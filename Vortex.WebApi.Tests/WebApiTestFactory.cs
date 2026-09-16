@@ -13,6 +13,7 @@ using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 using Vortex.Database.Context;
 using Vortex.Primitives.Authentication;
+using Vortex.Primitives.Chain;
 using Vortex.Primitives.Hosting;
 using Vortex.Primitives.Observability;
 using Vortex.Primitives.Shop;
@@ -83,6 +84,12 @@ internal sealed class WebApiTestFactory : IAsyncDisposable
         builder.Services.AddSingleton<IAccountSafetyQuestionsService>(SafetyQuestions);
         builder.Services.AddSingleton<IAccountTrustedLocationService>(TrustedLocations);
         builder.Services.AddSingleton<IShopService>(Shop);
+
+        // A hotel with no chain, which is what every hotel runs by default — and the state the two
+        // chain routes have to answer politely in rather than throw. Its absence here is what the
+        // production 500 looked like from the inside: an unregistered service, read by a minimal
+        // API as the request body, failing the whole endpoint.
+        builder.Services.AddSingleton<IChainService>(new FakeChainService());
         builder.Services.AddSingleton<RequiredServiceGuard>();
 
         // Mirrors WebApiWebHost.ForwardSingletons. Leaving a service out of that list is not a

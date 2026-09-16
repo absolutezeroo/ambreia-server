@@ -13,6 +13,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Vortex.Database.Context;
 using Vortex.Primitives.Authentication;
+using Vortex.Primitives.Chain;
 using Vortex.Primitives.Hosting;
 using Vortex.Primitives.Observability;
 using Vortex.Primitives.Shop;
@@ -276,6 +277,12 @@ internal sealed class WebApiWebHost(
         // not reference and does not need to: the endpoints know only IShopService, and which payment
         // providers exist behind it is settled where the module is registered.
         services.AddSingleton(rootServices.GetRequiredService<IShopService>());
+
+        // The chain, for the same reason and with the same shape. Forgetting it did not look like a
+        // missing registration: the startup probe resolved it happily on the ROOT host and said the
+        // chain was ready, while both /api/public/chain routes answered 500 from this one. Two
+        // containers, one of them told about the service.
+        services.AddSingleton(rootServices.GetRequiredService<IChainService>());
 
         // POST /api/user/reports emits an audit record. A service missing from this list is not a
         // resolution failure at call time — minimal APIs read an unregistered parameter as the

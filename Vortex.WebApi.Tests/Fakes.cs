@@ -1,9 +1,12 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Numerics;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Vortex.Primitives.Authentication;
+using Vortex.Primitives.Chain;
 using Vortex.Primitives.Observability;
 using Vortex.Primitives.Shop;
 using Vortex.WebApi.Services;
@@ -574,4 +577,45 @@ internal sealed class FakeTrustedLocationService : IAccountTrustedLocationServic
 
         return Task.FromResult(forgotten);
     }
+}
+
+/// <summary>
+/// A hotel with no chain configured, which is what every hotel runs until an operator sets one up.
+/// </summary>
+/// <remarks>
+/// Not a stub that pretends to work: <c>Enabled</c> is false and every call throws exactly as
+/// <c>ChainService</c> does in that state, because what the endpoints are being tested on is how
+/// they answer when the chain is off — politely, and not with a 500.
+/// </remarks>
+internal sealed class FakeChainService : IChainService
+{
+    public bool Enabled => false;
+
+    public string? TreasuryAddress => null;
+
+    public ChainInfo GetInfo() => new(31337, "Vortex", "VTX", null, null);
+
+    public bool IsPublicMethodAllowed(string? method) =>
+        method is "eth_chainId" or "eth_call" or "eth_sendRawTransaction";
+
+    public Task<BigInteger> GetCoinBalanceAsync(string address, CancellationToken ct) =>
+        throw Off();
+
+    public Task<IReadOnlyList<BigInteger>> GetRelicsAsync(string address, CancellationToken ct) =>
+        throw Off();
+
+    public Task<string> MintCoinAsync(string to, BigInteger amount, CancellationToken ct) =>
+        throw Off();
+
+    public Task<string> MintRelicAsync(string to, BigInteger assetId, CancellationToken ct) =>
+        throw Off();
+
+    public Task<JsonElement> ForwardPublicCallAsync(
+        string method,
+        IReadOnlyList<JsonElement> parameters,
+        CancellationToken ct
+    ) => throw Off();
+
+    private static InvalidOperationException Off() =>
+        new("No chain is configured; check IChainService.Enabled before calling.");
 }
