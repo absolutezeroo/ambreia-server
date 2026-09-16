@@ -7841,6 +7841,53 @@ namespace Vortex.Database.Migrations
                     b.ToTable("player_vault_income_rewards");
                 });
 
+            modelBuilder.Entity("Vortex.Database.Entities.Players.PlayerWalletEntity", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasColumnName("id");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Address")
+                        .IsRequired()
+                        .HasMaxLength(42)
+                        .HasColumnType("varchar(42)")
+                        .HasColumnName("address");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime(6)")
+                        .HasColumnName("created_at");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<DateTime>("CreatedAt"));
+
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("datetime(6)")
+                        .HasColumnName("deleted_at");
+
+                    b.Property<int>("PlayerEntityId")
+                        .HasColumnType("int")
+                        .HasColumnName("player_id");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("datetime(6)")
+                        .HasColumnName("updated_at");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlComputedColumn(b.Property<DateTime>("UpdatedAt"));
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Address")
+                        .IsUnique();
+
+                    b.HasIndex("PlayerEntityId");
+
+                    b.ToTable("player_wallets");
+                });
+
             modelBuilder.Entity("Vortex.Database.Entities.Players.PlayerWardrobeOutfitEntity", b =>
                 {
                     b.Property<int>("Id")
@@ -13118,6 +13165,17 @@ namespace Vortex.Database.Migrations
                 });
 
             modelBuilder.Entity("Vortex.Database.Entities.Players.PlayerVaultIncomeRewardEntity", b =>
+                {
+                    b.HasOne("Vortex.Database.Entities.Players.PlayerEntity", "PlayerEntity")
+                        .WithMany()
+                        .HasForeignKey("PlayerEntityId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("PlayerEntity");
+                });
+
+            modelBuilder.Entity("Vortex.Database.Entities.Players.PlayerWalletEntity", b =>
                 {
                     b.HasOne("Vortex.Database.Entities.Players.PlayerEntity", "PlayerEntity")
                         .WithMany()

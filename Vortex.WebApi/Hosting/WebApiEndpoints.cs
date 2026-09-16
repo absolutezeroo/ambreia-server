@@ -28,7 +28,7 @@ namespace Vortex.WebApi.Hosting;
 /// <see cref="WebApiHttpContextExtensions"/>); the sensitive endpoints declare a named rate-limiting
 /// policy. Every endpoint is tagged for Swagger grouping.
 /// </summary>
-internal static class WebApiEndpoints
+internal static partial class WebApiEndpoints
 {
     public const string LoginRateLimitPolicy = "webapi-login";
     public const string RegistrationRateLimitPolicy = "webapi-registration";
@@ -58,6 +58,10 @@ internal static class WebApiEndpoints
         MapNewUser(app);
         MapContent(app);
         MapShop(app);
+
+        // Where a self-custody wallet is proved and linked. Not in the game client, which has no
+        // interface for it — see WebApiEndpoints.Wallet.cs.
+        MapWallet(app);
 
         // The only route to the chain node, whose own port is deliberately unpublished — see
         // WebApiEndpoints.Chain.cs.

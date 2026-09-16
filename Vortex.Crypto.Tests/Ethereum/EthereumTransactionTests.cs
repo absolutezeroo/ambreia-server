@@ -25,6 +25,13 @@ public sealed class EthereumTransactionTests
         "ac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80"
     );
 
+    /// <summary>
+    /// The same message <c>EthereumSignatureTests</c> verifies a signature over, so signing and
+    /// recovery are pinned to one <c>ethers</c> vector rather than only to each other.
+    /// </summary>
+    private const string NONCE_MESSAGE =
+        "vortex.hotel wants you to link this wallet.\n\nNonce: 0123456789abcdef";
+
     /// <summary>A plain transfer: no data, and a value that fills most of a word.</summary>
     [Fact]
     public void Sign_matches_the_reference_for_a_transfer()
@@ -180,6 +187,55 @@ public sealed class EthereumTransactionTests
             .Should()
             .NotEqual(signed);
         HotelWallets.AddressOfPrivateKey(key).Should().Be(HotelWallets.DeriveAddress(seed, 4711));
+    }
+
+    /// <summary>
+    /// Signing a personal message, against the same <c>ethers</c> vector <c>EthereumSignatureTests</c>
+    /// verifies — so the two halves are pinned to each other and to the reference, rather than only
+    /// agreeing between themselves.
+    /// </summary>
+    [Fact]
+    public void SignPersonalMessage_matches_the_reference_implementation()
+    {
+        string signature =
+            "0x"
+            + Convert
+                .ToHexString(EthereumTransaction.SignPersonalMessage(NONCE_MESSAGE, TREASURY_KEY))
+                .ToLowerInvariant();
+
+        signature
+            .Should()
+            .Be(
+                "0xcc081590230a4f3484f142f4e88dbece9aafe655efd2d737be605c996fd0dd146a3c38ff8b9a79"
+                    + "46de55ae590bcbb2a85583581c2c3dacb07e004dd6e93d50061c"
+            );
+    }
+
+    /// <summary>
+    /// The property the wallet-link endpoint rests on: what this signs, <c>RecoverAddress</c> reads
+    /// back as the signer and nobody else.
+    /// </summary>
+    [Fact]
+    public void SignPersonalMessage_round_trips_through_recovery()
+    {
+        byte[] seed = Convert.FromHexString(
+            "6f1a2b3c4d5e6f708192a3b4c5d6e7f8091a2b3c4d5e6f708192a3b4c5d6e7f8"
+        );
+        byte[] key = HotelWallets.DerivePrivateKey(seed, 4711);
+
+        string signature =
+            "0x" + Convert.ToHexString(EthereumTransaction.SignPersonalMessage("link me", key));
+
+        EthereumSignature
+            .RecoverAddress("link me", signature)
+            .Should()
+            .Be(HotelWallets.AddressOfPrivateKey(key));
+
+        // And says nothing about a different message, which is what makes the nonce worth issuing.
+        EthereumSignature
+            .RecoverAddress("link me too", signature)
+            .Should()
+            .NotBe(HotelWallets.AddressOfPrivateKey(key));
     }
 
     [Theory]

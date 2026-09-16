@@ -11,9 +11,12 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
+using Vortex.Crypto.Configuration;
+using Vortex.Crypto.Ethereum;
 using Vortex.Database.Context;
 using Vortex.Primitives.Authentication;
 using Vortex.Primitives.Chain;
+using Vortex.Primitives.Crypto;
 using Vortex.Primitives.Hosting;
 using Vortex.Primitives.Observability;
 using Vortex.Primitives.Shop;
@@ -90,6 +93,29 @@ internal sealed class WebApiTestFactory : IAsyncDisposable
         // production 500 looked like from the inside: an unregistered service, read by a minimal
         // API as the request body, failing the whole endpoint.
         builder.Services.AddSingleton<IChainService>(new FakeChainService());
+
+        // The REAL implementations, not fakes. Both are pure and deterministic — one derives an
+        // address from a seed, the other recovers one from a signature — so a fake would only be a
+        // second, weaker copy of arithmetic that is already pinned against ethers, and the wallet
+        // tests would stop proving the thing they exist for.
+        builder.Services.AddSingleton<IWalletProof>(new WalletProof());
+        builder.Services.AddSingleton<IHotelWalletService>(
+            new HotelWalletService(
+                Options.Create(
+                    new CryptoConfig
+                    {
+                        KeySize = "3",
+                        PublicKey = "00",
+                        PrivateKey = "00",
+                        EnableServerToClientEncryption = false,
+                        WalletMasterSeed =
+                            "6f1a2b3c4d5e6f708192a3b4c5d6e7f8091a2b3c4d5e6f708192a3b4c5d6e7f8",
+                    }
+                ),
+                NullLogger<HotelWalletService>.Instance
+            )
+        );
+        builder.Services.AddSingleton<WalletLinkChallenges>();
         builder.Services.AddSingleton<RequiredServiceGuard>();
 
         // Mirrors WebApiWebHost.ForwardSingletons. Leaving a service out of that list is not a

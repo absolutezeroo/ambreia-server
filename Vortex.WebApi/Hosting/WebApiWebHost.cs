@@ -14,6 +14,7 @@ using Microsoft.Extensions.Options;
 using Vortex.Database.Context;
 using Vortex.Primitives.Authentication;
 using Vortex.Primitives.Chain;
+using Vortex.Primitives.Crypto;
 using Vortex.Primitives.Hosting;
 using Vortex.Primitives.Observability;
 using Vortex.Primitives.Shop;
@@ -283,6 +284,13 @@ internal sealed class WebApiWebHost(
         // chain was ready, while both /api/public/chain routes answered 500 from this one. Two
         // containers, one of them told about the service.
         services.AddSingleton(rootServices.GetRequiredService<IChainService>());
+
+        // Linking a wallet: the address a player's Stardust wallet is at, and the check that turns
+        // "this address is mine" from a claim into a proof. Both live in Vortex.Crypto, which this
+        // project does not reference — same arrangement as the shop and the chain above.
+        services.AddSingleton(rootServices.GetRequiredService<IHotelWalletService>());
+        services.AddSingleton(rootServices.GetRequiredService<IWalletProof>());
+        services.AddSingleton<Services.WalletLinkChallenges>();
 
         // POST /api/user/reports emits an audit record. A service missing from this list is not a
         // resolution failure at call time — minimal APIs read an unregistered parameter as the

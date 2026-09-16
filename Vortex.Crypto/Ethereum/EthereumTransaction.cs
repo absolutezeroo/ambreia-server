@@ -127,6 +127,34 @@ public static class EthereumTransaction
     }
 
     /// <summary>
+    /// Signs an EIP-191 personal message the way a wallet does, and answers the 65-byte
+    /// <c>r ‖ s ‖ v</c> a browser would have sent.
+    /// </summary>
+    /// <remarks>
+    /// The inverse of <see cref="EthereumSignature.RecoverAddress" />, and it exists so the link
+    /// flow can be exercised end to end in a test without a browser and a wallet extension in the
+    /// loop. The hotel never signs on a player's behalf in production — it holds no self-custody
+    /// key and would have nothing to sign with.
+    /// </remarks>
+    public static byte[] SignPersonalMessage(string message, ReadOnlySpan<byte> privateKey)
+    {
+        (BcBigInteger r, BcBigInteger s, int yParity) = SignHash(
+            EthereumSignature.HashPersonalMessage(message),
+            privateKey
+        );
+
+        byte[] signature = new byte[65];
+
+        BigIntegers.AsUnsignedByteArray(32, r).CopyTo(signature, 0);
+        BigIntegers.AsUnsignedByteArray(32, s).CopyTo(signature, 32);
+
+        // 27-based, which is what every wallet emits and what RecoverAddress reads first.
+        signature[64] = (byte)(yParity + 27);
+
+        return signature;
+    }
+
+    /// <summary>
     /// Signs <paramref name="hash" /> and answers the canonical <c>(r, s, yParity)</c>.
     /// </summary>
     private static (BcBigInteger R, BcBigInteger S, int YParity) SignHash(

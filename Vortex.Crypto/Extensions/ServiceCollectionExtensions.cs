@@ -31,6 +31,10 @@ public static class ServiceCollectionExtensions
         // once, at startup, rather than on every visit to the Collectors Guild.
         services.AddSingleton<IHotelWalletService, HotelWalletService>();
 
+        // Stateless, but a singleton like the rest: it exists so callers that must not reference
+        // this assembly can still verify a wallet's signature.
+        services.AddSingleton<IWalletProof, WalletProof>();
+
         return services;
     }
 }
