@@ -12,6 +12,7 @@ using Vortex.Database.Context;
 using Vortex.Database.Entities.Collectibles;
 using Vortex.Database.Entities.Furniture;
 using Vortex.Players.Grains;
+using Vortex.Primitives.Chain;
 using Vortex.Primitives.Collectibles;
 using Vortex.Primitives.Events;
 using Vortex.Primitives.Furniture.Enums;
@@ -29,6 +30,8 @@ public sealed class PlayerNftClaimsGrainTests
 {
     private const int PlayerId = 42;
     private const string Lamp = "02_dragonlamp_skream";
+    private const int RelicAssetId = 91;
+    private const string Wallet = "0x000000000000000000000000000000000000beef";
 
     [Fact]
     public async Task AnOutstandingClaim_IsListedWithTheSpriteIdAndTheWalletEchoedBack()
@@ -113,16 +116,93 @@ public sealed class PlayerNftClaimsGrainTests
             .ContainSingle("it stays for an admin to fix");
     }
 
+    /// <summary>
+    ///     The other door. A Relic that left through the Transfer tab comes home when the hotel's
+    ///     treasury holds its token on the chain — and claiming it destroys the token, because one
+    ///     Relic owned in two places is exactly what the wallet column exists to prevent.
+    /// </summary>
+    [Fact]
+    public async Task AReturnedRelic_IsListedForTheWalletItLeftFromAndClaimingItBurnsTheToken()
+    {
+        FakeChain chain = new();
+        Harness harness = await Harness
+            .CreateAsync(chain: chain, sentOutTo: Wallet)
+            .ConfigureAwait(true);
+
+        chain.Give(FakeChain.Treasury, RelicAssetId);
+
+        ImmutableArray<NftClaimSnapshot> claims = await harness
+            .Grain.GetClaimsAsync(Wallet, CancellationToken.None)
+            .ConfigureAwait(true);
+
+        claims
+            .Select(claim => claim.ClaimId)
+            .Should()
+            .Contain($"relic:{RelicAssetId}", "the treasury is holding it");
+
+        (
+            await harness
+                .Grain.GetClaimsAsync("0xsomewhereelse", CancellationToken.None)
+                .ConfigureAwait(true)
+        )
+            .Select(claim => claim.ClaimId)
+            .Should()
+            .NotContain($"relic:{RelicAssetId}", "it is listed under the wallet it left from");
+
+        await harness.Grain.ClaimAllAsync(CancellationToken.None).ConfigureAwait(true);
+
+        chain.Burned.Should().ContainSingle().Which.Should().Be(RelicAssetId);
+
+        await using VortexDbContext db = harness.Db.CreateDbContext();
+
+        db.NftAssets.Single(asset => asset.Id == RelicAssetId)
+            .WalletAddress.Should()
+            .BeNull("it is back in the hotel");
+    }
+
+    /// <summary>
+    ///     The chain decides, not the database. A row saying a Relic left is not evidence it came
+    ///     back, and offering it as a claim would hand the player a second copy of something they
+    ///     still own in their own wallet.
+    /// </summary>
+    [Fact]
+    public async Task ARelicStillOutOnTheChain_IsNotClaimable()
+    {
+        FakeChain chain = new();
+        Harness harness = await Harness
+            .CreateAsync(chain: chain, sentOutTo: Wallet)
+            .ConfigureAwait(true);
+
+        chain.Give(Wallet, RelicAssetId);
+
+        (await harness.Grain.GetClaimsAsync(Wallet, CancellationToken.None).ConfigureAwait(true))
+            .Select(claim => claim.ClaimId)
+            .Should()
+            .NotContain($"relic:{RelicAssetId}");
+
+        await harness.Grain.ClaimAllAsync(CancellationToken.None).ConfigureAwait(true);
+
+        chain.Burned.Should().BeEmpty("the hotel does not hold it");
+    }
+
     private sealed class Harness
     {
-        private Harness(PlayerNftClaimsGrain grain) => Grain = grain;
+        private Harness(PlayerNftClaimsGrain grain, IDbContextFactory<VortexDbContext> db)
+        {
+            Grain = grain;
+            Db = db;
+        }
 
         public PlayerNftClaimsGrain Grain { get; }
+
+        public IDbContextFactory<VortexDbContext> Db { get; }
 
         public static async Task<Harness> CreateAsync(
             string productCode = Lamp,
             int claimLimit = 1,
-            DateTime? validTo = null
+            DateTime? validTo = null,
+            IChainService? chain = null,
+            string? sentOutTo = null
         )
         {
             DbContextOptions<VortexDbContext> options =
@@ -167,6 +247,20 @@ public sealed class PlayerNftClaimsGrainTests
                     }
                 );
 
+                if (sentOutTo is not null)
+                {
+                    seed.NftAssets.Add(
+                        new NftAssetEntity
+                        {
+                            Id = RelicAssetId,
+                            PlayerEntityId = PlayerId,
+                            ProductCode = Lamp,
+                            WalletAddress = sentOutTo,
+                            SerialNumber = 1,
+                        }
+                    );
+                }
+
                 await seed.SaveChangesAsync().ConfigureAwait(true);
             }
 
@@ -180,16 +274,21 @@ public sealed class PlayerNftClaimsGrainTests
                     : null
             );
 
+            SingleOptionsFactory db = new(options);
+
             PlayerNftClaimsGrain grain =
                 GrainActivationContext.CreateWithIntegerKey<PlayerNftClaimsGrain>(
                     PlayerId,
-                    new SingleOptionsFactory(options),
+                    db,
                     grainFactory,
                     FakeProxy.Create<IEventPublisher>(_ => Task.CompletedTask),
-                    NullLogger<PlayerNftClaimsGrain>.Instance
+                    NullLogger<PlayerNftClaimsGrain>.Instance,
+                    // Off unless a test says otherwise: a hotel with no chain is the default, and
+                    // none of the claims above should ever reach one.
+                    chain ?? new FakeChain { Enabled = false, TreasuryAddress = null }
                 );
 
-            return new Harness(grain);
+            return new Harness(grain, db);
         }
 
         private sealed class SingleOptionsFactory(DbContextOptions<VortexDbContext> options)
