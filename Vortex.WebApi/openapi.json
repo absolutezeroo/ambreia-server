@@ -2591,6 +2591,10 @@
           "collectibleAddress": {
             "type": "string",
             "nullable": true
+          },
+          "treasuryAddress": {
+            "type": "string",
+            "nullable": true
           }
         },
         "additionalProperties": false
