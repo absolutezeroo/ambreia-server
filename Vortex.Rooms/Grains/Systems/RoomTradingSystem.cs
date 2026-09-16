@@ -672,15 +672,29 @@ public sealed class RoomTradingSystem(RoomGrain roomGrain)
                 )
                 .ExecuteUpdateAsync(row => row.SetProperty(f => f.PlayerEntityId, toOwner), ct);
 
-    /// <summary>A Relic cannot be standing in a room, so the guard is only that every one of them
-    /// still exists and still belongs to the player who offered it.</summary>
+    /// <summary>
+    /// A Relic cannot be standing in a room, so the guard is that every one of them still exists,
+    /// still belongs to the player who offered it, and is still IN THE HOTEL.
+    /// </summary>
+    /// <remarks>
+    /// The last condition is not redundant with the first two, and it is the one that would have
+    /// been forgotten: <c>player_id</c> keeps naming the last hotel owner after a Relic is
+    /// transferred out to a wallet, so a Relic sitting on the chain still passes the ownership
+    /// check. Offering one was already refused earlier — <c>AddTradeAssetsAsync</c> validates
+    /// against <c>PlayerMintGrain.GetAssetsAsync</c>, which excludes them — but this runs at commit,
+    /// against rows read fresh from the database, and it is the last thing standing between a
+    /// transfer that lands mid-trade and the same Relic existing in a wallet and in a stranger's
+    /// inventory at once.
+    /// </remarks>
     private static bool IsAssetOfferPersistable(
         List<NftAssetEntity> rows,
         int expectedCount,
         int expectedOwner
     ) =>
         rows.Count == expectedCount
-        && rows.All(r => r.PlayerEntityId == expectedOwner && r.DeletedAt is null);
+        && rows.All(r =>
+            r.PlayerEntityId == expectedOwner && r.DeletedAt is null && r.WalletAddress is null
+        );
 
     /// <summary>
     /// Hands Relics over and records each move. The ledger row goes in the same transaction as the

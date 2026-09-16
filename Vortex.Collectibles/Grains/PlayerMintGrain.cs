@@ -255,6 +255,11 @@ internal sealed class PlayerMintGrain(
         // type and recreating it cannot mint the same edition twice. Two players racing for the last
         // copy both read the same total here; the unique index on (product_code, serial_number) is
         // what actually settles it, and the loser's conversion is undone below.
+        //
+        // NO owner condition and NO `WalletAddress == null`, deliberately: this counts how many of
+        // the classname EXIST, not who holds them. Adding the wallet filter for consistency with the
+        // ownership queries would let a player transfer a Relic out to free a slot and mint another
+        // one, and "#3 of 3" would stop meaning anything.
         int minted = await dbCtx
             .NftAssets.AsNoTracking()
             .CountAsync(asset => asset.ProductCode == terms.ProductCode, ct)
@@ -392,9 +397,17 @@ internal sealed class PlayerMintGrain(
             .CreateDbContextAsync(ct)
             .ConfigureAwait(true);
 
+        // `WalletAddress == null` is what keeps one Relic from existing in two places. This answer is
+        // not only the inventory tab: RoomTradingSystem.AddTradeAssetsAsync validates a trade offer
+        // against it, so a Relic that leaked in here would be one a player could trade away while it
+        // is sitting in somebody's wallet.
         NftAssetEntity[] assets = await dbCtx
             .NftAssets.AsNoTracking()
-            .Where(asset => asset.PlayerEntityId == PlayerId.Value && asset.DeletedAt == null)
+            .Where(asset =>
+                asset.PlayerEntityId == PlayerId.Value
+                && asset.DeletedAt == null
+                && asset.WalletAddress == null
+            )
             .OrderBy(asset => asset.Id)
             .ToArrayAsync(ct)
             .ConfigureAwait(true);

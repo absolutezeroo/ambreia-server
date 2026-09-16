@@ -1694,11 +1694,18 @@ namespace Vortex.Database.Migrations
 
                     MySqlPropertyBuilderExtensions.UseMySqlComputedColumn(b.Property<DateTime>("UpdatedAt"));
 
+                    b.Property<string>("WalletAddress")
+                        .HasMaxLength(42)
+                        .HasColumnType("varchar(42)")
+                        .HasColumnName("wallet_address");
+
                     b.HasKey("Id");
 
                     b.HasIndex("FurnitureDefinitionEntityId");
 
                     b.HasIndex("PlayerEntityId");
+
+                    b.HasIndex("WalletAddress");
 
                     b.HasIndex("ProductCode", "SerialNumber")
                         .IsUnique();

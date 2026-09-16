@@ -146,11 +146,18 @@ internal sealed class NftCollectionsGrain(
             .ToListAsync(ct)
             .ConfigureAwait(true);
 
+        // A Relic out on the chain counts for nobody here. That is a decision and not an oversight:
+        // the alternative is to keep crediting `player_id`, which stops being an owner the moment
+        // the Relic leaves — a player who sells theirs to a stranger would keep the collection score
+        // for it forever, and the hotel has no way to learn otherwise. Counting only what is in the
+        // hotel costs the seller a score they no longer deserve, and it is the same rule the
+        // inventory and the trade table use.
         List<OwnedCount> relics = await dbCtx
             .NftAssets.AsNoTracking()
             .Where(asset =>
                 asset.PlayerEntityId == playerId.Value
                 && asset.DeletedAt == null
+                && asset.WalletAddress == null
                 && wanted.Contains(asset.ProductCode)
             )
             .GroupBy(asset => asset.ProductCode)

@@ -27,10 +27,49 @@ namespace Vortex.Database.Entities.Collectibles;
 // last copy of the same classname at the same moment both count the same total, and the second
 // insert is what has to fail. Its mint is refunded rather than the edition oversold.
 [Index(nameof(ProductCode), nameof(SerialNumber), IsUnique = true)]
+// Reconciling a wallet against the chain looks its Relics up by address.
+[Index(nameof(WalletAddress))]
 public class NftAssetEntity : VortexEntity
 {
+    /// <summary>
+    /// Who holds it IN THE HOTEL — and, once <see cref="WalletAddress" /> is set, who held it last.
+    /// It is not cleared on the way out, because the ledger reads better with it and because a Relic
+    /// that comes home usually comes home to the same person.
+    ///
+    /// <para>
+    /// <b>It is therefore not, on its own, a claim of ownership.</b> A Relic out on the chain still
+    /// names its last hotel owner here, and that owner may well have sold it to a stranger. Every
+    /// query that means "what does this player own" pairs this with
+    /// <c>WalletAddress == null</c>; see the remarks on that property for the two that deliberately
+    /// do not.
+    /// </para>
+    /// </summary>
     [Column("player_id")]
     public required int PlayerEntityId { get; set; }
+
+    /// <summary>
+    /// The chain address this Relic was transferred out to, or <c>null</c> while it is in the hotel.
+    /// Non-null means it is <b>gone from the game</b>: absent from the inventory tab, un-tradeable,
+    /// and counting towards nobody's collection score. The player owns it in their wallet, where the
+    /// hotel has no say over it.
+    ///
+    /// <para>
+    /// One column and not a state enum, because there is no third state and because the address is
+    /// needed anyway — it is what a claim back into the hotel has to be checked against.
+    /// </para>
+    ///
+    /// <para>
+    /// <b>Two queries deliberately ignore this, and must keep ignoring it:</b> the edition count in
+    /// <c>PlayerMintGrain</c> and the sold-out list in <c>NftMintingGrain</c>. Those count how many
+    /// of a classname EXIST, not who has them — filter them and a player could take a Relic out of
+    /// the hotel to free a slot and mint another, turning "1 of 5" into a lie. They read by
+    /// <c>ProductCode</c> with no owner condition, which is already right; the risk is somebody
+    /// later adding the filter for consistency.
+    /// </para>
+    /// </summary>
+    [Column("wallet_address")]
+    [MaxLength(42)]
+    public string? WalletAddress { get; set; }
 
     /// <summary>The classname of the furniture that was converted.</summary>
     [Column("product_code")]

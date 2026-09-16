@@ -107,6 +107,10 @@ internal sealed class NftMintingGrain(
             .CreateDbContextAsync(ct)
             .ConfigureAwait(true);
 
+        // Counts EXISTENCE, so no owner condition and no `WalletAddress == null` — a Relic that has
+        // been transferred out to a wallet has still been minted and still occupies its place in the
+        // edition. This has to agree exactly with the count PlayerMintGrain makes before minting, or
+        // the client shows a type as available that the mint then refuses.
         Dictionary<string, int> minted = await dbCtx
             .NftAssets.AsNoTracking()
             .Where(asset => capped.Contains(asset.ProductCode))
