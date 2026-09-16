@@ -1,0 +1,25 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <IsPackable>false</IsPackable>
+    <!--
+      Nothing here needs a node. The two things that could only be checked against a live chain —
+      that the signed bytes are accepted, and that the ABI matches the contracts — are already
+      pinned in Vortex.Crypto.Tests against ethers, and a test suite that silently passes when a
+      node happens to be absent is worse than one that does not claim to test that at all.
+
+      What is left is the glue, and it is where the interesting mistakes are: a hex quantity is
+      MINIMAL and a hex data blob is not, a node reports failure as HTTP 200, and the whole feature
+      has to be switched off by an empty setting rather than by a crash.
+    -->
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="FluentAssertions" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" />
+    <PackageReference Include="xunit" />
+    <PackageReference Include="xunit.runner.visualstudio" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Vortex.Chain\Vortex.Chain.csproj" />
+  </ItemGroup>
+</Project>

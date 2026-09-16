@@ -11,6 +11,66 @@ name: vortex-cloud
 
 services:
   # -----------------------------------------------------------------------------------------------
+  # The hotel's chain (anvil)
+  # -----------------------------------------------------------------------------------------------
+  # Same Foundry release as tools/foundry, which is what a developer without Docker runs locally —
+  # keep the two versions in step.
+  #
+  # ⚠ THE RPC PORT IS NOT PUBLISHED, AND MUST NOT BE.
+  #
+  # anvil serves the `anvil_*` and `evm_*` admin namespaces alongside the standard ones, with no way
+  # to switch them off: anyone who can reach this port can call `anvil_setBalance` and give
+  # themselves any amount of anything, or `anvil_impersonateAccount` and act as the treasury. On a
+  # contest, that is the end of the contest — and it takes one `curl`.
+  #
+  # A player's Metamask does need to reach an RPC endpoint to add the network and read balances. The
+  # way that happens is a FILTERED proxy on the hotel's own web API, forwarding a whitelist of
+  # `eth_*` / `net_*` / `web3_*` methods and refusing everything else — same origin, no extra
+  # service, and the allowlist lives next to the rest of the hotel's access rules. Publishing 8545
+  # is not a shortcut to that; it is the thing the proxy exists to prevent.
+  chain:
+    image: ghcr.io/foundry-rs/foundry:v1.8.3
+    restart: unless-stopped
+    entrypoint: ["anvil"]
+    command:
+      # Container-local binds are binds to nowhere here too — the emulator reaches this over the
+      # compose network, not over loopback.
+      - --host=0.0.0.0
+      - --chain-id=31337
+      # Load on start, save periodically and on exit. Without it every restart is a brand new chain:
+      # the contracts vanish, and so does every balance the contest was counting.
+      - --state=/data/anvil-state.json
+      - --state-interval=10
+    volumes:
+      - vortex-chain-data:/data
+
+  # -----------------------------------------------------------------------------------------------
+  # One-shot: put the two contracts on the chain
+  # -----------------------------------------------------------------------------------------------
+  # Behind a profile, so `docker compose up` never runs it. Deploying is a once-per-chain act:
+  #
+  #   docker compose run --rm chain-deploy
+  #
+  # It needs neither solc nor npm — tools/chain/deploy.sh sends the committed bytecode from
+  # chain/artifacts with `cast`, and refuses if the chain already has contracts on it.
+  chain-deploy:
+    image: ghcr.io/foundry-rs/foundry:v1.8.3
+    profiles: ["setup"]
+    depends_on:
+      - chain
+    entrypoint: ["/bin/sh", "/deploy.sh"]
+    environment:
+      VORTEX_CHAIN_RPC_URL: "http://chain:8545"
+      # anvil's first genesis account, fixed by its default mnemonic and therefore public knowledge.
+      # It is the treasury ONLY on this development stack; a real hotel deploys from a key it
+      # generated, and every VTX in existence is mintable by whoever holds it.
+      VORTEX_CHAIN_TREASURY_KEY: "0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80"
+      VORTEX_COLLECTIBLE_BASE_URI: "http://localhost:8080/api/public/collectibles/"
+    volumes:
+      - ./chain/artifacts:/chain/artifacts:ro
+      - ./tools/chain/deploy.sh:/deploy.sh:ro
+
+  # -----------------------------------------------------------------------------------------------
   # MySQL 8
   # -----------------------------------------------------------------------------------------------
   mysql:
@@ -164,6 +224,22 @@ services:
       VORTEX__Vortex__Crypto__PublicKey: "c01389982ad84c9e716dd76edc7238fe5a6411798ea25809fab540d58b6ede11d9c9813d60d6b3ffb43154b72c74f77ab3f223d11b67eaa4cb234389ea8cbed717f5cffcbc8e2b68df7ca8bccbad0af151478e26d2967f11494f86da97333dd536b6d10e4e2b16d18e4d9fdb6c4beffc47ba4cc219fedfc953fff17d19f0dd37"
       VORTEX__Vortex__Crypto__PrivateKey: "800d066571e58869a0f3e4f492f6d0a991980ba65f16e55bfc78d5e3b249e9613bdbab7e408f22aa7820e324c84dfa51cd4c17e0bceff1c33217825bf1b329e39251a0059220eb6215942e2335f1cd0c53e01074cce53fcac6b8ef1fab661bf97f7c5672cc74f616a32cf43052a9afabda7005669aace59d83462952d23c634b"
 
+      # --- Custodial player wallets (DEVELOPMENT ONLY) -----------------------------------------
+      # The root every player's on-chain wallet key is derived from — see Vortex.Crypto/HotelWallets
+      # and the Stardust address the Collectors Guild is handed. This is the one value in this file
+      # that would actually be worth stealing on a real hotel: it is every player's private key at
+      # once. A deployment generates its own and keeps it in a secret store, never in a committed
+      # file. Committed here anyway, and harmless, for the reason the header of this file gives.
+      #
+      # appsettings.json ships this EMPTY rather than as a CHANGE_ME placeholder, and that is
+      # deliberate: empty means "no chain, keyless placeholder addresses", which is a supported way
+      # to run the hotel. A placeholder marker there would fail the startup of every hotel that
+      # wants no chain at all, where the RSA keys have no such option.
+      #
+      # Generate one with:
+      #   node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
+      VORTEX__Vortex__Crypto__WalletMasterSeed: "1091cfaf3cc2f22b86cf117775cf0aa227b5e212ebbca634a80d58415747891c"
+
       # --- Auth (DEVELOPMENT ONLY) -------------------------------------------------------------
       # HMAC key for the IP addresses hashed into auth events. Only a placeholder check applies in
       # Development (Vortex.Authentication/Configuration/AuthenticationConfigValidator.cs enforces
@@ -173,3 +249,6 @@ services:
 
 volumes:
   vortex-mysql-data:
+  # The chain itself. `docker compose down -v` destroys it, and with it every balance and every
+  # Relic ever minted — there is no other copy, and the contracts would have to be deployed again.
+  vortex-chain-data:

@@ -1,0 +1,33 @@
+# =================================================================================================
+# The hotel's own chain: two contracts, and the Foundry project that builds and tests them.
+#
+#   ../tools/foundry/forge.exe build      (or `forge` from the docker image, same version)
+#   ../tools/foundry/forge.exe test
+#
+# solc is PINNED. Foundry would otherwise pick whatever satisfies the pragma, and the bytecode is
+# what gets deployed: a build that happens on a developer's machine and a build that happens in the
+# deploy container have to produce the same contract, or the address recorded in configuration is
+# not the address that ends up on the chain.
+# =================================================================================================
+
+[profile.default]
+src = "src"
+test = "test"
+out = "out"
+libs = ["node_modules"]
+solc = "0.8.28"
+optimizer = true
+optimizer_runs = 200
+
+# OpenZeppelin comes from npm rather than from soldeer (whose registry is unreachable from here) or
+# from `forge install` (which would add a git submodule — a second repository inside this one, for
+# one dependency). The path is the same one Hardhat projects use, so the import lines below read
+# exactly as they do in every OpenZeppelin example.
+#
+# forge-std does NOT come from npm. The `forge-std` package there is an unofficial third-party
+# redistribution frozen at 1.1.2 against an upstream on 1.16; tools/chain/get-forge-std.ps1 takes it
+# from foundry-rs' own release instead. It is test-only, so chain/lib is gitignored.
+remappings = [
+    "@openzeppelin/contracts/=node_modules/@openzeppelin/contracts/",
+    "forge-std/=lib/forge-std/src/",
+]

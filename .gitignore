@@ -63,3 +63,19 @@ tools/catalog_converter/input/
 tools/catalog_converter/output/
 tools/catalog_converter/exemples/
 bugs/*
+
+# Foundry (anvil / forge / cast), for working on the chain from a machine that has no Docker. 230 MB
+# of third-party binaries, fetched per checkout by tools/chain/get-foundry.ps1 and never committed.
+# A deployment needs none of it: docker-compose runs the official image instead.
+tools/foundry/
+
+# The chain project's dependencies and build output. The SOURCES in chain/src and chain/test are
+# committed and are what anyone reads; everything below is fetched or regenerated —
+# tools/chain/get-forge-std.ps1 and `npm install` in chain/ restore the first two, `forge build` the
+# rest. chain/out in particular is the compiled bytecode, which must come from a pinned solc rather
+# than from whatever a checkout happens to hold.
+chain/node_modules/
+chain/lib/
+chain/out/
+chain/cache/
+chain/broadcast/

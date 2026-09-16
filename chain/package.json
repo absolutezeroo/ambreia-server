@@ -1,0 +1,8 @@
+{
+  "name": "vortex-chain",
+  "private": true,
+  "description": "Solidity sources for the hotel's own chain. npm is here only to fetch OpenZeppelin: forge's own registry (soldeer) could not be reached, and a git submodule would put a second repository inside this one for one dependency.",
+  "dependencies": {
+    "@openzeppelin/contracts": "5.5.0"
+  }
+}

@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using Microsoft.Extensions.Options;
+using Vortex.Crypto.Ethereum;
 
 namespace Vortex.Crypto.Configuration;
 
@@ -106,6 +107,33 @@ public sealed class CryptoConfigValidator : IValidateOptions<CryptoConfig>
                     + "is enabled but no private key is configured. The server cannot complete the "
                     + "handshake without one."
             );
+        }
+
+        // Absent is a supported state -- no chain, keyless placeholder addresses -- so only a seed
+        // that is PRESENT and unusable is rejected. A hotel that meant to enable wallets and pasted
+        // the placeholder would otherwise start, derive every player's key from the literal string
+        // "CHANGE_ME...", and look for all the world like it was working.
+        if (!string.IsNullOrWhiteSpace(options.WalletMasterSeed))
+        {
+            ValidateHexField(
+                failures,
+                nameof(CryptoConfig.WalletMasterSeed),
+                options.WalletMasterSeed.StartsWith("0x", StringComparison.OrdinalIgnoreCase)
+                    ? options.WalletMasterSeed[2..]
+                    : options.WalletMasterSeed,
+                $"{CryptoConfig.SECTION_NAME}:{nameof(CryptoConfig.WalletMasterSeed)}"
+            );
+
+            if (HotelWallets.ParseMasterSeed(options.WalletMasterSeed) is null)
+            {
+                failures.Add(
+                    $"'{CryptoConfig.SECTION_NAME}:{nameof(CryptoConfig.WalletMasterSeed)}' must be "
+                        + $"at least {HotelWallets.MASTER_SEED_BYTES} bytes of hexadecimal. A short "
+                        + "seed makes every player's key only as unguessable as the seed itself. "
+                        + "Generate one with HotelWallets.GenerateMasterSeed(), or remove the "
+                        + "setting to run without on-chain wallets."
+                );
+            }
         }
 
         return failures.Count > 0

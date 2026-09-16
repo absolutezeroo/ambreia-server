@@ -89,5 +89,6 @@
     <ProjectReference Include="..\Vortex.Rooms\Vortex.Rooms.csproj" />
     <ProjectReference Include="..\Vortex.WebApi\Vortex.WebApi.csproj" />
     <ProjectReference Include="..\Vortex.Runtime\Vortex.Runtime.csproj" />
+    <ProjectReference Include="..\Vortex.Chain\Vortex.Chain.csproj" />
   </ItemGroup>
 </Project>

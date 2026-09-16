@@ -1,36 +1,40 @@
-using System.Globalization;
 using System.Threading;
 using System.Threading.Tasks;
 using Vortex.Messages.Registry;
+using Vortex.Primitives.Crypto;
 using Vortex.Protocol.Messages.Incoming.Collectibles;
 using Vortex.Protocol.Messages.Outgoing.Collectibles;
 
 namespace Vortex.PacketHandlers.Collectibles;
 
 /// <summary>
-/// Which wallets the player has linked.
+/// Which wallets the player has.
 ///
-/// Every player gets a Stardust wallet, derived deterministically from the player id — there is no
-/// wallet grain and nowhere in the client to link an external one, but the address has to be
-/// non-empty and stable across sessions, because the client keys its collections and reward claims
-/// on it.
+/// The Stardust one is the hotel's own, held on the player's behalf, and
+/// <see cref="IHotelWalletService" /> derives it from the hotel's master seed — a real secp256k1
+/// key, so the address is one a chain can actually be asked about. With no seed configured that
+/// same service answers the keyless placeholder this handler used to build itself, which is what
+/// keeps a hotel that wants no chain running unchanged.
 ///
-/// Returning nothing here is what used to hang two tabs. The client pushes the Stardust address
-/// into its wallet list only when it is not empty, and both <c>CollectionsTab</c> and
-/// <c>RewardClaimsTab</c> only ever leave their loading state from a message that is itself only
-/// requested per wallet. With an empty list neither request is sent, so neither tab ever becomes
-/// ready — the Flash client behaves the same way, so this is a server gap, not a client bug.
+/// <para>
+/// The address has to be non-empty either way. The client pushes the Stardust address into its
+/// wallet list only when it is not empty, and both <c>CollectionsTab</c> and <c>RewardClaimsTab</c>
+/// only ever leave their loading state from a message that is itself only requested per wallet. With
+/// an empty list neither request is sent, so neither tab ever becomes ready — the Flash client
+/// behaves the same way, so that is a server gap, not a client bug.
+/// </para>
+///
+/// <para>
+/// Self-custody wallets — the addresses <c>CollectibleWalletAddressesMessageEventParser</c> reads
+/// AFTER the Stardust one — are linked on the website, not here: the game client has no interface
+/// for connecting one, which is why habbo.com carries <c>/settings/wallet</c>. They arrive through
+/// this same composer once that page exists.
+/// </para>
 /// </summary>
-public class GetCollectibleWalletAddressesMessageHandler
+public class GetCollectibleWalletAddressesMessageHandler(IHotelWalletService wallets)
     : IMessageHandler<GetCollectibleWalletAddressesMessage>
 {
-    /// <summary>
-    /// Habbo's own Stardust addresses are 0x-prefixed 40-hex-digit strings. The client never parses
-    /// or validates the address — it uses it as an opaque key and shows the Stardust one under a
-    /// friendly name — so a deterministic value in the real shape is enough.
-    /// </summary>
-    private static string StardustAddressFor(int playerId) =>
-        "0x" + playerId.ToString("x", CultureInfo.InvariantCulture).PadLeft(40, '0');
+    private readonly IHotelWalletService _wallets = wallets;
 
     public async ValueTask HandleAsync(
         GetCollectibleWalletAddressesMessage message,
@@ -46,7 +50,7 @@ public class GetCollectibleWalletAddressesMessageHandler
         await ctx.SendComposerAsync(
                 new CollectibleWalletAddressesMessageComposer
                 {
-                    StardustWalletAddress = StardustAddressFor(ctx.PlayerId),
+                    StardustWalletAddress = _wallets.GetAddress(ctx.PlayerId),
                 },
                 ct
             )

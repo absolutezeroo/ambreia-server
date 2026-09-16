@@ -20,6 +20,15 @@
 Dockerfile     text eol=lf
 .dockerignore  text eol=lf
 
+# The chain's sources, and the compiled bytecode the deploy step feeds to `cast send --create`.
+# The .hex files are the ones that actually matter: they are `cat`ed inside the container and
+# passed straight to a command line, so a trailing carriage return does not read as whitespace —
+# it becomes part of the contract's creation code.
+*.sol          text eol=lf
+*.toml         text eol=lf
+*.hex          text eol=lf
+*.mjs          text eol=lf
+
 # Keep Windows endings for Windows-specific stuff
 *.sln          text eol=crlf
 *.bat          text eol=crlf
