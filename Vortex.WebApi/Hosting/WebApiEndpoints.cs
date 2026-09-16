@@ -62,6 +62,11 @@ internal static class WebApiEndpoints
         // The only route to the chain node, whose own port is deliberately unpublished — see
         // WebApiEndpoints.Chain.cs.
         WebApiEndpointsChain.MapChain(app, TagChain, ChainRpcRateLimitPolicy);
+
+        // What VortexCollectible's tokenURI points at. Tagged Public rather than Chain because it
+        // answers with or without a chain: it describes a Relic, and a Relic exists in the hotel
+        // whether or not anybody ever moved it.
+        WebApiEndpointsCollectibles.MapCollectibles(app, TagPublic);
     }
 
     /// <summary>
