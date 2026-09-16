@@ -9,11 +9,14 @@
 # this hotel is actually deployed. So the node deploys them itself, on first boot, and prints the
 # addresses on every boot.
 #
-# Build from the REPOSITORY ROOT, not from chain/:
-#   docker build -f chain/Dockerfile -t vortex-chain .
+# THE BUILD CONTEXT IS THIS DIRECTORY, not the repository root:
+#   docker build -f chain/Dockerfile -t vortex-chain chain
 #
-# because it needs tools/chain/deploy.sh as well as chain/artifacts, and a Dockerfile cannot reach
-# above its context.
+# Everything the image needs lives under chain/ for exactly that reason. It used to reach for
+# tools/chain/deploy.sh, which forced the context up to the repository root — and a deployment
+# platform that sets the build context to the directory holding the Dockerfile, which is the normal
+# thing to do and what Coolify does, then failed every COPY with "not found". A context a build
+# cannot choose is one the image must not depend on.
 #
 # THE RPC PORT MUST NOT BE PUBLISHED. anvil serves anvil_setBalance and anvil_impersonateAccount
 # beside the standard methods with no way to switch them off; anyone who can reach this port can
@@ -32,9 +35,9 @@ USER root
 
 # The compiled contracts and the script that sends them. Both are committed, so this image needs
 # neither solc nor npm: the bytecode was produced once by the pinned solc in chain/foundry.toml.
-COPY chain/artifacts /chain/artifacts
-COPY tools/chain/deploy.sh /usr/local/bin/deploy.sh
-COPY chain/docker-entrypoint.sh /usr/local/bin/vortex-chain-entrypoint.sh
+COPY artifacts /chain/artifacts
+COPY deploy.sh /usr/local/bin/deploy.sh
+COPY docker-entrypoint.sh /usr/local/bin/vortex-chain-entrypoint.sh
 
 RUN chmod +x /usr/local/bin/deploy.sh /usr/local/bin/vortex-chain-entrypoint.sh \
     && mkdir -p /data

@@ -35,10 +35,11 @@ services:
   # that drift.
   chain:
     build:
-      # The repository root, because the image needs tools/chain/deploy.sh as well as
-      # chain/artifacts and a Dockerfile cannot reach above its context.
-      context: .
-      dockerfile: chain/Dockerfile
+      # chain/ and not the repository root: everything the image needs lives there, so the context
+      # is the directory holding the Dockerfile — which is what a deployment platform picks by
+      # default, and what this has to agree with.
+      context: ./chain
+      dockerfile: Dockerfile
     restart: unless-stopped
     environment:
       # anvil's first genesis account, fixed by its default mnemonic and therefore public knowledge.

@@ -58,7 +58,7 @@ public static class EthereumTransaction
         /// <summary>
         /// The recipient, <c>0x</c>-prefixed or not. Contract creation -- an absent recipient -- is
         /// deliberately not supported: the hotel's two contracts are deployed once by
-        /// <c>tools/chain/deploy.sh</c>, and a server that can create contracts at runtime is a
+        /// <c>chain/deploy.sh</c>, and a server that can create contracts at runtime is a
         /// capability nothing here needs.
         /// </summary>
         public required string To { get; init; }

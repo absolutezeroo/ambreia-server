@@ -27,7 +27,7 @@ public class ChainConfig
     /// <summary>
     /// <c>VortexCoin</c>'s address. Deterministic for a given treasury — the first contract it
     /// deploys — so it is a constant here rather than something discovered at startup. See
-    /// <c>tools/chain/deploy.sh</c>.
+    /// <c>chain/deploy.sh</c>.
     /// </summary>
     public string? CoinAddress { get; init; }
 
