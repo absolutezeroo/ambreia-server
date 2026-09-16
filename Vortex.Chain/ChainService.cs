@@ -64,8 +64,18 @@ public sealed class ChainService : IChainService, IDisposable
 
         _treasuryKey = HotelWallets.ParsePrivateKey(_config.TreasuryPrivateKey);
 
+        // The URL is parsed rather than trusted, and that is not symmetry for its own sake. This
+        // constructor runs inside the DI container, so anything it throws does not disable the
+        // feature — it fails to resolve the service, and every endpoint that asks for one answers
+        // 500. A missing scheme ("vortex-chain:8545" instead of "http://vortex-chain:8545") is
+        // enough, and the 500 says nothing about which setting is wrong.
+        bool addressable =
+            Uri.TryCreate(_config.RpcUrl, UriKind.Absolute, out Uri? endpoint)
+            && (endpoint.Scheme == Uri.UriSchemeHttp || endpoint.Scheme == Uri.UriSchemeHttps);
+
         if (
-            _treasuryKey is null
+            !addressable
+            || _treasuryKey is null
             || !EthereumSignature.IsAddress(_config.CoinAddress)
             || !EthereumSignature.IsAddress(_config.CollectibleAddress)
         )
@@ -73,10 +83,17 @@ public sealed class ChainService : IChainService, IDisposable
             // A warning and not a startup failure, on purpose: the chain is an optional feature, and
             // half-configuring it should cost the feature rather than the hotel. It is WARN rather
             // than DEBUG because the operator plainly meant to turn it on -- they set an RPC URL.
+            // Each cause is named, because "on-chain features stay off" over four settings is a
+            // message that sends an operator to read all four.
             _logger.LogWarning(
-                "A chain RPC URL is configured but the contract addresses or the treasury key are "
-                    + "missing or malformed, so on-chain features stay off. Check '{Section}'.",
-                ChainConfig.SECTION_NAME
+                "A chain RPC URL is configured but on-chain features stay off. Check '{Section}': "
+                    + "RpcUrl {RpcUrlState}, TreasuryPrivateKey {KeyState}, CoinAddress "
+                    + "{CoinState}, CollectibleAddress {CollectibleState}.",
+                ChainConfig.SECTION_NAME,
+                addressable ? "ok" : "is not an absolute http(s) URL",
+                _treasuryKey is null ? "is not 32 bytes of hex on the curve" : "ok",
+                EthereumSignature.IsAddress(_config.CoinAddress) ? "ok" : "is not an address",
+                EthereumSignature.IsAddress(_config.CollectibleAddress) ? "ok" : "is not an address"
             );
 
             _treasuryKey = null;
@@ -84,10 +101,7 @@ public sealed class ChainService : IChainService, IDisposable
             return;
         }
 
-        _rpc = new JsonRpcClient(
-            new Uri(_config.RpcUrl),
-            TimeSpan.FromSeconds(_config.RequestTimeoutSeconds)
-        );
+        _rpc = new JsonRpcClient(endpoint!, TimeSpan.FromSeconds(_config.RequestTimeoutSeconds));
 
         TreasuryAddress = HotelWallets.AddressOfPrivateKey(_treasuryKey);
 

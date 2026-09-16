@@ -84,6 +84,42 @@ public sealed class ChainServiceTests
     }
 
     /// <summary>
+    /// A malformed RPC URL has to switch the feature off like any other bad setting — it must not
+    /// throw.
+    ///
+    /// <para>
+    /// This constructor runs inside the DI container, so an exception here does not disable
+    /// anything: it fails to RESOLVE the service, and every endpoint that asks for one answers 500
+    /// while saying nothing about which setting is wrong. That is what a deployed hotel actually
+    /// did, on a hostname written without its scheme.
+    /// </para>
+    /// </summary>
+    [Theory]
+    // The one that happened: a host and a port, read by Uri as a scheme called "vortex-chain".
+    [InlineData("vortex-chain:8545")]
+    [InlineData("chain")]
+    [InlineData("//chain:8545")]
+    [InlineData("ftp://chain:8545")]
+    [InlineData("   ")]
+    public void A_malformed_rpc_url_switches_the_chain_off_instead_of_throwing(string rpcUrl)
+    {
+        Func<ChainService> build = () =>
+            Build(
+                new ChainConfig
+                {
+                    RpcUrl = rpcUrl,
+                    CoinAddress = COIN,
+                    CollectibleAddress = COLLECTIBLE,
+                    TreasuryPrivateKey = TREASURY_KEY,
+                }
+            );
+
+        using ChainService service = build.Should().NotThrow().Subject;
+
+        service.Enabled.Should().BeFalse();
+    }
+
+    /// <summary>
     /// A complete configuration comes up enabled and knows which account it mints from -- derived
     /// from the key, never configured separately, so the two cannot disagree.
     /// </summary>
