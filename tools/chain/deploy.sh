@@ -52,6 +52,38 @@ until cast chain-id --rpc-url "$RPC_URL" >/dev/null 2>&1; do
     sleep 1
 done
 
+# A treasury with no gas cannot deploy, and a real hotel's treasury key is one an operator generated
+# — so it starts at zero on a chain whose coins are all in anvil's genesis accounts. Funding it is
+# one transaction that has to happen from INSIDE this network, because the node's port is not
+# published; asking an operator to run it themselves means handing them a command that does not work
+# from the shell they would naturally type it in. So it happens here.
+#
+# The funding account defaults to anvil's first genesis address, whose key is public knowledge and
+# which is exactly why it must not be the treasury. On a chain with no known genesis account, set
+# VORTEX_CHAIN_FUNDING_KEY to something that has a balance, or fund the treasury beforehand and this
+# does nothing.
+FUNDING_KEY="${VORTEX_CHAIN_FUNDING_KEY:-0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80}"
+FUNDING_AMOUNT="${VORTEX_CHAIN_FUNDING_AMOUNT:-1000ether}"
+
+if [ "$(cast balance "$TREASURY" --rpc-url "$RPC_URL")" = "0" ]; then
+    FUNDER=$(cast wallet address --private-key "$FUNDING_KEY")
+
+    if [ "$FUNDER" = "$TREASURY" ]; then
+        echo "The treasury has no balance and is its own funding account; nothing can pay for the" >&2
+        echo "deployment. Send it some of the chain's native coin first." >&2
+        exit 1
+    fi
+
+    echo "funding  : $FUNDING_AMOUNT from $FUNDER"
+
+    if ! cast send "$TREASURY" --value "$FUNDING_AMOUNT" \
+        --rpc-url "$RPC_URL" --private-key "$FUNDING_KEY" >/dev/null; then
+        echo "Could not fund the treasury from $FUNDER. Set VORTEX_CHAIN_FUNDING_KEY to an" >&2
+        echo "account that holds something, or fund $TREASURY yourself." >&2
+        exit 1
+    fi
+fi
+
 deploy() {
     name="$1"
     signature="$2"
