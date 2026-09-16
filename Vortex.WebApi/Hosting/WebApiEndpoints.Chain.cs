@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Text.Json;
+using System.Text.Json.Nodes;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
@@ -145,14 +146,31 @@ internal static partial class WebApiEndpointsChain
 
         app.MapPost(
                 "/api/public/chain/rpc",
-                async Task<
-                    Results<
-                        Ok<JsonElement>,
-                        BadRequest<ApiErrorResponse>,
-                        JsonHttpResult<ApiErrorResponse>
-                    >
-                > (RpcRequest? body, [FromServices] IChainService chain, CancellationToken ct) =>
+                async Task<IResult> (
+                    JsonElement body,
+                    [FromServices] IChainService chain,
+                    CancellationToken ct
+                ) =>
                 {
+                    // A batch. Every entry gets its own envelope and the whole thing is a 200,
+                    // because one status cannot describe several answers — a batch where the second
+                    // call reverted is not a failed request.
+                    if (body.ValueKind == JsonValueKind.Array)
+                    {
+                        JsonArray answers = [];
+
+                        foreach (JsonElement call in body.EnumerateArray())
+                        {
+                            answers.Add(await AnswerAsync(call, chain, ct).ConfigureAwait(false));
+                        }
+
+                        return TypedResults.Json(answers);
+                    }
+
+                    // The hotel's own three refusals keep their status codes. They are not the node
+                    // speaking and they are not what a wallet is meant to retry against; a 403 on
+                    // `anvil_setBalance` is the one line in the log that says the allowlist did its
+                    // job, and a 200 carrying an error member would not be.
                     if (!chain.Enabled)
                     {
                         // 503 and not 404: the route exists and will work once an operator turns the
@@ -163,47 +181,137 @@ internal static partial class WebApiEndpointsChain
                         );
                     }
 
-                    if (body is null || string.IsNullOrWhiteSpace(body.Method))
+                    string? method = MethodOf(body);
+
+                    if (method is null)
                     {
                         return TypedResults.BadRequest(new ApiErrorResponse("invalid_request"));
                     }
 
-                    if (!chain.IsPublicMethodAllowed(body.Method))
+                    if (!chain.IsPublicMethodAllowed(method))
                     {
                         // Named in the answer rather than hidden behind a generic refusal: a wallet
                         // asking for a method this hotel does not proxy is a configuration problem
                         // somebody has to be able to diagnose, and the method name is not a secret.
                         return TypedResults.Json(
-                            new ApiErrorResponse($"method_not_allowed:{body.Method}"),
+                            new ApiErrorResponse($"method_not_allowed:{method}"),
                             statusCode: StatusCodes.Status403Forbidden
                         );
                     }
 
-                    IReadOnlyList<JsonElement> parameters = body.Params ?? [];
-
-                    try
-                    {
-                        JsonElement result = await chain
-                            .ForwardPublicCallAsync(body.Method, parameters, ct)
-                            .ConfigureAwait(false);
-
-                        return TypedResults.Ok(result);
-                    }
-                    catch (Exception failure) when (failure is not OperationCanceledException)
-                    {
-                        // The node answering "execution reverted" is not this API failing, and it
-                        // arrives as an exception because JsonRpcClient turns an error member into
-                        // one. 502 says the upstream refused; the message carries its reason.
-                        return TypedResults.Json(
-                            new ApiErrorResponse(failure.Message),
-                            statusCode: StatusCodes.Status502BadGateway
-                        );
-                    }
+                    return TypedResults.Json(await AnswerAsync(body, chain, ct).ConfigureAwait(false));
                 }
             )
             .RequireRateLimiting(rateLimitPolicy)
             .WithName("ChainRpc")
-            .WithSummary("Forwards an allowlisted JSON-RPC call to the hotel's node.")
+            .WithSummary("Forwards an allowlisted JSON-RPC call, or a batch of them, to the node.")
             .WithTags(tag);
+    }
+
+    /// <summary>
+    /// One call, answered as JSON-RPC 2.0 wants it: <c>jsonrpc</c>, the caller's own <c>id</c>, and
+    /// exactly one of <c>result</c> or <c>error</c>.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// <b>The envelope is not decoration.</b> This route used to answer the node's <c>result</c>
+    /// member on its own — <c>"0x7a69"</c> where a wallet expects
+    /// <c>{"jsonrpc":"2.0","id":1,"result":"0x7a69"}</c> — so MetaMask could not match the answer to
+    /// the request it had pending and reported the network as unreachable. Nothing in the hotel
+    /// noticed, because the proxy had done its job and the node had answered correctly.
+    /// </para>
+    /// <para>
+    /// The id is echoed verbatim, whatever its type. A wallet matches on it, and an id that comes
+    /// back as a string where a number went out is an answer nobody claims.
+    /// </para>
+    /// </remarks>
+    private static async Task<JsonObject> AnswerAsync(
+        JsonElement call,
+        IChainService chain,
+        CancellationToken ct
+    )
+    {
+        JsonObject answer = new()
+        {
+            ["jsonrpc"] = "2.0",
+            ["id"] =
+                call.ValueKind == JsonValueKind.Object
+                && call.TryGetProperty("id", out JsonElement id)
+                    ? JsonNode.Parse(id.GetRawText())
+                    : null,
+        };
+
+        string? method = MethodOf(call);
+
+        if (method is null)
+        {
+            return Failed(answer, -32600, "Invalid Request");
+        }
+
+        if (!chain.Enabled)
+        {
+            return Failed(answer, -32603, "chain_disabled");
+        }
+
+        if (!chain.IsPublicMethodAllowed(method))
+        {
+            return Failed(answer, -32601, $"Method not found: {method}");
+        }
+
+        List<JsonElement> parameters = [];
+
+        if (
+            call.TryGetProperty("params", out JsonElement sent)
+            && sent.ValueKind == JsonValueKind.Array
+        )
+        {
+            parameters.AddRange(sent.EnumerateArray());
+        }
+
+        try
+        {
+            JsonElement result = await chain
+                .ForwardPublicCallAsync(method, parameters, ct)
+                .ConfigureAwait(false);
+
+            // A JSON `null` result is a real answer and not a missing one — an unmined
+            // `eth_getTransactionReceipt` is exactly that — so it is written rather than skipped.
+            answer["result"] = JsonNode.Parse(result.GetRawText());
+
+            return answer;
+        }
+        catch (Exception failure) when (failure is not OperationCanceledException)
+        {
+            // The node answering "execution reverted" is not this API failing, and it arrives as an
+            // exception because JsonRpcClient turns an error member back into one. It goes out as a
+            // JSON-RPC error on a 200, which is where a wallet looks for it; an HTTP 502 reads to
+            // the wallet as "the network is down" and makes it retry something that will never
+            // succeed.
+            return Failed(answer, -32000, failure.Message);
+        }
+    }
+
+    /// <summary>The <c>method</c> member, or <c>null</c> when there is not a usable one.</summary>
+    private static string? MethodOf(JsonElement call)
+    {
+        if (
+            call.ValueKind != JsonValueKind.Object
+            || !call.TryGetProperty("method", out JsonElement method)
+            || method.ValueKind != JsonValueKind.String
+        )
+        {
+            return null;
+        }
+
+        string? name = method.GetString();
+
+        return string.IsNullOrWhiteSpace(name) ? null : name;
+    }
+
+    private static JsonObject Failed(JsonObject answer, int code, string message)
+    {
+        answer["error"] = new JsonObject { ["code"] = code, ["message"] = message };
+
+        return answer;
     }
 }

@@ -206,35 +206,19 @@
         "tags": [
           "Chain"
         ],
-        "summary": "Forwards an allowlisted JSON-RPC call to the hotel\u0027s node.",
+        "summary": "Forwards an allowlisted JSON-RPC call, or a batch of them, to the node.",
         "operationId": "ChainRpc",
         "requestBody": {
           "content": {
             "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/RpcRequest"
-              }
+              "schema": {}
             }
-          }
+          },
+          "required": true
         },
         "responses": {
           "200": {
-            "description": "OK",
-            "content": {
-              "application/json": {
-                "schema": {}
-              }
-            }
-          },
-          "400": {
-            "description": "Bad Request",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiErrorResponse"
-                }
-              }
-            }
+            "description": "OK"
           }
         }
       }
@@ -3254,21 +3238,6 @@
           },
           "doorOpen": {
             "type": "boolean"
-          }
-        },
-        "additionalProperties": false
-      },
-      "RpcRequest": {
-        "type": "object",
-        "properties": {
-          "method": {
-            "type": "string",
-            "nullable": true
-          },
-          "params": {
-            "type": "array",
-            "items": {},
-            "nullable": true
           }
         },
         "additionalProperties": false
