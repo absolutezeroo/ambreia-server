@@ -593,6 +593,8 @@ internal sealed class FakeChainService : IChainService
 
     public string? TreasuryAddress => null;
 
+    public int RelicTransferFeeSilver => 0;
+
     public ChainInfo GetInfo() => new(31337, "Vortex", "VTX", null, null);
 
     public bool IsPublicMethodAllowed(string? method) =>
@@ -609,6 +611,8 @@ internal sealed class FakeChainService : IChainService
 
     public Task<string> MintRelicAsync(string to, BigInteger assetId, CancellationToken ct) =>
         throw Off();
+
+    public Task<string> BurnRelicAsync(BigInteger assetId, CancellationToken ct) => throw Off();
 
     public Task<JsonElement> ForwardPublicCallAsync(
         string method,

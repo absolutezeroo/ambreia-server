@@ -1,44 +1,88 @@
+using System.Collections.Immutable;
 using System.Threading;
 using System.Threading.Tasks;
+using Orleans;
 using Vortex.Messages.Registry;
+using Vortex.Primitives.Collectibles;
+using Vortex.Primitives.Collectibles.Grains;
+using Vortex.Primitives.Orleans;
+using Vortex.Primitives.Players;
 using Vortex.Protocol.Messages.Incoming.Collectibles;
 using Vortex.Protocol.Messages.Outgoing.Collectibles;
 
 namespace Vortex.PacketHandlers.Collectibles;
 
 /// <summary>
-/// The Transfer tab's "move my Relics to that address". Refused, and the tab itself is switched off.
+/// The Transfer tab's "move my Relics to that address" — the door out of the hotel.
 /// </summary>
 /// <remarks>
 /// <para>
-/// Not because of a chain — because of what the message is. It carries a single destination address
-/// and nothing else, so it moves the player's <em>whole</em> collection at once with no way to
-/// choose; and the addresses it offers as destinations are the same list the Collections tab uses to
-/// pick which wallet to browse. There is no reading of that list that makes both tabs mean something
-/// sensible on a hotel where every player has exactly one wallet.
+/// It moves the player's <em>whole</em> collection at once, because that is all the message carries:
+/// one destination address and no item list. Handing over a single Relic is done in the trade window
+/// instead, per item and with the confirmation both sides already know.
 /// </para>
 /// <para>
-/// Handing a Relic to somebody is done in the trade window instead — per item, with the
-/// confirmation both sides already know. The tab is hidden by
-/// <c>collectibles.transfer.enabled</c> in the client's external variables, so this only answers the
-/// case of a client that still asks.
+/// This used to refuse outright, on the grounds that there was no chain to move anything onto and
+/// that the destination list was ambiguous. Neither holds any more: the hotel runs its own chain, and
+/// the addresses a player may send to are the ones they PROVED on the website, which is what
+/// <see cref="IPlayerMintGrain.TransferAssetsAsync" /> checks before it mints anything. Without that
+/// check the destination would be whatever the client sent, and minting to it would be a way to hand
+/// a stranger somebody else's collection.
+/// </para>
+/// <para>
+/// The tab is still gated by <c>collectibles.transfer.enabled</c> in the client's external
+/// variables, so a hotel with no chain switches the whole thing off there rather than relying on
+/// this to refuse.
 /// </para>
 /// </remarks>
-public class TransferNftAssetsMessageHandler : IMessageHandler<TransferNftAssetsMessage>
+public class TransferNftAssetsMessageHandler(IGrainFactory grainFactory)
+    : IMessageHandler<TransferNftAssetsMessage>
 {
+    private readonly IGrainFactory _grainFactory = grainFactory;
+
     public async ValueTask HandleAsync(
         TransferNftAssetsMessage message,
         MessageContext ctx,
         CancellationToken ct
-    ) =>
-        await ctx.SendComposerAsync(
-                new NftTransferAssetsResultMessageComposer
-                {
-                    // Non-zero: this client reads success as code == 0, so a refusal that forgot to
-                    // set one would report a transfer that never happened.
-                    ResultCode = NftTransferAssetsResultMessageComposer.NotAvailable,
-                },
+    )
+    {
+        if (ctx.PlayerId <= 0)
+        {
+            return;
+        }
+
+        IPlayerMintGrain mint = _grainFactory.GetPlayerMintGrain(new PlayerId(ctx.PlayerId));
+
+        NftTransferResult result = await mint.TransferAssetsAsync(
+                message.Wallet ?? string.Empty,
                 ct
             )
             .ConfigureAwait(false);
+
+        // The outcome's own numbering goes on the wire: the client prints the code into
+        // "collectibles.transfer.error" and shows nothing else, and it reads zero as success — which
+        // is exactly NftTransferOutcome.Transferred.
+        await ctx.SendComposerAsync(
+                new NftTransferAssetsResultMessageComposer { ResultCode = (short)result.Outcome },
+                ct
+            )
+            .ConfigureAwait(false);
+
+        if (result.Outcome != NftTransferOutcome.Transferred)
+        {
+            return;
+        }
+
+        // Re-sent unasked, because nothing else will ask. The inventory's Collectibles tab treats
+        // its list as authoritative once it has one, so a Relic that just left the hotel would go on
+        // being offered for trade until the player reopened the client.
+        ImmutableArray<CollectibleAssetSnapshot> assets = await mint.GetAssetsAsync(ct)
+            .ConfigureAwait(false);
+
+        await ctx.SendComposerAsync(
+                new TradeNftAssetInventoryMessageComposer { Assets = assets },
+                ct
+            )
+            .ConfigureAwait(false);
+    }
 }

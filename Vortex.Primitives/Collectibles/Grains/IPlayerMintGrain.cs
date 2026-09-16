@@ -33,6 +33,67 @@ public interface IPlayerMintGrain : IGrainWithIntegerKey
 
     /// <summary>The Relics the player holds, as the inventory's Collectibles tab lists them.</summary>
     public Task<ImmutableArray<CollectibleAssetSnapshot>> GetAssetsAsync(CancellationToken ct);
+
+    /// <summary>
+    /// The self-custody wallet addresses this player has proved on the website.
+    /// </summary>
+    /// <remarks>
+    /// Not a mint concern, and here anyway: the packet-handler assembly references primitives and no
+    /// database, so a grain is the only way it can read a table — and this grain is the one that
+    /// needs the same list, to decide whether a transfer's destination belongs to the player asking.
+    /// A grain of its own for one query would be a second thing to keep in step with the first.
+    /// </remarks>
+    public Task<ImmutableArray<string>> GetLinkedWalletsAsync(CancellationToken ct);
+
+    /// <summary>
+    /// Moves every Relic the player still holds in the hotel out to <paramref name="wallet" />:
+    /// mints each as an ERC-721 to that address, and marks it gone from the game.
+    /// </summary>
+    /// <remarks>
+    /// The whole collection, because that is all the message asks for — it carries one address and
+    /// no item list.
+    /// </remarks>
+    public Task<NftTransferResult> TransferAssetsAsync(string wallet, CancellationToken ct);
+}
+
+/// <summary>How a transfer out to a wallet ended, and how much of it happened.</summary>
+[GenerateSerializer, Immutable]
+public sealed record NftTransferResult
+{
+    [Id(0)]
+    public required NftTransferOutcome Outcome { get; init; }
+
+    /// <summary>How many Relics actually reached the wallet. Zero on every refusal.</summary>
+    [Id(1)]
+    public int Transferred { get; init; }
+}
+
+/// <summary>
+/// Why a transfer was refused. The client prints the number into
+/// <c>collectibles.transfer.error</c>, so these are few and mean one thing each.
+/// </summary>
+public enum NftTransferOutcome
+{
+    Transferred = 0,
+
+    /// <summary>No chain is configured, so there is nowhere for a Relic to go.</summary>
+    ChainUnavailable = 1,
+
+    /// <summary>
+    /// The destination is not an address this player has proved on the website. Refused rather than
+    /// trusted: the address arrives from the client, and minting to whatever it sends would be a way
+    /// to hand a stranger somebody else's collection.
+    /// </summary>
+    WalletNotLinked = 2,
+
+    /// <summary>Nothing left in the hotel to move.</summary>
+    NothingToTransfer = 3,
+
+    /// <summary>The transfer fee could not be paid.</summary>
+    CannotAffordFee = 4,
+
+    /// <summary>The chain refused or did not answer; nothing moved and the fee was returned.</summary>
+    Failed = 5,
 }
 
 /// <summary>How a stamp purchase ended, and what the balance is now.</summary>

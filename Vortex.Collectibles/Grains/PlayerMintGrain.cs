@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
+using System.Numerics;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
@@ -9,6 +10,7 @@ using Microsoft.Extensions.Logging;
 using Orleans;
 using Vortex.Database.Context;
 using Vortex.Database.Entities.Collectibles;
+using Vortex.Primitives.Chain;
 using Vortex.Primitives.Collectibles;
 using Vortex.Primitives.Collectibles.Grains;
 using Vortex.Primitives.Commerce;
@@ -46,7 +48,8 @@ internal sealed class PlayerMintGrain(
     IGrainFactory grainFactory,
     IEventPublisher events,
     ILogger<PlayerMintGrain> logger,
-    ICommerceJournal journal
+    ICommerceJournal journal,
+    IChainService chain
 ) : Grain, IPlayerMintGrain
 {
     private readonly ICommerceJournal _journal = journal;
@@ -54,6 +57,7 @@ internal sealed class PlayerMintGrain(
     private readonly IGrainFactory _grainFactory = grainFactory;
     private readonly IEventPublisher _events = events;
     private readonly ILogger<PlayerMintGrain> _logger = logger;
+    private readonly IChainService _chain = chain;
 
     private PlayerId PlayerId => new((int)this.GetPrimaryKeyLong());
 
@@ -473,6 +477,202 @@ internal sealed class PlayerMintGrain(
             }),
         ];
     }
+
+    public async Task<ImmutableArray<string>> GetLinkedWalletsAsync(CancellationToken ct)
+    {
+        await using VortexDbContext dbCtx = await _dbCtxFactory
+            .CreateDbContextAsync(ct)
+            .ConfigureAwait(true);
+
+        return
+        [
+            .. await dbCtx
+                .PlayerWallets.AsNoTracking()
+                .Where(row => row.PlayerEntityId == PlayerId.Value)
+                .OrderBy(row => row.Id)
+                .Select(row => row.Address)
+                .ToArrayAsync(ct)
+                .ConfigureAwait(true),
+        ];
+    }
+
+    public async Task<NftTransferResult> TransferAssetsAsync(string wallet, CancellationToken ct)
+    {
+        if (!_chain.Enabled)
+        {
+            return Refused(NftTransferOutcome.ChainUnavailable);
+        }
+
+        // The destination the client sent is matched against the addresses this player PROVED, and
+        // the stored spelling is the one used from here on: a signature was recovered into EIP-55
+        // checksum form when it was linked, and the client sends back whatever case it happens to
+        // hold. Comparing case-insensitively and then minting to the stored string keeps one
+        // spelling on the chain and in the database.
+        ImmutableArray<string> linked = await GetLinkedWalletsAsync(ct).ConfigureAwait(true);
+
+        string? destination = linked.FirstOrDefault(address =>
+            string.Equals(address, wallet, StringComparison.OrdinalIgnoreCase)
+        );
+
+        if (destination is null)
+        {
+            _logger.LogWarning(
+                "Player {PlayerId} asked to transfer Relics to {Wallet}, which is not linked to them.",
+                PlayerId,
+                wallet
+            );
+
+            return Refused(NftTransferOutcome.WalletNotLinked);
+        }
+
+        await using VortexDbContext dbCtx = await _dbCtxFactory
+            .CreateDbContextAsync(ct)
+            .ConfigureAwait(true);
+
+        // Tracked: WalletAddress is written back on the ones that make it.
+        List<NftAssetEntity> assets = await dbCtx
+            .NftAssets.Where(asset =>
+                asset.PlayerEntityId == PlayerId.Value
+                && asset.DeletedAt == null
+                && asset.WalletAddress == null
+            )
+            .OrderBy(asset => asset.Id)
+            .ToListAsync(ct)
+            .ConfigureAwait(true);
+
+        if (assets.Count == 0)
+        {
+            return Refused(NftTransferOutcome.NothingToTransfer);
+        }
+
+        int fee = _chain.RelicTransferFeeSilver;
+        List<WalletDebitRequest> cost = fee > 0 ? [SilverCost(fee)] : [];
+        IPlayerWalletGrain purse = _grainFactory.GetPlayerWalletGrain(PlayerId);
+
+        // Charged before the chain is touched, and credited back below if nothing moved. The other
+        // order — mint, then charge — hands out a free transfer to anyone whose balance ran out
+        // between the two, and a Relic cannot be taken back off a wallet the hotel does not own.
+        if (fee > 0)
+        {
+            WalletDebitResult debit = await purse.TryDebitAsync(cost, ct).ConfigureAwait(true);
+
+            if (!debit.Succeeded)
+            {
+                return Refused(NftTransferOutcome.CannotAffordFee);
+            }
+        }
+
+        int transferred;
+
+        try
+        {
+            transferred = await MintOutAsync(dbCtx, destination, assets, ct).ConfigureAwait(true);
+        }
+        catch (Exception failure)
+        {
+            // Swallowed on purpose: the fee has to go back, and a throw out of here would keep it.
+            // Nothing is written to the database before the read-back below, so a chain that failed
+            // halfway leaves the hotel's own record untouched and the next attempt picks up where
+            // this one stopped.
+            _logger.LogError(
+                failure,
+                "Transferring player {PlayerId}'s Relics to {Wallet} failed.",
+                PlayerId,
+                destination
+            );
+
+            transferred = 0;
+        }
+
+        if (transferred == 0)
+        {
+            if (fee > 0)
+            {
+                await purse.CreditBackAsync(cost, ct).ConfigureAwait(true);
+            }
+
+            return Refused(NftTransferOutcome.Failed);
+        }
+
+        _logger.LogInformation(
+            "Player {PlayerId} transferred {Count} Relic(s) out to {Wallet} for {Fee} silver.",
+            PlayerId,
+            transferred,
+            destination,
+            fee
+        );
+
+        return new NftTransferResult
+        {
+            Outcome = NftTransferOutcome.Transferred,
+            Transferred = transferred,
+        };
+    }
+
+    /// <summary>
+    /// Mints the Relics onto the chain and marks the ones that arrived. Answers how many did.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// The wallet is read BEFORE anything is sent, because minting an id the contract already has
+    /// reverts — and after a transfer that stopped halfway, the ids it did manage are exactly the
+    /// ones still marked as being in the hotel. Skipping them is what makes a second attempt finish
+    /// the job instead of failing on its first token.
+    /// </para>
+    /// <para>
+    /// It is read AGAIN afterwards, and that read is what decides. A transaction hash says the node
+    /// accepted the transaction, not that it was mined successfully; marking a Relic gone on the
+    /// strength of one would lose it outright for a player if the mint reverted. The database
+    /// follows the chain here, never the other way round.
+    /// </para>
+    /// </remarks>
+    private async Task<int> MintOutAsync(
+        VortexDbContext dbCtx,
+        string destination,
+        List<NftAssetEntity> assets,
+        CancellationToken ct
+    )
+    {
+        HashSet<BigInteger> before =
+        [
+            .. await _chain.GetRelicsAsync(destination, ct).ConfigureAwait(true),
+        ];
+
+        foreach (NftAssetEntity asset in assets)
+        {
+            if (before.Contains(asset.Id))
+            {
+                continue;
+            }
+
+            await _chain.MintRelicAsync(destination, asset.Id, ct).ConfigureAwait(true);
+        }
+
+        HashSet<BigInteger> after =
+        [
+            .. await _chain.GetRelicsAsync(destination, ct).ConfigureAwait(true),
+        ];
+
+        int transferred = 0;
+
+        foreach (NftAssetEntity asset in assets)
+        {
+            if (!after.Contains(asset.Id))
+            {
+                continue;
+            }
+
+            asset.WalletAddress = destination;
+            transferred++;
+        }
+
+        await dbCtx.SaveChangesAsync(ct).ConfigureAwait(true);
+
+        return transferred;
+    }
+
+    private static NftTransferResult Refused(NftTransferOutcome outcome) =>
+        new() { Outcome = outcome, Transferred = 0 };
 
     private static WalletDebitRequest SilverCost(int amount) =>
         new()

@@ -1,7 +1,11 @@
+using System.Collections.Immutable;
 using System.Threading;
 using System.Threading.Tasks;
+using Orleans;
 using Vortex.Messages.Registry;
 using Vortex.Primitives.Crypto;
+using Vortex.Primitives.Orleans;
+using Vortex.Primitives.Players;
 using Vortex.Protocol.Messages.Incoming.Collectibles;
 using Vortex.Protocol.Messages.Outgoing.Collectibles;
 
@@ -27,14 +31,18 @@ namespace Vortex.PacketHandlers.Collectibles;
 /// <para>
 /// Self-custody wallets — the addresses <c>CollectibleWalletAddressesMessageEventParser</c> reads
 /// AFTER the Stardust one — are linked on the website, not here: the game client has no interface
-/// for connecting one, which is why habbo.com carries <c>/settings/wallet</c>. They arrive through
-/// this same composer once that page exists.
+/// for connecting one, which is why habbo.com carries <c>/settings/wallet</c>. That page exists now,
+/// and this is where what it writes reaches the game. Every one of them is an address whose holder
+/// signed to prove it, which is what lets the Transfer tab offer it as a destination at all.
 /// </para>
 /// </summary>
-public class GetCollectibleWalletAddressesMessageHandler(IHotelWalletService wallets)
-    : IMessageHandler<GetCollectibleWalletAddressesMessage>
+public class GetCollectibleWalletAddressesMessageHandler(
+    IHotelWalletService wallets,
+    IGrainFactory grainFactory
+) : IMessageHandler<GetCollectibleWalletAddressesMessage>
 {
     private readonly IHotelWalletService _wallets = wallets;
+    private readonly IGrainFactory _grainFactory = grainFactory;
 
     public async ValueTask HandleAsync(
         GetCollectibleWalletAddressesMessage message,
@@ -47,10 +55,16 @@ public class GetCollectibleWalletAddressesMessageHandler(IHotelWalletService wal
             return;
         }
 
+        ImmutableArray<string> linked = await _grainFactory
+            .GetPlayerMintGrain(new PlayerId(ctx.PlayerId))
+            .GetLinkedWalletsAsync(ct)
+            .ConfigureAwait(false);
+
         await ctx.SendComposerAsync(
                 new CollectibleWalletAddressesMessageComposer
                 {
                     StardustWalletAddress = _wallets.GetAddress(ctx.PlayerId),
+                    WalletAddresses = linked,
                 },
                 ct
             )

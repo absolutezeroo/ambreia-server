@@ -45,6 +45,17 @@ public interface IChainService
     /// <summary>The address the hotel mints from, or <c>null</c> when disabled.</summary>
     public string? TreasuryAddress { get; }
 
+    /// <summary>
+    /// What the hotel charges, in silver, to move a player's Relics out to their own wallet.
+    ///
+    /// <para>
+    /// A price on a chain interface reads oddly, and it is here for a reason a reader can check: the
+    /// packet handler that answers <c>GetNftTransferFee</c> lives in an assembly that references
+    /// primitives and nothing else, so this is the only place both it and the configuration can see.
+    /// </para>
+    /// </summary>
+    public int RelicTransferFeeSilver { get; }
+
     /// <summary>What a player's wallet needs in order to add this network and find the contracts.</summary>
     public ChainInfo GetInfo();
 
@@ -100,4 +111,16 @@ public interface IChainService
     /// one, and minting the same asset twice reverts.
     /// </summary>
     public Task<string> MintRelicAsync(string to, BigInteger assetId, CancellationToken ct);
+
+    /// <summary>
+    /// Destroys the Relic token <paramref name="assetId" />, which the treasury must hold.
+    ///
+    /// <para>
+    /// This is the second half of the door: a Relic comes home by being sent to the treasury on the
+    /// chain, and the hotel then burns it rather than keeping it. Holding it instead would leave one
+    /// object owned twice — a database row saying the player has it and a token saying the hotel
+    /// does — and the next transfer out would revert on an id that already exists.
+    /// </para>
+    /// </summary>
+    public Task<string> BurnRelicAsync(BigInteger assetId, CancellationToken ct);
 }

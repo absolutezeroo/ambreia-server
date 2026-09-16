@@ -76,4 +76,20 @@ public class ChainConfig
     /// handling, and a node that has stopped answering must fail rather than hold a handler open.
     /// </summary>
     public int RequestTimeoutSeconds { get; init; } = 10;
+
+    /// <summary>
+    /// What the Collectors Guild charges, in silver, to move a player's Relics out to their own
+    /// wallet. Zero is free.
+    ///
+    /// <para>
+    /// A price living in the chain section on purpose, rather than in a configuration class of its
+    /// own: the transfer door exists only while a chain does, so this is turned on and off by the
+    /// same operator at the same moment as everything above it.
+    /// </para>
+    /// <para>
+    /// Charged once per transfer and not per Relic, because the message that asks for it carries one
+    /// address and no item count — the client's button moves the whole collection at once.
+    /// </para>
+    /// </summary>
+    public int TransferFeeSilver { get; init; } = 10;
 }

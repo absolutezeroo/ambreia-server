@@ -117,6 +117,10 @@ public sealed class ChainService : IChainService, IDisposable
 
     public string? TreasuryAddress { get; }
 
+    // Clamped rather than trusted: a negative price would credit the player for transferring, and a
+    // configuration file is somewhere a minus sign can land by accident.
+    public int RelicTransferFeeSilver => Math.Max(0, _config.TransferFeeSilver);
+
     public ChainInfo GetInfo() =>
         new(
             _config.ChainId,
@@ -207,6 +211,18 @@ public sealed class ChainService : IChainService, IDisposable
                 AbiCodec.Value.Address(to),
                 AbiCodec.Value.Uint256(assetId)
             ),
+            ct
+        );
+
+    // `mintBatch` exists on the contract and is deliberately not used here. One transaction for N
+    // Relics has to fit under a single gas ceiling, and an enumerable ERC-721 mint costs upwards of
+    // 150k each against a 300k limit -- so a batch of three would revert for being too large, and
+    // raising the ceiling only moves where it breaks. One mint per transaction also means a caller
+    // can reconcile against the chain per token, which is what the transfer door does.
+    public Task<string> BurnRelicAsync(BigInteger assetId, CancellationToken ct) =>
+        SendAsync(
+            _config.CollectibleAddress,
+            AbiCodec.EncodeCall("burn(uint256)", AbiCodec.Value.Uint256(assetId)),
             ct
         );
 
