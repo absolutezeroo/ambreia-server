@@ -153,6 +153,35 @@ internal static partial class DashboardEndpoints
             Capabilities.Dashboard.OpsGrantCurrency,
             TagOperations
         );
+
+        // Beside the currency grants because that is what an operator is doing here, and behind the
+        // same capability for the same reason. What it is NOT is another row in a wallet: this one
+        // sends a transaction to a chain, so it fails for reasons no other grant on this page has —
+        // no chain configured, or a node that will not take it.
+        MapPost(
+            app,
+            ApiOperations + "/currency/chain",
+            async (
+                HttpContext ctx,
+                GiveChainCoinRequest body,
+                CurrencyOperations currencyOps,
+                CancellationToken ct
+            ) =>
+            {
+                if (body.PlayerId <= 0 || body.Amount <= 0)
+                {
+                    return Results.BadRequest(new { error = "invalid_request" });
+                }
+
+                return Results.Ok(
+                    await currencyOps
+                        .GiveChainCoinAsync(body, ctx.ActorEmail(), ct)
+                        .ConfigureAwait(false)
+                );
+            },
+            Capabilities.Dashboard.OpsGrantCurrency,
+            TagOperations
+        );
         MapPost(
             app,
             ApiOperations + "/items/grant",

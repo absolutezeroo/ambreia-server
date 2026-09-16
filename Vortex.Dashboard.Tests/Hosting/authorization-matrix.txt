@@ -186,6 +186,7 @@ POST /api/v1/operations/content/rentable-terms/delete -> dashboard.ops.content.m
 POST /api/v1/operations/content/store-offers -> dashboard.ops.content.manage
 POST /api/v1/operations/content/store-offers/delete -> dashboard.ops.content.manage
 POST /api/v1/operations/currency/activity-points -> dashboard.ops.currency.grant
+POST /api/v1/operations/currency/chain -> dashboard.ops.currency.grant
 POST /api/v1/operations/currency/collectibles -> dashboard.ops.currency.grant
 POST /api/v1/operations/currency/credits -> dashboard.ops.currency.grant
 POST /api/v1/operations/daily-tasks -> dashboard.ops.quests.manage

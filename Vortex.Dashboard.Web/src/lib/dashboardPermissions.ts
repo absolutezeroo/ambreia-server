@@ -132,6 +132,9 @@ export const OPERATION_CAPABILITIES = {
   credits: CAPABILITIES.opsGrantCurrency,
   activity: CAPABILITIES.opsGrantCurrency,
   collectibles: CAPABILITIES.opsGrantCurrency,
+  // Minting VortexCoin is granting currency, so it sits behind the same capability rather than a
+  // new one: an operator trusted to hand out silver is trusted to hand out this.
+  chainCoin: CAPABILITIES.opsGrantCurrency,
   item: CAPABILITIES.opsGrantItem,
   kick: CAPABILITIES.opsKickPlayer,
   forensicsPurge: CAPABILITIES.opsForensicsPurge,

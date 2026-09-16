@@ -10,6 +10,8 @@ using Vortex.Dashboard.API.Operations.Catalogue.Contracts;
 using Vortex.Observability.Diagnostics;
 using Vortex.Primitives.Action;
 using Vortex.Primitives.Catalog.Snapshots;
+using Vortex.Primitives.Chain;
+using Vortex.Primitives.Crypto;
 using Vortex.Primitives.Moderation;
 using Vortex.Primitives.Networking;
 using Vortex.Primitives.Observability;
@@ -23,10 +25,25 @@ using Vortex.Primitives.Rooms.Snapshots.Avatars;
 
 namespace Vortex.Dashboard.API.Operations.Catalogue;
 
-internal sealed class CurrencyOperations(OperationRunner runner, IGrainFactory grainFactory)
+internal sealed class CurrencyOperations(
+    OperationRunner runner,
+    IGrainFactory grainFactory,
+    IChainService chain,
+    IHotelWalletService hotelWallets
+)
 {
+    /// <summary>
+    /// VortexCoin's decimals, which belong to the contract and are not a display choice. An operator
+    /// types whole coins; the chain counts the smallest unit. Skipping this conversion mints 100 wei
+    /// where 100 VTX was meant — a number so small it reads as zero everywhere it is shown, and a
+    /// mistake nothing would report.
+    /// </summary>
+    private const int COIN_DECIMALS = 18;
+
     private readonly OperationRunner _runner = runner;
     private readonly IGrainFactory _grainFactory = grainFactory;
+    private readonly IChainService _chain = chain;
+    private readonly IHotelWalletService _hotelWallets = hotelWallets;
 
     public Task<OperationResult> GiveCreditsAsync(
         GiveCreditsRequest request,
@@ -111,6 +128,61 @@ internal sealed class CurrencyOperations(OperationRunner runner, IGrainFactory g
                         $"currency_not_configured: {currency} has no enabled currency_types row"
                     );
                 }
+            },
+            ct
+        );
+
+    /// <summary>
+    /// Mints VortexCoin to the player's own on-chain wallet.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// Not a currency grant like the ones above, despite sitting beside them. Those credit a row in
+    /// <c>player_currencies</c> and are done when the transaction commits; this one sends a
+    /// transaction to a chain and is done when a node accepts it. The answer is a transaction hash,
+    /// which is a receipt that it was ACCEPTED — a mint that reverts is mined with a failed status,
+    /// and an operator who needs certainty reads the receipt.
+    /// </para>
+    /// <para>
+    /// It goes to the player's Stardust address, the one the hotel derives and holds for them, and
+    /// never to a wallet they linked themselves: those come and go, a player may have none, and
+    /// choosing between several is not a decision an operator should be making from this form.
+    /// </para>
+    /// </remarks>
+    public Task<OperationResult> GiveChainCoinAsync(
+        GiveChainCoinRequest request,
+        string actor,
+        CancellationToken ct
+    ) =>
+        _runner.ExecuteAsync(
+            "ops.currency.chain.grant",
+            actor,
+            request.Reason,
+            targetPlayerId: request.PlayerId,
+            roomId: null,
+            detail: new { currency = "vortexcoin", request.Amount },
+            work: async c =>
+            {
+                if (!_chain.Enabled)
+                {
+                    // Refused rather than reported as done. With no chain configured there is
+                    // nowhere for this to go, and a green result for it is how a grant that minted
+                    // nothing looks like one that worked.
+                    throw new InvalidOperationException(
+                        "chain_not_configured: no chain is configured for this hotel"
+                    );
+                }
+
+                string address = _hotelWallets.GetAddress(request.PlayerId);
+
+                await _chain
+                    .MintCoinAsync(
+                        address,
+                        new System.Numerics.BigInteger(request.Amount)
+                            * System.Numerics.BigInteger.Pow(10, COIN_DECIMALS),
+                        c
+                    )
+                    .ConfigureAwait(false);
             },
             ct
         );
