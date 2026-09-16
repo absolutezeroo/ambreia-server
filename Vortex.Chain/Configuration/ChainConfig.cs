@@ -35,6 +35,16 @@ public class ChainConfig
     public string? CollectibleAddress { get; init; }
 
     /// <summary>
+    /// What a wallet calls the chain's NATIVE coin — the one that pays for gas, not
+    /// <c>VortexCoin</c>. A wallet shows whatever the network declares here, so this is the
+    /// difference between a player seeing "0.02 ETH" and "0.02 VTX" beside a transaction on a chain
+    /// that has nothing to do with Ethereum.
+    /// </summary>
+    public string CurrencyName { get; init; } = "Vortex";
+
+    public string CurrencySymbol { get; init; } = "VTX";
+
+    /// <summary>
     /// The account that owns both contracts and pays for every transaction the hotel sends.
     /// Hexadecimal, 32 bytes.
     ///

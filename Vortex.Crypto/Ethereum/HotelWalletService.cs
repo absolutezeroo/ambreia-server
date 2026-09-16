@@ -34,12 +34,19 @@ public sealed class HotelWalletService : IHotelWalletService
 
         if (_masterSeed is null)
         {
+            // The remedy is spelled out as a shell command and an environment variable, because the
+            // person reading this line is running a container and cannot call a C# method — which
+            // is what this used to tell them to do.
             logger.LogWarning(
                 "No wallet master seed configured ('{Section}:{Key}'): players are given "
                     + "placeholder wallet addresses with no keys behind them, and every on-chain "
-                    + "feature is off. Generate one with HotelWallets.GenerateMasterSeed().",
+                    + "feature is off. Generate 32 bytes of hex — "
+                    + "`openssl rand -hex 32` — and set it as {EnvironmentVariable}. "
+                    + "Keep it: it is every player's private key, and losing it strands every "
+                    + "balance on those addresses.",
                 CryptoConfig.SECTION_NAME,
-                nameof(CryptoConfig.WalletMasterSeed)
+                nameof(CryptoConfig.WalletMasterSeed),
+                "VORTEX__Vortex__Crypto__WalletMasterSeed"
             );
         }
         else

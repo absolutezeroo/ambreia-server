@@ -1,9 +1,27 @@
 using System.Collections.Generic;
 using System.Numerics;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 
 namespace Vortex.Primitives.Chain;
+
+/// <summary>
+/// What a wallet needs to add the hotel's network and find its contracts. Everything here is
+/// public by nature — it is printed in the player's own wallet the moment they connect.
+/// </summary>
+/// <param name="ChainId">Signed into every transaction; what stops one chain's being replayed on another.</param>
+/// <param name="CurrencyName">What the wallet calls the native coin. Not VortexCoin: that is the ERC-20.</param>
+/// <param name="CurrencySymbol">Its ticker, as the wallet displays it.</param>
+/// <param name="CoinAddress">VortexCoin, the ERC-20 the contest is counted in.</param>
+/// <param name="CollectibleAddress">VortexCollectible, the Relics.</param>
+public readonly record struct ChainInfo(
+    long ChainId,
+    string CurrencyName,
+    string CurrencySymbol,
+    string? CoinAddress,
+    string? CollectibleAddress
+);
 
 /// <summary>
 /// What the rest of the hotel is allowed to ask of the chain. Deliberately four operations and not a
@@ -26,6 +44,40 @@ public interface IChainService
 
     /// <summary>The address the hotel mints from, or <c>null</c> when disabled.</summary>
     public string? TreasuryAddress { get; }
+
+    /// <summary>What a player's wallet needs in order to add this network and find the contracts.</summary>
+    public ChainInfo GetInfo();
+
+    /// <summary>
+    /// Whether <paramref name="method" /> may be forwarded from a browser.
+    ///
+    /// <para>
+    /// Asked through the interface so the web API can answer a refused method with its own status
+    /// code without referencing the chain assembly — the list itself stays beside the thing that
+    /// holds the node's address, where a second caller cannot get past it.
+    /// </para>
+    /// </summary>
+    public bool IsPublicMethodAllowed(string? method);
+
+    /// <summary>
+    /// Forwards one JSON-RPC call from a player's browser to the node, if the method is on the
+    /// allowlist.
+    ///
+    /// <para>
+    /// This is the ONLY way a browser reaches the chain: the node's port is not published, because
+    /// anvil serves <c>anvil_setBalance</c> alongside the standard methods with no way to switch it
+    /// off. A refused method throws rather than answering an error object, so a caller cannot
+    /// mistake "the hotel will not do that" for "the chain said no".
+    /// </para>
+    /// </summary>
+    /// <exception cref="System.InvalidOperationException">
+    /// The method is not allowed, or no chain is configured.
+    /// </exception>
+    public Task<JsonElement> ForwardPublicCallAsync(
+        string method,
+        IReadOnlyList<JsonElement> parameters,
+        CancellationToken ct
+    );
 
     /// <summary>VortexCoin held by <paramref name="address" />, in wei.</summary>
     public Task<BigInteger> GetCoinBalanceAsync(string address, CancellationToken ct);

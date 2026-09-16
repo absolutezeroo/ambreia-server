@@ -118,6 +118,11 @@ internal static class WebApiAppConfigurator
                 WebApiEndpoints.ShopOrderRateLimitPolicy,
                 config.ShopOrderRateLimit
             );
+            AddFixedWindowPolicy(
+                options,
+                WebApiEndpoints.ChainRpcRateLimitPolicy,
+                config.ChainRpcRateLimit
+            );
         });
     }
 

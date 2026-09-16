@@ -103,6 +103,50 @@ public sealed class ChainService : IChainService, IDisposable
 
     public string? TreasuryAddress { get; }
 
+    public ChainInfo GetInfo() =>
+        new(
+            _config.ChainId,
+            _config.CurrencyName,
+            _config.CurrencySymbol,
+            _config.CoinAddress,
+            _config.CollectibleAddress
+        );
+
+    public bool IsPublicMethodAllowed(string? method) => PublicRpcMethods.IsAllowed(method);
+
+    public async Task<System.Text.Json.JsonElement> ForwardPublicCallAsync(
+        string method,
+        IReadOnlyList<System.Text.Json.JsonElement> parameters,
+        CancellationToken ct
+    )
+    {
+        ArgumentNullException.ThrowIfNull(parameters);
+
+        if (!PublicRpcMethods.IsAllowed(method))
+        {
+            // Refused here rather than in the endpoint, so the rule travels with the thing that
+            // holds the node's address: a second caller added later cannot reach the node without
+            // passing it.
+            throw new InvalidOperationException(
+                $"'{method}' is not on the public JSON-RPC allowlist."
+            );
+        }
+
+        JsonRpcClient rpc = Started();
+
+        // Boxed as object? because JsonRpcClient serialises whatever it is handed; a JsonElement
+        // round-trips as the exact JSON the browser sent, which is what a proxy has to do — it is
+        // not this hotel's business to understand the shape of every parameter it forwards.
+        object?[] forwarded = new object?[parameters.Count];
+
+        for (int index = 0; index < parameters.Count; index++)
+        {
+            forwarded[index] = parameters[index];
+        }
+
+        return await rpc.CallAsync(method, forwarded, ct).ConfigureAwait(false);
+    }
+
     public async Task<BigInteger> GetCoinBalanceAsync(string address, CancellationToken ct)
     {
         byte[] result = await CallAsync(
@@ -233,7 +277,7 @@ public sealed class ChainService : IChainService, IDisposable
     /// unhelpful, and silent about the actual state. The reason a caller can act on is that the
     /// chain is off, so that is the one it is told.
     /// </summary>
-    private JsonRpcClient Started(string? contract)
+    private JsonRpcClient Started()
     {
         if (!Enabled)
         {
@@ -242,6 +286,13 @@ public sealed class ChainService : IChainService, IDisposable
             );
         }
 
+        return _rpc!;
+    }
+
+    private JsonRpcClient Started(string? contract)
+    {
+        JsonRpcClient rpc = Started();
+
         if (contract is null)
         {
             throw new InvalidOperationException(
@@ -249,7 +300,7 @@ public sealed class ChainService : IChainService, IDisposable
             );
         }
 
-        return _rpc!;
+        return rpc;
     }
 
     public void Dispose()

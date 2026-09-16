@@ -180,6 +180,65 @@
         }
       }
     },
+    "/api/public/chain": {
+      "get": {
+        "tags": [
+          "Chain"
+        ],
+        "summary": "What a wallet needs to add the hotel\u0027s network.",
+        "operationId": "ChainDescriptor",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ChainDescriptor"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/public/chain/rpc": {
+      "post": {
+        "tags": [
+          "Chain"
+        ],
+        "summary": "Forwards an allowlisted JSON-RPC call to the hotel\u0027s node.",
+        "operationId": "ChainRpc",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RpcRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/public/languages": {
       "get": {
         "tags": [
@@ -2257,6 +2316,52 @@
         },
         "additionalProperties": false
       },
+      "ChainDescriptor": {
+        "required": [
+          "chainId",
+          "chainIdHex",
+          "currencyDecimals",
+          "currencyName",
+          "currencySymbol",
+          "enabled",
+          "rpcUrl"
+        ],
+        "type": "object",
+        "properties": {
+          "enabled": {
+            "type": "boolean"
+          },
+          "chainId": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "chainIdHex": {
+            "type": "string"
+          },
+          "rpcUrl": {
+            "type": "string"
+          },
+          "currencyName": {
+            "type": "string"
+          },
+          "currencySymbol": {
+            "type": "string"
+          },
+          "currencyDecimals": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "coinAddress": {
+            "type": "string",
+            "nullable": true
+          },
+          "collectibleAddress": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
       "ChangeEmailRequest": {
         "required": [
           "isValid"
@@ -2916,6 +3021,21 @@
         },
         "additionalProperties": false
       },
+      "RpcRequest": {
+        "type": "object",
+        "properties": {
+          "method": {
+            "type": "string",
+            "nullable": true
+          },
+          "params": {
+            "type": "array",
+            "items": {},
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
       "SafetyLockRequest": {
         "required": [
           "isValid"
@@ -3472,6 +3592,9 @@
   "tags": [
     {
       "name": "Authentication"
+    },
+    {
+      "name": "Chain"
     },
     {
       "name": "Content"

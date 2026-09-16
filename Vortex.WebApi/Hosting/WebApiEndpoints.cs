@@ -35,6 +35,7 @@ internal static class WebApiEndpoints
     public const string SsoTokenRateLimitPolicy = "webapi-ssotoken";
     public const string ReportRateLimitPolicy = "webapi-report";
     public const string ShopOrderRateLimitPolicy = "webapi-shop-order";
+    public const string ChainRpcRateLimitPolicy = "webapi-chain-rpc";
 
     private const string TagPublic = "Public";
     private const string TagAuth = "Authentication";
@@ -42,6 +43,7 @@ internal static class WebApiEndpoints
     private const string TagNewUser = "NewUser";
     private const string TagContent = "Content";
     private const string TagShop = "Shop";
+    private const string TagChain = "Chain";
 
     public static void Map(WebApplication app)
     {
@@ -56,6 +58,10 @@ internal static class WebApiEndpoints
         MapNewUser(app);
         MapContent(app);
         MapShop(app);
+
+        // The only route to the chain node, whose own port is deliberately unpublished — see
+        // WebApiEndpoints.Chain.cs.
+        WebApiEndpointsChain.MapChain(app, TagChain, ChainRpcRateLimitPolicy);
     }
 
     /// <summary>

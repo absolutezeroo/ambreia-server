@@ -189,6 +189,25 @@ public sealed class WebApiConfig
         };
 
     /// <summary>
+    /// Fixed-window rate limit applied to <c>POST /api/public/chain/rpc</c>.
+    ///
+    /// <para>
+    /// Generous, because a wallet is chatty by nature: adding the network, drawing a balance and
+    /// watching for a receipt is a dozen calls before the player has done anything, and a limit
+    /// tight enough to matter would break the ordinary case. It is here to stop this route from
+    /// becoming a free proxy for hammering the node — every call is a read or a broadcast, so the
+    /// worst it can cost is the node's time.
+    /// </para>
+    /// </summary>
+    public RateLimitOptions ChainRpcRateLimit { get; set; } =
+        new RateLimitOptions
+        {
+            PermitLimit = 300,
+            WindowSeconds = 60,
+            QueueLimit = 0,
+        };
+
+    /// <summary>
     /// Fixed-window rate limit applied to <c>POST /api/user/shop/orders</c> and
     /// <c>POST /api/user/shop/voucher</c>.
     ///
