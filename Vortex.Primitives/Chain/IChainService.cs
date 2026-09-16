@@ -15,12 +15,18 @@ namespace Vortex.Primitives.Chain;
 /// <param name="CurrencySymbol">Its ticker, as the wallet displays it.</param>
 /// <param name="CoinAddress">VortexCoin, the ERC-20 the contest is counted in.</param>
 /// <param name="CollectibleAddress">VortexCollectible, the Relics.</param>
+/// <param name="PublicRpcUrl">
+/// What a wallet is told to call, when an operator has said so. <c>null</c> leaves the web API to
+/// work it out from the request, which only holds while nothing proxies it twice — see
+/// <c>ChainConfig.PublicRpcUrl</c>.
+/// </param>
 public readonly record struct ChainInfo(
     long ChainId,
     string CurrencyName,
     string CurrencySymbol,
     string? CoinAddress,
-    string? CollectibleAddress
+    string? CollectibleAddress,
+    string? PublicRpcUrl
 );
 
 /// <summary>

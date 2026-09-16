@@ -117,10 +117,16 @@ internal static partial class WebApiEndpointsChain
                                     "x",
                                     System.Globalization.CultureInfo.InvariantCulture
                                 ),
-                            new Uri(
-                                new Uri($"{PublicScheme(ctx)}://{ctx.Request.Host}"),
-                                "/api/public/chain/rpc"
-                            ).ToString(),
+                            // The operator's own answer wins. Deriving it works behind ONE proxy and
+                            // not behind two: the site proxies /api here over plain HTTP, and that
+                            // inner hop rewrites X-Forwarded-Proto to "http" — true for its own leg,
+                            // and an endpoint every wallet refuses. No header survives an arbitrary
+                            // chain, so past one hop this has to be configured rather than guessed.
+                            info.PublicRpcUrl
+                                ?? new Uri(
+                                    new Uri($"{PublicScheme(ctx)}://{ctx.Request.Host}"),
+                                    "/api/public/chain/rpc"
+                                ).ToString(),
                             info.CurrencyName,
                             info.CurrencySymbol,
                             // 18, like every EVM chain's native coin. Not configurable, because it

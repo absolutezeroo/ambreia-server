@@ -595,7 +595,7 @@ internal sealed class FakeChainService : IChainService
 
     public int RelicTransferFeeSilver => 0;
 
-    public ChainInfo GetInfo() => new(31337, "Vortex", "VTX", null, null);
+    public ChainInfo GetInfo() => new(31337, "Vortex", "VTX", null, null, null);
 
     public bool IsPublicMethodAllowed(string? method) =>
         method is "eth_chainId" or "eth_call" or "eth_sendRawTransaction";

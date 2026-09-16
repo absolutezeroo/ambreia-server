@@ -127,7 +127,8 @@ public sealed class ChainService : IChainService, IDisposable
             _config.CurrencyName,
             _config.CurrencySymbol,
             _config.CoinAddress,
-            _config.CollectibleAddress
+            _config.CollectibleAddress,
+            string.IsNullOrWhiteSpace(_config.PublicRpcUrl) ? null : _config.PublicRpcUrl.Trim()
         );
 
     public bool IsPublicMethodAllowed(string? method) => PublicRpcMethods.IsAllowed(method);

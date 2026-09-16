@@ -19,6 +19,21 @@ public class ChainConfig
     public string? RpcUrl { get; init; }
 
     /// <summary>
+    /// The endpoint a PLAYER'S WALLET is told to use — this API's own filtered proxy, as seen from
+    /// the outside, e.g. <c>https://webapi.example.com/api/public/chain/rpc</c>. Never the node.
+    ///
+    /// <para>
+    /// Empty means "work it out from the request", which is right on one hop and wrong on two. The
+    /// web API derives the URL from <c>Host</c> and <c>X-Forwarded-Proto</c>, and when the site
+    /// proxies <c>/api</c> to the API over plain HTTP that inner hop sets the header to <c>http</c>
+    /// — truthfully, for its own leg, and uselessly for a wallet, which refuses a plain-HTTP RPC
+    /// endpoint outright. There is no header that survives an arbitrary proxy chain intact, so past
+    /// one hop the hotel has to be told rather than guess.
+    /// </para>
+    /// </summary>
+    public string? PublicRpcUrl { get; init; }
+
+    /// <summary>
     /// Signed into every transaction, and what a player's wallet has to be pointed at. 31337 is
     /// anvil's default.
     /// </summary>

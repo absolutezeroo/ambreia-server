@@ -45,7 +45,7 @@ internal sealed class FakeChain : IChainService
 
     public IReadOnlyCollection<BigInteger> Holdings(string address) => Held(address);
 
-    public ChainInfo GetInfo() => new(31337, "Vortex", "VTX", "0xcoin", "0xcollectible");
+    public ChainInfo GetInfo() => new(31337, "Vortex", "VTX", "0xcoin", "0xcollectible", null);
 
     public bool IsPublicMethodAllowed(string? method) => false;
 
