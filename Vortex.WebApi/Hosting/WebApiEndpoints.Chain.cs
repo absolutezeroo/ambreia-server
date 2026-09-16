@@ -47,7 +47,11 @@ internal static partial class WebApiEndpointsChain
         string CurrencySymbol,
         int CurrencyDecimals,
         string? CoinAddress,
-        string? CollectibleAddress
+        string? CollectibleAddress,
+        // Where a Relic is sent to bring it back into the hotel. Public by nature — it owns both
+        // contracts, so anyone reading the chain has it already — and the player cannot use the
+        // claim door without being told it.
+        string? TreasuryAddress
     );
 
     /// <summary>One JSON-RPC call, as the browser sent it.</summary>
@@ -123,7 +127,8 @@ internal static partial class WebApiEndpointsChain
                             // is not ours to choose: it is how the node counts wei.
                             18,
                             info.CoinAddress,
-                            info.CollectibleAddress
+                            info.CollectibleAddress,
+                            chain.TreasuryAddress
                         )
                     );
                 }
