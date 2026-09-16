@@ -28,6 +28,12 @@ public static class ServiceCollectionExtensions
             provider.GetRequiredService<ChainService>()
         );
 
+        // Builds it during startup rather than on the first request. A singleton built lazily takes
+        // everything its constructor has to say about the configuration — including a throw — to
+        // whoever happens to touch it first, which is a stranger's browser and not the operator's
+        // log. See ChainStartupProbe.
+        services.AddHostedService<ChainStartupProbe>();
+
         return services;
     }
 }
