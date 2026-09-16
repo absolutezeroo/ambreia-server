@@ -45,6 +45,39 @@ public sealed class ChainEndpointTests
         body.GetProperty("rpcUrl").GetString().Should().EndWith("/api/public/chain/rpc");
     }
 
+    /// <summary>
+    /// Behind a TLS-terminating proxy the hotel speaks plain HTTP to Kestrel, so the scheme it sees
+    /// is not the one the caller used. The advertised RPC URL has to carry the caller's: a wallet
+    /// refuses an <c>http://</c> endpoint offered by an <c>https://</c> page, and
+    /// <c>wallet_addEthereumChain</c> requires HTTPS outside localhost. The wrong scheme produces a
+    /// network nobody can add, not a cosmetic difference.
+    /// </summary>
+    [Theory]
+    [InlineData("https", "https://")]
+    // A chain of proxies appends; the first entry is the caller's.
+    [InlineData("https,http", "https://")]
+    [InlineData(" https ", "https://")]
+    // Anything else is ignored rather than echoed into the URL.
+    [InlineData("gopher", "http://")]
+    [InlineData("", "http://")]
+    public async Task Descriptor_AdvertisesTheSchemeTheCallerUsed(string forwarded, string expected)
+    {
+        await using WebApiTestFactory factory = new();
+
+        using HttpRequestMessage request = new(HttpMethod.Get, "/api/public/chain");
+
+        if (forwarded.Length > 0)
+        {
+            request.Headers.TryAddWithoutValidation("X-Forwarded-Proto", forwarded);
+        }
+
+        using HttpResponseMessage response = await factory.Client.SendAsync(request);
+
+        JsonElement body = await response.Content.ReadFromJsonAsync<JsonElement>();
+
+        body.GetProperty("rpcUrl").GetString().Should().StartWith(expected);
+    }
+
     [Fact]
     public async Task Rpc_IsUnavailableWhenNoChainIsConfigured()
     {

@@ -53,6 +53,42 @@ internal static partial class WebApiEndpointsChain
     /// <summary>One JSON-RPC call, as the browser sent it.</summary>
     public sealed record RpcRequest(string? Method, JsonElement[]? Params);
 
+    /// <summary>
+    /// The scheme the CALLER used, which behind a TLS-terminating proxy is not the one Kestrel saw.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// This matters for exactly one value and it is not cosmetic: a wallet refuses an
+    /// <c>http://</c> RPC endpoint offered by an <c>https://</c> page, and
+    /// <c>wallet_addEthereumChain</c> requires HTTPS outside localhost. A hotel behind Coolify,
+    /// Traefik or any other reverse proxy speaks plain HTTP to Kestrel, so
+    /// <c>ctx.Request.Scheme</c> reads "http" and the network the hotel advertises cannot be added.
+    /// </para>
+    /// <para>
+    /// The header is trusted here and nowhere else, and only to BUILD A URL TO PRINT. Spoofing it
+    /// changes which scheme this one string carries and grants nothing — no session, no
+    /// authorisation, no routing decision. That is why this is four lines rather than
+    /// <c>UseForwardedHeaders</c>, which would apply to the whole pipeline and needs a list of
+    /// trusted proxies to be safe at all.
+    /// </para>
+    /// </remarks>
+    private static string PublicScheme(HttpContext ctx)
+    {
+        string? forwarded = ctx.Request.Headers["X-Forwarded-Proto"].ToString();
+
+        // A chain of proxies appends, so the first entry is the caller's.
+        int separator = forwarded.IndexOf(',', StringComparison.Ordinal);
+
+        if (separator >= 0)
+        {
+            forwarded = forwarded[..separator];
+        }
+
+        forwarded = forwarded.Trim();
+
+        return forwarded is "http" or "https" ? forwarded : ctx.Request.Scheme;
+    }
+
     public static void MapChain(WebApplication app, string tag, string rateLimitPolicy)
     {
         // [FromServices] is not decoration here. Minimal APIs infer an unannotated parameter as the
@@ -78,7 +114,7 @@ internal static partial class WebApiEndpointsChain
                                     System.Globalization.CultureInfo.InvariantCulture
                                 ),
                             new Uri(
-                                new Uri($"{ctx.Request.Scheme}://{ctx.Request.Host}"),
+                                new Uri($"{PublicScheme(ctx)}://{ctx.Request.Host}"),
                                 "/api/public/chain/rpc"
                             ).ToString(),
                             info.CurrencyName,
