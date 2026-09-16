@@ -43,9 +43,19 @@ internal static partial class WebApiEndpoints
     public sealed record WalletLinkRequest(string? Address, string? Signature);
 
     /// <summary>One player's wallets: the hotel's own, which is derived, and the linked ones.</summary>
+    /// <param name="RelicHolders">
+    /// Which of the addresses above the chain says holds at least one Relic — the Stardust one
+    /// included, because the page marks every row.
+    ///
+    /// <para>
+    /// A set rather than a flag carried on each address, so it cannot fall out of step with the
+    /// list it describes: two arrays read by index drift the first time one of them is filtered.
+    /// </para>
+    /// </param>
     public sealed record WalletsResponse(
         string? StardustAddress,
-        IReadOnlyList<string> LinkedAddresses
+        IReadOnlyList<string> LinkedAddresses,
+        IReadOnlyList<string> RelicHolders
     );
 
     private static void MapWallet(WebApplication app)
@@ -60,6 +70,7 @@ internal static partial class WebApiEndpoints
                     IWebApiPlayerService players,
                     [FromServices] IDbContextFactory<VortexDbContext> dbContexts,
                     [FromServices] IHotelWalletService hotelWallets,
+                    [FromServices] IChainService chain,
                     CancellationToken ct
                 ) =>
                 {
@@ -83,7 +94,7 @@ internal static partial class WebApiEndpoints
                         .ConfigureAwait(false);
 
                     return TypedResults.Ok(
-                        await ReadWalletsAsync(db, hotelWallets, playerId.Value, ct)
+                        await ReadWalletsAsync(db, hotelWallets, chain, playerId.Value, ct)
                             .ConfigureAwait(false)
                     );
                 }
@@ -144,6 +155,7 @@ internal static partial class WebApiEndpoints
                     IWebApiPlayerService players,
                     [FromServices] IDbContextFactory<VortexDbContext> dbContexts,
                     [FromServices] IHotelWalletService hotelWallets,
+                    [FromServices] IChainService chain,
                     [FromServices] WalletLinkChallenges challenges,
                     [FromServices] IWalletProof proof,
                     [FromServices] IOptions<WebApiConfig> options,
@@ -221,7 +233,7 @@ internal static partial class WebApiEndpoints
                         // reason that column is unique.
                         return existing.PlayerEntityId == playerId.Value
                             ? TypedResults.Ok(
-                                await ReadWalletsAsync(db, hotelWallets, playerId.Value, ct)
+                                await ReadWalletsAsync(db, hotelWallets, chain, playerId.Value, ct)
                                     .ConfigureAwait(false)
                             )
                             : TypedResults.Conflict(
@@ -240,7 +252,7 @@ internal static partial class WebApiEndpoints
                     await db.SaveChangesAsync(ct).ConfigureAwait(false);
 
                     return TypedResults.Ok(
-                        await ReadWalletsAsync(db, hotelWallets, playerId.Value, ct)
+                        await ReadWalletsAsync(db, hotelWallets, chain, playerId.Value, ct)
                             .ConfigureAwait(false)
                     );
                 }
@@ -260,6 +272,7 @@ internal static partial class WebApiEndpoints
                     IWebApiPlayerService players,
                     [FromServices] IDbContextFactory<VortexDbContext> dbContexts,
                     [FromServices] IHotelWalletService hotelWallets,
+                    [FromServices] IChainService chain,
                     CancellationToken ct
                 ) =>
                 {
@@ -303,7 +316,7 @@ internal static partial class WebApiEndpoints
                     await db.SaveChangesAsync(ct).ConfigureAwait(false);
 
                     return TypedResults.Ok(
-                        await ReadWalletsAsync(db, hotelWallets, playerId.Value, ct)
+                        await ReadWalletsAsync(db, hotelWallets, chain, playerId.Value, ct)
                             .ConfigureAwait(false)
                     );
                 }
@@ -320,6 +333,7 @@ internal static partial class WebApiEndpoints
     private static async Task<WalletsResponse> ReadWalletsAsync(
         VortexDbContext db,
         IHotelWalletService hotelWallets,
+        IChainService chain,
         int playerId,
         CancellationToken ct
     )
@@ -334,6 +348,64 @@ internal static partial class WebApiEndpoints
 
         // The Stardust address is derived and never stored, so it is answered alongside the table
         // rather than read from it — see PlayerWalletEntity for why it is not a row.
-        return new WalletsResponse(hotelWallets.GetAddress(playerId), linked);
+        string? stardust = hotelWallets.GetAddress(playerId);
+
+        return new WalletsResponse(
+            stardust,
+            linked,
+            await RelicHoldersAsync(chain, [stardust, .. linked], ct).ConfigureAwait(false)
+        );
+    }
+
+    /// <summary>
+    /// Which of <paramref name="addresses" /> hold at least one Relic right now.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// One <c>eth_call</c> per address against a node the hotel runs itself, and a player has one or
+    /// two addresses — so this is cheaper than the round trip that carries it. It is asked per
+    /// request rather than cached because the answer changes the moment a Relic is transferred, and
+    /// a stale mark on this page is the one thing it is there to report.
+    /// </para>
+    /// <para>
+    /// A chain that refuses or is switched off costs the marks and never the page. This is
+    /// decoration beside the addresses, and an account's own wallet list must not stop loading
+    /// because a node is down.
+    /// </para>
+    /// </remarks>
+    private static async Task<IReadOnlyList<string>> RelicHoldersAsync(
+        IChainService chain,
+        IReadOnlyList<string?> addresses,
+        CancellationToken ct
+    )
+    {
+        if (!chain.Enabled)
+        {
+            return [];
+        }
+
+        List<string> holders = [];
+
+        foreach (string? address in addresses)
+        {
+            if (string.IsNullOrWhiteSpace(address))
+            {
+                continue;
+            }
+
+            try
+            {
+                if ((await chain.GetRelicsAsync(address, ct).ConfigureAwait(false)).Count > 0)
+                {
+                    holders.Add(address);
+                }
+            }
+            catch
+            {
+                // Unmarked rather than wrongly marked, and the next load asks again.
+            }
+        }
+
+        return holders;
     }
 }

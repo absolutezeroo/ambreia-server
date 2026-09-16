@@ -3866,7 +3866,8 @@
       },
       "WalletsResponse": {
         "required": [
-          "linkedAddresses"
+          "linkedAddresses",
+          "relicHolders"
         ],
         "type": "object",
         "properties": {
@@ -3875,6 +3876,12 @@
             "nullable": true
           },
           "linkedAddresses": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "relicHolders": {
             "type": "array",
             "items": {
               "type": "string"
