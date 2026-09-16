@@ -28,47 +28,27 @@ services:
   # `eth_*` / `net_*` / `web3_*` methods and refusing everything else — same origin, no extra
   # service, and the allowlist lives next to the rest of the hotel's access rules. Publishing 8545
   # is not a shortcut to that; it is the thing the proxy exists to prevent.
+  # ONE service and not two, because this hotel is deployed with one resource per service and a
+  # one-shot deploy container has nowhere to live there. chain/Dockerfile's image starts anvil,
+  # deploys the contracts if the chain is virgin, and prints their addresses on every boot — so this
+  # file and a Coolify resource are the same thing configured twice, rather than two arrangements
+  # that drift.
   chain:
-    image: ghcr.io/foundry-rs/foundry:v1.8.3
+    build:
+      # The repository root, because the image needs tools/chain/deploy.sh as well as
+      # chain/artifacts and a Dockerfile cannot reach above its context.
+      context: .
+      dockerfile: chain/Dockerfile
     restart: unless-stopped
-    entrypoint: ["anvil"]
-    command:
-      # Container-local binds are binds to nowhere here too — the emulator reaches this over the
-      # compose network, not over loopback.
-      - --host=0.0.0.0
-      - --chain-id=31337
-      # Load on start, save periodically and on exit. Without it every restart is a brand new chain:
-      # the contracts vanish, and so does every balance the contest was counting.
-      - --state=/data/anvil-state.json
-      - --state-interval=10
-    volumes:
-      - vortex-chain-data:/data
-
-  # -----------------------------------------------------------------------------------------------
-  # One-shot: put the two contracts on the chain
-  # -----------------------------------------------------------------------------------------------
-  # Behind a profile, so `docker compose up` never runs it. Deploying is a once-per-chain act:
-  #
-  #   docker compose run --rm chain-deploy
-  #
-  # It needs neither solc nor npm — tools/chain/deploy.sh sends the committed bytecode from
-  # chain/artifacts with `cast`, and refuses if the chain already has contracts on it.
-  chain-deploy:
-    image: ghcr.io/foundry-rs/foundry:v1.8.3
-    profiles: ["setup"]
-    depends_on:
-      - chain
-    entrypoint: ["/bin/sh", "/deploy.sh"]
     environment:
-      VORTEX_CHAIN_RPC_URL: "http://chain:8545"
       # anvil's first genesis account, fixed by its default mnemonic and therefore public knowledge.
-      # It is the treasury ONLY on this development stack; a real hotel deploys from a key it
-      # generated, and every VTX in existence is mintable by whoever holds it.
+      # It is the treasury ONLY on this development stack. A real hotel generates its own — see the
+      # header of this file, and note that the public JSON-RPC proxy allows eth_sendRawTransaction,
+      # so a treasury whose key everyone knows is a treasury everyone can mint from.
       VORTEX_CHAIN_TREASURY_KEY: "0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80"
       VORTEX_COLLECTIBLE_BASE_URI: "http://localhost:8080/api/public/collectibles/"
     volumes:
-      - ./chain/artifacts:/chain/artifacts:ro
-      - ./tools/chain/deploy.sh:/deploy.sh:ro
+      - vortex-chain-data:/data
 
   # -----------------------------------------------------------------------------------------------
   # MySQL 8
