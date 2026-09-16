@@ -122,7 +122,7 @@ internal sealed class VortexConsoleFormatter(
 
         if (options.IncludeScopes && scopeProvider is not null)
         {
-            scopeProvider.ForEachScope((scope, s) => s.Append(" => ").Append(scope), sb);
+            scopeProvider.ForEachScope((scope, s) => AppendScope(s.Append(" => "), scope), sb);
         }
 
         textWriter.WriteLine(sb.ToString());
@@ -134,6 +134,48 @@ internal sealed class VortexConsoleFormatter(
                 : logEntry.Exception.ToString();
             textWriter.WriteLine(exLine);
         }
+    }
+
+    /// <summary>
+    /// One scope, written so a reader learns something from it.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// This used to be <c>Append(scope)</c>, which is what the framework's own console formatter
+    /// does — and it means <c>ToString()</c>. A scope opened with a dictionary, which is the shape
+    /// every structured logger asks for and the shape <c>VortexContextAccessor</c> uses, has no
+    /// <c>ToString()</c> of its own, so every line in the hotel ended
+    /// <c>=&gt; System.Collections.Generic.Dictionary`2[System.String,System.Object]</c> — the
+    /// correlation id and the operation carried right past the reader and printed as their
+    /// container's type name.
+    /// </para>
+    /// <para>
+    /// A scope opened with a message template is left alone: <c>FormattedLogValues</c> is also a
+    /// list of pairs, and it already renders itself as the sentence the caller wrote. Telling the
+    /// two apart on whether <c>ToString()</c> was overridden is what keeps this from turning those
+    /// back into key=value noise.
+    /// </para>
+    /// </remarks>
+    private static void AppendScope(StringBuilder sb, object? scope)
+    {
+        if (
+            scope is IEnumerable<KeyValuePair<string, object?>> pairs
+            && scope.ToString() == scope.GetType().ToString()
+        )
+        {
+            bool first = true;
+
+            foreach (KeyValuePair<string, object?> pair in pairs)
+            {
+                sb.Append(first ? string.Empty : ", ").Append(pair.Key).Append('=').Append(pair.Value);
+
+                first = false;
+            }
+
+            return;
+        }
+
+        sb.Append(scope);
     }
 
     private static string TrimCategory(string category, int depth)
