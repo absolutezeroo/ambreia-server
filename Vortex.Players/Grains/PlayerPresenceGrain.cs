@@ -44,6 +44,20 @@ internal sealed partial class PlayerPresenceGrain
 
     private ISessionContextObserver? _sessionObserver;
 
+    /// <summary>
+    /// The socket currently holding the player, for the test that pins the replacement ordering.
+    /// Reading it is the only way to tell the two sockets apart without driving the outgoing queue,
+    /// which is processed off the caller's turn and would make the assertion a race.
+    /// </summary>
+    internal ISessionContextObserver? AttachedObserver => _sessionObserver;
+
+    /// <summary>
+    /// Which socket generation currently holds this player. Handed out by
+    /// <see cref="BeginSessionAsync"/> and checked when a socket tries to attach, so one that was
+    /// replaced mid-attach cannot take the player back.
+    /// </summary>
+    private long _sessionGeneration;
+
     public PlayerPresenceGrain(
         IGrainFactory grainFactory,
         IEventPublisher events,
@@ -95,8 +109,35 @@ internal sealed partial class PlayerPresenceGrain
         return Task.CompletedTask;
     }
 
-    public Task RegisterSessionObserverAsync(ISessionContextObserver observer)
+    public Task<long> BeginSessionAsync(CancellationToken ct)
     {
+        // Monotonic within the activation, and the activation is the player: Orleans runs one call
+        // here at a time, so whoever asks last gets the higher number. That is the whole ordering.
+        //
+        // It does not survive a reactivation, and does not need to: an activation with no observer
+        // has nobody attached, so the first socket after it is the current one by definition.
+        return Task.FromResult(++_sessionGeneration);
+    }
+
+    public Task RegisterSessionObserverAsync(ISessionContextObserver observer, long generation)
+    {
+        if (generation < _sessionGeneration)
+        {
+            // A socket that was replaced while it was still attaching. Registering it would put a
+            // dead socket in front of the live one and the player would go quiet -- connected as far
+            // as the server is concerned, hearing nothing. Its own teardown still runs; the gateway
+            // mapping already refuses to let that teardown touch the session that replaced it.
+            _logger.LogWarning(
+                "Ignoring a session observer for player {PlayerId} from generation {Generation}; "
+                    + "generation {Current} holds the player.",
+                this.GetPrimaryKeyLong(),
+                generation,
+                _sessionGeneration
+            );
+
+            return Task.CompletedTask;
+        }
+
         _sessionObserver = observer;
 
         // A fresh socket is a fresh queue. The grain outlives the session it was serving, so the

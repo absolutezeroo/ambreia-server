@@ -44,7 +44,7 @@ public sealed class PresenceSessionLifetimeTests
         Recorder recorder = new();
 
         await Build(recorder)
-            .RegisterSessionObserverAsync(FakeProxy.Create<ISessionContextObserver>(_ => null))
+            .RegisterSessionObserverAsync(FakeProxy.Create<ISessionContextObserver>(_ => null), 1)
             .ConfigureAwait(true);
 
         recorder
@@ -59,6 +59,44 @@ public sealed class PresenceSessionLifetimeTests
         recorder.Deactivations.Should().Be(0);
     }
 
+    /// <summary>
+    ///     Two sockets for one account, the second replacing the first, and the first still on its
+    ///     way in when it does. Attaching it would put a socket nobody is listening to in front of
+    ///     the live one: the player is connected as far as the server is concerned and hears
+    ///     nothing, which is the ghost this whole suite is named for arriving by another door.
+    /// </summary>
+    [Fact]
+    public async Task ASocketReplacedWhileItWasStillAttaching_DoesNotTakeThePlayerBack()
+    {
+        Recorder recorder = new();
+        PlayerPresenceGrain grain = Build(recorder);
+
+        // Both sockets claim their place in the order the gateway decided it, which is what
+        // BeginSessionAsync exists to record.
+        long first = await grain.BeginSessionAsync(CancellationToken.None).ConfigureAwait(true);
+        long second = await grain.BeginSessionAsync(CancellationToken.None).ConfigureAwait(true);
+
+        second.Should().BeGreaterThan(first, "the replacement was decided second");
+
+        ISessionContextObserver live = FakeProxy.Create<ISessionContextObserver>(_ => null);
+
+        await grain.RegisterSessionObserverAsync(live, second).ConfigureAwait(true);
+
+        // And now the one it replaced finally lands.
+        await grain
+            .RegisterSessionObserverAsync(
+                FakeProxy.Create<ISessionContextObserver>(_ => null),
+                first
+            )
+            .ConfigureAwait(true);
+
+        (await grain.IsOnlineAsync(CancellationToken.None).ConfigureAwait(true))
+            .Should()
+            .BeTrue("the live socket is still the one holding the player");
+
+        grain.AttachedObserver.Should().BeSameAs(live, "the replaced socket did not take it back");
+    }
+
     [Fact]
     public async Task DroppingTheSession_ReleasesTheActivation()
     {
@@ -66,7 +104,7 @@ public sealed class PresenceSessionLifetimeTests
         PlayerPresenceGrain grain = Build(recorder);
 
         await grain
-            .RegisterSessionObserverAsync(FakeProxy.Create<ISessionContextObserver>(_ => null))
+            .RegisterSessionObserverAsync(FakeProxy.Create<ISessionContextObserver>(_ => null), 1)
             .ConfigureAwait(true);
         await grain.UnregisterSessionObserverAsync(CancellationToken.None).ConfigureAwait(true);
 

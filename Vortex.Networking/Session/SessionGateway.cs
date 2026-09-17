@@ -217,6 +217,7 @@ public sealed class SessionGateway(
 
         IPlayerPresenceGrain playerPresence = _grainFactory.GetPlayerPresenceGrain(playerId);
         DateTime connectedAt;
+        long generation;
 
         await _mappingGate.WaitAsync(ct).ConfigureAwait(false);
 
@@ -250,13 +251,24 @@ public sealed class SessionGateway(
             _playerToSession[playerId] = key;
             connectedAt = DateTime.UtcNow;
             _playerConnectedAt[playerId] = connectedAt;
+
+            // Claimed here, with the mapping, so the order generations come out in is the order the
+            // replacements were decided. The registration itself stays outside the lock -- it is the
+            // ordering that had to be established inside it, not the call.
+            generation = await playerPresence.BeginSessionAsync(ct).ConfigureAwait(false);
         }
         finally
         {
             _mappingGate.Release();
         }
 
-        await playerPresence.RegisterSessionObserverAsync(observer).ConfigureAwait(false);
+        // Outside the lock, and therefore raceable against a socket that replaces this one before
+        // the call lands. The generation is what the presence grain uses to refuse it: a socket that
+        // was replaced while it was still attaching would otherwise reinstate itself in front of the
+        // live one, and the player would go mute while the server believed they were attached.
+        await playerPresence
+            .RegisterSessionObserverAsync(observer, generation)
+            .ConfigureAwait(false);
         await PublishConnectedEventSafelyAsync(playerId, connectedAt).ConfigureAwait(false);
     }
 
