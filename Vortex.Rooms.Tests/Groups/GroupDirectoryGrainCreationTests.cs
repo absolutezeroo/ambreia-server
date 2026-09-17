@@ -503,6 +503,7 @@ public sealed class GroupDirectoryGrainCreationTests
         public Task<ClubPurchaseResult> GrantClubMonthsAsync(
             int months,
             bool isVip,
+            CommerceOperationId operation,
             CancellationToken ct
         )
         {

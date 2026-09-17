@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -7,7 +8,9 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Orleans;
+using Vortex.Database.Commerce;
 using Vortex.Database.Context;
+using Vortex.Database.Entities.Commerce;
 using Vortex.Database.Entities.Players;
 using Vortex.Logging;
 using Vortex.Players.Configuration;
@@ -548,6 +551,7 @@ internal sealed partial class PlayerGrain : Grain, IPlayerGrain
                             months,
                             isVip,
                             costCredits,
+                            operation,
                             innerCt
                         )
                         .ConfigureAwait(true);
@@ -593,11 +597,12 @@ internal sealed partial class PlayerGrain : Grain, IPlayerGrain
     public Task<ClubPurchaseResult> GrantClubMonthsAsync(
         int months,
         bool isVip,
+        CommerceOperationId operation,
         CancellationToken ct
     ) =>
         months <= 0
             ? Task.FromResult(ClubPurchaseResult.Success)
-            : ApplyClubMonthsAsync(months, isVip, costCredits: 0, ct);
+            : ApplyClubMonthsAsync(months, isVip, costCredits: 0, operation, ct);
 
     /// <summary>
     /// Extends the membership and everything hanging off it (streak, gifts, badges, kickback, the
@@ -609,9 +614,28 @@ internal sealed partial class PlayerGrain : Grain, IPlayerGrain
         int months,
         bool isVip,
         int costCredits,
+        CommerceOperationId operation,
         CancellationToken ct
     )
     {
+        // Asked before anything is touched, because the months are added to whatever is already
+        // there: repeating this call without the check is how a replayed webhook buys a month twice.
+        // The receipt goes in with the subscription row further down, so "the months are there" and
+        // "a receipt says so" are one commit and cannot disagree.
+        if (!operation.IsNone)
+        {
+            await using VortexDbContext receiptCtx = await _dbCtxFactory.CreateDbContextAsync(ct);
+
+            if (
+                await receiptCtx
+                    .HasCommittedReceiptAsync(operation, CommerceStepKeys.CLUB_MONTHS, ct)
+                    .ConfigureAwait(true)
+            )
+            {
+                return ClubPurchaseResult.Success;
+            }
+        }
+
         IServerConfigGrain config = this.GrainFactory.GetServerConfigGrain();
         int giftCycleDays = await config
             .GetIntAsync(ClubConfig.GiftCycleDaysKey, ClubConfig.GiftCycleDaysDefault)
@@ -719,6 +743,23 @@ internal sealed partial class PlayerGrain : Grain, IPlayerGrain
                     FirstSubscribedAt = _state.ClubFirstSubscribedAt,
                     HcBadgeGranted = _state.ClubBadgeGranted,
                     PlayerEntity = playerEntity,
+                }
+            );
+        }
+
+        // In the same commit as the months. This is what the caller used to have to fake by claiming
+        // the step beforehand: the claim and the grant were two writes, and a crash between them left
+        // the months owed with the step already marked done -- a paid order indistinguishable from a
+        // delivered one, and a replayed webhook that closed it as Fulfilled.
+        if (!operation.IsNone)
+        {
+            dbCtx.CommerceReceipts.Add(
+                new CommerceReceiptEntity
+                {
+                    OperationId = operation.Value,
+                    StepKey = CommerceStepKeys.CLUB_MONTHS,
+                    Result = months.ToString(CultureInfo.InvariantCulture),
+                    CreatedAt = DateTime.UtcNow,
                 }
             );
         }

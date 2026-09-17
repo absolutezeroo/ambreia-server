@@ -4,6 +4,7 @@ using System.Collections.Immutable;
 using System.Threading;
 using System.Threading.Tasks;
 using Orleans;
+using Vortex.Primitives.Commerce;
 using Vortex.Primitives.Orleans.Snapshots.Players;
 using Vortex.Primitives.Players.Enums;
 using Vortex.Primitives.Rooms.Enums;
@@ -96,9 +97,18 @@ public interface IPlayerGrain : IGrainWithIntegerKey
 
     /// <summary>Extends the membership without taking payment -- a prize or a staff award. Applies
     /// the same bookkeeping as <see cref="PurchaseClubAsync"/> (streak, gifts, badges, kickback).</summary>
+    /// <param name="operation">
+    /// The operation the months belong to, or <see cref="CommerceOperationId.None"/> for a grant
+    /// that answers to nobody. Named, the months and a receipt for them commit together, so the
+    /// call can be repeated as often as a provider repeats its webhook and still add them once.
+    /// Without that, a caller had to claim the step before calling — and a crash in between left
+    /// the months owed with the step already marked done, which reads from the outside exactly like
+    /// a delivery that happened.
+    /// </param>
     public Task<ClubPurchaseResult> GrantClubMonthsAsync(
         int months,
         bool isVip,
+        CommerceOperationId operation,
         CancellationToken ct
     );
 

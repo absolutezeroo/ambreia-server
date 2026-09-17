@@ -92,7 +92,11 @@ internal sealed class ShopTestHarness : IAsyncDisposable
                 return null;
             }
 
-            Club.Record((int)call.Args![0]!, (bool)call.Args[1]!);
+            Club.Record(
+                (int)call.Args![0]!,
+                (bool)call.Args[1]!,
+                (CommerceOperationId)call.Args[2]!
+            );
 
             return Task.FromResult(ClubPurchaseResult.Success);
         });
@@ -345,17 +349,35 @@ internal sealed class RecordingWallet : IPlayerWalletGrain
         Task.FromResult(true);
 }
 
-/// <summary>What the club grain was asked for, and how many times.</summary>
+/// <summary>What the club grain was asked for, and how many times it actually applied it.</summary>
 internal sealed class ClubRecorder
 {
+    private readonly HashSet<Guid> _applied = [];
+
     public int Months { get; private set; }
 
     public int Calls { get; private set; }
 
     public bool Vip { get; private set; }
 
-    public void Record(int months, bool isVip)
+    /// <summary>
+    /// Idempotent by operation, because the grain it stands in for is: the months and the receipt
+    /// that says they were added commit together there, so a replayed webhook reaches it a second
+    /// time and adds nothing.
+    /// </summary>
+    /// <remarks>
+    /// The shop used to claim the step before calling, and this recorder was never reached twice.
+    /// Now the deduplication lives in the grain, where it can be atomic with the effect, so the
+    /// stand-in has to model it — otherwise the test would be asserting the old mechanism instead
+    /// of the invariant it is named for.
+    /// </remarks>
+    public void Record(int months, bool isVip, CommerceOperationId operation)
     {
+        if (!operation.IsNone && !_applied.Add(operation.Value))
+        {
+            return;
+        }
+
         Months += months;
         Vip = isVip;
         Calls++;

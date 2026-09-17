@@ -7,6 +7,7 @@ using Microsoft.Extensions.Logging;
 using Orleans;
 using Vortex.Database.Context;
 using Vortex.Database.Entities.Prizes;
+using Vortex.Primitives.Commerce;
 using Vortex.Primitives.Events;
 using Vortex.Primitives.Furniture.Enums;
 using Vortex.Primitives.Furniture.Providers;
@@ -285,7 +286,7 @@ internal sealed class PlayerPrizeGrain(
 
         ClubPurchaseResult result = await _grainFactory
             .GetPlayerGrain(OwnerId)
-            .GrantClubMonthsAsync(months, isVip, ct)
+            .GrantClubMonthsAsync(months, isVip, CommerceOperationId.None, ct)
             .ConfigureAwait(true);
 
         if (result != ClubPurchaseResult.Success)

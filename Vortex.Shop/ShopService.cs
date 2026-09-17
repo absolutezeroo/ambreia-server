@@ -489,26 +489,24 @@ internal sealed class ShopService(
 
         if (order.Kind is ShopProductKind.Club or ShopProductKind.ClubVip)
         {
-            // Claim first, then act. GrantClubMonthsAsync adds months to whatever is there, so it is
-            // not safe to repeat — unlike the wallet, which commits its credit and its receipt
-            // together and can be retried freely.
+            // The club write takes the operation id now, so the months and the receipt for them
+            // commit together and this is safe to repeat — the same property the wallet branch below
+            // has always had.
             //
-            // ponytail: the ceiling is a crash between the claim and the grant, which leaves the
-            // months owed with the step already marked done. The order is left NeedsIntervention by
-            // the caller in that case and an operator sees it; making it atomic would need the club
-            // write to take an operation id, the way the wallet's does.
-            if (
-                !await journal
-                    .TryRecordStepAsync(operation, CommerceStepKeys.CLUB_MONTHS, null, ct)
-                    .ConfigureAwait(false)
-            )
-            {
-                return true;
-            }
-
+            // It used to claim the step first and then act, because the grant added months to
+            // whatever was there and could not be repeated. The ceiling that comment named was a
+            // crash between the two writes: the months stayed owed with the step already marked
+            // done, so a replayed webhook was answered "already granted" and FulfilAsync closed the
+            // order as delivered. A paid order that was never delivered became indistinguishable
+            // from one that was.
             ClubPurchaseResult result = await grainFactory
                 .GetPlayerGrain(player)
-                .GrantClubMonthsAsync(order.Amount, order.Kind == ShopProductKind.ClubVip, ct)
+                .GrantClubMonthsAsync(
+                    order.Amount,
+                    order.Kind == ShopProductKind.ClubVip,
+                    operation,
+                    ct
+                )
                 .ConfigureAwait(false);
 
             return result == ClubPurchaseResult.Success;
