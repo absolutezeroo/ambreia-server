@@ -22,6 +22,12 @@ namespace Vortex.Rooms.Games.Progression;
 /// A score with no player is a team award nobody caused — a wired box, a rule's own bookkeeping —
 /// and a negative one is Freeze's friendly fire. Neither is progression.
 /// </para>
+/// <para>
+/// One event per score, measured and left alone: an arena caps at twenty players and a snowball
+/// takes two seconds, so a hundred players is five arenas and 50–150 events a second, none of
+/// them a database write. The fan-out to watch is a blast freezing three Habbos — three events
+/// for one player, awaited one after another.
+/// </para>
 /// </remarks>
 public sealed class GameProgressSink(int roomId, Action<IEvent> publish) : IGameEventSink
 {
