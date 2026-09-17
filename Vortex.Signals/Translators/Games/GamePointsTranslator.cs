@@ -30,6 +30,7 @@ public sealed class GamePointsTranslator : ISignalTranslator<GamePointsScoredEve
     /// <summary>Scoring acts a player counts one by one, in the games' own vocabulary.</summary>
     private const string PlayerFrozen = "freeze.player_frozen";
     private const string PowerUpCollected = "freeze.powerup_collected";
+    private const string FootballGoal = "football.goal";
 
     public static ImmutableArray<SignalShape> Shapes { get; } =
     [
@@ -37,10 +38,13 @@ public sealed class GamePointsTranslator : ISignalTranslator<GamePointsScoredEve
         new(SignalActions.BanzaiPoints, [Facts.Room]),
         new(SignalActions.FreezePlayerFrozen, [Facts.Room]),
         new(SignalActions.FreezePowerUpCollected, [Facts.Room]),
+        new(SignalActions.FootballGoalScored, [Facts.Room]),
     ];
 
     public ImmutableArray<ProgressSignal> Translate(GamePointsScoredEvent e)
     {
+        // Football has a counted act and no points action: the hotel measures goals, never the
+        // points a goal is worth. A game can have either half, or neither and raise nothing.
         string? points = e.Game switch
         {
             Freeze => SignalActions.FreezePoints,
@@ -48,7 +52,15 @@ public sealed class GamePointsTranslator : ISignalTranslator<GamePointsScoredEve
             _ => null,
         };
 
-        if (points is null)
+        string? act = e.Reason switch
+        {
+            PlayerFrozen => SignalActions.FreezePlayerFrozen,
+            PowerUpCollected => SignalActions.FreezePowerUpCollected,
+            FootballGoal => SignalActions.FootballGoalScored,
+            _ => null,
+        };
+
+        if (points is null && act is null)
         {
             return [];
         }
@@ -56,14 +68,10 @@ public sealed class GamePointsTranslator : ISignalTranslator<GamePointsScoredEve
         ImmutableArray<ProgressSignal>.Builder signals =
             ImmutableArray.CreateBuilder<ProgressSignal>(2);
 
-        signals.Add(Signal(e, points, e.Amount));
-
-        string? act = e.Reason switch
+        if (points is not null)
         {
-            PlayerFrozen => SignalActions.FreezePlayerFrozen,
-            PowerUpCollected => SignalActions.FreezePowerUpCollected,
-            _ => null,
-        };
+            signals.Add(Signal(e, points, e.Amount));
+        }
 
         if (act is not null)
         {

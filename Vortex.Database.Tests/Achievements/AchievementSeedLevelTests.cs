@@ -173,6 +173,7 @@ public sealed class AchievementSeedLevelTests
             AchievementNames.BattleBallPlayer,
             AchievementNames.FreezePowerUp,
             AchievementNames.EsA,
+            AchievementNames.FootballGoalScored,
         ];
 
         HashSet<string> seeded = [.. Catalogue.Select(l => l.Family)];

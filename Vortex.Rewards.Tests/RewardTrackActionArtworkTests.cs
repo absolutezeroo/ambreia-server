@@ -135,6 +135,7 @@ public class RewardTrackActionArtworkTests
         RewardTrackActions.FreezePowerUpCollected,
         RewardTrackActions.FreezePoints,
         RewardTrackActions.BanzaiPoints,
+        RewardTrackActions.FootballGoalScored,
     };
 
     private static IEnumerable<string> AllActionCodes() =>

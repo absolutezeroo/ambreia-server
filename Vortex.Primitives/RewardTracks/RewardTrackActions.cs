@@ -286,4 +286,7 @@ public static class RewardTrackActions
 
     /// <inheritdoc cref="FreezePoints"/>
     public const string BanzaiPoints = "banzai_points";
+
+    /// <summary>Scored a goal in football. The hotel counts goals, never their points.</summary>
+    public const string FootballGoalScored = "football_goal_scored";
 }

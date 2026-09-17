@@ -157,6 +157,7 @@ public sealed class VocabularyGovernanceTests
         "freeze_powerup_collected",
         "freeze_points",
         "banzai_points",
+        "football_goal_scored",
     ];
 
     /// <summary>The declared values of every closed fact, which content compares against too.</summary>

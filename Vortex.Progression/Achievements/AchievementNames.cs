@@ -27,4 +27,5 @@ public static class AchievementNames
 
     /// <summary>"For freezing %limit% Habbos in Freeze" — Sulake's code name for it is ACH_EsA.</summary>
     public const string EsA = "EsA";
+    public const string FootballGoalScored = "FootballGoalScored";
 }

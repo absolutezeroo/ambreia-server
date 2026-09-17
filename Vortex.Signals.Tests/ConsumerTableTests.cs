@@ -63,6 +63,7 @@ public sealed class ConsumerTableTests
             [SignalActions.BanzaiPoints] = (AchievementNames.BattleBallPlayer, false),
             [SignalActions.FreezePlayerFrozen] = (AchievementNames.EsA, false),
             [SignalActions.FreezePowerUpCollected] = (AchievementNames.FreezePowerUp, false),
+            [SignalActions.FootballGoalScored] = (AchievementNames.FootballGoalScored, false),
         };
 
         AchievementSignalConsumer

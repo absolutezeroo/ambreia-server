@@ -55,9 +55,18 @@ public sealed class TranslatorCaseTests
             .Which.Action.Should()
             .Be(SignalActions.BanzaiPoints);
 
+        // Football is the other half alone: a counted act and no points action, because the
+        // hotel measures goals and never what a goal was worth.
+        ImmutableArray<ProgressSignal> goal = translator.Translate(
+            new GamePointsScoredEvent(4312, 7, "football", "football.goal", 3)
+        );
+
+        goal.Should().ContainSingle().Which.Action.Should().Be(SignalActions.FootballGoalScored);
+        goal[0].Amount.Should().Be(1);
+
         // A game with no achievements raises nothing rather than an action nothing reads.
         translator
-            .Translate(new GamePointsScoredEvent(4312, 7, "football", "football.goal", 1))
+            .Translate(new GamePointsScoredEvent(4312, 7, "football", "football.own_goal", 1))
             .Should()
             .BeEmpty();
     }
@@ -396,6 +405,7 @@ public sealed class TranslatorCaseTests
                 3
             );
             yield return new GamePointsScoredEvent(4312, 7, "banzai", "banzai.tile_locked", 8);
+            yield return new GamePointsScoredEvent(4312, 7, "football", "football.goal", 3);
         }
     }
 }

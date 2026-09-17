@@ -260,6 +260,9 @@ public static class SignalActions
     /// <inheritdoc cref="RewardTrackActions.BanzaiPoints"/>
     public const string BanzaiPoints = RewardTrackActions.BanzaiPoints;
 
+    /// <inheritdoc cref="RewardTrackActions.FootballGoalScored"/>
+    public const string FootballGoalScored = RewardTrackActions.FootballGoalScored;
+
     /// <summary>
     /// Every core action. The governance test freezes this list, and the translator processor uses
     /// it to tell a core action from one a plugin must qualify with its own key.
@@ -341,6 +344,7 @@ public static class SignalActions
         FreezePlayerFrozen,
         FreezePowerUpCollected,
         FreezePoints,
-        BanzaiPoints
+        BanzaiPoints,
+        FootballGoalScored
     );
 }

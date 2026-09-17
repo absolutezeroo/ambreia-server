@@ -84,6 +84,9 @@ public sealed class AchievementSignalConsumer(IGrainFactory grainFactory, IComme
         [SignalActions.BanzaiPoints] = new(AchievementNames.BattleBallPlayer, CountsAmount: true),
         [SignalActions.FreezePlayerFrozen] = new(AchievementNames.EsA),
         [SignalActions.FreezePowerUpCollected] = new(AchievementNames.FreezePowerUp),
+        // Football scores through the same funnel; only its goals are worth counting, and its
+        // FootballGoalScoredInRoom sibling is not here because it credits the room owner.
+        [SignalActions.FootballGoalScored] = new(AchievementNames.FootballGoalScored),
     }.ToFrozenDictionary();
 
     public async ValueTask HandleAsync(
