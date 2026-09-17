@@ -1232,7 +1232,14 @@
 {#if canManage && collectionForm}
   {@const form = collectionForm}
   <Drawer title={$t('collectibles.collectionsTitle')} eyebrow={$t('collectibles.title')} onclose={() => (collectionForm = null)}>
+    <!-- Every form on this page carries an id and every submit button names it with `form=`. Drawer
+         pins its `actions` snippet to the panel footer, OUTSIDE `children` where the form lives, and
+         a `type="submit"` button only submits the form it is INSIDE. Without the pairing the button
+         does nothing whatsoever: no request, no validation message, no console line. All eight
+         drawers here were built without it and all eight were dead. EconomyExtrasPage and
+         NavigatorConfigPage have done it correctly since theirs were written. -->
     <form
+      id="collection-form"
       class="inline-form editor-form"
       onsubmit={(event) => {
         event.preventDefault();
@@ -1322,7 +1329,7 @@
     </form>
   
     {#snippet actions()}
-      <button class="success" type="submit" disabled={!form.collectionCode.trim() || !form.name.trim()}>
+      <button class="success" type="submit" form="collection-form" disabled={!form.collectionCode.trim() || !form.name.trim()}>
       {form.id ? $t('collectibles.updateCollection') : $t('collectibles.addCollection')}
       </button>
       {#if form.id}
@@ -1345,6 +1352,7 @@
   {@const form = itemForm}
   <Drawer title={$t('collectibles.itemsTitle')} eyebrow={$t('collectibles.title')} onclose={() => (itemForm = null)}>
     <form
+      id="collection-item-form"
       class="inline-form editor-form"
       onsubmit={(event) => {
         event.preventDefault();
@@ -1397,7 +1405,7 @@
     </form>
   
     {#snippet actions()}
-      <button type="submit" disabled={!form.productCode.trim()}>{$t('collectibles.saveItem')}</button>
+      <button type="submit" form="collection-item-form" disabled={!form.productCode.trim()}>{$t('collectibles.saveItem')}</button>
       <button type="button" class="success" onclick={() => (itemForm = emptyItem())}>
       {$t('collectibles.newItem')}
       </button>
@@ -1409,6 +1417,7 @@
   {@const form = offerForm}
   <Drawer title={$t('collectibles.shopTitle')} eyebrow={$t('collectibles.title')} onclose={() => (offerForm = null)}>
     <form
+      id="store-offer-form"
       class="inline-form editor-form"
       onsubmit={(event) => {
         event.preventDefault();
@@ -1487,7 +1496,7 @@
     </form>
   
     {#snippet actions()}
-      <button class="success" type="submit" disabled={!form.productCode.trim()}>
+      <button class="success" type="submit" form="store-offer-form" disabled={!form.productCode.trim()}>
       {form.id ? $t('collectibles.updateOffer') : $t('collectibles.addOffer')}
       </button>
       <button type="button" class="success" onclick={() => (offerForm = emptyOffer())}>
@@ -1501,6 +1510,7 @@
   {@const form = mintableForm}
   <Drawer title={$t('collectibles.mintablesTitle')} eyebrow={$t('collectibles.title')} onclose={() => (mintableForm = null)}>
     <form
+      id="mintable-type-form"
       class="inline-form editor-form"
       onsubmit={(event) => {
         event.preventDefault();
@@ -1572,7 +1582,7 @@
     </form>
   
     {#snippet actions()}
-      <button class="success" type="submit" disabled={!form.productCode.trim()}>
+      <button class="success" type="submit" form="mintable-type-form" disabled={!form.productCode.trim()}>
       {form.id ? $t('collectibles.updateMintable') : $t('collectibles.addMintable')}
       </button>
       <button type="button" class="success" onclick={() => (mintableForm = emptyMintable())}>
@@ -1586,6 +1596,7 @@
   {@const form = tokenOfferForm}
   <Drawer title={$t('collectibles.tokenOffersTitle')} eyebrow={$t('collectibles.title')} onclose={() => (tokenOfferForm = null)}>
     <form
+      id="mint-token-offer-form"
       class="inline-form editor-form"
       onsubmit={(event) => {
         event.preventDefault();
@@ -1630,7 +1641,7 @@
     </form>
   
     {#snippet actions()}
-      <button class="success" type="submit" disabled={!form.productCode.trim()}>
+      <button class="success" type="submit" form="mint-token-offer-form" disabled={!form.productCode.trim()}>
       {form.id ? $t('collectibles.updateTokenOffer') : $t('collectibles.addTokenOffer')}
       </button>
       <button type="button" class="success" onclick={() => (tokenOfferForm = emptyTokenOffer())}>
@@ -1644,6 +1655,7 @@
   {@const form = claimForm}
   <Drawer title={$t('collectibles.claimsTitle')} eyebrow={$t('collectibles.title')} onclose={() => (claimForm = null)}>
     <form
+      id="claim-form"
       class="inline-form editor-form"
       onsubmit={(event) => {
         event.preventDefault();
@@ -1706,7 +1718,7 @@
     </form>
   
     {#snippet actions()}
-      <button type="submit" disabled={!form.productCode.trim() || !form.playerId} class="success">
+      <button type="submit" form="claim-form" disabled={!form.productCode.trim() || !form.playerId} class="success">
       {$t('collectibles.addClaim')}
       </button>
       <button
@@ -1728,6 +1740,7 @@
   {@const avatar = grantAvatar}
   <Drawer title={$t('collectibles.grantTitle')} eyebrow={$t('collectibles.title')} onclose={() => (grantForm = null)}>
     <form
+      id="avatar-grant-form"
       class="inline-form editor-form"
       onsubmit={(event) => {
         event.preventDefault();
@@ -1767,7 +1780,7 @@
     </form>
   
     {#snippet actions()}
-      <button type="submit" disabled={!form.playerId}>{$t('collectibles.grantAvatar')}</button>
+      <button type="submit" form="avatar-grant-form" disabled={!form.playerId}>{$t('collectibles.grantAvatar')}</button>
       <button type="button" class="ghost-button" onclick={() => (grantAvatar = null)}>
       {$t('common.cancel')}
       </button>
@@ -1779,6 +1792,7 @@
   {@const form = avatarForm}
   <Drawer title={$t('collectibles.avatarsTitle')} eyebrow={$t('collectibles.title')} onclose={() => (avatarForm = null)}>
     <form
+      id="avatar-form"
       class="inline-form editor-form"
       onsubmit={(event) => {
         event.preventDefault();
@@ -1849,7 +1863,7 @@
     </form>
   
     {#snippet actions()}
-      <button class="success" type="submit" disabled={!form.avatarCode.trim() || !form.figure.trim()}>
+      <button class="success" type="submit" form="avatar-form" disabled={!form.avatarCode.trim() || !form.figure.trim()}>
       {form.id ? $t('collectibles.updateAvatar') : $t('collectibles.addAvatar')}
       </button>
       <button type="button" class="success" onclick={() => (avatarForm = emptyAvatar())}>
