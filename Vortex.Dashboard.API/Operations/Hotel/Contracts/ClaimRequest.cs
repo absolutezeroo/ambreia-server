@@ -12,5 +12,6 @@ public sealed record ClaimRequest(
     int ClaimLimit,
     DateTime? ValidFrom,
     DateTime? ValidTo,
+    int MinCollectorLevel,
     string Reason
 ) : IReasonedRequest;

@@ -2268,6 +2268,7 @@ export interface NftClaimRow {
   remaining: number;
   validFrom: string | null;
   validTo: string | null;
+  minCollectorLevel: number;
   isNft: boolean;
   iconUrl: string | null;
 }

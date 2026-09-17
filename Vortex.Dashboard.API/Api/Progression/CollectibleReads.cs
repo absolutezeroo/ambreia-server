@@ -209,6 +209,7 @@ internal sealed class CollectibleReads(
                         c.ClaimedAmount,
                         c.ValidFrom,
                         c.ValidTo,
+                        c.MinCollectorLevel,
                     })
                     .ToListAsync(ct)
                     .ConfigureAwait(false);
@@ -234,6 +235,7 @@ internal sealed class CollectibleReads(
                         c.ClaimLimit - c.ClaimedAmount,
                         c.ValidFrom,
                         c.ValidTo,
+                        c.MinCollectorLevel,
                         IsCollectibleClassname(c.ProductCode),
                         _assetUrls.FurniIcon(c.ProductCode)
                     ))

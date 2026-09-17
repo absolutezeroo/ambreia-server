@@ -984,6 +984,7 @@ internal sealed partial class ContentAdminService(
             ClaimLimit = spec.ClaimLimit,
             ValidFrom = spec.ValidFrom,
             ValidTo = spec.ValidTo,
+            MinCollectorLevel = Math.Max(0, spec.MinCollectorLevel),
         };
 
         db.NftClaims.Add(entity);

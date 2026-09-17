@@ -15,6 +15,7 @@ using Vortex.Database.Entities.Furniture;
 using Vortex.Players.Grains;
 using Vortex.Primitives.Chain;
 using Vortex.Primitives.Collectibles;
+using Vortex.Primitives.Collectibles.Grains;
 using Vortex.Primitives.Commerce;
 using Vortex.Primitives.Events;
 using Vortex.Primitives.Furniture.Enums;
@@ -154,6 +155,54 @@ public sealed class PlayerNftClaimsGrainTests
     }
 
     /// <summary>
+    ///     What Habbo gates its monthly rewards on: a claim asking for a collector level the player
+    ///     has not reached is not theirs yet. Both doors are checked, because a prize the tab hides
+    ///     and the button hands over anyway is not gated at all — the client's one button carries no
+    ///     arguments, so it claims whatever the server agrees is outstanding.
+    /// </summary>
+    [Theory]
+    [InlineData(4, 0, "the level is short of what the claim asks")]
+    [InlineData(5, 1, "the level is exactly what the claim asks")]
+    [InlineData(9, 1, "a level past it is still past it")]
+    public async Task AClaimAboveThePlayersCollectorLevel_IsNeitherListedNorClaimable(
+        int reached,
+        int expected,
+        string because
+    )
+    {
+        Harness harness = await Harness
+            .CreateAsync(minCollectorLevel: 5, collectorLevel: reached)
+            .ConfigureAwait(true);
+
+        (
+            await harness
+                .Grain.GetClaimsAsync("0xwallet", CancellationToken.None)
+                .ConfigureAwait(true)
+        )
+            .Length.Should()
+            .Be(expected, because);
+
+        (await harness.Grain.ClaimAllAsync(CancellationToken.None).ConfigureAwait(true))
+            .Should()
+            .Be(expected, because);
+    }
+
+    /// <summary>
+    ///     The level costs a pass over everything the player owns, so an ungated claim must not pay
+    ///     for it. Every claim written before the column existed is ungated.
+    /// </summary>
+    [Fact]
+    public async Task AnUngatedClaim_NeverAsksForTheCollectorLevel()
+    {
+        Harness harness = await Harness.CreateAsync().ConfigureAwait(true);
+
+        await harness.Grain.GetClaimsAsync("0xwallet", CancellationToken.None).ConfigureAwait(true);
+        await harness.Grain.ClaimAllAsync(CancellationToken.None).ConfigureAwait(true);
+
+        harness.CollectorScoreReads.Should().Be(0);
+    }
+
+    /// <summary>
     ///     The other door. A Relic that left through the Transfer tab comes home when the hotel's
     ///     treasury holds its token on the chain — and claiming it destroys the token, because one
     ///     Relic owned in two places is exactly what the wallet column exists to prevent.
@@ -224,15 +273,19 @@ public sealed class PlayerNftClaimsGrainTests
 
     private sealed class Harness
     {
+        private readonly Counter _collectorScoreReads;
+
         private Harness(
             PlayerNftClaimsGrain grain,
             IDbContextFactory<VortexDbContext> db,
-            GrantRecorder grants
+            GrantRecorder grants,
+            Counter collectorScoreReads
         )
         {
             Grain = grain;
             Db = db;
             Grants = grants;
+            _collectorScoreReads = collectorScoreReads;
         }
 
         public PlayerNftClaimsGrain Grain { get; }
@@ -242,12 +295,17 @@ public sealed class PlayerNftClaimsGrainTests
         /// <summary>What the inventory was actually handed, once each.</summary>
         public GrantRecorder Grants { get; }
 
+        /// <summary>How many times the collector level was computed.</summary>
+        public int CollectorScoreReads => _collectorScoreReads.Count;
+
         public static async Task<Harness> CreateAsync(
             string productCode = Lamp,
             int claimLimit = 1,
             DateTime? validTo = null,
             IChainService? chain = null,
-            string? sentOutTo = null
+            string? sentOutTo = null,
+            int minCollectorLevel = 0,
+            int collectorLevel = 0
         )
         {
             DbContextOptions<VortexDbContext> options =
@@ -289,6 +347,7 @@ public sealed class PlayerNftClaimsGrainTests
                         ProductCode = productCode,
                         ClaimLimit = claimLimit,
                         ValidTo = validTo,
+                        MinCollectorLevel = minCollectorLevel,
                     }
                 );
 
@@ -337,11 +396,34 @@ public sealed class PlayerNftClaimsGrainTests
                 return Task.CompletedTask;
             });
 
+            Counter collectorScoreReads = new();
+
+            // The collector level, counted as well as answered: the claims flow is supposed to skip
+            // this call entirely when no claim asks for a level, and only a counter can say so.
+            INftCollectionsGrain collections = FakeProxy.Create<INftCollectionsGrain>(call =>
+            {
+                if (call.Method.Name != nameof(INftCollectionsGrain.GetCollectorScoreAsync))
+                {
+                    return null;
+                }
+
+                collectorScoreReads.Bump();
+
+                return Task.FromResult(
+                    new CollectorScoreSnapshot
+                    {
+                        Score = 0,
+                        HighestScore = 0,
+                        Level = collectorLevel,
+                    }
+                );
+            });
+
             IGrainFactory grainFactory = FakeProxy.Create<IGrainFactory>(call =>
-                call.Method.IsGenericMethod
-                && call.Method.GetGenericArguments()[0] == typeof(IInventoryGrain)
-                    ? inventory
-                    : null
+                !call.Method.IsGenericMethod ? null
+                : call.Method.GetGenericArguments()[0] == typeof(IInventoryGrain) ? inventory
+                : call.Method.GetGenericArguments()[0] == typeof(INftCollectionsGrain) ? collections
+                : null
             );
 
             SingleOptionsFactory db = new(options);
@@ -358,7 +440,14 @@ public sealed class PlayerNftClaimsGrainTests
                     chain ?? new FakeChain { Enabled = false, TreasuryAddress = null }
                 );
 
-            return new Harness(grain, db, grants);
+            return new Harness(grain, db, grants, collectorScoreReads);
+        }
+
+        private sealed class Counter
+        {
+            public int Count { get; private set; }
+
+            public void Bump() => Count++;
         }
 
         /// <summary>

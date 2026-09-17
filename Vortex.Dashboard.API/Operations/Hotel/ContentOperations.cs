@@ -539,6 +539,7 @@ internal sealed class ContentOperations(OperationRunner runner, IContentAdminSer
                 request.PlayerId,
                 request.ProductCode,
                 request.ClaimLimit,
+                request.MinCollectorLevel,
             },
             work: async c =>
                 Throw(
@@ -552,7 +553,8 @@ internal sealed class ContentOperations(OperationRunner runner, IContentAdminSer
                                 request.Collection,
                                 request.ClaimLimit,
                                 request.ValidFrom,
-                                request.ValidTo
+                                request.ValidTo,
+                                request.MinCollectorLevel
                             ),
                             c
                         )

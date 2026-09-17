@@ -1811,6 +1811,10 @@ namespace Vortex.Database.Migrations
                         .HasColumnType("datetime(6)")
                         .HasColumnName("deleted_at");
 
+                    b.Property<int>("MinCollectorLevel")
+                        .HasColumnType("int")
+                        .HasColumnName("min_collector_level");
+
                     b.Property<int>("PlayerEntityId")
                         .HasColumnType("int")
                         .HasColumnName("player_id");

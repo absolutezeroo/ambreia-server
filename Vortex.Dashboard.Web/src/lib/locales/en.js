@@ -3769,6 +3769,9 @@ export default {
     setIdHelp: 'Displayed label, looked up as collectibles.set.<id>.',
     claimLimit: 'Quantity',
     claimLimitHelp: 'How many copies they receive.',
+    colMinLevel: 'Min. level',
+    minLevelHelp:
+      'Collector level required for the reward to be offered. 0 = everybody. The level is how many collections the player has finished.',
     expiresHelp: 'Empty = no date shown.',
     sortOrder: 'Order',
     title: 'Collectibles',

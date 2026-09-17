@@ -18,6 +18,7 @@ public sealed record NftClaimRow(
     int Remaining,
     DateTime? ValidFrom,
     DateTime? ValidTo,
+    int MinCollectorLevel,
     bool IsNft,
     string? IconUrl
 );

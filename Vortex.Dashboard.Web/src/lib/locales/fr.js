@@ -3783,6 +3783,9 @@ export default {
     setIdHelp: 'Libellé affiché, cherché comme collectibles.set.<id>.',
     claimLimit: 'Quantité',
     claimLimitHelp: 'Combien d’exemplaires il recevra.',
+    colMinLevel: 'Niveau min.',
+    minLevelHelp:
+      'Niveau de collectionneur requis pour que la récompense soit proposée. 0 = tout le monde. Le niveau est le nombre de collections terminées.',
     expiresHelp: 'Vide = pas de date affichée.',
     sortOrder: 'Ordre',
     title: 'Collectibles',

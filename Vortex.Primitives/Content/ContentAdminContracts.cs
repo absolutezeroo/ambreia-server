@@ -116,7 +116,8 @@ public sealed record NftClaimSpec(
     string Collection,
     int ClaimLimit,
     DateTime? ValidFrom,
-    DateTime? ValidTo
+    DateTime? ValidTo,
+    int MinCollectorLevel
 );
 
 /// <summary>A currency the hotel offers.</summary>

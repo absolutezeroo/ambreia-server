@@ -77,17 +77,14 @@ internal sealed class PlayerNftClaimsGrain(
             .CreateDbContextAsync(ct)
             .ConfigureAwait(true);
 
-        NftClaimEntity[] claims = await OutstandingQuery(dbCtx)
-            .OrderBy(claim => claim.Id)
-            .ToArrayAsync(ct)
-            .ConfigureAwait(true);
+        List<NftClaimEntity> claims = await OutstandingAsync(dbCtx, ct).ConfigureAwait(true);
 
         // Scoped to the wallet asked about, so a Relic shows up on exactly one of the tab's per-
         // wallet lists: the one it left from.
         List<NftAssetEntity> returned = await ReturnedRelicsAsync(dbCtx, wallet, ct)
             .ConfigureAwait(true);
 
-        if (claims.Length == 0 && returned.Count == 0)
+        if (claims.Count == 0 && returned.Count == 0)
         {
             return [];
         }
@@ -116,10 +113,7 @@ internal sealed class PlayerNftClaimsGrain(
             .ConfigureAwait(true);
 
         // Tracked, not AsNoTracking: the counters below are written back.
-        List<NftClaimEntity> claims = await OutstandingQuery(dbCtx)
-            .OrderBy(claim => claim.Id)
-            .ToListAsync(ct)
-            .ConfigureAwait(true);
+        List<NftClaimEntity> claims = await OutstandingAsync(dbCtx, ct).ConfigureAwait(true);
 
         // Every wallet, not one: the client's button carries no arguments at all, so "claim
         // everything" has to mean everything.
@@ -379,6 +373,44 @@ internal sealed class PlayerNftClaimsGrain(
                 DefaultCollectionName = string.Empty,
             },
         };
+    }
+
+    /// <summary>
+    /// The claims a player may actually take: outstanding, and within the collector level they have
+    /// reached.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// Both doors go through here — listing the tab and pressing its button — because a prize the
+    /// list hides and the button hands over anyway is not gated at all.
+    /// </para>
+    /// <para>
+    /// The level is only counted when a claim actually asks for one. Computing it is a pass over
+    /// everything the player owns, and a hotel that gates nothing should not pay for that on every
+    /// open of the tab.
+    /// </para>
+    /// </remarks>
+    private async Task<List<NftClaimEntity>> OutstandingAsync(
+        VortexDbContext dbCtx,
+        CancellationToken ct
+    )
+    {
+        List<NftClaimEntity> claims = await OutstandingQuery(dbCtx)
+            .OrderBy(claim => claim.Id)
+            .ToListAsync(ct)
+            .ConfigureAwait(true);
+
+        if (!claims.Exists(claim => claim.MinCollectorLevel > 0))
+        {
+            return claims;
+        }
+
+        CollectorScoreSnapshot score = await _grainFactory
+            .GetNftCollectionsGrain()
+            .GetCollectorScoreAsync(PlayerId, ct)
+            .ConfigureAwait(true);
+
+        return [.. claims.Where(claim => claim.MinCollectorLevel <= score.Level)];
     }
 
     /// <summary>

@@ -60,6 +60,20 @@ public class NftClaimEntity : VortexEntity
     [Column("claimed_amount")]
     public int ClaimedAmount { get; set; }
 
+    /// <summary>
+    /// The collector level the player must have reached before this claim is offered to them. 0
+    /// offers it to everybody, which is what every claim written before this column existed does.
+    /// </summary>
+    /// <remarks>
+    /// This is how Habbo gates its own monthly rewards: <c>collectibles.no_claims</c> promises
+    /// prizes "based on your collector level", and the hotel view advertises them to "Collector
+    /// Levels of 5+". A level here is the one we send in <c>NftCollectionsScore</c> — the number of
+    /// collections the player has finished — so the scale an operator types against is the same one
+    /// the client prints in the Collectors Guild header.
+    /// </remarks>
+    [Column("min_collector_level")]
+    public int MinCollectorLevel { get; set; }
+
     [Column("valid_from")]
     public DateTime? ValidFrom { get; set; }
 

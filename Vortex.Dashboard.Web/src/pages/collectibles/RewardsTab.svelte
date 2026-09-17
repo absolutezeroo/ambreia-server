@@ -24,6 +24,7 @@
     collection: string;
     claimLimit: Num;
     validTo: string;
+    minCollectorLevel: Num;
   };
 
   const emptyClaim = (): ClaimForm => ({
@@ -35,6 +36,7 @@
     collection: '',
     claimLimit: 1,
     validTo: '',
+    minCollectorLevel: 0,
   });
 
   let claimForm = $state<ClaimForm | null>(null);
@@ -63,6 +65,7 @@
             <th>{$t('collectibles.colItem')}</th>
             <th>{$t('collectibles.colRemaining')}</th>
             <th>{$t('collectibles.colSet')}</th>
+            <th>{$t('collectibles.colMinLevel')}</th>
             <th>{$t('collectibles.colExpires')}</th>
             {#if canManage}<th>{$t('common.actions')}</th>{/if}
           </tr>
@@ -84,6 +87,7 @@
               </td>
               <td>{formatNumber(claim.remaining)} / {formatNumber(claim.claimLimit)}</td>
               <td>{claim.setId || '—'}</td>
+              <td>{claim.minCollectorLevel > 0 ? formatNumber(claim.minCollectorLevel) : '—'}</td>
               <td>{claim.validTo ? formatDate(claim.validTo) : '—'}</td>
               {#if canManage}
                 <td class="row-actions">
@@ -163,6 +167,7 @@
             defaultCollectionName: form.defaultCollectionName || '',
             collection: form.collection || '',
             claimLimit: Number(form.claimLimit) || 1,
+            minCollectorLevel: Number(form.minCollectorLevel) || 0,
             validFrom: null,
             validTo: form.validTo ? new Date(form.validTo).toISOString() : null,
           },
@@ -204,6 +209,11 @@
         {$t('collectibles.claimLimit')}
         <input autocomplete="off" spellcheck="false" type="number" min="1" bind:value={form.claimLimit} />
         <small class="muted">{$t('collectibles.claimLimitHelp')}</small>
+      </label>
+      <label>
+        {$t('collectibles.colMinLevel')}
+        <input autocomplete="off" spellcheck="false" type="number" min="0" bind:value={form.minCollectorLevel} />
+        <small class="muted">{$t('collectibles.minLevelHelp')}</small>
       </label>
       <label>
         {$t('collectibles.colExpires')}
