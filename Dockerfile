@@ -72,6 +72,24 @@ RUN dotnet publish Vortex.Main/Vortex.Main.csproj \
         -p:SkipDashboardFrontendBuild=true \
         --output /app/publish
 
+# The dashboard, published SEPARATELY, because the host no longer references it: it is a loadable
+# plugin now, and a project reference is exactly what would make it impossible to unload (see the
+# comment in Vortex.Main.csproj). Without this the image ships a hotel with NO admin panel and
+# nothing says so — the host starts, serves the game, and the dashboard port answers nothing.
+#
+# Into a folder named after the plugin key, with its manifest.json beside the assembly, which is the
+# shape PluginManager discovers. The Vortex.* assemblies published alongside it are never loaded
+# from here: ByteLoadingAlc hands any assembly the host already holds to the default context, so one
+# IVortexPlugin and one VortexDbContext type exist in the process.
+#
+# --no-restore is safe: the restore layer above restored Vortex.Main's whole graph, and this project
+# is inside it.
+RUN dotnet publish Vortex.Dashboard.API/Vortex.Dashboard.API.csproj \
+        --configuration Release \
+        --no-restore \
+        -p:SkipDashboardFrontendBuild=true \
+        --output /app/publish-plugins/turbo-dashboard-api
+
 # =================================================================================================
 # Runtime stage
 # =================================================================================================
@@ -85,6 +103,16 @@ WORKDIR /app
 # The published output, owned by the non-root `app` user that the official .NET images provide
 # (uid 1654). Copying with --chown avoids a second full-size layer just to fix ownership.
 COPY --from=build --chown=app:app /app/publish ./
+
+# The plugins that ship WITH the image. Today that is the dashboard, which used to be compiled into
+# the host and is now a folder the loader discovers.
+#
+# WARNING FOR THE OPERATOR: a volume mounted at /app/plugins REPLACES this directory, and the hotel
+# comes back with no admin panel. The loader scans every subdirectory of the plugin folder and
+# expects a manifest.json in each, so there is no "extra plugins" subfolder to mount instead. Ship
+# plugins in the image; to add one outside it, mount the volume AND seed it with this directory's
+# contents.
+COPY --from=build --chown=app:app /app/publish-plugins /app/plugins/
 
 # Writable directories the host expects under its content root, created while still root:
 #   logs/    — Vortex:Observability:AuditDeadLetterPath defaults to logs/audit-dead-letter.jsonl
