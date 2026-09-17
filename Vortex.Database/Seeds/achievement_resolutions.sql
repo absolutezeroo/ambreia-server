@@ -17,7 +17,7 @@ SELECT `a`.`id`, `o`.`offset`, `o`.`sort_order`, 1, UTC_TIMESTAMP(), UTC_TIMESTA
   UNION SELECT 'Login',                   1, 2
   UNION SELECT 'Motto',                   1, 3
   UNION SELECT 'AvatarLooks',             1, 4
-  UNION SELECT 'FriendCount',             1, 5
+  UNION SELECT 'FriendListSize',          1, 5
   UNION SELECT 'RespectGiven',            1, 6
   UNION SELECT 'RespectEarned',           1, 7
   UNION SELECT 'RoomDecoFurniCount',      1, 8
