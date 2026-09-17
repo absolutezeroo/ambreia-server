@@ -37,4 +37,21 @@ public interface IPlayerAchievementGrain : IGrainWithIntegerKey
     /// </summary>
     [OneWay]
     public Task ProgressDailyAsync(string achievementName, int amount, CancellationToken ct);
+
+    /// <summary>
+    /// Recounts the distinct colours of one baby pet type this player owns, and raises that
+    /// breeding achievement to the count.
+    /// </summary>
+    /// <remarks>
+    /// The only shape here that is not a counter. "Owning %limit% different coloured baby bears" is
+    /// a property of the pets table, not a tally of acts: breeding a sixth pet in a colour already
+    /// owned advances nothing, and counting adoptions would. So this reads the truth and raises the
+    /// bar to it rather than adding to it — and raises only, because an achievement never goes
+    /// backwards and releasing a pet does not take a badge away in the hotel either.
+    /// <para>
+    /// A pet type no breeding achievement covers is a no-op; see <c>BabyPetAchievements</c>.
+    /// </para>
+    /// </remarks>
+    [OneWay]
+    public Task ProgressBabyPetColoursAsync(int petType, CancellationToken ct);
 }

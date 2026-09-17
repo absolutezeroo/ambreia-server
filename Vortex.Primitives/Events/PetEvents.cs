@@ -8,6 +8,16 @@ namespace Vortex.Primitives.Events;
 /// </summary>
 public sealed record PetAdoptedEvent(PlayerId OwnerId, int PetId, string Name, int Type) : IEvent;
 
+/// <summary>
+/// Two pets produced a baby, which now belongs to <paramref name="OwnerId"/>.
+/// </summary>
+/// <remarks>
+/// Breeding used to publish nothing at all: a baby appeared in an inventory and no progression
+/// system, log or dashboard ever heard about it. <paramref name="Type"/> is the baby's own type
+/// (24 Baby Bear, 28 Kitten Baby, ...), never the parents'.
+/// </remarks>
+public sealed record PetBredEvent(PlayerId OwnerId, int PetId, int Type, string Color) : IEvent;
+
 /// <summary>A pet was set down in a room.</summary>
 public sealed record PetPlacedEvent(PlayerId ActorId, int PetId, int RoomId) : IEvent;
 

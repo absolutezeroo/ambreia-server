@@ -28,4 +28,11 @@ public static class AchievementNames
     /// <summary>"For freezing %limit% Habbos in Freeze" — Sulake's code name for it is ACH_EsA.</summary>
     public const string EsA = "EsA";
     public const string FootballGoalScored = "FootballGoalScored";
+
+    /// <summary>Colours of one baby pet type owned. See <see cref="BabyPetAchievements"/>.</summary>
+    public const string BearBreeder = "BearBreeder";
+    public const string TerrierBreeder = "TerrierBreeder";
+    public const string CatBreeder = "CatBreeder";
+    public const string DogBreeder = "DogBreeder";
+    public const string PigBreeder = "PigBreeder";
 }

@@ -146,15 +146,42 @@ internal sealed class PlayerAchievementGrain(
     }
 
     public Task ProgressAsync(string achievementName, int amount, CancellationToken ct) =>
-        ProgressCoreAsync(achievementName, amount, oncePerDay: false, ct);
+        ProgressCoreAsync(achievementName, amount, oncePerDay: false, absolute: false, ct);
 
     public Task ProgressDailyAsync(string achievementName, int amount, CancellationToken ct) =>
-        ProgressCoreAsync(achievementName, amount, oncePerDay: true, ct);
+        ProgressCoreAsync(achievementName, amount, oncePerDay: true, absolute: false, ct);
 
+    public async Task ProgressBabyPetColoursAsync(int petType, CancellationToken ct)
+    {
+        if (!BabyPetAchievements.ByPetType.TryGetValue(petType, out string? achievementName))
+        {
+            return;
+        }
+
+        await using VortexDbContext dbCtx = await dbCtxFactory
+            .CreateDbContextAsync(ct)
+            .ConfigureAwait(true);
+
+        int colours = await dbCtx
+            .Pets.AsNoTracking()
+            .Where(p => p.OwnerPlayerEntityId == PlayerId && p.Type == petType)
+            .Select(p => p.Color)
+            .Distinct()
+            .CountAsync(ct)
+            .ConfigureAwait(true);
+
+        await ProgressCoreAsync(achievementName, colours, oncePerDay: false, absolute: true, ct)
+            .ConfigureAwait(true);
+    }
+
+    /// <param name="amount">
+    /// Points to add, or — when <paramref name="absolute"/> — the total the bar should stand at.
+    /// </param>
     private async Task ProgressCoreAsync(
         string achievementName,
         int amount,
         bool oncePerDay,
+        bool absolute,
         CancellationToken ct
     )
     {
@@ -193,6 +220,18 @@ internal sealed class PlayerAchievementGrain(
         {
             state = new ProgressState();
             _stateByAchievementId[definition.Id] = state;
+        }
+
+        // An absolute call states where the bar should stand; the rest of this method only knows how
+        // to add, so the difference is what it adds. Already there, or past it, is nothing to do.
+        if (absolute)
+        {
+            amount -= state.Progress;
+
+            if (amount <= 0)
+            {
+                return;
+            }
         }
 
         DateTime now = DateTime.UtcNow;

@@ -149,6 +149,26 @@ public sealed class AchievementSeedLevelTests
     }
 
     [Fact]
+    public void TheBabyPetTypesAreTheClientsOwnIds()
+    {
+        // pet.type.<id> in external_flash_texts, which is not in this repository: 24 Baby Bear,
+        // 25 Baby Terrier, 28 Kitten Baby, 29 Puppy Baby, 30 Piglet Baby. The adults sit at 0, 1,
+        // 3, 4 and 5 and no breeding achievement counts them — these are the babies.
+        BabyPetAchievements
+            .ByPetType.Should()
+            .Equal(
+                new Dictionary<int, string>
+                {
+                    [24] = AchievementNames.BearBreeder,
+                    [25] = AchievementNames.TerrierBreeder,
+                    [28] = AchievementNames.CatBreeder,
+                    [29] = AchievementNames.DogBreeder,
+                    [30] = AchievementNames.PigBreeder,
+                }
+            );
+    }
+
+    [Fact]
     public void EveryNameTheConsumersCreditIsInTheCatalogue()
     {
         // The name is the only link between a trigger and a row: PlayerAchievementGrain resolves
@@ -174,6 +194,7 @@ public sealed class AchievementSeedLevelTests
             AchievementNames.FreezePowerUp,
             AchievementNames.EsA,
             AchievementNames.FootballGoalScored,
+            .. BabyPetAchievements.ByPetType.Values,
         ];
 
         HashSet<string> seeded = [.. Catalogue.Select(l => l.Family)];

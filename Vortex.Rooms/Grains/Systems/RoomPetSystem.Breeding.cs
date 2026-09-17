@@ -200,6 +200,13 @@ public sealed partial class RoomPetSystem
         dbCtx.Pets.Add(baby);
         await dbCtx.SaveChangesAsync(ct);
 
+        // Detached, like the furniture events: the breeder's achievement grain must not be on the
+        // path of the confirmation the two players are waiting for. Until this line, breeding was
+        // invisible to every progression system in the hotel.
+        _roomGrain.PublishDetached(
+            new PetBredEvent(session.OwnerOneId, baby.Id, baby.Type, baby.Color)
+        );
+
         // The client keys the outcome to the nest it was started from, and reads a result code
         // rather than a flag: 1 is the success it acts on.
         ConfirmBreedingResultEventMessageComposer resultMsg = new()
