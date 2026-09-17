@@ -1,0 +1,101 @@
+[[Image:Achievbutton Music.png|Music. Amount will be shown in green ribbon|thumb]]
+[[Music (Achievements)]] was a previous category of [[achievements]] that was removed from the client with the introduction of [[Habbo 2020]]. These achievements related mostly to [[Jukebox|Jukeboxes]] and/or [[Trax Machines]]. With only two different achievements to earn in this section, it was notably the smallest of any sections. There were a total of just 30 different badges to earn in this category and just because there aren't many, it doesn't mean they won't be easy to earn. When this category was discontinued from the client, these achievements moved into the Archive.  
+
+== Achievements ==
+
+=== Music Player ===
+
+The Music Player achievement was earned by playing a [[Juke Box]] in your room and setting it to play music. This achievement would only increase when there were other players in the user's room and they could hear the music. The progress for this achievement increased for each player that is in the room, so for example: There were 3 players in the room and they each stay for 5 minutes. This would equate to 15 minutes in total towards the achievement.
+
+::{|
+|-
+| [[Image:ACH MusicPlayer1.gif|Music Player]] || Music Player Level 1 - For playing '''5 minutes''' of music in a room.
+|-
+| [[Image:ACH MusicPlayer2.gif|Music Player]] || Music Player Level 2 - For playing '''105 minutes''' of music in a room.
+|-
+| [[Image:ACH MusicPlayer3.gif|Music Player]] || Music Player Level 3 - For playing '''305 minutes''' of music in a room.
+|-
+| [[Image:ACH MusicPlayer4.gif|Music Player]] || Music Player Level 4 - For playing '''605 minutes''' of music in a room.
+|-
+| [[Image:ACH MusicPlayer5.gif|Music Player]] || Music Player Level 5 - For playing '''1,005 minutes''' of music in a room.
+|-
+| [[Image:ACH MusicPlayer6.gif|Music Player]] || Music Player Level 6 - For playing '''1,505 minutes''' of music in a room.
+|-
+| [[Image:ACH MusicPlayer7.gif|Music Player]] || Music Player Level 7 - For playing '''2,105 minutes''' of music in a room.
+|-
+| [[Image:ACH MusicPlayer8.gif|Music Player]] || Music Player Level 8 - For playing '''2,805 minutes''' of music in a room.
+|-
+| [[Image:ACH MusicPlayer9.gif|Music Player]] || Music Player Level 9 - For playing '''3,605 minutes''' of music in a room.
+|-
+| [[Image:ACH MusicPlayer10.gif|Music Player]] || Music Player Level 10 - For playing '''4,605 minutes''' of music in a room.
+|-
+| [[Image:ACH MusicPlayer11.gif|Music Player]] || Music Player Level 11 - For playing '''6,605 minutes''' of music in a room.
+|-
+| [[Image:ACH MusicPlayer12.gif|Music Player]] || Music Player Level 12 - For playing '''9,605 minutes''' of music in a room.
+|-
+| [[Image:ACH MusicPlayer13.gif|Music Player]] || Music Player Level 13 - For playing '''13,605 minutes''' of music in a room.
+|-
+| [[Image:ACH MusicPlayer14.gif|Music Player]] || Music Player Level 14 - For playing '''18,605 minutes''' of music in a room.
+|-
+| [[Image:ACH MusicPlayer15.gif|Music Player]] || Music Player Level 15 - For playing '''24,605 minutes''' of music in a room.
+|-
+| [[Image:ACH MusicPlayer16.gif|Music Player]] || Music Player Level 16 - For playing '''31,605 minutes''' of music in a room.
+|-
+| [[Image:ACH MusicPlayer17.gif|Music Player]] || Music Player Level 17 - For playing '''39,605 minutes''' of music in a room.
+|-
+| [[Image:ACH MusicPlayer18.gif|Music Player]] || Music Player Level 18 - For playing '''49,605 minutes''' of music in a room.
+|-
+| [[Image:ACH MusicPlayer19.gif|Music Player]] || Music Player Level 19 - For playing '''64,605 minutes''' of music in a room.
+|-
+| [[Image:ACH MusicPlayer20.gif|Music Player]] || Music Player Level 20 - For playing '''94,605 minutes''' of music in a room.
+|}
+
+=== Music Collector ===
+
+This achievement was earnt by purchasing different songs from the catalogue for use in a [[Juke Box]]. There were only 10 levels so it shouldn't be too expensive to reach the top, with the progress bar increasing each time a song was bought. Despite the hotel listing there only being 10 levels, the badge images have been uploaded to cover 20 levels.
+
+::{|
+|-
+| [[Image:ACH MusicCollector1.gif|Music Collector]] || Music Collector Level 1 - For purchasing '''2 songs''' from the catalogue.
+|-
+| [[Image:ACH MusicCollector2.gif|Music Collector]] || Music Collector Level 2 - For purchasing '''5 songs''' from the catalogue.
+|-
+| [[Image:ACH MusicCollector3.gif|Music Collector]] || Music Collector Level 3 - For purchasing '''9 songs''' from the catalogue.
+|-
+| [[Image:ACH MusicCollector4.gif|Music Collector]] || Music Collector Level 4 - For purchasing '''14 songs''' from the catalogue.
+|-
+| [[Image:ACH MusicCollector5.gif|Music Collector]] || Music Collector Level 5 - For purchasing '''20 songs''' from the catalogue.
+|-
+| [[Image:ACH MusicCollector6.gif|Music Collector]] || Music Collector Level 6 - For purchasing '''27 songs''' from the catalogue.
+|-
+| [[Image:ACH MusicCollector7.gif|Music Collector]] || Music Collector Level 7 - For purchasing '''35 songs''' from the catalogue.
+|-
+| [[Image:ACH MusicCollector8.gif|Music Collector]] || Music Collector Level 8 - For purchasing '''44 songs''' from the catalogue.
+|-
+| [[Image:ACH MusicCollector9.gif|Music Collector]] || Music Collector Level 9 - For purchasing '''54 songs''' from the catalogue.
+|-
+| [[Image:ACH MusicCollector10.gif|Music Collector]] || Music Collector Level 10 - For purchasing '''69 songs''' from the catalogue.
+|-
+| [[Image:ACH MusicCollector11.gif|Music Collector]] || Music Collector Level 11 - ''This badge is not yet available to earn.''
+|-
+| [[Image:ACH MusicCollector12.gif|Music Collector]] || Music Collector Level 12 - ''This badge is not yet available to earn.''
+|-
+| [[Image:ACH MusicCollector13.gif|Music Collector]] || Music Collector Level 13 - ''This badge is not yet available to earn.''
+|-
+| [[Image:ACH MusicCollector14.gif|Music Collector]] || Music Collector Level 14 - ''This badge is not yet available to earn.''
+|-
+| [[Image:ACH MusicCollector15.gif|Music Collector]] || Music Collector Level 15 - ''This badge is not yet available to earn.''
+|-
+| [[Image:ACH MusicCollector16.gif|Music Collector]] || Music Collector Level 16 - ''This badge is not yet available to earn.''
+|-
+| [[Image:ACH MusicCollector17.gif|Music Collector]] || Music Collector Level 17 - ''This badge is not yet available to earn.''
+|-
+| [[Image:ACH MusicCollector18.gif|Music Collector]] || Music Collector Level 18 - ''This badge is not yet available to earn.''
+|-
+| [[Image:ACH MusicCollector19.gif|Music Collector]] || Music Collector Level 19 - ''This badge is not yet available to earn.''
+|-
+| [[Image:ACH MusicCollector20.gif|Music Collector]] || Music Collector Level 20 - ''This badge is not yet available to earn.''
+|}
+
+{{NavBox Achievements}}
+[[Category:Achievements]]

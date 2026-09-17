@@ -1,0 +1,715 @@
+[[Image:Achievbutton Pets.png|Pets. Amount will be shown in green ribbon|thumb]]
+There is a whole range of [[achievements]] to be earned from [[Pets]]. At present this figure stands at 260 achievements in total, ranging from how many pets you own, feeding pets and even as far as jumping obstacles on a horse. As with many [[achievements]], some will cost you [[credits]] while others may merely cost time.
+
+== Achievements ==
+=== Pet Owner ===
+To earn this achievement, a player must simply own a certain number of [[Pets]]. The quantity required increases with each level up to level 10 with the possibility of more being added in the future. If you receive a pet as a gift, this will not count towards the tally. However, if you send a pet in a gift to someone else, this will count.
+
+::{|
+|-
+| [[Image:ACH PetLover1.gif|Pet Owner Achievement]] || Pet Owner Level 1 - For having '''1 pets''' owned by your Habbo.
+|-
+| [[Image:ACH PetLover2.gif|Pet Owner Achievement]] || Pet Owner Level 2 - For having '''3 pets''' owned by your Habbo.
+|-
+| [[Image:ACH PetLover3.gif|Pet Owner Achievement]] || Pet Owner Level 3 - For having '''5 pets''' owned by your Habbo.
+|-
+| [[Image:ACH PetLover4.gif|Pet Owner Achievement]] || Pet Owner Level 4 - For having '''10 pets''' owned by your Habbo.
+|-
+| [[Image:ACH PetLover5.gif|Pet Owner Achievement]] || Pet Owner Level 5 - For having '''15 pets''' owned by your Habbo.
+|-
+| [[Image:ACH PetLover6.gif|Pet Owner Achievement]] || Pet Owner Level 6 - For having '''25 pets''' owned by your Habbo.
+|-
+| [[Image:ACH PetLover7.gif|Pet Owner Achievement]] || Pet Owner Level 7 - For having '''30 pets''' owned by your Habbo.
+|-
+| [[Image:ACH PetLover8.gif|Pet Owner Achievement]] || Pet Owner Level 8 - For having '''45 pets''' owned by your Habbo.
+|-
+| [[Image:ACH PetLover9.gif|Pet Owner Achievement]] || Pet Owner Level 9 - For having '''60 pets''' owned by your Habbo.
+|-
+| [[Image:ACH PetLover10.gif|Pet Owner Achievement]] || Pet Owner Level 10 - For having '''75 pets''' owned by your Habbo.
+|}
+
+=== Pet Trainer ===
+
+All pets can be taught special tricks, and this achievement can be earned by doing so. Different animals have different abilities - for example, a chicken can be trained to chicken dance, while a dragon can be taught to breathe fire. Each time your pet levels up, you will gain one point towards your next achievement level.
+
+::{|
+|-
+| [[Image:ACH PetLevelUp1.gif|Pet Trainer Achievement]] || Pet Trainer Level 1 - For training a pet up '''2 levels'''
+|-
+| [[Image:ACH PetLevelUp2.gif|Pet Trainer Achievement]] || Pet Trainer Level 2 - For training a pet up '''5 levels'''
+|-
+| [[Image:ACH PetLevelUp3.gif|Pet Trainer Achievement]] || Pet Trainer Level 3 - For training a pet up '''10 levels'''
+|-
+| [[Image:ACH PetLevelUp4.gif|Pet Trainer Achievement]] || Pet Trainer Level 4 - For training a pet up '''20 levels'''
+|-
+| [[Image:ACH PetLevelUp5.gif|Pet Trainer Achievement]] || Pet Trainer Level 5 - For training a pet up '''30 levels'''
+|-
+| [[Image:ACH PetLevelUp6.gif|Pet Trainer Achievement]] || Pet Trainer Level 6 - For training a pet up '''50 levels'''
+|-
+| [[Image:ACH PetLevelUp7.gif|Pet Trainer Achievement]] || Pet Trainer Level 7 - For training a pet up '''80 levels'''
+|-
+| [[Image:ACH PetLevelUp8.gif|Pet Trainer Achievement]] || Pet Trainer Level 8 - For training a pet up '''130 levels'''
+|-
+| [[Image:ACH PetLevelUp9.gif|Pet Trainer Achievement]] || Pet Trainer Level 9 - For training a pet up '''200 levels'''
+|-
+| [[Image:ACH PetLevelUp10.gif|Pet Trainer Achievement]] || Pet Trainer Level 10 - For training a pet up '''350 levels'''
+|}
+
+=== They're eating all my credits! ===
+
+This achievement may cost a fair few [[credits]] to achieve level 20. It requires users to feed pets various food items available in the hotel. Each item of food has a different energy value which will affect how much energy your pet will receive from it.
+
+::{|
+|-
+| [[Image:ACH PetFeeding1.gif|They're eating all my credits!]] || Pet Feeder Level 1 - For feeding your pets '''200 points''' of energy.
+|-
+| [[Image:ACH PetFeeding2.gif|They're eating all my credits!]] || Pet Feeder Level 2 - For feeding your pets '''600 points''' of energy.
+|-
+| [[Image:ACH PetFeeding3.gif|They're eating all my credits!]] || Pet Feeder Level 3 - For feeding your pets '''1,400 points''' of energy.
+|-
+| [[Image:ACH PetFeeding4.gif|They're eating all my credits!]] || Pet Feeder Level 4 - For feeding your pets '''3,000 points''' of energy.
+|-
+| [[Image:ACH PetFeeding5.gif|They're eating all my credits!]] || Pet Feeder Level 5 - For feeding your pets '''6,200 points''' of energy.
+|-
+| [[Image:ACH PetFeeding6.gif|They're eating all my credits!]] || Pet Feeder Level 6 - For feeding your pets '''12,600 points''' of energy.
+|-
+| [[Image:ACH PetFeeding7.gif|They're eating all my credits!]] || Pet Feeder Level 7 - For feeding your pets '''25,400 points''' of energy.
+|-
+| [[Image:ACH PetFeeding8.gif|They're eating all my credits!]] || Pet Feeder Level 8 - For feeding your pets '''51,000 points''' of energy.
+|-
+| [[Image:ACH PetFeeding9.gif|They're eating all my credits!]] || Pet Feeder Level 9 - For feeding your pets '''102,200 points''' of energy.
+|-
+| [[Image:ACH PetFeeding10.gif|They're eating all my credits!]] || Pet Feeder Level 10 - For feeding your pets '''204,600 points''' of energy.
+|-
+| [[Image:ACH PetFeeding11.gif|They're eating all my credits!]] || Pet Feeder Level 11 - For feeding your pets '''306,900 points''' of energy.
+|-
+| [[Image:ACH PetFeeding12.gif|They're eating all my credits!]] || Pet Feeder Level 12 - For feeding your pets '''460,350 points''' of energy.
+|-
+| [[Image:ACH PetFeeding13.gif|They're eating all my credits!]] || Pet Feeder Level 13 - For feeding your pets '''690,525 points''' of energy.
+|-
+| [[Image:ACH PetFeeding14.gif|They're eating all my credits!]] || Pet Feeder Level 14 - For feeding your pets '''1,035,788 points''' of energy.
+|-
+| [[Image:ACH PetFeeding15.gif|They're eating all my credits!]] || Pet Feeder Level 15 - For feeding your pets '''1,553,681 points''' of energy.
+|-
+| [[Image:ACH PetFeeding16.gif|They're eating all my credits!]] || Pet Feeder Level 16 - For feeding your pets '''2,330,522 points''' of energy.
+|-
+| [[Image:ACH PetFeeding17.gif|They're eating all my credits!]] || Pet Feeder Level 17 - For feeding your pets '''3,495,783 points''' of energy.
+|-
+| [[Image:ACH PetFeeding18.gif|They're eating all my credits!]] || Pet Feeder Level 18 - For feeding your pets '''5,243,674''' of energy.
+|-
+| [[Image:ACH PetFeeding19.gif|They're eating all my credits!]] || Pet Feeder Level 19 - For feeding your pets '''7,865,511 points''' of energy.
+|-
+| [[Image:ACH PetFeeding20.gif|They're eating all my credits!]] || Pet Feeder Level 20 - For feeding your pets '''11,798,267 points''' of energy.
+|}
+
+=== Pet Lover ===
+
+To show that you love pets, this achievement requires you to scratch another user's pets. Each scratch will earn one point towards the next level, and with a possible three scratches per day, it will take a little time to reach level 20!
+
+::{|
+|-
+| [[Image:ACH PetRespectGiver1.gif|Pet Lover]] || Pet Lover Level 1 - For scratching another Habbo's pet '''2 times'''.
+|-
+| [[Image:ACH PetRespectGiver2.gif|Pet Lover]] || Pet Lover Level 2 - For scratching another Habbo's pet '''x times'''.
+|-
+| [[Image:ACH PetRespectGiver3.gif|Pet Lover]] || Pet Lover Level 3 - For scratching another Habbo's pet '''10 times'''.
+|-
+| [[Image:ACH PetRespectGiver4.gif|Pet Lover]] || Pet Lover Level 4 - For scratching another Habbo's pet '''20 times'''.
+|-
+| [[Image:ACH PetRespectGiver5.gif|Pet Lover]] || Pet Lover Level 5 - For scratching another Habbo's pet '''40 times'''.
+|-
+| [[Image:ACH PetRespectGiver6.gif|Pet Lover]] || Pet Lover Level 6 - For scratching another Habbo's pet '''70 times'''.
+|-
+| [[Image:ACH PetRespectGiver7.gif|Pet Lover]] || Pet Lover Level 7 - For scratching another Habbo's pet '''110 times'''.
+|-
+| [[Image:ACH PetRespectGiver8.gif|Pet Lover]] || Pet Lover Level 8 - For scratching another Habbo's pet '''170 times'''.
+|-
+| [[Image:ACH PetRespectGiver9.gif|Pet Lover]] || Pet Lover Level 9 - For scratching another Habbo's pet '''250 times'''.
+|-
+| [[Image:ACH PetRespectGiver10.gif|Pet Lover]] || Pet Lover Level 10 - For scratching another Habbo's pet '''350 times'''.
+|-
+| [[Image:ACH PetRespectGiver11.gif|Pet Lover]] || Pet Lover Level 11 - For scratching another Habbo's pet '''470 times'''.
+|-
+| [[Image:ACH PetRespectGiver12.gif|Pet Lover]] || Pet Lover Level 12 - For scratching another Habbo's pet '''610 times'''.
+|-
+| [[Image:ACH PetRespectGiver13.gif|Pet Lover]] || Pet Lover Level 13 - For scratching another Habbo's pet '''770 times'''.
+|-
+| [[Image:ACH PetRespectGiver14.gif|Pet Lover]] || Pet Lover Level 14 - For scratching another Habbo's pet '''950 times'''.
+|-
+| [[Image:ACH PetRespectGiver15.gif|Pet Lover]] || Pet Lover Level 15 - For scratching another Habbo's pet '''1,150 times'''.
+|-
+| [[Image:ACH PetRespectGiver16.gif|Pet Lover]] || Pet Lover Level 16 - For scratching another Habbo's pet '''1,370 times'''.
+|-
+| [[Image:ACH PetRespectGiver17.gif|Pet Lover]] || Pet Lover Level 17 - For scratching another Habbo's pet '''1,610 times'''.
+|-
+| [[Image:ACH PetRespectGiver18.gif|Pet Lover]] || Pet Lover Level 18 - For scratching another Habbo's pet '''1,870 times'''.
+|-
+| [[Image:ACH PetRespectGiver19.gif|Pet Lover]] || Pet Lover Level 19 - For scratching another Habbo's pet '''2,150 times'''.
+|-
+| [[Image:ACH PetRespectGiver20.gif|Pet Lover]] || Pet Lover Level 20 - For scratching another Habbo's pet '''2,450 times'''.
+|}
+
+=== My pets get all the love ===
+
+Just like the achievement above, this one also relates to scratching pets. This time, however, it requires other users to scratch your own pets. With only ten levels it is considerably easier than the above achievement. Some users do use multiple accounts they own to scratch their pets more than three times in one day.
+
+::{|
+|-
+| [[Image:ACH PetRespectReceiver1.gif|My pets get all the love]] || Loved Pet Level 1 - For having another Habbo scratch your pet '''3 times'''.
+|-
+| [[Image:ACH PetRespectReceiver2.gif|My pets get all the love]] || Loved Pet Level 2 - For having another Habbo scratch your pet '''10 times'''.
+|-
+| [[Image:ACH PetRespectReceiver3.gif|My pets get all the love]] || Loved Pet Level 3 - For having another Habbo scratch your pet '''20 times'''.
+|-
+| [[Image:ACH PetRespectReceiver4.gif|My pets get all the love]] || Loved Pet Level 4 - For having another Habbo scratch your pet '''40 times'''.
+|-
+| [[Image:ACH PetRespectReceiver5.gif|My pets get all the love]] || Loved Pet Level 5 - For having another Habbo scratch your pet '''70 times'''.
+|-
+| [[Image:ACH PetRespectReceiver6.gif|My pets get all the love]] || Loved Pet Level 6 - For having another Habbo scratch your pet '''120 times'''.
+|-
+| [[Image:ACH PetRespectReceiver7.gif|My pets get all the love]] || Loved Pet Level 7 - For having another Habbo scratch your pet '''200 times'''.
+|-
+| [[Image:ACH PetRespectReceiver8.gif|My pets get all the love]] || Loved Pet Level 8 - For having another Habbo scratch your pet '''300 times'''.
+|-
+| [[Image:ACH PetRespectReceiver9.gif|My pets get all the love]] || Loved Pet Level 9 - For having another Habbo scratch your pet '''500 times'''.
+|-
+| [[Image:ACH PetRespectReceiver10.gif|My pets get all the love]] || Loved Pet Level 10 - For having another Habbo scratch your pet '''750 times'''.
+|}
+
+=== Equestrian Track Host ===
+
+This achievement will be awarded to owners of horse stables. There are currently five levels and to level up players are required to host a certain number of jumps in their room. Each time somebody completes a jump on a horse while in the owner's room, the owner will earn one point towards the next level.
+
+::{|
+|-
+| [[Image:ACH RoomHorseJumpCount1.gif|Equestrian Track Host]] || Equestrian Host Level 1 - For having a total of '''250 jumps''' completed in your room.
+|-
+| [[Image:ACH RoomHorseJumpCount2.gif|Equestrian Track Host]] || Equestrian Host Level 2 - For having a total of '''2,750 jumps''' completed in your room.
+|-
+| [[Image:ACH RoomHorseJumpCount3.gif|Equestrian Track Host]] || Equestrian Host Level 3 - For having a total of '''7,750 jumps''' completed in your room.
+|-
+| [[Image:ACH RoomHorseJumpCount4.gif|Equestrian Track Host]] || Equestrian Host Level 4 - For having a total of '''17,750 jumps''' completed in your room.
+|-
+| [[Image:ACH RoomHorseJumpCount5.gif|Equestrian Track Host]] || Equestrian Host Level 5 - For having a total of '''37,750 jumps''' completed in your room.
+|}
+
+=== Horse Jumper ===
+
+As the name may suggest, this achievement can be earned by making jumps on a horse. For every jump completed, the user will earn one point towards the next achievement level, with a total of 5 different levels to unlock.
+
+::{|
+|-
+| [[Image:ACH HorseJumping1.gif|Horse Jumper]] || Horse Jumper Level 1 - For completing '''50 jumps''' on a horse.
+|-
+| [[Image:ACH HorseJumping2.gif|Horse Jumper]] || Horse Jumper Level 2 - For completing '''300 jumps''' on a horse.
+|-
+| [[Image:ACH HorseJumping3.gif|Horse Jumper]] || Horse Jumper Level 3 - For completing '''950 jumps''' on a horse.
+|-
+| [[Image:ACH HorseJumping4.gif|Horse Jumper]] || Horse Jumper Level 4 - For completing '''2,500 jumps''' on a horse.
+|-
+| [[Image:ACH HorseJumping5.gif|Horse Jumper]] || Horse Jumper Level 5 - For completing '''6,000 jumps''' on a horse.
+|}
+
+=== Stable Owner ===
+
+To earn the Stable Owner achievement, players will need to let other Habbos ride their horse(s). This achievement will increase one point each time another player rides your horse, mounting the horse yourself will not count towards this achievement.
+
+::{|
+|-
+| [[Image:ACH HorseRent1.gif|Stable Owner]] || Stable Owner Level 1 - For allowing others to ride your horse '''4 times'''.
+|-
+| [[Image:ACH HorseRent2.gif|Stable Owner]] || Stable Owner Level 2 - For allowing others to ride your horse '''12 times'''.
+|-
+| [[Image:ACH HorseRent3.gif|Stable Owner]] || Stable Owner Level 3 - For allowing others to ride your horse '''28 times'''.
+|-
+| [[Image:ACH HorseRent4.gif|Stable Owner]] || Stable Owner Level 4 - For allowing others to ride your horse '''60 times'''.
+|-
+| [[Image:ACH HorseRent5.gif|Stable Owner]] || Stable Owner Level 5 - For allowing others to ride your horse '''124 times'''.
+|-
+| [[Image:ACH HorseRent6.gif|Stable Owner]] || Stable Owner Level 6 - For allowing others to ride your horse '''252 times'''.
+|-
+| [[Image:ACH HorseRent7.gif|Stable Owner]] || Stable Owner Level 7 - For allowing others to ride your horse '''508 times'''.
+|-
+| [[Image:ACH HorseRent8.gif|Stable Owner]] || Stable Owner Level 8 - For allowing others to ride your horse '''1,020 times'''.
+|-
+| [[Image:ACH HorseRent9.gif|Stable Owner]] || Stable Owner Level 9 - For allowing others to ride your horse '''2,044 times'''.
+|-
+| [[Image:ACH HorseRent10.gif|Stable Owner]] || Stable Owner Level 10 - For allowing others to ride your horse '''4,092 times'''.
+|}
+
+=== Equestrian ===
+
+The Equestrian achievement will require a user to complete a series of jumps in a room. These jumps must be consecutive for them to count towards the next level of achievement.
+
+::{|
+|-
+| [[Image:ACH HorseConsecutiveJumpsCount1.gif|Equestrian]] || Equestrian Level 1 - For completing '''6 consecutive jumps''' on a horse'''.
+|-
+| [[Image:ACH HorseConsecutiveJumpsCount2.gif|Equestrian]] || Equestrian Level 2 - For completing '''7 consecutive jumps''' on a horse'''.
+|-
+| [[Image:ACH HorseConsecutiveJumpsCount3.gif|Equestrian]] || Equestrian Level 3 - For completing '''8 consecutive jumps''' on a horse'''.
+|-
+| [[Image:ACH HorseConsecutiveJumpsCount4.gif|Equestrian]] || Equestrian Level 4 - For completing '''9 consecutive jumps''' on a horse'''.
+|-
+| [[Image:ACH HorseConsecutiveJumpsCount5.gif|Equestrian]] || Equestrian Level 5 - For completing '''10 consecutive jumps''' on a horse'''.
+|-
+| [[Image:ACH HorseConsecutiveJumpsCount6.gif|Equestrian]] || Equestrian Level 6 - For completing '''11 consecutive jumps''' on a horse'''.
+|-
+| [[Image:ACH HorseConsecutiveJumpsCount7.gif|Equestrian]] || Equestrian Level 7 - For completing '''12 consecutive jumps''' on a horse'''.
+|-
+| [[Image:ACH HorseConsecutiveJumpsCount8.gif|Equestrian]] || Equestrian Level 8 - For completing '''13 consecutive jumps''' on a horse'''.
+|-
+| [[Image:ACH HorseConsecutiveJumpsCount9.gif|Equestrian]] || Equestrian Level 9 - For completing '''14 consecutive jumps''' on a horse'''.
+|-
+| [[Image:ACH HorseConsecutiveJumpsCount10.gif|Equestrian]] || Equestrian Level 10 - For completing '''15 consecutive jumps''' on a horse'''.
+|-
+| [[Image:ACH HorseConsecutiveJumpsCount11.gif|Equestrian]] || Equestrian Level 11 - For completing '''17 consecutive jumps''' on a horse'''.
+|-
+| [[Image:ACH HorseConsecutiveJumpsCount12.gif|Equestrian]] || Equestrian Level 12 - For completing '''19 consecutive jumps''' on a horse'''.
+|-
+| [[Image:ACH HorseConsecutiveJumpsCount13.gif|Equestrian]] || Equestrian Level 13 - For completing '''21 consecutive jumps''' on a horse'''.
+|-
+| [[Image:ACH HorseConsecutiveJumpsCount14.gif|Equestrian]] || Equestrian Level 14 - For completing '''23 consecutive jumps''' on a horse'''.
+|-
+| [[Image:ACH HorseConsecutiveJumpsCount15.gif|Equestrian]] || Equestrian Level 15 - For completing '''25 consecutive jumps''' on a horse'''.
+|-
+| [[Image:ACH HorseConsecutiveJumpsCount16.gif|Equestrian]] || Equestrian Level 16 - For completing '''27 consecutive jumps''' on a horse'''.
+|-
+| [[Image:ACH HorseConsecutiveJumpsCount17.gif|Equestrian]] || Equestrian Level 17 - For completing '''29 consecutive jumps''' on a horse'''.
+|-
+| [[Image:ACH HorseConsecutiveJumpsCount18.gif|Equestrian]] || Equestrian Level 18 - For completing '''31 consecutive jumps''' on a horse'''.
+|-
+| [[Image:ACH HorseConsecutiveJumpsCount19.gif|Equestrian]] || Equestrian Level 19 - For completing '''33 consecutive jumps''' on a horse'''.
+|-
+| [[Image:ACH HorseConsecutiveJumpsCount20.gif|Equestrian]] || Equestrian Level 20 - For completing '''35 consecutive jumps''' on a horse'''.
+|}
+
+== Gnome Achievements ==
+
+=== They're eating all my credits! ===
+
+This achievement may cost a fair few [[Credits]] to achieve level 20. It requires users to feed a [[Gnome]] various food items available in the hotel. Each item of food has a different energy value which will affect how much energy your Gnome will receive from it.
+
+::{|
+|-
+| [[Image:ACH GnomeFeeding1.gif|They're eating all my credits!]] || Gnome Feeder Level 1 - For feeding your Gnomes '''200 points''' of energy.
+|-
+| [[Image:ACH GnomeFeeding2.gif|They're eating all my credits!]] || Gnome Feeder Level 2 - For feeding your Gnomes '''600 points''' of energy.
+|-
+| [[Image:ACH GnomeFeeding3.gif|They're eating all my credits!]] || Gnome Feeder Level 3 - For feeding your Gnomes '''1,400 points''' of energy.
+|-
+| [[Image:ACH GnomeFeeding4.gif|They're eating all my credits!]] || Gnome Feeder Level 4 - For feeding your Gnomes '''3,000 points''' of energy.
+|-
+| [[Image:ACH GnomeFeeding5.gif|They're eating all my credits!]] || Gnome Feeder Level 5 - For feeding your Gnomes '''6,200 points''' of energy.
+|-
+| [[Image:ACH GnomeFeeding6.gif|They're eating all my credits!]] || Gnome Feeder Level 6 - For feeding your Gnomes '''12,600 points''' of energy.
+|-
+| [[Image:ACH GnomeFeeding7.gif|They're eating all my credits!]] || Gnome Feeder Level 7 - For feeding your Gnomes '''25,400 points''' of energy.
+|-
+| [[Image:ACH GnomeFeeding8.gif|They're eating all my credits!]] || Gnome Feeder Level 8 - For feeding your Gnomes '''51,000 points''' of energy.
+|-
+| [[Image:ACH GnomeFeeding9.gif|They're eating all my credits!]] || Gnome Feeder Level 9 - For feeding your Gnomes '''102,200 points''' of energy.
+|-
+| [[Image:ACH GnomeFeeding10.gif|They're eating all my credits!]] || Gnome Feeder Level 10 - For feeding your Gnomes '''204,600 points''' of energy.
+|}
+
+=== My Gnome Knows A Trick ===
+
+All Gnomes can be taught special tricks, and this achievement can be earned by doing so. Each time your Gnome levels up, you will gain one point towards your next achievement level.
+
+::{|
+|-
+| [[Image:ACH GnomeLevelUp1.gif|Gnome Trainer Achievement]] || Gnome Trainer Level 1 - For training a Gnome up '''1 levels'''
+|-
+| [[Image:ACH GnomeLevelUp2.gif|Gnome Trainer Achievement]] || Gnome Trainer Level 2 - For training a Gnome up '''3 levels'''
+|-
+| [[Image:ACH GnomeLevelUp3.gif|Gnome Trainer Achievement]] || Gnome Trainer Level 3 - For training a Gnome up '''5 levels'''
+|-
+| [[Image:ACH GnomeLevelUp4.gif|Gnome Trainer Achievement]] || Gnome Trainer Level 4 - For training a Gnome up '''7 levels'''
+|-
+| [[Image:ACH GnomeLevelUp5.gif|Gnome Trainer Achievement]] || Gnome Trainer Level 5 - For training a Gnome up '''9 levels'''
+|-
+| [[Image:ACH GnomeLevelUp6.gif|Gnome Trainer Achievement]] || Gnome Trainer Level 6 - For training a Gnome up '''11 levels'''
+|-
+| [[Image:ACH GnomeLevelUp7.gif|Gnome Trainer Achievement]] || Gnome Trainer Level 7 - For training a Gnome up '''13 levels'''
+|-
+| [[Image:ACH GnomeLevelUp8.gif|Gnome Trainer Achievement]] || Gnome Trainer Level 8 - For training a Gnome up '''15 levels'''
+|-
+| [[Image:ACH GnomeLevelUp9.gif|Gnome Trainer Achievement]] || Gnome Trainer Level 9 - For training a Gnome up '''17 levels'''
+|-
+| [[Image:ACH GnomeLevelUp10.gif|Gnome Trainer Achievement]] || Gnome Trainer Level 10 - For training a Gnome up '''20 levels'''
+|}
+
+=== I Like Your Gnome ===
+
+To show that you love Gnomes, this achievement requires you to scratch another user's Gnome. Each scratch will earn one point towards the next level, and with a possible three scratches per day, it will take a little time to reach level 20.
+
+::{|
+|-
+| [[Image:ACH GnomeRespectGiver1.gif|Gnome Lover]] || Gnome Lover Level 1 - For scratching another Habbo's Gnome '''3 times'''.
+|-
+| [[Image:ACH GnomeRespectGiver2.gif|Gnome Lover]] || Gnome Lover Level 2 - For scratching another Habbo's Gnome '''10 times'''.
+|-
+| [[Image:ACH GnomeRespectGiver3.gif|Gnome Lover]] || Gnome Lover Level 3 - For scratching another Habbo's Gnome '''20 times'''.
+|-
+| [[Image:ACH GnomeRespectGiver4.gif|Gnome Lover]] || Gnome Lover Level 4 - For scratching another Habbo's Gnome '''40 times'''.
+|-
+| [[Image:ACH GnomeRespectGiver5.gif|Gnome Lover]] || Gnome Lover Level 5 - For scratching another Habbo's Gnome '''70 times'''.
+|-
+| [[Image:ACH GnomeRespectGiver6.gif|Gnome Lover]] || Gnome Lover Level 6 - For scratching another Habbo's Gnome '''120 times'''.
+|-
+| [[Image:ACH GnomeRespectGiver7.gif|Gnome Lover]] || Gnome Lover Level 7 - For scratching another Habbo's Gnome '''200 times'''.
+|-
+| [[Image:ACH GnomeRespectGiver8.gif|Gnome Lover]] || Gnome Lover Level 8 - For scratching another Habbo's Gnome '''300 times'''.
+|-
+| [[Image:ACH GnomeRespectGiver9.gif|Gnome Lover]] || Gnome Lover Level 9 - For scratching another Habbo's Gnome '''500 times'''.
+|-
+| [[Image:ACH GnomeRespectGiver10.gif|Gnome Lover]] || Gnome Lover Level 10 - For scratching another Habbo's Gnome '''750 times'''
+|}
+
+== Leprechaun Achievements ==
+
+=== They're eating all my credits! ===
+
+This achievement may cost a fair few [[Credits]] to achieve level 20. It requires users to feed a [[Leprechaun]] various food items available in the hotel. Each item of food has a different energy value which will affect how much energy your Leprechaun will receive from it.
+
+::{|
+|-
+| [[Image:ACH LeprechaunFeeding1.gif|They're eating all my credits!]] || Leprechaun Feeder Level 1 - For feeding your Leprechauns '''200 points''' of energy.
+|-
+| [[Image:ACH LeprechaunFeeding2.gif|They're eating all my credits!]] || Leprechaun Feeder Level 2 - For feeding your Leprechauns '''600 points''' of energy.
+|-
+| [[Image:ACH LeprechaunFeeding3.gif|They're eating all my credits!]] || Leprechaun Feeder Level 3 - For feeding your Leprechauns '''1,400 points''' of energy.
+|-
+| [[Image:ACH LeprechaunFeeding4.gif|They're eating all my credits!]] || Leprechaun Feeder Level 4 - For feeding your Leprechauns '''3,000 points''' of energy.
+|-
+| [[Image:ACH LeprechaunFeeding5.gif|They're eating all my credits!]] || Leprechaun Feeder Level 5 - For feeding your Leprechauns '''6,200 points''' of energy.
+|-
+| [[Image:ACH LeprechaunFeeding6.gif|They're eating all my credits!]] || Leprechaun Feeder Level 6 - For feeding your Leprechauns '''12,600 points''' of energy.
+|-
+| [[Image:ACH LeprechaunFeeding7.gif|They're eating all my credits!]] || Leprechaun Feeder Level 7 - For feeding your Leprechauns '''25,400 points''' of energy.
+|-
+| [[Image:ACH LeprechaunFeeding8.gif|They're eating all my credits!]] || Leprechaun Feeder Level 8 - For feeding your Leprechaun '''51,000 points''' of energy.
+|-
+| [[Image:ACH LeprechaunFeeding9.gif|They're eating all my credits!]] || Leprechaun Feeder Level 9 - For feeding your Leprechaun '''102,200 points''' of energy.
+|-
+| [[Image:ACH LeprechaunFeeding10.gif|They're eating all my credits!]] || Leprechaun Feeder Level 10 - For feeding your Leprechaun '''204,600 points''' of energy.
+|}
+
+=== My Leprechaun Knows A Trick ===
+
+All Leprechauns can be taught special tricks, and this achievement can be earned by doing so. Each time your Leprechaun levels up, you will gain one point towards your next achievement level.
+
+::{|
+|-
+| [[Image:ACH LeprechaunLevelUp1.gif|Leprechaun Trainer Achievement]] || Leprechaun Trainer Level 1 - For training a Leprechaun up '''1 levels'''
+|-
+| [[Image:ACH LeprechaunLevelUp2.gif|Leprechaun Trainer Achievement]] || Leprechaun Trainer Level 2 - For training a Leprechaun up '''3 levels'''
+|-
+| [[Image:ACH LeprechaunLevelUp3.gif|Leprechaun Trainer Achievement]] || Leprechaun Trainer Level 3 - For training a Leprechaun up '''5 levels'''
+|-
+| [[Image:ACH LeprechaunLevelUp4.gif|Leprechaun Trainer Achievement]] || Leprechaun Trainer Level 4 - For training a Leprechaun up '''7 levels'''
+|-
+| [[Image:ACH LeprechaunLevelUp5.gif|Leprechaun Trainer Achievement]] || Leprechaun Trainer Level 5 - For training a Leprechaun up '''9 levels'''
+|-
+| [[Image:ACH LeprechaunLevelUp6.gif|Leprechaun Trainer Achievement]] || Leprechaun Trainer Level 6 - For training a Leprechaun up '''11 levels'''
+|-
+| [[Image:ACH LeprechaunLevelUp7.gif|Leprechaun Trainer Achievement]] || Leprechaun Trainer Level 7 - For training a Leprechaun up '''13 levels'''
+|-
+| [[Image:ACH LeprechaunLevelUp8.gif|Leprechaun Trainer Achievement]] || Leprechaun Trainer Level 8 - For training a Leprechaun up '''15 levels'''
+|-
+| [[Image:ACH LeprechaunLevelUp9.gif|Leprechaun Trainer Achievement]] || Leprechaun Trainer Level 9 - For training a Leprechaun up '''17 levels'''
+|-
+| [[Image:ACH LeprechaunLevelUp10.gif|Leprechaun Trainer Achievement]] || Leprechaun Trainer Level 10 - For training a Leprechaun up '''20 levels'''
+|}
+
+=== I Like Your Leprechaun ===
+
+To show that you love Leprechauns, this achievement requires you to scratch another user's Leprechaun. Each scratch will earn one point towards the next level, and with a possible three scratches per day, it will take a little time to reach level 20.
+
+::{|
+|-
+| [[Image:ACH LeprechaunRespectGiver1.gif|Leprechaun Lover]] || Leprechaun Lover Level 1 - For scratching another Habbo's Leprechaun '''3 times'''.
+|-
+| [[Image:ACH LeprechaunRespectGiver2.gif|Leprechaun Lover]] || Leprechaun Lover Level 2 - For scratching another Habbo's Leprechaun '''10 times'''.
+|-
+| [[Image:ACH LeprechaunRespectGiver3.gif|Leprechaun Lover]] || Leprechaun Lover Level 3 - For scratching another Habbo's Leprechaun '''20 times'''.
+|-
+| [[Image:ACH LeprechaunRespectGiver4.gif|Leprechaun Lover]] || Leprechaun Lover Level 4 - For scratching another Habbo's Leprechaun '''40 times'''.
+|-
+| [[Image:ACH LeprechaunRespectGiver5.gif|Leprechaun Lover]] || Leprechaun Lover Level 5 - For scratching another Habbo's Leprechaun '''70 times'''.
+|-
+| [[Image:ACH LeprechaunRespectGiver6.gif|Leprechaun Lover]] || Leprechaun Lover Level 6 - For scratching another Habbo's Leprechaun '''120 times'''.
+|-
+| [[Image:ACH LeprechaunRespectGiver7.gif|Leprechaun Lover]] || Leprechaun Lover Level 7 - For scratching another Habbo's Leprechaun '''200 times'''.
+|-
+| [[Image:ACH LeprechaunRespectGiver8.gif|Leprechaun Lover]] || Leprechaun Lover Level 8 - For scratching another Habbo's Leprechaun '''300 times'''.
+|-
+| [[Image:ACH LeprechaunRespectGiver9.gif|Leprechaun Lover]] || Leprechaun Lover Level 9 - For scratching another Habbo's Leprechaun '''500 times'''.
+|-
+| [[Image:ACH LeprechaunRespectGiver10.gif|Leprechaun Lover]] || Leprechaun Lover Level 10 - For scratching another Habbo's Leprechaun '''750 times'''
+|}
+
+== Obbah Wobbah Achievements ==
+
+=== They're eating all my credits! ===
+
+This achievement may cost a fair few [[Credits]] to achieve level 20. It requires users to feed an [[Obbah Wobbah]] various food items available in the hotel. Each item of food has a different energy value which will affect how much energy your Obbah Wobbah will receive from it.
+
+::{|
+|-
+| [[Image:ACH HaloompaFeeding1.gif|They're eating all my credits!]] || Obbah Wobbah Feeder Level 1 - For feeding your Obbah Wobbah '''200 points''' of energy.
+|-
+| [[Image:ACH HaloompaFeeding2.gif|They're eating all my credits!]] || Obbah Wobbah Feeder Level 2 - For feeding your Obbah Wobbah '''600 points''' of energy.
+|-
+| [[Image:ACH HaloompaFeeding3.gif|They're eating all my credits!]] || Obbah Wobbah Feeder Level 3 - For feeding your Obbah Wobbah '''1,400 points''' of energy.
+|-
+| [[Image:ACH HaloompaFeeding4.gif|They're eating all my credits!]] || Obbah Wobbah Feeder Level 4 - For feeding your Obbah Wobbah '''3,000 points''' of energy.
+|-
+| [[Image:ACH HaloompaFeeding5.gif|They're eating all my credits!]] || Obbah Wobbah Feeder Level 5 - For feeding your Obbah Wobbah '''6,200 points''' of energy.
+|-
+| [[Image:ACH HaloompaFeeding6.gif|They're eating all my credits!]] || Obbah Wobbah Feeder Level 6 - For feeding your Obbah Wobbah '''12,600 points''' of energy.
+|-
+| [[Image:ACH HaloompaFeeding7.gif|They're eating all my credits!]] || Obbah Wobbah Feeder Level 7 - For feeding your Obbah Wobbah '''25,400 points''' of energy.
+|-
+| [[Image:ACH HaloompaFeeding8.gif|They're eating all my credits!]] || Obbah Wobbah Feeder Level 8 - For feeding your Obbah Wobbah '''51,000 points''' of energy.
+|-
+| [[Image:ACH HaloompaFeeding9.gif|They're eating all my credits!]] || Obbah Wobbah Feeder Level 9 - For feeding your Obbah Wobbah '''102,200 points''' of energy.
+|-
+| [[Image:ACH HaloompaFeeding10.gif|They're eating all my credits!]] || Obbah Wobbah Feeder Level 10 - For feeding your Obbah Wobbah '''204,600 points''' of energy.
+|}
+
+=== My Obbah Wobbah Knows A Trick ===
+
+All Obbah Wobbahs can be taught special tricks, and this achievement can be earned by doing so. Each time your Obbah Wobbah levels up, you will gain one point towards your next achievement level.
+
+::{|
+|-
+| [[Image:ACH HaloompaLevelUp1.gif|Obbah Wobbah Trainer Achievement]] || Obbah Wobbah Trainer Level 1 - For training an Obbah Wobbah up '''1 levels'''
+|-
+| [[Image:ACH HaloompaLevelUp2.gif|Obbah Wobbah Trainer Achievement]] || Obbah Wobbah Trainer Level 2 - For training an Obbah Wobbah up '''3 levels'''
+|-
+| [[Image:ACH HaloompaLevelUp3.gif|Obbah Wobbah Trainer Achievement]] || Obbah Wobbah Trainer Level 3 - For training an Obbah Wobbah up '''5 levels'''
+|-
+| [[Image:ACH HaloompaLevelUp4.gif|Obbah Wobbah Trainer Achievement]] || Obbah Wobbah Trainer Level 4 - For training an Obbah Wobbah up '''7 levels'''
+|-
+| [[Image:ACH HaloompaLevelUp5.gif|Obbah Wobbah Trainer Achievement]] || Obbah Wobbah Trainer Level 5 - For training an Obbah Wobbah up '''9 levels'''
+|-
+| [[Image:ACH HaloompaLevelUp6.gif|Obbah Wobbah Trainer Achievement]] || Obbah Wobbah Trainer Level 6 - For training an Obbah Wobbah up '''11 levels'''
+|-
+| [[Image:ACH HaloompaLevelUp7.gif|Obbah Wobbah Trainer Achievement]] || Obbah Wobbah Trainer Level 7 - For training an Obbah Wobbah up '''13 levels'''
+|-
+| [[Image:ACH HaloompaLevelUp8.gif|Obbah Wobbah Trainer Achievement]] || Obbah Wobbah Trainer Level 8 - For training an Obbah Wobbah up '''15 levels'''
+|-
+| [[Image:ACH HaloompaLevelUp9.gif|Obbah Wobbah Trainer Achievement]] || Obbah Wobbah Trainer Level 9 - For training an Obbah Wobbah up '''17 levels'''
+|-
+| [[Image:ACH HaloompaLevelUp10.gif|Obbah Wobbah Trainer Achievement]] || Obbah Wobbah Trainer Level 10 - For training an Obbah Wobbah up '''20 levels'''
+|}
+
+=== I Like Your Obbah Wobbah ===
+
+To show that you love Obbah Wobbahs, this achievement requires you to scratch another user's Obbah Wobbah. Each scratch will earn one point towards the next level, and with a possible three scratches per day, it will take a little time to reach level 20.
+
+::{|
+|-
+| [[Image:ACH HaloompaRespectGiver1.gif|Obbah Wobbah Lover]] || Obbah Wobbah Lover Level 1 - For scratching another Habbo's Obbah Wobbah '''3 times'''.
+|-
+| [[Image:ACH HaloompaRespectGiver2.gif|Obbah Wobbah Lover]] || Obbah Wobbah Lover Level 2 - For scratching another Habbo's Obbah Wobbah '''10 times'''.
+|-
+| [[Image:ACH HaloompaRespectGiver3.gif|Obbah Wobbah Lover]] || Obbah Wobbah Lover Level 3 - For scratching another Habbo's Obbah Wobbah '''20 times'''.
+|-
+| [[Image:ACH HaloompaRespectGiver4.gif|Obbah Wobbah Lover]] || Obbah Wobbah Lover Level 4 - For scratching another Habbo's Obbah Wobbah '''40 times'''.
+|-
+| [[Image:ACH HaloompaRespectGiver5.gif|Obbah Wobbah Lover]] || Obbah Wobbah Lover Level 5 - For scratching another Habbo's Obbah Wobbah '''70 times'''.
+|-
+| [[Image:ACH HaloompaRespectGiver6.gif|Obbah Wobbah Lover]] || Obbah Wobbah Lover Level 6 - For scratching another Habbo's Obbah Wobbah '''120 times'''.
+|-
+| [[Image:ACH HaloompaRespectGiver7.gif|Obbah Wobbah Lover]] || Obbah Wobbah Lover Level 7 - For scratching another Habbo's Obbah Wobbah '''200 times'''.
+|-
+| [[Image:ACH HaloompaRespectGiver8.gif|Obbah Wobbah Lover]] || Obbah Wobbah Lover Level 8 - For scratching another Habbo's Obbah Wobbah '''300 times'''.
+|-
+| [[Image:ACH HaloompaRespectGiver9.gif|Obbah Wobbah Lover]] || Obbah Wobbah Lover Level 9 - For scratching another Habbo's Obbah Wobbah '''500 times'''.
+|-
+| [[Image:ACH HaloompaRespectGiver10.gif|Obbah Wobbah Lover]] || Obbah Wobbah Lover Level 10 - For scratching another Habbo's Obbah Wobbah '''750 times'''
+|}
+
+==Breeding Achievements ==
+===Terrier Breeder===
+Earning this achievement requires the player to breed different amounts of [[Pets|Pet]] [[Terriers]] using the breeding box available from the [[catalogue]].
+
+::{|
+|-
+| [[Image:ACH TerrierBreeder1.gif|Terrier Breeder]] || Terrier Breeder Level 1 - For breeding '''2 terriers''' in a breeding box.
+|-
+| [[Image:ACH TerrierBreeder2.gif|Terrier Breeder]] || Terrier Breeder Level 2 - For breeding '''4 terriers''' in a breeding box.
+|-
+| [[Image:ACH TerrierBreeder3.gif|Terrier Breeder]] || Terrier Breeder Level 3 - For breeding '''6 terriers''' in a breeding box.
+|-
+| [[Image:ACH TerrierBreeder4.gif|Terrier Breeder]] || Terrier Breeder Level 4 - For breeding '''8 terriers''' in a breeding box.
+|-
+| [[Image:ACH TerrierBreeder5.gif|Terrier Breeder]] || Terrier Breeder Level 5 - For breeding '''10 terriers''' in a breeding box.
+|-
+| [[Image:ACH TerrierBreeder6.gif|Terrier Breeder]] || Terrier Breeder Level 6 - For breeding '''12 terriers''' in a breeding box.
+|-
+| [[Image:ACH TerrierBreeder7.gif|Terrier Breeder]] || Terrier Breeder Level 7 - For breeding '''14 terriers''' in a breeding box.
+|-
+| [[Image:ACH TerrierBreeder8.gif|Terrier Breeder]] || Terrier Breeder Level 8 - For breeding '''16 terriers''' in a breeding box.
+|-
+| [[Image:ACH TerrierBreeder9.gif|Terrier Breeder]] || Terrier Breeder Level 9 - For breeding '''18 terriers''' in a breeding box.
+|-
+| [[Image:ACH TerrierBreeder10.gif|Terrier Breeder]] || Terrier Breeder Level 10 - For breeding '''20 terriers''' in a breeding box.
+|}
+
+=== Bear Breeder ===
+
+Earning this achievement requires the player to breed different amounts of [[Bear|Pet Bears]] using the breeding box available from the [[catalogue]].
+
+::{|
+|-
+| [[Image:ACH BearBreeder1.gif|Bear Breeder]] || Bear Breeder Level 1 - For breeding '''2 bears''' in a breeding box.
+|-
+| [[Image:ACH BearBreeder2.gif|Bear Breeder]] || Bear Breeder Level 2 - For breeding '''4 bears''' in a breeding box.
+|-
+| [[Image:ACH BearBreeder3.gif|Bear Breeder]] || Bear Breeder Level 3 - For breeding '''6 bears''' in a breeding box.
+|-
+| [[Image:ACH BearBreeder4.gif|Bear Breeder]] || Bear Breeder Level 4 - For breeding '''8 bears''' in a breeding box.
+|-
+| [[Image:ACH BearBreeder5.gif|Bear Breeder]] || Bear Breeder Level 5 - For breeding '''10 bears''' in a breeding box.
+|-
+| [[Image:ACH BearBreeder6.gif|Bear Breeder]] || Bear Breeder Level 6 - For breeding '''12 bears''' in a breeding box.
+|-
+| [[Image:ACH BearBreeder7.gif|Bear Breeder]] || Bear Breeder Level 7 - For breeding '''14 bears''' in a breeding box.
+|-
+| [[Image:ACH BearBreeder8.gif|Bear Breeder]] || Bear Breeder Level 8 - For breeding '''16 bears''' in a breeding box.
+|-
+| [[Image:ACH BearBreeder9.gif|Bear Breeder]] || Bear Breeder Level 9 - For breeding '''18 bears''' in a breeding box.
+|-
+| [[Image:ACH BearBreeder10.gif|Bear Breeder]] || Bear Breeder Level 10 - For breeding '''20 bears''' in a breeding box.
+|}
+
+=== Dog Breeder ===
+
+Earning this achievement requires the player to breed different amounts of [[Bear|Pet Bears]] using the breeding box available from the [[catalogue]].
+
+::{|
+|-
+| [[Image:ACH DogBreeder1.gif|Dog Breeder]] || Dog Breeder Level 1 - For breeding '''2 Dogs''' in a breeding box.
+|-
+| [[Image:ACH DogBreeder2.gif|Dog Breeder]] || Dog Breeder Level 2 - For breeding '''4 Dogs''' in a breeding box.
+|-
+| [[Image:ACH DogBreeder3.gif|Dog Breeder]] || Dog Breeder Level 3 - For breeding '''6 Dogs''' in a breeding box.
+|-
+| [[Image:ACH DogBreeder4.gif|Dog Breeder]] || Dog Breeder Level 4 - For breeding '''8 Dogs''' in a breeding box.
+|-
+| [[Image:ACH DogBreeder5.gif|Dog Breeder]] || Dog Breeder Level 5 - For breeding '''10 Dogs''' in a breeding box.
+|-
+| [[Image:ACH DogBreeder6.gif|Dog Breeder]] || Dog Breeder Level 6 - For breeding '''12 Dogs''' in a breeding box.
+|-
+| [[Image:ACH DogBreeder7.gif|Dog Breeder]] || Dog Breeder Level 7 - For breeding '''14 Dogs''' in a breeding box.
+|-
+| [[Image:ACH DogBreeder8.gif|Dog Breeder]] || Dog Breeder Level 8 - For breeding '''16 Dogs''' in a breeding box.
+|-
+| [[Image:ACH DogBreeder9.gif|Dog Breeder]] || Dog Breeder Level 9 - For breeding '''18 Dogs''' in a breeding box.
+|-
+| [[Image:ACH DogBreeder10.gif|Dog Breeder]] || Dog Breeder Level 10 - For breeding '''20 Dogs''' in a breeding box.
+|}
+
+=== Cat Breeder ===
+
+Earning this achievement requires the player to breed different amounts of [[Bear|Pet Bears]] using the breeding box available from the [[catalogue]].
+
+::{|
+|-
+| [[Image:ACH CatBreeder1.gif|Cat Breeder]] || Cat Breeder Level 1 - For breeding '''2 Cats''' in a breeding box.
+|-
+| [[Image:ACH CatBreeder2.gif|Cat Breeder]] || Cat Breeder Level 2 - For breeding '''4 Cats''' in a breeding box.
+|-
+| [[Image:ACH CatBreeder3.gif|Cat Breeder]] || Cat Breeder Level 3 - For breeding '''6 Cats''' in a breeding box.
+|-
+| [[Image:ACH CatBreeder4.gif|Cat Breeder]] || Cat Breeder Level 4 - For breeding '''8 Cats''' in a breeding box.
+|-
+| [[Image:ACH CatBreeder5.gif|Cat Breeder]] || Cat Breeder Level 5 - For breeding '''10 Cats''' in a breeding box.
+|-
+| [[Image:ACH CatBreeder6.gif|Cat Breeder]] || Cat Breeder Level 6 - For breeding '''12 Cats''' in a breeding box.
+|-
+| [[Image:ACH CatBreeder7.gif|Cat Breeder]] || Cat Breeder Level 7 - For breeding '''14 Cats''' in a breeding box.
+|-
+| [[Image:ACH CatBreeder8.gif|Cat Breeder]] || Cat Breeder Level 8 - For breeding '''16 Cats''' in a breeding box.
+|-
+| [[Image:ACH CatBreeder9.gif|Cat Breeder]] || Cat Breeder Level 9 - For breeding '''18 Cats''' in a breeding box.
+|-
+| [[Image:ACH CatBreeder10.gif|Cat Breeder]] || Cat Breeder Level 10 - For breeding '''20 Cats''' in a breeding box.
+|}
+
+=== Pig Breeder ===
+
+Earning this achievement requires the player to breed different amounts of [[Bear|Pet Bears]] using the breeding box available from the [[catalogue]].
+
+::{|
+|-
+| [[Image:ACH PigBreeder1.gif|Pig Breeder]] || Pig Breeder Level 1 - For breeding '''2 Pigs''' in a breeding box.
+|-
+| [[Image:ACH PigBreeder2.gif|Pig Breeder]] || Pig Breeder Level 2 - For breeding '''4 Pigs''' in a breeding box.
+|-
+| [[Image:ACH PigBreeder3.gif|Pig Breeder]] || Pig Breeder Level 3 - For breeding '''6 Pigs''' in a breeding box.
+|-
+| [[Image:ACH PigBreeder4.gif|Pig Breeder]] || Pig Breeder Level 4 - For breeding '''8 Pigs''' in a breeding box.
+|-
+| [[Image:ACH PigBreeder5.gif|Pig Breeder]] || Pig Breeder Level 5 - For breeding '''10 Pigs''' in a breeding box.
+|-
+| [[Image:ACH PigBreeder6.gif|Pig Breeder]] || Pig Breeder Level 6 - For breeding '''12 Pigs''' in a breeding box.
+|-
+| [[Image:ACH PigBreeder7.gif|Pig Breeder]] || Pig Breeder Level 7 - For breeding '''14 Pigs''' in a breeding box.
+|-
+| [[Image:ACH PigBreeder8.gif|Pig Breeder]] || Pig Breeder Level 8 - For breeding '''16 Pigs''' in a breeding box.
+|-
+| [[Image:ACH PigBreeder9.gif|Pig Breeder]] || Pig Breeder Level 9 - For breeding '''18 Pigs''' in a breeding box.
+|-
+| [[Image:ACH PigBreeder10.gif|Pig Breeder]] || Pig Breeder Level 10 - For breeding '''20 Pigs''' in a breeding box.
+|}
+
+== Expired Achievements ==
+
+=== Horse Quester ===
+
+''This achievement is no longer available.'' To earn these achievements players just had to complete quests which were available alongside the release of [[Horse|Horses]].
+
+::{|
+|-
+| [[Image:ACH HorseQuestCompleted1.gif|Horse Quester]] || Horse Quester Level 1 - For completing '''5 quests''' during the horse release.
+|-
+| [[Image:ACH HorseQuestCompleted2.gif|Horse Quester]] || Horse Quester Level 2 - For completing '''10 quests''' during the horse release.
+|-
+| [[Image:ACH HorseQuestCompleted3.gif|Horse Quester]] || Horse Quester Level 3 - For completing '''20 quests''' during the horse release.
+|}
+
+=== Lost Monkey ===
+
+This achievement cannot be earned directly through playing [[Habbo]]. It will require the use of [[Lost Monkey]], another game developed by [[Sulake]], Habbo's creator. For each level you gain in [[Lost Monkey]], you will earn one point towards leveling up this achievement.
+
+::{|
+|-
+| [[Image:ACH BadMonkeyLevelUp1.gif|Lost Monkey]] || Lost Monkey Level 1 - For leveling your monkey up to Level 1 in [[Lost Monkey]].
+|-
+| [[Image:ACH BadMonkeyLevelUp2.gif|Lost Monkey]] || Lost Monkey Level 2 - For leveling your monkey up to Level 2 in [[Lost Monkey]].
+|-
+| [[Image:ACH BadMonkeyLevelUp3.gif|Lost Monkey]] || Lost Monkey Level 3 - For leveling your monkey up to Level 3 in [[Lost Monkey]].
+|-
+| [[Image:ACH BadMonkeyLevelUp4.gif|Lost Monkey]] || Lost Monkey Level 4 - For leveling your monkey up to Level 4 in [[Lost Monkey]].
+|-
+| [[Image:ACH BadMonkeyLevelUp5.gif|Lost Monkey]] || Lost Monkey Level 5 - For leveling your monkey up to Level 5 in [[Lost Monkey]].
+|-
+| [[Image:ACH BadMonkeyLevelUp6.gif|Lost Monkey]] || Lost Monkey Level 6 - For leveling your monkey up to Level 6 in [[Lost Monkey]].
+|-
+| [[Image:ACH BadMonkeyLevelUp7.gif|Lost Monkey]] || Lost Monkey Level 7 - For leveling your monkey up to Level 7 in [[Lost Monkey]].
+|-
+| [[Image:ACH BadMonkeyLevelUp8.gif|Lost Monkey]] || Lost Monkey Level 8 - For leveling your monkey up to Level 8 in [[Lost Monkey]].
+|-
+| [[Image:ACH BadMonkeyLevelUp9.gif|Lost Monkey]] || Lost Monkey Level 9 - For leveling your monkey up to Level 9 in [[Lost Monkey]].
+|-
+| [[Image:ACH BadMonkeyLevelUp10.gif|Lost Monkey]] || Lost Monkey Level 10 - For leveling your monkey up to Level 10 in [[Lost Monkey]].
+|}
+
+{{NavBox Achievements}}
+{{NavBox Pets}}
+[[Category:Achievements]][[Category:Pets]]
