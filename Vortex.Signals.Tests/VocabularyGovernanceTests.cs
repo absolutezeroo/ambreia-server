@@ -153,6 +153,10 @@ public sealed class VocabularyGovernanceTests
         "wear_nft_avatar",
         "earn_habbicon",
         "claim_habbicon_reward",
+        "freeze_player_frozen",
+        "freeze_powerup_collected",
+        "freeze_points",
+        "banzai_points",
     ];
 
     /// <summary>The declared values of every closed fact, which content compares against too.</summary>

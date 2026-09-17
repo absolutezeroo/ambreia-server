@@ -169,6 +169,10 @@ public sealed class AchievementSeedLevelTests
             AchievementNames.GiftGiver,
             AchievementNames.PetLevelUp,
             AchievementNames.PetLover,
+            AchievementNames.FreezePlayer,
+            AchievementNames.BattleBallPlayer,
+            AchievementNames.FreezePowerUp,
+            AchievementNames.EsA,
         ];
 
         HashSet<string> seeded = [.. Catalogue.Select(l => l.Family)];

@@ -248,6 +248,18 @@ public static class SignalActions
     /// <inheritdoc cref="RewardTrackActions.ClaimHabbiconReward"/>
     public const string ClaimHabbiconReward = RewardTrackActions.ClaimHabbiconReward;
 
+    /// <inheritdoc cref="RewardTrackActions.FreezePlayerFrozen"/>
+    public const string FreezePlayerFrozen = RewardTrackActions.FreezePlayerFrozen;
+
+    /// <inheritdoc cref="RewardTrackActions.FreezePowerUpCollected"/>
+    public const string FreezePowerUpCollected = RewardTrackActions.FreezePowerUpCollected;
+
+    /// <inheritdoc cref="RewardTrackActions.FreezePoints"/>
+    public const string FreezePoints = RewardTrackActions.FreezePoints;
+
+    /// <inheritdoc cref="RewardTrackActions.BanzaiPoints"/>
+    public const string BanzaiPoints = RewardTrackActions.BanzaiPoints;
+
     /// <summary>
     /// Every core action. The governance test freezes this list, and the translator processor uses
     /// it to tell a core action from one a plugin must qualify with its own key.
@@ -325,6 +337,10 @@ public static class SignalActions
         ClaimVaultIncome,
         WearNftAvatar,
         EarnHabbicon,
-        ClaimHabbiconReward
+        ClaimHabbiconReward,
+        FreezePlayerFrozen,
+        FreezePowerUpCollected,
+        FreezePoints,
+        BanzaiPoints
     );
 }

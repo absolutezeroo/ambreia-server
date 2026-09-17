@@ -38,9 +38,11 @@ public sealed class AchievementSignalConsumer(IGrainFactory grainFactory, IComme
     /// What each action advances.
     /// </summary>
     /// <remarks>
-    /// Every one of these counts <c>1</c>, never the signal's amount: that is what the eight
-    /// handlers did, and an achievement here measures how often something happened, not how much of
-    /// it. An action that should count its amount would have to say so, deliberately.
+    /// These count <c>1</c> unless the rule says <c>CountsAmount</c>: that is what the eight
+    /// handlers did, and an achievement here usually measures how often something happened, not how
+    /// much of it. The exceptions are the ones the hotel words as a sum — participation points —
+    /// and they have to say so, deliberately, exactly as the quest table's <c>CountsAmount</c> does
+    /// next door.
     /// </remarks>
     internal static readonly FrozenDictionary<string, AchievementRule> Rules = new Dictionary<
         string,
@@ -74,6 +76,14 @@ public sealed class AchievementSignalConsumer(IGrainFactory grainFactory, IComme
         // not be expressed here anyway; releasing a pet does not take the badge back in the hotel
         // either.
         [SignalActions.AdoptPet] = new(AchievementNames.PetLover),
+        // The two games that have achievements. Their participation counts points, so these are the
+        // rules that read the signal's amount; the two Freeze acts below are tallies of one, which
+        // is why the translator emits them as their own actions rather than leaving this table to
+        // tell a blast from the points it scored.
+        [SignalActions.FreezePoints] = new(AchievementNames.FreezePlayer, CountsAmount: true),
+        [SignalActions.BanzaiPoints] = new(AchievementNames.BattleBallPlayer, CountsAmount: true),
+        [SignalActions.FreezePlayerFrozen] = new(AchievementNames.EsA),
+        [SignalActions.FreezePowerUpCollected] = new(AchievementNames.FreezePowerUp),
     }.ToFrozenDictionary();
 
     public async ValueTask HandleAsync(
@@ -108,10 +118,12 @@ public sealed class AchievementSignalConsumer(IGrainFactory grainFactory, IComme
             AchievementRule rule = Rules[signal.Action];
             IPlayerAchievementGrain grain = grainFactory.GetPlayerAchievementGrain(signal.PlayerId);
 
+            int amount = rule.CountsAmount ? signal.Amount : 1;
+
             await (
                 rule.Daily
-                    ? grain.ProgressDailyAsync(rule.Name, 1, ct)
-                    : grain.ProgressAsync(rule.Name, 1, ct)
+                    ? grain.ProgressDailyAsync(rule.Name, amount, ct)
+                    : grain.ProgressAsync(rule.Name, amount, ct)
             ).ConfigureAwait(false);
         }
     }
@@ -145,7 +157,17 @@ public sealed class AchievementSignalConsumer(IGrainFactory grainFactory, IComme
 /// <summary>One action's meaning to achievements.</summary>
 /// <param name="Name">One of <see cref="AchievementNames"/>.</param>
 /// <param name="Daily">Call <c>ProgressDailyAsync</c>: at most one advance per calendar day.</param>
-internal readonly record struct AchievementRule(string Name, bool Daily = false);
+/// <param name="CountsAmount">
+/// Credit the signal's amount rather than one. Off by default and deliberately so: an achievement
+/// here almost always measures how often something happened, not how much of it, and a signal whose
+/// amount is a level reached rather than a quantity earned would multiply a bar by the level.
+/// Turned on for the few worded as a sum — "gaining %limit% participation points".
+/// </param>
+internal readonly record struct AchievementRule(
+    string Name,
+    bool Daily = false,
+    bool CountsAmount = false
+);
 
 /// <summary>
 /// Which actions achievements care about — the keys of the table above, and nothing else.

@@ -59,6 +59,10 @@ public sealed class ConsumerTableTests
             [SignalActions.BuyGift] = (AchievementNames.GiftGiver, false),
             [SignalActions.PetLevel] = (AchievementNames.PetLevelUp, false),
             [SignalActions.AdoptPet] = (AchievementNames.PetLover, false),
+            [SignalActions.FreezePoints] = (AchievementNames.FreezePlayer, false),
+            [SignalActions.BanzaiPoints] = (AchievementNames.BattleBallPlayer, false),
+            [SignalActions.FreezePlayerFrozen] = (AchievementNames.EsA, false),
+            [SignalActions.FreezePowerUpCollected] = (AchievementNames.FreezePowerUp, false),
         };
 
         AchievementSignalConsumer

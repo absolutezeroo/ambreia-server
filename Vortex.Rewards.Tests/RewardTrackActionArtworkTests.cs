@@ -128,6 +128,13 @@ public class RewardTrackActionArtworkTests
         RewardTrackActions.WearNftAvatar,
         RewardTrackActions.EarnHabbicon,
         RewardTrackActions.ClaimHabbiconReward,
+        // The room games' scoring. Habbo's reward tracks never had a task on a game's points —
+        // the achievements did, which is what these were raised for — so there is no embed to
+        // borrow here either.
+        RewardTrackActions.FreezePlayerFrozen,
+        RewardTrackActions.FreezePowerUpCollected,
+        RewardTrackActions.FreezePoints,
+        RewardTrackActions.BanzaiPoints,
     };
 
     private static IEnumerable<string> AllActionCodes() =>

@@ -39,6 +39,7 @@ using Vortex.Primitives.Rooms.Snapshots;
 using Vortex.Primitives.Sound.Providers;
 using Vortex.Rooms.Configuration;
 using Vortex.Rooms.Games.Presentation;
+using Vortex.Rooms.Games.Progression;
 using Vortex.Rooms.Games.Runtime;
 using Vortex.Rooms.Grains.Modules;
 using Vortex.Rooms.Grains.Systems;
@@ -213,6 +214,8 @@ public sealed partial class RoomGrain : Grain, IRoomGrain
         // in the timer furni, in the wired control-clock action and in the tick loop.
         gameProvider.AttachGamesTo(GameRuntime);
         GameRuntime.AddSink(new GameDiagnosticsSink(_logger));
+        // One sink for every game's scoring, rather than progression plumbing inside each game.
+        GameRuntime.AddSink(new GameProgressSink(RoomId.Value, PublishDetached));
 
         EventModule.Register(RollerSystem);
         EventModule.Register(WiredSystem);

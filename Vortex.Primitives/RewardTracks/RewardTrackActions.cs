@@ -271,4 +271,19 @@ public static class RewardTrackActions
 
     /// <summary>Claimed a completed collection's bonus. (no Habbo artwork: this hotel's own signal)</summary>
     public const string ClaimHabbiconReward = "claim_habbicon_reward";
+
+    /// <summary>Froze another Habbo in Freeze. One per Habbo caught in the blast.</summary>
+    public const string FreezePlayerFrozen = "freeze_player_frozen";
+
+    /// <summary>Picked up a Freeze power-up.</summary>
+    public const string FreezePowerUpCollected = "freeze_powerup_collected";
+
+    /// <summary>
+    /// Points scored in Freeze, whatever the act. Carries the points as its amount, unlike almost
+    /// everything else here — "gaining %limit% participation points" is a sum, not a tally of acts.
+    /// </summary>
+    public const string FreezePoints = "freeze_points";
+
+    /// <inheritdoc cref="FreezePoints"/>
+    public const string BanzaiPoints = "banzai_points";
 }
