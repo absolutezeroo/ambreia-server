@@ -120,6 +120,17 @@ public sealed class DatabaseBackupService(
             $"{Prefix}{DateTime.UtcNow.ToString("yyyyMMdd-HHmmss", CultureInfo.InvariantCulture)}{Extension}";
         string path = Path.Combine(directory, fileName);
 
+        // mysqldump streams into this, and it is renamed to `path` only once the process has exited
+        // cleanly. The leading dot is what keeps it out of the `{Prefix}*{Extension}` glob that
+        // List() and Prune() use, so a dump still being written is not a backup yet.
+        //
+        // It used to stream straight into the final name. A cancellation from the caller -- a host
+        // shutdown -- escapes both catches at the end of this method (the first filters that case
+        // out, the second excludes the type), so a half-written dump stayed on disk under the name
+        // of a good one, and List() offered it as the newest backup with nothing marking it
+        // partial. Finding that out during a restore is finding it out too late.
+        string partialPath = Path.Combine(directory, $".{fileName}.part");
+
         ProcessStartInfo startInfo = new()
         {
             FileName = _config.MysqlDumpPath,
@@ -154,7 +165,12 @@ public sealed class DatabaseBackupService(
                 ?? throw new InvalidOperationException("mysqldump did not start");
 
             await using (
-                FileStream file = new(path, FileMode.CreateNew, FileAccess.Write, FileShare.None)
+                FileStream file = new(
+                    partialPath,
+                    FileMode.Create,
+                    FileAccess.Write,
+                    FileShare.None
+                )
             )
             {
                 Task copy = process.StandardOutput.BaseStream.CopyToAsync(file, timeout.Token);
@@ -176,11 +192,15 @@ public sealed class DatabaseBackupService(
 
                     // Leave nothing that could be mistaken for a usable backup.
                     file.Close();
-                    TryDelete(path);
+                    TryDelete(partialPath);
 
                     return new DatabaseBackupResult(false, "mysqldump_failed");
                 }
             }
+
+            // The stream is closed and mysqldump exited 0: this is now a backup, and naming it is
+            // the single step that says so.
+            File.Move(partialPath, path, overwrite: true);
 
             long size = new FileInfo(path).Length;
 
@@ -204,15 +224,25 @@ public sealed class DatabaseBackupService(
                 _config.TimeoutMinutes
             );
 
-            TryDelete(path);
+            TryDelete(partialPath);
 
             return new DatabaseBackupResult(false, "backup_timed_out");
+        }
+        catch (OperationCanceledException)
+        {
+            // The caller cancelled -- a host shutdown, usually. Nothing cleaned up after this case
+            // before: the catch above filters it out and the one below excludes the type, so the
+            // partial dump simply stayed. It still propagates, as it always did; it just no longer
+            // leaves anything behind.
+            TryDelete(partialPath);
+
+            throw;
         }
         catch (Exception ex) when (ex is not OperationCanceledException)
         {
             logger.LogError(ex, "Database backup {FileName} failed.", fileName);
 
-            TryDelete(path);
+            TryDelete(partialPath);
 
             return new DatabaseBackupResult(false, "backup_failed");
         }
