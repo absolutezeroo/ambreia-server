@@ -157,13 +157,40 @@ public sealed class RoomPersistenceGrain(
             // RoomFurnitureLocationStore -- so a snapshot arriving two seconds late has no opinion
             // about where the item lives.
             //
-            // A stale position can still land on an item that has since moved rooms: the write is
-            // not conditional, because the values differ per row and one statement each would cost a
-            // hundred round trips a tick where a tracked batch costs one. Its new room overwrites it
-            // on the next tick, which is the difference between a position and an owner -- one
-            // heals itself and the other does not.
+            // "Its new room overwrites it on the next tick" was the reasoning, and it does not hold:
+            // the new room only resends what is dirty, so an item that arrives and then sits still
+            // is never rewritten. A snapshot queued before the item left could therefore land on it
+            // minutes later and restore a position and an ExtraData from a room it is no longer in,
+            // visible on the next reload with nothing to undo it.
+            //
+            // So the batch is filtered to the rows this room still holds, in one query. Per-row
+            // conditional writes would be correct too and would cost the hundred round trips a tick
+            // the batch exists to avoid; this keeps the single write and pays one read.
+            //
+            // ponytail: the window is now the gap between this read and the save below rather than a
+            // whole tick. Closing it completely needs a placement generation carried in the snapshot
+            // and checked in the write -- the audit's A2 -- which is a schema change and a pass over
+            // every transfer path, not a line here.
+            long roomId = this.GetPrimaryKeyLong();
+            int[] batchIds = [.. batch.Select(b => b.ObjectId.Value)];
+            HashSet<int> stillHere =
+            [
+                .. await dbCtx
+                    .Furnitures.AsNoTracking()
+                    .Where(f => batchIds.Contains(f.Id) && f.RoomEntityId == roomId)
+                    .Select(f => f.Id)
+                    .ToListAsync(ct),
+            ];
+
             foreach (RoomItemSnapshot item in batch)
             {
+                if (!stillHere.Contains(item.ObjectId.Value))
+                {
+                    // Gone to another room, to an inventory, or deleted. Whatever holds it now owns
+                    // its position; this snapshot is a memory of somewhere else.
+                    continue;
+                }
+
                 FurnitureEntity dbEntity = new()
                 {
                     Id = item.ObjectId.Value,

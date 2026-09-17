@@ -119,7 +119,15 @@ public sealed class RoomPersistenceLossWindowTests
         await h.EnqueueAsync(1);
         await h.DeactivateAsync();
 
-        h.RowsWritten().Should().Be(1, "the position was still written");
+        // This assertion is the reverse of what it used to be, deliberately. It read "the position
+        // was still written", and writing it is the defect: the snapshot holds coordinates from
+        // THIS room, and room 99 now holds the item. Landing them on it moves somebody else's
+        // furniture to a spot chosen by a room it is no longer in, and the old reasoning for
+        // allowing it -- that the new room rewrites it on its next tick -- does not hold, because a
+        // room only resends what is dirty and an item that arrives and sits still never is.
+        h.RowsWritten()
+            .Should()
+            .Be(0, "another room holds it; its position is not this room's");
         h.RoomOf(1).Should().Be(99, "the room that holds the row keeps it");
         h.OwnerOf(1).Should().Be(55, "and the owner it was traded to keeps it");
     }
@@ -190,8 +198,11 @@ public sealed class RoomPersistenceLossWindowTests
                 // Computed, so EF writes neither and EnsureCreated leaves both NOT NULL with no
                 // default. Updates are unaffected, which is all the flush does afterwards.
                 //
-                // The flush issues updates, so the rows have to exist. They start outside the room,
-                // which is what makes "was it written" answerable.
+                // The flush issues updates, so the rows have to exist, and they start IN the room
+                // because that is what an item this room is flushing is: the location store claims
+                // room_id when the item is placed and clears it on pickup. "Was it written" stays
+                // answerable through x, which every seeded row starts at 0 and every snapshot
+                // carries as its own id.
                 for (int id = 1; id <= 8; id++)
                 {
                     seed.Database.ExecuteSqlRaw(
@@ -199,9 +210,10 @@ public sealed class RoomPersistenceLossWindowTests
                         INSERT INTO furniture (id, player_id, definition_id, room_id, x, y, z,
                                                direction, wall_offset, extra_data,
                                                created_at, updated_at)
-                        VALUES ({0}, 1, 1, NULL, 0, 0, 0, 0, 0, '', datetime('now'), datetime('now'))
+                        VALUES ({0}, 1, 1, {1}, 0, 0, 0, 0, 0, '', datetime('now'), datetime('now'))
                         """,
-                        id
+                        id,
+                        ROOM
                     );
                 }
             }
