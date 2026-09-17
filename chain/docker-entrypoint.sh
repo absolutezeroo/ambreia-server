@@ -84,7 +84,27 @@ else
     COLLECTIBLE=$(cast compute-address "$TREASURY" --nonce 1 | sed 's/.*: //')
 
     if [ "$(cast code "$COIN" --rpc-url "$RPC_URL")" = "0x" ]; then
-        echo "vortex-chain: chain is virgin, deploying"
+        # Said loudly, because this line is the only moment at which the loss is visible.
+        #
+        # A virgin chain is correct exactly once: the first boot ever. Every other time it means
+        # $STATE_DIR did not keep what was written to it, and the contracts are about to be
+        # redeployed onto an empty ledger -- every VTX balance and every Relic gone, with no other
+        # copy anywhere. This container cannot tell the two cases apart, because any marker that
+        # would say so would live on the volume that just vanished. So it states what it found and
+        # what that implies, and leaves the judgement to whoever reads it.
+        #
+        # It has happened: 2026-09-17, a Coolify resource with no persistent storage on /data. The
+        # compose file mounts a NAMED volume, but a bare `VOLUME ["/data"]` in the Dockerfile gets an
+        # ANONYMOUS one, which survives a container restart and not a redeployment. This line used to
+        # read "chain is virgin, deploying" and nothing else, so the chain was recreated in silence
+        # and the first anyone noticed was an empty leaderboard two hours later.
+        echo "vortex-chain: ==============================================================" >&2
+        echo "vortex-chain: NO CONTRACTS ON THIS CHAIN, AND NO STATE IN $STATE_DIR." >&2
+        echo "vortex-chain: Deploying fresh ones. This is correct ONLY on a first boot." >&2
+        echo "vortex-chain: If this hotel had balances, THEY ARE GONE and $STATE_DIR is" >&2
+        echo "vortex-chain: not persisting. Mount a NAMED volume there -- an anonymous one" >&2
+        echo "vortex-chain: is replaced on every redeployment." >&2
+        echo "vortex-chain: ==============================================================" >&2
 
         # Deliberately not fatal. The node holds state and a restart loop on a stateful service is
         # worse than a running node with a loud complaint: an operator can read this, fix the cause
