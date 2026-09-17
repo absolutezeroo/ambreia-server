@@ -1,0 +1,326 @@
+Vortex Cloud beta readiness audit — validation excerpts
+Audited SHA: 04550328f8d696358d477cc835c7d86dffb2b8bc
+Audit dates: 2026-09-14 to 2026-09-16
+These are selected original output lines, not complete logs.
+
+=== Local SDK from repository root ===
+.NET SDK:
+ Version:           10.0.401
+ Commit:            e34a38d2ae
+ Workload version:  10.0.400-manifests.63b36e85
+ MSBuild version:   18.9.11+e34a38d2a
+
+Runtime Environment:
+ OS Name:     ubuntu
+ OS Version:  24.04
+ OS Platform: Linux
+ RID:         linux-x64
+ Base Path:   /workspace/scratch/61f6cd1fa9f3/dotnet/sdk/10.0.401/
+
+.NET workloads installed:
+There are no installed workloads to display.
+Configured to use workload sets when installing new manifests.
+No workload sets are installed. Run "dotnet workload restore" to install a workload set.
+
+Host:
+  Version:      10.0.12
+  Architecture: x64
+  Commit:       95017c711e
+
+.NET SDKs installed:
+  10.0.401 [/workspace/scratch/61f6cd1fa9f3/dotnet/sdk]
+
+.NET runtimes installed:
+  Microsoft.AspNetCore.App 10.0.12 [/workspace/scratch/61f6cd1fa9f3/dotnet/shared/Microsoft.AspNetCore.App]
+  Microsoft.NETCore.App 10.0.12 [/workspace/scratch/61f6cd1fa9f3/dotnet/shared/Microsoft.NETCore.App]
+
+Other architectures found:
+  None
+
+Environment variables:
+  Not set
+
+global.json file:
+  Invalid [/workspace/scratch/61f6cd1fa9f3/vortex-cloud/global.json]
+    Version '10.0' is not valid for the 'sdk/version' value
+    Invalid global.json is ignored for SDK resolution.
+
+Learn more:
+  https://aka.ms/dotnet/info
+
+Download .NET:
+  https://aka.ms/dotnet/download
+
+=== Local main build ===
+  Vortex.LoadGen -> /workspace/scratch/61f6cd1fa9f3/vortex-cloud/Vortex.LoadGen/bin/Debug/net10.0/Vortex.LoadGen.dll
+  Vortex.Main -> /workspace/scratch/61f6cd1fa9f3/vortex-cloud/Vortex.Main/bin/Debug/net10.0/Vortex.Main.dll
+
+Build succeeded.
+
+/workspace/scratch/61f6cd1fa9f3/vortex-cloud/Vortex.Primitives/Groups/Grains/IGroupDirectoryGrain.cs(6,7): warning CS0105: The using directive for 'Vortex.Primitives.Groups.Snapshots' appeared previously in this namespace [/workspace/scratch/61f6cd1fa9f3/vortex-cloud/Vortex.Primitives/Vortex.Primitives.csproj]
+/workspace/scratch/61f6cd1fa9f3/vortex-cloud/Vortex.Social/Grains/GroupDirectoryGrain.cs(20,7): warning CS0105: The using directive for 'Vortex.Primitives.Groups.Snapshots' appeared previously in this namespace [/workspace/scratch/61f6cd1fa9f3/vortex-cloud/Vortex.Social/Vortex.Social.csproj]
+/workspace/scratch/61f6cd1fa9f3/vortex-cloud/Vortex.PacketHandlers/Catalog/GetRoomAdPurchaseInfoMessageHandler.cs(14,7): warning CS0105: The using directive for 'Vortex.Primitives.Rooms' appeared previously in this namespace [/workspace/scratch/61f6cd1fa9f3/vortex-cloud/Vortex.PacketHandlers/Vortex.PacketHandlers.csproj]
+    3 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:09:55.05
+=== Local solution tests ===
+   System.Net.NetworkInformation.NetworkInformationException : Operation not permitted
+     at System.Net.NetworkInformation.LinuxNetworkInterface.GetLinuxNetworkInterfaces()
+   at Orleans.Runtime.Configuration.ConfigUtilities.GetLocalIPAddress(AddressFamily family, String interfaceName) in /_/src/Orleans.Core/Configuration/ConfigUtilities.cs:line 172
+   System.Net.NetworkInformation.NetworkInformationException : Operation not permitted
+     at System.Net.NetworkInformation.LinuxNetworkInterface.GetLinuxNetworkInterfaces()
+   at Orleans.Runtime.Configuration.ConfigUtilities.GetLocalIPAddress(AddressFamily family, String interfaceName) in /_/src/Orleans.Core/Configuration/ConfigUtilities.cs:line 172
+   System.Net.NetworkInformation.NetworkInformationException : Operation not permitted
+     at System.Net.NetworkInformation.LinuxNetworkInterface.GetLinuxNetworkInterfaces()
+   at Orleans.Runtime.Configuration.ConfigUtilities.GetLocalIPAddress(AddressFamily family, String interfaceName) in /_/src/Orleans.Core/Configuration/ConfigUtilities.cs:line 172
+   System.Net.NetworkInformation.NetworkInformationException : Operation not permitted
+     at System.Net.NetworkInformation.LinuxNetworkInterface.GetLinuxNetworkInterfaces()
+   at Orleans.Runtime.Configuration.ConfigUtilities.GetLocalIPAddress(AddressFamily family, String interfaceName) in /_/src/Orleans.Core/Configuration/ConfigUtilities.cs:line 172
+   System.Net.NetworkInformation.NetworkInformationException : Operation not permitted
+     at System.Net.NetworkInformation.LinuxNetworkInterface.GetLinuxNetworkInterfaces()
+   at Orleans.Runtime.Configuration.ConfigUtilities.GetLocalIPAddress(AddressFamily family, String interfaceName) in /_/src/Orleans.Core/Configuration/ConfigUtilities.cs:line 172
+   System.Net.NetworkInformation.NetworkInformationException : Operation not permitted
+     at System.Net.NetworkInformation.LinuxNetworkInterface.GetLinuxNetworkInterfaces()
+   at Orleans.Runtime.Configuration.ConfigUtilities.GetLocalIPAddress(AddressFamily family, String interfaceName) in /_/src/Orleans.Core/Configuration/ConfigUtilities.cs:line 172
+   System.Net.NetworkInformation.NetworkInformationException : Operation not permitted
+     at System.Net.NetworkInformation.LinuxNetworkInterface.GetLinuxNetworkInterfaces()
+   at Orleans.Runtime.Configuration.ConfigUtilities.GetLocalIPAddress(AddressFamily family, String interfaceName) in /_/src/Orleans.Core/Configuration/ConfigUtilities.cs:line 172
+   System.Net.NetworkInformation.NetworkInformationException : Operation not permitted
+     at System.Net.NetworkInformation.LinuxNetworkInterface.GetLinuxNetworkInterfaces()
+   at Orleans.Runtime.Configuration.ConfigUtilities.GetLocalIPAddress(AddressFamily family, String interfaceName) in /_/src/Orleans.Core/Configuration/ConfigUtilities.cs:line 172
+   System.Net.NetworkInformation.NetworkInformationException : Operation not permitted
+     at System.Net.NetworkInformation.LinuxNetworkInterface.GetLinuxNetworkInterfaces()
+   at Orleans.Runtime.Configuration.ConfigUtilities.GetLocalIPAddress(AddressFamily family, String interfaceName) in /_/src/Orleans.Core/Configuration/ConfigUtilities.cs:line 172
+   System.Net.NetworkInformation.NetworkInformationException : Operation not permitted
+     at System.Net.NetworkInformation.LinuxNetworkInterface.GetLinuxNetworkInterfaces()
+   at Orleans.Runtime.Configuration.ConfigUtilities.GetLocalIPAddress(AddressFamily family, String interfaceName) in /_/src/Orleans.Core/Configuration/ConfigUtilities.cs:line 172
+   System.Net.NetworkInformation.NetworkInformationException : Operation not permitted
+     at System.Net.NetworkInformation.LinuxNetworkInterface.GetLinuxNetworkInterfaces()
+   at Orleans.Runtime.Configuration.ConfigUtilities.GetLocalIPAddress(AddressFamily family, String interfaceName) in /_/src/Orleans.Core/Configuration/ConfigUtilities.cs:line 172
+   System.Net.NetworkInformation.NetworkInformationException : Operation not permitted
+     at System.Net.NetworkInformation.LinuxNetworkInterface.GetLinuxNetworkInterfaces()
+   at Orleans.Runtime.Configuration.ConfigUtilities.GetLocalIPAddress(AddressFamily family, String interfaceName) in /_/src/Orleans.Core/Configuration/ConfigUtilities.cs:line 172
+   System.Net.NetworkInformation.NetworkInformationException : Operation not permitted
+     at System.Net.NetworkInformation.LinuxNetworkInterface.GetLinuxNetworkInterfaces()
+   at Orleans.Runtime.Configuration.ConfigUtilities.GetLocalIPAddress(AddressFamily family, String interfaceName) in /_/src/Orleans.Core/Configuration/ConfigUtilities.cs:line 172
+   System.Net.NetworkInformation.NetworkInformationException : Operation not permitted
+     at System.Net.NetworkInformation.LinuxNetworkInterface.GetLinuxNetworkInterfaces()
+   at Orleans.Runtime.Configuration.ConfigUtilities.GetLocalIPAddress(AddressFamily family, String interfaceName) in /_/src/Orleans.Core/Configuration/ConfigUtilities.cs:line 172
+   System.Net.NetworkInformation.NetworkInformationException : Operation not permitted
+     at System.Net.NetworkInformation.LinuxNetworkInterface.GetLinuxNetworkInterfaces()
+   at Orleans.Runtime.Configuration.ConfigUtilities.GetLocalIPAddress(AddressFamily family, String interfaceName) in /_/src/Orleans.Core/Configuration/ConfigUtilities.cs:line 172
+Failed!  - Failed:    15, Passed:  1463, Skipped:     0, Total:  1478, Duration: 17 s - Vortex.Rooms.Tests.dll (net10.0)
+Passed!  - Failed:     0, Passed:   134, Skipped:     0, Total:   134, Duration: 10 s - Vortex.WebApi.Tests.dll (net10.0)
+Passed!  - Failed:     0, Passed:   220, Skipped:     0, Total:   220, Duration: 12 s - Vortex.Database.Tests.dll (net10.0)
+Passed!  - Failed:     0, Passed:   295, Skipped:     0, Total:   295, Duration: 1 s - Vortex.Revisions.Tests.dll (net10.0)
+Passed!  - Failed:     0, Passed:   349, Skipped:     0, Total:   349, Duration: 7 s - Vortex.Players.Tests.dll (net10.0)
+Passed!  - Failed:     0, Passed:    31, Skipped:     0, Total:    31, Duration: 1 m 26 s - Vortex.Plugins.Tests.dll (net10.0)
+Passed!  - Failed:     0, Passed:   138, Skipped:     0, Total:   138, Duration: 2 s - Vortex.Hosting.Tests.dll (net10.0)
+=== Subsequent isolated project attempts ===
+[
+  {
+    "project": "Vortex.Authentication.Tests/Vortex.Authentication.Tests.csproj",
+    "exit": 1,
+    "log": "../audit-validation/Vortex.Authentication.Tests.log"
+  },
+  {
+    "project": "Vortex.Crypto.Tests/Vortex.Crypto.Tests.csproj",
+    "exit": 1,
+    "log": "../audit-validation/Vortex.Crypto.Tests.log"
+  },
+  {
+    "project": "Vortex.Dashboard.Tests/Vortex.Dashboard.Tests.csproj",
+    "exit": 1,
+    "log": "../audit-validation/Vortex.Dashboard.Tests.log"
+  },
+  {
+    "project": "Vortex.Navigator.Tests/Vortex.Navigator.Tests.csproj",
+    "exit": 1,
+    "log": "../audit-validation/Vortex.Navigator.Tests.log"
+  },
+  {
+    "project": "Vortex.PacketHandlers.Tests/Vortex.PacketHandlers.Tests.csproj",
+    "exit": 1,
+    "log": "../audit-validation/Vortex.PacketHandlers.Tests.log"
+  },
+  {
+    "project": "Vortex.Pipeline.Tests/Vortex.Pipeline.Tests.csproj",
+    "exit": 1,
+    "log": "../audit-validation/Vortex.Pipeline.Tests.log"
+  },
+  {
+    "project": "Vortex.Rewards.Tests/Vortex.Rewards.Tests.csproj",
+    "exit": 1,
+    "log": "../audit-validation/Vortex.Rewards.Tests.log"
+  },
+  {
+    "project": "Vortex.Shop.Tests/Vortex.Shop.Tests.csproj",
+    "exit": 1,
+    "log": "../audit-validation/Vortex.Shop.Tests.log"
+  },
+  {
+    "project": "Vortex.Signals.Tests/Vortex.Signals.Tests.csproj",
+    "exit": 1,
+    "log": "../audit-validation/Vortex.Signals.Tests.log"
+  },
+  {
+    "project": "Vortex.Specs.Tests/Vortex.Specs.Tests.csproj",
+    "exit": 1,
+    "log": "../audit-validation/Vortex.Specs.Tests.log"
+  },
+  {
+    "project": "Vortex.Supervisor.Tests/Vortex.Supervisor.Tests.csproj",
+    "exit": 1,
+    "log": "../audit-validation/Vortex.Supervisor.Tests.log"
+  }
+]
+/workspace/scratch/61f6cd1fa9f3/dotnet/sdk/10.0.401/Sdks/Microsoft.NET.Sdk/targets/Microsoft.PackageDependencyResolution.targets(266,5): error NETSDK1064: Package Microsoft.CodeAnalysis.Analyzers, version 5.3.0 was not found. It might have been deleted since NuGet restore. Otherwise, NuGet restore might have only partially completed, which might have been due to maximum path length restrictions. [/workspace/scratch/61f6cd1fa9f3/vortex-cloud/Vortex.Authentication.Tests/Vortex.Authentication.Tests.csproj]
+
+=== CI Ubuntu exact SHA ===
+Run: https://github.com/absolutezeroo/vortex-cloud/actions/runs/34803028084
+Job: 103849344325
+2026-09-14T03:34:31.6758356Z /home/runner/work/vortex-cloud/vortex-cloud/Vortex.Database.Tests/Vortex.Database.Tests.csproj : warning NU1903: Package 'SQLitePCLRaw.lib.e_sqlite3' 2.1.10 has a known high severity vulnerability, https://github.com/advisories/GHSA-2m69-gcr7-jv3q [/home/runner/work/vortex-cloud/vortex-cloud/Vortex.Cloud.sln]
+2026-09-14T03:34:31.6763742Z /home/runner/work/vortex-cloud/vortex-cloud/Vortex.Rooms.Tests/Vortex.Rooms.Tests.csproj : warning NU1903: Package 'SQLitePCLRaw.lib.e_sqlite3' 2.1.10 has a known high severity vulnerability, https://github.com/advisories/GHSA-2m69-gcr7-jv3q [/home/runner/work/vortex-cloud/vortex-cloud/Vortex.Cloud.sln]
+2026-09-14T03:34:31.6769348Z /home/runner/work/vortex-cloud/vortex-cloud/Vortex.Dashboard.Tests/Vortex.Dashboard.Tests.csproj : warning NU1903: Package 'SQLitePCLRaw.lib.e_sqlite3' 2.1.10 has a known high severity vulnerability, https://github.com/advisories/GHSA-2m69-gcr7-jv3q [/home/runner/work/vortex-cloud/vortex-cloud/Vortex.Cloud.sln]
+2026-09-14T03:34:31.9078944Z /home/runner/work/vortex-cloud/vortex-cloud/Vortex.Players.Tests/Vortex.Players.Tests.csproj : warning NU1903: Package 'SQLitePCLRaw.lib.e_sqlite3' 2.1.10 has a known high severity vulnerability, https://github.com/advisories/GHSA-2m69-gcr7-jv3q [/home/runner/work/vortex-cloud/vortex-cloud/Vortex.Cloud.sln]
+2026-09-14T03:34:46.4549028Z /home/runner/work/vortex-cloud/vortex-cloud/Vortex.Players.Tests/Vortex.Players.Tests.csproj : warning NU1903: Package 'SQLitePCLRaw.lib.e_sqlite3' 2.1.10 has a known high severity vulnerability, https://github.com/advisories/GHSA-2m69-gcr7-jv3q [/home/runner/work/vortex-cloud/vortex-cloud/Vortex.Cloud.sln] [/home/runner/work/vortex-cloud/vortex-cloud/Vortex.Main/Vortex.Main.csproj]
+2026-09-14T03:34:46.4578663Z /home/runner/work/vortex-cloud/vortex-cloud/Vortex.Dashboard.Tests/Vortex.Dashboard.Tests.csproj : warning NU1903: Package 'SQLitePCLRaw.lib.e_sqlite3' 2.1.10 has a known high severity vulnerability, https://github.com/advisories/GHSA-2m69-gcr7-jv3q [/home/runner/work/vortex-cloud/vortex-cloud/Vortex.Cloud.sln] [/home/runner/work/vortex-cloud/vortex-cloud/Vortex.Main/Vortex.Main.csproj]
+2026-09-14T03:34:46.4618612Z /home/runner/work/vortex-cloud/vortex-cloud/Vortex.Database.Tests/Vortex.Database.Tests.csproj : warning NU1903: Package 'SQLitePCLRaw.lib.e_sqlite3' 2.1.10 has a known high severity vulnerability, https://github.com/advisories/GHSA-2m69-gcr7-jv3q [/home/runner/work/vortex-cloud/vortex-cloud/Vortex.Cloud.sln] [/home/runner/work/vortex-cloud/vortex-cloud/Vortex.Main/Vortex.Main.csproj]
+2026-09-14T03:34:46.5069448Z /home/runner/work/vortex-cloud/vortex-cloud/Vortex.Rooms.Tests/Vortex.Rooms.Tests.csproj : warning NU1903: Package 'SQLitePCLRaw.lib.e_sqlite3' 2.1.10 has a known high severity vulnerability, https://github.com/advisories/GHSA-2m69-gcr7-jv3q [/home/runner/work/vortex-cloud/vortex-cloud/Vortex.Cloud.sln] [/home/runner/work/vortex-cloud/vortex-cloud/Vortex.Main/Vortex.Main.csproj]
+2026-09-14T03:38:23.9238972Z /home/runner/work/vortex-cloud/vortex-cloud/Vortex.Rooms.Tests/Vortex.Rooms.Tests.csproj : warning NU1903: Package 'SQLitePCLRaw.lib.e_sqlite3' 2.1.10 has a known high severity vulnerability, https://github.com/advisories/GHSA-2m69-gcr7-jv3q [/home/runner/work/vortex-cloud/vortex-cloud/Vortex.Main/Vortex.Main.csproj]
+2026-09-14T03:38:24.1236570Z /home/runner/work/vortex-cloud/vortex-cloud/Vortex.Database.Tests/Vortex.Database.Tests.csproj : warning NU1903: Package 'SQLitePCLRaw.lib.e_sqlite3' 2.1.10 has a known high severity vulnerability, https://github.com/advisories/GHSA-2m69-gcr7-jv3q [/home/runner/work/vortex-cloud/vortex-cloud/Vortex.Main/Vortex.Main.csproj]
+2026-09-14T03:38:24.3929176Z /home/runner/work/vortex-cloud/vortex-cloud/Vortex.Players.Tests/Vortex.Players.Tests.csproj : warning NU1903: Package 'SQLitePCLRaw.lib.e_sqlite3' 2.1.10 has a known high severity vulnerability, https://github.com/advisories/GHSA-2m69-gcr7-jv3q [/home/runner/work/vortex-cloud/vortex-cloud/Vortex.Main/Vortex.Main.csproj]
+2026-09-14T03:38:25.8838621Z /home/runner/work/vortex-cloud/vortex-cloud/Vortex.Dashboard.Tests/Vortex.Dashboard.Tests.csproj : warning NU1903: Package 'SQLitePCLRaw.lib.e_sqlite3' 2.1.10 has a known high severity vulnerability, https://github.com/advisories/GHSA-2m69-gcr7-jv3q [/home/runner/work/vortex-cloud/vortex-cloud/Vortex.Main/Vortex.Main.csproj]
+2026-09-14T03:38:30.9758948Z   Passed!  - Failed:     0, Passed:    13, Skipped:     0, Total:    13, Duration: 694 ms - Vortex.Pipeline.Tests.dll (net10.0)
+2026-09-14T03:38:33.1495876Z   Passed!  - Failed:     0, Passed:    64, Skipped:     0, Total:    64, Duration: 2 s - Vortex.Crypto.Tests.dll (net10.0)
+2026-09-14T03:38:54.3106087Z   Passed!  - Failed:     0, Passed:   134, Skipped:     0, Total:   134, Duration: 12 s - Vortex.WebApi.Tests.dll (net10.0)
+2026-09-14T03:39:09.2350347Z   Passed!  - Failed:     0, Passed:   217, Skipped:     0, Total:   217, Duration: 29 s - Vortex.Specs.Tests.dll (net10.0)
+2026-09-14T03:39:10.6442866Z   Passed!  - Failed:     0, Passed:   295, Skipped:     0, Total:   295, Duration: 367 ms - Vortex.Revisions.Tests.dll (net10.0)
+2026-09-14T03:39:20.5149674Z   Passed!  - Failed:     0, Passed:   215, Skipped:     0, Total:   215, Duration: 7 s - Vortex.Dashboard.Tests.dll (net10.0)
+2026-09-14T03:39:21.4180247Z   Passed!  - Failed:     0, Passed:    94, Skipped:     0, Total:    94, Duration: 69 ms - Vortex.Rewards.Tests.dll (net10.0)
+2026-09-14T03:39:57.4091103Z   Passed!  - Failed:     0, Passed:    31, Skipped:     0, Total:    31, Duration: 1 m 26 s - Vortex.Plugins.Tests.dll (net10.0)
+2026-09-14T03:40:01.8862532Z   Passed!  - Failed:     0, Passed:   437, Skipped:     0, Total:   437, Duration: 495 ms - Vortex.Signals.Tests.dll (net10.0)
+2026-09-14T03:40:05.1078776Z   Passed!  - Failed:     0, Passed:    19, Skipped:     0, Total:    19, Duration: 3 s - Vortex.Shop.Tests.dll (net10.0)
+2026-09-14T03:40:08.4398364Z   Passed!  - Failed:     0, Passed:   349, Skipped:     0, Total:   349, Duration: 5 s - Vortex.Players.Tests.dll (net10.0)
+2026-09-14T03:40:09.9554333Z   Passed!  - Failed:     0, Passed:    54, Skipped:     0, Total:    54, Duration: 153 ms - Vortex.Navigator.Tests.dll (net10.0)
+2026-09-14T03:40:14.6625854Z   Passed!  - Failed:     0, Passed:    36, Skipped:     0, Total:    36, Duration: 1 s - Vortex.Supervisor.Tests.dll (net10.0)
+2026-09-14T03:40:31.7095882Z   Passed!  - Failed:     0, Passed:    68, Skipped:     0, Total:    68, Duration: 15 s - Vortex.Authentication.Tests.dll (net10.0)
+2026-09-14T03:40:34.5693312Z   Passed!  - Failed:     0, Passed:  1478, Skipped:     0, Total:  1478, Duration: 16 s - Vortex.Rooms.Tests.dll (net10.0)
+2026-09-14T03:40:42.2953733Z   Passed!  - Failed:     0, Passed:   220, Skipped:     0, Total:   220, Duration: 7 s - Vortex.Database.Tests.dll (net10.0)
+2026-09-14T03:40:43.3617983Z   Passed!  - Failed:     0, Passed:     7, Skipped:     0, Total:     7, Duration: 21 ms - Vortex.PacketHandlers.Tests.dll (net10.0)
+2026-09-14T03:40:45.8792580Z   Passed!  - Failed:     0, Passed:   138, Skipped:     0, Total:   138, Duration: 890 ms - Vortex.Hosting.Tests.dll (net10.0)
+2026-09-14T03:40:46.0731837Z   check-header-registry: no client sources beside this repository -- falling back to the id ceiling.
+2026-09-14T03:40:46.0743608Z     - MessageComposer.CustomStackingHeightUpdateMessageComposer = 9201
+2026-09-14T03:40:46.0786746Z /home/runner/work/vortex-cloud/vortex-cloud/Directory.Build.targets(38,5): error MSB3073: The command "node scripts/hooks/check-header-registry.mjs" exited with code 2. [/home/runner/work/vortex-cloud/vortex-cloud/Vortex.Main/Vortex.Main.csproj]
+2026-09-14T03:40:46.0977339Z /home/runner/work/vortex-cloud/vortex-cloud/Vortex.Players.Tests/Vortex.Players.Tests.csproj : warning NU1903: Package 'SQLitePCLRaw.lib.e_sqlite3' 2.1.10 has a known high severity vulnerability, https://github.com/advisories/GHSA-2m69-gcr7-jv3q [/home/runner/work/vortex-cloud/vortex-cloud/Vortex.Cloud.sln] [/home/runner/work/vortex-cloud/vortex-cloud/Vortex.Main/Vortex.Main.csproj]
+2026-09-14T03:40:46.0983937Z /home/runner/work/vortex-cloud/vortex-cloud/Vortex.Dashboard.Tests/Vortex.Dashboard.Tests.csproj : warning NU1903: Package 'SQLitePCLRaw.lib.e_sqlite3' 2.1.10 has a known high severity vulnerability, https://github.com/advisories/GHSA-2m69-gcr7-jv3q [/home/runner/work/vortex-cloud/vortex-cloud/Vortex.Cloud.sln] [/home/runner/work/vortex-cloud/vortex-cloud/Vortex.Main/Vortex.Main.csproj]
+2026-09-14T03:40:46.0991114Z /home/runner/work/vortex-cloud/vortex-cloud/Vortex.Database.Tests/Vortex.Database.Tests.csproj : warning NU1903: Package 'SQLitePCLRaw.lib.e_sqlite3' 2.1.10 has a known high severity vulnerability, https://github.com/advisories/GHSA-2m69-gcr7-jv3q [/home/runner/work/vortex-cloud/vortex-cloud/Vortex.Cloud.sln] [/home/runner/work/vortex-cloud/vortex-cloud/Vortex.Main/Vortex.Main.csproj]
+2026-09-14T03:40:46.0997727Z /home/runner/work/vortex-cloud/vortex-cloud/Vortex.Rooms.Tests/Vortex.Rooms.Tests.csproj : warning NU1903: Package 'SQLitePCLRaw.lib.e_sqlite3' 2.1.10 has a known high severity vulnerability, https://github.com/advisories/GHSA-2m69-gcr7-jv3q [/home/runner/work/vortex-cloud/vortex-cloud/Vortex.Cloud.sln] [/home/runner/work/vortex-cloud/vortex-cloud/Vortex.Main/Vortex.Main.csproj]
+2026-09-14T03:40:46.1049275Z /home/runner/work/vortex-cloud/vortex-cloud/Vortex.Rooms.Tests/Vortex.Rooms.Tests.csproj : warning NU1903: Package 'SQLitePCLRaw.lib.e_sqlite3' 2.1.10 has a known high severity vulnerability, https://github.com/advisories/GHSA-2m69-gcr7-jv3q [/home/runner/work/vortex-cloud/vortex-cloud/Vortex.Main/Vortex.Main.csproj]
+2026-09-14T03:40:46.1052012Z /home/runner/work/vortex-cloud/vortex-cloud/Vortex.Database.Tests/Vortex.Database.Tests.csproj : warning NU1903: Package 'SQLitePCLRaw.lib.e_sqlite3' 2.1.10 has a known high severity vulnerability, https://github.com/advisories/GHSA-2m69-gcr7-jv3q [/home/runner/work/vortex-cloud/vortex-cloud/Vortex.Main/Vortex.Main.csproj]
+2026-09-14T03:40:46.1055030Z /home/runner/work/vortex-cloud/vortex-cloud/Vortex.Players.Tests/Vortex.Players.Tests.csproj : warning NU1903: Package 'SQLitePCLRaw.lib.e_sqlite3' 2.1.10 has a known high severity vulnerability, https://github.com/advisories/GHSA-2m69-gcr7-jv3q [/home/runner/work/vortex-cloud/vortex-cloud/Vortex.Main/Vortex.Main.csproj]
+2026-09-14T03:40:46.1057773Z /home/runner/work/vortex-cloud/vortex-cloud/Vortex.Dashboard.Tests/Vortex.Dashboard.Tests.csproj : warning NU1903: Package 'SQLitePCLRaw.lib.e_sqlite3' 2.1.10 has a known high severity vulnerability, https://github.com/advisories/GHSA-2m69-gcr7-jv3q [/home/runner/work/vortex-cloud/vortex-cloud/Vortex.Main/Vortex.Main.csproj]
+2026-09-14T03:40:46.1060204Z /home/runner/work/vortex-cloud/vortex-cloud/Directory.Build.targets(38,5): error MSB3073: The command "node scripts/hooks/check-header-registry.mjs" exited with code 2. [/home/runner/work/vortex-cloud/vortex-cloud/Vortex.Main/Vortex.Main.csproj]
+
+=== check-0.log ===
+check-dashboard-capabilities: OK (64 capabilities, 52 routes, 3486 locale keys).
+
+=== check-1.log ===
+check-header-registry: no client sources beside this repository -- falling back to the id ceiling.
+
+Mapped header ids above the Revision20260701 client ceiling (4101):
+  - MessageComposer.CustomStackingHeightUpdateMessageComposer = 9201
+
+An id the client does not know registers fine and never fires.
+
+=== check-2.log ===
+Architecture walls hold: 7 checked, 0 baselined leak(s).
+
+=== check-3.log ===
+check-logic-groups: OK (261 cles, 14 groupes).
+
+=== check-4.log ===
+check-wire-conflicts: could not run Vortex.Specs.Cli (exit null).
+undefined
+
+=== check-5.log ===
+npm warn Unknown env config "http-proxy". This will stop working in the next major version of npm.
+
+> lint
+> eslint src
+
+npm notice
+npm notice New major version of npm available! 11.9.0 -> 12.0.2
+npm notice Changelog: https://github.com/npm/cli/releases/tag/v12.0.2
+npm notice To update run: npm install -g npm@12.0.2
+npm notice
+
+=== check-6.log ===
+npm warn Unknown env config "http-proxy". This will stop working in the next major version of npm.
+
+> test
+> npm run check && node tools/articleBlocks.check.mjs && node tools/pickerWiring.check.mjs && node tools/sequenceSteps.check.mjs && node tools/graphModel.check.mjs
+
+npm warn Unknown env config "http-proxy". This will stop working in the next major version of npm.
+
+> check
+> svelte-check --tsconfig ./tsconfig.json --threshold error
+
+Loading svelte-check in workspace: /workspace/scratch/61f6cd1fa9f3/vortex-cloud/Vortex.Dashboard.Web
+Getting Svelte diagnostics...
+
+====================================
+svelte-check found 0 errors and 16 warnings in 11 files
+articleBlocks: ok
+picker wiring ok: 20 directories, 4 layouts, all mapped server-side
+sequence steps: ok
+graph model: ok
+
+=== wallet-probe.log ===
+POST-GRANT FAILURE: goods=1, balance=100, refunds=1 (free delivery reproduced in executor)
+POST-DEBIT FAILURE: goods=0, balance=90, refunds=0 (no recovery in executor)
+CONTROL: failure before delivery refunds the debit once
+
+=== fastcheck-final.log ===
+
+Welcome to .NET 10.0!
+---------------------
+SDK Version: 10.0.401
+
+----------------
+Installed an ASP.NET Core HTTPS development certificate.
+To trust the certificate, run 'dotnet dev-certs https --trust'
+Learn about HTTPS: https://aka.ms/dotnet-https
+
+----------------
+Write your first app: https://aka.ms/dotnet-hello-world
+Find out what's new: https://aka.ms/dotnet-whats-new
+Explore documentation: https://aka.ms/dotnet-docs
+Report issues and find source on GitHub: https://github.com/dotnet/core
+Use 'dotnet --help' to see available commands or visit: https://aka.ms/dotnet-cli
+--------------------------------------------------------------------------------------
+  Determining projects to restore...
+
+Build FAILED.
+    0 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:02.98
+
+=== qualitygate-local.log ===
+  Determining projects to restore...
+
+Build FAILED.
+    0 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:02.96
+
+=== Final formatted probe rerun ===
+Expected injected failure: injected journal failure after delivery
+POST-GRANT FAILURE: goods=1, balance=100, refunds=1 (free delivery reproduced in executor)
+Expected injected failure: injected post-commit notification failure
+POST-DEBIT FAILURE: goods=0, balance=90, refunds=0 (no recovery in executor)
+Expected injected failure: injected failure before any delivery
+CONTROL: failure before delivery refunds the debit once
