@@ -71,6 +71,10 @@ internal static partial class WebApiEndpoints
         // answers with or without a chain: it describes a Relic, and a Relic exists in the hotel
         // whether or not anybody ever moved it.
         WebApiEndpointsCollectibles.MapCollectibles(app, TagPublic);
+
+        // The coin contest. Public for the same reason the chain routes are: every balance in it is
+        // readable off the chain by anyone who has the addresses, and the addresses are public.
+        WebApiEndpointsLeaderboard.MapLeaderboard(app, TagPublic);
     }
 
     /// <summary>

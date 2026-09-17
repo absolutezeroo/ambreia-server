@@ -2,6 +2,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Vortex.Players.Configuration;
 using Vortex.Players.Providers;
+using Vortex.Primitives.Chain;
 using Vortex.Primitives.Content;
 using Vortex.Primitives.Hosting;
 using Vortex.Primitives.Moderation;
@@ -47,6 +48,17 @@ public sealed class PlayerModule : IHostPluginModule
         );
         services.AddSingleton<IBuildersClubService, BuildersClubService>();
         services.AddHostedService<BuildersClubTierSeederService>();
+
+        // The coin contest. One instance in two roles: the hosted service that refreshes the
+        // standings, and the IChainLeaderboard everything else reads them from. Registered this way
+        // round because AddHostedService<T> would otherwise construct a SECOND copy — the one doing
+        // the reading would then always be empty, and nothing would say why.
+        services.AddSingleton<ChainLeaderboardService>();
+        services.AddSingleton<IChainLeaderboard>(sp =>
+            sp.GetRequiredService<ChainLeaderboardService>()
+        );
+        services.AddHostedService(sp => sp.GetRequiredService<ChainLeaderboardService>());
+
         // The admin services moved to the dashboard: authoring content is its job, not the
         // emulator's. A host without that module has no authoring path here, deliberately.
     }

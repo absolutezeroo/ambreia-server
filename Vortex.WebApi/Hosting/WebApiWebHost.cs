@@ -285,6 +285,11 @@ internal sealed class WebApiWebHost(
         // containers, one of them told about the service.
         services.AddSingleton(rootServices.GetRequiredService<IChainService>());
 
+        // The coin standings. The snapshot is refreshed by a hosted service on the root host; this
+        // container only reads it, and reads the very same instance — a second one would sit empty
+        // forever and the leaderboard would render as "nobody holds anything".
+        services.AddSingleton(rootServices.GetRequiredService<IChainLeaderboard>());
+
         // Linking a wallet: the address a player's Stardust wallet is at, and the check that turns
         // "this address is mine" from a claim into a proof. Both live in Vortex.Crypto, which this
         // project does not reference — same arrangement as the shop and the chain above.

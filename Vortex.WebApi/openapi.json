@@ -736,6 +736,27 @@
         }
       }
     },
+    "/api/public/leaderboard/coins": {
+      "get": {
+        "tags": [
+          "Public"
+        ],
+        "summary": "Who holds the most VortexCoin, as of the last snapshot.",
+        "operationId": "CoinLeaderboard",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LeaderboardResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/public/shop/products": {
       "get": {
         "tags": [
@@ -2723,6 +2744,64 @@
         "properties": {
           "propertyNameCaseInsensitive": {
             "type": "boolean"
+          }
+        },
+        "additionalProperties": false
+      },
+      "LeaderboardEntryResponse": {
+        "required": [
+          "address",
+          "balance",
+          "balanceWei",
+          "playerId",
+          "playerName",
+          "rank"
+        ],
+        "type": "object",
+        "properties": {
+          "rank": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "playerId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "playerName": {
+            "type": "string"
+          },
+          "address": {
+            "type": "string"
+          },
+          "balance": {
+            "type": "string"
+          },
+          "balanceWei": {
+            "type": "string"
+          }
+        },
+        "additionalProperties": false
+      },
+      "LeaderboardResponse": {
+        "required": [
+          "enabled",
+          "standings"
+        ],
+        "type": "object",
+        "properties": {
+          "enabled": {
+            "type": "boolean"
+          },
+          "takenAtUtc": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "standings": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/LeaderboardEntryResponse"
+            }
           }
         },
         "additionalProperties": false
