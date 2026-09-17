@@ -16,7 +16,6 @@ using Vortex.Benchmark;
 using Vortex.Catalog;
 using Vortex.Chain.Extensions;
 using Vortex.Crypto.Extensions;
-using Vortex.Dashboard.API;
 using Vortex.Database.Extensions;
 using Vortex.Database.Migrations;
 using Vortex.Events.Extensions;
@@ -152,7 +151,9 @@ internal class Program
         builder.Services.AddHostPlugin<FishingModule>(builder);
         // Before the web API: the site's shop routes resolve IShopService out of the root provider.
         builder.Services.AddHostPlugin<ShopModule>(builder);
-        builder.Services.AddHostPlugin<DashboardApiModule>(builder);
+        // No dashboard module here any more. The dashboard is a LOADABLE plugin, found in its folder
+        // by PluginManager rather than compiled into this host — registering it here would mean
+        // referencing its assembly, which is exactly what makes a plugin impossible to unload.
         builder.Services.AddHostPlugin<BenchmarkModule>(builder);
         builder.Services.AddHostPlugin<NavigatorModule>(builder);
         builder.Services.AddHostPlugin<RoomModule>(builder);

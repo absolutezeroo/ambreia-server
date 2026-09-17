@@ -1,7 +1,31 @@
+using System;
+using System.Diagnostics.Metrics;
+using System.Threading;
+using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
+using Orleans;
+using Vortex.Database.Backup;
+using Vortex.Database.Context;
+using Vortex.Observability.Metrics;
+using Vortex.Observability.Runtime;
+using Vortex.Primitives.Benchmark;
+using Vortex.Primitives.Catalog.Providers;
+using Vortex.Primitives.Catalog.Tags;
+using Vortex.Primitives.Chain;
+using Vortex.Primitives.Console;
+using Vortex.Primitives.Crypto;
+using Vortex.Primitives.Furniture.Providers;
+using Vortex.Primitives.Moderation;
+using Vortex.Primitives.Networking;
+using Vortex.Primitives.Observability;
+using Vortex.Primitives.Players.Providers;
+using Vortex.Primitives.Plugins.Exports;
+using Vortex.Primitives.Signals;
+using Vortex.Primitives.Sound.Providers;
 using Vortex.Dashboard.API.Admin.Catalogue;
 using Vortex.Dashboard.API.Admin.Hotel;
 using Vortex.Dashboard.API.Admin.Progression;
@@ -72,36 +96,41 @@ namespace Vortex.Dashboard.API;
 /// reason every operation must produce. It is injected, never inherited, so a subject cannot bend
 /// it. Reads share only <see cref="Api.DashboardReads"/>, which opens a context and nothing else.
 /// </para>
+/// <para>
+/// <b>It is a LOADABLE plugin, not a compiled-in one.</b> It used to be an <c>IHostPluginModule</c>,
+/// which is a module the host references and registers at startup — optional in principle, welded to
+/// the build in practice. As an <see cref="IVortexPlugin"/> it is a folder with a
+/// <c>manifest.json</c>: dropped in, activated, unloaded and reloaded while the hotel runs, which is
+/// what stops a change to an admin screen from costing a restart of the hotel.
+/// </para>
+/// <para>
+/// Two consequences follow and neither is optional. <b>Nothing in the host may reference this
+/// assembly</b> — <c>ByteLoadingAlc</c> hands any assembly the host already holds to the default
+/// context, so a project reference would silently make it un-unloadable. And <b>nothing in the host
+/// may hold one of its objects</b>, for the same reason at the instance level: what the hotel needs
+/// from here goes out through <see cref="BindExportsAsync"/>. <c>DashboardUnloadabilityTests</c> is
+/// the measurement that says whether either rule has been broken.
+/// </para>
 /// </summary>
-public sealed class DashboardApiModule : IHostPluginModule
+public sealed class DashboardPlugin : IVortexPlugin
 {
     public string Key => "turbo-dashboard-api";
 
-    public void ConfigureServices(IServiceCollection services, HostApplicationBuilder builder)
+    public string Version => "1.0.0";
+
+    public void ConfigureServices(IServiceCollection services, PluginManifest manifest)
     {
-        // ObservabilityModule binds the same section; both register the validator through
-        // TryAddEnumerable so it runs exactly once regardless of module order.
-        services
-            .AddOptions<ObservabilityConfig>()
-            .Bind(builder.Configuration.GetSection(ObservabilityConfig.SECTION_NAME))
-            .ValidateOnStart();
+        BorrowFromHost(services);
 
-        services.TryAddEnumerable(
-            ServiceDescriptor.Singleton<
-                IValidateOptions<ObservabilityConfig>,
-                ObservabilityConfigValidator
-            >()
-        );
-
-        // Shared with WebApiModule; whichever module registers first wins.
+        // Its own rather than the host's. A plugin container starts empty, and this is a guard
+        // object with no shared state — there is nothing to gain by reaching across for it.
         services.TryAddSingleton<RequiredServiceGuard>();
 
+        // NOT registered as IAccountSessionRevoker any more. It used to be, so a password change
+        // reached dashboard sessions — but a host that holds one of this assembly's objects pins the
+        // whole AssemblyLoadContext and the plugin could never be unloaded. It goes out through
+        // BindExportsAsync instead, where the host reads it through an indirection it owns.
         services.TryAddSingleton<DashboardSessionStore>();
-        // Registered as the shared interface too, so a password change reaches these sessions
-        // without the password service knowing how many session stores exist.
-        services.AddSingleton<IAccountSessionRevoker>(sp =>
-            sp.GetRequiredService<DashboardSessionStore>()
-        );
         services.TryAddSingleton<DashboardAuthService>();
         services.TryAddSingleton<DashboardAssetStore>();
         services.TryAddSingleton<DashboardAssetUrls>();
@@ -209,7 +238,121 @@ public sealed class DashboardApiModule : IHostPluginModule
         services.TryAddSingleton<IQuestContentAdminService, QuestContentAdminService>();
         services.TryAddSingleton<IWebArticleAdminService, WebArticleAdminService>();
 
-        // The dashboard runs as a self-contained ASP.NET Core (Kestrel) app inside the generic host.
+        // The dashboard runs as a self-contained ASP.NET Core (Kestrel) app. Inside the plugin's own
+        // container now rather than the host's, which is what makes stopping it a matter of
+        // unloading the plugin: PluginManager starts every IHostedService a plugin registers and
+        // stops it again on unload.
         services.AddHostedService<DashboardWebHost>();
     }
+
+    /// <summary>
+    /// Everything the dashboard needs from the hotel, declared once.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// A plugin's container starts empty, so without this nothing here could constructor-inject a
+    /// database context, a grain factory or a metric. <c>UseHostService&lt;T&gt;</c> makes the host's
+    /// instance injectable without the plugin ever seeing the host's provider, and
+    /// <c>PluginManager</c> checks every entry at activation — so a hotel missing one of these
+    /// refuses the load instead of failing on whichever request first needed it.
+    /// </para>
+    /// <para>
+    /// <b>This list is the contract between the dashboard and the hotel.</b> It was not written by
+    /// hand: it is every constructor parameter of every type registered below that the plugin does
+    /// not register itself. Adding a dependency here is a deliberate widening of that contract, and
+    /// the compiler will not tell you — the activation check will.
+    /// </para>
+    /// </remarks>
+    private static void BorrowFromHost(IServiceCollection services)
+    {
+        // Configuration and process. ObservabilityConfig is bound by ObservabilityModule in the
+        // host; borrowing the bound options rather than re-binding means one section, read once.
+        services.UseHostService<IOptions<ObservabilityConfig>>();
+        services.UseHostService<IHostEnvironment>();
+        services.UseHostService<IHostApplicationLifetime>();
+
+        // Data and the live hotel.
+        services.UseHostService<IDbContextFactory<VortexDbContext>>();
+        services.UseHostService<IGrainFactory>();
+        services.UseHostService<ISessionGateway>();
+        services.UseHostService<IDatabaseBackupService>();
+
+        // Observability: the aggregates the overview reads, and the sinks writes go to.
+        services.UseHostService<IMeterFactory>();
+        services.UseHostService<IVortexMetrics>();
+        services.UseHostService<IVortexContextAccessor>();
+        services.UseHostService<IAuditSink>();
+        services.UseHostService<ILiveStatsAggregator>();
+        services.UseHostService<IIncidentDetectionService>();
+        services.UseHostService<IInfrastructureHealthService>();
+        services.UseHostService<RoomPerformanceAggregator>();
+        services.UseHostService<ClientPerformanceMetrics>();
+        services.UseHostService<ClubMetrics>();
+        services.UseHostService<IForensicsPurgeService>();
+
+        // Accounts and moderation.
+        services.UseHostService<IAccountAuthenticator>();
+        services.UseHostService<IAccountMfaService>();
+        services.UseHostService<IAccountPasswordService>();
+        services.UseHostService<IPermissionService>();
+        services.UseHostService<ICfhTicketService>();
+
+        // The catalogues and vocabularies the editors write against, plus the reloader that makes a
+        // write visible to the running hotel.
+        services.UseHostService<IReferenceDataReloader>();
+        services.UseHostService<ICatalogSnapshotProvider<NormalCatalog>>();
+        services.UseHostService<ICatalogSnapshotProvider<BuildersClubCatalog>>();
+        services.UseHostService<IFurnitureDefinitionProvider>();
+        services.UseHostService<INavigatorProvider>();
+        services.UseHostService<ISongProvider>();
+        services.UseHostService<ICurrencyTypeProvider>();
+        services.UseHostService<IHabbiconCatalog>();
+        services.UseHostService<IRewardTrackCatalog>();
+        services.UseHostService<ISignalVocabulary>();
+
+        // The console page and the benchmark page, which drive the emulator rather than read it.
+        services.UseHostService<ServerConsoleFeed>();
+        services.UseHostService<IConsoleCommandDispatcher>();
+        services.UseHostService<IBenchmarkService>();
+
+        // The chain, for the operator actions that mint.
+        services.UseHostService<IChainService>();
+        services.UseHostService<IHotelWalletService>();
+    }
+
+    /// <summary>
+    /// Publishes the one thing the hotel needs back from the dashboard.
+    /// </summary>
+    /// <remarks>
+    /// A password change has to sign the account out of the dashboard too, and the dashboard keeps
+    /// its own session store. Registering that store in the host's container would work and would
+    /// also make this plugin permanently unloadable — the host would hold one of its objects
+    /// forever. An export is a slot the HOST owns; this fills it, and every reload refills it.
+    /// </remarks>
+    public Task BindExportsAsync(IExportBinder binder, IServiceProvider services)
+    {
+        ArgumentNullException.ThrowIfNull(binder);
+        ArgumentNullException.ThrowIfNull(services);
+
+        return binder.ExportAsync<IAccountSessionRevoker>(
+            IAccountSessionRevoker.ExportKey,
+            services.GetRequiredService<DashboardSessionStore>()
+        );
+    }
+
+    /// <summary>
+    /// Nothing to do: <see cref="DashboardWebHost"/> is an <c>IHostedService</c>, and PluginManager
+    /// has already started it by the time this runs. It is here because the interface asks for it,
+    /// and an empty body says that deliberately rather than by omission.
+    /// </summary>
+    public Task StartAsync(IServiceProvider services, CancellationToken ct) => Task.CompletedTask;
+
+    /// <summary>Likewise: the rollback stops the hosted service, in reverse order.</summary>
+    public Task StopAsync(CancellationToken ct) => Task.CompletedTask;
+
+    /// <summary>
+    /// Nothing of its own to release — every disposable it owns lives in the plugin's service
+    /// provider, which PluginManager disposes before it unloads the context.
+    /// </summary>
+    public ValueTask DisposeAsync() => ValueTask.CompletedTask;
 }

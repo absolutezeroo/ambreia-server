@@ -6,7 +6,7 @@ using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using FluentAssertions;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
+using Vortex.Primitives.Plugins;
 using Vortex.Runtime.AssemblyProcessing;
 using Xunit;
 
@@ -51,7 +51,7 @@ namespace Vortex.Plugins.Tests;
 public sealed class DashboardUnloadabilityTests
 {
     private const string DASHBOARD_ASSEMBLY = "Vortex.Dashboard.API.dll";
-    private const string MODULE_TYPE = "Vortex.Dashboard.API.DashboardApiModule";
+    private const string MODULE_TYPE = "Vortex.Dashboard.API.DashboardPlugin";
 
     /// <summary>
     ///     The control. Without it the dashboard result is unreadable: an instrument that can never
@@ -137,16 +137,26 @@ public sealed class DashboardUnloadabilityTests
         object module = Activator.CreateInstance(moduleType)!;
 
         ServiceCollection services = [];
-        HostApplicationBuilder builder = Host.CreateApplicationBuilder();
+
+        // A manifest built here rather than read from the plugin's folder: ConfigureServices only
+        // needs one to exist, and the question being asked is about types, not packaging.
+        PluginManifest manifest = new()
+        {
+            Name = "Vortex Dashboard",
+            Key = "turbo-dashboard-api",
+            Version = "1.0.0",
+            Author = "Vortex",
+            AssemblyFile = DASHBOARD_ASSEMBLY,
+        };
 
         // Through reflection because this project cannot reference the dashboard — see the remarks
         // on the class. Registration alone is enough for the question being asked: it names every
-        // service type the module knows, which is what has to come back out.
+        // service type the plugin knows, which is what has to come back out.
         moduleType
             .GetMethod("ConfigureServices", BindingFlags.Public | BindingFlags.Instance)!
-            .Invoke(module, [services, builder]);
+            .Invoke(module, [services, manifest]);
 
-        services.Count.Should().BeGreaterThan(0, "the module registers its services");
+        services.Count.Should().BeGreaterThan(0, "the plugin registers its services");
 
         ServiceProvider provider = services.BuildServiceProvider();
 

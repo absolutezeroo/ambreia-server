@@ -97,6 +97,18 @@ public readonly record struct PasswordChangeResult(
 /// </summary>
 public interface IAccountSessionRevoker
 {
+    /// <summary>
+    /// The export key a PLUGIN publishes its revoker under.
+    /// </summary>
+    /// <remarks>
+    /// A plugin cannot register itself in the host's container: the host would then hold one of the
+    /// plugin's objects, which pins its <c>AssemblyLoadContext</c> and makes it unloadable for the
+    /// life of the process. It publishes an export instead, and the host holds a stable adapter that
+    /// reads through it. The constant lives here because the two sides are in assemblies that do not
+    /// reference each other, and a key spelled twice is a key that eventually differs.
+    /// </remarks>
+    public const string ExportKey = "account.session.revoker";
+
     /// <summary>Which front door this holds sessions for, for the log line.</summary>
     string SessionKind { get; }
 

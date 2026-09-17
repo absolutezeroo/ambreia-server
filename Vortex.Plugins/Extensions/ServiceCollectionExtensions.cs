@@ -23,6 +23,13 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<IValidateOptions<PluginConfig>, PluginConfigValidator>();
 
         services.AddSingleton<PluginManager>();
+
+        // So the hotel itself can read what a plugin publishes. Without this, exports were a
+        // plugin-to-plugin mechanism only, and anything the host wanted from a plugin it had to hold
+        // directly — which is exactly what pins a collectible AssemblyLoadContext and stops that
+        // plugin from ever being unloaded. See PluginManager.Catalog.
+        services.AddSingleton(sp => sp.GetRequiredService<PluginManager>().Catalog);
+
         services.AddHostedService<PluginBootstrapper>();
 
         if (builder.Environment.IsDevelopment() && pluginSection.GetValue<bool>("HotReloadEnabled"))

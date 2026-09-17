@@ -75,7 +75,12 @@
     </ProjectReference>
     <ProjectReference Include="..\Vortex.Navigator\Vortex.Navigator.csproj" />
     <ProjectReference Include="..\Vortex.Networking\Vortex.Networking.csproj" />
-    <ProjectReference Include="..\Vortex.Dashboard.API\Vortex.Dashboard.API.csproj" />
+    <!-- Vortex.Dashboard.API is deliberately NOT referenced, and must not be. It is a loadable
+         plugin now, and ByteLoadingAlc hands any assembly the host already holds to the default
+         context — so a reference here would quietly make the dashboard impossible to unload, which
+         is the entire point of it being a plugin. It is built by the solution and lands in the
+         plugin folder from its own csproj. DashboardUnloadabilityTests is what notices if this
+         comes back. -->
     <ProjectReference Include="..\Vortex.Observability\Vortex.Observability.csproj" />
     <ProjectReference Include="..\Vortex.PacketHandlers\Vortex.PacketHandlers.csproj" />
     <ProjectReference Include="..\Vortex.Pipeline\Vortex.Pipeline.csproj" />

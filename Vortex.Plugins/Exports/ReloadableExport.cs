@@ -15,6 +15,8 @@ public sealed class ReloadableExport<T>(ILogger? logger = null) : IExport<T>, IE
     private volatile T? _current;
     private ImmutableArray<Action<T>> _subs = [];
 
+    public bool IsBound => _current is not null;
+
     public T Current =>
         _current ?? throw new InvalidOperationException($"Export {typeof(T).Name} not bound yet.");
 

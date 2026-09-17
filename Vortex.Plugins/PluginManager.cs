@@ -40,6 +40,29 @@ public sealed class PluginManager(
 
     private readonly ExportRegistry _exports = new(logger);
 
+    /// <summary>
+    ///     What a plugin publishes, as the HOST reads it.
+    /// </summary>
+    /// <remarks>
+    ///     <para>
+    ///     Every plugin already gets an <see cref="IPluginCatalog" /> of its own so plugins can see
+    ///     each other's exports. The host had no way in at all, which made exports a plugin-to-plugin
+    ///     mechanism only — and left the hotel with no way to consume anything a plugin offers except
+    ///     by holding the instance, which is precisely what pins a collectible
+    ///     <c>AssemblyLoadContext</c> and makes the plugin unloadable.
+    ///     </para>
+    ///     <para>
+    ///     Through the same registry the plugins use, so a host-side consumer and a plugin-side one
+    ///     see the same slot and the same swap.
+    ///     </para>
+    /// </remarks>
+    ///     <para>
+    ///     A new wrapper per call rather than a cached one: <see cref="PluginCatalog" /> holds no
+    ///     state of its own, the registry behind it is the shared thing, and a property with no
+    ///     backing field cannot race. DI asks once anyway.
+    ///     </para>
+    public IPluginCatalog Catalog => new PluginCatalog(_exports);
+
     private readonly ConcurrentDictionary<string, SemaphoreSlim> _keyLocks = new(
         StringComparer.OrdinalIgnoreCase
     );

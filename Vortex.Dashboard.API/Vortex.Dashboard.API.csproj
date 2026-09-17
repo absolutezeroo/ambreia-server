@@ -6,6 +6,20 @@
     <FrameworkReference Include="Microsoft.AspNetCore.App" />
   </ItemGroup>
   <ItemGroup>
+    <!--
+      What makes this output a plugin FOLDER rather than just a build output. PluginManager reads
+      manifest.json from a directory and byte-loads the assembly it names; with this beside the DLL,
+      the bin directory IS a loadable plugin and needs no staging step to be one during development
+      (see Vortex:Plugin:DevPluginPaths in appsettings.Development.json).
+
+      The other assemblies here — Vortex.Primitives, Vortex.Database, Vortex.Observability — are
+      never byte-loaded with it: ByteLoadingAlc hands any assembly the host already holds to the
+      default context, which is what keeps one IVortexPlugin and one VortexDbContext type in the
+      process. That is also why Vortex.Main must not reference this project; see its csproj.
+    -->
+    <Content Include="manifest.json" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+  <ItemGroup>
     <PackageReference Include="Microsoft.EntityFrameworkCore" />
     <PackageReference Include="Microsoft.Orleans.Sdk" />
     <PackageReference Include="Swashbuckle.AspNetCore" />

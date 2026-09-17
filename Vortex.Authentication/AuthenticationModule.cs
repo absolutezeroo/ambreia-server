@@ -34,6 +34,14 @@ public sealed class AuthenticationModule : IHostPluginModule
         services.AddSingleton<IAccountAuthenticator, AccountAuthenticator>();
         services.AddSingleton<IAccountMfaService, AccountMfaService>();
         services.AddSingleton<IAccountPasswordService, AccountPasswordService>();
+
+        // A password change signs the account out everywhere, and everywhere includes surfaces a
+        // plugin owns. This is the host's own stable object; what it delegates to is swapped by
+        // whichever plugin publishes a revoker, so the hotel never holds a plugin's type — which is
+        // exactly what would make that plugin unloadable for the life of the process. See
+        // PluginSessionRevoker.
+        services.AddSingleton<IAccountSessionRevoker, PluginSessionRevoker>();
+
         services.AddSingleton<IAccountEmailService, AccountEmailService>();
         services.AddSingleton<IAccountSafetyLockService, AccountSafetyLockService>();
         services.AddSingleton<IAccountSafetyQuestionsService, AccountSafetyQuestionsService>();
