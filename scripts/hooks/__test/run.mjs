@@ -119,6 +119,17 @@ const direct = [
   ['check-variable-capabilities.mjs', [], 2, 'variable qui annonce une ecriture sans ecriture'],
   ['check-variable-capabilities.mjs', [], 0, 'capacites variables : toutes tenues'],
   ['check-header-registry.mjs', [], 2, 'header injoignable hors baseline', { VORTEX_HEADER_BASELINE: emptyBaseline }],
+  // Le repli plafond est le seul chemin que la CI emprunte, et il sortait 2 sur 9201 sans jamais
+  // ouvrir le baseline qui le tolere : les trois jobs mouraient sur un header deja accepte.
+  ['check-header-registry.mjs', [], 0, 'repli plafond : le baseline est consulte', { VORTEX_HEADER_NO_CLIENT: '1' }],
+  // Et le repli bloque toujours ce que le baseline ne couvre pas : la porte n'a pas ete desarmee.
+  [
+    'check-header-registry.mjs',
+    [],
+    2,
+    'repli plafond : id hors baseline bloque encore',
+    { VORTEX_HEADER_NO_CLIENT: '1', VORTEX_HEADER_BASELINE: emptyBaseline },
+  ],
   ['check-architecture-walls.mjs', [], 2, 'fuite protocole + reference rendue a un projet protege'],
   ['check-architecture-walls.mjs', [], 0, 'murs archi : les sept tiennent'],
 ];

@@ -213,8 +213,13 @@ function readKnownFromTypeScript(file) {
   return found.MessageEvent.size > 0 && found.MessageComposer.size > 0 ? found : null;
 }
 
-const tsRegistry = findClientTsRegistry();
-const as3Known = trees.length > 0 ? readKnown(trees[0].src) : null;
+// Same purpose as VORTEX_HEADER_BASELINE above: the ceiling fallback is the only path CI ever takes,
+// and it cannot be reached on a machine that has a client sitting beside the repository -- which is
+// exactly why it shipped broken and nobody saw it locally.
+const forceNoClient = process.env.VORTEX_HEADER_NO_CLIENT === '1';
+
+const tsRegistry = forceNoClient ? null : findClientTsRegistry();
+const as3Known = !forceNoClient && trees.length > 0 ? readKnown(trees[0].src) : null;
 const known = as3Known ?? (tsRegistry ? readKnownFromTypeScript(tsRegistry) : null);
 
 // Named so a reader can tell which authority answered. "It exists somewhere" with no source would
@@ -245,19 +250,40 @@ for (const tree of trees.slice(1)) {
       if (!later.has(`${section}/${id}`)) later.set(`${section}/${id}`, tree.build);
 }
 
+// ---- the baseline ---------------------------------------------------------------------------------
+//
+// Read here rather than after the comparison, because the ceiling fallback below needs it too. It did
+// not have it: the fallback exited 2 on any id above the ceiling without ever opening this file, so a
+// mapping the baseline explicitly tolerates still failed the gate on every machine with no client
+// beside the repository -- CI included, where this is the only path that ever runs. 9201 is the
+// entry that did it, and the three CI jobs died on a header the repository had already accepted.
+if (!fs.existsSync(baselineFile)) {
+  console.error(`check-header-registry: no baseline at ${path.relative(root, baselineFile)}. Run with --update.`);
+  process.exit(2);
+}
+
+const baseline = new Set(JSON.parse(fs.readFileSync(baselineFile, 'utf8')).unreachable);
+
 // ---- fallback: the ceiling, when there is no client to ask ----------------------------------------
 if (!known) {
-  const above = ours.filter((name) => headers[name].id > CEILING && !isExtension(name));
+  // Same entry spelling as the comparison below, so one baseline answers for both paths.
+  const above = ours
+    .filter((name) => headers[name].id > CEILING && !isExtension(name))
+    .map((name) => `${headers[name].section}/${name}=${headers[name].id}`);
+  const unbaselined = above.filter((entry) => !baseline.has(entry));
+
   console.error(
     'check-header-registry: no client sources beside this repository -- falling back to the id ceiling.'
   );
-  if (above.length) {
+  if (unbaselined.length) {
     console.error(`\nMapped header ids above the ${revision} client ceiling (${CEILING}):`);
-    for (const name of above) console.error(`  - ${headers[name].section}.${name} = ${headers[name].id}`);
+    for (const entry of unbaselined) console.error(`  - ${entry}`);
     console.error('\nAn id the client does not know registers fine and never fires.');
     process.exit(2);
   }
-  console.error(`check-header-registry: ceiling OK (${ours.length} mapped headers).`);
+  console.error(
+    `check-header-registry: ceiling OK (${ours.length} mapped headers, ${above.length} baselined above the ceiling).`
+  );
   process.exit(0);
 }
 
@@ -298,12 +324,6 @@ if (update) {
   process.exit(0);
 }
 
-if (!fs.existsSync(baselineFile)) {
-  console.error(`check-header-registry: no baseline at ${path.relative(root, baselineFile)}. Run with --update.`);
-  process.exit(2);
-}
-
-const baseline = new Set(JSON.parse(fs.readFileSync(baselineFile, 'utf8')).unreachable);
 const added = unreachable.filter((entry) => !baseline.has(entry));
 const fixed = [...baseline].filter((entry) => !unreachable.includes(entry));
 
