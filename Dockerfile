@@ -51,7 +51,14 @@ RUN for proj in *.csproj; do \
 
 # Restoring Vortex.Main pulls in its full ProjectReference graph. The test projects are copied above
 # but deliberately not restored — the image only ships the host.
-RUN dotnet restore Vortex.Main/Vortex.Main.csproj
+#
+# The dashboard needs its own line, and that is not tidiness. It used to be inside Vortex.Main's
+# graph and came along for free; making it a loadable plugin meant removing that reference, which is
+# exactly what took it out of this restore. The publish below then failed with NETSDK1004, "assets
+# file not found" — and only in the image: a developer's tree still has obj/project.assets.json from
+# an earlier build, so the same command succeeds locally and says nothing.
+RUN dotnet restore Vortex.Main/Vortex.Main.csproj \
+    && dotnet restore Vortex.Dashboard.API/Vortex.Dashboard.API.csproj
 
 # --- source + publish ----------------------------------------------------------------------------
 COPY . .
@@ -82,8 +89,9 @@ RUN dotnet publish Vortex.Main/Vortex.Main.csproj \
 # from here: ByteLoadingAlc hands any assembly the host already holds to the default context, so one
 # IVortexPlugin and one VortexDbContext type exist in the process.
 #
-# --no-restore is safe: the restore layer above restored Vortex.Main's whole graph, and this project
-# is inside it.
+# --no-restore works because the layer above restores this project EXPLICITLY. It is no longer part
+# of Vortex.Main's graph — that is the whole point of it being a plugin — so it would otherwise have
+# no assets file here.
 RUN dotnet publish Vortex.Dashboard.API/Vortex.Dashboard.API.csproj \
         --configuration Release \
         --no-restore \
