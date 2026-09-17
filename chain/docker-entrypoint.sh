@@ -16,7 +16,11 @@ set -eu
 
 STATE_DIR="${VORTEX_CHAIN_STATE_DIR:-/data}"
 STATE_FILE="$STATE_DIR/anvil-state.json"
-CHAIN_ID="${VORTEX_CHAIN_ID:-31337}"
+# Not anvil's own 31337: a wallet checks the id against the public chain registry before it will add
+# a network, and 31337 is registered there as GoChain Testnet, whose coin is GO. MetaMask then
+# refuses ours with "the native token symbol does not match". 867839 is unregistered, and spells
+# VORTEX on a phone keypad. It must stay in step with Vortex:Chain:ChainId on the emulator.
+CHAIN_ID="${VORTEX_CHAIN_ID:-867839}"
 RPC_URL="${VORTEX_CHAIN_RPC_URL:-http://127.0.0.1:8545}"
 
 # Overridable so this script can be exercised outside a container, against a real anvil, which is

@@ -34,10 +34,28 @@ public class ChainConfig
     public string? PublicRpcUrl { get; init; }
 
     /// <summary>
-    /// Signed into every transaction, and what a player's wallet has to be pointed at. 31337 is
-    /// anvil's default.
+    /// Signed into every transaction, and what a player's wallet has to be pointed at.
+    ///
+    /// <para>
+    /// <b>NOT anvil's 31337, on purpose.</b> A wallet checks the id against the public chain
+    /// registry before it will add a network, and 31337 is taken there — it is GoChain Testnet,
+    /// whose native coin is <c>GO</c>. Offering it under any other symbol makes MetaMask refuse the
+    /// network with "the native token symbol does not match the expected symbol for this chain ID",
+    /// which reads like a misconfiguration of this hotel and is not one.
+    /// </para>
+    /// <para>
+    /// 867839 is unregistered (<c>ethereum-lists/chains</c> has no <c>eip155-867839</c>), and it
+    /// spells VORTEX on a phone keypad, which is the only reason it is that number rather than any
+    /// other free one. A hotel that changes it must pick another the registry does not have, or the
+    /// same wall comes back wearing a different chain's name.
+    /// </para>
+    /// <para>
+    /// Changing it means the chain has to be wiped: an id is signed into every transaction already
+    /// on it. The contract addresses survive — they come from the treasury's address and nonce, not
+    /// from the chain.
+    /// </para>
     /// </summary>
-    public long ChainId { get; init; } = 31337;
+    public long ChainId { get; init; } = 867839;
 
     /// <summary>
     /// <c>VortexCoin</c>'s address. Deterministic for a given treasury — the first contract it

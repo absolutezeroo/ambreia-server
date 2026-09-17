@@ -45,7 +45,7 @@ RUN chmod +x /usr/local/bin/deploy.sh /usr/local/bin/vortex-chain-entrypoint.sh 
 ENV VORTEX_CHAIN_ARTIFACTS=/chain/artifacts \
     VORTEX_CHAIN_RPC_URL=http://127.0.0.1:8545 \
     VORTEX_CHAIN_STATE_DIR=/data \
-    VORTEX_CHAIN_ID=31337
+    VORTEX_CHAIN_ID=867839
 
 EXPOSE 8545
 VOLUME ["/data"]
