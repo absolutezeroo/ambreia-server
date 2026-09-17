@@ -386,10 +386,18 @@ internal sealed class QuestContentAdminService(
     }
 
     /// <summary>
-    /// Null when every reward this task pays in a currency would really be paid. A reward type that
-    /// names neither credits nor an activity-point number is an item code, which the task grain
-    /// already reports as ungranted — not this check's business.
+    /// Null when every reward this task promises would really be handed over.
     /// </summary>
+    /// <remarks>
+    /// A reward type that names neither credits nor an activity-point number is an item code, and
+    /// nothing grants items on a daily task yet — the grain logs it and hands over nothing. This
+    /// used to let it through on the grounds that the grain reported it, which made the board a
+    /// place where a reward could be promised to a player that no code path could pay. Refusing it
+    /// here is the difference between a promise that is late and one that was never keepable.
+    ///
+    /// The check is on the way in, so rows configured before it stay as they are; editing one now
+    /// surfaces it, which is the point. Delete this branch when items are wired, not before.
+    /// </remarks>
     private string? ValidateRewardCurrencies(DailyTaskSpec spec)
     {
         foreach (DailyTaskRewardSpec reward in spec.Rewards)
@@ -404,6 +412,12 @@ internal sealed class QuestContentAdminService(
             )
             {
                 return error;
+            }
+
+            if (!CurrencyRewardRules.TryParseNamed(reward.RewardTypeId, out _))
+            {
+                return $"Reward '{reward.RewardTypeId}' is not a currency, and daily tasks cannot "
+                    + "hand over items yet. The task would promise it and pay nothing.";
             }
         }
 

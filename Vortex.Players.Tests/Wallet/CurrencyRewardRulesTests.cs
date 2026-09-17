@@ -6,12 +6,14 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging.Abstractions;
 using Orleans;
 using Vortex.Dashboard.API.Admin.Hotel;
+using Vortex.Dashboard.API.Admin.Progression;
 using Vortex.Database.Context;
 using Vortex.Primitives.Content;
 using Vortex.Primitives.Players.Enums.Wallet;
 using Vortex.Primitives.Players.Providers;
 using Vortex.Primitives.Players.Snapshots;
 using Vortex.Primitives.Players.Wallet;
+using Vortex.Primitives.Quests.Admin;
 using Vortex.Tests.Support;
 using Xunit;
 
@@ -104,6 +106,42 @@ public sealed class CurrencyRewardRulesTests
             .ValidateNamed(StubCurrencies.Empty(), "throne", amount: 1)
             .Should()
             .BeNull("item rewards are the task grain's business, not this rule's");
+    }
+
+    /// <summary>
+    ///     Whose business it is: the admin service, on the way in. Nothing grants an item on a daily
+    ///     task, so a board configured to promise one promises what no code path can pay — and the
+    ///     player who completes it is simply owed something that will never arrive.
+    /// </summary>
+    [Fact]
+    public async Task SavingADailyTask_RefusesARewardNothingCanHandOver()
+    {
+        QuestContentAdminService service = new(
+            new UnusedDbContextFactory(),
+            FakeProxy.Create<IGrainFactory>(_ => null),
+            StubCurrencies.WithDuckets(),
+            NullLogger<QuestContentAdminService>.Instance
+        );
+
+        QuestContentAdminResult result = await service
+            .CreateDailyTaskAsync(
+                new DailyTaskSpec(
+                    TaskCode: "sit_on_it",
+                    QuestTypeCode: "SIT",
+                    IsBonus: false,
+                    ImageVersion: "1",
+                    CatalogName: "Sit on it",
+                    RequiredRepeats: 1,
+                    Enabled: true,
+                    SortOrder: 0,
+                    Rewards: [new DailyTaskRewardSpec(0, "throne", string.Empty, 1)]
+                ),
+                CancellationToken.None
+            )
+            .ConfigureAwait(true);
+
+        result.Success.Should().BeFalse("the task would promise a throne and pay nothing");
+        result.ErrorCode.Should().Contain("throne");
     }
 
     [Fact]

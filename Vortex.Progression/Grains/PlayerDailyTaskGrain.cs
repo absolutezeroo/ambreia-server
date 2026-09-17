@@ -224,20 +224,43 @@ internal sealed class PlayerDailyTaskGrain(
             )
             .ConfigureAwait(true);
 
+        bool delivered = true;
+
         foreach (DailyTaskRewardEntity reward in rewards)
         {
-            await GrantAsync(reward, operation, ct).ConfigureAwait(true);
+            delivered &= await GrantAsync(reward, operation, ct).ConfigureAwait(true);
         }
 
-        await _journal
-            .TransitionAsync(
-                operation,
-                CommerceOperationState.Completed,
-                CommerceStepKeys.REWARD_PAYOUT,
-                null,
-                ct
-            )
-            .ConfigureAwait(true);
+        // Completed only when the whole board went out. A reward this build cannot hand over --
+        // today, anything that is not a currency -- used to be logged and then sealed under a
+        // Completed operation anyway: the task read as paid, the journal agreed, and the part that
+        // never arrived left no trace anyone could act on. Left at Pivoted it is owed, and
+        // CommerceRelayService escalates it once it has been stuck past its deadline.
+        //
+        // The board is still shown as claimed, because it is: the status committed before any of
+        // this and re-offering the task would pay the delivered half twice.
+        if (delivered)
+        {
+            await _journal
+                .TransitionAsync(
+                    operation,
+                    CommerceOperationState.Completed,
+                    CommerceStepKeys.REWARD_PAYOUT,
+                    null,
+                    ct
+                )
+                .ConfigureAwait(true);
+        }
+        else
+        {
+            _logger.LogError(
+                "Daily task {AssignmentId} for player {PlayerId} was claimed but part of its reward "
+                    + "could not be handed over; operation {OperationId} is owed.",
+                assignment.Id,
+                PlayerId,
+                operation
+            );
+        }
 
         await Presence
             .SendComposerAsync(
@@ -261,7 +284,7 @@ internal sealed class PlayerDailyTaskGrain(
     /// type is described to the client but not materialised — there is no furniture-granting path
     /// wired to daily tasks yet, and silently dropping it without a trace would be worse.
     /// </summary>
-    private async Task GrantAsync(
+    private async Task<bool> GrantAsync(
         DailyTaskRewardEntity reward,
         CommerceOperationId operation,
         CancellationToken ct
@@ -269,7 +292,7 @@ internal sealed class PlayerDailyTaskGrain(
     {
         if (reward.Amount <= 0)
         {
-            return;
+            return true;
         }
 
         IPlayerWalletGrain wallet = _grainFactory.GetPlayerWalletGrain((long)PlayerId);
@@ -301,7 +324,9 @@ internal sealed class PlayerDailyTaskGrain(
                 )
                 .ConfigureAwait(true);
 
-            return;
+            // A false return means the receipt was already there -- this reward went out on an
+            // earlier attempt. Delivered either way; what it must not mean is "not paid".
+            return true;
         }
 
         _logger.LogWarning(
@@ -309,6 +334,10 @@ internal sealed class PlayerDailyTaskGrain(
             reward.RewardTypeId,
             PlayerId
         );
+
+        // Not delivered, and said so. The caller leaves the operation owed rather than completing
+        // over it -- the board promised this reward and the player did not get it.
+        return false;
     }
 
     private async Task<List<PlayerDailyTaskEntity>> LoadAssignmentsAsync(
