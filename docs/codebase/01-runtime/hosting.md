@@ -138,9 +138,9 @@ command rather than a route.
 | `Vortex:WebApi:Enabled` | code default `false`, `appsettings.json` sets `true` |
 | `Vortex:WebApi:MetricsEnabled` / `MetricsToken` / `MetricsPath` | → [Observability](../10-operations/observability.md) |
 
-> **Turning `Vortex:WebApi:Enabled` off silently breaks the supervisor.**
-> `Vortex:Supervisor:HealthUrl` defaults to `http://localhost:8080/health`, which is a web API route.
-> The supervisor reports `Unknown` and nothing explains why.
+> **Turning `Vortex:WebApi:Enabled` off silently breaks the container health check.**
+> The `Dockerfile`'s `HEALTHCHECK` curls `http://localhost:8080/health`, which is a web API route, so
+> the container reports itself unhealthy and nothing explains why.
 
 ## Sources
 

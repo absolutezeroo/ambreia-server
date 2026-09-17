@@ -21,7 +21,6 @@ each gap.
 | `Vortex.Dashboard.Tests` | 47 | dashboard API via `TestServer` |
 | `Vortex.Authentication.Tests` | 43 | tickets, MFA, permissions |
 | `Vortex.Crypto.Tests` | 39 | |
-| `Vortex.Supervisor.Tests` | 31 | lifecycle races, placeholder-token and insecure-bind refusals |
 | `Vortex.WebApi.Tests` | 31 | includes the 7-case metrics gating suite |
 | `Vortex.Navigator.Tests` | 25 | |
 | `Vortex.Plugins.Tests` | 22 | real activation against a real byte-loaded plugin |
@@ -187,7 +186,6 @@ Two places have no compiler between the halves, and both have a test:
 
 - **LoadGen ↔ Benchmark** — the `LoadSample` JSON line (`Vortex.LoadGen/Program.Wire` vs
   `LoadGeneratorHost.Parse`)
-- **Supervisor ↔ emulator** — the stdin command (`GracefulShutdownCommand` vs `ConsoleCommandService`)
 
 ## Sources
 

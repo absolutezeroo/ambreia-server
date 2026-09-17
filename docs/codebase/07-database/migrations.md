@@ -26,8 +26,8 @@ and `VortexDbContextModelSnapshot.cs` contains `.HasColumnName("vending_ids")`.
 That is still the default. `MigrationHelper.ApplyStartupMigrationsAsync` makes it opt-in for a
 single node: `Program.cs` calls it **before `host.StartAsync`**, and it returns immediately unless
 `Vortex:Database:MigrateOnStartup` is true. When it is, it logs the pending ids, applies them, and
-lets a failure propagate into the host's `catch` — which exits non-zero, so the supervisor restarts
-or alerts instead of serving a schema the code does not match.
+lets a failure propagate into the host's `catch` — which exits non-zero, so the container runtime
+restarts or alerts instead of serving a schema the code does not match.
 
 It resolves `IDbContextFactory<VortexDbContext>`, not `VortexDbContext`: the context is registered
 through `AddPooledDbContextFactory`, so `GetRequiredService<VortexDbContext>()` throws — which is

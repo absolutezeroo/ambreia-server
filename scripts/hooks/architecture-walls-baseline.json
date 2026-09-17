@@ -33,8 +33,6 @@
     "Vortex.Specs",
     "Vortex.Specs.Cli",
     "Vortex.Specs.Tests",
-    "Vortex.Supervisor",
-    "Vortex.Supervisor.Tests",
     "Vortex.Tests.Support",
     "Vortex.WebApi",
     "Vortex.WebApi.Tests"

@@ -22,7 +22,7 @@ order is what it is.
 | 9 | `AddHostedService<VortexEmulator>()` — **last** | so the game sockets open after every module's own hosted services |
 | 10 | `host.StartAsync(ct)` | |
 | 11 | `ConsoleCommandService.Enable()` | the stdin loop starts only after the host is up |
-| 12 | on any exception: `LogCritical` + `Environment.ExitCode = 1` | **explicitly**, so a supervisor sees a failure rather than a clean exit |
+| 12 | on any exception: `LogCritical` + `Environment.ExitCode = 1` | **explicitly**, so the container runtime sees a failure rather than a clean exit |
 
 ### Step 5 — `AddOrleans`, in order
 
@@ -111,7 +111,7 @@ PluginBootstrapper.StartAsync
 
 ## Shutdown
 
-`quit` on stdin (or from the supervisor, which writes to the child's stdin) →
+`quit` on stdin →
 `ConsoleCommandService` stops the host → hosted services stop in **reverse** registration order, so
 the game sockets close first and the writers drain last.
 

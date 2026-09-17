@@ -185,10 +185,8 @@
     "http:GET /api/user/twofactor  (Vortex.WebApi/Hosting/WebApiEndpoints.cs)": "account-id",
     "http:GET /article/{slug}  (Vortex.WebApi/Hosting/WebApiSiteHosting.cs)": "NONE",
     "http:GET /assets/{file}  (Vortex.Dashboard.API/Hosting/DashboardEndpoints.cs)": "require-authorization+anonymous",
-    "http:GET /console  (Vortex.Supervisor/Endpoints/SupervisorEndpoints.cs)": "endpoint-filter",
     "http:GET /health  (Vortex.WebApi/Hosting/WebApiEndpoints.cs)": "NONE",
     "http:GET /hotel-assets/{**path}  (Vortex.Dashboard.API/Hosting/Hotel/DashboardEndpoints.HotelAssets.cs)": "anonymous",
-    "http:GET /status  (Vortex.Supervisor/Endpoints/SupervisorEndpoints.cs)": "endpoint-filter",
     "http:POST /api/login  (Vortex.Dashboard.API/Hosting/DashboardEndpoints.cs)": "anonymous",
     "http:POST /api/logout  (Vortex.Dashboard.API/Hosting/DashboardEndpoints.cs)": "anonymous",
     "http:POST /api/newuser/name/check  (Vortex.WebApi/Hosting/WebApiEndpoints.cs)": "NONE",
@@ -199,7 +197,6 @@
     "http:POST /api/public/authentication/password  (Vortex.WebApi/Hosting/WebApiEndpoints.cs)": "account-id",
     "http:POST /api/public/registration/new  (Vortex.WebApi/Hosting/WebApiEndpoints.cs)": "NONE",
     "http:POST /api/public/shop/webhook/{provider}  (Vortex.WebApi/Hosting/WebApiEndpoints.cs)": "account-id+selected-player",
-    "http:POST /api/session  (Vortex.Supervisor/Endpoints/SupervisorEndpoints.cs)": "endpoint-filter",
     "http:POST /api/user/avatars  (Vortex.WebApi/Hosting/WebApiEndpoints.cs)": "account-id",
     "http:POST /api/user/avatars/select  (Vortex.WebApi/Hosting/WebApiEndpoints.cs)": "account-id",
     "http:POST /api/user/email/change  (Vortex.WebApi/Hosting/WebApiEndpoints.cs)": "account-id",
@@ -215,11 +212,7 @@
     "http:POST /api/user/trustedlocations/reset  (Vortex.WebApi/Hosting/WebApiEndpoints.cs)": "account-id",
     "http:POST /api/user/twofactor/disable  (Vortex.WebApi/Hosting/WebApiEndpoints.cs)": "account-id",
     "http:POST /api/user/twofactor/enable  (Vortex.WebApi/Hosting/WebApiEndpoints.cs)": "account-id",
-    "http:POST /api/user/twofactor/startregistration  (Vortex.WebApi/Hosting/WebApiEndpoints.cs)": "account-id",
-    "http:POST /console  (Vortex.Supervisor/Endpoints/SupervisorEndpoints.cs)": "endpoint-filter",
-    "http:POST /restart  (Vortex.Supervisor/Endpoints/SupervisorEndpoints.cs)": "endpoint-filter",
-    "http:POST /start  (Vortex.Supervisor/Endpoints/SupervisorEndpoints.cs)": "endpoint-filter",
-    "http:POST /stop  (Vortex.Supervisor/Endpoints/SupervisorEndpoints.cs)": "endpoint-filter"
+    "http:POST /api/user/twofactor/startregistration  (Vortex.WebApi/Hosting/WebApiEndpoints.cs)": "account-id"
   },
   "notes": {
     "_": "This file records WHICH GATE guards each entry of the authorization surface, not whether that gate is correct. It exists because the same question -- may this actor do this? -- is answered by more than twenty distinct idiom combinations in this repository, two of which (gated-lookup, ensure-helper) are indistinguishable from an ungated method in a diff. A NEW entry, or an entry whose gate disappears, blocks; confirming the gate and running --update is the deliberate look this check is asking for.",

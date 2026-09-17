@@ -35,9 +35,10 @@ SSE.
 `IsEnabled` returns `logLevel != LogLevel.None` **on purpose**, so the factory's configured rules stay
 authoritative for both sinks — the feed does not get its own filtering.
 
-> `ServerConsoleFeed` lives in `Vortex.Primitives/Console/` rather than `Vortex.Logging` precisely
-> because **two processes use it**: the emulator's logger sink, and the supervisor's carrier for the
-> child's stdout. → [Deployment](../01-runtime/deployment.md)
+> `ServerConsoleFeed` lives in `Vortex.Primitives/Console/` rather than `Vortex.Logging` because two
+> processes used to need it: the emulator's logger sink, and the supervisor's carrier for the child's
+> stdout. The supervisor is gone, so today only the first is real.
+> → [Deployment](../01-runtime/deployment.md)
 
 ## There is no rotation
 

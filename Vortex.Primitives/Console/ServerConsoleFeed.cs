@@ -8,14 +8,16 @@ namespace Vortex.Primitives.Console;
 /// <summary>
 ///     Holds the last N console lines and fans new ones out to every attached viewer.
 ///     <para>
-///     Two processes need this: the emulator, where a logger provider feeds it every line it logs so
-///     the dashboard can follow along, and the supervisor, where it carries the child process's
-///     stdout so the control page still has a console when the emulator is down.
+///     One process needs this: the emulator, where a logger provider feeds it every line it logs so
+///     the dashboard can follow along. A second used to — a supervisor that ran the emulator as a
+///     child process and carried its stdout, so its control page kept a console while the emulator
+///     was down. It was removed: under Docker the container runtime already restarts the process and
+///     already keeps its logs, and it was wired into no deployment here.
 ///     </para>
 ///     <para>
 ///     Each viewer gets its own bounded channel that drops its oldest line when full, so a browser
-///     tab that stops reading slows down nothing but itself — neither the emulator's logging nor the
-///     child's stdout is ever back-pressured by a stalled HTTP response.
+///     tab that stops reading slows down nothing but itself — the emulator's logging is never
+///     back-pressured by a stalled HTTP response.
 ///     </para>
 /// </summary>
 public sealed partial class ServerConsoleFeed(int capacity)

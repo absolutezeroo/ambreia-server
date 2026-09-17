@@ -14,7 +14,6 @@ the emulator's process; they do not have a `Main`.
 | Executable | SDK | Role |
 |---|---|---|
 | `Vortex.Main` | default | the emulator: composition root, Orleans silo, all listeners |
-| `Vortex.Supervisor` | `Microsoft.NET.Sdk.Web` | a *separate process* that starts/stops/restarts `Vortex.Main` |
 | `Vortex.LoadGen` | default | out-of-process synthetic client fleet |
 | `Vortex.Specs.Cli` | default | dev-time spec generator; referenced by nothing at runtime |
 
@@ -69,7 +68,6 @@ The solution's own seven folders (`Vortex.Cloud.sln`, `NestedProjects`) are the 
 | Project | Owns |
 |---|---|
 | `Vortex.Main` | `Program.cs` composition, Orleans silo config, DI and hosted-service ordering, console commands, the `VortexEmulator` hosted service that opens the game sockets last |
-| `Vortex.Supervisor` | a parent process: child lifecycle, stdin-driven graceful shutdown, console relay over SSE, `/health` polling. Deliberately outside the emulator — "nothing living inside a process can restart that process" |
 
 ### 2 Protocol
 

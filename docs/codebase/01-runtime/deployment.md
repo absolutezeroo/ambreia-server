@@ -2,8 +2,7 @@
 
 ## Purpose
 
-The container image, the compose stack, and the supervisor — including what the compose stack does
-*not* cover.
+The container image and the compose stack — including what the compose stack does *not* cover.
 
 ## The image
 
@@ -63,62 +62,29 @@ Three details worth understanding before copying it:
 | 30001 (dev 40001) | game WebSocket |
 | 8080 | web API, `/health`, `/metrics` |
 | 9000 (HTTPS 9443) | operator dashboard |
-| 5250 | supervisor, if run |
 
-## The supervisor
+## The supervisor was removed (2026-09-17)
 
-`Vortex.Supervisor` is a **separate process** — `Sdk="Microsoft.NET.Sdk.Web"`, `OutputType Exe`, a
-small `WebApplication.CreateSlimBuilder` host. Its class comment states the reason plainly:
+`Vortex.Supervisor` was a separate process that ran the emulator as a **child**, on the reasoning
+that *"nothing living inside a process can restart that process"*: it started, stopped and restarted
+it, carried its stdout both ways, and polled `/health` so an operator had a control page even while
+the hotel was down.
 
-> *"nothing living inside a process can restart that process"*
+It was deleted because the container runtime already is that process. `docker-compose.yml` carries
+`restart: unless-stopped` and the `Dockerfile` a `HEALTHCHECK` on `/health` — restart on exit and a
+health probe, the supervisor's two jobs. This document already recorded the tell: it appeared in
+**neither** `Dockerfile` nor `docker-compose.yml`, so it was wired into no deployment and never ran.
 
-It references only `Vortex.Logging` and `Vortex.Primitives`, and shares the emulator's
-`appsettings.json` by `<Content Include="../appsettings.json">`.
-
-### What it does
-
-| Concern | Mechanism |
-|---|---|
-| Child lifecycle | `EmulatorProcess.{StartAsync,StopAsync,RestartAsync,SendInputAsync}` behind a `SemaphoreSlim _gate` — restart holds the gate across **both** halves so two operators cannot interleave — plus a `Lock` ordering field access against the thread-pool `Exited` callback |
-| Graceful shutdown | writes `GracefulShutdownCommand` (default `"quit"`) to the child's **stdin**, where `ConsoleCommandService` reads it; waits `GracefulShutdownTimeoutSeconds` (30) then `Kill()` |
-| Working directory | `ResolveWorkingDirectory` anchors a relative path on `AppContext.BaseDirectory`, **not** the CWD |
-| Console, both ways | child stdout → `ServerConsoleFeed` → SSE at `GET /api/console` (with `X-Accel-Buffering: no`); operator input via `POST /api/console` |
-| Health | `EmulatorHealthProbe` polls `Vortex:Supervisor:HealthUrl` every `HealthPollSeconds`, summarising to `Healthy`/`Degraded`/`Unhealthy`/`Unknown` |
-
-`OnExited` only claims the slot if `ReferenceEquals(_current, process)` — a late exit notification must
-not mark the *replacement* as stopped.
-
-### Auth, and why it is a shared secret
-
-One token, compared in fixed time (`SupervisorAuth.TokenMatches`). `POST /api/session` exchanges it
-for an HttpOnly cookie, because `EventSource` cannot send headers.
-
-`SupervisorAuth`'s comment states why there is no login against the staff table: **this surface must
-answer while the database is down.** That is the whole point of the process.
-
-`SupervisorConfigValidator` refuses `PLACEHOLDER_TOKEN` and any `CHANGE_ME` marker, and refuses a
-cleartext off-box bind unless `AllowInsecureRemoteHttp`.
-
-The UI is one hand-written `wwwroot/index.html` with no npm step — *"the one moment this UI matters is
-when everything else is down."*
-
-### The health-URL coupling
-
-`Vortex:Supervisor:HealthUrl` defaults to `http://localhost:8080/health`, which is a **`Vortex.WebApi`
-route**.
-
-> Setting `Vortex:WebApi:Enabled = false` therefore breaks the supervisor's health view silently — it
-> reports `Unknown` and nothing explains why.
+It made sense for the other way of running the hotel — `dotnet Vortex.Main.dll` on a machine, with
+nothing to relaunch it and no restart button for someone without SSH. If that deployment ever comes
+back, this is what to restore: `git log -- Vortex.Supervisor`.
 
 ## Gaps
 
-Two, both verified:
+One, verified:
 
-1. **The supervisor is not containerised.** It appears in neither `Dockerfile` nor
-   `docker-compose.yml`. How it is meant to run alongside a container deployment is undocumented.
-2. **`Vortex:Supervisor:Emulator:WorkingDirectory` defaults to a dev-tree path**
-   (`../../../../Vortex.Main/bin/Debug/net10.0`) baked into the shared `appsettings.json`, and there
-   is no `appsettings.Production.json` in the tree.
+1. **No `appsettings.Production.json` in the tree.** Production values have to arrive through
+   `VORTEX__`-prefixed environment variables, which is what the compose stack does.
 
 ## Production checklist
 
@@ -133,7 +99,6 @@ Derived from the validators and gates rather than from a runbook:
       `AllowUnclusteredOutsideDevelopment`
 - [ ] if `ClusteringProvider = adonet`: Orleans' own SQL scripts applied first
       (https://aka.ms/orleans-sql-scripts — **not vendored here**)
-- [ ] `Vortex:Supervisor:Token` set to something real, and `WorkingDirectory` overridden
 - [ ] dashboard behind TLS, or `DashboardAllowInsecureRemoteHttp` consciously set
 - [ ] `Vortex:WebApi:MetricsToken` set if `/metrics` is reachable off-box
       → [Observability](../10-operations/observability.md)
@@ -144,10 +109,6 @@ Derived from the validators and gates rather than from a runbook:
 ## Sources
 
 - `Dockerfile`, `docker-compose.yml`, `global.json`
-- `Vortex.Supervisor/Program.cs`, `Process/EmulatorProcess.cs`, `Health/EmulatorHealthProbe.cs`, `SupervisorAuth.cs`
-- `Vortex.Supervisor/Configuration/{SupervisorConfig,SupervisorConfigValidator}.cs`
-- `Vortex.Supervisor/wwwroot/index.html`
-- `Vortex.Supervisor.Tests/**`
 - `Vortex.Main/Extensions/HostApplicationBuilderExtensions.cs`
 - `Vortex.Dashboard.API/Vortex.Dashboard.API.csproj`
 - `README.md`

@@ -8,7 +8,7 @@ behaviour rather than tune it.
 ## Sources, in order
 
 1. `appsettings.json` — **at the repository root**, not in `Vortex.Main`.
-   `Vortex.Main.csproj` copies `../appsettings*.json` to output; `Vortex.Supervisor` does the same.
+   `Vortex.Main.csproj` copies `../appsettings*.json` to output.
 2. `appsettings.Development.json` — **gitignored** (`.gitignore`: `**/appsettings.*.json`).
 3. Environment variables with the prefix **`VORTEX__`**, stripped, `__` → `:`.
 
@@ -63,7 +63,6 @@ the class alone is misleading.
 | `Vortex:Protocol:*` | 5 revision maps | wire-safety ceilings, not business policy |
 | `Vortex:Revisions:DefaultRevisionId` | `RevisionRegistrationService` | **not set** — "first registration wins" decides |
 | `Vortex:Plugin:HotReloadEnabled` | `PluginHotReloadService` | see the mismatch below |
-| `Vortex:Supervisor:Token` | supervisor | placeholder rejected before any request is served |
 | `Vortex:Commerce:Recovery:*` | `CommerceRelayService` | 30 s / 100 / 10 min |
 
 ## Runtime-editable config is not here
@@ -112,7 +111,7 @@ All verified at this commit.
 | **Hot reload is off by default even in Development** | `ServiceCollectionExtensions` gates registration on a **raw** `pluginSection.GetValue<bool>("HotReloadEnabled")`, which returns `false` when the key is absent — while `PluginConfig.HotReloadEnabled` defaults to `true`. Neither appsettings file has a `Vortex:Plugin` section at all |
 | **Dead section** | `appsettings.json` declares `"Game": {}`; nothing binds `Vortex:Game` |
 | **Dead key** | `appsettings.Development.json` sets `Vortex:Database:LoggingEnabled`, which is not a property of `DatabaseConfig` |
-| **Dev path in shared config** | `Vortex:Supervisor:Emulator:WorkingDirectory` defaults to `../../../../Vortex.Main/bin/Debug/net10.0`. There is no `appsettings.Production.json` in the tree |
+| **No production file** | There is no `appsettings.Production.json` in the tree; production values arrive as `VORTEX__` environment variables |
 
 ## Validation
 
@@ -123,8 +122,6 @@ use. Notable validators:
   `PLACEHOLDER`, and **never echoes the value**
 - `OrleansHostConfigValidator` — `AdvertisedIp` must parse as a literal IP (hostnames rejected), ports
   in range and mutually distinct, **and distinct from every game listener port**
-- `SupervisorConfigValidator` — refuses `PLACEHOLDER_TOKEN` and any `CHANGE_ME` marker, and refuses a
-  cleartext off-box bind unless `AllowInsecureRemoteHttp`
 - `PluginConfigValidator` — path **syntax** only; a not-yet-built dev folder is normal
 
 Pinned by `Vortex.Hosting.Tests/ConfigValidationTests.cs` and `ListenerSecurityTests.cs`.
@@ -142,6 +139,5 @@ list.
 - `Vortex.Main/Configuration/{OrleansHostConfig,OrleansHostConfigValidator}.cs`
 - `Vortex.Database/Configuration/{DatabaseConfig,DatabaseConfigValidator}.cs`
 - `Vortex.Plugins/Configuration/{PluginConfig,PluginConfigValidator}.cs`, `Extensions/ServiceCollectionExtensions.cs`
-- `Vortex.Supervisor/Configuration/{SupervisorConfig,SupervisorConfigValidator}.cs`
 - `Vortex.PacketHandlers/PacketHandlersModule.cs` — the friend-limit comment
 - `appsettings.json`, `appsettings.Development.json`, `docker-compose.yml`
