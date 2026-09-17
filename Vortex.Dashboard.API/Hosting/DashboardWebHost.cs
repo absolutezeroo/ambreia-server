@@ -668,6 +668,56 @@ internal sealed class DashboardWebHost(
             ui.DocumentTitle = "Vortex Dashboard API";
         });
 
+        // HTTP access audit trail, registered ABOVE authentication, authorization and the rate
+        // limiter so that it wraps them.
+        //
+        // It used to sit below all three, which in this pipeline means inside them: a request the
+        // authorization middleware rejected short-circuited there and never reached this, so the
+        // denials -- the 401s, the 403s, the 429s, the requests most worth having a record of --
+        // were the exact ones it could not see. Its own 401/403 branch had never been reachable.
+        //
+        // Login/logout audit themselves; operation success is audited by the operations classes
+        // (with correlation id), so for operation routes only failures are logged here to avoid
+        // duplicate records.
+        app.Use(
+            async (ctx, next) =>
+            {
+                await next().ConfigureAwait(false);
+
+                string path = ctx.Request.Path.Value ?? "/";
+
+                if (!path.StartsWith("/api/", StringComparison.Ordinal))
+                {
+                    return;
+                }
+
+                if (path is "/api/login" or "/api/logout")
+                {
+                    return;
+                }
+
+                int status = ctx.Response.StatusCode;
+                bool isOperation =
+                    path.StartsWith("/api/ops/", StringComparison.Ordinal)
+                    || path.StartsWith("/api/v1/operations/", StringComparison.Ordinal);
+
+                if (isOperation && status == StatusCodes.Status200OK)
+                {
+                    return;
+                }
+
+                AuditResult result = status switch
+                {
+                    StatusCodes.Status200OK => AuditResult.Success,
+                    StatusCodes.Status401Unauthorized or StatusCodes.Status403Forbidden =>
+                        AuditResult.Denied,
+                    _ => AuditResult.Failed,
+                };
+
+                emitter.Emit(path, result, status, "HttpAccess", ctx.ActorEmail());
+            }
+        );
+
         app.UseAuthentication();
         app.UseAuthorization();
         app.UseRateLimiter();
@@ -711,48 +761,6 @@ internal sealed class DashboardWebHost(
                 );
 
                 await next().ConfigureAwait(false);
-            }
-        );
-
-        // HTTP access audit trail. Login/logout audit themselves; operation success is audited by
-        // the operations classes (with correlation id), so for operation routes only failures are
-        // logged here to avoid duplicate records.
-        app.Use(
-            async (ctx, next) =>
-            {
-                await next().ConfigureAwait(false);
-
-                string path = ctx.Request.Path.Value ?? "/";
-
-                if (!path.StartsWith("/api/", StringComparison.Ordinal))
-                {
-                    return;
-                }
-
-                if (path is "/api/login" or "/api/logout")
-                {
-                    return;
-                }
-
-                int status = ctx.Response.StatusCode;
-                bool isOperation =
-                    path.StartsWith("/api/ops/", StringComparison.Ordinal)
-                    || path.StartsWith("/api/v1/operations/", StringComparison.Ordinal);
-
-                if (isOperation && status == StatusCodes.Status200OK)
-                {
-                    return;
-                }
-
-                AuditResult result = status switch
-                {
-                    StatusCodes.Status200OK => AuditResult.Success,
-                    StatusCodes.Status401Unauthorized or StatusCodes.Status403Forbidden =>
-                        AuditResult.Denied,
-                    _ => AuditResult.Failed,
-                };
-
-                emitter.Emit(path, result, status, "HttpAccess", ctx.ActorEmail());
             }
         );
     }
