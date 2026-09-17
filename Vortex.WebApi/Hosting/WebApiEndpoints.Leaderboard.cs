@@ -58,7 +58,10 @@ internal static partial class WebApiEndpointsLeaderboard
     {
         app.MapGet(
                 "/api/public/leaderboard/coins",
-                ([FromServices] IChainLeaderboard leaderboard, [FromServices] IChainService chain) =>
+                (
+                    [FromServices] IChainLeaderboard leaderboard,
+                    [FromServices] IChainService chain
+                ) =>
                     TypedResults.Ok(
                         new LeaderboardResponse(
                             chain.Enabled,

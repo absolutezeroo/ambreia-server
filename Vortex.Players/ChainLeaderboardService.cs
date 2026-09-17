@@ -79,9 +79,7 @@ internal sealed class ChainLeaderboardService(
         {
             // Not a failure and not worth a warning: a hotel with no chain has no contest, and the
             // standings stay empty, which is what a caller renders as "nothing here".
-            logger.LogDebug(
-                "No chain or no custodial wallets; the coin leaderboard stays empty."
-            );
+            logger.LogDebug("No chain or no custodial wallets; the coin leaderboard stays empty.");
 
             return;
         }
