@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Orleans;
+using Vortex.Database.Commerce;
 using Vortex.Database.Context;
 using Vortex.Database.Entities.Commerce;
 using Vortex.Database.Entities.Furniture;
@@ -618,6 +619,14 @@ public sealed partial class InventoryGrain
         }
         catch (DbUpdateException ex) when (!operationId.IsNone)
         {
+            // The receipt decides whether this really is a replay. Returning quietly on any write
+            // failure is how a grant that never happened gets reported as one that did, and the
+            // purchase above it completes over a delivery the player never received.
+            if (!await dbCtx.HasCommittedReceiptAsync(operationId, stepKey, ct))
+            {
+                throw;
+            }
+
             _logger.LogInformation(
                 ex,
                 "Step {StepKey} of operation {OperationId} already granted {Copies} of definition "

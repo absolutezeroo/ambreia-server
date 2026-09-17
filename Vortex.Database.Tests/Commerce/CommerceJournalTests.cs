@@ -268,6 +268,130 @@ public sealed class CommerceJournalTests : IAsyncLifetime
         (await _journal.GetIncompletePivotedAsync(10, CancellationToken.None)).Should().BeEmpty();
     }
 
+    /// <summary>
+    /// Every flow records its pivot from inside the closure <c>ExecutePurchaseAsync</c> runs, and
+    /// that closure refunds the debit on any exception leaving it. So a journal write that threw
+    /// after the goods were handed over refunded a delivered purchase: the player kept the item and
+    /// got the credits back. Recording the pivot must not be able to undo it.
+    /// </summary>
+    [Fact]
+    public async Task APivotThatCannotBeRecorded_DoesNotThrowAtTheCaller()
+    {
+        CommerceOperationId id = CommerceOperationId.New();
+        await _journal.OpenAsync(
+            id,
+            CommerceOperationKind.CatalogPurchase,
+            PLAYER,
+            null,
+            CancellationToken.None
+        );
+
+        // Closing the connection takes the in-memory database with it: every write from here fails.
+        await _conn.CloseAsync();
+
+        Func<Task> recordThePivot = () =>
+            _journal.TransitionAsync(
+                id,
+                CommerceOperationState.Pivoted,
+                CommerceStepKeys.LOCAL_GRANT,
+                null,
+                CancellationToken.None
+            );
+
+        await recordThePivot
+            .Should()
+            .NotThrowAsync(
+                "the goods are already the player's and the caller compensates on throw"
+            );
+    }
+
+    /// <summary>
+    /// The counterweight: the guard above must not have turned the journal into something that
+    /// swallows everything. Before the pivot a refund is still the right answer, so the caller has
+    /// to hear about the failure.
+    /// </summary>
+    [Fact]
+    public async Task ADebitThatCannotBeRecorded_StillThrows()
+    {
+        CommerceOperationId id = CommerceOperationId.New();
+        await _journal.OpenAsync(
+            id,
+            CommerceOperationKind.CatalogPurchase,
+            PLAYER,
+            null,
+            CancellationToken.None
+        );
+
+        await _conn.CloseAsync();
+
+        Func<Task> recordTheDebit = () =>
+            _journal.TransitionAsync(
+                id,
+                CommerceOperationState.Debited,
+                CommerceStepKeys.DEBIT,
+                null,
+                CancellationToken.None
+            );
+
+        await recordTheDebit
+            .Should()
+            .ThrowAsync<Exception>("compensation is still correct before the pivot");
+    }
+
+    /// <summary>
+    /// What the four <c>DbUpdateException</c> sites now ask instead of reading the exception type.
+    /// They report "already applied" on a false answer, and a caller told that about a write which
+    /// never landed grants the goods against a debit that was rolled back.
+    /// </summary>
+    [Fact]
+    public async Task ACommittedReceipt_IsTellableFromAnyOtherWriteFailure()
+    {
+        CommerceOperationId recorded = CommerceOperationId.New();
+        CommerceOperationId never = CommerceOperationId.New();
+
+        await _journal.OpenAsync(
+            recorded,
+            CommerceOperationKind.CatalogPurchase,
+            PLAYER,
+            null,
+            CancellationToken.None
+        );
+        await _journal.TryRecordStepAsync(
+            recorded,
+            CommerceStepKeys.DEBIT,
+            "applied",
+            CancellationToken.None
+        );
+
+        await using VortexDbContext db = new(
+            new DbContextOptionsBuilder<VortexDbContext>().UseSqlite(_conn).Options
+        );
+
+        (
+            await db.HasCommittedReceiptAsync(
+                recorded,
+                CommerceStepKeys.DEBIT,
+                CancellationToken.None
+            )
+        )
+            .Should()
+            .BeTrue("this one really did run before");
+
+        (await db.HasCommittedReceiptAsync(never, CommerceStepKeys.DEBIT, CancellationToken.None))
+            .Should()
+            .BeFalse("no receipt means the write failed for some other reason, not a replay");
+
+        (
+            await db.HasCommittedReceiptAsync(
+                recorded,
+                CommerceStepKeys.LOCAL_GRANT,
+                CancellationToken.None
+            )
+        )
+            .Should()
+            .BeFalse("a receipt for one step is not a receipt for another");
+    }
+
     private async Task<DateTime?> PivotedAsync(CommerceOperationId id)
     {
         IReadOnlyList<CommerceOperationRecord> rows = await _journal.GetIncompletePivotedAsync(

@@ -260,8 +260,34 @@ public sealed class MarketplacePurchaseGrain(
             .ConfigureAwait(true);
 
         // THE PIVOT. The offer is off the market; the item is owed back.
-        offer.State = MarketplaceOfferState.Cancelled;
-        await dbCtx.SaveChangesAsync(ct).ConfigureAwait(true);
+        //
+        // Conditional for the same reason BuyOfferAsync is: the buyer runs in another player's
+        // grain, so nothing serialises it against this one, and the Sold check above is only true
+        // as of the read. An unconditional SaveChanges here overwrote the buyer's Sold with
+        // Cancelled and handed the seller a second copy of an item somebody had already paid for.
+        //
+        // Cancelled is in the set so a seller whose restitution failed can still retry through
+        // here; PendingRemoval is not, because the listing has not taken the item out of the
+        // seller's inventory yet and giving it "back" would mint a copy.
+        int claimed = await dbCtx
+            .MarketplaceOffers.Where(o =>
+                o.Id == offer.Id
+                && (
+                    o.State == MarketplaceOfferState.Active
+                    || o.State == MarketplaceOfferState.Expired
+                    || o.State == MarketplaceOfferState.Cancelled
+                )
+            )
+            .ExecuteUpdateAsync(
+                up => up.SetProperty(p => p.State, MarketplaceOfferState.Cancelled),
+                ct
+            )
+            .ConfigureAwait(true);
+
+        if (claimed == 0)
+        {
+            return false;
+        }
 
         await _journal
             .TransitionAsync(

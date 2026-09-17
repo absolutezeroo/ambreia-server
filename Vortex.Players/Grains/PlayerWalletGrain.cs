@@ -7,6 +7,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.Extensions.Logging;
 using Orleans;
+using Vortex.Database.Commerce;
 using Vortex.Database.Context;
 using Vortex.Database.Entities.Commerce;
 using Vortex.Database.Entities.Players;
@@ -172,6 +173,23 @@ internal sealed class PlayerWalletGrain(
                     {
                         await tx.RollbackAsync(ct);
 
+                        // Nothing of this attempt committed. Calling it a replay is only honest if
+                        // the earlier attempt's receipt is genuinely there, because the caller acts
+                        // on that answer by granting the goods: read the receipt instead of reading
+                        // the exception type. Without an operation there is no receipt and no
+                        // replay to claim, so that case leaves here too.
+                        if (
+                            operationId.IsNone
+                            || !await dbCtx.HasCommittedReceiptAsync(
+                                operationId,
+                                CommerceStepKeys.DEBIT,
+                                ct
+                            )
+                        )
+                        {
+                            throw;
+                        }
+
                         _logger.LogInformation(
                             ex,
                             "Wallet debit for player {PlayerId} replayed operation {OperationId}; "
@@ -204,28 +222,49 @@ internal sealed class PlayerWalletGrain(
                 return WalletDebitResult.InsufficientBalance(failure);
             }
 
-            IPlayerPresenceGrain playerPresence = _grainFactory.GetPlayerPresenceGrain(
-                (int)this.GetPrimaryKeyLong()
-            );
-
-            foreach (WalletCurrencyUpdateSnapshot update in updates)
+            // The debit is committed and its receipt with it. Everything below only tells other
+            // people about it, and none of it is allowed to change what this method returns.
+            //
+            // It used to: the caller is ExecutePurchaseAsync, which calls the debit BEFORE its
+            // compensation block, so an exception thrown from here left the money taken, the grant
+            // never run and no refund attempted. A failed presence call is a stale credit counter
+            // until the next update; a thrown one was the player's balance.
+            try
             {
-                await playerPresence.OnCurrencyUpdateAsync(update, ct);
+                IPlayerPresenceGrain playerPresence = _grainFactory.GetPlayerPresenceGrain(
+                    (int)this.GetPrimaryKeyLong()
+                );
 
-                (string currency, int? activityPointType) = DescribeCurrency(update.CurrencyKind);
+                foreach (WalletCurrencyUpdateSnapshot update in updates)
+                {
+                    await playerPresence.OnCurrencyUpdateAsync(update, ct);
 
-                await _events
-                    .PublishAsync(
-                        new CurrencyChangedEvent(
-                            (int)this.GetPrimaryKeyLong(),
-                            currency,
-                            activityPointType,
-                            -update.ChangedBy,
-                            update.Amount
-                        ),
-                        ct
-                    )
-                    .ConfigureAwait(true);
+                    (string currency, int? activityPointType) = DescribeCurrency(
+                        update.CurrencyKind
+                    );
+
+                    await _events
+                        .PublishAsync(
+                            new CurrencyChangedEvent(
+                                (int)this.GetPrimaryKeyLong(),
+                                currency,
+                                activityPointType,
+                                -update.ChangedBy,
+                                update.Amount
+                            ),
+                            ct
+                        )
+                        .ConfigureAwait(true);
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(
+                    ex,
+                    "Wallet debit for player {PlayerId} committed, but announcing it failed. The "
+                        + "debit stands; the client's balance is stale until the next update.",
+                    this.GetPrimaryKeyLong()
+                );
             }
         }
 
@@ -523,6 +562,14 @@ internal sealed class PlayerWalletGrain(
         }
         catch (DbUpdateException ex)
         {
+            // Same rule as the debit above: the receipt decides, not the exception type. Returning
+            // false here tells the caller the credit is already the player's, and a caller told
+            // that about a write that never landed closes a debt nobody ever paid.
+            if (!await dbCtx.HasCommittedReceiptAsync(operationId, stepKey, ct))
+            {
+                throw;
+            }
+
             _logger.LogInformation(
                 ex,
                 "Step {StepKey} of operation {OperationId} was already credited to player "

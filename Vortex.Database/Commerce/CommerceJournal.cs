@@ -83,7 +83,61 @@ public sealed class CommerceJournal(
         }
     }
 
+    /// <summary>
+    /// States a refund is never correct from. <see cref="CommerceOperationState"/> happens to order
+    /// FailedBeforePivot after Pivoted, so this is a set and not a <c>&gt;=</c> comparison.
+    /// </summary>
+    private static bool IsPastPivot(CommerceOperationState state) =>
+        state
+            is CommerceOperationState.Pivoted
+                or CommerceOperationState.Completing
+                or CommerceOperationState.Completed
+                or CommerceOperationState.NeedsIntervention;
+
     public async Task TransitionAsync(
+        CommerceOperationId id,
+        CommerceOperationState state,
+        string? step,
+        string? error,
+        CancellationToken ct
+    )
+    {
+        if (!IsPastPivot(state))
+        {
+            await TransitionCoreAsync(id, state, step, error, ct).ConfigureAwait(false);
+
+            return;
+        }
+
+        // Past the pivot the only ways out are completion or an operator -- CommerceOperationState
+        // says so on Pivoted itself. But every flow records its pivot from inside the closure the
+        // wallet's purchase executor runs, and that executor compensates on ANY exception escaping
+        // it. So a journal write that threw here reached back and refunded a purchase whose goods
+        // had already been handed to the player: they kept the furniture and got the credits back.
+        // Twelve call sites had the same shape, and the catalogue's own comment above its pivot
+        // ("Nothing after it refunds") described what the code did not do.
+        //
+        // Recording that the pivot happened must never be able to undo the pivot. Swallowing leaves
+        // the operation at its previous state with its effect applied, which is the conservative
+        // end of the trade: an operator finds an unfinished operation instead of a silent loss, and
+        // the amount is still in the receipts.
+        try
+        {
+            await TransitionCoreAsync(id, state, step, error, ct).ConfigureAwait(false);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogCritical(
+                ex,
+                "Commerce operation {OperationId} applied its effect but could not be recorded as "
+                    + "{State}. The effect stands; the journal does not show it.",
+                id,
+                state
+            );
+        }
+    }
+
+    private async Task TransitionCoreAsync(
         CommerceOperationId id,
         CommerceOperationState state,
         string? step,

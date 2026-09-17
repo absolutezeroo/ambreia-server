@@ -197,12 +197,12 @@ internal sealed partial class PlayerRewardTrackGrain
         // The claim row first. Its unique index is the whole of the never-twice guarantee: a second
         // attempt -- a double click, a retried grain call, a reconnect replaying the packet -- fails
         // to insert and is answered AlreadyClaimed without granting anything.
+        await using VortexDbContext db = await dbCtxFactory
+            .CreateDbContextAsync(ct)
+            .ConfigureAwait(true);
+
         try
         {
-            await using VortexDbContext db = await dbCtxFactory
-                .CreateDbContextAsync(ct)
-                .ConfigureAwait(true);
-
             db.PlayerRewardTrackClaims.Add(
                 new PlayerRewardTrackClaimEntity
                 {
@@ -218,8 +218,27 @@ internal sealed partial class PlayerRewardTrackGrain
         }
         catch (DbUpdateException ex)
         {
-            // Almost certainly the unique index doing its job. The in-memory set is brought back in
-            // line so the next read agrees with the database.
+            // "Almost certainly the unique index" was doing a lot of work here. Any other write
+            // failure was answered AlreadyClaimed and cached as claimed, which spends an entitlement
+            // that was never recorded and cannot be claimed again. Ask the table.
+            bool alreadyClaimed = await db
+                .PlayerRewardTrackClaims.AsNoTracking()
+                .AnyAsync(
+                    c =>
+                        c.PlayerEntityId == PlayerId
+                        && c.TrackId == trackId
+                        && c.PrizeId == prizeId,
+                    ct
+                )
+                .ConfigureAwait(true);
+
+            if (!alreadyClaimed)
+            {
+                throw;
+            }
+
+            // The unique index really did do its job. The in-memory set is brought back in line so
+            // the next read agrees with the database.
             state.ClaimedPrizeIds.Add(prizeId);
 
             logger.LogWarning(
