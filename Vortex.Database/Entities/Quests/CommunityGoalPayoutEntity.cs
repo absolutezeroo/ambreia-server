@@ -36,12 +36,7 @@ namespace Vortex.Database.Entities.Quests;
 // One reward per player per rung. This is the last line of defence behind
 // CommunityGoalEntity.RewardedLevel: two nodes deciding the same rung fell at the same moment both
 // build the same winner list, and the second insert is what has to fail rather than pay twice.
-[Index(
-    nameof(CommunityGoalEntityId),
-    nameof(LevelNumber),
-    nameof(PlayerEntityId),
-    IsUnique = true
-)]
+[Index(nameof(CommunityGoalEntityId), nameof(LevelNumber), nameof(PlayerEntityId), IsUnique = true)]
 // The drain's own query: everything not yet paid, oldest first.
 [Index(nameof(MintedAt))]
 public class CommunityGoalPayoutEntity : VortexEntity
