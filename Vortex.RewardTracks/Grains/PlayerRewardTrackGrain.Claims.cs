@@ -155,7 +155,10 @@ internal sealed partial class PlayerRewardTrackGrain
 
         if (state.ClaimedPrizeIds.Contains(prizeId))
         {
-            return RewardClaimOutcome.Fail(RewardClaimResult.AlreadyClaimed, trackId, prizeId);
+            // Spent, but perhaps never delivered. The claim commits before the bundle goes out, so
+            // the second click is the only retry this flow has.
+            return await ResumeUnfinishedAsync(trackId, prizeId, prize, ct).ConfigureAwait(true)
+                ?? RewardClaimOutcome.Fail(RewardClaimResult.AlreadyClaimed, trackId, prizeId);
         }
 
         if (prize.Premium && !state.PremiumUnlocked)
@@ -211,6 +214,7 @@ internal sealed partial class PlayerRewardTrackGrain
                     PrizeId = prizeId,
                     ClaimedAt = now,
                     PointsAtClaim = state.Points,
+                    OperationId = operation.Value,
                 }
             );
 
@@ -249,7 +253,8 @@ internal sealed partial class PlayerRewardTrackGrain
                 PlayerId
             );
 
-            return RewardClaimOutcome.Fail(RewardClaimResult.AlreadyClaimed, trackId, prizeId);
+            return await ResumeUnfinishedAsync(trackId, prizeId, prize, ct).ConfigureAwait(true)
+                ?? RewardClaimOutcome.Fail(RewardClaimResult.AlreadyClaimed, trackId, prizeId);
         }
 
         state.ClaimedPrizeIds.Add(prizeId);
@@ -311,6 +316,92 @@ internal sealed partial class PlayerRewardTrackGrain
         // Reported as a success even when part of the bundle is owed. The claim happened, the
         // milestone is spent, and the operator's queue -- not the player's button -- is where an
         // undelivered reward belongs.
+        return new RewardClaimOutcome
+        {
+            Result = RewardClaimResult.Success,
+            TrackId = trackId,
+            PrizeId = prizeId,
+        };
+    }
+
+    /// <summary>
+    /// Finishes a claim that was recorded but whose bundle never went out. Null when there is
+    /// nothing to finish, which is the ordinary "you already have this" case.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// The claim row commits before the grant runs, so the entitlement is spent from before the
+    /// rewards exist. That ordering is right — the alternative hands the bundle out twice whenever
+    /// the recording fails — but it leaves a window, and the window used to be a dead end: the
+    /// operation id was minted per attempt and written nowhere, so a stop in between left the prize
+    /// gone, the operation at Prepared where the post-pivot sweep does not look, and every later
+    /// click answered AlreadyClaimed.
+    /// </para>
+    /// <para>
+    /// With the id on the row the later click is the retry. Re-granting is safe because every
+    /// granter is idempotent under its operation — currency through the wallet's receipt, furniture
+    /// through the inventory's — so a bundle already delivered hands over nothing again.
+    /// </para>
+    /// <para>
+    /// <c>GrantedSummary</c> is what marks a finished delivery: it is written once the bundle is
+    /// out. An empty one on a claim that has an operation is the unfinished case, and the only one
+    /// resumed. Rows from before the column existed carry no operation and are left as they are
+    /// rather than guessed at.
+    /// </para>
+    /// </remarks>
+    private async Task<RewardClaimOutcome?> ResumeUnfinishedAsync(
+        string trackId,
+        string prizeId,
+        RewardTrackPrizeDefinitionSnapshot prize,
+        CancellationToken ct
+    )
+    {
+        if (prize.Rewards.IsDefaultOrEmpty)
+        {
+            return null;
+        }
+
+        await using VortexDbContext db = await dbCtxFactory
+            .CreateDbContextAsync(ct)
+            .ConfigureAwait(true);
+
+        PlayerRewardTrackClaimEntity? claim = await db
+            .PlayerRewardTrackClaims.AsNoTracking()
+            .FirstOrDefaultAsync(
+                c => c.PlayerEntityId == PlayerId && c.TrackId == trackId && c.PrizeId == prizeId,
+                ct
+            )
+            .ConfigureAwait(true);
+
+        if (claim is null || !claim.IsDeliveryUnfinished)
+        {
+            return null;
+        }
+
+        CommerceOperationId operation = new(claim.OperationId);
+
+        logger.LogWarning(
+            "Claim {TrackId}/{PrizeId} by player {PlayerId} was recorded but never delivered; "
+                + "finishing operation {OperationId}.",
+            trackId,
+            prizeId,
+            PlayerId,
+            operation
+        );
+
+        RewardBundleResult granted = await rewards
+            .GrantAsync(PlayerId, trackId, prizeId, prize.Rewards, operation, ct)
+            .ConfigureAwait(true);
+
+        await RecordGrantSummaryAsync(trackId, prizeId, granted.Summary, ct).ConfigureAwait(true);
+
+        if (granted.Complete)
+        {
+            await journal
+                .TransitionAsync(operation, CommerceOperationState.Completed, null, null, ct)
+                .ConfigureAwait(true);
+        }
+
         return new RewardClaimOutcome
         {
             Result = RewardClaimResult.Success,

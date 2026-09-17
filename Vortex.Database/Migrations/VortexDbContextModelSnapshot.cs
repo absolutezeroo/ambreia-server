@@ -9412,6 +9412,10 @@ namespace Vortex.Database.Migrations
                         .HasDefaultValue("")
                         .HasColumnName("granted_summary");
 
+                    b.Property<Guid>("OperationId")
+                        .HasColumnType("char(36)")
+                        .HasColumnName("operation_id");
+
                     b.Property<int>("PlayerEntityId")
                         .HasColumnType("int")
                         .HasColumnName("player_id");

@@ -226,7 +226,7 @@ internal sealed class PlayerDailyTaskGrain(
 
         foreach (DailyTaskRewardEntity reward in rewards)
         {
-            await GrantAsync(reward, ct).ConfigureAwait(true);
+            await GrantAsync(reward, operation, ct).ConfigureAwait(true);
         }
 
         await _journal
@@ -261,7 +261,11 @@ internal sealed class PlayerDailyTaskGrain(
     /// type is described to the client but not materialised — there is no furniture-granting path
     /// wired to daily tasks yet, and silently dropping it without a trace would be worse.
     /// </summary>
-    private async Task GrantAsync(DailyTaskRewardEntity reward, CancellationToken ct)
+    private async Task GrantAsync(
+        DailyTaskRewardEntity reward,
+        CommerceOperationId operation,
+        CancellationToken ct
+    )
     {
         if (reward.Amount <= 0)
         {
@@ -272,8 +276,29 @@ internal sealed class PlayerDailyTaskGrain(
 
         if (CurrencyRewardRules.TryParseNamed(reward.RewardTypeId, out int rewardType))
         {
+            // CreditOnceAsync, not GrantCurrencyAsync: the credit and the receipt that says it
+            // happened commit together, under this reward's own step. The status is committed
+            // before the payout runs, so everything here is owed from before it starts -- and an
+            // unreceipted credit made that debt impossible to settle safely, because nothing could
+            // tell a retry from a second payout. A bundle of three rewards that died on the second
+            // could not be finished by hand or by anything else without risking paying the first
+            // again.
+            //
+            // Keyed by the reward row so the rewards of one task do not share a receipt: finishing
+            // the two that are owed must not be blocked by the one that already went out.
             await wallet
-                .GrantCurrencyAsync(CurrencyRewardRules.KindFor(rewardType), reward.Amount, ct)
+                .CreditOnceAsync(
+                    [
+                        new WalletDebitRequest
+                        {
+                            CurrencyKind = CurrencyRewardRules.KindFor(rewardType),
+                            Amount = reward.Amount,
+                        },
+                    ],
+                    operation,
+                    $"{CommerceStepKeys.REWARD_PAYOUT}:{reward.Id}",
+                    ct
+                )
                 .ConfigureAwait(true);
 
             return;
