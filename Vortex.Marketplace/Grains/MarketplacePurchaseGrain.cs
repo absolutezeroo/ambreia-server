@@ -541,75 +541,90 @@ public sealed class MarketplacePurchaseGrain(
             return 0;
         }
 
-        // Pay first, clear the debt second — the opposite of what this used to do. Zeroing first
-        // meant a failure to credit lost the seller their money outright: the database said they had
-        // been paid and they had not. The receipt makes the payment safe to retry, so if the clearing
-        // is what fails, the next redeem finds the debt still there, is answered "already paid" by
-        // the receipt, and clears it. Nothing is lost, nothing is paid twice.
-        CommerceOperationId operation = OperationForOffer(
-            CommerceOperationKind.MarketplaceRedeem,
-            soldOffers.Min(o => o.Id)
-        );
+        // One operation per offer, not one for the batch.
+        //
+        // Pay first and clear second is right, and stays. What was wrong was the identity: it came
+        // from the smallest id in the batch, and the batch is not fixed. Pay a batch whose smallest
+        // id is 5, crash before the clearing, and a new sale can join the next attempt while 5 is
+        // still the smallest. The retry recomputes the same operation id, the receipt answers
+        // "already paid" for a total that no longer matches, and the code then clears every offer
+        // in the new batch: the new sale's credits are gone, with a receipt saying they were paid.
+        // A sale arriving with a *lower* id inverts it — a different identity over debts already
+        // settled, paid a second time.
+        //
+        // An offer is the thing that is owed, so an offer is what the payment is identified by. The
+        // cost is a wallet call and a commit per offer rather than one of each; redeeming is a rare
+        // deliberate act, not a hot path, and a seller with a long list would rather wait than be
+        // short.
+        int paid = 0;
+        int settled = 0;
 
-        await _journal
-            .OpenIfNewAsync(
-                operation,
-                CommerceOperationKind.MarketplaceRedeem,
-                (int)this.GetPrimaryKeyLong(),
-                $"offers={soldOffers.Count} credits={totalCredits}",
-                ct
-            )
-            .ConfigureAwait(true);
-
-        await _grainFactory
-            .GetPlayerWalletGrain(this.GetPrimaryKeyLong())
-            .CreditOnceAsync(
-                [
-                    new WalletDebitRequest
-                    {
-                        CurrencyKind = new CurrencyKind { CurrencyType = CurrencyType.Credits },
-                        Amount = totalCredits,
-                    },
-                ],
-                operation,
-                CommerceStepKeys.MARKETPLACE_CREDIT,
-                ct
-            )
-            .ConfigureAwait(true);
-
-        await _journal
-            .TransitionAsync(
-                operation,
-                CommerceOperationState.Pivoted,
-                CommerceStepKeys.MARKETPLACE_CREDIT,
-                null,
-                ct
-            )
-            .ConfigureAwait(true);
-
-        foreach (MarketplaceOfferEntity o in soldOffers)
+        foreach (MarketplaceOfferEntity offer in soldOffers)
         {
-            o.CreditsOwed = 0;
+            int owed = offer.CreditsOwed;
+
+            CommerceOperationId operation = OperationForOffer(
+                CommerceOperationKind.MarketplaceRedeem,
+                offer.Id
+            );
+
+            await _journal
+                .OpenIfNewAsync(
+                    operation,
+                    CommerceOperationKind.MarketplaceRedeem,
+                    (int)this.GetPrimaryKeyLong(),
+                    $"offer={offer.Id} credits={owed}",
+                    ct
+                )
+                .ConfigureAwait(true);
+
+            await _grainFactory
+                .GetPlayerWalletGrain(this.GetPrimaryKeyLong())
+                .CreditOnceAsync(
+                    [
+                        new WalletDebitRequest
+                        {
+                            CurrencyKind = new CurrencyKind { CurrencyType = CurrencyType.Credits },
+                            Amount = owed,
+                        },
+                    ],
+                    operation,
+                    CommerceStepKeys.MARKETPLACE_CREDIT,
+                    ct
+                )
+                .ConfigureAwait(true);
+
+            await _journal
+                .TransitionAsync(
+                    operation,
+                    CommerceOperationState.Pivoted,
+                    CommerceStepKeys.MARKETPLACE_CREDIT,
+                    null,
+                    ct
+                )
+                .ConfigureAwait(true);
+
+            // This offer's debt only. A failure here leaves the others owed and retryable, each
+            // answered by its own receipt.
+            offer.CreditsOwed = 0;
+            await dbCtx.SaveChangesAsync(ct).ConfigureAwait(true);
+
+            await _journal
+                .TransitionAsync(operation, CommerceOperationState.Completed, null, null, ct)
+                .ConfigureAwait(true);
+
+            paid += owed;
+            settled++;
         }
-
-        await dbCtx.SaveChangesAsync(ct).ConfigureAwait(true);
-
-        await _journal
-            .TransitionAsync(operation, CommerceOperationState.Completed, null, null, ct)
-            .ConfigureAwait(true);
 
         await _events
             .PublishAsync(
-                new MarketplaceCreditsRedeemedEvent(
-                    (int)this.GetPrimaryKeyLong(),
-                    totalCredits,
-                    soldOffers.Count
-                ),
+                new MarketplaceCreditsRedeemedEvent((int)this.GetPrimaryKeyLong(), paid, settled),
                 ct
             )
             .ConfigureAwait(true);
 
-        return totalCredits;
+        return paid;
     }
 
     /// <summary>
