@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
 using System.Threading;
@@ -14,6 +15,7 @@ using Vortex.Database.Entities.Furniture;
 using Vortex.Players.Grains;
 using Vortex.Primitives.Chain;
 using Vortex.Primitives.Collectibles;
+using Vortex.Primitives.Commerce;
 using Vortex.Primitives.Events;
 using Vortex.Primitives.Furniture.Enums;
 using Vortex.Primitives.Inventory.Grains;
@@ -90,6 +92,41 @@ public sealed class PlayerNftClaimsGrainTests
         (await harness.Grain.ClaimAllAsync(CancellationToken.None).ConfigureAwait(true))
             .Should()
             .Be(0);
+    }
+
+    /// <summary>
+    ///     The failure the entitlement counter cannot survive on its own: the copies are handed over
+    ///     durably, and the counter that says so is lost before it commits. Restoring the counter is
+    ///     what a crash between the two writes leaves behind, and the next press of the button is
+    ///     the player asking again.
+    /// </summary>
+    /// <remarks>
+    ///     The copies used to go over one bare call at a time with every counter saved after the
+    ///     loop, so there was nothing on the inventory side to recognise the second ask by: it
+    ///     handed the lot over again. The receipt is what answers it now.
+    /// </remarks>
+    [Fact]
+    public async Task AClaimWhoseCounterWasLost_HandsTheCopiesOverOnce()
+    {
+        Harness harness = await Harness.CreateAsync(claimLimit: 2).ConfigureAwait(true);
+
+        await harness.Grain.ClaimAllAsync(CancellationToken.None).ConfigureAwait(true);
+
+        harness.Grants.Copies.Should().Be(2, "both copies are owed");
+
+        // What the crash left: the furniture is the player's, the entitlement still says otherwise.
+        await using (VortexDbContext db = harness.Db.CreateDbContext())
+        {
+            NftClaimEntity claim = db.NftClaims.Single();
+            claim.ClaimedAmount = 0;
+            await db.SaveChangesAsync().ConfigureAwait(true);
+        }
+
+        await harness.Grain.ClaimAllAsync(CancellationToken.None).ConfigureAwait(true);
+
+        harness
+            .Grants.Copies.Should()
+            .Be(2, "the same operation asking again is answered from its receipt, not paid twice");
     }
 
     /// <summary>
@@ -187,15 +224,23 @@ public sealed class PlayerNftClaimsGrainTests
 
     private sealed class Harness
     {
-        private Harness(PlayerNftClaimsGrain grain, IDbContextFactory<VortexDbContext> db)
+        private Harness(
+            PlayerNftClaimsGrain grain,
+            IDbContextFactory<VortexDbContext> db,
+            GrantRecorder grants
+        )
         {
             Grain = grain;
             Db = db;
+            Grants = grants;
         }
 
         public PlayerNftClaimsGrain Grain { get; }
 
         public IDbContextFactory<VortexDbContext> Db { get; }
+
+        /// <summary>What the inventory was actually handed, once each.</summary>
+        public GrantRecorder Grants { get; }
 
         public static async Task<Harness> CreateAsync(
             string productCode = Lamp,
@@ -264,8 +309,33 @@ public sealed class PlayerNftClaimsGrainTests
                 await seed.SaveChangesAsync().ConfigureAwait(true);
             }
 
-            // Only the inventory is reached, and only to be handed a definition id.
-            IInventoryGrain inventory = FakeProxy.Create<IInventoryGrain>(_ => Task.CompletedTask);
+            GrantRecorder grants = new();
+
+            // The inventory as it actually behaves for a named step: all the copies in one commit
+            // with their receipt, so the same operation asked twice hands over one lot. A fake that
+            // accepted everything would let a duplicate grant pass unnoticed, which is the whole
+            // thing the operation id is there to stop.
+            IInventoryGrain inventory = FakeProxy.Create<IInventoryGrain>(call =>
+            {
+                if (
+                    call.Method.Name == nameof(IInventoryGrain.GrantFurnitureDefinitionCopiesAsync)
+                    && call.Args is { Length: 6 }
+                )
+                {
+                    grants.Record((int)call.Args[2]!, (CommerceOperationId)call.Args[3]!);
+                }
+
+                // The unnamed single grant is recorded too, with no operation, so a flow that hands
+                // copies over without one is counted exactly as the inventory would count it: every
+                // time it is asked. A recorder that ignored this call would score an unprotected
+                // flow as if it were protected.
+                if (call.Method.Name == nameof(IInventoryGrain.GrantFurnitureDefinitionAsync))
+                {
+                    grants.Record(1, CommerceOperationId.None);
+                }
+
+                return Task.CompletedTask;
+            });
 
             IGrainFactory grainFactory = FakeProxy.Create<IGrainFactory>(call =>
                 call.Method.IsGenericMethod
@@ -288,7 +358,29 @@ public sealed class PlayerNftClaimsGrainTests
                     chain ?? new FakeChain { Enabled = false, TreasuryAddress = null }
                 );
 
-            return new Harness(grain, db);
+            return new Harness(grain, db, grants);
+        }
+
+        /// <summary>
+        /// Counts copies the way a receipt does: an operation already applied hands over nothing on
+        /// a second ask. Without an operation id it cannot tell a retry from a fresh grant, which is
+        /// exactly the state this flow used to be in.
+        /// </summary>
+        public sealed class GrantRecorder
+        {
+            private readonly HashSet<Guid> _applied = [];
+
+            public int Copies { get; private set; }
+
+            public void Record(int copies, CommerceOperationId operation)
+            {
+                if (!operation.IsNone && !_applied.Add(operation.Value))
+                {
+                    return;
+                }
+
+                Copies += copies;
+            }
         }
 
         private sealed class SingleOptionsFactory(DbContextOptions<VortexDbContext> options)

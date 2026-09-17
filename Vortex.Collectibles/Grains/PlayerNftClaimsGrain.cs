@@ -14,6 +14,7 @@ using Vortex.Database.Entities.Collectibles;
 using Vortex.Primitives.Chain;
 using Vortex.Primitives.Collectibles;
 using Vortex.Primitives.Collectibles.Grains;
+using Vortex.Primitives.Commerce;
 using Vortex.Primitives.Events;
 using Vortex.Primitives.Furniture.Enums;
 using Vortex.Primitives.Inventory.Grains;
@@ -157,21 +158,40 @@ internal sealed class PlayerNftClaimsGrain(
 
             int remaining = claim.ClaimLimit - claim.ClaimedAmount;
 
-            for (int i = 0; i < remaining; i++)
+            if (remaining <= 0)
             {
-                await inventory
-                    .GrantFurnitureDefinitionAsync(definition.DefinitionId, null, ct)
-                    .ConfigureAwait(true);
-
-                granted++;
+                continue;
             }
 
-            // Counted after the grants rather than before: a failure above throws out of the whole
-            // call, and an unclaimed prize is recoverable where a consumed one is not.
-            claim.ClaimedAmount = claim.ClaimLimit;
-        }
+            // One receipted call for the whole claim, under an id derived from the claim row.
+            //
+            // It used to be one bare call per copy, with every counter saved after the loop. A
+            // second copy that failed -- or the save at the end -- threw out of the whole method
+            // with the first copy already durably in the inventory and the entitlement still
+            // outstanding, so the next press of the button handed it over again. The entitlement
+            // was the only thing counting, and it was counted last.
+            //
+            // The receipt commits in the same transaction as the furniture rows, so a replay is
+            // answered from it and grants nothing.
+            await inventory
+                .GrantFurnitureDefinitionCopiesAsync(
+                    definition.DefinitionId,
+                    null,
+                    remaining,
+                    CommerceOperationId.Deterministic(CommerceOperationKind.NftClaim, claim.Id),
+                    CommerceStepKeys.LOCAL_GRANT,
+                    ct
+                )
+                .ConfigureAwait(true);
 
-        await dbCtx.SaveChangesAsync(ct).ConfigureAwait(true);
+            granted += remaining;
+
+            // Per claim, not once for all of them at the end: a failure on the next claim leaves
+            // this one's counter written, and its receipt means a retry cannot hand it over twice
+            // even if the counter is what failed.
+            claim.ClaimedAmount = claim.ClaimLimit;
+            await dbCtx.SaveChangesAsync(ct).ConfigureAwait(true);
+        }
 
         _logger.LogInformation(
             "Player {PlayerId} claimed {Granted} collectible reward(s).",

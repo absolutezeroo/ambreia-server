@@ -140,6 +140,13 @@ public enum CommerceOperationKind
     /// it. Nothing refunds one: a grant that fails is owed, and the card was charged either way.
     /// </summary>
     ShopPurchase = 20,
+
+    /// <summary>
+    /// The furniture a collectible entitlement hands over. Its own kind rather than a borrowed one
+    /// because the id is derived from the claim row, and two flows sharing a kind would collide the
+    /// moment their entity ids met.
+    /// </summary>
+    NftClaim = 21,
 }
 
 /// <summary>
