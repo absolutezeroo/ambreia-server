@@ -25,16 +25,28 @@ public sealed class ByteLoadingAlc(
     /// <para>
     /// It is not enough for the name to look like ours: a plugin split over
     /// <c>Vortex.MyPlugin.Core</c> and <c>Vortex.MyPlugin</c> must still load its own halves. What
-    /// makes an assembly shared is that the host already has it, so that is what is asked.
+    /// makes an assembly shared is that the host already has it, so that is what is asked — and
+    /// nothing else. There used to be a <c>Vortex.</c> prefix test in front of this, and it was
+    /// wrong for the same reason a name test is always wrong here: the assemblies a plugin and the
+    /// host must agree on are not only the ones this project wrote.
+    /// </para>
+    /// <para>
+    /// The dashboard is what proved it. It publishes <c>Microsoft.EntityFrameworkCore</c> beside
+    /// itself, like any project with that package reference; the prefix test let that copy be
+    /// byte-loaded, so the plugin got its own <c>DbContext</c> type while <c>VortexDbContext</c>
+    /// still derived from the host's. Registering <c>IDbContextFactory&lt;VortexDbContext&gt;</c>
+    /// then failed with "violates the constraint of type parameter 'TContext'" — a constraint that
+    /// reads as impossible until you notice there are two <c>DbContext</c>s in the process.
+    /// </para>
+    /// <para>
+    /// The consequence is deliberate: a plugin cannot carry its own version of a package the host
+    /// already has. That is the ordinary rule for in-process plugins, and the alternative — two
+    /// versions of EF Core, of ASP.NET, of the logging abstractions — is the failure above wearing
+    /// a different type name each time.
     /// </para>
     /// </summary>
     public static bool IsHostContractAssembly(string simpleName)
     {
-        if (!simpleName.StartsWith("Vortex.", StringComparison.OrdinalIgnoreCase))
-        {
-            return false;
-        }
-
         return HOST_CONTRACT_CACHE.GetOrAdd(
             simpleName,
             static name =>

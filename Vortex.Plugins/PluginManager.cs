@@ -173,13 +173,20 @@ public sealed class PluginManager(
                 {
                     asm = GetLoadedPluginAssembly(m, folder);
 
+                    // Debug, not a warning, and not actionable. Any published plugin carries a copy
+                    // of every package it and the host share — EF Core, the logging abstractions,
+                    // ASP.NET — and using the host's instead is the whole reason both sides mean the
+                    // same type. This used to warn and to advise Private=false, which made sense
+                    // while only Vortex.* assemblies were shadowed and is wrong for a NuGet package:
+                    // the plugin needs those references to compile, it simply must not load them.
                     if (asm.ShadowedContractAssemblies.Count > 0)
                     {
-                        _logger.LogWarning(
-                            "Plugin {Key} ships host contract assemblies ({Assemblies}); they were "
-                                + "ignored in favour of the host's own copies. Reference them with "
-                                + "Private=false so the package stops carrying dead files.",
+                        _logger.LogDebug(
+                            "Plugin {Key} shipped {Count} assembly(ies) the host already has; the "
+                                + "host's copies were used so both sides share the types: "
+                                + "{Assemblies}",
                             m.Key,
+                            asm.ShadowedContractAssemblies.Count,
                             string.Join(", ", asm.ShadowedContractAssemblies)
                         );
                     }
