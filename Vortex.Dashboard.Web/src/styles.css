@@ -2396,8 +2396,11 @@ form > .op-actions,
   gap: 8px;
 }
 
-.editor-form label.check input,
-.editor-form label.checkbox input {
+/* NOT `width: auto` on the box itself. A checkbox is `appearance: none` here, so it has no
+   intrinsic width -- auto collapsed it to its own two borders, a 4px blue sliver beside the
+   wording, in every `.check` row of every editor form. The base rule's 16px is the size. */
+.editor-form label.check input:not([type='checkbox']):not([type='radio']),
+.editor-form label.checkbox input:not([type='checkbox']):not([type='radio']) {
   width: auto;
 }
 
