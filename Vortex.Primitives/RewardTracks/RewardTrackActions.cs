@@ -289,4 +289,16 @@ public static class RewardTrackActions
 
     /// <summary>Scored a goal in football. The hotel counts goals, never their points.</summary>
     public const string FootballGoalScored = "football_goal_scored";
+
+    /// <summary>Scratched somebody's pet.</summary>
+    public const string RespectPet = "respect_pet";
+
+    /// <summary>Had one of your own pets scratched. The other half of respect_pet.</summary>
+    public const string PetRespected = "pet_respected";
+
+    /// <summary>Fed a pet by hand. Carries the food's nutrition as its amount.</summary>
+    public const string FeedPet = "feed_pet";
+
+    /// <summary>Was given something bought from the catalogue. The other half of buy_gift.</summary>
+    public const string ReceiveGift = "receive_gift";
 }

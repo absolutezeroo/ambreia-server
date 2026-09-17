@@ -5,6 +5,7 @@ using Microsoft.EntityFrameworkCore;
 using Vortex.Database.Context;
 using Vortex.Database.Entities.Room;
 using Vortex.Primitives.Action;
+using Vortex.Primitives.Events;
 using Vortex.Primitives.Pets.Snapshots;
 using Vortex.Rooms.Grains.Modules;
 
@@ -75,6 +76,15 @@ public sealed partial class RoomPetSystem
 
         await SendPetUpdatedAsync(fed, ct);
         await BroadcastPetVocalAsync(fed, "GENERIC_HAPPY");
+
+        // The nutrition the item was worth, not the one the pet could still take: a full pet is
+        // still being fed, and "giving pets %limit% points of food" counts what was given.
+        if (handItem.Nutrition > 0)
+        {
+            _roomGrain.PublishDetached(
+                new PetFedEvent(ctx.PlayerId, fed.OwnerId, petId, handItem.Nutrition)
+            );
+        }
 
         return true;
     }

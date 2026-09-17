@@ -64,6 +64,10 @@ public sealed class ConsumerTableTests
             [SignalActions.FreezePlayerFrozen] = (AchievementNames.EsA, false),
             [SignalActions.FreezePowerUpCollected] = (AchievementNames.FreezePowerUp, false),
             [SignalActions.FootballGoalScored] = (AchievementNames.FootballGoalScored, false),
+            [SignalActions.RespectPet] = (AchievementNames.PetRespectGiver, false),
+            [SignalActions.PetRespected] = (AchievementNames.PetRespectReceiver, false),
+            [SignalActions.FeedPet] = (AchievementNames.PetFeeding, false),
+            [SignalActions.ReceiveGift] = (AchievementNames.GiftReceiver, false),
         };
 
         AchievementSignalConsumer

@@ -18,6 +18,15 @@ public sealed record PetAdoptedEvent(PlayerId OwnerId, int PetId, string Name, i
 /// </remarks>
 public sealed record PetBredEvent(PlayerId OwnerId, int PetId, int Type, string Color) : IEvent;
 
+/// <summary>Somebody scratched a pet. <paramref name="ActorId"/> and <paramref name="OwnerId"/>
+/// are the two sides the hotel counts separately, and are often the same player.</summary>
+public sealed record PetRespectedEvent(PlayerId ActorId, PlayerId OwnerId, int PetId) : IEvent;
+
+/// <summary>A player fed a pet by hand. <paramref name="Nutrition"/> is what the item was worth,
+/// which is what "giving pets %limit% points of food" counts -- not the number of meals.</summary>
+public sealed record PetFedEvent(PlayerId ActorId, PlayerId OwnerId, int PetId, int Nutrition)
+    : IEvent;
+
 /// <summary>A pet was set down in a room.</summary>
 public sealed record PetPlacedEvent(PlayerId ActorId, int PetId, int RoomId) : IEvent;
 

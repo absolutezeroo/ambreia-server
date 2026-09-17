@@ -158,6 +158,10 @@ public sealed class VocabularyGovernanceTests
         "freeze_points",
         "banzai_points",
         "football_goal_scored",
+        "respect_pet",
+        "pet_respected",
+        "feed_pet",
+        "receive_gift",
     ];
 
     /// <summary>The declared values of every closed fact, which content compares against too.</summary>

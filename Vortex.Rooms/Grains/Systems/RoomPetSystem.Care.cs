@@ -114,6 +114,11 @@ public sealed partial class RoomPetSystem
         await SendPetUpdatedAsync(updated, ct);
         await BroadcastPetRespectNotificationAsync(updated);
 
+        // Detached, like the furniture events: the scratcher's progression must not sit between
+        // the click and the animation. Both sides ride one event -- the hotel counts scratching
+        // somebody's pet and having yours scratched as two different achievements.
+        _roomGrain.PublishDetached(new PetRespectedEvent(ctx.PlayerId, updated.OwnerId, petId));
+
         return updated;
     }
 

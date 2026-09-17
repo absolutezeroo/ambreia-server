@@ -136,6 +136,10 @@ public class RewardTrackActionArtworkTests
         RewardTrackActions.FreezePoints,
         RewardTrackActions.BanzaiPoints,
         RewardTrackActions.FootballGoalScored,
+        RewardTrackActions.RespectPet,
+        RewardTrackActions.PetRespected,
+        RewardTrackActions.FeedPet,
+        RewardTrackActions.ReceiveGift,
     };
 
     private static IEnumerable<string> AllActionCodes() =>

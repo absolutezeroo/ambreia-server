@@ -87,6 +87,12 @@ public sealed class AchievementSignalConsumer(IGrainFactory grainFactory, IComme
         // Football scores through the same funnel; only its goals are worth counting, and its
         // FootballGoalScoredInRoom sibling is not here because it credits the room owner.
         [SignalActions.FootballGoalScored] = new(AchievementNames.FootballGoalScored),
+        // Both sides of one scratch, and the amount of one meal: "giving pets %limit% points of
+        // food" is a sum, so a bowl worth twenty counts twenty.
+        [SignalActions.RespectPet] = new(AchievementNames.PetRespectGiver),
+        [SignalActions.PetRespected] = new(AchievementNames.PetRespectReceiver),
+        [SignalActions.FeedPet] = new(AchievementNames.PetFeeding, CountsAmount: true),
+        [SignalActions.ReceiveGift] = new(AchievementNames.GiftReceiver),
     }.ToFrozenDictionary();
 
     public async ValueTask HandleAsync(

@@ -35,4 +35,9 @@ public static class AchievementNames
     public const string CatBreeder = "CatBreeder";
     public const string DogBreeder = "DogBreeder";
     public const string PigBreeder = "PigBreeder";
+
+    public const string PetRespectGiver = "PetRespectGiver";
+    public const string PetRespectReceiver = "PetRespectReceiver";
+    public const string PetFeeding = "PetFeeding";
+    public const string GiftReceiver = "GiftReceiver";
 }

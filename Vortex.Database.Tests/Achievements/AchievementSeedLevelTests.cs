@@ -195,6 +195,10 @@ public sealed class AchievementSeedLevelTests
             AchievementNames.EsA,
             AchievementNames.FootballGoalScored,
             .. BabyPetAchievements.ByPetType.Values,
+            AchievementNames.PetRespectGiver,
+            AchievementNames.PetRespectReceiver,
+            AchievementNames.PetFeeding,
+            AchievementNames.GiftReceiver,
         ];
 
         HashSet<string> seeded = [.. Catalogue.Select(l => l.Family)];
