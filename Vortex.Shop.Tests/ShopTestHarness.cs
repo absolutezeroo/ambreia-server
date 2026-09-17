@@ -267,6 +267,12 @@ internal sealed class RecordingJournal : ICommerceJournal
         int limit,
         CancellationToken ct
     ) => Task.FromResult<IReadOnlyList<CommerceOperationRecord>>([]);
+
+    public Task<IReadOnlyList<CommerceOperationRecord>> GetEscalatableAsync(
+        DateTime pivotedBefore,
+        int limit,
+        CancellationToken ct
+    ) => Task.FromResult<IReadOnlyList<CommerceOperationRecord>>([]);
 }
 
 /// <summary>

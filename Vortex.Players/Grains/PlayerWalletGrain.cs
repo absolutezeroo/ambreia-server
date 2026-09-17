@@ -532,14 +532,22 @@ internal sealed class PlayerWalletGrain(
 
             if (entity is null)
             {
-                _logger.LogError(
-                    "Refund of {Amount} {Currency} to player {PlayerId} did not land.",
-                    request.Amount,
-                    request.CurrencyKind.CurrencyType,
-                    this.GetPrimaryKeyLong()
+                // Nothing is written, and nothing already added to the context will be: the receipt
+                // below vouches for the whole step, so crediting the currencies that did resolve and
+                // then stamping it Applied sealed a partial credit as a complete one. A replay after
+                // the missing row is added finds that receipt and completes nothing. And the row is
+                // usually what is missing -- a wallet credit is a no-op without its currency_types
+                // row, which is the failure that makes this reachable at all.
+                //
+                // Thrown rather than returned false, because false on this method means "already
+                // credited". Telling a caller that about money it never paid is the exact failure
+                // this is here to prevent. Throwing leaves the operation short of its terminal
+                // state, which is what the sweep and an operator go looking for.
+                throw new InvalidOperationException(
+                    $"Currency {request.CurrencyKind.CurrencyType} could not be resolved for player "
+                        + $"{this.GetPrimaryKeyLong()}: step {stepKey} of operation {operationId} "
+                        + "was not applied."
                 );
-
-                continue;
             }
 
             entity.Amount += request.Amount;
