@@ -149,7 +149,8 @@ public sealed class NetworkManager(
             _messageSystem,
             _loggerFactory.CreateLogger<PackageHandler>(),
             _contextAccessor,
-            _errorSink
+            _errorSink,
+            _config
         );
         WsPackageHandler wsPackageHandler = new(
             decoder,
@@ -338,6 +339,9 @@ public sealed class NetworkManager(
         services.AddSingleton(_contextAccessor);
         services.AddSingleton(_errorSink);
         services.AddSingleton(_metrics);
+        // PackageHandler reads LogPacketPayloadOnError from this. Forwarded resolved rather than as
+        // IOptions<> for the same reason as the rest: this container only holds what is handed to it.
+        services.AddSingleton(_config);
         services.AddSingleton<IPackageEncoder<OutgoingPackage>, PackageEncoder>();
         services.AddSingleton<IPackageHandler<IClientPacket>, PackageHandler>();
         services.AddSingleton<IClientPacketDecoder>(_ => new ClientPacketDecoder(

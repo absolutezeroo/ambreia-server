@@ -41,6 +41,20 @@ public class NetworkingConfig
     public int MaxPacketBodyBytes { get; init; } = DefaultMaxPacketBodyBytes;
 
     /// <summary>
+    ///     Whether a packet that fails to parse has its bytes written to the log. Off, because the
+    ///     first field of the SSO packet is the ticket: send the ticket, omit the int after it, and
+    ///     the parser throws with the credential already sitting at offset 0 of the buffer the
+    ///     error handler dumps. The 128-byte cap bounds the volume, not the secret, and hex is not
+    ///     a one-way function.
+    ///
+    ///     Turn it on in a development configuration when diagnosing a parser against real bytes —
+    ///     that is what the dump is for — and keep it off anywhere a real ticket can arrive. The
+    ///     header, length, read position and error are logged either way, which is what says
+    ///     <em>which</em> parser disagreed and where.
+    /// </summary>
+    public bool LogPacketPayloadOnError { get; init; }
+
+    /// <summary>
     ///     How many concurrent sessions one remote address may hold. Zero disables the cap.
     /// </summary>
     /// <remarks>
