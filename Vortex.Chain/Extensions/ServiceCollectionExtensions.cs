@@ -28,6 +28,10 @@ public static class ServiceCollectionExtensions
             provider.GetRequiredService<ChainService>()
         );
 
+        // How the GAME pays coin, as opposed to how an operator does. Stateless, but a singleton
+        // like everything else here so it is built once against the one ChainService above.
+        services.AddSingleton<IChainRewardService, ChainRewardService>();
+
         // Builds it during startup rather than on the first request. A singleton built lazily takes
         // everything its constructor has to say about the configuration — including a throw — to
         // whoever happens to touch it first, which is a stranger's browser and not the operator's

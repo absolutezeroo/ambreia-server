@@ -28,22 +28,20 @@ namespace Vortex.Dashboard.API.Operations.Catalogue;
 internal sealed class CurrencyOperations(
     OperationRunner runner,
     IGrainFactory grainFactory,
-    IChainService chain,
-    IHotelWalletService hotelWallets
+    IChainRewardService coins
 )
 {
-    /// <summary>
-    /// VortexCoin's decimals, which belong to the contract and are not a display choice. An operator
-    /// types whole coins; the chain counts the smallest unit. Skipping this conversion mints 100 wei
-    /// where 100 VTX was meant — a number so small it reads as zero everywhere it is shown, and a
-    /// mistake nothing would report.
-    /// </summary>
-    private const int COIN_DECIMALS = 18;
-
     private readonly OperationRunner _runner = runner;
     private readonly IGrainFactory _grainFactory = grainFactory;
-    private readonly IChainService _chain = chain;
-    private readonly IHotelWalletService _hotelWallets = hotelWallets;
+
+    /// <summary>
+    /// Where the decimals live now. This class used to carry its own <c>COIN_DECIMALS = 18</c> and
+    /// resolve the address itself; so did two other files, and eighteen is the kind of number that
+    /// is right in three places and wrong in the fourth for a year. Skipping the conversion mints
+    /// 100 wei where 100 VTX was meant — a figure so small it reads as zero everywhere it is shown,
+    /// and a mistake nothing would report.
+    /// </summary>
+    private readonly IChainRewardService _coins = coins;
 
     public Task<OperationResult> GiveCreditsAsync(
         GiveCreditsRequest request,
@@ -163,26 +161,12 @@ internal sealed class CurrencyOperations(
             detail: new { currency = "vortexcoin", request.Amount },
             work: async c =>
             {
-                if (!_chain.Enabled)
-                {
-                    // Refused rather than reported as done. With no chain configured there is
-                    // nowhere for this to go, and a green result for it is how a grant that minted
-                    // nothing looks like one that worked.
-                    throw new InvalidOperationException(
-                        "chain_not_configured: no chain is configured for this hotel"
-                    );
-                }
-
-                string address = _hotelWallets.GetAddress(request.PlayerId);
-
-                await _chain
-                    .MintCoinAsync(
-                        address,
-                        new System.Numerics.BigInteger(request.Amount)
-                            * System.Numerics.BigInteger.Pow(10, COIN_DECIMALS),
-                        c
-                    )
-                    .ConfigureAwait(false);
+                // Through the same service the GAME pays coin with, so an operator's grant and a
+                // community goal's reward cannot land at two different addresses or apply two
+                // different decimal counts. It throws when there is no chain, which this runner
+                // reports as a refusal — and a refusal is right: with nowhere for the coins to go, a
+                // green result is how a grant that minted nothing looks like one that worked.
+                await _coins.PayAsync(request.PlayerId, request.Amount, c).ConfigureAwait(false);
             },
             ct
         );

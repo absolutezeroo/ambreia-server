@@ -336,6 +336,7 @@ internal sealed class QuestContentAdminService(
                     LevelNumber = number,
                     ScoreThreshold = Math.Max(0, level.ScoreThreshold),
                     RewardUserLimit = Math.Max(0, level.RewardUserLimit),
+                    RewardCoins = Math.Max(0, level.RewardCoins),
                 }
             );
 

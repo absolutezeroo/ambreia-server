@@ -391,6 +391,8 @@ public class VortexDbContext(DbContextOptions<VortexDbContext> options)
     public DbSet<PlayerCommunityGoalContributionEntity> PlayerCommunityGoalContributions { get; init; } =
         null!;
 
+    public DbSet<CommunityGoalPayoutEntity> CommunityGoalPayouts { get; init; } = null!;
+
     public DbSet<PollEntity> Polls { get; init; } = null!;
 
     public DbSet<PollQuestionEntity> PollQuestions { get; init; } = null!;
@@ -560,6 +562,22 @@ public class VortexDbContext(DbContextOptions<VortexDbContext> options)
             .HasOne(c => c.CommunityGoalEntity)
             .WithMany()
             .HasForeignKey(c => c.CommunityGoalEntityId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        // A payout is a receipt for coins that were minted on a public chain, so BOTH its links are
+        // Restrict — deleting a goal or a player must not take the record of what they were paid
+        // with it. The contribution above cascades with the player because a contribution is a
+        // score; this is money.
+        mb.Entity<CommunityGoalPayoutEntity>()
+            .HasOne(p => p.PlayerEntity)
+            .WithMany()
+            .HasForeignKey(p => p.PlayerEntityId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        mb.Entity<CommunityGoalPayoutEntity>()
+            .HasOne(p => p.CommunityGoalEntity)
+            .WithMany()
+            .HasForeignKey(p => p.CommunityGoalEntityId)
             .OnDelete(DeleteBehavior.Restrict);
 
         // A poll owns its questions and a question owns its choices, so editing a survey down to

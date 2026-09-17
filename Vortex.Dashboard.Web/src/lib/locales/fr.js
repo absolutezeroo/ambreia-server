@@ -2365,11 +2365,16 @@ export default {
     ladderLegend: 'Paliers',
     threshold: 'Total requis',
     rewardLimit: 'Joueurs récompensés',
+    rewardCoins: 'VTX chacun',
     addLevel: 'Ajouter un palier',
     ladderHint:
       "Les paliers sont renumérotés par seuil à l'enregistrement : le client associe les limites de récompense aux niveaux par position.",
+    coinsHint:
+      "Les VTX sont créés sur la chaîne quand un palier tombe, pour ce nombre de meilleurs contributeurs, figés au moment où la barre s'est remplie. Joueurs récompensés × VTX chacun, sur toute l'échelle, c'est tout ce que cette campagne émettra. 0 dans l'une ou l'autre colonne ne paie rien.",
+    emission: 'Cette échelle émettra {total} VTX',
     levelLabel: 'Niveau {level}',
     rewardsCount: '{count} récompensés',
+    rewardsCoins: '{count} VTX chacun',
     goalSummary: 'niveau {level}/{levels} — {score} points de {contributors} contributeur(s)',
     noGoals: 'Aucun objectif communautaire pour le moment.',
     taskCodeRequired: 'Code de la tâche *',

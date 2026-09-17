@@ -46,6 +46,12 @@ public sealed class ProgressionModule : IHostPluginModule
         services.AddSingleton<ISignalInterestSource, AchievementSignalInterest>();
         services.AddSingleton<ISignalInterestSource, DailyTaskSignalInterest>();
         services.AddSingleton<ISignalInterestSource, QuestSignalInterest>();
+
+        // The community goal's coin rewards. Unlike the leaderboard beside it there is no second
+        // registration keeping one instance in two roles — nothing reads this one, it only drains
+        // community_goal_payouts. It returns immediately on a hotel with no chain.
+        services.AddHostedService<CommunityGoalPayoutService>();
+
         // The admin services moved to the dashboard: authoring content is its job, not the
         // emulator's. A host without that module has no authoring path here, deliberately.
     }

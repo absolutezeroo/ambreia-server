@@ -2358,11 +2358,16 @@ export default {
     ladderLegend: 'Ladder',
     threshold: 'Total needed',
     rewardLimit: 'Rewarded players',
+    rewardCoins: 'VTX each',
     addLevel: 'Add a rung',
     ladderHint:
       'Rungs are renumbered by threshold when saved, because the client pairs reward limits with levels by position.',
+    coinsHint:
+      'VTX is minted on the chain when a rung falls, to that many top contributors, frozen at the moment the bar filled. Rewarded players × VTX each, summed over the ladder, is everything this campaign will ever emit. 0 in either column pays nothing.',
+    emission: 'This ladder will emit {total} VTX',
     levelLabel: 'Level {level}',
     rewardsCount: '{count} rewarded',
+    rewardsCoins: '{count} VTX each',
     goalSummary: 'level {level}/{levels} — {score} points from {contributors} contributor(s)',
     noGoals: 'No community goals yet.',
     taskCodeRequired: 'Task code *',

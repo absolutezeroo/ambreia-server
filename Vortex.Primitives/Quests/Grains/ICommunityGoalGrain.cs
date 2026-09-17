@@ -25,10 +25,16 @@ public interface ICommunityGoalGrain : IGrainWithStringKey
     /// Adds to a player's contribution and to the hotel total. Ignored when no goal is active or the
     /// active one has expired.
     /// </summary>
+    /// <param name="completions">
+    /// How many quests were finished, NOT how much score to add. The goal owns the conversion — its
+    /// <c>score_per_quest</c> — because that number is what an operator turns to make the bar fill
+    /// faster or slower without rewriting every threshold on the ladder. Callers count events; the
+    /// goal decides what an event is worth.
+    /// </param>
     public Task ContributeAsync(
         int playerId,
         string campaignCode,
-        int amount,
+        int completions,
         CancellationToken ct
     );
 

@@ -608,11 +608,12 @@ internal sealed class PlayerQuestGrain(
                     .ConfigureAwait(true);
 
                 // A finished quest feeds the community goal, if the active one is fed by this
-                // campaign. The goal grain decides that -- it owns which campaign counts, and
-                // ignores everything else.
+                // campaign. The goal grain decides that -- it owns which campaign counts, what a
+                // completion is worth (`score_per_quest`), and ignores everything else. One quest
+                // finished is one completion here; turning it into score is not this grain's call.
                 await _grainFactory
                     .GetCommunityGoalGrain()
-                    .ContributeAsync(PlayerId, snapshot.CampaignCode, amount: 1, ct)
+                    .ContributeAsync(PlayerId, snapshot.CampaignCode, completions: 1, ct)
                     .ConfigureAwait(true);
 
                 await _events

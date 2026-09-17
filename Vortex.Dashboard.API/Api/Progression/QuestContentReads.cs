@@ -104,6 +104,7 @@ internal sealed class QuestContentReads(IDbContextFactory<VortexDbContext> dbCon
                                     l.LevelNumber,
                                     l.ScoreThreshold,
                                     l.RewardUserLimit,
+                                    l.RewardCoins,
                                     total >= l.ScoreThreshold
                                 ))
                                 .ToList()

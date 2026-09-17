@@ -8715,6 +8715,12 @@ namespace Vortex.Database.Migrations
                         .HasColumnType("datetime(6)")
                         .HasColumnName("ends_at");
 
+                    b.Property<int>("RewardedLevel")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasDefaultValue(0)
+                        .HasColumnName("rewarded_level");
+
                     b.Property<int>("ScorePerQuest")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int")
@@ -8770,6 +8776,12 @@ namespace Vortex.Database.Migrations
                         .HasColumnType("int")
                         .HasColumnName("level_number");
 
+                    b.Property<int>("RewardCoins")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasDefaultValue(0)
+                        .HasColumnName("reward_coins");
+
                     b.Property<int>("RewardUserLimit")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int")
@@ -8793,6 +8805,95 @@ namespace Vortex.Database.Migrations
                         .IsUnique();
 
                     b.ToTable("community_goal_levels");
+                });
+
+            modelBuilder.Entity("Vortex.Database.Entities.Quests.CommunityGoalPayoutEntity", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasColumnName("id");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Address")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("varchar(64)")
+                        .HasColumnName("address");
+
+                    b.Property<int>("AmountCoins")
+                        .HasColumnType("int")
+                        .HasColumnName("amount_coins");
+
+                    b.Property<int>("Attempts")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasDefaultValue(0)
+                        .HasColumnName("attempts");
+
+                    b.Property<int>("CommunityGoalEntityId")
+                        .HasColumnType("int")
+                        .HasColumnName("goal_id");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime(6)")
+                        .HasColumnName("created_at");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<DateTime>("CreatedAt"));
+
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("datetime(6)")
+                        .HasColumnName("deleted_at");
+
+                    b.Property<string>("LastError")
+                        .HasMaxLength(512)
+                        .HasColumnType("varchar(512)")
+                        .HasColumnName("last_error");
+
+                    b.Property<int>("LevelNumber")
+                        .HasColumnType("int")
+                        .HasColumnName("level_number");
+
+                    b.Property<DateTime?>("MintedAt")
+                        .HasColumnType("datetime(6)")
+                        .HasColumnName("minted_at");
+
+                    b.Property<int>("PlayerEntityId")
+                        .HasColumnType("int")
+                        .HasColumnName("player_id");
+
+                    b.Property<int>("Rank")
+                        .HasColumnType("int")
+                        .HasColumnName("contributor_rank");
+
+                    b.Property<int>("Score")
+                        .HasColumnType("int")
+                        .HasColumnName("score");
+
+                    b.Property<string>("TransactionHash")
+                        .HasMaxLength(80)
+                        .HasColumnType("varchar(80)")
+                        .HasColumnName("tx_hash");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("datetime(6)")
+                        .HasColumnName("updated_at");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlComputedColumn(b.Property<DateTime>("UpdatedAt"));
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("MintedAt");
+
+                    b.HasIndex("PlayerEntityId");
+
+                    b.HasIndex("CommunityGoalEntityId", "LevelNumber", "PlayerEntityId")
+                        .IsUnique();
+
+                    b.ToTable("community_goal_payouts");
                 });
 
             modelBuilder.Entity("Vortex.Database.Entities.Quests.DailyTaskEntity", b =>
@@ -13333,6 +13434,25 @@ namespace Vortex.Database.Migrations
                         .IsRequired();
 
                     b.Navigation("CommunityGoalEntity");
+                });
+
+            modelBuilder.Entity("Vortex.Database.Entities.Quests.CommunityGoalPayoutEntity", b =>
+                {
+                    b.HasOne("Vortex.Database.Entities.Quests.CommunityGoalEntity", "CommunityGoalEntity")
+                        .WithMany()
+                        .HasForeignKey("CommunityGoalEntityId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Vortex.Database.Entities.Players.PlayerEntity", "PlayerEntity")
+                        .WithMany()
+                        .HasForeignKey("PlayerEntityId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("CommunityGoalEntity");
+
+                    b.Navigation("PlayerEntity");
                 });
 
             modelBuilder.Entity("Vortex.Database.Entities.Quests.DailyTaskRewardEntity", b =>

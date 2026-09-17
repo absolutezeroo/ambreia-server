@@ -904,6 +904,7 @@ export interface CommunityGoalLevelRow {
   levelNumber: number;
   scoreThreshold: number;
   rewardUserLimit: number;
+  rewardCoins: number;
   reached: boolean;
 }
 

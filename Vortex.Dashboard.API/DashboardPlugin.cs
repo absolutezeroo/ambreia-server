@@ -315,7 +315,10 @@ public sealed class DashboardPlugin : IVortexPlugin
         services.UseHostService<IConsoleCommandDispatcher>();
         services.UseHostService<IBenchmarkService>();
 
-        // The chain, for the operator actions that mint.
+        // The chain, for the operator actions that mint. The reward service is what the grant
+        // actually goes through — the other two are still borrowed because the Relic and wallet
+        // reads use them directly.
+        services.UseHostService<IChainRewardService>();
         services.UseHostService<IChainService>();
         services.UseHostService<IHotelWalletService>();
     }

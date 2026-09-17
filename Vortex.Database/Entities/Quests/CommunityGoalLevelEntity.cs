@@ -29,6 +29,26 @@ public class CommunityGoalLevelEntity : VortexEntity
     [DefaultValue(0)]
     public int RewardUserLimit { get; set; }
 
+    /// <summary>
+    /// Whole VortexCoin paid to each of those top contributors when this rung falls. Zero — the
+    /// default, and what every rung authored before this column existed carries — means the rung
+    /// rewards nothing on the chain, which is how a goal that is not a coin campaign behaves.
+    /// </summary>
+    /// <remarks>
+    /// Whole coins, not wei: an operator types "20" into the dashboard and the payout multiplies by
+    /// 10^18 on its way to the contract. A wei column would make the smallest useful reward a
+    /// nineteen-digit number in a form field.
+    /// <para>
+    /// This number times <see cref="RewardUserLimit" />, summed over the ladder, IS the campaign's
+    /// whole emission — and it is knowable before the campaign opens, which is the reason the coin
+    /// reward hangs off the rung and not off each contribution. A faucet that pays per action cannot
+    /// answer "how much will this mint" until it is over.
+    /// </para>
+    /// </remarks>
+    [Column("reward_coins")]
+    [DefaultValue(0)]
+    public int RewardCoins { get; set; }
+
     [ForeignKey(nameof(CommunityGoalEntityId))]
     public CommunityGoalEntity? CommunityGoalEntity { get; set; }
 }

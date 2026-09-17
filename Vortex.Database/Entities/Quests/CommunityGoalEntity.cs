@@ -40,4 +40,21 @@ public class CommunityGoalEntity : VortexEntity
     [Column("sort_order")]
     [DefaultValue(0)]
     public int SortOrder { get; set; }
+
+    /// <summary>
+    /// The highest rung whose coin reward has already been handed out. Zero means none has.
+    /// </summary>
+    /// <remarks>
+    /// This is what makes a rung pay exactly once. The hotel total only ever rises, so without it
+    /// every contribution after a rung fell would see the threshold cleared and pay the winners
+    /// again — and the payouts are real transactions on a public chain, so "again" is not something
+    /// a later fix can take back.
+    /// <para>
+    /// It advances in the same <c>SaveChanges</c> as the payout rows it authorises, so a crash
+    /// between the two cannot leave a rung marked paid with nobody owed, nor owed twice.
+    /// </para>
+    /// </remarks>
+    [Column("rewarded_level")]
+    [DefaultValue(0)]
+    public int RewardedLevel { get; set; }
 }

@@ -32,7 +32,28 @@
     reason: string;
   };
 
-  type LevelForm = { scoreThreshold: number | string; rewardUserLimit: number | string };
+  type LevelForm = {
+    scoreThreshold: number | string;
+    rewardUserLimit: number | string;
+    // Whole VTX each rewarded player is paid when the rung falls. The chain's 18 decimals are the
+    // server's business; an operator types "20".
+    rewardCoins: number | string;
+  };
+
+  /**
+   * What a ladder will emit over the whole campaign: rewarded players × VTX each, summed over the
+   * rungs.
+   *
+   * Shown while the ladder is being typed, because it is the one number worth balancing and it is
+   * otherwise invisible until the coins have already been minted on a public chain.
+   */
+  function emission(levels: LevelForm[]) {
+    return levels.reduce(
+      (total, level) =>
+        total + (Number(level.rewardUserLimit) || 0) * (Number(level.rewardCoins) || 0),
+      0,
+    );
+  }
 
   /** A daily task being edited. */
   type TaskForm = {
@@ -73,7 +94,7 @@
   }
 
   function emptyLevel(): LevelForm {
-    return { scoreThreshold: 0, rewardUserLimit: 0 };
+    return { scoreThreshold: 0, rewardUserLimit: 0, rewardCoins: 0 };
   }
 
   function emptyTask(): TaskForm {
@@ -177,10 +198,16 @@
       sortOrder: Number(form.sortOrder) || 0,
       // Rows the operator started and left blank are dropped rather than saved as a rung at zero.
       levels: form.levels
-        .filter((l) => Number(l.scoreThreshold) > 0 || Number(l.rewardUserLimit) > 0)
+        .filter(
+          (l) =>
+            Number(l.scoreThreshold) > 0 ||
+            Number(l.rewardUserLimit) > 0 ||
+            Number(l.rewardCoins) > 0,
+        )
         .map((l) => ({
           scoreThreshold: Number(l.scoreThreshold) || 0,
           rewardUserLimit: Number(l.rewardUserLimit) || 0,
+          rewardCoins: Number(l.rewardCoins) || 0,
         })),
       reason: form.reason.trim(),
     };
@@ -305,6 +332,7 @@
           ? goal.levels.map((l) => ({
               scoreThreshold: l.scoreThreshold,
               rewardUserLimit: l.rewardUserLimit,
+              rewardCoins: l.rewardCoins,
             }))
           : [emptyLevel()],
       reason: '',
@@ -414,9 +442,10 @@
         <fieldset class="op-subgroup">
           <legend>{$t('questContent.ladderLegend')}</legend>
           {#each newGoal!.levels as level, index}
-            <div class="row-grid">
+            <div class="row-grid four">
               <input autocomplete="off" spellcheck="false" type="number" min="0" placeholder={$t('questContent.threshold')} bind:value={level.scoreThreshold} />
               <input autocomplete="off" spellcheck="false" type="number" min="0" placeholder={$t('questContent.rewardLimit')} bind:value={level.rewardUserLimit} />
+              <input autocomplete="off" spellcheck="false" type="number" min="0" placeholder={$t('questContent.rewardCoins')} bind:value={level.rewardCoins} />
               <button
                 type="button"
                 class="ghost-button danger"
@@ -432,6 +461,12 @@
             {$t('questContent.addLevel')}
           </button>
           <small class="muted">{$t('questContent.ladderHint')}</small>
+          <small class="muted">{$t('questContent.coinsHint')}</small>
+          {#if emission(newGoal!.levels) > 0}
+            <!-- Only once the ladder actually pays coin: on a goal that does not, this line would be
+                 a permanent "0 VTX" next to a feature the operator is not using. -->
+            <small class="emission">{$t('questContent.emission', { total: formatNumber(emission(newGoal!.levels)) })}</small>
+          {/if}
         </fieldset>
 
         <div class="op-field">
@@ -494,6 +529,9 @@
                 <span>{$t('questContent.levelLabel', { level: level.levelNumber })}</span>
                 <span class="muted">{formatNumber(level.scoreThreshold)}</span>
                 <span class="muted">{$t('questContent.rewardsCount', { count: level.rewardUserLimit })}</span>
+                {#if level.rewardCoins > 0}
+                  <span class="coins">{$t('questContent.rewardsCoins', { count: level.rewardCoins })}</span>
+                {/if}
               </li>
             {/each}
           </ul>
@@ -523,9 +561,10 @@
               <fieldset class="op-subgroup">
                 <legend>{$t('questContent.ladderLegend')}</legend>
                 {#each editGoal!.levels as level, index}
-                  <div class="row-grid">
-                    <input autocomplete="off" spellcheck="false" type="number" min="0" bind:value={level.scoreThreshold} />
-                    <input autocomplete="off" spellcheck="false" type="number" min="0" bind:value={level.rewardUserLimit} />
+                  <div class="row-grid four">
+                    <input autocomplete="off" spellcheck="false" type="number" min="0" placeholder={$t('questContent.threshold')} bind:value={level.scoreThreshold} />
+                    <input autocomplete="off" spellcheck="false" type="number" min="0" placeholder={$t('questContent.rewardLimit')} bind:value={level.rewardUserLimit} />
+                    <input autocomplete="off" spellcheck="false" type="number" min="0" placeholder={$t('questContent.rewardCoins')} bind:value={level.rewardCoins} />
                     <button
                       type="button"
                       class="ghost-button danger"
@@ -540,6 +579,9 @@
                 <button type="button" class="success" onclick={() => (editGoal!.levels = [...editGoal!.levels, emptyLevel()])}>
                   {$t('questContent.addLevel')}
                 </button>
+                {#if emission(editGoal!.levels) > 0}
+                  <small class="emission">{$t('questContent.emission', { total: formatNumber(emission(editGoal!.levels)) })}</small>
+                {/if}
               </fieldset>
 
               <div class="op-field">
@@ -885,7 +927,9 @@
 
   .ladder li {
     display: grid;
-    grid-template-columns: 90px 110px 1fr;
+    /* Four columns now, and the coin one is last: it is absent from most rungs, and a missing cell
+       at the end of the row leaves the ones before it where they were. */
+    grid-template-columns: 90px 110px 130px 1fr;
     gap: 8px;
     padding: 3px 7px;
     border-radius: 7px;
@@ -894,6 +938,19 @@
   .ladder li.reached {
     background: var(--surface-hover);
     font-weight: 600;
+  }
+
+  /* Not `muted` like its neighbours: this rung mints real coin on a public chain when it falls, and
+     the one line that says so should not read as an aside. */
+  .ladder .coins,
+  .emission {
+    color: var(--accent, #d9a441);
+    font-weight: 600;
+  }
+
+  .emission {
+    display: block;
+    margin-top: 6px;
   }
 
   .editor {

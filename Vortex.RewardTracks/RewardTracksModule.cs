@@ -42,6 +42,11 @@ public sealed class RewardTracksModule : IHostPluginModule
         services.AddSingleton<IRewardGranter, HabbiconRewardGranter>();
         services.AddSingleton<IRewardGranter, EntitlementRewardGranter>();
 
+        // Registered unconditionally, like every other kind. It refuses at grant time on a hotel
+        // with no chain rather than being absent from the map: a missing granter logs "no granter
+        // for reward kind Coin", which reads like a build mistake and would not be one.
+        services.AddSingleton<IRewardGranter, CoinRewardGranter>();
+
         services.AddSingleton<RewardGrantPipeline>();
     }
 }
