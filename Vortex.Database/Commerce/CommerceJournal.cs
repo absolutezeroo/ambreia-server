@@ -344,22 +344,58 @@ public sealed class CommerceJournal(
             )
             .OrderBy(o => o.CreatedAt)
             .Take(limit)
-            .Select(o => new CommerceOperationRecord
-            {
-                Id = new CommerceOperationId(o.Id),
-                Kind = o.Kind,
-                PlayerId = o.PlayerId,
-                State = o.State,
-                Attempts = o.Attempts,
-                CurrentStep = o.CurrentStep,
-                LastError = o.LastError,
-                Detail = o.Detail,
-                PivotedAt = o.PivotedAt,
-                CreatedAt = o.CreatedAt,
-            })
+            .Select(AsRecord)
             .ToListAsync(ct)
             .ConfigureAwait(false);
     }
+
+    public async Task<IReadOnlyList<CommerceOperationRecord>> GetEscalatableAsync(
+        DateTime pivotedBefore,
+        int limit,
+        CancellationToken ct
+    )
+    {
+        await using VortexDbContext dbCtx = await _dbCtxFactory
+            .CreateDbContextAsync(ct)
+            .ConfigureAwait(false);
+
+        return await dbCtx
+            .CommerceOperations.AsNoTracking()
+            // Both conditions in SQL, ahead of the Take. Already-escalated operations are out --
+            // there is nothing left to do to them -- and so is anything still inside its grace
+            // period, rather than being fetched and then skipped by the caller.
+            .Where(o =>
+                (
+                    o.State == CommerceOperationState.Pivoted
+                    || o.State == CommerceOperationState.Completing
+                )
+                && o.PivotedAt != null
+                && o.PivotedAt <= pivotedBefore
+            )
+            .OrderBy(o => o.CreatedAt)
+            .Take(limit)
+            .Select(AsRecord)
+            .ToListAsync(ct)
+            .ConfigureAwait(false);
+    }
+
+    /// <summary>One row as the operator and recovery read it. Shared so the two queries above
+    /// cannot drift apart.</summary>
+    private static readonly System.Linq.Expressions.Expression<
+        Func<CommerceOperationEntity, CommerceOperationRecord>
+    > AsRecord = o => new CommerceOperationRecord
+    {
+        Id = new CommerceOperationId(o.Id),
+        Kind = o.Kind,
+        PlayerId = o.PlayerId,
+        State = o.State,
+        Attempts = o.Attempts,
+        CurrentStep = o.CurrentStep,
+        LastError = o.LastError,
+        Detail = o.Detail,
+        PivotedAt = o.PivotedAt,
+        CreatedAt = o.CreatedAt,
+    };
 
     private static string? Truncate(string? value, int max) =>
         value is null || value.Length <= max ? value : value[..max];

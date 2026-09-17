@@ -239,7 +239,70 @@ public sealed class CommerceRelayTests : IAsyncLifetime
         return id;
     }
 
-    private CommerceRelayService BuildRelay(int stuckAfterMinutes = 10) =>
+    /// <summary>
+    /// The sweep used to ask for everything incomplete — interventions included — and skip them
+    /// inside its loop, after the batch limit had been applied. A backlog of old interventions
+    /// therefore filled the batch and nothing newer was ever escalated again. A hundred of them is
+    /// the default; one is enough to show it.
+    /// </summary>
+    [Fact]
+    public async Task ABacklogOfInterventions_DoesNotStarveANewerStuckOperation()
+    {
+        CommerceOperationId old = CommerceOperationId.New();
+        await _journal.OpenAsync(
+            old,
+            CommerceOperationKind.CatalogPurchase,
+            PLAYER,
+            "the backlog",
+            CancellationToken.None
+        );
+        await _journal.TransitionAsync(
+            old,
+            CommerceOperationState.Pivoted,
+            null,
+            null,
+            CancellationToken.None
+        );
+
+        // One pass turns it into the intervention that used to fill the batch for ever after.
+        using (CommerceRelayService first = BuildRelay(stuckAfterMinutes: 0, batchSize: 1))
+        {
+            await first.EscalateAsync(CancellationToken.None);
+        }
+
+        CommerceOperationId fresh = CommerceOperationId.New();
+        await _journal.OpenAsync(
+            fresh,
+            CommerceOperationKind.CatalogPurchase,
+            PLAYER,
+            "stuck behind it",
+            CancellationToken.None
+        );
+        await _journal.TransitionAsync(
+            fresh,
+            CommerceOperationState.Pivoted,
+            null,
+            null,
+            CancellationToken.None
+        );
+
+        using CommerceRelayService relay = BuildRelay(stuckAfterMinutes: 0, batchSize: 1);
+        await relay.EscalateAsync(CancellationToken.None);
+
+        IReadOnlyList<CommerceOperationRecord> all = await _journal.GetIncompletePivotedAsync(
+            10,
+            CancellationToken.None
+        );
+
+        all.Single(r => r.Id == fresh)
+            .State.Should()
+            .Be(
+                CommerceOperationState.NeedsIntervention,
+                "an operation already escalated must not consume the batch a newer one needs"
+            );
+    }
+
+    private CommerceRelayService BuildRelay(int stuckAfterMinutes = 10, int batchSize = 50) =>
         new(
             _journal,
             FakeProxy.Create<IEventPublisher>(call =>
@@ -251,7 +314,7 @@ public sealed class CommerceRelayTests : IAsyncLifetime
             Options.Create(
                 new CommerceRecoveryConfig
                 {
-                    RelayBatchSize = 50,
+                    RelayBatchSize = batchSize,
                     StuckAfterMinutes = stuckAfterMinutes,
                 }
             ),

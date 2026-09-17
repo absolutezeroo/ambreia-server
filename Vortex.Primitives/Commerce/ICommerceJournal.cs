@@ -111,6 +111,24 @@ public interface ICommerceJournal
         int limit,
         CancellationToken ct
     );
+
+    /// <summary>
+    /// The operations the sweep can still act on: past their pivot, not escalated yet, and stuck
+    /// since before <paramref name="pivotedBefore"/>.
+    /// </summary>
+    /// <remarks>
+    /// Separate from <see cref="GetIncompletePivotedAsync"/>, which is the operator's list and
+    /// deliberately includes NeedsIntervention. The sweep used to read that one and skip the
+    /// interventions inside its loop — after the <c>Take</c> had already spent the batch on them.
+    /// One full batch of old interventions, a hundred by default, and no newer stuck operation was
+    /// ever examined again: the journal still had them, the automatic detection just stopped
+    /// moving. Both filters belong in SQL, ahead of the limit.
+    /// </remarks>
+    Task<IReadOnlyList<CommerceOperationRecord>> GetEscalatableAsync(
+        System.DateTime pivotedBefore,
+        int limit,
+        CancellationToken ct
+    );
 }
 
 /// <summary>One row of the journal, as ops and recovery read it.</summary>

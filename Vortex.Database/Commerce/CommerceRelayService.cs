@@ -109,23 +109,17 @@ public sealed class CommerceRelayService(
 
     internal async Task EscalateAsync(CancellationToken ct)
     {
-        IReadOnlyList<CommerceOperationRecord> stuck = await _journal
-            .GetIncompletePivotedAsync(_config.RelayBatchSize, ct)
-            .ConfigureAwait(false);
-
         DateTime deadline = DateTime.UtcNow.AddMinutes(-_config.StuckAfterMinutes);
+
+        // Asking for what can actually be escalated, rather than for everything incomplete and then
+        // skipping most of it. The skipping happened after the batch limit had been applied, so a
+        // backlog of old interventions filled the batch and starved every newer stuck operation.
+        IReadOnlyList<CommerceOperationRecord> stuck = await _journal
+            .GetEscalatableAsync(deadline, _config.RelayBatchSize, ct)
+            .ConfigureAwait(false);
 
         foreach (CommerceOperationRecord record in stuck)
         {
-            if (
-                record.State == CommerceOperationState.NeedsIntervention
-                || record.PivotedAt is null
-                || record.PivotedAt > deadline
-            )
-            {
-                continue;
-            }
-
             _logger.LogCritical(
                 "Commerce operation {OperationId} ({Kind}, player {PlayerId}) has been past its "
                     + "pivot since {PivotedAt} on step {Step}: {Detail}. Last error: {Error}.",

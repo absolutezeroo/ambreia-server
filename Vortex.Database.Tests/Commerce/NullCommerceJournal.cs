@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
@@ -88,6 +89,12 @@ internal sealed class NullCommerceJournal : ICommerceJournal
     ) => Task.FromResult<string?>(null);
 
     public Task<IReadOnlyList<CommerceOperationRecord>> GetIncompletePivotedAsync(
+        int limit,
+        CancellationToken ct
+    ) => Task.FromResult<IReadOnlyList<CommerceOperationRecord>>([]);
+
+    public Task<IReadOnlyList<CommerceOperationRecord>> GetEscalatableAsync(
+        DateTime pivotedBefore,
         int limit,
         CancellationToken ct
     ) => Task.FromResult<IReadOnlyList<CommerceOperationRecord>>([]);
