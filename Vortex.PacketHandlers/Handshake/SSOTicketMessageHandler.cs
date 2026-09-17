@@ -161,8 +161,12 @@ public class SSOTicketMessageHandler(
             Task<ImmutableArray<AvatarEffectSnapshot>> effectsTask = _grainFactory
                 .GetPlayerEffectGrain(playerId)
                 .GetEffectsAsync(ct);
+            // The ticket's player id, like every other read here. ctx.PlayerId is -1 for the whole
+            // of this handler -- the MessageContext was built before the session was bound to a
+            // player -- so this one line was asking the clothing grain of a player that does not
+            // exist, and every returning player logged in with an empty wardrobe.
             Task<PlayerClothingSnapshot> clothingTask = _grainFactory
-                .GetPlayerClothingGrain(ctx.PlayerId)
+                .GetPlayerClothingGrain(playerId)
                 .GetUnlockedAsync(ct);
             Task<int> creditsTask = wallet.GetAmountForCurrencyAsync(
                 new CurrencyKind { CurrencyType = CurrencyType.Credits },
