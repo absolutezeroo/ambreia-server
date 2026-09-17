@@ -55,6 +55,18 @@ public class NetworkingConfig
     public bool LogPacketPayloadOnError { get; init; }
 
     /// <summary>
+    ///     How many packets one connection may send that fail to parse before it is closed. Zero
+    ///     disables the budget.
+    /// </summary>
+    /// <remarks>
+    ///     A client speaking this revision produces none: a parse failure means the two disagree
+    ///     about the wire, and disagreeing ten times over is not a client with a bad connection, it
+    ///     is something else. Counted for the life of the connection rather than per window, because
+    ///     the honest number is zero and a window would only decide how slowly the budget refills.
+    /// </remarks>
+    public int MaxParseFailuresPerSession { get; init; } = 10;
+
+    /// <summary>
     ///     How many concurrent sessions one remote address may hold. Zero disables the cap.
     /// </summary>
     /// <remarks>

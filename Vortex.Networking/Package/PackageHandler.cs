@@ -97,6 +97,27 @@ public sealed class PackageHandler(
                 _networking.LogPacketPayloadOnError ? packet.ToHexDump() : PAYLOAD_REDACTED
             );
 
+            // Admission, after the fact but before the next one. Parsing runs ahead of the pipeline
+            // that holds the per-player quota, so a sender sending rubbish made the server resolve a
+            // handler, attempt a parse and write a log line for each packet without ever reaching
+            // it. A client that agrees with this revision produces none of these, so the budget
+            // costs an honest connection nothing.
+            int failures = ctx.RecordParseFailure();
+
+            if (
+                _networking.MaxParseFailuresPerSession > 0
+                && failures >= _networking.MaxParseFailuresPerSession
+            )
+            {
+                _logger.LogWarning(
+                    "Session {SessionKey} sent {Failures} packets that could not be parsed; closing it.",
+                    ctx.SessionKey,
+                    failures
+                );
+
+                await ctx.CloseSessionAsync().ConfigureAwait(false);
+            }
+
             IVortexContext? context = _contextAccessor.Current;
 
             _errorSink.Record(

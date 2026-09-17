@@ -54,6 +54,10 @@ public sealed class WebSocketSessionContext(
         await session.CloseAsync().ConfigureAwait(false);
     }
 
+    private int _parseFailures;
+
+    public int RecordParseFailure() => Interlocked.Increment(ref _parseFailures);
+
     public void Touch()
     {
         LastActivityUtc = DateTime.UtcNow;

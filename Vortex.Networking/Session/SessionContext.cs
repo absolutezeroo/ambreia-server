@@ -49,6 +49,10 @@ public class SessionContext(
 
     public async Task CloseSessionAsync() => await this.CloseAsync().ConfigureAwait(false);
 
+    private int _parseFailures;
+
+    public int RecordParseFailure() => Interlocked.Increment(ref _parseFailures);
+
     public void Touch()
     {
         LastActivityUtc = DateTime.UtcNow;
