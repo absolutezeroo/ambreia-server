@@ -138,20 +138,34 @@ public sealed partial class RoomGrain
             return;
         }
 
+        // The ids going over, held so that exactly those can be dropped once they are accepted.
+        RoomObjectId[] flushing = [.. _state.DirtyItemIds];
+
         List<RoomItemSnapshot> batch = new List<RoomItemSnapshot>();
 
         batch.AddRange(
-            _state
-                .DirtyItemIds.Select(x =>
+            flushing
+                .Select(x =>
                     _state.ItemsById.TryGetValue(x, out IRoomItem? item) ? item.GetSnapshot() : null
                 )
                 .Where(x => x is not null)!
         );
 
-        _state.DirtyItemIds.Clear();
-
         await _grainFactory
             .GetRoomPersistenceGrain(_state.RoomId)
             .EnqueueDirtyItemsAsync(_state.RoomId, batch, ct);
+
+        // Only now. Clearing before the handover meant a failed enqueue left the snapshots in
+        // neither queue -- the room had forgotten them and the persistence grain never received
+        // them -- so the positions stayed lost until something moved the item again. The
+        // persistence grain does keep its batch across a failed SaveChanges, but that protection
+        // only starts once it has accepted the batch; this is the window before that.
+        //
+        // Removing the flushed ids rather than clearing the set, because anything marked dirty
+        // while the call was in flight has to survive it.
+        foreach (RoomObjectId id in flushing)
+        {
+            _state.DirtyItemIds.Remove(id);
+        }
     }
 }
