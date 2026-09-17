@@ -167,7 +167,10 @@ internal sealed class VortexConsoleFormatter(
 
             foreach (KeyValuePair<string, object?> pair in pairs)
             {
-                sb.Append(first ? string.Empty : ", ").Append(pair.Key).Append('=').Append(pair.Value);
+                sb.Append(first ? string.Empty : ", ")
+                    .Append(pair.Key)
+                    .Append('=')
+                    .Append(pair.Value);
 
                 first = false;
             }

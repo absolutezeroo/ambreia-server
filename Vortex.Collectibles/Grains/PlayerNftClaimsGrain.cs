@@ -269,7 +269,8 @@ internal sealed class PlayerNftClaimsGrain(
             // Read back, because a transaction hash is a receipt that the node accepted the burn and
             // not that it succeeded. A Relic handed back while its token still exists is one the
             // player could transfer out again onto an id the contract already has.
-            Func<NftAssetEntity, bool> stillHeld = await TreasuryHoldsAsync(ct).ConfigureAwait(true);
+            Func<NftAssetEntity, bool> stillHeld = await TreasuryHoldsAsync(ct)
+                .ConfigureAwait(true);
 
             home = [.. home.Where(asset => !stillHeld(asset))];
         }

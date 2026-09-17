@@ -199,7 +199,9 @@ internal static partial class WebApiEndpointsChain
                         );
                     }
 
-                    return TypedResults.Json(await AnswerAsync(body, chain, ct).ConfigureAwait(false));
+                    return TypedResults.Json(
+                        await AnswerAsync(body, chain, ct).ConfigureAwait(false)
+                    );
                 }
             )
             .RequireRateLimiting(rateLimitPolicy)
