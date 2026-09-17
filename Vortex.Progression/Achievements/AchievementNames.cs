@@ -15,4 +15,8 @@ public static class AchievementNames
     public const string RoomDecoFurniCount = "RoomDecoFurniCount";
     public const string RespectGiven = "RespectGiven";
     public const string RespectEarned = "RespectEarned";
+    public const string Name = "Name";
+    public const string GiftGiver = "GiftGiver";
+    public const string PetLevelUp = "PetLevelUp";
+    public const string PetLover = "PetLover";
 }

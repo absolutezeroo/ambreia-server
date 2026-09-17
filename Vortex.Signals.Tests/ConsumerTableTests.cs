@@ -40,9 +40,11 @@ public sealed class ConsumerTableTests
         ];
 
     [Fact]
-    public void Achievements_map_the_eight_actions_their_handlers_did()
+    public void Achievements_map_every_action_that_advances_one()
     {
-        // The inventory of AchievementProgressEventHandlers.cs, which this table replaced.
+        // The first eight are the inventory of AchievementProgressEventHandlers.cs, which this
+        // table replaced; the rest are achievements the catalogue already held and that an already
+        // emitted signal means exactly. Anything not here is an achievement whose bar never moves.
         Dictionary<string, (string Name, bool Daily)> expected = new()
         {
             [SignalActions.Login] = (AchievementNames.Login, true),
@@ -53,6 +55,10 @@ public sealed class ConsumerTableTests
             [SignalActions.PlaceItem] = (AchievementNames.RoomDecoFurniCount, false),
             [SignalActions.GiveRespect] = (AchievementNames.RespectGiven, false),
             [SignalActions.ReceiveRespect] = (AchievementNames.RespectEarned, false),
+            [SignalActions.ChangeName] = (AchievementNames.Name, false),
+            [SignalActions.BuyGift] = (AchievementNames.GiftGiver, false),
+            [SignalActions.PetLevel] = (AchievementNames.PetLevelUp, false),
+            [SignalActions.AdoptPet] = (AchievementNames.PetLover, false),
         };
 
         AchievementSignalConsumer

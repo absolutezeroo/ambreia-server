@@ -59,6 +59,21 @@ public sealed class AchievementSignalConsumer(IGrainFactory grainFactory, IComme
         [SignalActions.GiveRespect] = new(AchievementNames.RespectGiven),
         // The signal's player is already the receiver; nothing here has to know that.
         [SignalActions.ReceiveRespect] = new(AchievementNames.RespectEarned),
+        [SignalActions.ChangeName] = new(AchievementNames.Name),
+        // "For giving %limit% gifts to other Habbos": the signal is credited to the buyer, which is
+        // the player this measures. Its GiftReceiver counterpart is NOT here — open_present credits
+        // whoever unwraps a present, including one they bought themselves, and the receiver of a
+        // gift is only known as a fact on this same signal. Crediting a signal's target rather than
+        // its player is a capability this table does not have.
+        [SignalActions.BuyGift] = new(AchievementNames.GiftGiver),
+        // One per level gained, which is what "training a pet up %limit% levels" counts. The
+        // signal's Amount is the level reached, and is deliberately ignored like every other.
+        [SignalActions.PetLevel] = new(AchievementNames.PetLevelUp),
+        // Cumulative adoptions against an achievement worded "pets owned". An achievement only ever
+        // moves forward (AchievementProgressCalculator), so a count of what is currently held could
+        // not be expressed here anyway; releasing a pet does not take the badge back in the hotel
+        // either.
+        [SignalActions.AdoptPet] = new(AchievementNames.PetLover),
     }.ToFrozenDictionary();
 
     public async ValueTask HandleAsync(
