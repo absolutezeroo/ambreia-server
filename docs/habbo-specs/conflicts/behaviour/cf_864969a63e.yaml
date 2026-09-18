@@ -10,14 +10,14 @@
 
 spec: conflict
 spec_version: 1
-generated_digest: "sha256:c5320451dbce03272dd3f43970c0a10687c5b64a171e18eac1dfa0acbad0c57f"
+generated_digest: "sha256:e44af9a1d3b4ab7eac7668c450698792d213a2f723016c67c5c4eef67f5da3ff"
 generated:
   id: cf_864969a63e
   kind: behaviour
   subject: "GetCollectorScore: packets emitted in response"
   packet: GetCollectorScore
   positions:
-  - origin: capture (1 observations)
+  - origin: capture (2 observations)
     authority: official_capture
     claim: CollectableMintableItemTypes then CollectibleMintingEnabled then FurniList then CollectibleMintTokenOffers then NftTransferFee
     evidence: ev_421e7c20dad7

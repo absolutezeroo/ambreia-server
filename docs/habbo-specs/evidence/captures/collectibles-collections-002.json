@@ -1,0 +1,63 @@
+{
+  "id": "collectibles-collections-002",
+  "source": "official",
+  "revision": "AIR-1.0.31",
+  "recordedUtc": "2026-09-18T09:26:11Z",
+  "note": "Switching wallet in the Collections tab of the live Habbo hotel, which is the only thing that makes the hotel answer GetNftCollections. This capture answers the question capture 001 left open. THE FINDING: in 001 the client sent GetNftCollections, GetCollectibleMintTokens and GetCollectorScore carrying the stardust wallet (hwm-hhfr-11440776) and Habbo answered NONE of the three. Here the same three requests carry the player's 0x address instead -- CollectionsTab.requestCollections is re-run on wallet selection -- and all three are answered. A hotel that treats the stardust string and the chain address as interchangeable will therefore look like Habbo in 001 and unlike it here. NftCollections was decoded byte by byte and consumed its 125906-byte body EXACTLY, which is what makes its layout evidence rather than a plausible reading: int count, then per collection { int itemCount, item[], string code, string name, int score, int totalScore, int boostScore, bool hasBonus, [item], bool hasReward, [item], long, long, short status, [claim], [claim] } -- field for field what this emulator's NftCollectionsMessageComposerSerializer already writes. Two things the values say that the field names do not. (1) The SECOND long is a closing date, not a snapshot time: it is 5 to 6 weeks AFTER the first on every dated collection and is -1 on the 133 evergreen ones, and Habbo's own status field is 2 for 107 of the 110 collections that carry it and never for one that does not. (2) totalScore is the sum of the item scores ALONE -- boostScore is separately total x itemCount for all 243 without exception, a formula rather than editorial data. Header ids are AIR-1.0.31's and are copied nowhere. CAVEAT ON PAIRING: as in 001 the hotel answers asynchronously, so a server message is not a reply to the request printed above it.",
+  "messages": [
+    {
+      "index": 0,
+      "direction": "client_to_server",
+      "name": "GetNftCollections",
+      "fields": {
+        "wallet": "0x9101d5cee76f0d987db788289b04c7d25a918c60"
+      }
+    },
+    {
+      "index": 1,
+      "direction": "client_to_server",
+      "name": "GetCollectibleMintTokens",
+      "fields": {
+        "wallet": "0x9101d5cee76f0d987db788289b04c7d25a918c60"
+      }
+    },
+    {
+      "index": 2,
+      "direction": "client_to_server",
+      "name": "GetCollectorScore",
+      "fields": {
+        "wallet": "0x9101d5cee76f0d987db788289b04c7d25a918c60"
+      }
+    },
+    {
+      "index": 3,
+      "direction": "server_to_client",
+      "name": "NftCollections",
+      "fields": {
+        "collection_count": "243",
+        "item_count": "1962",
+        "collections_with_a_bonus_item": "1",
+        "collections_with_a_reward_item": "0",
+        "body_bytes": "125906"
+      }
+    },
+    {
+      "index": 4,
+      "direction": "server_to_client",
+      "name": "CollectibleMintTokenCount",
+      "fields": {
+        "count": "0"
+      }
+    },
+    {
+      "index": 5,
+      "direction": "server_to_client",
+      "name": "NftCollectionsScore",
+      "fields": {
+        "score": "0",
+        "highest_score": "0",
+        "level": "0"
+      }
+    }
+  ]
+}

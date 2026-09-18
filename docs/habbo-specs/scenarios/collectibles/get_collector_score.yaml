@@ -10,7 +10,7 @@
 
 spec: scenarios
 spec_version: 1
-generated_digest: "sha256:96e0deb516cd3154ec77c55d8ab20f672e67d10359510ac0f861402676267d1b"
+generated_digest: "sha256:3113b8ddc425a35082347de5f05d76b83355133a7708564b1f55bf073862dee7"
 generated:
   feature: collectibles.get_collector_score
   scenarios:
@@ -49,7 +49,7 @@ generated:
       emits:
       - NftCollectionsScore
       evidence: ev_03de12ea0513
-    - origin: capture (1 observations)
+    - origin: capture (2 observations)
       authority: official_capture
       outcome: success
       emits:

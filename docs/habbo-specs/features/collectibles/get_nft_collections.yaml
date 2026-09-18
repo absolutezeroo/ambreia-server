@@ -10,7 +10,7 @@
 
 spec: feature
 spec_version: 1
-generated_digest: "sha256:d4ce588b843b4fd3a4b88fcfceb43e942b27a8c7d5c82079b879f881a6ac0d04"
+generated_digest: "sha256:bf58e3070897e790de586927bd234d399513f6af873c39032a296f2595bbda08"
 generated:
   id: collectibles.get_nft_collections
   domain: collectibles
@@ -42,7 +42,7 @@ generated:
     evidence: ev_03de12ea0513
   state_changes: []
   outgoing:
-    ordering: unknown
+    ordering: strict
     packets:
     - packet: NftCollections
       recipient: actor
@@ -75,5 +75,19 @@ generated:
   - collectibles.get_nft_collections.guard_0
   - collectibles.get_nft_collections.guard_1
   - collectibles.get_nft_collections.success
-verified: {}
+verified:
+  wire_layout:
+    evidence: "capture collectibles-collections-002"
+    note: "The official NftCollections body was decoded byte by byte and consumed its 125906 bytes exactly, so this layout is measured rather than inferred. It is field for field what NftCollectionsMessageComposerSerializer already writes."
+    body: "int collectionCount, then per collection: int itemCount, item[itemCount], string collectionId, string collectionName, int score, int totalScore, int boostScore, bool hasBonusItem, [item], bool hasRewardItem, [item], long, long, short status, [claim if hasBonusItem], [claim if hasRewardItem]."
+    item: "short productTypeId, string itemTypeId, int score, int amount, string petFigureString, int figureSetIdCount, int[] figureSetIds, string productCode, string rarity. The amount sits between the score and the pet figure, not at the end."
+  second_long_is_a_closing_date:
+    evidence: "capture collectibles-collections-002"
+    note: "Named SnapshotTimeMs here and snapshot_at in the database, on the reading that it was when ownership was last taken stock of. The official values say otherwise and nothing has been renamed yet: on all 110 dated collections it falls five to six weeks AFTER the first long, and it is -1 on the 133 evergreen ones. Habbo's own status field is 2 for 107 of the 110 that carry it and never for one that does not, which is a closing date with a state beside it rather than a stocktake."
+  total_score_excludes_the_boost:
+    evidence: "capture collectibles-collections-002"
+    note: "Habbo's totalScore is the sum of the item scores alone; boostScore is separately totalScore x itemCount on all 243 collections without exception, which makes it a formula rather than editorial data. This emulator sends sum + boost as the total, so a collection imported with Habbo's numbers displays a larger total than Habbo shows for it."
+  the_wallet_argument_decides_whether_habbo_answers:
+    evidence: "captures collectibles-hub-open-001 and collectibles-collections-002"
+    note: "GetNftCollections, GetCollectibleMintTokens and GetCollectorScore each carry a wallet string. Sent with the stardust wallet (hwm-...) in 001, Habbo answered none of the three. Re-sent with the player's 0x address in 002 -- CollectionsTab.requestCollections runs again on wallet selection -- all three were answered. This emulator ignores the argument and answers either, which is a deliberate difference: it has no chain, and a Collections tab that spins forever is worse than one that fills."
 manual: {}

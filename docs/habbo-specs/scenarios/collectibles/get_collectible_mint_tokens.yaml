@@ -10,7 +10,7 @@
 
 spec: scenarios
 spec_version: 1
-generated_digest: "sha256:ef9d75b5ec1d262e9170a6c53c3c42167ae52e49d3fcf1d496a3cd1b347796a4"
+generated_digest: "sha256:f5b6e607e89940e6820c7e265b2dadc460ac8024c87e2a94fdbecf3c175a4efd"
 generated:
   feature: collectibles.get_collectible_mint_tokens
   scenarios:
@@ -49,7 +49,7 @@ generated:
       emits:
       - CollectibleMintTokenCount
       evidence: ev_1188c2e2ba2a
-    - origin: capture (1 observations)
+    - origin: capture (2 observations)
       authority: official_capture
       outcome: success
       emits: []

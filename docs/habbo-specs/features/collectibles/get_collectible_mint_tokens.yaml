@@ -10,7 +10,7 @@
 
 spec: feature
 spec_version: 1
-generated_digest: "sha256:5bf9dc34ef2014dd260320a0d65ced8dffd788df899ba39a3596f33ac9b4b48a"
+generated_digest: "sha256:6e603a043235f2283f973f237c036b56641ab8cb0cc238e932df410d3f9b03e4"
 generated:
   id: collectibles.get_collectible_mint_tokens
   domain: collectibles
@@ -38,7 +38,7 @@ generated:
     evidence: ev_1188c2e2ba2a
   state_changes: []
   outgoing:
-    ordering: unknown
+    ordering: strict
     packets:
     - packet: CollectibleMintTokenCount
       recipient: actor
