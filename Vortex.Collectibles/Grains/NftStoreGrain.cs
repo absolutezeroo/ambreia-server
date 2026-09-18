@@ -58,7 +58,10 @@ internal sealed class NftStoreGrain(
     {
         await EnsureLoadedAsync(ct).ConfigureAwait(true);
 
-        return [.. _offers.Where(IsOnSale).Select(ToSnapshot)];
+        // Sold out is shown, not hidden: the client draws a full counter and a dead buy button for
+        // it, which is the answer a player who missed a limited edition should get. Filtering on
+        // IsOnSale here made that branch unreachable and the item vanish instead.
+        return [.. _offers.Where(offer => offer.Enabled).Select(ToSnapshot)];
     }
 
     public async Task<NftStorePurchaseOutcome> PurchaseAsync(
@@ -289,7 +292,10 @@ internal sealed class NftStoreGrain(
             EmeraldPrice = offer.EmeraldPrice,
             IsFeatured = offer.IsFeatured,
             IsLimited = offer.IsLimited,
-            MintLimit = offer.MintLimit,
+            // Zero is this hotel's "no limit" (see IsOnSale) and -1 is the client's; sending ours
+            // verbatim disables the buy button on every unlimited offer.
+            MintLimit =
+                offer.MintLimit <= 0 ? NftStoreOfferSnapshot.UnlimitedMintLimit : offer.MintLimit,
             MintedCount = offer.SoldCount,
             ProductInfo = new CollectibleProductItemSnapshot
             {

@@ -18,7 +18,10 @@ namespace Vortex.Primitives.Collectibles.Grains;
 /// </remarks>
 public interface INftStoreGrain : IGrainWithStringKey
 {
-    /// <summary>What the shop tab lists. Sold-out and disabled offers are already filtered out.</summary>
+    /// <summary>What the shop tab lists: everything an admin has left enabled, sold-out included —
+    /// the client draws that one full and unbuyable, which is the answer a player who missed a
+    /// limited edition should get. Only <see cref="PurchaseAsync"/> decides what is still
+    /// buyable.</summary>
     public Task<ImmutableArray<NftStoreOfferSnapshot>> GetOffersAsync(CancellationToken ct);
 
     /// <summary>

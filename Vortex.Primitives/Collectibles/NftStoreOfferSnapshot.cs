@@ -8,6 +8,14 @@ namespace Vortex.Primitives.Collectibles;
 [GenerateSerializer, Immutable]
 public sealed record NftStoreOfferSnapshot
 {
+    /// <summary>
+    /// What <see cref="MintLimit" /> has to carry for an offer nobody limited. The client shows the
+    /// mint counter on <c>mintLimit &gt; 0</c> and enables the buy button on <c>mintLimit === -1 ||
+    /// mintedCount &lt; mintLimit</c>, so a zero here is neither: no counter <em>and</em> a dead
+    /// button.
+    /// </summary>
+    public const int UnlimitedMintLimit = -1;
+
     [Id(0)]
     public required string ProductCode { get; init; }
 
