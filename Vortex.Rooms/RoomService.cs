@@ -25,6 +25,7 @@ using Vortex.Primitives.Rooms.RaidProtection;
 using Vortex.Primitives.Rooms.Snapshots.Avatars;
 using Vortex.Primitives.Rooms.Snapshots.Furniture;
 using Vortex.Primitives.Rooms.Snapshots.Mapping;
+using Vortex.Primitives.Rooms.Snapshots.Wired;
 using Vortex.Protocol.Messages.Outgoing.Navigator;
 using Vortex.Protocol.Messages.Outgoing.Room.Action;
 using Vortex.Protocol.Messages.Outgoing.Room.Engine;
@@ -32,6 +33,7 @@ using Vortex.Protocol.Messages.Outgoing.Room.Layout;
 using Vortex.Protocol.Messages.Outgoing.Room.Permissions;
 using Vortex.Protocol.Messages.Outgoing.Room.RaidProtection;
 using Vortex.Protocol.Messages.Outgoing.Room.Session;
+using Vortex.Protocol.Messages.Outgoing.Userdefinedroomevents;
 using Vortex.Protocol.Messages.Outgoing.Userdefinedroomevents.Wiredmenu;
 using Vortex.Rooms.Configuration;
 
@@ -93,9 +95,9 @@ internal sealed partial class RoomService(
 
         // Pending, not approved: the gates below have not run yet. This used to claim approval here
         // and never take it back on the doorbell path, where the request legitimately stays pending
-        // while the room is asked -- so a ringer who sent GetRoomEntryData without waiting for an
-        // answer was handed the whole entry payload and walked in. Approval is granted in
-        // CompleteRoomEntryAsync, the one place every admission passes through.
+        // while the room is asked -- so a ringer who asked for the entry payload without waiting
+        // for an answer was handed it and walked in. Approval is granted in CompleteRoomEntryAsync,
+        // the one place every admission passes through.
         await playerPresence.SetPendingRoomAsync(roomId, false).ConfigureAwait(false);
 
         // Room entry is the one flow that legitimately spans the room: core activation, the
@@ -304,14 +306,57 @@ internal sealed partial class RoomService(
             )
             .ConfigureAwait(false);
         bool hasRights = controllerLevel >= RoomControllerType.Rights;
-        IComposer[] danceComposers = avatarSnapshots
-            .OfType<RoomPlayerAvatarSnapshot>()
-            .Where(x => x.DanceType != AvatarDanceType.None)
-            .Select(
-                IComposer (x) =>
-                    new DanceMessageComposer { ObjectId = x.ObjectId, DanceType = x.DanceType }
-            )
-            .ToArray();
+
+        // Until this is sent the client assumes no click-user box exists: it opens the context menu
+        // itself and never sends WiredClickUser. An official capture of a room entry shows the
+        // server pushing this as part of the entry burst -- after OpenConnection the client asks
+        // for nothing at all, so there is no later request to hang it on.
+        WiredClickUserSnapshot clickUser = await room.GetClickUserStateAsync(ct)
+            .ConfigureAwait(false);
+
+        // None of a dance, a worn effect or a hand item is part of the Users payload, so each one
+        // has to be replayed for the player walking in. Bots dance too, and their dance is as
+        // absent from that payload as a player's.
+        IComposer[] replayComposers =
+        [
+            .. avatarSnapshots
+                .OfType<RoomPlayerAvatarSnapshot>()
+                .Where(x => x.DanceType != AvatarDanceType.None)
+                .Select(
+                    IComposer (x) =>
+                        new DanceMessageComposer { ObjectId = x.ObjectId, DanceType = x.DanceType }
+                ),
+            .. avatarSnapshots
+                .OfType<RoomBotAvatarSnapshot>()
+                .Where(x => x.DanceType != AvatarDanceType.None)
+                .Select(
+                    IComposer (x) =>
+                        new DanceMessageComposer { ObjectId = x.ObjectId, DanceType = x.DanceType }
+                ),
+            .. avatarSnapshots
+                .OfType<RoomPlayerAvatarSnapshot>()
+                .Where(x => x.CurrentEffectId != 0)
+                .Select(
+                    IComposer (x) =>
+                        new AvatarEffectMessageComposer
+                        {
+                            UserId = x.ObjectId,
+                            EffectId = x.CurrentEffectId,
+                            DelayMilliseconds = 0,
+                        }
+                ),
+            .. avatarSnapshots
+                .OfType<RoomPlayerAvatarSnapshot>()
+                .Where(x => x.CarryItemId != 0)
+                .Select(
+                    IComposer (x) =>
+                        new CarryObjectMessageComposer
+                        {
+                            UserId = x.ObjectId.Value,
+                            ItemType = x.CarryItemId,
+                        }
+                ),
+        ];
 
         await playerPresence
             .SendComposerAsync(
@@ -333,7 +378,8 @@ internal sealed partial class RoomService(
                 {
                     CanModify = hasRights,
                     CanRead = hasRights,
-                }
+                },
+                new WiredEnvironmentMessageComposer { HasClickUserWired = clickUser.Present }
             )
             .ConfigureAwait(false);
 
@@ -344,9 +390,9 @@ internal sealed partial class RoomService(
                 .ConfigureAwait(false);
         }
 
-        if (danceComposers.Length > 0)
+        if (replayComposers.Length > 0)
         {
-            await playerPresence.SendComposerAsync(danceComposers).ConfigureAwait(false);
+            await playerPresence.SendComposerAsync(replayComposers).ConfigureAwait(false);
         }
 
         // Last, and to everyone -- including the visitors who get a plain "no". The official client
@@ -366,10 +412,9 @@ internal sealed partial class RoomService(
         await playerPresence.SetActiveRoomAsync(roomId, ct).ConfigureAwait(false);
 
         // Approved only once the player is genuinely in. Every gate above answered, the payload is
-        // sent and the avatar exists, so the flag now means what GetRoomEntryDataMessageHandler
-        // reads it as: this player was admitted here. Granting it any earlier reopens the hole it
-        // closes -- a request stays pending for as long as a locked room's doorbell rings, and the
-        // handler served the whole entry payload off the room id alone.
+        // sent and the avatar exists, so the flag means exactly one thing: this player was admitted
+        // here. Granting it any earlier reopens the hole it closes -- a request stays pending for as
+        // long as a locked room's doorbell rings.
         await playerPresence.SetPendingRoomAsync(roomId, true).ConfigureAwait(false);
     }
 

@@ -363,7 +363,6 @@ internal static class MessageEvent
     public const int ClickFurniMessageEvent = 443;
     public const int CompostPlantMessageEvent = 1989;
     public const int GetFurnitureAliasesMessageEvent = 1901;
-    public const int GetRoomEntryDataMessageEvent = 1250; // UNRESOLVED: not found - the no-arg client request that would trigger a room-entry-data response could not be located in either official AS3 revision
     public const int GetItemDataMessageEvent = 350;
     public const int GetPetCommandsMessageEvent = 2425;
     public const int GiveSupplementToPetMessageEvent = 1694;

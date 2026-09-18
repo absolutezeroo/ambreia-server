@@ -96,10 +96,6 @@ internal sealed class RoomMap : IRevisionMap
             MessageEvent.GetFurnitureAliasesMessageEvent,
             new GetFurnitureAliasesMessageParser()
         );
-        builder.MapParser(
-            MessageEvent.GetRoomEntryDataMessageEvent,
-            new GetRoomEntryDataMessageParser()
-        );
         builder.MapParser(MessageEvent.GetItemDataMessageEvent, new GetItemDataMessageParser());
         builder.MapParser(
             MessageEvent.GetPetCommandsMessageEvent,

@@ -18,8 +18,8 @@ namespace Vortex.Hosting.Tests.Architecture;
 /// and calling the second, and two did. <c>FollowFriend</c> called
 /// <c>SetActiveRoomAsync</c> straight off the friend's location, so a friend in a locked, passworded
 /// or full room could be joined by anyone on their friend list — and without an entry payload, so
-/// the server had an avatar standing in a room the client did not know it was in.
-/// <c>GetRoomEntryData</c> did the same off a pending request that a ringing doorbell leaves set.
+/// the server had an avatar standing in a room the client did not know it was in. A second handler,
+/// since deleted, did the same off a pending request that a ringing doorbell leaves set.
 /// </para>
 /// <para>
 /// Neither was visible in a build, a test or a grep for something wrong; both were visible only by
@@ -86,8 +86,8 @@ public sealed class RoomEntryBoundaryTests
         offenders
             .Should()
             .BeEmpty(
-                "GetRoomEntryDataMessageHandler serves the whole entry payload to whoever the flag "
-                    + "says was admitted, so anything that can set it is a door into every locked room "
+                "the flag is what says a player was admitted rather than merely left pending by a "
+                    + "ringing doorbell, so anything that can set it is a door into every locked room "
                     + "in the hotel"
             );
     }
