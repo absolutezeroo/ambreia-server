@@ -10,7 +10,7 @@
 
 spec: scenarios
 spec_version: 1
-generated_digest: "sha256:37a36d2509eb71f705ca9c4a63b8ccf4170b21769a71062a5762eb6b01173517"
+generated_digest: "sha256:372ce960864e467b2e2f7152572f6e8945c688f2861ee5bf69942ca182f17609"
 generated:
   feature: collectibles.get_nft_collections
   scenarios:
@@ -57,10 +57,9 @@ generated:
     when:
       packet: GetNftCollections
     expected:
-      status: unknown
-      confidence: unknown
-    needs_evidence: an official capture of GetNftCollections succeeding, with every packet the server sends back and in what order
-    executable: false
+      status: success
+      confidence: capture_confirmed
+    executable: true
     claims:
     - origin: vortex
       authority: vortex_emulator
@@ -68,7 +67,18 @@ generated:
       emits:
       - NftCollections
       evidence: ev_03de12ea0513
+    - origin: capture (1 observations)
+      authority: official_capture
+      outcome: success
+      emits: []
+      evidence: ev_cd2753698c39
   evidence:
+  - id: ev_cd2753698c39
+    kind: capture
+    authority: official_capture
+    origin: capture
+    source: docs/habbo-specs/evidence/captures
+    symbol: GetNftCollections
   - id: ev_03de12ea0513
     kind: emulator_flow
     authority: vortex_emulator

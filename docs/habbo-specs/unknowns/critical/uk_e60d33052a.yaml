@@ -10,12 +10,12 @@
 
 spec: unknown
 spec_version: 1
-generated_digest: "sha256:6dd9c7fbcf8d16c5f94dacab710f9136567048e5cd7a06fa00c325cce7c0d20e"
+generated_digest: "sha256:96353b6dd842b6b9a534c357633b649fb024f34afca65d76d1090422d8a11064"
 generated:
   id: uk_e60d33052a
   subject: headers this emulator maps that the target client never sends
   severity: critical
-  question: 15 incoming headers are registered here but appear in no composer of the target client build. Each is a handler that can never fire (for example CompostPlant=1989, GetRoomEntryData=1250, HarvestPet=1210, RentableSpaceConfigure=4601, RentableSpaceGetConfig=4600, SaveRaidProtectionSettings=2687, VortexApplyFurniDefinition=8007, VortexApplyFurniEdit=8003).
+  question: 14 incoming headers are registered here but appear in no composer of the target client build. Each is a handler that can never fire (for example CompostPlant=1989, HarvestPet=1210, RentableSpaceConfigure=4601, RentableSpaceGetConfig=4600, SaveRaidProtectionSettings=2687, VortexApplyFurniDefinition=8007, VortexApplyFurniEdit=8003, VortexFishingJoinDerby=8105).
   resolved_by: "check each id against the client's message registry; a header above the client's highest real id was invented and must be corrected or removed"
   known_evidence:
   - id: ev_1ed0aead370e

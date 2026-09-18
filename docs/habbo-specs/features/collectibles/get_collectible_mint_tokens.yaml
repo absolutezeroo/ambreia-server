@@ -10,7 +10,7 @@
 
 spec: feature
 spec_version: 1
-generated_digest: "sha256:a26c18f349bf495b969d59a1b2d83a85f04318c520b0aa777c39cc6df7bbf4d7"
+generated_digest: "sha256:5bf9dc34ef2014dd260320a0d65ced8dffd788df899ba39a3596f33ac9b4b48a"
 generated:
   id: collectibles.get_collectible_mint_tokens
   domain: collectibles
@@ -21,7 +21,7 @@ generated:
     vortex: true
     references: []
   official_behavior:
-    status: unknown
+    status: capture_confirmed
   flow:
   - order: 0
     layer: handler

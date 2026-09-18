@@ -27,6 +27,18 @@ public static class ScenarioOutcomeNames
             ScenarioOutcome.Disconnected => "disconnected",
             _ => "unknown",
         };
+
+    /// <summary>
+    /// Whether <paramref name="wire"/> names an outcome.
+    /// </summary>
+    /// <remarks>
+    /// The validator needs this to tell a scenario's <c>status</c> apart from a confidence level,
+    /// which is spelled with the same key elsewhere in the tree. Every outcome but this one is
+    /// distinct from every confidence name; <c>unknown</c> is both, which is exactly why the two
+    /// went uncaught until a capture made a scenario say something else.
+    /// </remarks>
+    public static bool IsOutcome(string? wire) =>
+        wire is "success" or "rejected" or "ignored" or "disconnected" or "unknown";
 }
 
 /// <summary>One source's answer to "what happens in this scenario", kept attributed.</summary>

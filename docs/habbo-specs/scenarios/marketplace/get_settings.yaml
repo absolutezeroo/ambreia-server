@@ -10,7 +10,7 @@
 
 spec: scenarios
 spec_version: 1
-generated_digest: "sha256:c96834cb1cfe3765ba872229a08f6c087d3b0cebafdc6652f53f76b3582c996f"
+generated_digest: "sha256:7b614e914921ea3aa49c9a956754705da72640fbed3909a2c372497611222880"
 generated:
   feature: marketplace.get_settings
   scenarios:
@@ -21,10 +21,9 @@ generated:
     when:
       packet: GetMarketplaceConfiguration
     expected:
-      status: unknown
-      confidence: unknown
-    needs_evidence: an official capture of GetMarketplaceConfiguration succeeding, with every packet the server sends back and in what order
-    executable: false
+      status: success
+      confidence: capture_confirmed
+    executable: true
     claims:
     - origin: vortex
       authority: vortex_emulator
@@ -32,7 +31,18 @@ generated:
       emits:
       - MarketplaceConfiguration
       evidence: ev_3269baae7de7
+    - origin: capture (1 observations)
+      authority: official_capture
+      outcome: success
+      emits: []
+      evidence: ev_ee20908bfe6f
   evidence:
+  - id: ev_ee20908bfe6f
+    kind: capture
+    authority: official_capture
+    origin: capture
+    source: docs/habbo-specs/evidence/captures
+    symbol: GetMarketplaceConfiguration
   - id: ev_3269baae7de7
     kind: emulator_flow
     authority: vortex_emulator

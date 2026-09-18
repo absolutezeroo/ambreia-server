@@ -10,7 +10,7 @@
 
 spec: scenarios
 spec_version: 1
-generated_digest: "sha256:9126861763eabd5a869af6bacd7dc362722570f6d367fa9382e7f8a4b53fe7ff"
+generated_digest: "sha256:ae71a1bc156424b8c21462970d52fb3a3c5355ec136220a445e91b364691df9d"
 generated:
   feature: collectibles.get_mint_token_offers
   scenarios:
@@ -21,10 +21,9 @@ generated:
     when:
       packet: GetMintTokenOffers
     expected:
-      status: unknown
-      confidence: unknown
-    needs_evidence: an official capture of GetMintTokenOffers succeeding, with every packet the server sends back and in what order
-    executable: false
+      status: success
+      confidence: capture_confirmed
+    executable: true
     claims:
     - origin: vortex
       authority: vortex_emulator
@@ -32,7 +31,18 @@ generated:
       emits:
       - CollectibleMintTokenOffers
       evidence: ev_920ca1682c21
+    - origin: capture (1 observations)
+      authority: official_capture
+      outcome: success
+      emits: []
+      evidence: ev_bde127a7c76b
   evidence:
+  - id: ev_bde127a7c76b
+    kind: capture
+    authority: official_capture
+    origin: capture
+    source: docs/habbo-specs/evidence/captures
+    symbol: GetMintTokenOffers
   - id: ev_920ca1682c21
     kind: emulator_flow
     authority: vortex_emulator

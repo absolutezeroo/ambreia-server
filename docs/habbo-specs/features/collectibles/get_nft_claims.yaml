@@ -10,7 +10,7 @@
 
 spec: feature
 spec_version: 1
-generated_digest: "sha256:e343e32143c40133fcd7a6de080e7efc5b18414af658448cbacacd37d784eeaf"
+generated_digest: "sha256:0d8ee3e37cbd05844bce624290f77933ce4bb84059dea95cfa0a36ee067a4b9a"
 generated:
   id: collectibles.get_nft_claims
   domain: collectibles
@@ -21,7 +21,7 @@ generated:
     vortex: true
     references: []
   official_behavior:
-    status: unknown
+    status: capture_confirmed
   flow:
   - order: 0
     layer: handler
@@ -75,5 +75,7 @@ generated:
   - collectibles.get_nft_claims.guard_0
   - collectibles.get_nft_claims.guard_1
   - collectibles.get_nft_claims.success
+  conflicts:
+  - cf_3f219506ea
 verified: {}
 manual: {}

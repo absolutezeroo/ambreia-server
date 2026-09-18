@@ -10,7 +10,7 @@
 
 spec: feature
 spec_version: 1
-generated_digest: "sha256:cb37d7931622ebe55f60f7bc17e86c81eb987d9d1d48b6e7101dbb8243ea66d4"
+generated_digest: "sha256:7baf99bc179b392bdfe2b2f84470ca90bfbd516f8cdb6586960373bb23f576e0"
 generated:
   id: inventory.request_furni_inventory_when_not_in_room
   domain: inventory
@@ -21,7 +21,7 @@ generated:
     vortex: true
     references: []
   official_behavior:
-    status: unknown
+    status: capture_confirmed
   flow:
   - order: 0
     layer: handler
@@ -58,7 +58,7 @@ generated:
     evidence: ev_a2f5f7a4e8c7
   state_changes: []
   outgoing:
-    ordering: unknown
+    ordering: strict
     packets:
     - packet: FurniList
       recipient: unknown

@@ -10,7 +10,7 @@
 
 spec: scenarios
 spec_version: 1
-generated_digest: "sha256:1f2af2e7d5dbdf0320478c2d05b10bf33f22d3cdd550c0a57641a975c97ad14b"
+generated_digest: "sha256:4f958762140a07c30492388855da929185a5e924d2173150ef93db1bd3e9cea4"
 generated:
   feature: inventory.request_furni_inventory_when_not_in_room
   scenarios:
@@ -39,10 +39,9 @@ generated:
     when:
       packet: RequestFurniInventoryWhenNotInRoom
     expected:
-      status: unknown
-      confidence: unknown
-    needs_evidence: an official capture of RequestFurniInventoryWhenNotInRoom succeeding, with every packet the server sends back and in what order
-    executable: false
+      status: success
+      confidence: capture_confirmed
+    executable: true
     claims:
     - origin: vortex
       authority: vortex_emulator
@@ -50,7 +49,18 @@ generated:
       emits:
       - FurniList
       evidence: ev_0c8ec94a79b8
+    - origin: capture (2 observations)
+      authority: official_capture
+      outcome: success
+      emits: []
+      evidence: ev_0447bceb9410
   evidence:
+  - id: ev_0447bceb9410
+    kind: capture
+    authority: official_capture
+    origin: capture
+    source: docs/habbo-specs/evidence/captures
+    symbol: RequestFurniInventoryWhenNotInRoom
   - id: ev_0c8ec94a79b8
     kind: emulator_handler
     authority: vortex_emulator

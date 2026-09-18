@@ -10,7 +10,7 @@
 
 spec: scenarios
 spec_version: 1
-generated_digest: "sha256:12ea787c6646aaa39c89c10f26e6a5d58fa3d51c1e5c232b5e3ee9cf7fdc12fd"
+generated_digest: "sha256:96e0deb516cd3154ec77c55d8ab20f672e67d10359510ac0f861402676267d1b"
 generated:
   feature: collectibles.get_collector_score
   scenarios:
@@ -39,10 +39,9 @@ generated:
     when:
       packet: GetCollectorScore
     expected:
-      status: unknown
-      confidence: unknown
-    needs_evidence: an official capture of GetCollectorScore succeeding, with every packet the server sends back and in what order
-    executable: false
+      status: success
+      confidence: capture_confirmed
+    executable: true
     claims:
     - origin: vortex
       authority: vortex_emulator
@@ -50,7 +49,23 @@ generated:
       emits:
       - NftCollectionsScore
       evidence: ev_03de12ea0513
+    - origin: capture (1 observations)
+      authority: official_capture
+      outcome: success
+      emits:
+      - CollectableMintableItemTypes
+      - CollectibleMintingEnabled
+      - FurniList
+      - CollectibleMintTokenOffers
+      - NftTransferFee
+      evidence: ev_421e7c20dad7
   evidence:
+  - id: ev_421e7c20dad7
+    kind: capture
+    authority: official_capture
+    origin: capture
+    source: docs/habbo-specs/evidence/captures
+    symbol: GetCollectorScore
   - id: ev_03de12ea0513
     kind: emulator_flow
     authority: vortex_emulator

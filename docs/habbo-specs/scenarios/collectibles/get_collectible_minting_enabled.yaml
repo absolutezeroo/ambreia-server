@@ -10,7 +10,7 @@
 
 spec: scenarios
 spec_version: 1
-generated_digest: "sha256:d93f7547a3ea35e1a2b8dae7481912ba8673b769eaef76cf45a3a048ed0d8d04"
+generated_digest: "sha256:d7bf20ea398cbd5471134b0e70bc7c1c9aaaf2d61bbcaf7848d8db52f6fa7a61"
 generated:
   feature: collectibles.get_collectible_minting_enabled
   scenarios:
@@ -21,10 +21,9 @@ generated:
     when:
       packet: GetCollectibleMintingEnabled
     expected:
-      status: unknown
-      confidence: unknown
-    needs_evidence: an official capture of GetCollectibleMintingEnabled succeeding, with every packet the server sends back and in what order
-    executable: false
+      status: success
+      confidence: capture_confirmed
+    executable: true
     claims:
     - origin: vortex
       authority: vortex_emulator
@@ -32,7 +31,18 @@ generated:
       emits:
       - CollectibleMintingEnabled
       evidence: ev_61b974b83353
+    - origin: capture (1 observations)
+      authority: official_capture
+      outcome: success
+      emits: []
+      evidence: ev_519985ddd4a0
   evidence:
+  - id: ev_519985ddd4a0
+    kind: capture
+    authority: official_capture
+    origin: capture
+    source: docs/habbo-specs/evidence/captures
+    symbol: GetCollectibleMintingEnabled
   - id: ev_61b974b83353
     kind: emulator_flow
     authority: vortex_emulator

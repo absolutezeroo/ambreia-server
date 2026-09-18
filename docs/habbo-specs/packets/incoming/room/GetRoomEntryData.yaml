@@ -10,14 +10,13 @@
 
 spec: packet
 spec_version: 1
-generated_digest: "sha256:962d1ad0bbfb5f7e014fdb98aca953510388d2faf54c273a8e7af2853c2b5a59"
+generated_digest: "sha256:a66e058dbd12dba9011c19cd420fa5e5acfd65444394aaccf8397d097e62e80e"
 generated:
   name: GetRoomEntryData
   direction: incoming
   domain: room
-  structure_confidence: implementation_observed
-  mapped_in_vortex: true
-  vortex_handler: GetRoomEntryDataMessageHandler
+  structure_confidence: unknown
+  mapped_in_vortex: false
   fields: []
   layouts_by_source:
   - origin: habbo-arcturus-daybreak
@@ -26,12 +25,6 @@ generated:
     partial: true
     types: []
     evidence: ev_fd4c50c7f66d
-  - origin: vortex
-    authority: vortex_emulator
-    field_count: 0
-    partial: false
-    types: []
-    evidence: ev_7d23e5e0b152
   evidence:
   - id: ev_fd4c50c7f66d
     kind: reference_handler
@@ -41,14 +34,5 @@ generated:
     symbol: GetRoomEntryDataMessageEvent
     line: 11
     note: third-party server implementation; evidence, not authority
-  - id: ev_7d23e5e0b152
-    kind: emulator_parser
-    authority: vortex_emulator
-    origin: vortex
-    source: Vortex.Revisions/Revision20260701/Parsers/Room/Engine/GetRoomEntryDataMessageParser.cs
-    symbol: GetRoomEntryDataMessageParser
-    line: 7
-  conflicts:
-  - cf_f43696220c
 verified: {}
 manual: {}

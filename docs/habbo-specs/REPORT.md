@@ -23,10 +23,10 @@ actually produced against the trees listed under Sources.
 
 | | Count |
 |---|---:|
-| Features | 519 |
-| Scenarios | 2009 |
-| Captures imported | 0 |
-| Capture observations | 0 |
+| Features | 518 |
+| Scenarios | 1997 |
+| Captures imported | 1 |
+| Capture observations | 13 |
 
 ## Confidence in packet structure
 
@@ -36,27 +36,22 @@ actually produced against the trees listed under Sources.
 | client_confirmed | 617 | 41.3% |
 | multi_reference_confirmed | 88 | 5.9% |
 | reference_observed | 238 | 15.9% |
-| implementation_observed | 275 | 18.4% |
-| unknown | 212 | 14.2% |
+| implementation_observed | 274 | 18.3% |
+| unknown | 213 | 14.3% |
 
 ## Open questions
 
 | | Count |
 |---|---:|
-| Conflicts | 370 |
+| Conflicts | 372 |
 | Critical unknowns | 129 |
-| Unknowns in total | 686 |
+| Unknowns in total | 685 |
 | Fields with no attested name | 1601 of 5832 |
-
-> No captures were available to this run. Every behavioural question in this tree is
-> therefore open: the client and the implementations describe what a packet looks like
-> and what other people's servers do with it, and neither can say what Habbo does.
-> See `evidence/captures/README.md` for the format to drop them in.
 
 ## Files
 
-- written: 47
-- unchanged: 3552
+- written: 26
+- unchanged: 3573
 - blocked by hand edits: 0
 
 ## Coverage the scan bounded

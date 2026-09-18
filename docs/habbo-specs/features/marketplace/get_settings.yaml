@@ -10,7 +10,7 @@
 
 spec: feature
 spec_version: 1
-generated_digest: "sha256:574e8981be920a230903f01067080919a829cc24abbe11dc29df801415a2be6c"
+generated_digest: "sha256:2a5ffbe24ed12105b39a9277f4dbaae69f0145ff3c4c64f22f97e8be8c196154"
 generated:
   id: marketplace.get_settings
   domain: marketplace
@@ -21,7 +21,7 @@ generated:
     vortex: true
     references: []
   official_behavior:
-    status: unknown
+    status: capture_confirmed
   flow:
   - order: 0
     layer: handler

@@ -10,7 +10,7 @@
 
 spec: revision
 spec_version: 1
-generated_digest: "sha256:dbe4538c233854992069883b9435da480591d0b601354912d2ac79809bb4bfc0"
+generated_digest: "sha256:e283f079d8e3067fe67753c00ed64c440bd77840e99384b15cf80430df9f60d0"
 generated:
   revision: WIN63-202607011411-782849652
   origin: vortex
@@ -264,7 +264,6 @@ generated:
     GetResolutionAchievements: 1760
     GetRoomAdPurchaseInfo: 366
     GetRoomChatlog: 1346
-    GetRoomEntryData: 1250
     GetRoomEntryTile: 880
     GetRoomSettings: 256
     GetRoomVisits: 903

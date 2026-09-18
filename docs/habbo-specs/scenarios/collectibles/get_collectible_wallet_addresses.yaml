@@ -10,7 +10,7 @@
 
 spec: scenarios
 spec_version: 1
-generated_digest: "sha256:82d67da484559ae1ce7ac480b50b44c82e022fc82ce039e9e4db4ec8278a2035"
+generated_digest: "sha256:5f86498126a3c61ad52c679a2134698caa85e1b98a0a75fd5f271c754ac57642"
 generated:
   feature: collectibles.get_collectible_wallet_addresses
   scenarios:
@@ -39,10 +39,9 @@ generated:
     when:
       packet: GetCollectibleWalletAddresses
     expected:
-      status: unknown
-      confidence: unknown
-    needs_evidence: an official capture of GetCollectibleWalletAddresses succeeding, with every packet the server sends back and in what order
-    executable: false
+      status: success
+      confidence: capture_confirmed
+    executable: true
     claims:
     - origin: vortex
       authority: vortex_emulator
@@ -50,7 +49,18 @@ generated:
       emits:
       - CollectibleWalletAddresses
       evidence: ev_655e223fc358
+    - origin: capture (1 observations)
+      authority: official_capture
+      outcome: success
+      emits: []
+      evidence: ev_1376b0064973
   evidence:
+  - id: ev_1376b0064973
+    kind: capture
+    authority: official_capture
+    origin: capture
+    source: docs/habbo-specs/evidence/captures
+    symbol: GetCollectibleWalletAddresses
   - id: ev_655e223fc358
     kind: emulator_flow
     authority: vortex_emulator

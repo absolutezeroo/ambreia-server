@@ -10,7 +10,7 @@
 
 spec: feature
 spec_version: 1
-generated_digest: "sha256:56809e3d8aaf222579ef3a2d873635dcb5d56aca7b38a57ed15e518eb3d68c6d"
+generated_digest: "sha256:e9a9c6e85c4b7a7c8e56903cbb2831dcb27ea6f55ee706e98ed6f706e4c3c032"
 generated:
   id: collectibles.get_collectible_wallet_addresses
   domain: collectibles
@@ -21,7 +21,7 @@ generated:
     vortex: true
     references: []
   official_behavior:
-    status: unknown
+    status: capture_confirmed
   flow:
   - order: 0
     layer: handler

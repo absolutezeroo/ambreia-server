@@ -10,7 +10,7 @@
 
 spec: packet
 spec_version: 1
-generated_digest: "sha256:ccbea3d5098b4d654adb9205ee26969750d8ac33f90cd4e2bfc8c89e3604a3ee"
+generated_digest: "sha256:e5132e811793d60a27e0b5c45f9b2a13862396921fb5ff0849e5037198e31c4b"
 generated:
   name: GetNftClaims
   direction: incoming
@@ -56,5 +56,7 @@ generated:
     source: Vortex.Revisions/Revision20260701/Parsers/Collectibles/GetNftClaimsMessageParser.cs
     symbol: GetNftClaimsMessageParser
     line: 7
+  conflicts:
+  - cf_3f219506ea
 verified: {}
 manual: {}

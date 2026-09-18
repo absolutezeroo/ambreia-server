@@ -10,7 +10,7 @@
 
 spec: feature
 spec_version: 1
-generated_digest: "sha256:3fec5f2611bc3e4d2353c588c25e83adad3652db7722f54066e3031bf3c42f0e"
+generated_digest: "sha256:901e49cf57ce74cb09f317d7a35db8168b70f619e013f3b27dcdb5776393f70b"
 generated:
   id: collectibles.get_nft_transfer_fee
   domain: collectibles
@@ -21,7 +21,7 @@ generated:
     vortex: true
     references: []
   official_behavior:
-    status: unknown
+    status: capture_confirmed
   flow:
   - order: 0
     layer: handler

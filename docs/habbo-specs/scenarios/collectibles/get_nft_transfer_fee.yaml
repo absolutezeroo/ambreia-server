@@ -10,7 +10,7 @@
 
 spec: scenarios
 spec_version: 1
-generated_digest: "sha256:17c552e258b80e74a0f91738bea9a75933ee583d7dcaccd7a64177d05b43a4b1"
+generated_digest: "sha256:3f672b79d11d7a888ef83d296966047b600564716fcf5fac69dc2643f8d5aa84"
 generated:
   feature: collectibles.get_nft_transfer_fee
   scenarios:
@@ -21,10 +21,9 @@ generated:
     when:
       packet: GetNftTransferFee
     expected:
-      status: unknown
-      confidence: unknown
-    needs_evidence: an official capture of GetNftTransferFee succeeding, with every packet the server sends back and in what order
-    executable: false
+      status: success
+      confidence: capture_confirmed
+    executable: true
     claims:
     - origin: vortex
       authority: vortex_emulator
@@ -32,7 +31,18 @@ generated:
       emits:
       - NftTransferFee
       evidence: ev_a8e17d490a06
+    - origin: capture (1 observations)
+      authority: official_capture
+      outcome: success
+      emits: []
+      evidence: ev_29529f660766
   evidence:
+  - id: ev_29529f660766
+    kind: capture
+    authority: official_capture
+    origin: capture
+    source: docs/habbo-specs/evidence/captures
+    symbol: GetNftTransferFee
   - id: ev_a8e17d490a06
     kind: emulator_handler
     authority: vortex_emulator

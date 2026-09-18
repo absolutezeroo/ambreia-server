@@ -10,7 +10,7 @@
 
 spec: packet
 spec_version: 1
-generated_digest: "sha256:c0d7f582d58d17466cb09462cfcda7bc240f354cf08eb63974af7d8060a5c5b9"
+generated_digest: "sha256:0c70178736a5ffd001821899858e5256d0e374db05d22f711d592b756e2707e1"
 generated:
   name: GetNftStoreOffers
   direction: incoming
@@ -48,5 +48,7 @@ generated:
     source: Vortex.Revisions/Revision20260701/Parsers/Collectibles/GetNftStoreOffersMessageParser.cs
     symbol: GetNftStoreOffersMessageParser
     line: 7
+  conflicts:
+  - cf_890ada2f15
 verified: {}
 manual: {}

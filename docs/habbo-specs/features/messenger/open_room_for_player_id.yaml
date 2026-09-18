@@ -10,7 +10,7 @@
 
 spec: feature
 spec_version: 1
-generated_digest: "sha256:d1a9ecc81e147c86b9a6d6f0bce8e595698a3953b1bdd8eefefac077d19c1123"
+generated_digest: "sha256:fd4f88f83f9dcfa3a1d7d51740098f9366b49b08e230830e6a27465d8e9ee5de"
 generated:
   id: messenger.open_room_for_player_id
   domain: messenger
@@ -740,7 +740,7 @@ generated:
     origin: vortex
     source: Vortex.Rooms/RoomService.cs
     symbol: RoomService
-    line: 60
+    line: 62
   - id: ev_7f41f2bdde62
     kind: emulator_flow
     authority: vortex_emulator

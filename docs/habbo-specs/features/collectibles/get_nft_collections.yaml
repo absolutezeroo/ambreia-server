@@ -10,7 +10,7 @@
 
 spec: feature
 spec_version: 1
-generated_digest: "sha256:dac550a430841d9fb309d2204ea62add9a4ddd14759f0996a0306dff654e491c"
+generated_digest: "sha256:d4ce588b843b4fd3a4b88fcfceb43e942b27a8c7d5c82079b879f881a6ac0d04"
 generated:
   id: collectibles.get_nft_collections
   domain: collectibles
@@ -21,7 +21,7 @@ generated:
     vortex: true
     references: []
   official_behavior:
-    status: unknown
+    status: capture_confirmed
   flow:
   - order: 0
     layer: handler

@@ -10,7 +10,7 @@
 
 spec: feature
 spec_version: 1
-generated_digest: "sha256:630d03b5480b2cdc3718247ee1079bc104cc66779137b12ef7cc8f1540368f64"
+generated_digest: "sha256:1f08d293c2bab3b12fb96972c16c96eb4d28b3b9a31f4e14863769b7dff49848"
 generated:
   id: catalog.has_active_advertisement
   domain: catalog
@@ -98,7 +98,7 @@ generated:
     origin: vortex
     source: Vortex.Navigator/NavigatorProvider.cs
     symbol: RoomQueryExtensions
-    line: 782
+    line: 783
   - id: ev_614cdf3234fd
     kind: emulator_flow
     authority: vortex_emulator

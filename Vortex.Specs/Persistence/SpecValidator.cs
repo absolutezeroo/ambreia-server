@@ -169,6 +169,14 @@ public sealed class SpecValidator
                     continue;
                 }
 
+                // A scenario's `status` is an outcome, not a confidence. The two share the key and
+                // share the word `unknown`, which is why every scenario validated cleanly right up
+                // until a capture let one of them say `success`.
+                if (entry.Key == "status" && ScenarioOutcomeNames.IsOutcome(scalar.Value))
+                {
+                    continue;
+                }
+
                 if (!SpecNames.TryParseConfidence(scalar.Value, out Confidence confidence))
                 {
                     yield return new ValidationIssue(

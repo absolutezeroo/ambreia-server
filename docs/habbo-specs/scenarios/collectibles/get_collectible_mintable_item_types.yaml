@@ -10,7 +10,7 @@
 
 spec: scenarios
 spec_version: 1
-generated_digest: "sha256:c529774eca289904de8ff24ac749e6a00ce27fead2ad84ac1d3966cb46c5b950"
+generated_digest: "sha256:f8f2055ff5c78dd19bd66704c33e1d8cad8a26a29e03984da34a99c9e51c5105"
 generated:
   feature: collectibles.get_collectible_mintable_item_types
   scenarios:
@@ -39,10 +39,9 @@ generated:
     when:
       packet: GetCollectibleMintableItemTypes
     expected:
-      status: unknown
-      confidence: unknown
-    needs_evidence: an official capture of GetCollectibleMintableItemTypes succeeding, with every packet the server sends back and in what order
-    executable: false
+      status: success
+      confidence: capture_confirmed
+    executable: true
     claims:
     - origin: vortex
       authority: vortex_emulator
@@ -50,7 +49,18 @@ generated:
       emits:
       - CollectableMintableItemTypes
       evidence: ev_4512e162b296
+    - origin: capture (1 observations)
+      authority: official_capture
+      outcome: success
+      emits: []
+      evidence: ev_20c6f0e09391
   evidence:
+  - id: ev_20c6f0e09391
+    kind: capture
+    authority: official_capture
+    origin: capture
+    source: docs/habbo-specs/evidence/captures
+    symbol: GetCollectibleMintableItemTypes
   - id: ev_4512e162b296
     kind: emulator_handler
     authority: vortex_emulator

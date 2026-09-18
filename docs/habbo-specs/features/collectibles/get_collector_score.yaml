@@ -10,7 +10,7 @@
 
 spec: feature
 spec_version: 1
-generated_digest: "sha256:5afcc88353a98aa6484a9a650cb9c8c4d18ba6b7a489092bd4d6957912f8aac2"
+generated_digest: "sha256:edbee341944847afe044fd40468cee09976616e0691013f511221d1555d8055d"
 generated:
   id: collectibles.get_collector_score
   domain: collectibles
@@ -21,7 +21,7 @@ generated:
     vortex: true
     references: []
   official_behavior:
-    status: unknown
+    status: capture_confirmed
   flow:
   - order: 0
     layer: handler
@@ -70,5 +70,7 @@ generated:
   scenarios:
   - collectibles.get_collector_score.guard_0
   - collectibles.get_collector_score.success
+  conflicts:
+  - cf_864969a63e
 verified: {}
 manual: {}
