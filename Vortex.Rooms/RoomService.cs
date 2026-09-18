@@ -244,11 +244,16 @@ internal sealed partial class RoomService(
             .ConfigureAwait(false);
 
         RoomMapSnapshot mapSnapshot = await room.GetMapSnapshotAsync(ct).ConfigureAwait(false);
+        bool canRate = await room.CanRateAsync(playerId, ct).ConfigureAwait(false);
 
         await playerPresence
             .SendComposerAsync(
                 new RoomReadyMessageComposer { WorldType = snapshot.WorldType, RoomId = roomId },
-                new RoomRatingMessageComposer { Rating = 0, CanRate = false },
+                // Score rides along on the snapshot already in hand; only "may this player still
+                // vote" costs a lookup. The client shows the like button off canRate alone and
+                // never withdraws it by itself, so a blanket false hid the button in every room and
+                // a blanket true offered a vote the grain would refuse.
+                new RoomRatingMessageComposer { Rating = snapshot.Score, CanRate = canRate },
                 new RoomEntryTileMessageComposer
                 {
                     X = mapSnapshot.DoorX,

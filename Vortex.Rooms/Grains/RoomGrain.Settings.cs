@@ -689,74 +689,11 @@ public sealed partial class RoomGrain
         }
     }
 
-    public async Task<bool> RateRoomAsync(PlayerId actor, int points, CancellationToken ct)
-    {
-        int sign = Math.Sign(points);
+    public Task<bool> CanRateAsync(PlayerId actor, CancellationToken ct) =>
+        RatingSystem.CanRateAsync(actor, ct);
 
-        if (sign == 0 || _state.RoomSnapshot.OwnerId == actor)
-        {
-            return false;
-        }
-
-        try
-        {
-            await using VortexDbContext dbCtx = await _dbCtxFactory
-                .CreateDbContextAsync(ct)
-                .ConfigureAwait(true);
-
-            bool alreadyRated = await dbCtx
-                .RoomRatings.AnyAsync(
-                    r => r.RoomEntityId == _state.RoomId.Value && r.PlayerEntityId == actor.Value,
-                    ct
-                )
-                .ConfigureAwait(true);
-
-            if (alreadyRated)
-            {
-                return false;
-            }
-
-            RoomEntity? entity = await dbCtx
-                .Rooms.FirstOrDefaultAsync(r => r.Id == _state.RoomId.Value, ct)
-                .ConfigureAwait(true);
-
-            if (entity is null)
-            {
-                return false;
-            }
-
-            dbCtx.RoomRatings.Add(
-                new RoomRatingEntity
-                {
-                    RoomEntityId = _state.RoomId.Value,
-                    PlayerEntityId = actor.Value,
-                    RoomEntity = null!,
-                    PlayerEntity = null!,
-                }
-            );
-
-            entity.Score += sign;
-
-            await dbCtx.SaveChangesAsync(ct).ConfigureAwait(true);
-
-            _state.RoomSnapshot = _state.RoomSnapshot with
-            {
-                Score = entity.Score,
-                LastUpdatedUtc = DateTime.UtcNow,
-            };
-
-            await _events
-                .PublishAsync(new RoomRatedEvent(actor, _state.RoomId.Value, sign), ct)
-                .ConfigureAwait(true);
-
-            return true;
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Failed to rate room {RoomId}.", _state.RoomId);
-            return false;
-        }
-    }
+    public Task<int?> RateRoomAsync(PlayerId actor, int points, CancellationToken ct) =>
+        RatingSystem.RateRoomAsync(actor, points, ct);
 
     public async Task SetStaffPickAsync(PlayerId actor, bool staffPick, CancellationToken ct)
     {

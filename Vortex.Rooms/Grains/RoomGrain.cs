@@ -120,6 +120,7 @@ public sealed partial class RoomGrain : Grain, IRoomGrain
     public readonly RoomRaidProtectionSystem RaidProtectionSystem;
     public readonly RoomMysteryBoxSystem MysteryBoxSystem;
     public readonly RoomCrackableSystem CrackableSystem;
+    public readonly RoomRatingSystem RatingSystem;
     public readonly RoomTradingSystem TradingSystem;
     public readonly RoomWiredTradingSystem WiredTradingSystem;
     public readonly RoomJukeboxSystem JukeboxSystem;
@@ -204,6 +205,7 @@ public sealed partial class RoomGrain : Grain, IRoomGrain
         RaidProtectionSystem = new RoomRaidProtectionSystem(this);
         MysteryBoxSystem = new RoomMysteryBoxSystem(this);
         CrackableSystem = new RoomCrackableSystem(this);
+        RatingSystem = new RoomRatingSystem(this);
         TradingSystem = new RoomTradingSystem(this);
         WiredTradingSystem = new RoomWiredTradingSystem(this);
         JukeboxSystem = new RoomJukeboxSystem(this);

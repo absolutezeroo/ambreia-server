@@ -5,6 +5,7 @@ using Vortex.Messages.Registry;
 using Vortex.Primitives.Orleans;
 using Vortex.Primitives.Rooms.Grains;
 using Vortex.Protocol.Messages.Incoming.Navigator;
+using Vortex.Protocol.Messages.Outgoing.Navigator;
 
 namespace Vortex.PacketHandlers.Navigator;
 
@@ -23,6 +24,22 @@ public class RateFlatMessageHandler(IGrainFactory grainFactory) : IMessageHandle
 
         IRoomSettings roomGrain = grainFactory.GetRoomSettings(ctx.RoomId);
 
-        await roomGrain.RateRoomAsync(ctx.PlayerId, message.Points, ct).ConfigureAwait(false);
+        int? newScore = await roomGrain
+            .RateRoomAsync(ctx.PlayerId, message.Points, ct)
+            .ConfigureAwait(false);
+
+        if (newScore is null)
+        {
+            return;
+        }
+
+        // The client never lowers its own like button: canRate comes from RoomRating and nowhere
+        // else (RoomToolsWidgetHandler.rateRoom just sends and forgets). Without this the button
+        // stays up for the rest of the visit and the score the player just moved never shows.
+        await ctx.SendComposerAsync(
+                new RoomRatingMessageComposer { Rating = newScore.Value, CanRate = false },
+                ct
+            )
+            .ConfigureAwait(false);
     }
 }
