@@ -3830,6 +3830,10 @@
             "items": {
               "$ref": "#/components/schemas/TokenAttribute"
             }
+          },
+          "external_url": {
+            "type": "string",
+            "nullable": true
           }
         },
         "additionalProperties": false

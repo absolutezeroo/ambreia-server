@@ -144,6 +144,21 @@ public sealed class WebApiConfig
     /// </summary>
     public string SiteName { get; set; } = string.Empty;
 
+    /// <summary>
+    /// Absolute base URL of the website (e.g. <c>https://vortex-hotel.online</c>). Used for one
+    /// thing: the <c>external_url</c> in a Relic's ERC-721 metadata, which is the link a wallet or a
+    /// marketplace offers back to the hotel. Empty means the field is omitted, and a Relic then has
+    /// a name and a picture but nowhere to click through to.
+    /// </summary>
+    /// <remarks>
+    /// Configured rather than taken from the request, which is what <c>og:url</c> does one file
+    /// over. That works there because the share URL is served BY the site; this document is fetched
+    /// at whatever host the contract's base URI names, and a deployment that puts the API on its own
+    /// hostname — <c>webapi.</c>something — would otherwise publish that hostname as the hotel's
+    /// address in every wallet holding a Relic.
+    /// </remarks>
+    public string PublicSiteUrl { get; set; } = string.Empty;
+
     /// <summary>Fixed-window rate limit applied to <c>POST /api/public/authentication/login</c>.</summary>
     public RateLimitOptions LoginRateLimit { get; set; } =
         new RateLimitOptions

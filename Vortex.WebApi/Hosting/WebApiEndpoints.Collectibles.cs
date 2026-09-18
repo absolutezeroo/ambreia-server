@@ -48,7 +48,14 @@ internal static class WebApiEndpointsCollectibles
         [property: JsonPropertyName("name")] string Name,
         [property: JsonPropertyName("description")] string Description,
         [property: JsonPropertyName("image")] string? Image,
-        [property: JsonPropertyName("attributes")] IReadOnlyList<TokenAttribute> Attributes
+        [property: JsonPropertyName("attributes")] IReadOnlyList<TokenAttribute> Attributes,
+        // The schema's link back to wherever the thing comes from, and the only one a Relic gets:
+        // without it a wallet holding one shows a name, a picture and no way to find the hotel it
+        // belongs to. Omitted rather than emitted empty when no site URL is configured — a null
+        // `external_url` is a document with no link, an empty one is a document with a broken link.
+        [property: JsonPropertyName("external_url")]
+        [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+            string? ExternalUrl
     );
 
     public sealed record TokenAttribute(
@@ -121,7 +128,31 @@ internal static class WebApiEndpointsCollectibles
             "A Relic minted in the Collectors Guild, converted from the piece of furniture it is "
                 + "named after.",
             FurniIcon(asset.ProductCode, config),
-            attributes
+            attributes,
+            RelicPage(asset.Id, config)
+        );
+    }
+
+    /// <summary>
+    /// The Relic's page on the website, or <c>null</c> when no site URL is configured.
+    /// </summary>
+    /// <remarks>
+    /// The hash is not a mistake: the site is a <c>svelte-spa-router</c> application and routes on
+    /// the fragment, so <c>/habbo-nft/relic/3</c> with no <c>#</c> is a path its server has no route
+    /// for. It is built here rather than with the id appended by the caller because the id it needs
+    /// is the asset's, which is also the ERC-721 token id — one numbering, which is what lets both
+    /// this URL and the metadata one be reached by concatenation.
+    /// </remarks>
+    private static string? RelicPage(int assetId, WebApiConfig config)
+    {
+        if (string.IsNullOrWhiteSpace(config.PublicSiteUrl))
+        {
+            return null;
+        }
+
+        return string.Create(
+            CultureInfo.InvariantCulture,
+            $"{config.PublicSiteUrl.TrimEnd('/')}/#/habbo-nft/relic/{assetId}"
         );
     }
 

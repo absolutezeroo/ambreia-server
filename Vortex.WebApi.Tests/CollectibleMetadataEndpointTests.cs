@@ -94,6 +94,47 @@ public sealed class CollectibleMetadataEndpointTests
         body.GetProperty("image").ValueKind.Should().Be(JsonValueKind.Null);
     }
 
+    /// <summary>
+    /// The link back to the hotel, which is the only address a Relic has outside the game.
+    /// </summary>
+    /// <remarks>
+    /// The <c>#</c> is the assertion worth having: the site routes on the fragment, so the same URL
+    /// without it is a path its server has no route for, and the failure would only ever be seen by
+    /// somebody clicking through from a marketplace.
+    /// </remarks>
+    [Fact]
+    public async Task Metadata_LinksBackToTheRelicsPageOnTheSite()
+    {
+        await using WebApiTestFactory factory = new(config =>
+            // With the trailing slash on purpose: it is how anybody would write a base URL, and it
+            // is what puts `//#/` in the link if nothing trims it.
+            config.PublicSiteUrl = "https://vortex-hotel.online/"
+        );
+        await SeedRelicAsync(factory, id: 90714, productCode: "dragonlamp", serial: 3, edition: 5);
+
+        JsonElement body = await GetAsync(factory, 90714);
+
+        body.GetProperty("external_url")
+            .GetString()
+            .Should()
+            .Be("https://vortex-hotel.online/#/habbo-nft/relic/90714");
+    }
+
+    /// <summary>
+    /// With no site URL configured the field is absent rather than empty: a document with no link is
+    /// one a wallet renders without a button, where an empty one renders a button that goes nowhere.
+    /// </summary>
+    [Fact]
+    public async Task Metadata_OmitsTheLinkHomeWhenNoSiteUrlIsConfigured()
+    {
+        await using WebApiTestFactory factory = new();
+        await SeedRelicAsync(factory, id: 11, productCode: "throne", serial: 1, edition: 0);
+
+        JsonElement body = await GetAsync(factory, 11);
+
+        body.TryGetProperty("external_url", out _).Should().BeFalse();
+    }
+
     [Fact]
     public async Task Metadata_IsNotFoundForAnAssetThatDoesNotExist()
     {
