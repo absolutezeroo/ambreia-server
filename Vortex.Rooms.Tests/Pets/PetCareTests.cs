@@ -17,6 +17,7 @@ using Vortex.Primitives.Permissions;
 using Vortex.Primitives.Pets.Providers;
 using Vortex.Primitives.Pets.Snapshots;
 using Vortex.Primitives.Players;
+using Vortex.Primitives.Players.Grains;
 using Vortex.Primitives.Rooms;
 using Vortex.Primitives.Rooms.Enums;
 using Vortex.Primitives.Rooms.Grains;
@@ -92,6 +93,25 @@ public sealed class PetCareTests
         updated!.Respect.Should().Be(10);
         updated.RespectTodayCount.Should().Be(1, "yesterday's tally does not carry over");
         updated.RespectLastResetDate.Should().Be(Today);
+    }
+
+    /// <summary>
+    /// The scratcher's own daily allowance, which is a separate budget from the pet's cap: one stops
+    /// a player farming a single pet, the other stops them farming every pet in the room. It is also
+    /// the number the client counts down from, so the two must agree.
+    /// </summary>
+    [Fact]
+    public async Task AScratcherOutOfDailyPetRespects_ChangesNothing()
+    {
+        Harness harness = new(Pet(), scratcherHasBudgetLeft: false);
+
+        PetSnapshot? updated = await harness
+            .System.RespectPetAsync(harness.Context, PetId, CancellationToken.None)
+            .ConfigureAwait(true);
+
+        updated!.Respect.Should().Be(0);
+        updated.RespectTodayCount.Should().Be(0, "the pet's own cap was never reached");
+        updated.Experience.Should().Be(0, "a refused scratch must not pay experience either");
     }
 
     [Fact]
@@ -197,7 +217,7 @@ public sealed class PetCareTests
     /// </summary>
     private sealed class Harness
     {
-        public Harness(PetSnapshot pet)
+        public Harness(PetSnapshot pet, bool scratcherHasBudgetLeft = true)
         {
             RoomGrain grain = GrainActivationContext.CreateWithIntegerKey<RoomGrain>(
                 RoomId,
@@ -212,7 +232,7 @@ public sealed class PetCareTests
                 FakeProxy.Create<IRoomAvatarProvider>(_ => null),
                 FakeProxy.Create<IRoomWiredVariablesProvider>(_ => null),
                 RoomGrainStubs.NoListeners(),
-                FakeProxy.Create<IGrainFactory>(_ => null),
+                ScratcherGrainFactory(scratcherHasBudgetLeft),
                 FakeProxy.Create<IEventPublisher>(_ => null),
                 RoomGrainStubs.NeverCancels(),
                 FakeProxy.Create<IPermissionService>(_ => null),
@@ -246,6 +266,23 @@ public sealed class PetCareTests
 
         public ActionContext Context { get; } =
             ActionContext.CreateForPlayer(new PlayerId(OwnerId), new RoomId(RoomId));
+
+        /// <summary>
+        /// Enough of a grain factory to answer the scratcher's own daily allowance — the third gate
+        /// on a scratch, after the pet's cap and the account-age rule, and the only one that lives
+        /// on the player rather than on the pet.
+        /// </summary>
+        private static IGrainFactory ScratcherGrainFactory(bool hasBudgetLeft) =>
+            FakeProxy.Create<IGrainFactory>(call =>
+                call.Method.IsGenericMethod
+                && call.Method.GetGenericArguments()[0] == typeof(IPlayerGrain)
+                    ? FakeProxy.Create<IPlayerGrain>(inner =>
+                        inner.Method.Name == nameof(IPlayerGrain.TryGivePetRespectAsync)
+                            ? Task.FromResult(hasBudgetLeft)
+                            : null
+                    )
+                    : null
+            );
 
         private static IPetLevelProvider BuildPetLevelProvider() =>
             FakeProxy.Create<IPetLevelProvider>(call =>

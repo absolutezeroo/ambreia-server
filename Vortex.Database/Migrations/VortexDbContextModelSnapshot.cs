@@ -7167,6 +7167,12 @@ namespace Vortex.Database.Migrations
                         .HasColumnType("datetime(6)")
                         .HasColumnName("nux_completed_at");
 
+                    b.Property<int>("PetRespectGivenToday")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasDefaultValue(0)
+                        .HasColumnName("pet_respect_given_today");
+
                     b.Property<int?>("PlayerAccountEntityId")
                         .HasColumnType("int")
                         .HasColumnName("account_id");
@@ -7196,6 +7202,12 @@ namespace Vortex.Database.Migrations
                         .HasColumnType("int")
                         .HasDefaultValue(0)
                         .HasColumnName("respect_received");
+
+                    b.Property<int>("RespectReplenishesUsedToday")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasDefaultValue(0)
+                        .HasColumnName("respect_replenishes_used_today");
 
                     b.Property<DateTime?>("RespectResetDate")
                         .HasColumnType("datetime(6)")
@@ -10800,6 +10812,51 @@ namespace Vortex.Database.Migrations
                     b.ToTable("room_entry_logs");
                 });
 
+            modelBuilder.Entity("Vortex.Database.Entities.Room.RoomFilterWordEntity", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasColumnName("id");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("CreatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime(6)")
+                        .HasColumnName("created_at");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<DateTime>("CreatedAt"));
+
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("datetime(6)")
+                        .HasColumnName("deleted_at");
+
+                    b.Property<int>("RoomEntityId")
+                        .HasColumnType("int")
+                        .HasColumnName("room_id");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("datetime(6)")
+                        .HasColumnName("updated_at");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlComputedColumn(b.Property<DateTime>("UpdatedAt"));
+
+                    b.Property<string>("Word")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("varchar(64)")
+                        .HasColumnName("word");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("RoomEntityId", "Word")
+                        .IsUnique();
+
+                    b.ToTable("room_filter_words");
+                });
+
             modelBuilder.Entity("Vortex.Database.Entities.Room.RoomModelEntity", b =>
                 {
                     b.Property<int>("Id")
@@ -13767,6 +13824,17 @@ namespace Vortex.Database.Migrations
                         .IsRequired();
 
                     b.Navigation("PlayerEntity");
+
+                    b.Navigation("RoomEntity");
+                });
+
+            modelBuilder.Entity("Vortex.Database.Entities.Room.RoomFilterWordEntity", b =>
+                {
+                    b.HasOne("Vortex.Database.Entities.Room.RoomEntity", "RoomEntity")
+                        .WithMany()
+                        .HasForeignKey("RoomEntityId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.Navigation("RoomEntity");
                 });

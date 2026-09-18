@@ -57,4 +57,40 @@ public class RespectBudgetTests
         allowed.Should().BeTrue();
         given.Should().Be(1);
     }
+
+    /// <summary>
+    /// The number the user object hands the client, which is the only thing that decides whether
+    /// the respect button is drawn at all. A budget spent yesterday must read as full today, or the
+    /// button stays hidden until the player gives a respect they cannot give.
+    /// </summary>
+    [Fact]
+    public void Remaining_CountsDownWithinTheDay()
+    {
+        RespectBudget.Remaining(0, Today, Today, dailyLimit: 3).Should().Be(3);
+        RespectBudget.Remaining(2, Today, Today, dailyLimit: 3).Should().Be(1);
+        RespectBudget.Remaining(3, Today, Today, dailyLimit: 3).Should().Be(0);
+    }
+
+    [Fact]
+    public void Remaining_IsFullAgainOnANewDay()
+    {
+        RespectBudget
+            .Remaining(3, Today.AddDays(-1), Today, dailyLimit: 3)
+            .Should()
+            .Be(3, "yesterday's spending is not today's");
+    }
+
+    [Fact]
+    public void Remaining_NeverGoesNegativeWhenTheLimitIsLowered()
+    {
+        // An operator can drop respect.daily_limit while players hold counts above it.
+        RespectBudget.Remaining(5, Today, Today, dailyLimit: 3).Should().Be(0);
+    }
+
+    [Fact]
+    public void Remaining_IsZeroWhenTheAllowanceIsOff()
+    {
+        // How the replenish button stays hidden: respect.daily_replenishes defaults to 0.
+        RespectBudget.Remaining(0, Today, Today, dailyLimit: 0).Should().Be(0);
+    }
 }

@@ -9,6 +9,7 @@ using Vortex.Primitives.Permissions;
 using Vortex.Primitives.Rooms;
 using Vortex.Primitives.Rooms.Grains;
 using Vortex.Protocol.Messages.Incoming.Room.Action;
+using Vortex.Protocol.Messages.Outgoing.Roomsettings;
 
 namespace Vortex.PacketHandlers.Room.Action;
 
@@ -65,19 +66,27 @@ public class UnbanUserFromRoomMessageHandler(
             .UnbanUserAsync(actorCtx, message.UserId, ct)
             .ConfigureAwait(false);
 
-        if (!applied)
+        if (applied)
         {
-            // The room's mod settings did not grant this actor authority here.
-            await RoomModerationGuard
-                .AuditDenialAsync(
-                    events,
-                    ctx,
-                    actorRoomId,
-                    message.UserId,
-                    ModerationAction.Ban,
+            // Back to the operator, not to the room: the ban list is a window they have open, and
+            // RoomSettingsCtrl drops the row only on this message. Same session the request came
+            // from, exactly like the list itself in GetBannedUsersFromRoomMessageHandler.
+            await ctx.SendComposerAsync(
+                    new UserUnbannedFromRoomEventMessageComposer
+                    {
+                        RoomId = actorRoomId.Value,
+                        PlayerId = message.UserId,
+                    },
                     ct
                 )
                 .ConfigureAwait(false);
+
+            return;
         }
+
+        // The room's mod settings did not grant this actor authority here.
+        await RoomModerationGuard
+            .AuditDenialAsync(events, ctx, actorRoomId, message.UserId, ModerationAction.Ban, ct)
+            .ConfigureAwait(false);
     }
 }

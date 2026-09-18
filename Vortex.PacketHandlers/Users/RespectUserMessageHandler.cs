@@ -1,6 +1,5 @@
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Extensions.Configuration;
 using Orleans;
 using Vortex.Messages.Registry;
 using Vortex.Primitives.Orleans;
@@ -8,11 +7,10 @@ using Vortex.Protocol.Messages.Incoming.Users;
 
 namespace Vortex.PacketHandlers.Users;
 
-public class RespectUserMessageHandler(IGrainFactory grainFactory, IConfiguration configuration)
+public class RespectUserMessageHandler(IGrainFactory grainFactory)
     : IMessageHandler<RespectUserMessage>
 {
     private readonly IGrainFactory _grainFactory = grainFactory;
-    private readonly IConfiguration _configuration = configuration;
 
     public async ValueTask HandleAsync(
         RespectUserMessage message,
@@ -25,11 +23,12 @@ public class RespectUserMessageHandler(IGrainFactory grainFactory, IConfiguratio
             return;
         }
 
-        int dailyLimit = _configuration.GetValue("Vortex:Rooms:DailyRespectLimit", 3);
-
+        // The budget belongs to the giver's grain (respect.daily_limit), not to this handler: it is
+        // the same number the user object handed the client at login, and only one of the two can
+        // be authoritative.
         await _grainFactory
             .GetRoomAvatars(ctx.RoomId)
-            .RespectPlayerAsync(ctx.AsActionContext(), message.UserId, dailyLimit, ct)
+            .RespectPlayerAsync(ctx.AsActionContext(), message.UserId, ct)
             .ConfigureAwait(false);
     }
 }

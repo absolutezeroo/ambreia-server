@@ -43,6 +43,10 @@ internal sealed class UsersMap : IRevisionMap
         );
         builder.MapParser(MessageEvent.RespectUserMessageEvent, new RespectUserMessageParser());
         builder.MapParser(
+            MessageEvent.ReplenishRespectMessageEvent,
+            new ReplenishRespectMessageParser()
+        );
+        builder.MapParser(
             MessageEvent.GetGuildCreationInfoMessageEvent,
             new GetGuildCreationInfoMessageParser()
         );

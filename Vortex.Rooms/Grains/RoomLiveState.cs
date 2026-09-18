@@ -40,6 +40,10 @@ public sealed class RoomLiveState
 
     public HashSet<PlayerId> PlayerIdsWithRights { get; } = [];
 
+    /// <summary>The room's own banned words, hydrated on load. Case-insensitive because that is how
+    /// the filter is applied — an owner who banned "bobba" did not mean to allow "BOBBA".</summary>
+    public HashSet<string> FilterWords { get; } = new(StringComparer.OrdinalIgnoreCase);
+
     /// <summary>Member ranks for the guild that owns this room, keyed by player id. Empty when the
     /// room has no guild. Hydrated on room load and kept in sync by
     /// <c>RoomGrain.RefreshGroupMembershipAsync</c> — <see cref="Modules.RoomSecurityModule"/> reads

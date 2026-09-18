@@ -114,6 +114,11 @@ public sealed class RoomChatSystem(RoomGrain roomGrain)
             avatar.LastChatStyleId = styleId;
         }
 
+        // After the cancellable event, so a handler still sees what was actually typed, and before
+        // the line reaches anybody -- including the speaker, who must see the same masked text as
+        // the room or they would not know the filter exists.
+        text = ApplyFilterWords(text);
+
         await SendChatAsync(
             avatar.ObjectId,
             playerId,
@@ -373,6 +378,35 @@ public sealed class RoomChatSystem(RoomGrain roomGrain)
                 _roomGrain.RoomId
             );
         }
+    }
+
+    /// <summary>
+    /// Masks the room's own banned words. Whole words only, so a room that bans "ass" does not
+    /// mangle "class" — the client's own filter behaves the same way, and an owner who wanted the
+    /// substring can ban it on its own.
+    /// </summary>
+    internal string ApplyFilterWords(string text)
+    {
+        if (_roomGrain._state.FilterWords.Count == 0 || string.IsNullOrEmpty(text))
+        {
+            return text;
+        }
+
+        string[] parts = text.Split(' ');
+        bool changed = false;
+
+        for (int i = 0; i < parts.Length; i++)
+        {
+            if (parts[i].Length == 0 || !_roomGrain._state.FilterWords.Contains(parts[i]))
+            {
+                continue;
+            }
+
+            parts[i] = _roomGrain._roomConfig.FilterReplacement;
+            changed = true;
+        }
+
+        return changed ? string.Join(' ', parts) : text;
     }
 
     /// <summary>

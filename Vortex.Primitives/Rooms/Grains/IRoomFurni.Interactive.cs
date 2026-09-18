@@ -110,6 +110,26 @@ public partial interface IRoomFurni
     );
 
     /// <summary>
+    /// The magic tile widget's up/down arrows: snap the tile to the next surface of whatever else
+    /// is stacked on its tile, rather than to an absolute height.
+    /// </summary>
+    /// <remarks>
+    /// The slider and the text box already send an absolute height, so these two buttons would need
+    /// no server at all if they were a fixed step. They exist because the step is "the next thing on
+    /// this tile", which only the room knows — the client sends the direction and nothing else
+    /// (<c>CustomStackHeightWidget.sendAdjacentHeightRequest</c>).
+    /// </remarks>
+    /// <param name="down">The down arrow; false is up.</param>
+    /// <returns>False if the item is absent, is not a magic tile, the actor lacks room rights, or
+    /// there is nothing on the tile to snap to in that direction.</returns>
+    public Task<bool> SetAdjacentCustomStackHeightAsync(
+        ActionContext ctx,
+        RoomObjectId itemId,
+        bool down,
+        CancellationToken ct
+    );
+
+    /// <summary>
     /// Throws away a wall item that is meant to be thrown away — a sticky note or a photo.
     /// </summary>
     /// <remarks>

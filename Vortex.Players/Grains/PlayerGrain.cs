@@ -84,8 +84,13 @@ internal sealed partial class PlayerGrain : Grain, IPlayerGrain
             .ConfigureAwait(true);
     }
 
-    public async Task<bool> TryGiveRespectAsync(int dailyLimit, CancellationToken ct)
+    public async Task<bool> TryGiveRespectAsync(CancellationToken ct)
     {
+        int dailyLimit = await this
+            .GrainFactory.GetServerConfigGrain()
+            .GetIntAsync(RespectConfig.DailyLimitKey, RespectConfig.DailyLimitDefault)
+            .ConfigureAwait(true);
+
         (bool allowed, int givenToday, DateTime resetDate) = RespectBudget.TryConsume(
             _state.RespectGivenToday,
             _state.RespectResetDate,
@@ -93,8 +98,11 @@ internal sealed partial class PlayerGrain : Grain, IPlayerGrain
             dailyLimit
         );
 
+        // The reset date is rolled over whether or not the respect is allowed: a refused give on a
+        // new day still means today's budget is the one being counted from now on.
+        RollRespectDayIfNeeded(resetDate);
+
         _state.RespectGivenToday = givenToday;
-        _state.RespectResetDate = resetDate;
 
         if (!allowed)
         {
@@ -104,6 +112,121 @@ internal sealed partial class PlayerGrain : Grain, IPlayerGrain
         await WriteToDatabaseAsync(ct);
 
         return true;
+    }
+
+    public async Task<bool> TryGivePetRespectAsync(CancellationToken ct)
+    {
+        int dailyLimit = await this
+            .GrainFactory.GetServerConfigGrain()
+            .GetIntAsync(RespectConfig.PetDailyLimitKey, RespectConfig.PetDailyLimitDefault)
+            .ConfigureAwait(true);
+
+        (bool allowed, int givenToday, DateTime resetDate) = RespectBudget.TryConsume(
+            _state.PetRespectGivenToday,
+            _state.RespectResetDate,
+            DateTime.UtcNow,
+            dailyLimit
+        );
+
+        RollRespectDayIfNeeded(resetDate);
+
+        _state.PetRespectGivenToday = givenToday;
+
+        if (!allowed)
+        {
+            return false;
+        }
+
+        await WriteToDatabaseAsync(ct);
+
+        return true;
+    }
+
+    public async Task<bool> ReplenishRespectAsync(CancellationToken ct)
+    {
+        int allowance = await this
+            .GrainFactory.GetServerConfigGrain()
+            .GetIntAsync(RespectConfig.DailyReplenishesKey, RespectConfig.DailyReplenishesDefault)
+            .ConfigureAwait(true);
+
+        (bool allowed, int usedToday, DateTime resetDate) = RespectBudget.TryConsume(
+            _state.RespectReplenishesUsedToday,
+            _state.RespectResetDate,
+            DateTime.UtcNow,
+            allowance
+        );
+
+        RollRespectDayIfNeeded(resetDate);
+
+        if (!allowed)
+        {
+            return false;
+        }
+
+        _state.RespectReplenishesUsedToday = usedToday;
+        _state.RespectGivenToday = 0;
+
+        await WriteToDatabaseAsync(ct);
+
+        return true;
+    }
+
+    public async Task<PlayerRespectSnapshot> GetRespectStateAsync(CancellationToken ct)
+    {
+        IServerConfigGrain config = this.GrainFactory.GetServerConfigGrain();
+        int dailyLimit = await config
+            .GetIntAsync(RespectConfig.DailyLimitKey, RespectConfig.DailyLimitDefault)
+            .ConfigureAwait(true);
+        int petDailyLimit = await config
+            .GetIntAsync(RespectConfig.PetDailyLimitKey, RespectConfig.PetDailyLimitDefault)
+            .ConfigureAwait(true);
+        int replenishes = await config
+            .GetIntAsync(RespectConfig.DailyReplenishesKey, RespectConfig.DailyReplenishesDefault)
+            .ConfigureAwait(true);
+
+        DateTime now = DateTime.UtcNow;
+
+        return new PlayerRespectSnapshot
+        {
+            Received = _state.RespectReceived,
+            Left = RespectBudget.Remaining(
+                _state.RespectGivenToday,
+                _state.RespectResetDate,
+                now,
+                dailyLimit
+            ),
+            PetLeft = RespectBudget.Remaining(
+                _state.PetRespectGivenToday,
+                _state.RespectResetDate,
+                now,
+                petDailyLimit
+            ),
+            ReplenishesLeft = RespectBudget.Remaining(
+                _state.RespectReplenishesUsedToday,
+                _state.RespectResetDate,
+                now,
+                replenishes
+            ),
+            MaxPerDay = dailyLimit,
+        };
+    }
+
+    /// <summary>
+    /// Moves all three respect counters onto <paramref name="day"/> together. They share one reset
+    /// date, so whichever budget notices the new day first has to clear the other two — otherwise
+    /// yesterday's pet scratches would still be counted against today.
+    /// </summary>
+    private void RollRespectDayIfNeeded(DateTime day)
+    {
+        if (_state.RespectResetDate?.Date == day.Date)
+        {
+            return;
+        }
+
+        _state.RespectResetDate = day;
+        _state.RespectGivenToday = 0;
+        _state.PetRespectGivenToday = 0;
+        _state.RespectReplenishesUsedToday = 0;
     }
 
     public async Task<int> AddRespectReceivedAsync(CancellationToken ct)
@@ -1135,6 +1258,8 @@ internal sealed partial class PlayerGrain : Grain, IPlayerGrain
         _state.AchievementScore = entity.AchievementScore;
         _state.RespectReceived = entity.RespectReceived;
         _state.RespectGivenToday = entity.RespectGivenToday;
+        _state.PetRespectGivenToday = entity.PetRespectGivenToday;
+        _state.RespectReplenishesUsedToday = entity.RespectReplenishesUsedToday;
         _state.RespectResetDate = entity.RespectResetDate;
         _state.CreatedAt = entity.CreatedAt;
         _state.MutedUntil = entity.MutedUntil;
@@ -1239,6 +1364,11 @@ internal sealed partial class PlayerGrain : Grain, IPlayerGrain
                         .SetProperty(p => p.AchievementScore, snapshot.AchievementScore)
                         .SetProperty(p => p.RespectReceived, _state.RespectReceived)
                         .SetProperty(p => p.RespectGivenToday, _state.RespectGivenToday)
+                        .SetProperty(p => p.PetRespectGivenToday, _state.PetRespectGivenToday)
+                        .SetProperty(
+                            p => p.RespectReplenishesUsedToday,
+                            _state.RespectReplenishesUsedToday
+                        )
                         .SetProperty(p => p.RespectResetDate, _state.RespectResetDate),
                 ct
             );

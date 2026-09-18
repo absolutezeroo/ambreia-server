@@ -368,18 +368,12 @@ public sealed partial class RoomGrain
     public async Task RespectPlayerAsync(
         ActionContext ctx,
         int targetPlayerId,
-        int dailyLimit,
         CancellationToken ct
     )
     {
         try
         {
-            await AvatarModule.RespectPlayerAsync(
-                (int)ctx.PlayerId,
-                targetPlayerId,
-                dailyLimit,
-                ct
-            );
+            await AvatarModule.RespectPlayerAsync((int)ctx.PlayerId, targetPlayerId, ct);
         }
         catch (Exception ex)
         {

@@ -23,6 +23,8 @@ public sealed class PlayerLiveState
     public int AchievementScore { get; set; } = 0;
     public int RespectReceived { get; set; } = 0;
     public int RespectGivenToday { get; set; } = 0;
+    public int PetRespectGivenToday { get; set; } = 0;
+    public int RespectReplenishesUsedToday { get; set; } = 0;
     public DateTime? RespectResetDate { get; set; } = null;
 
     /// <summary>Guild whose badge this player shows on their avatar, or 0 for none. Owned here:

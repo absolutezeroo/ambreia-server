@@ -172,6 +172,73 @@ public sealed partial class RoomGrain
         return true;
     }
 
+    public async Task<bool> SetAdjacentCustomStackHeightAsync(
+        ActionContext ctx,
+        RoomObjectId itemId,
+        bool down,
+        CancellationToken ct
+    )
+    {
+        IRoomItem? item = await FindManipulableItemAsync(ctx, itemId).ConfigureAwait(true);
+
+        if (item is not IRoomFloorItem floor || floor.Logic is not FurnitureCustomStackHeightLogic)
+        {
+            return false;
+        }
+
+        int tileIdx = MapModule.ToIdx(floor.X, floor.Y);
+
+        if (!MapModule.InBounds(tileIdx))
+        {
+            return false;
+        }
+
+        double? target = AdjacentStackHeight.Pick(
+            floor.Z,
+            SurfacesOnTile(tileIdx, itemId),
+            down,
+            _roomConfig.MaxStackHeight
+        );
+
+        if (target is null)
+        {
+            return false;
+        }
+
+        MapModule.MoveFloorItem(floor, tileIdx, Altitude.FromValue(target.Value));
+        floor.MarkDirty();
+
+        await SendComposerToRoomAsync(floor.GetUpdateComposer()).ConfigureAwait(true);
+
+        return true;
+    }
+
+    /// <summary>
+    /// Every height an item on this tile could be snapped to: both edges of everything else
+    /// standing here, plus the floor. An item's underside is as much a surface to land on as its
+    /// top, and <paramref name="movingItemId"/> is left out — its own two edges would otherwise be
+    /// the nearest candidates and the arrow would never move anything.
+    /// </summary>
+    private IEnumerable<double> SurfacesOnTile(int tileIdx, RoomObjectId movingItemId)
+    {
+        foreach (RoomObjectId stackedId in _state.TileFloorStacks[tileIdx])
+        {
+            if (
+                stackedId == movingItemId
+                || !_state.ItemsById.TryGetValue(stackedId, out IRoomItem? stacked)
+                || stacked is not IRoomFloorItem stackedFloor
+            )
+            {
+                continue;
+            }
+
+            yield return stackedFloor.Z;
+            yield return stackedFloor.Z + stackedFloor.GetStackHeight();
+        }
+
+        yield return _state.Model?.BaseHeights[tileIdx] ?? Altitude.Zero;
+    }
+
     /// <summary>
     /// Removes furniture that has been used up — a cracked egg, an opened present — from the room
     /// and the database. Returns false when the delete did not happen, so the caller can avoid

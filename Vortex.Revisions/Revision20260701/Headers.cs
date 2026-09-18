@@ -491,6 +491,7 @@ internal static class MessageEvent
     public const int RoomDimmerGetPresetsMessageEvent = 3145;
     public const int RoomDimmerSavePresetMessageEvent = 130;
     public const int SetAreaHideDataEvent = 1954;
+    public const int SetAdjacentCustomStackingHeightEvent = 3315; // AS3-verified (direct read): _composers[3315] = _SafeCls_3040(objectId:int, down:Boolean), sent by CustomStackHeightWidget.sendAdjacentHeightRequest for its move_up/move_down buttons
     public const int SetCustomStackingHeightEvent = 3045; // AS3-verified (old-revision trace): _SafeCls_3545 -> onMultiWalkChange() still exists in current revision at 3045
     public const int SetMannequinFigureEvent = 2301; // AS3-verified (old-revision trace): _SafeCls_3486 -> saveOutfit() still exists in current revision at 2301
     public const int SetMannequinNameEvent = 606; // AS3-verified (old-revision trace): MannequinWidget::saveOutfitName() still exists in current revision at 606

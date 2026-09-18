@@ -326,6 +326,108 @@ public sealed partial class RoomGrain
         return await SecurityModule.LoadBannedUsersAsync(ct).ConfigureAwait(true);
     }
 
+    /// <summary>Owner-only, same reason as <see cref="GetControllersAsync"/>.</summary>
+    public async Task<ImmutableArray<string>> GetFilterWordsAsync(
+        PlayerId actor,
+        CancellationToken ct
+    )
+    {
+        if (!await IsRoomOwnerAsync(actor).ConfigureAwait(true))
+        {
+            return [];
+        }
+
+        return [.. _state.FilterWords.Order(StringComparer.OrdinalIgnoreCase)];
+    }
+
+    public async Task<ImmutableArray<string>> UpdateFilterWordAsync(
+        PlayerId actor,
+        bool adding,
+        string word,
+        CancellationToken ct
+    )
+    {
+        if (!await IsRoomOwnerAsync(actor).ConfigureAwait(true))
+        {
+            return [];
+        }
+
+        string trimmed = word.Trim();
+
+        // Silently ignored rather than refused: the dialog has no error path for this, it just
+        // redraws from whatever list comes back. A word too long or already there leaves the list
+        // as it was, which is exactly what it should then show.
+        if (
+            trimmed.Length == 0
+            || trimmed.Length > _roomConfig.FilterWordMaxLength
+            || (adding && _state.FilterWords.Count >= _roomConfig.FilterMaxWords)
+        )
+        {
+            return [.. _state.FilterWords.Order(StringComparer.OrdinalIgnoreCase)];
+        }
+
+        bool changed = adding
+            ? _state.FilterWords.Add(trimmed)
+            : _state.FilterWords.Remove(trimmed);
+
+        if (!changed)
+        {
+            return [.. _state.FilterWords.Order(StringComparer.OrdinalIgnoreCase)];
+        }
+
+        try
+        {
+            await using VortexDbContext dbCtx = await _dbCtxFactory
+                .CreateDbContextAsync(ct)
+                .ConfigureAwait(true);
+
+            if (adding)
+            {
+                dbCtx.RoomFilterWords.Add(
+                    new RoomFilterWordEntity
+                    {
+                        RoomEntityId = _state.RoomId.Value,
+                        Word = trimmed,
+                        RoomEntity = null!,
+                    }
+                );
+            }
+            else
+            {
+                await dbCtx
+                    .RoomFilterWords.Where(w =>
+                        w.RoomEntityId == _state.RoomId.Value && w.Word == trimmed
+                    )
+                    .ExecuteDeleteAsync(ct)
+                    .ConfigureAwait(true);
+            }
+
+            await dbCtx.SaveChangesAsync(ct).ConfigureAwait(true);
+        }
+        catch (Exception ex)
+        {
+            // Put the live list back: it is what the chat filter reads on every line, and letting
+            // it disagree with the table would mean a word that filters until the room next loads.
+            if (adding)
+            {
+                _state.FilterWords.Remove(trimmed);
+            }
+            else
+            {
+                _state.FilterWords.Add(trimmed);
+            }
+
+            _logger.LogError(
+                ex,
+                "Failed to {Action} filter word in room {RoomId}.",
+                adding ? "add" : "remove",
+                _state.RoomId.Value
+            );
+        }
+
+        return [.. _state.FilterWords.Order(StringComparer.OrdinalIgnoreCase)];
+    }
+
     public async Task<bool> UpdateCategoryAndTradeAsync(
         PlayerId actor,
         int categoryId,

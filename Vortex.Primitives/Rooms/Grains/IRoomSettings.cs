@@ -45,6 +45,25 @@ public interface IRoomSettings : IGrainWithIntegerKey
         CancellationToken ct
     );
 
+    /// <summary>
+    /// The room's own banned words, for the filter tab of the room settings dialog. Owner-only, same
+    /// reason as the lists above: the request names an arbitrary room id.
+    /// </summary>
+    Task<ImmutableArray<string>> GetFilterWordsAsync(PlayerId actor, CancellationToken ct);
+
+    /// <summary>
+    /// Adds or removes one word from the room's filter and returns the list as it now stands, which
+    /// is what the dialog redraws itself from.
+    /// </summary>
+    /// <param name="adding">True to add the word, false to remove it.</param>
+    /// <returns>The current list, or empty when the actor does not own the room.</returns>
+    Task<ImmutableArray<string>> UpdateFilterWordAsync(
+        PlayerId actor,
+        bool adding,
+        string word,
+        CancellationToken ct
+    );
+
     Task<bool> UpdateCategoryAndTradeAsync(
         PlayerId actor,
         int categoryId,

@@ -242,6 +242,10 @@ internal sealed class RoomMap : IRevisionMap
         );
         builder.MapParser(MessageEvent.SetAreaHideDataEvent, new SetAreaHideDataMessageParser());
         builder.MapParser(
+            MessageEvent.SetAdjacentCustomStackingHeightEvent,
+            new SetAdjacentCustomStackingHeightMessageParser()
+        );
+        builder.MapParser(
             MessageEvent.SetCustomStackingHeightEvent,
             new SetCustomStackingHeightMessageParser()
         );

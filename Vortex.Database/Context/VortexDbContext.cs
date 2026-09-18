@@ -102,6 +102,8 @@ public class VortexDbContext(DbContextOptions<VortexDbContext> options)
 
     public DbSet<RoomEntity> Rooms { get; init; } = null!;
 
+    public DbSet<RoomFilterWordEntity> RoomFilterWords { get; init; } = null!;
+
     public DbSet<RoomModelEntity> RoomModels { get; init; } = null!;
 
     public DbSet<RoomMuteEntity> RoomMutes { get; init; } = null!;

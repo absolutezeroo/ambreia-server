@@ -39,7 +39,6 @@ public sealed partial class RoomAvatarModule(RoomGrain roomGrain)
     public async Task RespectPlayerAsync(
         int giverPlayerId,
         int targetPlayerId,
-        int dailyLimit,
         CancellationToken ct
     )
     {
@@ -59,7 +58,7 @@ public sealed partial class RoomAvatarModule(RoomGrain roomGrain)
 
         bool given = await _roomGrain
             ._grainFactory.GetGrain<IPlayerGrain>((long)giverPlayerId)
-            .TryGiveRespectAsync(dailyLimit, ct);
+            .TryGiveRespectAsync(ct);
 
         if (!given)
         {

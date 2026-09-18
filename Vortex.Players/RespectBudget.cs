@@ -29,4 +29,15 @@ public static class RespectBudget
 
         return (true, given + 1, today);
     }
+
+    /// <summary>
+    /// What is left of today's budget. The client is told this number once, at login, and counts
+    /// down on its own — it is what decides whether the respect button is drawn at all.
+    /// </summary>
+    public static int Remaining(int givenToday, DateTime? resetDate, DateTime now, int dailyLimit)
+    {
+        int given = resetDate?.Date == now.Date ? givenToday : 0;
+
+        return Math.Max(0, dailyLimit - given);
+    }
 }

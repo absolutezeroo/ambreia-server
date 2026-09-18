@@ -588,6 +588,20 @@ public sealed partial class RoomGrain : Grain, IRoomGrain
                 _state.PlayerIdsWithRights.Add(playerId);
             }
 
+            List<string> filterWords = await dbCtx
+                .RoomFilterWords.AsNoTracking()
+                .Where(w => w.RoomEntityId == entity.Id && w.DeletedAt == null)
+                .Select(w => w.Word)
+                .ToListAsync(ct)
+                .ConfigureAwait(true);
+
+            _state.FilterWords.Clear();
+
+            foreach (string word in filterWords)
+            {
+                _state.FilterWords.Add(word);
+            }
+
             await HydrateGroupMembershipAsync(dbCtx, entity.GroupEntityId, ct).ConfigureAwait(true);
         }
         finally
