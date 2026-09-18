@@ -60,7 +60,7 @@ public static class ConfigKeyCatalog
             "respect.pet_daily_limit",
             "3",
             ConfigValueKind.Int,
-            "Pets a player may scratch per day. Applies on top of the per-pet daily cap in the room config.",
+            "Pets a player may scratch per day, and the only limit on scratching. It is the number the client is handed at login and counts down from on its own, so a second rule of ours would make that count a lie.",
             "Respect"
         ),
         new(
@@ -216,6 +216,27 @@ public static class ConfigKeyCatalog
             "50",
             ConfigValueKind.Int,
             "Max rooms a player may own",
+            "Rooms"
+        ),
+        new(
+            "room.filter.max_words",
+            "50",
+            ConfigValueKind.Int,
+            "Words one room's own chat filter may hold. Lowering it does not drop words already saved; it only refuses the next one.",
+            "Rooms"
+        ),
+        new(
+            "room.filter.word_max_length",
+            "64",
+            ConfigValueKind.Int,
+            "Longest word a room owner may add to their filter. The column holds 64, so a larger value here is refused by the database rather than honoured.",
+            "Rooms"
+        ),
+        new(
+            "room.filter.replacement",
+            "bobba",
+            ConfigValueKind.String,
+            "What a filtered word is replaced with in the line everyone sees. Read when a room loads its filter and when the filter is edited, not per chat line, so a change reaches an already-awake room on its next edit or reload.",
             "Rooms"
         ),
         // Raid protection. A room owner picks low/medium/high in their own panel; what each of the
@@ -491,6 +512,27 @@ public static class ConfigKeyCatalog
             ConfigValueKind.Bool,
             "Master switch. Off sends the client the feature's own disabled flag, which hides every track rather than showing an empty list.",
             "Reward tracks"
+        ),
+        new(
+            "camera.credit_price",
+            "2",
+            ConfigValueKind.Int,
+            "Credits charged to take a photo. The client reads this once per room entry and keeps it for the visit, so an edit reaches a player on their next room change.",
+            "Camera"
+        ),
+        new(
+            "camera.ducket_price",
+            "0",
+            ConfigValueKind.Int,
+            "Duckets charged to take a photo, alongside the credit price. Zero on the official hotel.",
+            "Camera"
+        ),
+        new(
+            "camera.publish_ducket_price",
+            "10",
+            ConfigValueKind.Int,
+            "Duckets charged to publish a photo to the hotel's feed, on top of taking it.",
+            "Camera"
         ),
     ];
 
