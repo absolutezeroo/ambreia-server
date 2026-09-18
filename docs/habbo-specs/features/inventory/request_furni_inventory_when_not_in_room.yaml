@@ -10,7 +10,7 @@
 
 spec: feature
 spec_version: 1
-generated_digest: "sha256:91b6992f5c58d36194b840cff8e5b7a70d7bb3cf0b723f49acf8a9fde59ea508"
+generated_digest: "sha256:20c1c9135e9ea8f3e6474dd901fb8fe77423e64621ccb0aaef66ef90a9f7e4ac"
 generated:
   id: inventory.request_furni_inventory_when_not_in_room
   domain: inventory
@@ -79,7 +79,7 @@ generated:
     origin: vortex
     source: Vortex.Players/Grains/PlayerPresenceGrain.cs
     symbol: PlayerPresenceGrain
-    line: 123
+    line: 178
   - id: ev_3a5a694b9376
     kind: emulator_flow
     authority: vortex_emulator
@@ -107,7 +107,7 @@ generated:
     origin: vortex
     source: Vortex.Inventory/Grains/InventoryGrain.Furni.cs
     symbol: InventoryGrain
-    line: 823
+    line: 832
   - id: ev_d720d639bd09
     kind: emulator_flow
     authority: vortex_emulator

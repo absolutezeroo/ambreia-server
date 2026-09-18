@@ -10,7 +10,7 @@
 
 spec: feature
 spec_version: 1
-generated_digest: "sha256:f959a019d9094d278a0a17e161e71e1915ae5ab9bf245fcc8b1e5d0230c39542"
+generated_digest: "sha256:4e0486dd2e13773e7d3470b01c55552344ccde84ce87f52a40b5335b047a3aff"
 generated:
   id: room.remove_all_rights
   domain: room
@@ -49,7 +49,7 @@ generated:
     symbol: EventSystem.PublishAsync
     evidence: ev_34bf3ac088e2
   checks:
-  - expression: ctx.PlayerId <= 0 || ctx.RoomId <= 0
+  - expression: ctx.PlayerId <= 0 || targetRoomId <= 0
     on_fail: return
     observed_in: vortex
     evidence: ev_5db4694a10c2
@@ -113,14 +113,14 @@ generated:
     origin: vortex
     source: Vortex.PacketHandlers/Room/Action/RemoveAllRightsMessageHandler.cs
     symbol: RemoveAllRightsMessageHandler
-    line: 11
+    line: 12
   - id: ev_329537530b13
     kind: emulator_flow
     authority: vortex_emulator
     origin: vortex
     source: Vortex.Rooms/Grains/RoomGrain.Settings.cs
     symbol: RoomGrain
-    line: 560
+    line: 557
   - id: ev_34bf3ac088e2
     kind: emulator_flow
     authority: vortex_emulator
@@ -134,14 +134,14 @@ generated:
     origin: vortex
     source: Vortex.PacketHandlers/Room/Action/RemoveAllRightsMessageHandler.cs
     symbol: RemoveAllRightsMessageHandler
-    line: 22
+    line: 27
   - id: ev_82c2d2746361
     kind: emulator_flow
     authority: vortex_emulator
     origin: vortex
     source: Vortex.Rooms/Grains/Modules/RoomSecurityModule.cs
     symbol: RoomSecurityModule
-    line: 282
+    line: 285
   - id: ev_9f45a8c43da8
     kind: emulator_flow
     authority: vortex_emulator

@@ -10,7 +10,7 @@
 
 spec: scenarios
 spec_version: 1
-generated_digest: "sha256:2ab2c97e8d0e1c0ce2c89f165b5dcf4a5c0adbb8405aed77fad0e6bcf2636e95"
+generated_digest: "sha256:5b7502c7fba3c14b2583928680841406e0287c9bf4838c7275b3f6cee311abc6"
 generated:
   feature: quest.get_concurrent_users_reward
   scenarios:
@@ -125,6 +125,6 @@ generated:
     origin: vortex
     source: Vortex.Inventory/Grains/InventoryGrain.Furni.cs
     symbol: InventoryGrain
-    line: 459
+    line: 460
 verified: {}
 manual: {}

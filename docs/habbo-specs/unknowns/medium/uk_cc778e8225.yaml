@@ -10,7 +10,7 @@
 
 spec: unknown
 spec_version: 1
-generated_digest: "sha256:5922b3245ea32e2c1843962e01d6905a2390d547f96283be5174151104288fbf"
+generated_digest: "sha256:b0836d7cdd827ed73363f53533f7b5b7d7f32382aa1f8badffd839ac71c6b2bf"
 generated:
   id: uk_cc778e8225
   subject: "navigator.create_room: what the server sends when it refuses"
@@ -47,13 +47,6 @@ generated:
     source: Vortex.PacketHandlers/Navigator/CreateFlatMessageHandler.cs
     symbol: CreateFlatMessageHandler
     line: 38
-  - id: ev_c70390fca34b
-    kind: emulator_flow
-    authority: vortex_emulator
-    origin: vortex
-    source: Vortex.Rooms/Wired/WiredVariableArithmetic.cs
-    symbol: WiredVariableArithmetic
-    line: 165
   - id: ev_f8d4827f4b8f
     kind: emulator_flow
     authority: vortex_emulator

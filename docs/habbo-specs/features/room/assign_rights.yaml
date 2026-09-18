@@ -10,7 +10,7 @@
 
 spec: feature
 spec_version: 1
-generated_digest: "sha256:86f27daa294f4eac3a3abdd4d5ebe6d8fcc327eaee550f545f3243b58f6d5c4b"
+generated_digest: "sha256:6d2bcefdf996015e352ffd3043b4303aa37714812bbe1609e776ebda5d5478c7"
 generated:
   id: room.assign_rights
   domain: room
@@ -34,17 +34,25 @@ generated:
     evidence: ev_329537530b13
   - order: 2
     layer: module
-    symbol: RoomSecurityModule.RefreshControllerLevelForPlayerAsync
+    symbol: RoomSecurityModule.LoadControllersAsync
     evidence: ev_82c2d2746361
   - order: 3
+    layer: domain
+    symbol: WiredActionBranch.Select
+    evidence: ev_f13d6bcce744
+  - order: 4
+    layer: module
+    symbol: RoomSecurityModule.RefreshControllerLevelForPlayerAsync
+    evidence: ev_82c2d2746361
+  - order: 5
     layer: grain
     symbol: PlayerPresenceGrain.OnControllerLevelUpdatedAsync
     evidence: ev_b44ef304d36a
-  - order: 4
+  - order: 6
     layer: domain
     symbol: RoomAvatar.AddStatus
     evidence: ev_9f45a8c43da8
-  - order: 5
+  - order: 7
     layer: module
     symbol: EventSystem.PublishAsync
     evidence: ev_34bf3ac088e2
@@ -117,7 +125,7 @@ generated:
     origin: vortex
     source: Vortex.Rooms/Grains/RoomGrain.Settings.cs
     symbol: RoomGrain
-    line: 405
+    line: 400
   - id: ev_34bf3ac088e2
     kind: emulator_flow
     authority: vortex_emulator
@@ -138,7 +146,7 @@ generated:
     origin: vortex
     source: Vortex.Rooms/Grains/Modules/RoomSecurityModule.cs
     symbol: RoomSecurityModule
-    line: 282
+    line: 319
   - id: ev_9f45a8c43da8
     kind: emulator_flow
     authority: vortex_emulator
@@ -160,6 +168,13 @@ generated:
     source: Vortex.PacketHandlers/Room/Action/AssignRightsMessageHandler.cs
     symbol: AssignRightsMessageHandler
     line: 11
+  - id: ev_f13d6bcce744
+    kind: emulator_flow
+    authority: vortex_emulator
+    origin: vortex
+    source: Vortex.Rooms/Wired/WiredActionBranch.cs
+    symbol: WiredActionBranch
+    line: 23
   scenarios:
   - room.assign_rights.guard_0
   - room.assign_rights.guard_1

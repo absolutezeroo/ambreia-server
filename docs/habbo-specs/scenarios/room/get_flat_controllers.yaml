@@ -10,7 +10,7 @@
 
 spec: scenarios
 spec_version: 1
-generated_digest: "sha256:0380f17b1786fb6ca2aa12b977ba69ac150e02647eef3601edb70a57c9f27ffb"
+generated_digest: "sha256:c96f3bd3f539e8576433b52a2407717a7af616e7ba3aed04420d1a9ea87b920b"
 generated:
   feature: room.get_flat_controllers
   scenarios:
@@ -32,6 +32,30 @@ generated:
       outcome: ignored
       emits: []
       evidence: ev_392abf549ae0
+    - origin: habbo-arcturus-daybreak
+      authority: reference_emulator
+      outcome: success
+      emits:
+      - FlatControllers
+      evidence: ev_45d7f642be3c
+  - scenario: room.get_flat_controllers.guard_1
+    title: "get flat controllers: the guard '!await IsRoomOwnerAsync(actor).ConfigureAwait(true)' holds"
+    given:
+      guard: "!await IsRoomOwnerAsync(actor).ConfigureAwait(true)"
+      guard_holds: "true"
+    when:
+      packet: GetFlatControllers
+    expected:
+      status: unknown
+      confidence: unknown
+    needs_evidence: "an official capture of GetFlatControllers sent while '!await IsRoomOwnerAsync(actor).ConfigureAwait(true)' holds: does the server reply, stay silent, or disconnect?"
+    executable: false
+    claims:
+    - origin: vortex
+      authority: vortex_emulator
+      outcome: ignored
+      emits: []
+      evidence: ev_329537530b13
     - origin: habbo-arcturus-daybreak
       authority: reference_emulator
       outcome: success
@@ -77,7 +101,7 @@ generated:
     origin: vortex
     source: Vortex.Rooms/Grains/RoomGrain.Settings.cs
     symbol: RoomGrain
-    line: 266
+    line: 307
   - id: ev_392abf549ae0
     kind: emulator_flow
     authority: vortex_emulator

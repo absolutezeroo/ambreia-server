@@ -10,7 +10,7 @@
 
 spec: feature
 spec_version: 1
-generated_digest: "sha256:a25e739121238b1dfcc21f88b2f5fb26cc483083d0d20ea3a1be7492b15d2931"
+generated_digest: "sha256:6dd2a4bcb467912e917eed60b4943e66aeaba9152f0fb9d084ceae38d18405ad"
 generated:
   id: user_classification.room_users_classification
   domain: user_classification
@@ -78,7 +78,7 @@ generated:
     origin: vortex
     source: Vortex.Rooms/Grains/RoomGrain.Avatar.cs
     symbol: RoomGrain
-    line: 467
+    line: 523
   - id: ev_e6fef545a42a
     kind: emulator_flow
     authority: vortex_emulator

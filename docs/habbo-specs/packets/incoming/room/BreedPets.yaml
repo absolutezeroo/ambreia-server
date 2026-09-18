@@ -10,7 +10,7 @@
 
 spec: packet
 spec_version: 1
-generated_digest: "sha256:10bcaad2936c0c115bf003968a7f8d9936bbe9cc5a31a8597ece9326c33ac39c"
+generated_digest: "sha256:156698a7e1ee24a5fb9793cdd29993f6f21ed22ac083972b7ef41991dcb72fe1"
 generated:
   name: BreedPets
   direction: incoming
@@ -20,13 +20,13 @@ generated:
   vortex_handler: BreedPetsMessageHandler
   fields:
   - index: 0
-    name: unknown_int
+    name: action
     type: int32
-    name_is_placeholder: true
-    name_confidence: unknown
+    name_confidence: implementation_observed
     type_confidence: reference_observed
     evidence:
     - ev_a78a45b7847f
+    - ev_760765a6dceb
   - index: 1
     name: pet_one
     type: int32
@@ -65,9 +65,10 @@ generated:
     evidence: ev_a78a45b7847f
   - origin: vortex
     authority: vortex_emulator
-    field_count: 2
+    field_count: 3
     partial: false
     types:
+    - int32
     - int32
     - int32
     evidence: ev_760765a6dceb
@@ -102,10 +103,6 @@ generated:
     origin: vortex
     source: Vortex.Revisions/Revision20260701/Parsers/Room/Pets/BreedPetsMessageParser.cs
     symbol: BreedPetsMessageParser
-    line: 7
-  conflicts:
-  - cf_e6bbe57625
-  unknowns:
-  - uk_6b173bdcd9
+    line: 8
 verified: {}
 manual: {}

@@ -24,7 +24,7 @@ actually produced against the trees listed under Sources.
 | | Count |
 |---|---:|
 | Features | 519 |
-| Scenarios | 1993 |
+| Scenarios | 2009 |
 | Captures imported | 0 |
 | Capture observations | 0 |
 
@@ -43,10 +43,10 @@ actually produced against the trees listed under Sources.
 
 | | Count |
 |---|---:|
-| Conflicts | 367 |
-| Critical unknowns | 130 |
-| Unknowns in total | 689 |
-| Fields with no attested name | 1604 of 5822 |
+| Conflicts | 369 |
+| Critical unknowns | 129 |
+| Unknowns in total | 687 |
+| Fields with no attested name | 1603 of 5832 |
 
 > No captures were available to this run. Every behavioural question in this tree is
 > therefore open: the client and the implementations describe what a packet looks like
@@ -55,8 +55,8 @@ actually produced against the trees listed under Sources.
 
 ## Files
 
-- written: 49
-- unchanged: 3550
+- written: 469
+- unchanged: 3130
 - blocked by hand edits: 0
 
 ## Coverage the scan bounded
@@ -68,13 +68,11 @@ actually produced against the trees listed under Sources.
 - catalog.builders_club_place_wall_item: 23 guards observed, 12 turned into scenarios; the rest are listed in the feature spec's checks
 - catalog.get_flat_categories: 20 guards observed, 12 turned into scenarios; the rest are listed in the feature spec's checks
 - catalog.purchase_from_catalog_as_gift: 13 guards observed, 12 turned into scenarios; the rest are listed in the feature spec's checks
-- messenger.follow_friend: 22 guards observed, 12 turned into scenarios; the rest are listed in the feature spec's checks
 - messenger.open_room_for_player_id: 39 guards observed, 12 turned into scenarios; the rest are listed in the feature spec's checks
 - moderation.publish: 19 guards observed, 12 turned into scenarios; the rest are listed in the feature spec's checks
 - moderation.resolve_for_player: 18 guards observed, 12 turned into scenarios; the rest are listed in the feature spec's checks
 - room.answer_doorbell: 21 guards observed, 12 turned into scenarios; the rest are listed in the feature spec's checks
 - room.ban_user_with_duration: 17 guards observed, 12 turned into scenarios; the rest are listed in the feature spec's checks
-- room.get_room_entry_data: 19 guards observed, 12 turned into scenarios; the rest are listed in the feature spec's checks
 - room.look_to: 13 guards observed, 12 turned into scenarios; the rest are listed in the feature spec's checks
 - room.move_floor_item_in_room: 24 guards observed, 12 turned into scenarios; the rest are listed in the feature spec's checks
 - room.move_wall_item_in_room: 17 guards observed, 12 turned into scenarios; the rest are listed in the feature spec's checks

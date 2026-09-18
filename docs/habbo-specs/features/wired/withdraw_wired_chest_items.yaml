@@ -10,7 +10,7 @@
 
 spec: feature
 spec_version: 1
-generated_digest: "sha256:45822609ad9a75aaa13eb8433c4942a0f6eecdfa21622ea1c42f3cbfacb16820"
+generated_digest: "sha256:313d56168195024f41a2f7314e81679ce709b9746b002e0a7102b3b5b9d73bbf"
 generated:
   id: wired.withdraw_wired_chest_items
   domain: wired
@@ -327,7 +327,7 @@ generated:
     origin: vortex
     source: Vortex.Rooms/Grains/Modules/RoomSecurityModule.cs
     symbol: RoomSecurityModule
-    line: 203
+    line: 206
   - id: ev_84ee82d9d8e2
     kind: emulator_flow
     authority: vortex_emulator
@@ -362,7 +362,7 @@ generated:
     origin: vortex
     source: Vortex.Inventory/Grains/InventoryGrain.Furni.cs
     symbol: InventoryGrain
-    line: 61
+    line: 62
   - id: ev_d3a71568179c
     kind: emulator_flow
     authority: vortex_emulator

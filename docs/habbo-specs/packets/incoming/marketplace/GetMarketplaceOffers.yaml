@@ -10,7 +10,7 @@
 
 spec: packet
 spec_version: 1
-generated_digest: "sha256:405d86cd874a1a83ef9205474f0fece78d5bf8288a8d03ccb95aa9574a7fd8a2"
+generated_digest: "sha256:01232d13a4698b032891f9223d5c0c08b3507f97c62f8be1e9d8e25112c1f0ec"
 generated:
   name: GetMarketplaceOffers
   direction: incoming
@@ -72,13 +72,14 @@ generated:
     evidence: ev_55e71fae8afe
   - origin: vortex
     authority: vortex_emulator
-    field_count: 4
+    field_count: 5
     partial: false
     types:
     - int32
     - int32
     - string
     - int32
+    - boolean
     evidence: ev_5776b3848a86
   evidence:
   - id: ev_8746db4a775b
@@ -112,5 +113,7 @@ generated:
     source: Vortex.Revisions/Revision20260701/Parsers/Marketplace/GetMarketplaceOffersMessageParser.cs
     symbol: GetMarketplaceOffersMessageParser
     line: 7
+  conflicts:
+  - cf_5bc3ea38d3
 verified: {}
 manual: {}

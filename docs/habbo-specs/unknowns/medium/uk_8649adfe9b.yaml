@@ -10,7 +10,7 @@
 
 spec: unknown
 spec_version: 1
-generated_digest: "sha256:7b925295ffeb44eef2cbb1c20604efd53aaded5a0ea12e9bddc18e14ee321bc1"
+generated_digest: "sha256:1d2b943e6df97a140b23e4e24b010637ac550e3a7aff027c13c640cb3b7f06f3"
 generated:
   id: uk_8649adfe9b
   subject: "room.harvest_pet: what the server sends when it refuses"
@@ -32,7 +32,7 @@ generated:
     origin: vortex
     source: Vortex.Rooms/Grains/RoomGrain.Pets.cs
     symbol: RoomGrain
-    line: 432
+    line: 443
   - id: ev_a24ca6ca32d9
     kind: emulator_flow
     authority: vortex_emulator
@@ -53,6 +53,6 @@ generated:
     origin: vortex
     source: Vortex.Inventory/Grains/InventoryGrain.Furni.cs
     symbol: InventoryGrain
-    line: 544
+    line: 545
 verified: {}
 manual: {}

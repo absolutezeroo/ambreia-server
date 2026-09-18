@@ -10,7 +10,7 @@
 
 spec: unknown
 spec_version: 1
-generated_digest: "sha256:d58f4cdfbab6bf28b1289475712fba3d6968eaf718af1a6287f8684b5e226c15"
+generated_digest: "sha256:30f55ebe021eba4b65c61c85772313086a282abeed4cc6e99d148a26efc3cb8a"
 generated:
   id: uk_857d8bd5a5
   subject: "room.set_room_background_color_data: what the server sends when it refuses"
@@ -32,7 +32,7 @@ generated:
     origin: vortex
     source: Vortex.Rooms/Grains/RoomGrain.Furni.Interactive.cs
     symbol: RoomGrain
-    line: 410
+    line: 411
   - id: ev_bddb39be9010
     kind: emulator_handler
     authority: vortex_emulator
@@ -40,13 +40,6 @@ generated:
     source: Vortex.PacketHandlers/Room/Furniture/SetRoomBackgroundColorDataMessageHandler.cs
     symbol: SetRoomBackgroundColorDataMessageHandler
     line: 14
-  - id: ev_c70390fca34b
-    kind: emulator_flow
-    authority: vortex_emulator
-    origin: vortex
-    source: Vortex.Rooms/Wired/WiredVariableArithmetic.cs
-    symbol: WiredVariableArithmetic
-    line: 165
   - id: ev_f5b38117337e
     kind: emulator_flow
     authority: vortex_emulator

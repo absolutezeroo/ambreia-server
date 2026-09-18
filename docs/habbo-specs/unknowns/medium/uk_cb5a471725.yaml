@@ -10,7 +10,7 @@
 
 spec: unknown
 spec_version: 1
-generated_digest: "sha256:ce1447acb353508e7cfad5d3fa8acfdf7cbebf1cca4b43323f6edd3af901af20"
+generated_digest: "sha256:5659247f87b7a429a3a936b61ef9d06167bd99138efa67e8d41c4c47d12556f5"
 generated:
   id: uk_cb5a471725
   subject: "inventory.avatar_effect_selected: what the server sends when it refuses"
@@ -32,7 +32,7 @@ generated:
     origin: vortex
     source: Vortex.Players/Grains/PlayerPresenceGrain.cs
     symbol: PlayerPresenceGrain
-    line: 123
+    line: 178
   - id: ev_7ef4c91324dc
     kind: emulator_flow
     authority: vortex_emulator
@@ -60,14 +60,14 @@ generated:
     origin: vortex
     source: Vortex.Rooms/Grains/RoomGrain.Avatar.cs
     symbol: RoomGrain
-    line: 246
+    line: 293
   - id: ev_b46938ec853d
     kind: emulator_flow
     authority: vortex_emulator
     origin: vortex
     source: Vortex.Rooms/Grains/RoomGrain.cs
     symbol: RoomGrain
-    line: 280
+    line: 294
   - id: ev_e6fef545a42a
     kind: emulator_flow
     authority: vortex_emulator

@@ -10,7 +10,7 @@
 
 spec: feature
 spec_version: 1
-generated_digest: "sha256:09691bd6ff5cbbfc0bd995f2529a8941d6415b67bb2c4b340ab20c6e38f66cc0"
+generated_digest: "sha256:9bf7c84a2d98468b7c9e8a6a930ec3ebbb93b125307503f9929fe9d47cf0a80a"
 generated:
   id: nft.get_silver
   domain: nft
@@ -59,7 +59,7 @@ generated:
     origin: vortex
     source: Vortex.Players/Grains/PlayerWalletGrain.cs
     symbol: PlayerWalletGrain
-    line: 269
+    line: 308
   - id: ev_f5568474a4eb
     kind: emulator_flow
     authority: vortex_emulator

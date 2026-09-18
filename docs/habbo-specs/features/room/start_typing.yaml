@@ -10,7 +10,7 @@
 
 spec: feature
 spec_version: 1
-generated_digest: "sha256:cf3fa8dd37d198fe50789b1d1d95ca413721c71077aa842d629e21257d5f0dda"
+generated_digest: "sha256:2463f07fc92c6a38ed8dd5e12f49dbd54079576e23dc5460b798ab6cb275490a"
 generated:
   id: room.start_typing
   domain: room
@@ -84,14 +84,14 @@ generated:
     origin: vortex
     source: Vortex.Rooms/Grains/RoomGrain.Avatar.cs
     symbol: RoomGrain
-    line: 426
+    line: 482
   - id: ev_b46938ec853d
     kind: emulator_flow
     authority: vortex_emulator
     origin: vortex
     source: Vortex.Rooms/Grains/RoomGrain.cs
     symbol: RoomGrain
-    line: 280
+    line: 294
   - id: ev_e25e75af1a26
     kind: emulator_handler
     authority: vortex_emulator

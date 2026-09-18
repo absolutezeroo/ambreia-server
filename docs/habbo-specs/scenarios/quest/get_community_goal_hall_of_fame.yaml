@@ -10,7 +10,7 @@
 
 spec: scenarios
 spec_version: 1
-generated_digest: "sha256:c31503fa97e0d88e9d790fb1a56f762e888e7507212a03ab55ba4dba3cb11ee0"
+generated_digest: "sha256:47ed555b3e6e1c661df03331d5acd41cc293fd9ddac09992f86841bf0d23d3a6"
 generated:
   feature: quest.get_community_goal_hall_of_fame
   scenarios:
@@ -89,6 +89,6 @@ generated:
     origin: vortex
     source: Vortex.Progression/Grains/CommunityGoalGrain.cs
     symbol: CommunityGoalGrain
-    line: 105
+    line: 123
 verified: {}
 manual: {}

@@ -10,7 +10,7 @@
 
 spec: unknown
 spec_version: 1
-generated_digest: "sha256:0cdcdfb81a996d5a92f391c044ac80e9eea4a56d0b71151baf41ae471c52a5eb"
+generated_digest: "sha256:25d6591654b7b75b155107b8521c410299f2f5474b89adc29c6823d40b626ea0"
 generated:
   id: uk_bd37590f6d
   subject: "quest.get_community_goal_progress: who receives CommunityGoalProgress"
@@ -25,6 +25,6 @@ generated:
     origin: vortex
     source: Vortex.Progression/Grains/CommunityGoalGrain.cs
     symbol: CommunityGoalGrain
-    line: 84
+    line: 102
 verified: {}
 manual: {}

@@ -10,7 +10,7 @@
 
 spec: feature
 spec_version: 1
-generated_digest: "sha256:2fb3b012353863c88a6cd635186606f94f74abec0f06d2f97a1e666b12f72f20"
+generated_digest: "sha256:a9948b8e77164d4a6a44791015f22513d9643e88a239d5c9a23630cdfc7c1ed1"
 generated:
   id: room.room_dimmer_save_preset
   domain: room
@@ -37,10 +37,6 @@ generated:
     symbol: FurnitureRoomDimmerLogic.SavePresetAsync
     evidence: ev_1ec75b49676b
   - order: 3
-    layer: domain
-    symbol: WiredVariableArithmetic.Clamp
-    evidence: ev_c70390fca34b
-  - order: 4
     layer: domain
     symbol: DimmerPresets.Compose
     evidence: ev_f2e179d447db
@@ -84,7 +80,7 @@ generated:
     origin: vortex
     source: Vortex.Rooms/Grains/RoomGrain.Furni.Interactive.cs
     symbol: RoomGrain
-    line: 555
+    line: 572
   - id: ev_7db0b67a96c1
     kind: emulator_flow
     authority: vortex_emulator
@@ -99,13 +95,6 @@ generated:
     source: Vortex.PacketHandlers/Room/Furniture/RoomDimmerSavePresetMessageHandler.cs
     symbol: RoomDimmerSavePresetMessageHandler
     line: 15
-  - id: ev_c70390fca34b
-    kind: emulator_flow
-    authority: vortex_emulator
-    origin: vortex
-    source: Vortex.Rooms/Wired/WiredVariableArithmetic.cs
-    symbol: WiredVariableArithmetic
-    line: 165
   - id: ev_f2e179d447db
     kind: emulator_flow
     authority: vortex_emulator

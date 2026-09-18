@@ -10,7 +10,7 @@
 
 spec: unknown
 spec_version: 1
-generated_digest: "sha256:c3eda71354a79b8175de697a79648661adda7cfb29c4b21a1ccc03d17a72e481"
+generated_digest: "sha256:2fef489a04c9ff0d8cbbfa63f507e96c2b59e4fce18b2344a90078f36db3da18"
 generated:
   id: uk_4f018bec9e
   subject: "room.remove_all_rights: what the server sends when it refuses"
@@ -25,14 +25,14 @@ generated:
     origin: vortex
     source: Vortex.PacketHandlers/Room/Action/RemoveAllRightsMessageHandler.cs
     symbol: RemoveAllRightsMessageHandler
-    line: 11
+    line: 12
   - id: ev_329537530b13
     kind: emulator_flow
     authority: vortex_emulator
     origin: vortex
     source: Vortex.Rooms/Grains/RoomGrain.Settings.cs
     symbol: RoomGrain
-    line: 560
+    line: 557
   - id: ev_34bf3ac088e2
     kind: emulator_flow
     authority: vortex_emulator
@@ -46,14 +46,14 @@ generated:
     origin: vortex
     source: Vortex.PacketHandlers/Room/Action/RemoveAllRightsMessageHandler.cs
     symbol: RemoveAllRightsMessageHandler
-    line: 22
+    line: 27
   - id: ev_82c2d2746361
     kind: emulator_flow
     authority: vortex_emulator
     origin: vortex
     source: Vortex.Rooms/Grains/Modules/RoomSecurityModule.cs
     symbol: RoomSecurityModule
-    line: 282
+    line: 285
   - id: ev_9f45a8c43da8
     kind: emulator_flow
     authority: vortex_emulator

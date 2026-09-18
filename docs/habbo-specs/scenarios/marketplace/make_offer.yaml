@@ -10,7 +10,7 @@
 
 spec: scenarios
 spec_version: 1
-generated_digest: "sha256:a9fab4352a4d505aa5b23c0f3714b7380fe50593d9b29588886baca21ca3c081"
+generated_digest: "sha256:3a9367b13ad8b3ef4fb9e7e4735589749895ddf59ce2157ac84862a7b09d6ec2"
 generated:
   feature: marketplace.make_offer
   scenarios:
@@ -389,7 +389,7 @@ generated:
     origin: vortex
     source: Vortex.Inventory/Grains/InventoryGrain.Furni.cs
     symbol: InventoryGrain
-    line: 117
+    line: 118
   - id: ev_db53958cdf3b
     kind: emulator_flow
     authority: vortex_emulator

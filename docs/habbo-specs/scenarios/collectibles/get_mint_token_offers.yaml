@@ -10,7 +10,7 @@
 
 spec: scenarios
 spec_version: 1
-generated_digest: "sha256:b31bab358e22e94c478af8653326150bce2df9df29df390e27cf69590a744729"
+generated_digest: "sha256:9126861763eabd5a869af6bacd7dc362722570f6d367fa9382e7f8a4b53fe7ff"
 generated:
   feature: collectibles.get_mint_token_offers
   scenarios:
@@ -39,6 +39,6 @@ generated:
     origin: vortex
     source: Vortex.Collectibles/Grains/NftMintingGrain.cs
     symbol: NftMintingGrain
-    line: 134
+    line: 138
 verified: {}
 manual: {}

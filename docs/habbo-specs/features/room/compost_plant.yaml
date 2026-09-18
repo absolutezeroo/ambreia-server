@@ -10,7 +10,7 @@
 
 spec: feature
 spec_version: 1
-generated_digest: "sha256:e81d3fc05df5c26136b3d943525c08da5b091854a29f24b214bf0f45279d8617"
+generated_digest: "sha256:6d903fb52173dedf8b1d830099a7193bee670b2db68e881a8ee6dd903e14fbd9"
 generated:
   id: room.compost_plant
   domain: room
@@ -88,7 +88,7 @@ generated:
     origin: vortex
     source: Vortex.Rooms/Grains/RoomGrain.Pets.cs
     symbol: RoomGrain
-    line: 451
+    line: 462
   - id: ev_a24ca6ca32d9
     kind: emulator_flow
     authority: vortex_emulator
@@ -102,7 +102,7 @@ generated:
     origin: vortex
     source: Vortex.Rooms/Grains/RoomGrain.cs
     symbol: RoomGrain
-    line: 280
+    line: 294
   - id: ev_c83142745eae
     kind: emulator_handler
     authority: vortex_emulator

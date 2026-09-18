@@ -10,7 +10,7 @@
 
 spec: feature
 spec_version: 1
-generated_digest: "sha256:5c647e3e43296683cb8911cebb6fbd6afe72a64b890ed9941532031a23d1ae47"
+generated_digest: "sha256:633996beb1b4644f23e383a16401dd55830645562ba04cc92db18d99cae8661f"
 generated:
   id: room.customize_pet_with_furni
   domain: room
@@ -71,7 +71,7 @@ generated:
     origin: vortex
     source: Vortex.Rooms/Grains/RoomGrain.Pets.cs
     symbol: RoomGrain
-    line: 384
+    line: 395
   - id: ev_a24ca6ca32d9
     kind: emulator_flow
     authority: vortex_emulator

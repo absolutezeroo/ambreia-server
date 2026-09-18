@@ -10,7 +10,7 @@
 
 spec: feature
 spec_version: 1
-generated_digest: "sha256:8de5f1a0399223af031bc6dd984e4e2f13824d282ce9082f225b5bca08443450"
+generated_digest: "sha256:8acc53b2883d857ee5db4b76e7dea2e42e1c900c1490ab2e41918f8181236771"
 generated:
   id: room.answer_doorbell
   domain: room
@@ -221,7 +221,7 @@ generated:
     origin: vortex
     source: Vortex.Players/Grains/PlayerPresenceGrain.cs
     symbol: PlayerPresenceGrain
-    line: 123
+    line: 178
   - id: ev_3fdb23ee39cd
     kind: emulator_flow
     authority: vortex_emulator
@@ -256,7 +256,7 @@ generated:
     origin: vortex
     source: Vortex.Rooms/Grains/Modules/RoomSecurityModule.cs
     symbol: RoomSecurityModule
-    line: 203
+    line: 206
   - id: ev_93b2d0946619
     kind: emulator_flow
     authority: vortex_emulator

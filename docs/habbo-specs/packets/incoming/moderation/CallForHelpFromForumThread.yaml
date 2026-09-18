@@ -10,7 +10,7 @@
 
 spec: packet
 spec_version: 1
-generated_digest: "sha256:7ff9853df7e1e89aae20c72d897292b69a8c2fa6919c7bf146329457fee62995"
+generated_digest: "sha256:4e3a7c9e11cfdf5147ac5c99ab082a7dcffc1a65540e537eee4b7acf7cd1a486"
 generated:
   name: CallForHelpFromForumThread
   direction: incoming
@@ -72,12 +72,14 @@ generated:
     evidence: ev_a54d008d6585
   - origin: vortex
     authority: vortex_emulator
-    field_count: 4
+    field_count: 6
     partial: false
     types:
     - int32
     - int32
     - int32
+    - string
+    - string
     - string
     evidence: ev_24511bde453a
   evidence:
@@ -112,5 +114,7 @@ generated:
     source: Vortex.Revisions/Revision20260701/Parsers/Help/CallForHelpFromForumThreadMessageParser.cs
     symbol: CallForHelpFromForumThreadMessageParser
     line: 7
+  conflicts:
+  - cf_fedb56063c
 verified: {}
 manual: {}

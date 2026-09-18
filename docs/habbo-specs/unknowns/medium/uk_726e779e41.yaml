@@ -10,7 +10,7 @@
 
 spec: unknown
 spec_version: 1
-generated_digest: "sha256:afabd60ac8c8049cbb9f43ca29d8c00709f271d49b568c5bbc7492bfd8c85fca"
+generated_digest: "sha256:b648b5c28f47a631691a975032e9279f1a751c45228bad8f81485183379585f3"
 generated:
   id: uk_726e779e41
   subject: "room.set_custom_stacking_height: what the server sends when it refuses"
@@ -39,7 +39,7 @@ generated:
     origin: vortex
     source: Vortex.Rooms/Grains/RoomGrain.Furni.Interactive.cs
     symbol: RoomGrain
-    line: 109
+    line: 110
   - id: ev_6cde100b748d
     kind: emulator_flow
     authority: vortex_emulator

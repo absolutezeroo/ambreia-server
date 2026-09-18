@@ -10,7 +10,7 @@
 
 spec: conflict
 spec_version: 1
-generated_digest: "sha256:305fde7eeab5e1b4b5f364b11a2c5dca0ddf9459a35404e230778a338d848250"
+generated_digest: "sha256:8873ac4f186b1d78d95c7ea9d409a66afa24b37d35df17f6e5bde44b9496e961"
 generated:
   id: cf_ac0a01b901
   kind: behaviour
@@ -40,7 +40,7 @@ generated:
     origin: vortex
     source: Vortex.PacketHandlers/Catalog/RedeemVoucherMessageHandler.cs
     symbol: RedeemVoucherMessageHandler
-    line: 11
+    line: 24
   official:
     status: unknown
 verified: {}

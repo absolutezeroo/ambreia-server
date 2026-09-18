@@ -10,7 +10,7 @@
 
 spec: feature
 spec_version: 1
-generated_digest: "sha256:b4176c0cb12eb9d41694713fd38be5e55c4236bbcb629c582fb0210f99062a3c"
+generated_digest: "sha256:bc0f3a5f74fc7f60afe171388767103ee5515452d3517f9e3512ca3147ce7f0e"
 generated:
   id: navigator.convert_global_room_id
   domain: navigator
@@ -99,7 +99,7 @@ generated:
     origin: vortex
     source: Vortex.Rooms/Grains/Modules/RoomSecurityModule.cs
     symbol: RoomSecurityModule
-    line: 199
+    line: 202
   - id: ev_9eb84a2a2088
     kind: emulator_flow
     authority: vortex_emulator
@@ -113,7 +113,7 @@ generated:
     origin: vortex
     source: Vortex.Rooms/Grains/RoomGrain.cs
     symbol: RoomGrain
-    line: 249
+    line: 258
   - id: ev_bb859d4f21b2
     kind: emulator_flow
     authority: vortex_emulator

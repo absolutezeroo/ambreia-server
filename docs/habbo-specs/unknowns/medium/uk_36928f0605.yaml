@@ -10,12 +10,12 @@
 
 spec: unknown
 spec_version: 1
-generated_digest: "sha256:b1633b5b57e34fe670b9aebc7e7286c9336f263fccf0f48854feff305f4d3842"
+generated_digest: "sha256:5f1a12634e1053c8f0adc78978ac835848c863fabbf005d92ce0adc6f849aac9"
 generated:
   id: uk_36928f0605
   subject: "room.pass_carry_item_to_pet: what the server sends when it refuses"
   severity: medium
-  question: room.pass_carry_item_to_pet changes state and has 7 guards whose refusal behaviour nothing here attests. Does the official server answer a refused request, and with what?
+  question: room.pass_carry_item_to_pet changes state and has 8 guards whose refusal behaviour nothing here attests. Does the official server answer a refused request, and with what?
   resolved_by: an official capture of each guard being tripped
   feature: room.pass_carry_item_to_pet
   known_evidence:
@@ -25,7 +25,7 @@ generated:
     origin: vortex
     source: Vortex.Rooms/Grains/Systems/RoomPetSystem.HandItem.cs
     symbol: RoomPetSystem
-    line: 25
+    line: 26
   - id: ev_315e04717bdc
     kind: emulator_flow
     authority: vortex_emulator
@@ -33,6 +33,13 @@ generated:
     source: Vortex.Rooms/Grains/Modules/RoomHandItemModule.cs
     symbol: RoomHandItemModule
     line: 98
+  - id: ev_34bf3ac088e2
+    kind: emulator_flow
+    authority: vortex_emulator
+    origin: vortex
+    source: Vortex.Events/EventSystem.cs
+    symbol: EventSystem
+    line: 14
   - id: ev_85ee1703d909
     kind: emulator_flow
     authority: vortex_emulator
@@ -53,7 +60,14 @@ generated:
     origin: vortex
     source: Vortex.Rooms/Grains/RoomGrain.Avatar.cs
     symbol: RoomGrain
-    line: 243
+    line: 290
+  - id: ev_b46938ec853d
+    kind: emulator_flow
+    authority: vortex_emulator
+    origin: vortex
+    source: Vortex.Rooms/Grains/RoomGrain.cs
+    symbol: RoomGrain
+    line: 672
   - id: ev_b835c9e727ff
     kind: emulator_flow
     authority: vortex_emulator

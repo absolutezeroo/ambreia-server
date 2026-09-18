@@ -10,7 +10,7 @@
 
 spec: feature
 spec_version: 1
-generated_digest: "sha256:fb12be72844faf031698955da4ff4f2d1770ee893b9e5e6f234a5a8d22a283ae"
+generated_digest: "sha256:7fd0de6d1533056c311ad635feec941522c2b4eebe20611ba5e580035db71f48"
 generated:
   id: room.unban_user_from_room
   domain: room
@@ -61,11 +61,15 @@ generated:
     symbol: EventSystem.PublishAsync
     evidence: ev_34bf3ac088e2
   checks:
-  - expression: ctx.PlayerId <= 0 || ctx.RoomId <= 0 || message.UserId <= 0
+  - expression: ctx.PlayerId <= 0 || message.UserId <= 0
     on_fail: return
     observed_in: vortex
     evidence: ev_420bde327a4b
-  - expression: "!await RoomModerationGuard .CanActOnTargetAsync( permissionService, events, ctx, ctx.RoomId, message.UserId, ModerationAction.Ban, ct ) .ConfigureAwait(false)"
+  - expression: actorRoomId <= 0
+    on_fail: return
+    observed_in: vortex
+    evidence: ev_420bde327a4b
+  - expression: "!await RoomModerationGuard .CanActOnTargetAsync( permissionService, events, ctx, actorRoomId, message.UserId, ModerationAction.Ban, ct ) .ConfigureAwait(false)"
     on_fail: return
     observed_in: vortex
     evidence: ev_420bde327a4b
@@ -127,7 +131,7 @@ generated:
     origin: vortex
     source: Vortex.PacketHandlers/Room/Action/UnbanUserFromRoomMessageHandler.cs
     symbol: UnbanUserFromRoomMessageHandler
-    line: 26
+    line: 27
   - id: ev_743940bb69f7
     kind: emulator_flow
     authority: vortex_emulator
@@ -148,7 +152,7 @@ generated:
     origin: vortex
     source: Vortex.PacketHandlers/Room/Action/UnbanUserFromRoomMessageHandler.cs
     symbol: UnbanUserFromRoomMessageHandler
-    line: 14
+    line: 15
   - id: ev_bb859d4f21b2
     kind: emulator_flow
     authority: vortex_emulator
@@ -180,9 +184,8 @@ generated:
   - room.unban_user_from_room.guard_6
   - room.unban_user_from_room.guard_7
   - room.unban_user_from_room.guard_8
+  - room.unban_user_from_room.guard_9
   - room.unban_user_from_room.success
-  conflicts:
-  - cf_058004abb7
   unknowns:
   - uk_c46e8f9c43
 verified: {}

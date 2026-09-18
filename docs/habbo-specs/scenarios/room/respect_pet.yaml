@@ -10,7 +10,7 @@
 
 spec: scenarios
 spec_version: 1
-generated_digest: "sha256:5810d6561e67cbf40b858fc31ba991e5059d318638025adc92c3068b6812eeb0"
+generated_digest: "sha256:f6cff6084b4c70979862dbca93326d396b842b4b199b3e0549c34ab83650d2d8"
 generated:
   feature: room.respect_pet
   scenarios:
@@ -130,6 +130,29 @@ generated:
       outcome: ignored
       emits: []
       evidence: ev_cb9974479c1a
+  - scenario: room.respect_pet.guard_5
+    title: "respect pet: the guard '_registry is null' holds"
+    given:
+      guard: _registry is null
+      guard_holds: "true"
+    when:
+      packet: RespectPet
+    expected:
+      status: unknown
+      confidence: unknown
+    needs_evidence: "an official capture of RespectPet sent while '_registry is null' holds: does the server reply, stay silent, or disconnect?"
+    executable: false
+    claims:
+    - origin: vortex
+      authority: vortex_emulator
+      outcome: ignored
+      emits: []
+      evidence: ev_34bf3ac088e2
+    - origin: habbo-arcturus-daybreak
+      authority: reference_emulator
+      outcome: ignored
+      emits: []
+      evidence: ev_cb9974479c1a
   - scenario: room.respect_pet.success
     title: "respect pet: the request is accepted"
     given:
@@ -169,6 +192,13 @@ generated:
     source: Vortex.PacketHandlers/Room/Pets/RespectPetMessageHandler.cs
     symbol: RespectPetMessageHandler
     line: 22
+  - id: ev_34bf3ac088e2
+    kind: emulator_flow
+    authority: vortex_emulator
+    origin: vortex
+    source: Vortex.Events/EventSystem.cs
+    symbol: EventSystem
+    line: 16
   - id: ev_3b983736fec5
     kind: emulator_flow
     authority: vortex_emulator

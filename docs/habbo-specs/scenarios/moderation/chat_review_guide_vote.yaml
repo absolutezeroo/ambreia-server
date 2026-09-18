@@ -10,7 +10,7 @@
 
 spec: scenarios
 spec_version: 1
-generated_digest: "sha256:d484da21940e98ca9d7e56d72665e0e459a5cf08d04635b6faf3a1202870543b"
+generated_digest: "sha256:1dcdbb10cd9f0e003d741bfd04cd11f8c7e68ae571105297c5ee3ef86c875d99"
 generated:
   feature: moderation.chat_review_guide_vote
   scenarios:
@@ -76,7 +76,7 @@ generated:
       authority: vortex_emulator
       outcome: ignored
       emits: []
-      evidence: ev_2ed89ebaf6a7
+      evidence: ev_5ea072b947f5
     - origin: habbo-arcturus-daybreak
       authority: reference_emulator
       outcome: ignored
@@ -91,13 +91,6 @@ generated:
     symbol: ChatReviewGuideVoteMessageEvent
     line: 14
     note: third-party server implementation; evidence, not authority
-  - id: ev_2ed89ebaf6a7
-    kind: emulator_flow
-    authority: vortex_emulator
-    origin: vortex
-    source: Vortex.Primitives/Rooms/Wired/Variable/WiredVariableKey.cs
-    symbol: WiredVariableKey
-    line: 12
   - id: ev_5ea072b947f5
     kind: emulator_flow
     authority: vortex_emulator

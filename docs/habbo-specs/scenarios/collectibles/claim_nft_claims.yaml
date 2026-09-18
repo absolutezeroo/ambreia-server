@@ -10,7 +10,7 @@
 
 spec: scenarios
 spec_version: 1
-generated_digest: "sha256:6b50e93a3659c0ec9ac82c74b465e51899393f16652f4030daef103a66cf1bae"
+generated_digest: "sha256:ac8f4ed383d7ae4b3a2e4096a2358420526f50a8618efa4f877bf9856ed4ca88"
 generated:
   feature: collectibles.claim_nft_claims
   scenarios:
@@ -85,8 +85,15 @@ generated:
       outcome: success
       emits:
       - NftClaimResult
-      evidence: ev_34bf3ac088e2
+      evidence: ev_0ea5d10808d1
   evidence:
+  - id: ev_0ea5d10808d1
+    kind: emulator_flow
+    authority: vortex_emulator
+    origin: vortex
+    source: Vortex.Primitives/Commerce/CommerceOperation.cs
+    symbol: CommerceOperationId
+    line: 33
   - id: ev_34bf3ac088e2
     kind: emulator_flow
     authority: vortex_emulator
@@ -107,6 +114,6 @@ generated:
     origin: vortex
     source: Vortex.Collectibles/Grains/PlayerNftClaimsGrain.cs
     symbol: PlayerNftClaimsGrain
-    line: 80
+    line: 122
 verified: {}
 manual: {}

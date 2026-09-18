@@ -10,7 +10,7 @@
 
 spec: packet
 spec_version: 1
-generated_digest: "sha256:27273ac186c8d9b4cbfc12c53773a0a2875f852f48de15d8bc24fc3c7016de12"
+generated_digest: "sha256:d3a435377c2f7c0033a3713eca6c61552c8334244d0afd791473c0e2284426df"
 generated:
   name: RoomAdSearch
   direction: incoming
@@ -50,9 +50,11 @@ generated:
     evidence: ev_83b765f6509b
   - origin: vortex
     authority: vortex_emulator
-    field_count: 0
+    field_count: 2
     partial: false
-    types: []
+    types:
+    - int32
+    - int32
     evidence: ev_141742dd16e9
   evidence:
   - id: ev_b2ff761c07de

@@ -10,7 +10,7 @@
 
 spec: feature
 spec_version: 1
-generated_digest: "sha256:ab314d1fc2b02762dd553825829212bee2b7b04c42f77612aa7be5ca940d1b12"
+generated_digest: "sha256:e88de046b12a06bbfa2e665a0cca36fcde0546e57413cb71fa70e4929ae83ccb"
 generated:
   id: inventory.confirm_pet_breeding
   domain: inventory
@@ -38,10 +38,18 @@ generated:
     evidence: ev_e3aeea05728f
   - order: 3
     layer: grain
+    symbol: RoomGrain.PublishDetached
+    evidence: ev_b46938ec853d
+  - order: 4
+    layer: module
+    symbol: EventSystem.PublishAsync
+    evidence: ev_34bf3ac088e2
+  - order: 5
+    layer: grain
     symbol: RoomGrain.SendComposerToRoomAsync
     evidence: ev_b46938ec853d
   checks:
-  - expression: ctx.PlayerId <= 0 || ctx.RoomId <= 0 || message.PetId <= 0
+  - expression: ctx.PlayerId <= 0 || ctx.RoomId <= 0 || message.PetOneId <= 0 || message.PetTwoId <= 0
     on_fail: return
     observed_in: vortex
     evidence: ev_fcb551496df6
@@ -49,6 +57,10 @@ generated:
     on_fail: return
     observed_in: vortex
     evidence: ev_e3aeea05728f
+  - expression: _registry is null
+    on_fail: return
+    observed_in: vortex
+    evidence: ev_34bf3ac088e2
   state_changes: []
   outgoing:
     ordering: unknown
@@ -67,6 +79,13 @@ generated:
       evidence: ev_e3aeea05728f
   reaches_persistence: true
   evidence:
+  - id: ev_34bf3ac088e2
+    kind: emulator_flow
+    authority: vortex_emulator
+    origin: vortex
+    source: Vortex.Events/EventSystem.cs
+    symbol: EventSystem
+    line: 14
   - id: ev_7e53d81cbdc8
     kind: emulator_flow
     authority: vortex_emulator
@@ -87,7 +106,7 @@ generated:
     origin: vortex
     source: Vortex.Rooms/Grains/RoomGrain.cs
     symbol: RoomGrain
-    line: 280
+    line: 672
   - id: ev_e3aeea05728f
     kind: emulator_flow
     authority: vortex_emulator
@@ -105,9 +124,8 @@ generated:
   scenarios:
   - inventory.confirm_pet_breeding.guard_0
   - inventory.confirm_pet_breeding.guard_1
+  - inventory.confirm_pet_breeding.guard_2
   - inventory.confirm_pet_breeding.success
-  conflicts:
-  - cf_c936069c0e
   unknowns:
   - uk_13601998f3
   - uk_1a39026392

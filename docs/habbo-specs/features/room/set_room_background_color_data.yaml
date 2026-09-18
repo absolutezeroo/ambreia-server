@@ -10,7 +10,7 @@
 
 spec: feature
 spec_version: 1
-generated_digest: "sha256:7e2eac380238e4ac36f7125c03c02b7b33ed148de38129539546ccbffae0f294"
+generated_digest: "sha256:76547072878ec2b7e0fbe39116e7f4d45a7fb79884673449e96033390dafef1f"
 generated:
   id: room.set_room_background_color_data
   domain: room
@@ -36,10 +36,6 @@ generated:
     layer: domain
     symbol: FurnitureBackgroundColorLogic.SetColorAsync
     evidence: ev_554142d23342
-  - order: 3
-    layer: domain
-    symbol: WiredVariableArithmetic.Clamp
-    evidence: ev_c70390fca34b
   checks:
   - expression: ctx.PlayerId <= 0 || ctx.RoomId <= 0
     on_fail: return
@@ -80,7 +76,7 @@ generated:
     origin: vortex
     source: Vortex.Rooms/Grains/RoomGrain.Furni.Interactive.cs
     symbol: RoomGrain
-    line: 410
+    line: 411
   - id: ev_bddb39be9010
     kind: emulator_handler
     authority: vortex_emulator
@@ -88,13 +84,6 @@ generated:
     source: Vortex.PacketHandlers/Room/Furniture/SetRoomBackgroundColorDataMessageHandler.cs
     symbol: SetRoomBackgroundColorDataMessageHandler
     line: 14
-  - id: ev_c70390fca34b
-    kind: emulator_flow
-    authority: vortex_emulator
-    origin: vortex
-    source: Vortex.Rooms/Wired/WiredVariableArithmetic.cs
-    symbol: WiredVariableArithmetic
-    line: 165
   - id: ev_f5b38117337e
     kind: emulator_flow
     authority: vortex_emulator

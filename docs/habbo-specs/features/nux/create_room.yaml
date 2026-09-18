@@ -10,7 +10,7 @@
 
 spec: feature
 spec_version: 1
-generated_digest: "sha256:4e08be22e07a985f07d3b4e668179a92b5a4f79925565ec9165f17b0d385702a"
+generated_digest: "sha256:7d66a9aaa9e955e0d121dca3c1860b14ae556378045ce2d7cac624df87ec45ad"
 generated:
   id: nux.create_room
   domain: nux
@@ -44,10 +44,6 @@ generated:
     symbol: ServerConfigGrain.GetIntAsync
     evidence: ev_86f81f4f919c
   - order: 5
-    layer: domain
-    symbol: WiredVariableArithmetic.Clamp
-    evidence: ev_c70390fca34b
-  - order: 6
     layer: module
     symbol: EventSystem.PublishAsync
     evidence: ev_34bf3ac088e2
@@ -114,13 +110,6 @@ generated:
     source: Vortex.PacketHandlers/Nux/SelectInitialRoomMessageHandler.cs
     symbol: SelectInitialRoomMessageHandler
     line: 49
-  - id: ev_c70390fca34b
-    kind: emulator_flow
-    authority: vortex_emulator
-    origin: vortex
-    source: Vortex.Rooms/Wired/WiredVariableArithmetic.cs
-    symbol: WiredVariableArithmetic
-    line: 165
   - id: ev_cf270ab5d440
     kind: emulator_handler
     authority: vortex_emulator

@@ -10,7 +10,7 @@
 
 spec: scenarios
 spec_version: 1
-generated_digest: "sha256:488b5dab2ad1fb32ba9ad26d3b170193c083197bb5aadbbf6bcbb8a9c88e1c09"
+generated_digest: "sha256:ce5408b960a76c0b9b4e390b6253f0eb35dea27273ef40b81cfdf04bdcc2241f"
 generated:
   feature: navigator.resolve_for_player
   scenarios:
@@ -203,7 +203,7 @@ generated:
     origin: vortex
     source: Vortex.Rooms/Grains/RoomGrain.Settings.cs
     symbol: RoomGrain
-    line: 769
+    line: 766
   - id: ev_743940bb69f7
     kind: emulator_flow
     authority: vortex_emulator
@@ -217,6 +217,6 @@ generated:
     origin: vortex
     source: Vortex.Rooms/Grains/Modules/RoomSecurityModule.cs
     symbol: RoomSecurityModule
-    line: 270
+    line: 273
 verified: {}
 manual: {}

@@ -10,7 +10,7 @@
 
 spec: feature
 spec_version: 1
-generated_digest: "sha256:4c02b23fbc3cb5ab2454ebc6a2ad3fbe3a4beaa37344f75fbc5ec8be770f8673"
+generated_digest: "sha256:48ed9d1c5f6f746d9b2155eab7bf400127855e7a448a9f893bdef30874755b40"
 generated:
   id: inventory.get_achievements
   domain: inventory
@@ -41,10 +41,6 @@ generated:
     symbol: AchievementProgressCalculator.ComputeScore
     evidence: ev_b71b04b4b6c4
   - order: 4
-    layer: domain
-    symbol: WiredVariableArithmetic.Clamp
-    evidence: ev_c70390fca34b
-  - order: 5
     layer: grain
     symbol: AchievementManagerGrain.GetDefaultCategoryAsync
     evidence: ev_6a825bb2f759
@@ -95,13 +91,6 @@ generated:
     source: Vortex.Progression/Achievements/AchievementProgressCalculator.cs
     symbol: AchievementProgressCalculator
     line: 162
-  - id: ev_c70390fca34b
-    kind: emulator_flow
-    authority: vortex_emulator
-    origin: vortex
-    source: Vortex.Rooms/Wired/WiredVariableArithmetic.cs
-    symbol: WiredVariableArithmetic
-    line: 165
   - id: ev_dc142ad7bdb4
     kind: emulator_handler
     authority: vortex_emulator

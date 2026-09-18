@@ -10,7 +10,7 @@
 
 spec: feature
 spec_version: 1
-generated_digest: "sha256:192792cbb5d999553a7ea97919887449cec31f6bed40ff1950d612894b17074c"
+generated_digest: "sha256:e00505ee8c35ac8955dbf3538d10627726f95a4ec15e5baabc1074d37de07d6a"
 generated:
   id: quest.get_community_goal_hall_of_fame
   domain: quest
@@ -81,7 +81,7 @@ generated:
     origin: vortex
     source: Vortex.Progression/Grains/CommunityGoalGrain.cs
     symbol: CommunityGoalGrain
-    line: 101
+    line: 119
   scenarios:
   - quest.get_community_goal_hall_of_fame.guard_0
   - quest.get_community_goal_hall_of_fame.guard_1

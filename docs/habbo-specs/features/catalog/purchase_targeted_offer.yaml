@@ -10,7 +10,7 @@
 
 spec: feature
 spec_version: 1
-generated_digest: "sha256:20a48311fafeb3b694dc0fddb519c8478c19eb5460c0a68428b5889582d913b6"
+generated_digest: "sha256:95f0b013e61f6c3a2d3a08360f04faa22433ea0b25db817080f25ad86a8d0121"
 generated:
   id: catalog.purchase_targeted_offer
   domain: catalog
@@ -57,14 +57,10 @@ generated:
     symbol: TargetedOfferMapper.RemainingPurchases
     evidence: ev_481db2ad8bfa
   - order: 8
-    layer: domain
-    symbol: WiredVariableArithmetic.Clamp
-    evidence: ev_c70390fca34b
-  - order: 9
     layer: grain
     symbol: InventoryGrain.GrantFurnitureDefinitionCopiesAsync
     evidence: ev_c6396662000a
-  - order: 10
+  - order: 9
     layer: module
     symbol: EventSystem.PublishAsync
     evidence: ev_34bf3ac088e2
@@ -129,7 +125,7 @@ generated:
     origin: vortex
     source: Vortex.Players/Grains/PlayerGrain.cs
     symbol: PlayerGrain
-    line: 276
+    line: 279
   - id: ev_34bf3ac088e2
     kind: emulator_flow
     authority: vortex_emulator
@@ -171,14 +167,7 @@ generated:
     origin: vortex
     source: Vortex.Inventory/Grains/InventoryGrain.Furni.cs
     symbol: InventoryGrain
-    line: 550
-  - id: ev_c70390fca34b
-    kind: emulator_flow
-    authority: vortex_emulator
-    origin: vortex
-    source: Vortex.Rooms/Wired/WiredVariableArithmetic.cs
-    symbol: WiredVariableArithmetic
-    line: 165
+    line: 551
   - id: ev_f4c4c4ae6ace
     kind: emulator_flow
     authority: vortex_emulator

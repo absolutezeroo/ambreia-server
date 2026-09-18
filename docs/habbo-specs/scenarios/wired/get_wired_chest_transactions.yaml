@@ -10,7 +10,7 @@
 
 spec: scenarios
 spec_version: 1
-generated_digest: "sha256:24a9abf5419dd74b4ee057ec8386060a3d156254b361e781822cceb5b7aaa49e"
+generated_digest: "sha256:be2f82fd34212e26849b3f61ae5fd9d771f1e690d0f36761b0f0dbb0b86a6eef"
 generated:
   feature: wired.get_wired_chest_transactions
   scenarios:
@@ -276,7 +276,7 @@ generated:
     origin: vortex
     source: Vortex.Rooms/Grains/Modules/RoomSecurityModule.cs
     symbol: RoomSecurityModule
-    line: 205
+    line: 208
   - id: ev_d3a71568179c
     kind: emulator_flow
     authority: vortex_emulator

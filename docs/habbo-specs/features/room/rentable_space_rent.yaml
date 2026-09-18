@@ -10,7 +10,7 @@
 
 spec: feature
 spec_version: 1
-generated_digest: "sha256:9a75545eaa721ee39d6b944cd73b07aacf0390e2e2771bb52fb3cb227bb3ac21"
+generated_digest: "sha256:4abb5410a88f0ed55f8252752971ed26a67c0e33f548fb6b430b109387c3372a"
 generated:
   id: room.rentable_space_rent
   domain: room
@@ -157,7 +157,7 @@ generated:
     origin: vortex
     source: Vortex.Players/Grains/PlayerWalletGrain.cs
     symbol: PlayerWalletGrain
-    line: 400
+    line: 439
   - id: ev_f13d6bcce744
     kind: emulator_flow
     authority: vortex_emulator

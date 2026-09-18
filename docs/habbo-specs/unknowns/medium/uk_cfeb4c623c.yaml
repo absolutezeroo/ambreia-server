@@ -10,7 +10,7 @@
 
 spec: unknown
 spec_version: 1
-generated_digest: "sha256:ed231b57954a39bfa774c4280415a67affd6ac792a3dc2d477c9f578e845978a"
+generated_digest: "sha256:8c7c9c5b7296c20ddfb25418214fe02e035d59305599a8754fe09a632973efee"
 generated:
   id: uk_cfeb4c623c
   subject: "navigator.rate_flat: what the server sends when it refuses"
@@ -25,7 +25,7 @@ generated:
     origin: vortex
     source: Vortex.Rooms/Grains/RoomGrain.Settings.cs
     symbol: RoomGrain
-    line: 695
+    line: 692
   - id: ev_34bf3ac088e2
     kind: emulator_flow
     authority: vortex_emulator

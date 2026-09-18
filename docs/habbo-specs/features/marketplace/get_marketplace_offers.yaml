@@ -10,7 +10,7 @@
 
 spec: feature
 spec_version: 1
-generated_digest: "sha256:991786029c77a55fce6b1db580bdc140b2b502423c6a9219222cfc602fc439a6"
+generated_digest: "sha256:6ed6d0a00d83ad298d741e91c3e3f23af24945106adc1ad5dd2224d005541ffe"
 generated:
   id: marketplace.get_marketplace_offers
   domain: marketplace
@@ -82,5 +82,7 @@ generated:
   scenarios:
   - marketplace.get_marketplace_offers.guard_0
   - marketplace.get_marketplace_offers.success
+  conflicts:
+  - cf_5bc3ea38d3
 verified: {}
 manual: {}

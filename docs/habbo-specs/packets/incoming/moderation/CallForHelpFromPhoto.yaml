@@ -10,7 +10,7 @@
 
 spec: packet
 spec_version: 1
-generated_digest: "sha256:83007b56fff936c9a8a115dccc63d4262d6173d93aca4146efc6afc339087ff4"
+generated_digest: "sha256:e16db4e56af3c8fc432af1d0cc396a3c3954ce9c4c66a10285f06e9119e1c62b"
 generated:
   name: CallForHelpFromPhoto
   direction: incoming
@@ -90,7 +90,7 @@ generated:
     evidence: ev_a65c8c5d36de
   - origin: vortex
     authority: vortex_emulator
-    field_count: 5
+    field_count: 7
     partial: false
     types:
     - string
@@ -98,6 +98,8 @@ generated:
     - int32
     - int32
     - int32
+    - string
+    - string
     evidence: ev_687c0bada022
   evidence:
   - id: ev_c983a78c5694

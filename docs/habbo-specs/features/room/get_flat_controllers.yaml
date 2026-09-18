@@ -10,7 +10,7 @@
 
 spec: feature
 spec_version: 1
-generated_digest: "sha256:7fa90f773532b98d068b3495ee98b4acf372423b8f931d50016c6d3b02934580"
+generated_digest: "sha256:4c1c984e86ba3774a9c5c57aed5bf6865ed2f3e23392a3aec12bb29c6ec406cf"
 generated:
   id: room.get_flat_controllers
   domain: room
@@ -33,6 +33,10 @@ generated:
     symbol: RoomGrain.GetControllersAsync
     evidence: ev_329537530b13
   - order: 2
+    layer: module
+    symbol: RoomSecurityModule.LoadControllersAsync
+    evidence: ev_82c2d2746361
+  - order: 3
     layer: domain
     symbol: WiredActionBranch.Select
     evidence: ev_f13d6bcce744
@@ -41,6 +45,10 @@ generated:
     on_fail: return
     observed_in: vortex
     evidence: ev_392abf549ae0
+  - expression: "!await IsRoomOwnerAsync(actor).ConfigureAwait(true)"
+    on_fail: return
+    observed_in: vortex
+    evidence: ev_329537530b13
   state_changes: []
   outgoing:
     ordering: unknown
@@ -57,7 +65,7 @@ generated:
     origin: vortex
     source: Vortex.Rooms/Grains/RoomGrain.Settings.cs
     symbol: RoomGrain
-    line: 266
+    line: 302
   - id: ev_392abf549ae0
     kind: emulator_flow
     authority: vortex_emulator
@@ -65,6 +73,13 @@ generated:
     source: Vortex.PacketHandlers/RoomSettings/GetFlatControllersMessageHandler.cs
     symbol: GetFlatControllersMessageHandler
     line: 23
+  - id: ev_82c2d2746361
+    kind: emulator_flow
+    authority: vortex_emulator
+    origin: vortex
+    source: Vortex.Rooms/Grains/Modules/RoomSecurityModule.cs
+    symbol: RoomSecurityModule
+    line: 319
   - id: ev_f13d6bcce744
     kind: emulator_flow
     authority: vortex_emulator
@@ -81,6 +96,7 @@ generated:
     line: 14
   scenarios:
   - room.get_flat_controllers.guard_0
+  - room.get_flat_controllers.guard_1
   - room.get_flat_controllers.success
 verified: {}
 manual: {}

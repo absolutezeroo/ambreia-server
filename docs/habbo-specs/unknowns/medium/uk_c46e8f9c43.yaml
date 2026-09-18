@@ -10,12 +10,12 @@
 
 spec: unknown
 spec_version: 1
-generated_digest: "sha256:2a4ba64bc60b3edfa82fcc03d7efe3b47e0a5da9dc9a8a414b6d3ec6c2dceed6"
+generated_digest: "sha256:47f0aa54d511d07a8b3e6111c366c1d2fa42ea36cf139fb5a4ab1a18c0956e0e"
 generated:
   id: uk_c46e8f9c43
   subject: "room.unban_user_from_room: what the server sends when it refuses"
   severity: medium
-  question: room.unban_user_from_room changes state and has 10 guards whose refusal behaviour nothing here attests. Does the official server answer a refused request, and with what?
+  question: room.unban_user_from_room changes state and has 11 guards whose refusal behaviour nothing here attests. Does the official server answer a refused request, and with what?
   resolved_by: an official capture of each guard being tripped
   feature: room.unban_user_from_room
   known_evidence:
@@ -39,7 +39,7 @@ generated:
     origin: vortex
     source: Vortex.PacketHandlers/Room/Action/UnbanUserFromRoomMessageHandler.cs
     symbol: UnbanUserFromRoomMessageHandler
-    line: 26
+    line: 27
   - id: ev_743940bb69f7
     kind: emulator_flow
     authority: vortex_emulator
@@ -60,7 +60,7 @@ generated:
     origin: vortex
     source: Vortex.PacketHandlers/Room/Action/UnbanUserFromRoomMessageHandler.cs
     symbol: UnbanUserFromRoomMessageHandler
-    line: 14
+    line: 15
   - id: ev_bb859d4f21b2
     kind: emulator_flow
     authority: vortex_emulator

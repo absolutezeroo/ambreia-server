@@ -10,7 +10,7 @@
 
 spec: feature
 spec_version: 1
-generated_digest: "sha256:49d5a2fd390ec7561429881e110299e0f3a37af30818115f96c2ce44f542290a"
+generated_digest: "sha256:f9200c6233b6fce6bcd652cca2828959be0ba33249de909c35ea25f15460922e"
 generated:
   id: moderation.call_for_help_from_forum_thread
   domain: moderation
@@ -83,5 +83,7 @@ generated:
   - moderation.call_for_help_from_forum_thread.guard_0
   - moderation.call_for_help_from_forum_thread.guard_1
   - moderation.call_for_help_from_forum_thread.success
+  conflicts:
+  - cf_fedb56063c
 verified: {}
 manual: {}

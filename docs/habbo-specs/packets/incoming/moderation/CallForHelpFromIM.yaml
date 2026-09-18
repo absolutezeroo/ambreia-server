@@ -10,7 +10,7 @@
 
 spec: packet
 spec_version: 1
-generated_digest: "sha256:a32b4f57601942f6272ab7dd86403e9b32ee5a58fb536409a5f36e797d162304"
+generated_digest: "sha256:47944711ca66c1fc3edb6818fe88e80f50071c1d4fc2d4a4a1967c4786099d5d"
 generated:
   name: CallForHelpFromIM
   direction: incoming
@@ -97,7 +97,7 @@ generated:
     evidence: ev_4cf2d419ef56
   - origin: vortex
     authority: vortex_emulator
-    field_count: 5
+    field_count: 7
     partial: false
     types:
     - string
@@ -105,6 +105,8 @@ generated:
     - int32
     - int32
     - array
+    - string
+    - string
     evidence: ev_cfa0198af205
   evidence:
   - id: ev_dd51972ef6b0
@@ -139,7 +141,8 @@ generated:
     symbol: CallForHelpFromIMMessageParser
     line: 9
   conflicts:
-  - cf_b9af7ea3b9
+  - cf_1ed734b059
+  - cf_b81cca96ee
   unknowns:
   - uk_41b826a380
 verified: {}

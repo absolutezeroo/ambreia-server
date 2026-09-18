@@ -10,12 +10,12 @@
 
 spec: unknown
 spec_version: 1
-generated_digest: "sha256:6b45fec3885b7d556a964332a3554787595bfb59330f8cc57049a3f11234563f"
+generated_digest: "sha256:fc2b76d644733fb7ae131c3795ac0996c095284d1e517f58a28211d1565394cb"
 generated:
   id: uk_1310dc5b11
   subject: "marketplace.redeem_marketplace_offer_credits: what the server sends when it refuses"
   severity: medium
-  question: marketplace.redeem_marketplace_offer_credits changes state and has 4 guards whose refusal behaviour nothing here attests. Does the official server answer a refused request, and with what?
+  question: marketplace.redeem_marketplace_offer_credits changes state and has 6 guards whose refusal behaviour nothing here attests. Does the official server answer a refused request, and with what?
   resolved_by: an official capture of each guard being tripped
   feature: marketplace.redeem_marketplace_offer_credits
   known_evidence:
@@ -46,13 +46,13 @@ generated:
     origin: vortex
     source: Vortex.Players/Grains/PlayerWalletGrain.cs
     symbol: PlayerWalletGrain
-    line: 462
+    line: 501
   - id: ev_db53958cdf3b
     kind: emulator_flow
     authority: vortex_emulator
     origin: vortex
     source: Vortex.Marketplace/Grains/MarketplacePurchaseGrain.cs
     symbol: MarketplacePurchaseGrain
-    line: 496
+    line: 522
 verified: {}
 manual: {}

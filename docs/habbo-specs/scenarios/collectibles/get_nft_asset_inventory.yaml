@@ -10,7 +10,7 @@
 
 spec: scenarios
 spec_version: 1
-generated_digest: "sha256:a450d67dc3e1cd6e021e09d6b2301a3e2fd9bab7a3f614f22a96c25d562581c0"
+generated_digest: "sha256:9196d7101a817466db6d14b9bacc6eed7e84e697268cdbbadd01ac7c2b9a9990"
 generated:
   feature: collectibles.get_nft_asset_inventory
   scenarios:
@@ -89,6 +89,6 @@ generated:
     origin: vortex
     source: Vortex.Collectibles/Grains/PlayerMintGrain.cs
     symbol: PlayerMintGrain
-    line: 402
+    line: 419
 verified: {}
 manual: {}

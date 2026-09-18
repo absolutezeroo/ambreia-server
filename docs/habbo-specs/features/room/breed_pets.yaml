@@ -10,7 +10,7 @@
 
 spec: feature
 spec_version: 1
-generated_digest: "sha256:4af9b291955918c5521d1d7b7249a7ec7e7a6d0c5bfdf4b36c3bf29423149551"
+generated_digest: "sha256:0d6dbeaf5ff54e125a9dd2647ca38285c8a6f5d777f927e5dd9ade42a47f42e2"
 generated:
   id: room.breed_pets
   domain: room
@@ -35,6 +35,14 @@ generated:
   - order: 2
     layer: module
     symbol: RoomPetSystem.BreedPetsAsync
+    evidence: ev_e3aeea05728f
+  - order: 3
+    layer: grain
+    symbol: RoomGrain.CancelPetBreedingAsync
+    evidence: ev_7e53d81cbdc8
+  - order: 4
+    layer: module
+    symbol: RoomPetSystem.CancelPetBreedingAsync
     evidence: ev_e3aeea05728f
   checks:
   - expression: ctx.PlayerId <= 0 || ctx.RoomId <= 0 || message.PetOneId <= 0 || message.PetTwoId <= 0
@@ -73,14 +81,14 @@ generated:
     origin: vortex
     source: Vortex.PacketHandlers/Room/Pets/BreedPetsMessageHandler.cs
     symbol: BreedPetsMessageHandler
-    line: 21
+    line: 23
   - id: ev_25bf91bb67f2
     kind: emulator_handler
     authority: vortex_emulator
     origin: vortex
     source: Vortex.PacketHandlers/Room/Pets/BreedPetsMessageHandler.cs
     symbol: BreedPetsMessageHandler
-    line: 11
+    line: 13
   - id: ev_7e53d81cbdc8
     kind: emulator_flow
     authority: vortex_emulator
@@ -101,8 +109,6 @@ generated:
   - room.breed_pets.guard_2
   - room.breed_pets.guard_3
   - room.breed_pets.success
-  conflicts:
-  - cf_e6bbe57625
   unknowns:
   - uk_1ebbb79d1a
 verified: {}

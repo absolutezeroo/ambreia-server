@@ -10,21 +10,21 @@
 
 spec: scenarios
 spec_version: 1
-generated_digest: "sha256:89e91ad4add762ca0869fdaa90ce45f0671c5607a7ecb39dc44c94fa81b57a7d"
+generated_digest: "sha256:390f1513d7deacbbdc5d4a92b8a9d860a84fc6774c15fcd0a1ac44f5b939c7f2"
 generated:
   feature: room.unban_user_from_room
   scenarios:
   - scenario: room.unban_user_from_room.guard_0
-    title: "unban user from room: the guard 'ctx.PlayerId <= 0 || ctx.RoomId <= 0 || message.UserId <= 0' holds"
+    title: "unban user from room: the guard 'ctx.PlayerId <= 0 || message.UserId <= 0' holds"
     given:
-      guard: ctx.PlayerId <= 0 || ctx.RoomId <= 0 || message.UserId <= 0
+      guard: ctx.PlayerId <= 0 || message.UserId <= 0
       guard_holds: "true"
     when:
       packet: UnbanUserFromRoom
     expected:
       status: unknown
       confidence: unknown
-    needs_evidence: "an official capture of UnbanUserFromRoom sent while 'ctx.PlayerId <= 0 || ctx.RoomId <= 0 || message.UserId <= 0' holds: does the server reply, stay silent, or disconnect?"
+    needs_evidence: "an official capture of UnbanUserFromRoom sent while 'ctx.PlayerId <= 0 || message.UserId <= 0' holds: does the server reply, stay silent, or disconnect?"
     executable: false
     claims:
     - origin: vortex
@@ -38,16 +38,16 @@ generated:
       emits: []
       evidence: ev_726f4116c803
   - scenario: room.unban_user_from_room.guard_1
-    title: "unban user from room: the guard '!await RoomModerationGuard .CanActOnTargetAsync( permissi...' holds"
+    title: "unban user from room: the guard 'actorRoomId <= 0' holds"
     given:
-      guard: "!await RoomModerationGuard .CanActOnTargetAsync( permissionService, events, ctx, ctx.RoomId, message.UserId, ModerationAction.Ban, ct ) .ConfigureAwait(false)"
+      guard: actorRoomId <= 0
       guard_holds: "true"
     when:
       packet: UnbanUserFromRoom
     expected:
       status: unknown
       confidence: unknown
-    needs_evidence: "an official capture of UnbanUserFromRoom sent while '!await RoomModerationGuard .CanActOnTargetAsync( permissionService, events, ctx, ctx.RoomId, message.UserId, ModerationAction.Ban, ct ) .ConfigureAwait(false)' holds: does the server reply, stay silent, or disconnect?"
+    needs_evidence: "an official capture of UnbanUserFromRoom sent while 'actorRoomId <= 0' holds: does the server reply, stay silent, or disconnect?"
     executable: false
     claims:
     - origin: vortex
@@ -61,6 +61,29 @@ generated:
       emits: []
       evidence: ev_726f4116c803
   - scenario: room.unban_user_from_room.guard_2
+    title: "unban user from room: the guard '!await RoomModerationGuard .CanActOnTargetAsync( permissi...' holds"
+    given:
+      guard: "!await RoomModerationGuard .CanActOnTargetAsync( permissionService, events, ctx, actorRoomId, message.UserId, ModerationAction.Ban, ct ) .ConfigureAwait(false)"
+      guard_holds: "true"
+    when:
+      packet: UnbanUserFromRoom
+    expected:
+      status: unknown
+      confidence: unknown
+    needs_evidence: "an official capture of UnbanUserFromRoom sent while '!await RoomModerationGuard .CanActOnTargetAsync( permissionService, events, ctx, actorRoomId, message.UserId, ModerationAction.Ban, ct ) .ConfigureAwait(false)' holds: does the server reply, stay silent, or disconnect?"
+    executable: false
+    claims:
+    - origin: vortex
+      authority: vortex_emulator
+      outcome: ignored
+      emits: []
+      evidence: ev_420bde327a4b
+    - origin: habbo-arcturus-daybreak
+      authority: reference_emulator
+      outcome: ignored
+      emits: []
+      evidence: ev_726f4116c803
+  - scenario: room.unban_user_from_room.guard_3
     title: "unban user from room: the guard 'ModerationPolicy.CanActOnTarget(actorPermissions, targetP...' holds"
     given:
       guard: ModerationPolicy.CanActOnTarget(actorPermissions, targetPermissions)
@@ -83,7 +106,7 @@ generated:
       outcome: ignored
       emits: []
       evidence: ev_726f4116c803
-  - scenario: room.unban_user_from_room.guard_3
+  - scenario: room.unban_user_from_room.guard_4
     title: "unban user from room: the guard 'playerId <= 0' holds"
     given:
       guard: playerId <= 0
@@ -106,7 +129,7 @@ generated:
       outcome: ignored
       emits: []
       evidence: ev_726f4116c803
-  - scenario: room.unban_user_from_room.guard_4
+  - scenario: room.unban_user_from_room.guard_5
     title: "unban user from room: the guard 'actorCtx.PlayerId <= 0 || targetPlayerId <= 0 || actorCtx...' holds"
     given:
       guard: actorCtx.PlayerId <= 0 || targetPlayerId <= 0 || actorCtx.RoomId != _roomGrain._state.RoomId
@@ -129,7 +152,7 @@ generated:
       outcome: ignored
       emits: []
       evidence: ev_726f4116c803
-  - scenario: room.unban_user_from_room.guard_5
+  - scenario: room.unban_user_from_room.guard_6
     title: "unban user from room: the guard '!await CanModerateAsync( actorCtx, _roomGrain._state.Room...' holds"
     given:
       guard: "!await CanModerateAsync( actorCtx, _roomGrain._state.RoomSnapshot.ModSettings.WhoCanBan, ModerationAction.Ban )"
@@ -152,7 +175,7 @@ generated:
       outcome: ignored
       emits: []
       evidence: ev_726f4116c803
-  - scenario: room.unban_user_from_room.guard_6
+  - scenario: room.unban_user_from_room.guard_7
     title: "unban user from room: the guard 'roomId <= 0 || playerId <= 0' holds"
     given:
       guard: roomId <= 0 || playerId <= 0
@@ -175,7 +198,7 @@ generated:
       outcome: ignored
       emits: []
       evidence: ev_726f4116c803
-  - scenario: room.unban_user_from_room.guard_7
+  - scenario: room.unban_user_from_room.guard_8
     title: "unban user from room: the guard 'existing is null' holds"
     given:
       guard: existing is null
@@ -198,7 +221,7 @@ generated:
       outcome: ignored
       emits: []
       evidence: ev_726f4116c803
-  - scenario: room.unban_user_from_room.guard_8
+  - scenario: room.unban_user_from_room.guard_9
     title: "unban user from room: the guard '_registry is null' holds"
     given:
       guard: _registry is null
@@ -272,7 +295,7 @@ generated:
     origin: vortex
     source: Vortex.PacketHandlers/Room/Action/UnbanUserFromRoomMessageHandler.cs
     symbol: UnbanUserFromRoomMessageHandler
-    line: 26
+    line: 27
   - id: ev_743940bb69f7
     kind: emulator_flow
     authority: vortex_emulator

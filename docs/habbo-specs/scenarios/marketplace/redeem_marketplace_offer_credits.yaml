@@ -10,7 +10,7 @@
 
 spec: scenarios
 spec_version: 1
-generated_digest: "sha256:d7ac3c04b6249f3565c3b0c2323d446bd65188f43882a26f3a63f60ddd02aa9d"
+generated_digest: "sha256:932bedfc016a3045d6e94c4cd7a4f190da3ee840782bf92a4158a637c5979a80"
 generated:
   feature: marketplace.redeem_marketplace_offer_credits
   scenarios:
@@ -61,6 +61,52 @@ generated:
       emits: []
       evidence: ev_ac79a311e019
   - scenario: marketplace.redeem_marketplace_offer_credits.guard_2
+    title: "redeem marketplace offer credits: the guard 'entity is null' holds"
+    given:
+      guard: entity is null
+      guard_holds: "true"
+    when:
+      packet: RedeemMarketplaceOfferCredits
+    expected:
+      status: unknown
+      confidence: unknown
+    needs_evidence: "an official capture of RedeemMarketplaceOfferCredits sent while 'entity is null' holds: does the server reply, stay silent, or disconnect?"
+    executable: false
+    claims:
+    - origin: vortex
+      authority: vortex_emulator
+      outcome: rejected
+      emits: []
+      evidence: ev_d0cb8ee11644
+    - origin: habbo-arcturus-daybreak
+      authority: reference_emulator
+      outcome: ignored
+      emits: []
+      evidence: ev_ac79a311e019
+  - scenario: marketplace.redeem_marketplace_offer_credits.guard_3
+    title: "redeem marketplace offer credits: the guard '!await dbCtx.HasCommittedReceiptAsync(operationId, stepKe...' holds"
+    given:
+      guard: "!await dbCtx.HasCommittedReceiptAsync(operationId, stepKey, ct)"
+      guard_holds: "true"
+    when:
+      packet: RedeemMarketplaceOfferCredits
+    expected:
+      status: unknown
+      confidence: unknown
+    needs_evidence: "an official capture of RedeemMarketplaceOfferCredits sent while '!await dbCtx.HasCommittedReceiptAsync(operationId, stepKey, ct)' holds: does the server reply, stay silent, or disconnect?"
+    executable: false
+    claims:
+    - origin: vortex
+      authority: vortex_emulator
+      outcome: rejected
+      emits: []
+      evidence: ev_d0cb8ee11644
+    - origin: habbo-arcturus-daybreak
+      authority: reference_emulator
+      outcome: ignored
+      emits: []
+      evidence: ev_ac79a311e019
+  - scenario: marketplace.redeem_marketplace_offer_credits.guard_4
     title: "redeem marketplace offer credits: the guard '_registry is null' holds"
     given:
       guard: _registry is null
@@ -135,12 +181,19 @@ generated:
     source: Vortex.PacketHandlers/Marketplace/RedeemMarketplaceOfferCreditsMessageHandler.cs
     symbol: RedeemMarketplaceOfferCreditsMessageHandler
     line: 21
+  - id: ev_d0cb8ee11644
+    kind: emulator_flow
+    authority: vortex_emulator
+    origin: vortex
+    source: Vortex.Players/Grains/PlayerWalletGrain.cs
+    symbol: PlayerWalletGrain
+    line: 533
   - id: ev_db53958cdf3b
     kind: emulator_flow
     authority: vortex_emulator
     origin: vortex
     source: Vortex.Marketplace/Grains/MarketplacePurchaseGrain.cs
     symbol: MarketplacePurchaseGrain
-    line: 513
+    line: 539
 verified: {}
 manual: {}

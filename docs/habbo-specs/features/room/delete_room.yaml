@@ -10,7 +10,7 @@
 
 spec: feature
 spec_version: 1
-generated_digest: "sha256:0acb0b8b00101d3bb6d69672b38f190c50f4fc6d5988476bbd020431fc839323"
+generated_digest: "sha256:d1c6e39596d20f81b0d02e6452ee375eeccb0bf828cca6d603b1f387abbcc35f"
 generated:
   id: room.delete_room
   domain: room
@@ -34,65 +34,81 @@ generated:
     evidence: ev_329537530b13
   - order: 2
     layer: domain
+    symbol: RoomFurnitureLocationStore.ReleaseRoomContentsAsync
+    evidence: ev_c50eef4f80cc
+  - order: 3
+    layer: domain
+    symbol: WiredActionBranch.Select
+    evidence: ev_f13d6bcce744
+  - order: 4
+    layer: grain
+    symbol: InventoryGrain.ReloadFurnitureAsync
+    evidence: ev_c6396662000a
+  - order: 5
+    layer: module
+    symbol: InventoryFurniModule.ReloadAsync
+    evidence: ev_48fa24e8d4a2
+  - order: 6
+    layer: domain
     symbol: ActionContext.CreateForPlayer
     evidence: ev_f5b4cba2f556
-  - order: 3
+  - order: 7
     layer: module
     symbol: RoomAvatarModule.RemoveAvatarFromPlayerAsync
     evidence: ev_e6fef545a42a
-  - order: 4
+  - order: 8
     layer: module
     symbol: RoomObjectModule.RemoveObjectAsync
     evidence: ev_761b76967e2f
-  - order: 5
+  - order: 9
     layer: module
     symbol: RoomMapModule.RemoveItem
     evidence: ev_c26714967e6b
-  - order: 6
+  - order: 10
     layer: grain
     symbol: RoomGrain.CancelMysteryBoxSessionForItemAsync
     evidence: ev_82aaf63b45c1
-  - order: 7
+  - order: 11
     layer: module
     symbol: RoomMysteryBoxSystem.CancelMysteryBoxSessionForItemAsync
     evidence: ev_b2d21836a70a
-  - order: 8
+  - order: 12
     layer: grain
     symbol: RoomGrain.SendComposerToRoomAsync
     evidence: ev_b46938ec853d
-  - order: 9
+  - order: 13
     layer: persistence
     symbol: RoomPersistenceGrain.EnqueueDirtyItemAsync
     evidence: ev_e439cab6b248
-  - order: 10
+  - order: 14
     layer: module
     symbol: RoomAvatarModule.StopWalkingAsync
     evidence: ev_e6fef545a42a
-  - order: 11
+  - order: 15
     layer: domain
     symbol: RoomAvatar.SetGoalTileId
     evidence: ev_9f45a8c43da8
-  - order: 12
+  - order: 16
     layer: domain
     symbol: RoomAvatar.RemoveStatus
     evidence: ev_9f45a8c43da8
-  - order: 13
+  - order: 17
     layer: module
     symbol: RoomMapModule.RemoveAvatar
     evidence: ev_db615f36b20b
-  - order: 14
+  - order: 18
     layer: domain
     symbol: RoomGameRuntime.OnPlayerLeftAsync
     evidence: ev_8f4d446a6466
-  - order: 15
+  - order: 19
     layer: domain
     symbol: TeamBook.OnPlayerLeft
     evidence: ev_556d41376c6f
-  - order: 16
+  - order: 20
     layer: grain
     symbol: RoomDirectoryGrain.RemoveActiveRoomAsync
     evidence: ev_74aa24a9a756
-  - order: 17
+  - order: 21
     layer: module
     symbol: EventSystem.PublishAsync
     evidence: ev_34bf3ac088e2
@@ -170,6 +186,10 @@ generated:
     value: _roomGrain.ObjectModule.RemoveObjectAsync(ctx, avatar, ct, -1)
     observed_in: vortex
     evidence: ev_e6fef545a42a
+  - target: _state.IsFurnitureReady
+    value: "false"
+    observed_in: vortex
+    evidence: ev_48fa24e8d4a2
   - target: avatar
     value: avatar.SetGoalTileId(-1)
     observed_in: vortex
@@ -210,6 +230,18 @@ generated:
     value: roomGrain.DeleteRoomAsync(ctx.PlayerId, ct)
     observed_in: vortex
     evidence: ev_7601ba13c0f4
+  - target: row
+    value: row.SetProperty(f => f.RoomEntityId, (int?)null)
+    observed_in: vortex
+    evidence: ev_c50eef4f80cc
+  - target: row
+    value: row.SetProperty(p => p.RoomEntityId, (int?)null)
+    observed_in: vortex
+    evidence: ev_c50eef4f80cc
+  - target: row
+    value: row.SetProperty(b => b.RoomEntityId, (int?)null)
+    observed_in: vortex
+    evidence: ev_c50eef4f80cc
   outgoing:
     ordering: unknown
     packets:
@@ -235,7 +267,7 @@ generated:
     origin: vortex
     source: Vortex.Rooms/Grains/RoomGrain.Settings.cs
     symbol: RoomGrain
-    line: 204
+    line: 211
   - id: ev_34bf3ac088e2
     kind: emulator_flow
     authority: vortex_emulator
@@ -243,6 +275,13 @@ generated:
     source: Vortex.Events/EventSystem.cs
     symbol: EventSystem
     line: 14
+  - id: ev_48fa24e8d4a2
+    kind: emulator_flow
+    authority: vortex_emulator
+    origin: vortex
+    source: Vortex.Inventory/Grains/Modules/InventoryFurniModule.cs
+    symbol: InventoryFurniModule
+    line: 42
   - id: ev_556d41376c6f
     kind: emulator_flow
     authority: vortex_emulator
@@ -312,7 +351,7 @@ generated:
     origin: vortex
     source: Vortex.Rooms/Grains/RoomGrain.cs
     symbol: RoomGrain
-    line: 280
+    line: 294
   - id: ev_c26714967e6b
     kind: emulator_flow
     authority: vortex_emulator
@@ -320,6 +359,20 @@ generated:
     source: Vortex.Rooms/Grains/Modules/RoomMapModule.cs
     symbol: RoomMapModule
     line: 278
+  - id: ev_c50eef4f80cc
+    kind: emulator_flow
+    authority: vortex_emulator
+    origin: vortex
+    source: Vortex.Rooms/Grains/Systems/RoomFurnitureLocationStore.cs
+    symbol: RoomFurnitureLocationStore
+    line: 99
+  - id: ev_c6396662000a
+    kind: emulator_flow
+    authority: vortex_emulator
+    origin: vortex
+    source: Vortex.Inventory/Grains/InventoryGrain.Furni.cs
+    symbol: InventoryGrain
+    line: 62
   - id: ev_db615f36b20b
     kind: emulator_flow
     authority: vortex_emulator
@@ -341,6 +394,13 @@ generated:
     source: Vortex.Rooms/Grains/Modules/RoomAvatarModule.cs
     symbol: RoomAvatarModule
     line: 156
+  - id: ev_f13d6bcce744
+    kind: emulator_flow
+    authority: vortex_emulator
+    origin: vortex
+    source: Vortex.Rooms/Wired/WiredActionBranch.cs
+    symbol: WiredActionBranch
+    line: 23
   - id: ev_f5b4cba2f556
     kind: emulator_flow
     authority: vortex_emulator

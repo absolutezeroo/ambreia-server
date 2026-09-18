@@ -10,7 +10,7 @@
 
 spec: unknown
 spec_version: 1
-generated_digest: "sha256:77c77a1017e841dabd1205bdad0359e79778e491bca32abe792ef16461152946"
+generated_digest: "sha256:ffaa5f2d34d9075b671fffc963497f059323c55f2a0060646a7444adf0965227"
 generated:
   id: uk_0a9133f0b3
   subject: "messenger.request_friend: what the server sends when it refuses"
@@ -46,7 +46,7 @@ generated:
     origin: vortex
     source: Vortex.Players/Grains/PlayerPresenceGrain.cs
     symbol: PlayerPresenceGrain
-    line: 123
+    line: 178
   - id: ev_7f41f2bdde62
     kind: emulator_flow
     authority: vortex_emulator

@@ -10,7 +10,7 @@
 
 spec: unknown
 spec_version: 1
-generated_digest: "sha256:cd61ad530c9b5db81941b5d2e34fd8a4d561b175ab0fdc2ab0593e583d77f1d7"
+generated_digest: "sha256:3fbd8aec4032f8cb8e0e6b5ec6c6a89c286a1ef4255cda317c5907421e6a9d48"
 generated:
   id: uk_8a902e23bb
   subject: "inventory.avatar_effect_activated: what the server sends when it refuses"
@@ -32,7 +32,7 @@ generated:
     origin: vortex
     source: Vortex.Players/Grains/PlayerPresenceGrain.cs
     symbol: PlayerPresenceGrain
-    line: 123
+    line: 178
   - id: ev_68cdef56bfcd
     kind: emulator_handler
     authority: vortex_emulator

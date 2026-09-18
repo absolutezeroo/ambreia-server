@@ -10,7 +10,7 @@
 
 spec: packet
 spec_version: 1
-generated_digest: "sha256:20e6ea159ed1d8eda9ce70452f518e4a762962862be0b2624736581436f91308"
+generated_digest: "sha256:c4f54e24d91135e4637ce8d99727da2c61ee8a75446ceb0b0f1d2c7a0cdcee01"
 generated:
   name: RemoveAllRights
   direction: incoming
@@ -48,9 +48,10 @@ generated:
     evidence: ev_d9bdd3e8c230
   - origin: vortex
     authority: vortex_emulator
-    field_count: 0
+    field_count: 1
     partial: false
-    types: []
+    types:
+    - int32
     evidence: ev_043bfa1a10dd
   evidence:
   - id: ev_cf437849715a

@@ -10,7 +10,7 @@
 
 spec: unknown
 spec_version: 1
-generated_digest: "sha256:cac56bfed0a2ea93cf3625e3a2ddb65c8cce645f179115a8a30aef0ff5a69e27"
+generated_digest: "sha256:2c2f667c8672e39029cf833b121d76927db6f3299391c5995b263cd4973f9a2f"
 generated:
   id: uk_2b9c662104
   subject: "quest.claim_daily_task: what the server sends when it refuses"
@@ -53,7 +53,7 @@ generated:
     origin: vortex
     source: Vortex.Players/Grains/PlayerPresenceGrain.cs
     symbol: PlayerPresenceGrain
-    line: 123
+    line: 178
   - id: ev_752778d6f862
     kind: emulator_handler
     authority: vortex_emulator

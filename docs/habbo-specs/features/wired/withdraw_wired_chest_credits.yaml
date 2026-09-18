@@ -10,7 +10,7 @@
 
 spec: feature
 spec_version: 1
-generated_digest: "sha256:3ef9147604e2f066640d4c08f0cc621639ff2222d12b030c7e3ed50306767e1b"
+generated_digest: "sha256:79b1f8e29cdd34115099b0ab0a161140dff424fa5e9e2aaf12476b9bf7c93e79"
 generated:
   id: wired.withdraw_wired_chest_credits
   domain: wired
@@ -240,7 +240,7 @@ generated:
     origin: vortex
     source: Vortex.Players/Grains/PlayerPresenceGrain.cs
     symbol: PlayerPresenceGrain
-    line: 123
+    line: 178
   - id: ev_3fdb23ee39cd
     kind: emulator_flow
     authority: vortex_emulator
@@ -275,7 +275,7 @@ generated:
     origin: vortex
     source: Vortex.Rooms/Grains/Modules/RoomSecurityModule.cs
     symbol: RoomSecurityModule
-    line: 203
+    line: 206
   - id: ev_94ddaa174e6d
     kind: emulator_flow
     authority: vortex_emulator
@@ -296,7 +296,7 @@ generated:
     origin: vortex
     source: Vortex.Players/Grains/PlayerWalletGrain.cs
     symbol: PlayerWalletGrain
-    line: 630
+    line: 685
   - id: ev_d3a71568179c
     kind: emulator_flow
     authority: vortex_emulator

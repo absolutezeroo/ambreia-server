@@ -10,7 +10,7 @@
 
 spec: unknown
 spec_version: 1
-generated_digest: "sha256:87c112951d1d92440e3a79e8fb1b6c319780bb5bbc7331258e1d7a26b5e896e2"
+generated_digest: "sha256:c33453de23e5f7ff27ed8027bca11f9b8cf354bf9e5435060a0c32b9a51b8eb9"
 generated:
   id: uk_0b209015db
   subject: "navigator.remove_own_room_rights_room: who receives FlatControllers, WiredPermissions, YouAreController, YouAreNotController, YouAreOwner"
@@ -25,7 +25,7 @@ generated:
     origin: vortex
     source: Vortex.Rooms/Grains/RoomGrain.Settings.cs
     symbol: RoomGrain
-    line: 855
+    line: 853
   - id: ev_b44ef304d36a
     kind: emulator_flow
     authority: vortex_emulator

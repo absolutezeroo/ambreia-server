@@ -10,7 +10,7 @@
 
 spec: scenarios
 spec_version: 1
-generated_digest: "sha256:3940fd68fe5437ce29ecb23d69e52d8268927fbe912669c62b166c8ff5a39ca4"
+generated_digest: "sha256:8f24d9ba47b159f0ac635a988101d07489f42ae4ebb61cf06aa1fdcb2ef594c6"
 generated:
   feature: room.dance
   scenarios:
@@ -234,7 +234,7 @@ generated:
     origin: vortex
     source: Vortex.Rooms/Grains/RoomGrain.Avatar.cs
     symbol: RoomGrain
-    line: 198
+    line: 242
   - id: ev_e202f0e0c1a0
     kind: emulator_flow
     authority: vortex_emulator

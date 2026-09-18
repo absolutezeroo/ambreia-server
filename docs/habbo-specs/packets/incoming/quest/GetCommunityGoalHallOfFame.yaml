@@ -10,7 +10,7 @@
 
 spec: packet
 spec_version: 1
-generated_digest: "sha256:fa8b050d232baad4f0a545a10c8d9b190628304fcee3c704a09dc0f9fda49cea"
+generated_digest: "sha256:009df99a4150542e2505f7e735208f59981964e8f013ba984b4a8b84a43512f1"
 generated:
   name: GetCommunityGoalHallOfFame
   direction: incoming
@@ -18,7 +18,14 @@ generated:
   structure_confidence: implementation_observed
   mapped_in_vortex: true
   vortex_handler: GetCommunityGoalHallOfFameMessageHandler
-  fields: []
+  fields:
+  - index: 0
+    name: goal_code
+    type: string
+    name_confidence: implementation_observed
+    type_confidence: implementation_observed
+    evidence:
+    - ev_28949464ddb2
   layouts_by_source:
   - origin: "as3:WIN63-202607011411-782849652"
     authority: client_code
@@ -34,9 +41,10 @@ generated:
     evidence: ev_3268f08cf114
   - origin: vortex
     authority: vortex_emulator
-    field_count: 0
+    field_count: 1
     partial: false
-    types: []
+    types:
+    - string
     evidence: ev_28949464ddb2
   evidence:
   - id: ev_6a3e13a68938

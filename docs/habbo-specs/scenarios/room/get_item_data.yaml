@@ -10,7 +10,7 @@
 
 spec: scenarios
 spec_version: 1
-generated_digest: "sha256:9e99b052b3e8300c816f439cc38700948fa737c06450ef6038ca4af91a1694d8"
+generated_digest: "sha256:a60da7e09aceb0fee8c6e983f042e19a10da88a599995d177378703a3c47246d"
 generated:
   feature: room.get_item_data
   scenarios:
@@ -101,7 +101,7 @@ generated:
     origin: vortex
     source: Vortex.Rooms/Grains/RoomGrain.Furni.Interactive.cs
     symbol: RoomGrain
-    line: 602
+    line: 619
   - id: ev_c3e9abc54f38
     kind: emulator_flow
     authority: vortex_emulator

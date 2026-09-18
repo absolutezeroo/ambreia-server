@@ -10,7 +10,7 @@
 
 spec: unknown
 spec_version: 1
-generated_digest: "sha256:1323169138df3b47653f13ad502966cfec9e8a95b77a582c31f123e659647bfc"
+generated_digest: "sha256:08d05e7f7f4d5fa6cf725e52197b996d5af3f82c2f36937bb504620cfa0a4021"
 generated:
   id: uk_4567474999
   subject: "room.start_typing: what the server sends when it refuses"
@@ -32,14 +32,14 @@ generated:
     origin: vortex
     source: Vortex.Rooms/Grains/RoomGrain.Avatar.cs
     symbol: RoomGrain
-    line: 426
+    line: 482
   - id: ev_b46938ec853d
     kind: emulator_flow
     authority: vortex_emulator
     origin: vortex
     source: Vortex.Rooms/Grains/RoomGrain.cs
     symbol: RoomGrain
-    line: 280
+    line: 294
   - id: ev_e25e75af1a26
     kind: emulator_handler
     authority: vortex_emulator

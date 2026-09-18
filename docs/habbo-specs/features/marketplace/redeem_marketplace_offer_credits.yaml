@@ -10,7 +10,7 @@
 
 spec: feature
 spec_version: 1
-generated_digest: "sha256:4b0a2e7a652ebcec7b29d239c6a1776d7cd70f1ae288d5ef6bed8ede2294fc90"
+generated_digest: "sha256:1950893aad36c828f29f8d17dc4adb0069f47d18ae446cc14b4dfa705d650e32"
 generated:
   id: marketplace.redeem_marketplace_offer_credits
   domain: marketplace
@@ -49,6 +49,14 @@ generated:
     on_fail: return
     observed_in: vortex
     evidence: ev_db53958cdf3b
+  - expression: entity is null
+    on_fail: throw
+    observed_in: vortex
+    evidence: ev_d0cb8ee11644
+  - expression: "!await dbCtx.HasCommittedReceiptAsync(operationId, stepKey, ct)"
+    on_fail: throw
+    observed_in: vortex
+    evidence: ev_d0cb8ee11644
   - expression: _registry is null
     on_fail: return
     observed_in: vortex
@@ -58,7 +66,7 @@ generated:
     value: request.Amount
     observed_in: vortex
     evidence: ev_d0cb8ee11644
-  - target: o.CreditsOwed
+  - target: offer.CreditsOwed
     value: "0"
     observed_in: vortex
     evidence: ev_db53958cdf3b
@@ -94,18 +102,20 @@ generated:
     origin: vortex
     source: Vortex.Players/Grains/PlayerWalletGrain.cs
     symbol: PlayerWalletGrain
-    line: 462
+    line: 501
   - id: ev_db53958cdf3b
     kind: emulator_flow
     authority: vortex_emulator
     origin: vortex
     source: Vortex.Marketplace/Grains/MarketplacePurchaseGrain.cs
     symbol: MarketplacePurchaseGrain
-    line: 496
+    line: 522
   scenarios:
   - marketplace.redeem_marketplace_offer_credits.guard_0
   - marketplace.redeem_marketplace_offer_credits.guard_1
   - marketplace.redeem_marketplace_offer_credits.guard_2
+  - marketplace.redeem_marketplace_offer_credits.guard_3
+  - marketplace.redeem_marketplace_offer_credits.guard_4
   - marketplace.redeem_marketplace_offer_credits.success
   unknowns:
   - uk_1310dc5b11

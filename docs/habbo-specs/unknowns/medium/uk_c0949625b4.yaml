@@ -10,7 +10,7 @@
 
 spec: unknown
 spec_version: 1
-generated_digest: "sha256:1c51c784e2eeabe556c392496835ab9cf48e7bb7593bcc87414e4ccc6f4ea7b8"
+generated_digest: "sha256:d33c443a5c7e9e43d391c91884b09fb87ba94bfdaa662c4455e0f6846b474a2a"
 generated:
   id: uk_c0949625b4
   subject: "collectibles.add_trade_assets: what the server sends when it refuses"
@@ -74,7 +74,7 @@ generated:
     origin: vortex
     source: Vortex.Collectibles/Grains/PlayerMintGrain.cs
     symbol: PlayerMintGrain
-    line: 389
+    line: 398
   - id: ev_a8707f5e7b6c
     kind: emulator_flow
     authority: vortex_emulator

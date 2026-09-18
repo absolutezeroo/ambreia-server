@@ -10,7 +10,7 @@
 
 spec: conflict
 spec_version: 1
-generated_digest: "sha256:c645cda5fd5bfd61f3d0cd9aa5cfc9e178d4b114423a6d165d16a56d882c1b21"
+generated_digest: "sha256:c9754ad4fd60f3ddd86501bcf9955d91a3f05c54f141448aac875ae6808f1fa7"
 generated:
   id: cf_4c70ad2da2
   kind: behaviour
@@ -40,7 +40,7 @@ generated:
     origin: vortex
     source: Vortex.PacketHandlers/Room/Action/RemoveAllRightsMessageHandler.cs
     symbol: RemoveAllRightsMessageHandler
-    line: 11
+    line: 12
   official:
     status: unknown
 verified: {}

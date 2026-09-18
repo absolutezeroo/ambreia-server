@@ -10,7 +10,7 @@
 
 spec: scenarios
 spec_version: 1
-generated_digest: "sha256:cfb1b3c5bba7954cf5a053d5983d9ab0b6ef72e023ccd25fdba7792557159d72"
+generated_digest: "sha256:74fe47ab41d2284e630c6d8c496d2746c4bd8726e76800d7572d28607f5d1b44"
 generated:
   feature: marketplace.cancel_marketplace_offer
   scenarios:
@@ -84,6 +84,29 @@ generated:
       emits: []
       evidence: ev_ba2c087f087d
   - scenario: marketplace.cancel_marketplace_offer.guard_3
+    title: "cancel marketplace offer: the guard 'claimed == 0' holds"
+    given:
+      guard: claimed == 0
+      guard_holds: "true"
+    when:
+      packet: CancelMarketplaceOffer
+    expected:
+      status: unknown
+      confidence: unknown
+    needs_evidence: "an official capture of CancelMarketplaceOffer sent while 'claimed == 0' holds: does the server reply, stay silent, or disconnect?"
+    executable: false
+    claims:
+    - origin: vortex
+      authority: vortex_emulator
+      outcome: ignored
+      emits: []
+      evidence: ev_db53958cdf3b
+    - origin: habbo-arcturus-daybreak
+      authority: reference_emulator
+      outcome: ignored
+      emits: []
+      evidence: ev_ba2c087f087d
+  - scenario: marketplace.cancel_marketplace_offer.guard_4
     title: "cancel marketplace offer: the guard '_registry is null' holds"
     given:
       guard: _registry is null

@@ -10,15 +10,22 @@
 
 spec: unknown
 spec_version: 1
-generated_digest: "sha256:877900b8247f487c92689d5e6e2b56442db9dc009fd088b12565dbccd222ff64"
+generated_digest: "sha256:e1ead8b7117560aee2ef7923ffefaa0e9d9c6228d233d86abcd3abbc3eba15c7"
 generated:
   id: uk_13601998f3
   subject: "inventory.confirm_pet_breeding: what the server sends when it refuses"
   severity: medium
-  question: inventory.confirm_pet_breeding changes state and has 3 guards whose refusal behaviour nothing here attests. Does the official server answer a refused request, and with what?
+  question: inventory.confirm_pet_breeding changes state and has 4 guards whose refusal behaviour nothing here attests. Does the official server answer a refused request, and with what?
   resolved_by: an official capture of each guard being tripped
   feature: inventory.confirm_pet_breeding
   known_evidence:
+  - id: ev_34bf3ac088e2
+    kind: emulator_flow
+    authority: vortex_emulator
+    origin: vortex
+    source: Vortex.Events/EventSystem.cs
+    symbol: EventSystem
+    line: 14
   - id: ev_7e53d81cbdc8
     kind: emulator_flow
     authority: vortex_emulator
@@ -39,7 +46,7 @@ generated:
     origin: vortex
     source: Vortex.Rooms/Grains/RoomGrain.cs
     symbol: RoomGrain
-    line: 280
+    line: 672
   - id: ev_e3aeea05728f
     kind: emulator_flow
     authority: vortex_emulator

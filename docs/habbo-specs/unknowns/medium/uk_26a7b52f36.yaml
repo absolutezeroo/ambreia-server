@@ -10,7 +10,7 @@
 
 spec: unknown
 spec_version: 1
-generated_digest: "sha256:c9f5fbde0bab503b382cda365e75597aaedc98d69d33321b835b07716b06a45c"
+generated_digest: "sha256:9eeedbf6890d568c1e2d0216a6d876efe158ff7b98aae4db1526a4b6804ec62e"
 generated:
   id: uk_26a7b52f36
   subject: "room.set_clothing_change_data: what the server sends when it refuses"
@@ -39,7 +39,7 @@ generated:
     origin: vortex
     source: Vortex.Rooms/Grains/RoomGrain.Furni.Interactive.cs
     symbol: RoomGrain
-    line: 615
+    line: 632
   - id: ev_a42d2d83d3e7
     kind: emulator_handler
     authority: vortex_emulator

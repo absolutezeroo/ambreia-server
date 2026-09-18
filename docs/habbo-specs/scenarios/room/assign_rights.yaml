@@ -10,7 +10,7 @@
 
 spec: scenarios
 spec_version: 1
-generated_digest: "sha256:027dd0d81089f99f1378814dce7d8f63784c93d9f303d604c4ec9946f977cc8d"
+generated_digest: "sha256:9ebb6b9513850dbc96e72ea8bbd58ca2b07398ad606a55b1e8ad6241f901d6d8"
 generated:
   feature: room.assign_rights
   scenarios:
@@ -217,7 +217,7 @@ generated:
     origin: vortex
     source: Vortex.Rooms/Grains/RoomGrain.Settings.cs
     symbol: RoomGrain
-    line: 407
+    line: 402
   - id: ev_34bf3ac088e2
     kind: emulator_flow
     authority: vortex_emulator
@@ -238,7 +238,7 @@ generated:
     origin: vortex
     source: Vortex.Rooms/Grains/Modules/RoomSecurityModule.cs
     symbol: RoomSecurityModule
-    line: 297
+    line: 300
   - id: ev_b44ef304d36a
     kind: emulator_flow
     authority: vortex_emulator

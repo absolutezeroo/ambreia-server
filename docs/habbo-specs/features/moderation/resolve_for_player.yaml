@@ -10,7 +10,7 @@
 
 spec: feature
 spec_version: 1
-generated_digest: "sha256:e831382cd47edee344a6eabdddbb79cc46b2eb2d7614505749ff42a358352d03"
+generated_digest: "sha256:a1793bdb0c0024a81ab4684a1fec379580bcc4677070e45df880d428cb345aae"
 generated:
   id: moderation.resolve_for_player
   domain: moderation
@@ -347,7 +347,7 @@ generated:
     origin: vortex
     source: Vortex.Players/Grains/PlayerPresenceGrain.cs
     symbol: PlayerPresenceGrain
-    line: 118
+    line: 173
   - id: ev_3fdb23ee39cd
     kind: emulator_flow
     authority: vortex_emulator
@@ -389,7 +389,7 @@ generated:
     origin: vortex
     source: Vortex.Rooms/Grains/Modules/RoomSecurityModule.cs
     symbol: RoomSecurityModule
-    line: 268
+    line: 271
   - id: ev_85ba71af2c41
     kind: emulator_flow
     authority: vortex_emulator
@@ -438,14 +438,14 @@ generated:
     origin: vortex
     source: Vortex.Rooms/Grains/RoomGrain.Avatar.cs
     symbol: RoomGrain
-    line: 467
+    line: 523
   - id: ev_b46938ec853d
     kind: emulator_flow
     authority: vortex_emulator
     origin: vortex
     source: Vortex.Rooms/Grains/RoomGrain.cs
     symbol: RoomGrain
-    line: 254
+    line: 268
   - id: ev_bb859d4f21b2
     kind: emulator_flow
     authority: vortex_emulator

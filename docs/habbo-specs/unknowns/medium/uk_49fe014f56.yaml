@@ -10,7 +10,7 @@
 
 spec: unknown
 spec_version: 1
-generated_digest: "sha256:f91e926babf9037c130ce22bd47e12e67e83aa798175eea4833e73c0d8a02e56"
+generated_digest: "sha256:c3e93b031692de45bfd2a2158444875b870de9fc1048845e16c8f5ee2ab4604f"
 generated:
   id: uk_49fe014f56
   subject: "room.delete_room: what the server sends when it refuses"
@@ -25,7 +25,7 @@ generated:
     origin: vortex
     source: Vortex.Rooms/Grains/RoomGrain.Settings.cs
     symbol: RoomGrain
-    line: 204
+    line: 211
   - id: ev_34bf3ac088e2
     kind: emulator_flow
     authority: vortex_emulator
@@ -33,6 +33,13 @@ generated:
     source: Vortex.Events/EventSystem.cs
     symbol: EventSystem
     line: 14
+  - id: ev_48fa24e8d4a2
+    kind: emulator_flow
+    authority: vortex_emulator
+    origin: vortex
+    source: Vortex.Inventory/Grains/Modules/InventoryFurniModule.cs
+    symbol: InventoryFurniModule
+    line: 42
   - id: ev_556d41376c6f
     kind: emulator_flow
     authority: vortex_emulator
@@ -102,7 +109,7 @@ generated:
     origin: vortex
     source: Vortex.Rooms/Grains/RoomGrain.cs
     symbol: RoomGrain
-    line: 280
+    line: 294
   - id: ev_c26714967e6b
     kind: emulator_flow
     authority: vortex_emulator
@@ -110,6 +117,20 @@ generated:
     source: Vortex.Rooms/Grains/Modules/RoomMapModule.cs
     symbol: RoomMapModule
     line: 278
+  - id: ev_c50eef4f80cc
+    kind: emulator_flow
+    authority: vortex_emulator
+    origin: vortex
+    source: Vortex.Rooms/Grains/Systems/RoomFurnitureLocationStore.cs
+    symbol: RoomFurnitureLocationStore
+    line: 99
+  - id: ev_c6396662000a
+    kind: emulator_flow
+    authority: vortex_emulator
+    origin: vortex
+    source: Vortex.Inventory/Grains/InventoryGrain.Furni.cs
+    symbol: InventoryGrain
+    line: 62
   - id: ev_db615f36b20b
     kind: emulator_flow
     authority: vortex_emulator
@@ -131,6 +152,13 @@ generated:
     source: Vortex.Rooms/Grains/Modules/RoomAvatarModule.cs
     symbol: RoomAvatarModule
     line: 156
+  - id: ev_f13d6bcce744
+    kind: emulator_flow
+    authority: vortex_emulator
+    origin: vortex
+    source: Vortex.Rooms/Wired/WiredActionBranch.cs
+    symbol: WiredActionBranch
+    line: 23
   - id: ev_f5b4cba2f556
     kind: emulator_flow
     authority: vortex_emulator

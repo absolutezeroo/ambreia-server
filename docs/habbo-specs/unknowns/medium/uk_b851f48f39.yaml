@@ -10,7 +10,7 @@
 
 spec: unknown
 spec_version: 1
-generated_digest: "sha256:678e73b9f5a0a04af20f8616294350d0315f68baa936fcbb11db4fa3efd41504"
+generated_digest: "sha256:2ae2306db23c5d81b23f469b0174e4671c43ff837c33c585d8c26ed9a5f096d7"
 generated:
   id: uk_b851f48f39
   subject: "inventory.redeem_purchasable_clothing: what the server sends when it refuses"
@@ -39,7 +39,7 @@ generated:
     origin: vortex
     source: Vortex.Players/Grains/PlayerPresenceGrain.cs
     symbol: PlayerPresenceGrain
-    line: 123
+    line: 178
   - id: ev_3a5a694b9376
     kind: emulator_flow
     authority: vortex_emulator
@@ -81,7 +81,7 @@ generated:
     origin: vortex
     source: Vortex.Inventory/Grains/InventoryGrain.Furni.cs
     symbol: InventoryGrain
-    line: 815
+    line: 824
   - id: ev_d720d639bd09
     kind: emulator_flow
     authority: vortex_emulator

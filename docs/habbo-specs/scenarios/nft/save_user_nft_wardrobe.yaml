@@ -10,7 +10,7 @@
 
 spec: scenarios
 spec_version: 1
-generated_digest: "sha256:096c2ce23b370c88abeaf10a9c3beeedfa4ecf43e732057e40ed62d0511863a7"
+generated_digest: "sha256:2167df2d01925243f2af5c7514ec917dd99dee620dc9845c90ed996d8b17b286"
 generated:
   feature: nft.save_user_nft_wardrobe
   scenarios:
@@ -112,7 +112,7 @@ generated:
     origin: vortex
     source: Vortex.Players/Grains/PlayerGrain.cs
     symbol: PlayerGrain
-    line: 256
+    line: 259
   - id: ev_34bf3ac088e2
     kind: emulator_flow
     authority: vortex_emulator

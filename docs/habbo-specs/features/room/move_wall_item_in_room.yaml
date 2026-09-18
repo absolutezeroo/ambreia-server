@@ -10,7 +10,7 @@
 
 spec: feature
 spec_version: 1
-generated_digest: "sha256:e44daa0b596b465a9841e271075a8bbf9dd78371634fe7f1bf32eb14fc60f7ac"
+generated_digest: "sha256:60827247a0c2d1cd9dea36027dff2c133e08d0bed603a51881c59ac19ee433ce"
 generated:
   id: room.move_wall_item_in_room
   domain: room
@@ -208,7 +208,7 @@ generated:
     origin: vortex
     source: Vortex.Rooms/Grains/Modules/RoomSecurityModule.cs
     symbol: RoomSecurityModule
-    line: 26
+    line: 29
   - id: ev_969dc34ed932
     kind: emulator_flow
     authority: vortex_emulator
@@ -222,7 +222,7 @@ generated:
     origin: vortex
     source: Vortex.Rooms/Grains/RoomGrain.cs
     symbol: RoomGrain
-    line: 280
+    line: 294
   - id: ev_c716d5e1bc87
     kind: emulator_flow
     authority: vortex_emulator

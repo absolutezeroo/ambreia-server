@@ -10,7 +10,7 @@
 
 spec: unknown
 spec_version: 1
-generated_digest: "sha256:1f6cf68a321a8fafafaca114a8ff42799a5a21301bb46c67130ef3cc7cf2be32"
+generated_digest: "sha256:273b21b6f87bf2f450c3baa908fd9783f6cb044bcd8435f7c5acd93efce71fa9"
 generated:
   id: uk_a281efc05a
   subject: "habbicons.unfavourite_habbicon: what the server sends when it refuses"
@@ -32,7 +32,7 @@ generated:
     origin: vortex
     source: Vortex.Players/Grains/PlayerGrain.cs
     symbol: PlayerGrain
-    line: 296
+    line: 299
   - id: ev_34bf3ac088e2
     kind: emulator_flow
     authority: vortex_emulator

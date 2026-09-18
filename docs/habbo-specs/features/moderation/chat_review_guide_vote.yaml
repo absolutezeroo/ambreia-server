@@ -10,7 +10,7 @@
 
 spec: feature
 spec_version: 1
-generated_digest: "sha256:26c22cd701dddf2941dc3d7bdb8beb605448af9465332a6e00607fa14e4d1be3"
+generated_digest: "sha256:7d0e750b7de810b7d2d7e094ecd2b33cdd5196240874a24f843b570fc0753bd3"
 generated:
   id: moderation.chat_review_guide_vote
   domain: moderation
@@ -32,14 +32,6 @@ generated:
     layer: grain
     symbol: GuideDirectoryGrain.ChatReviewVoteAsync
     evidence: ev_5ea072b947f5
-  - order: 2
-    layer: domain
-    symbol: KeyValueStore.ContainsKey
-    evidence: ev_3f9b29818561
-  - order: 3
-    layer: domain
-    symbol: WiredVariableKey.ToStorageKey
-    evidence: ev_2ed89ebaf6a7
   checks:
   - expression: ctx.PlayerId <= 0
     on_fail: return
@@ -55,20 +47,6 @@ generated:
     packets: []
   reaches_persistence: false
   evidence:
-  - id: ev_2ed89ebaf6a7
-    kind: emulator_flow
-    authority: vortex_emulator
-    origin: vortex
-    source: Vortex.Primitives/Rooms/Wired/Variable/WiredVariableKey.cs
-    symbol: WiredVariableKey
-    line: 12
-  - id: ev_3f9b29818561
-    kind: emulator_flow
-    authority: vortex_emulator
-    origin: vortex
-    source: Vortex.Rooms/Grains/Storage/KeyValueStore.cs
-    symbol: KeyValueStore
-    line: 31
   - id: ev_5ea072b947f5
     kind: emulator_flow
     authority: vortex_emulator

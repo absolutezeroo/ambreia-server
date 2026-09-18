@@ -10,7 +10,7 @@
 
 spec: feature
 spec_version: 1
-generated_digest: "sha256:7e3f4f17e5ce29a894cd4c9a4428e71ed8cfe59ce6a5c0c29636e010d20d64e5"
+generated_digest: "sha256:e343e32143c40133fcd7a6de080e7efc5b18414af658448cbacacd37d784eeaf"
 generated:
   id: collectibles.get_nft_claims
   domain: collectibles
@@ -36,7 +36,7 @@ generated:
     on_fail: return
     observed_in: vortex
     evidence: ev_67625979fb59
-  - expression: claims.Length == 0
+  - expression: claims.Count == 0 && returned.Count == 0
     on_fail: return
     observed_in: vortex
     evidence: ev_d72434a4527c
@@ -63,7 +63,7 @@ generated:
     origin: vortex
     source: Vortex.Collectibles/Grains/PlayerNftClaimsGrain.cs
     symbol: PlayerNftClaimsGrain
-    line: 39
+    line: 71
   - id: ev_db570c5551de
     kind: emulator_handler
     authority: vortex_emulator

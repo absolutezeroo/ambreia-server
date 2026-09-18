@@ -10,7 +10,7 @@
 
 spec: scenarios
 spec_version: 1
-generated_digest: "sha256:55ee4a04085bedb8196755cecfdd35dfb73e43fe9d822ed95a0888b3f476e5e1"
+generated_digest: "sha256:5bbea1d919fdc312e4bf0d37d928702c0fa8b37fe61117d43feffdb29410e3b3"
 generated:
   feature: users.create_guild
   scenarios:
@@ -348,7 +348,7 @@ generated:
     origin: vortex
     source: Vortex.Players/Grains/PlayerGrain.cs
     symbol: PlayerGrain
-    line: 778
+    line: 819
   - id: ev_34bf3ac088e2
     kind: emulator_flow
     authority: vortex_emulator

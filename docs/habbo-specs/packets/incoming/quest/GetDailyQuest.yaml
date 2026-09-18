@@ -10,7 +10,7 @@
 
 spec: packet
 spec_version: 1
-generated_digest: "sha256:fbbbf8d54cb725086e261b99f6f0dcffe40a01b5a5a14e5cc94c0a1eda132903"
+generated_digest: "sha256:d41690b46e1570dc5a0740dedcf489c1c008524e9202516bb9483a651c6ee39c"
 generated:
   name: GetDailyQuest
   direction: incoming
@@ -18,7 +18,21 @@ generated:
   structure_confidence: implementation_observed
   mapped_in_vortex: true
   vortex_handler: GetDailyQuestMessageHandler
-  fields: []
+  fields:
+  - index: 0
+    name: refresh
+    type: boolean
+    name_confidence: implementation_observed
+    type_confidence: implementation_observed
+    evidence:
+    - ev_c35bb6903b88
+  - index: 1
+    name: index
+    type: int32
+    name_confidence: implementation_observed
+    type_confidence: implementation_observed
+    evidence:
+    - ev_c35bb6903b88
   layouts_by_source:
   - origin: "as3:WIN63-202607011411-782849652"
     authority: client_code
@@ -34,9 +48,11 @@ generated:
     evidence: ev_819dbd7f469f
   - origin: vortex
     authority: vortex_emulator
-    field_count: 0
+    field_count: 2
     partial: false
-    types: []
+    types:
+    - boolean
+    - int32
     evidence: ev_c35bb6903b88
   evidence:
   - id: ev_84b87d4248ec

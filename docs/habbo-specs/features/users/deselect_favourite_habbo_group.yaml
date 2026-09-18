@@ -10,7 +10,7 @@
 
 spec: feature
 spec_version: 1
-generated_digest: "sha256:a23011206844b6af34675bb868ede1dc9bf782bdc26c1ac35f579905aa169faa"
+generated_digest: "sha256:edb16ac5d7d1e81b4381e021b92377c19f9ce0f15121ec808e0c5fdea2abf369"
 generated:
   id: users.deselect_favourite_habbo_group
   domain: users
@@ -141,7 +141,7 @@ generated:
     origin: vortex
     source: Vortex.Players/Grains/PlayerGrain.cs
     symbol: PlayerGrain
-    line: 296
+    line: 299
   - id: ev_34bf3ac088e2
     kind: emulator_flow
     authority: vortex_emulator

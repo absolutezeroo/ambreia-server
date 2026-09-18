@@ -10,7 +10,7 @@
 
 spec: scenarios
 spec_version: 1
-generated_digest: "sha256:c56525102badf0b39f9d9a7d01dee0dcd84ca837369642bd6d96701070c715a5"
+generated_digest: "sha256:aca4360b3e37731a857b56fd8b43f6696b31d9b9d0cef693de94e71703766fec"
 generated:
   feature: room.pass_carry_item_to_pet
   scenarios:
@@ -122,6 +122,24 @@ generated:
       outcome: ignored
       emits: []
       evidence: ev_9f45a8c43da8
+  - scenario: room.pass_carry_item_to_pet.guard_6
+    title: "pass carry item to pet: the guard '_registry is null' holds"
+    given:
+      guard: _registry is null
+      guard_holds: "true"
+    when:
+      packet: PassCarryItemToPet
+    expected:
+      status: unknown
+      confidence: unknown
+    needs_evidence: "an official capture of PassCarryItemToPet sent while '_registry is null' holds: does the server reply, stay silent, or disconnect?"
+    executable: false
+    claims:
+    - origin: vortex
+      authority: vortex_emulator
+      outcome: ignored
+      emits: []
+      evidence: ev_34bf3ac088e2
   - scenario: room.pass_carry_item_to_pet.success
     title: "pass carry item to pet: the request is accepted"
     given:
@@ -146,7 +164,7 @@ generated:
     origin: vortex
     source: Vortex.Rooms/Grains/Systems/RoomPetSystem.HandItem.cs
     symbol: RoomPetSystem
-    line: 31
+    line: 32
   - id: ev_315e04717bdc
     kind: emulator_flow
     authority: vortex_emulator
@@ -154,6 +172,13 @@ generated:
     source: Vortex.Rooms/Grains/Modules/RoomHandItemModule.cs
     symbol: RoomHandItemModule
     line: 52
+  - id: ev_34bf3ac088e2
+    kind: emulator_flow
+    authority: vortex_emulator
+    origin: vortex
+    source: Vortex.Events/EventSystem.cs
+    symbol: EventSystem
+    line: 16
   - id: ev_9f45a8c43da8
     kind: emulator_flow
     authority: vortex_emulator

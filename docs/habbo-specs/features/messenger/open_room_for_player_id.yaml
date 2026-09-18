@@ -10,7 +10,7 @@
 
 spec: feature
 spec_version: 1
-generated_digest: "sha256:c0b979172ea7a0bed120210c33a98ad52d8aeded71010128c15dd004e7eac4a7"
+generated_digest: "sha256:d1a9ecc81e147c86b9a6d6f0bce8e595698a3953b1bdd8eefefac077d19c1123"
 generated:
   id: messenger.open_room_for_player_id
   domain: messenger
@@ -575,7 +575,7 @@ generated:
     observed_in: vortex
     evidence: ev_7c6cea3bc17b
   - target: playerPresence
-    value: playerPresence.SetPendingRoomAsync(roomId, true)
+    value: playerPresence.SetPendingRoomAsync(roomId, false)
     observed_in: vortex
     evidence: ev_7c6cea3bc17b
   - target: playerPresence
@@ -656,7 +656,7 @@ generated:
     origin: vortex
     source: Vortex.Players/Grains/PlayerPresenceGrain.cs
     symbol: PlayerPresenceGrain
-    line: 118
+    line: 173
   - id: ev_3fdb23ee39cd
     kind: emulator_flow
     authority: vortex_emulator
@@ -761,7 +761,7 @@ generated:
     origin: vortex
     source: Vortex.Rooms/Grains/Modules/RoomSecurityModule.cs
     symbol: RoomSecurityModule
-    line: 203
+    line: 206
   - id: ev_8f4d446a6466
     kind: emulator_flow
     authority: vortex_emulator
@@ -817,7 +817,7 @@ generated:
     origin: vortex
     source: Vortex.Rooms/Grains/RoomGrain.cs
     symbol: RoomGrain
-    line: 280
+    line: 294
   - id: ev_b4a557a65d81
     kind: emulator_flow
     authority: vortex_emulator

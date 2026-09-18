@@ -10,7 +10,7 @@
 
 spec: scenarios
 spec_version: 1
-generated_digest: "sha256:a00f17d48eb8ab228dcfcac462ee82e222c2ae9df8025387077f70ad460627cd"
+generated_digest: "sha256:8a1267c7311e7a720a6c021cb2ea0155a95a121b6bd18cda713b7e54d105d629"
 generated:
   feature: room.set_room_background_color_data
   scenarios:
@@ -127,7 +127,7 @@ generated:
     origin: vortex
     source: Vortex.Rooms/Grains/RoomGrain.Furni.Interactive.cs
     symbol: RoomGrain
-    line: 421
+    line: 422
   - id: ev_f5b38117337e
     kind: emulator_flow
     authority: vortex_emulator

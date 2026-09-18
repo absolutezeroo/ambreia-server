@@ -10,7 +10,7 @@
 
 spec: unknown
 spec_version: 1
-generated_digest: "sha256:6ae478d51a3becd6328349327de01bea2349175cbfe7bd43d38000e5f58d9571"
+generated_digest: "sha256:4056566853391d4b60c6a8d8f3b7320bc476f955e69522dd65fa8ab4cac4e314"
 generated:
   id: uk_384a5d59fe
   subject: "vault.income_reward_claim: what the server sends when it refuses"
@@ -46,7 +46,7 @@ generated:
     origin: vortex
     source: Vortex.Players/Grains/PlayerWalletGrain.cs
     symbol: PlayerWalletGrain
-    line: 400
+    line: 439
   - id: ev_d920210215ea
     kind: emulator_flow
     authority: vortex_emulator

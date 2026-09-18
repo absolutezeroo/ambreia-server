@@ -10,7 +10,7 @@
 
 spec: unknown
 spec_version: 1
-generated_digest: "sha256:87117ac27168d4accce27ad0c783445a543ba340d786be8f8cd71d5d814fe2d8"
+generated_digest: "sha256:5d955270c83170e2902adef928baf640593f7aa9b87d92118c140abddeb98475"
 generated:
   id: uk_107ee78c86
   subject: "room.enter_one_way_door: who receives OneWayDoorStatus, UserUpdate"
@@ -25,13 +25,13 @@ generated:
     origin: vortex
     source: Vortex.Rooms/Grains/RoomGrain.Furni.Interactive.cs
     symbol: RoomGrain
-    line: 374
+    line: 375
   - id: ev_5e51a330c801
     kind: emulator_flow
     authority: vortex_emulator
     origin: vortex
     source: Vortex.Rooms/Grains/RoomGrain.Furni.Interactive.cs
     symbol: RoomGrain
-    line: 394
+    line: 395
 verified: {}
 manual: {}

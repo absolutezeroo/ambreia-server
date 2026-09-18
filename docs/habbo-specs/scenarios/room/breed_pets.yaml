@@ -10,7 +10,7 @@
 
 spec: scenarios
 spec_version: 1
-generated_digest: "sha256:4356434cb1af93fa65567c2e1efea7f0084b69afbc803b087327cd8af55dae56"
+generated_digest: "sha256:9c7bac641dbcf419f2888e844a40436bc5577fa68b0769cabb5d8674d2b8e405"
 generated:
   feature: room.breed_pets
   scenarios:
@@ -145,7 +145,7 @@ generated:
     origin: vortex
     source: Vortex.PacketHandlers/Room/Pets/BreedPetsMessageHandler.cs
     symbol: BreedPetsMessageHandler
-    line: 21
+    line: 23
   - id: ev_e3aeea05728f
     kind: emulator_flow
     authority: vortex_emulator

@@ -10,7 +10,7 @@
 
 spec: unknown
 spec_version: 1
-generated_digest: "sha256:ab2ecf62c2741c2ac33db849e7e4d0fa3af950dc2e20199c057ca8125ca6a454"
+generated_digest: "sha256:da08ea1af2c2bca94ceda70ccd563884191980f7ef4e6358a3bd938f30e8c8ad"
 generated:
   id: uk_7d0d1edda5
   subject: "nux.create_room: what the server sends when it refuses"
@@ -47,13 +47,6 @@ generated:
     source: Vortex.PacketHandlers/Nux/SelectInitialRoomMessageHandler.cs
     symbol: SelectInitialRoomMessageHandler
     line: 49
-  - id: ev_c70390fca34b
-    kind: emulator_flow
-    authority: vortex_emulator
-    origin: vortex
-    source: Vortex.Rooms/Wired/WiredVariableArithmetic.cs
-    symbol: WiredVariableArithmetic
-    line: 165
   - id: ev_cf270ab5d440
     kind: emulator_handler
     authority: vortex_emulator

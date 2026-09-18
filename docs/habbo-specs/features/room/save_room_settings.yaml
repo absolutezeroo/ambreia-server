@@ -10,7 +10,7 @@
 
 spec: feature
 spec_version: 1
-generated_digest: "sha256:fed6f188f88cbc9ec1b235f1657a7b339c3a0f01248aaf4e768459015b63de1b"
+generated_digest: "sha256:5c8e007705c31d697d05f2107026cc3431b8390b69ee67d77f0b0a19fbea5c78"
 generated:
   id: room.save_room_settings
   domain: room
@@ -33,14 +33,10 @@ generated:
     symbol: RoomGrain.UpdateRoomSettingsAsync
     evidence: ev_329537530b13
   - order: 2
-    layer: domain
-    symbol: WiredVariableArithmetic.Clamp
-    evidence: ev_c70390fca34b
-  - order: 3
     layer: grain
     symbol: RoomDirectoryGrain.UpsertActiveRoomAsync
     evidence: ev_74aa24a9a756
-  - order: 4
+  - order: 3
     layer: module
     symbol: EventSystem.PublishAsync
     evidence: ev_34bf3ac088e2
@@ -91,7 +87,7 @@ generated:
     observed_in: vortex
     evidence: ev_329537530b13
   - target: entity.Description
-    value: update.Description
+    value: RoomsConfig.Clamp( update.Description, RoomsConfig.MaxDescriptionLength )
     observed_in: vortex
     evidence: ev_329537530b13
   - target: entity.DoorMode
@@ -135,7 +131,7 @@ generated:
     observed_in: vortex
     evidence: ev_329537530b13
   - target: entity.Name
-    value: update.Name
+    value: RoomsConfig.Clamp(update.Name, RoomsConfig.MaxNameLength)
     observed_in: vortex
     evidence: ev_329537530b13
   - target: entity.NavigatorCategoryEntityId
@@ -196,7 +192,7 @@ generated:
     origin: vortex
     source: Vortex.Rooms/Grains/RoomGrain.Settings.cs
     symbol: RoomGrain
-    line: 51
+    line: 53
   - id: ev_34bf3ac088e2
     kind: emulator_flow
     authority: vortex_emulator
@@ -211,13 +207,6 @@ generated:
     source: Vortex.Rooms/Grains/RoomDirectoryGrain.cs
     symbol: RoomDirectoryGrain
     line: 50
-  - id: ev_c70390fca34b
-    kind: emulator_flow
-    authority: vortex_emulator
-    origin: vortex
-    source: Vortex.Rooms/Wired/WiredVariableArithmetic.cs
-    symbol: WiredVariableArithmetic
-    line: 165
   - id: ev_cce9824702bc
     kind: emulator_handler
     authority: vortex_emulator

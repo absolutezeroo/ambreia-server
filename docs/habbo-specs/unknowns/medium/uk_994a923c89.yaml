@@ -10,12 +10,12 @@
 
 spec: unknown
 spec_version: 1
-generated_digest: "sha256:c641cea061e2aeef021b1c44d225dbd558f2baf7500c1ece91bd642f8fe97786"
+generated_digest: "sha256:116de8b72c3af550fa85dacd2db0f796ff7ec9922916a98beceeb467db281db4"
 generated:
   id: uk_994a923c89
   subject: "marketplace.cancel_marketplace_offer: what the server sends when it refuses"
   severity: medium
-  question: marketplace.cancel_marketplace_offer changes state and has 5 guards whose refusal behaviour nothing here attests. Does the official server answer a refused request, and with what?
+  question: marketplace.cancel_marketplace_offer changes state and has 6 guards whose refusal behaviour nothing here attests. Does the official server answer a refused request, and with what?
   resolved_by: an official capture of each guard being tripped
   feature: marketplace.cancel_marketplace_offer
   known_evidence:

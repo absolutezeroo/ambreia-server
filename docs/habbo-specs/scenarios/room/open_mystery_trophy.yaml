@@ -10,7 +10,7 @@
 
 spec: scenarios
 spec_version: 1
-generated_digest: "sha256:aeee659fc8ea0fd4b07ae4957ac15f079123c34a986788fa70b00a9cbc7df078"
+generated_digest: "sha256:8945582bf613f244e26209ac18d8002b3d21570743b6854523ce55adfd135117"
 generated:
   feature: room.open_mystery_trophy
   scenarios:
@@ -253,7 +253,7 @@ generated:
     origin: vortex
     source: Vortex.Rooms/Grains/RoomGrain.Furni.Interactive.cs
     symbol: RoomGrain
-    line: 209
+    line: 210
   - id: ev_761b76967e2f
     kind: emulator_flow
     authority: vortex_emulator

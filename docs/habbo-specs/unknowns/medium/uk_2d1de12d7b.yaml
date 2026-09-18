@@ -10,7 +10,7 @@
 
 spec: unknown
 spec_version: 1
-generated_digest: "sha256:ef2532f0fd3b174026a05d28f51a6d904340553b05fe841083be5bfe69111925"
+generated_digest: "sha256:1a2c153b86e009e2381e8338f6dea2e5397e03540a3f7128589dc87fe3aba819"
 generated:
   id: uk_2d1de12d7b
   subject: "room.save_room_settings: who receives RoomChatSettings, RoomSettingsSaved, RoomVisualizationSettings"
@@ -25,20 +25,20 @@ generated:
     origin: vortex
     source: Vortex.Rooms/Grains/RoomGrain.Settings.cs
     symbol: RoomGrain
-    line: 163
+    line: 170
   - id: ev_329537530b13
     kind: emulator_flow
     authority: vortex_emulator
     origin: vortex
     source: Vortex.Rooms/Grains/RoomGrain.Settings.cs
     symbol: RoomGrain
-    line: 154
+    line: 161
   - id: ev_329537530b13
     kind: emulator_flow
     authority: vortex_emulator
     origin: vortex
     source: Vortex.Rooms/Grains/RoomGrain.Settings.cs
     symbol: RoomGrain
-    line: 174
+    line: 181
 verified: {}
 manual: {}

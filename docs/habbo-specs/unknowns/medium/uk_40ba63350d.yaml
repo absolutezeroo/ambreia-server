@@ -10,7 +10,7 @@
 
 spec: unknown
 spec_version: 1
-generated_digest: "sha256:f4aa94114fc3ee14dc3587e0dbf034039b867d0879b0a03fd7e611e9033a65d3"
+generated_digest: "sha256:477f61e75afeac8ddedcd04b89901fedaad754de9ec630ae9620144413c6c752"
 generated:
   id: uk_40ba63350d
   subject: "collectibles.claim_nft_claims: what the server sends when it refuses"
@@ -19,6 +19,13 @@ generated:
   resolved_by: an official capture of each guard being tripped
   feature: collectibles.claim_nft_claims
   known_evidence:
+  - id: ev_0ea5d10808d1
+    kind: emulator_flow
+    authority: vortex_emulator
+    origin: vortex
+    source: Vortex.Primitives/Commerce/CommerceOperation.cs
+    symbol: CommerceOperationId
+    line: 33
   - id: ev_34bf3ac088e2
     kind: emulator_flow
     authority: vortex_emulator
@@ -46,13 +53,13 @@ generated:
     origin: vortex
     source: Vortex.Inventory/Grains/InventoryGrain.Furni.cs
     symbol: InventoryGrain
-    line: 544
+    line: 551
   - id: ev_d72434a4527c
     kind: emulator_flow
     authority: vortex_emulator
     origin: vortex
     source: Vortex.Collectibles/Grains/PlayerNftClaimsGrain.cs
     symbol: PlayerNftClaimsGrain
-    line: 68
+    line: 109
 verified: {}
 manual: {}

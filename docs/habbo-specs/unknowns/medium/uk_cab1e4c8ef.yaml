@@ -10,7 +10,7 @@
 
 spec: unknown
 spec_version: 1
-generated_digest: "sha256:1baf6b2eb71056927eeed653b86d347fee615caea54126e27ae44170be6011fc"
+generated_digest: "sha256:a417e73d598fdfa7deaeca0666be67e0a70a2d86bf3559973bfe80f767d2f78c"
 generated:
   id: uk_cab1e4c8ef
   subject: "moderation.resolve_for_player: what the server sends when it refuses"
@@ -53,7 +53,7 @@ generated:
     origin: vortex
     source: Vortex.Players/Grains/PlayerPresenceGrain.cs
     symbol: PlayerPresenceGrain
-    line: 118
+    line: 173
   - id: ev_3fdb23ee39cd
     kind: emulator_flow
     authority: vortex_emulator
@@ -95,7 +95,7 @@ generated:
     origin: vortex
     source: Vortex.Rooms/Grains/Modules/RoomSecurityModule.cs
     symbol: RoomSecurityModule
-    line: 268
+    line: 271
   - id: ev_85ba71af2c41
     kind: emulator_flow
     authority: vortex_emulator
@@ -144,14 +144,14 @@ generated:
     origin: vortex
     source: Vortex.Rooms/Grains/RoomGrain.Avatar.cs
     symbol: RoomGrain
-    line: 467
+    line: 523
   - id: ev_b46938ec853d
     kind: emulator_flow
     authority: vortex_emulator
     origin: vortex
     source: Vortex.Rooms/Grains/RoomGrain.cs
     symbol: RoomGrain
-    line: 254
+    line: 268
   - id: ev_bb859d4f21b2
     kind: emulator_flow
     authority: vortex_emulator

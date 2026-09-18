@@ -10,7 +10,7 @@
 
 spec: feature
 spec_version: 1
-generated_digest: "sha256:327582a1e056d339a7bbc6d362773ef25f4dddb2ba204c4826dd839ad2860f5a"
+generated_digest: "sha256:53cb4ae7905cf3973444148a7069ee0b3bfb785e3e2f737785a7ac461265b4b9"
 generated:
   id: room.remove_rights
   domain: room
@@ -34,17 +34,25 @@ generated:
     evidence: ev_329537530b13
   - order: 2
     layer: module
-    symbol: RoomSecurityModule.RefreshControllerLevelForPlayerAsync
+    symbol: RoomSecurityModule.LoadControllersAsync
     evidence: ev_82c2d2746361
   - order: 3
+    layer: domain
+    symbol: WiredActionBranch.Select
+    evidence: ev_f13d6bcce744
+  - order: 4
+    layer: module
+    symbol: RoomSecurityModule.RefreshControllerLevelForPlayerAsync
+    evidence: ev_82c2d2746361
+  - order: 5
     layer: grain
     symbol: PlayerPresenceGrain.OnControllerLevelUpdatedAsync
     evidence: ev_b44ef304d36a
-  - order: 4
+  - order: 6
     layer: domain
     symbol: RoomAvatar.AddStatus
     evidence: ev_9f45a8c43da8
-  - order: 5
+  - order: 7
     layer: module
     symbol: EventSystem.PublishAsync
     evidence: ev_34bf3ac088e2
@@ -120,7 +128,7 @@ generated:
     origin: vortex
     source: Vortex.Rooms/Grains/RoomGrain.Settings.cs
     symbol: RoomGrain
-    line: 481
+    line: 477
   - id: ev_34bf3ac088e2
     kind: emulator_flow
     authority: vortex_emulator
@@ -134,7 +142,7 @@ generated:
     origin: vortex
     source: Vortex.Rooms/Grains/Modules/RoomSecurityModule.cs
     symbol: RoomSecurityModule
-    line: 282
+    line: 319
   - id: ev_9f45a8c43da8
     kind: emulator_flow
     authority: vortex_emulator
@@ -156,6 +164,13 @@ generated:
     source: Vortex.Players/Grains/PlayerPresenceGrain.Room.cs
     symbol: PlayerPresenceGrain
     line: 193
+  - id: ev_f13d6bcce744
+    kind: emulator_flow
+    authority: vortex_emulator
+    origin: vortex
+    source: Vortex.Rooms/Wired/WiredActionBranch.cs
+    symbol: WiredActionBranch
+    line: 23
   scenarios:
   - room.remove_rights.guard_0
   - room.remove_rights.guard_1

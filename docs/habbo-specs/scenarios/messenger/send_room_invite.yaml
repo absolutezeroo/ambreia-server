@@ -10,7 +10,7 @@
 
 spec: scenarios
 spec_version: 1
-generated_digest: "sha256:8f51c5eacd894d896913d012683acbab438daebffd1af94a3c5ee5b88d6c4905"
+generated_digest: "sha256:b38ee20d1fbcce59276f1348403ccde7650ddd727b076f798e0740e309c048ff"
 generated:
   feature: messenger.send_room_invite
   scenarios:
@@ -98,7 +98,7 @@ generated:
     origin: vortex
     source: Vortex.Players/Grains/PlayerPresenceGrain.cs
     symbol: PlayerPresenceGrain
-    line: 123
+    line: 178
   - id: ev_4d6548f76fef
     kind: emulator_flow
     authority: vortex_emulator

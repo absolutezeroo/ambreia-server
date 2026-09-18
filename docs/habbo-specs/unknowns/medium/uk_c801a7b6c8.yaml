@@ -10,7 +10,7 @@
 
 spec: unknown
 spec_version: 1
-generated_digest: "sha256:de5dbe1c1ef658f583730e4a3a5d210ef2f04bb785bb92609f3ef218ef0a1897"
+generated_digest: "sha256:a385c020d854dbb91bf304a881a258a3ee91f3e5682dfcf12ce8d036625e1658"
 generated:
   id: uk_c801a7b6c8
   subject: "room.pick_up_pet_in_room: what the server sends when it refuses"
@@ -60,6 +60,6 @@ generated:
     origin: vortex
     source: Vortex.Rooms/Grains/RoomGrain.cs
     symbol: RoomGrain
-    line: 280
+    line: 294
 verified: {}
 manual: {}

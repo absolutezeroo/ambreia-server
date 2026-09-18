@@ -10,7 +10,7 @@
 
 spec: unknown
 spec_version: 1
-generated_digest: "sha256:587005f39d7705808f3a5b8fa729422b4f3fcbee1982a8f4169c6ee68cb29e9a"
+generated_digest: "sha256:c02c63c29ebccef2a3ae1334ee751ea09cabe4192d82408563efb9a8e575932d"
 generated:
   id: uk_59ad359a63
   subject: "handshake.get_subscription: what the server sends when it refuses"
@@ -32,7 +32,7 @@ generated:
     origin: vortex
     source: Vortex.Players/Grains/PlayerGrain.cs
     symbol: PlayerGrain
-    line: 922
+    line: 963
   - id: ev_34bf3ac088e2
     kind: emulator_flow
     authority: vortex_emulator
@@ -109,7 +109,7 @@ generated:
     origin: vortex
     source: Vortex.Players/Grains/PlayerWalletGrain.cs
     symbol: PlayerWalletGrain
-    line: 269
+    line: 308
   - id: ev_d429657b2673
     kind: emulator_flow
     authority: vortex_emulator

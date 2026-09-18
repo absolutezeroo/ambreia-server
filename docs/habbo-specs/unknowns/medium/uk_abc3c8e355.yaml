@@ -10,7 +10,7 @@
 
 spec: unknown
 spec_version: 1
-generated_digest: "sha256:1e4009a661bb806227e29105e9fa3179e4e90e69c2a6fb97a5b900078d250ba9"
+generated_digest: "sha256:adbb3ee7e8e460a7b352aa330d3b813270e49e7f79c41954683d3325413abb35"
 generated:
   id: uk_abc3c8e355
   subject: "room.compost_plant: what the server sends when it refuses"
@@ -32,7 +32,7 @@ generated:
     origin: vortex
     source: Vortex.Rooms/Grains/RoomGrain.Pets.cs
     symbol: RoomGrain
-    line: 451
+    line: 462
   - id: ev_a24ca6ca32d9
     kind: emulator_flow
     authority: vortex_emulator
@@ -46,7 +46,7 @@ generated:
     origin: vortex
     source: Vortex.Rooms/Grains/RoomGrain.cs
     symbol: RoomGrain
-    line: 280
+    line: 294
   - id: ev_c83142745eae
     kind: emulator_handler
     authority: vortex_emulator

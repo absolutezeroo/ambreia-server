@@ -10,7 +10,7 @@
 
 spec: feature
 spec_version: 1
-generated_digest: "sha256:db9f2f2efa23fbb8f71042c8eed6d9f117be6c3278e4f9b68da88aadfaf61da5"
+generated_digest: "sha256:7baf9fd986d9d879d6142531afb06aefd490c7adb09d4e2df8027e0964de99b4"
 generated:
   id: quest.get_community_goal_progress
   domain: quest
@@ -78,7 +78,7 @@ generated:
     origin: vortex
     source: Vortex.Progression/Quests/CommunityGoalLadder.cs
     symbol: CommunityGoalLadder
-    line: 83
+    line: 171
   - id: ev_f13d6bcce744
     kind: emulator_flow
     authority: vortex_emulator
@@ -92,7 +92,7 @@ generated:
     origin: vortex
     source: Vortex.Progression/Grains/CommunityGoalGrain.cs
     symbol: CommunityGoalGrain
-    line: 46
+    line: 64
   scenarios:
   - quest.get_community_goal_progress.guard_0
   - quest.get_community_goal_progress.guard_1

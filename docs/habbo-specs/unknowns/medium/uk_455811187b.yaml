@@ -10,7 +10,7 @@
 
 spec: unknown
 spec_version: 1
-generated_digest: "sha256:539ade7fb9b315472a0d945ab6ce85bc68e42a0225dddfec6e082bc14ad7cc06"
+generated_digest: "sha256:2ea01bfb9d16e97327fcacd8adc10f15affc23294eb6f43eb3879a0e61d43d1f"
 generated:
   id: uk_455811187b
   subject: "room.open_room_for_player_id: what the server sends when it refuses"
@@ -46,7 +46,7 @@ generated:
     origin: vortex
     source: Vortex.Players/Grains/PlayerPresenceGrain.cs
     symbol: PlayerPresenceGrain
-    line: 123
+    line: 178
   - id: ev_3fdb23ee39cd
     kind: emulator_flow
     authority: vortex_emulator
@@ -144,7 +144,7 @@ generated:
     origin: vortex
     source: Vortex.Rooms/Grains/Modules/RoomSecurityModule.cs
     symbol: RoomSecurityModule
-    line: 203
+    line: 206
   - id: ev_8f4d446a6466
     kind: emulator_flow
     authority: vortex_emulator
@@ -200,7 +200,7 @@ generated:
     origin: vortex
     source: Vortex.Rooms/Grains/RoomGrain.cs
     symbol: RoomGrain
-    line: 280
+    line: 294
   - id: ev_b4a557a65d81
     kind: emulator_flow
     authority: vortex_emulator

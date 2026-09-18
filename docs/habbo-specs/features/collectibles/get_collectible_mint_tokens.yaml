@@ -10,7 +10,7 @@
 
 spec: feature
 spec_version: 1
-generated_digest: "sha256:53e5be50e48e6912da0dd244881294e9273a4b4adbc92f11ff2fd16fd097ad30"
+generated_digest: "sha256:a26c18f349bf495b969d59a1b2d83a85f04318c520b0aa777c39cc6df7bbf4d7"
 generated:
   id: collectibles.get_collectible_mint_tokens
   domain: collectibles
@@ -66,7 +66,7 @@ generated:
     origin: vortex
     source: Vortex.Collectibles/Grains/PlayerMintGrain.cs
     symbol: PlayerMintGrain
-    line: 60
+    line: 64
   scenarios:
   - collectibles.get_collectible_mint_tokens.guard_0
   - collectibles.get_collectible_mint_tokens.success

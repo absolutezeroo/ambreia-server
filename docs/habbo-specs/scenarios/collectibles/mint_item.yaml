@@ -10,7 +10,7 @@
 
 spec: scenarios
 spec_version: 1
-generated_digest: "sha256:977e8b85e3087e018bff4785f08ef30b38bf50e43f10a3314a6184a2d8f9b2ab"
+generated_digest: "sha256:47fea17b0cb2f976b43233df72dbe351cb2c2e14d9d5fcdfb36de132dbce5649"
 generated:
   feature: collectibles.mint_item
   scenarios:
@@ -242,13 +242,13 @@ generated:
     origin: vortex
     source: Vortex.Collectibles/Grains/PlayerMintGrain.cs
     symbol: PlayerMintGrain
-    line: 215
+    line: 219
   - id: ev_c6396662000a
     kind: emulator_flow
     authority: vortex_emulator
     origin: vortex
     source: Vortex.Inventory/Grains/InventoryGrain.Furni.cs
     symbol: InventoryGrain
-    line: 117
+    line: 118
 verified: {}
 manual: {}

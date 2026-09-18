@@ -10,7 +10,7 @@
 
 spec: feature
 spec_version: 1
-generated_digest: "sha256:44f7750a70a22ff954a9df8a03acbec44055f6d5ab9bcab6fe3a8f65b04ab656"
+generated_digest: "sha256:9372773ff2e2e3eb658f9b4ab4bf7d2809b6eeecee21f17aab02e0f74fd16263"
 generated:
   id: room.set_mannequin_figure
   domain: room
@@ -61,7 +61,7 @@ generated:
     origin: vortex
     source: Vortex.Players/Grains/PlayerGrain.cs
     symbol: PlayerGrain
-    line: 256
+    line: 259
   - id: ev_22031426365a
     kind: emulator_handler
     authority: vortex_emulator
@@ -82,7 +82,7 @@ generated:
     origin: vortex
     source: Vortex.Rooms/Grains/RoomGrain.Furni.Interactive.cs
     symbol: RoomGrain
-    line: 56
+    line: 57
   scenarios:
   - room.set_mannequin_figure.guard_0
   - room.set_mannequin_figure.guard_1

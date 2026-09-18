@@ -10,7 +10,7 @@
 
 spec: feature
 spec_version: 1
-generated_digest: "sha256:156152c9eeb50aeb9f64e067b9ca4f0609fcd4e5f0422996fcf91ce8da1893ef"
+generated_digest: "sha256:2579576b42e3adbbbfeb35c62d7d9fd665ef8a613fa35d0e45c7cadd59d0e293"
 generated:
   id: moderation.post_quiz_answers
   domain: moderation
@@ -114,7 +114,7 @@ generated:
     origin: vortex
     source: Vortex.Players/Grains/PlayerPresenceGrain.cs
     symbol: PlayerPresenceGrain
-    line: 123
+    line: 178
   - id: ev_3a5a694b9376
     kind: emulator_flow
     authority: vortex_emulator
@@ -135,7 +135,7 @@ generated:
     origin: vortex
     source: Vortex.Inventory/Grains/InventoryGrain.Furni.cs
     symbol: InventoryGrain
-    line: 457
+    line: 458
   - id: ev_d720d639bd09
     kind: emulator_flow
     authority: vortex_emulator

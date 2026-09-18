@@ -10,7 +10,7 @@
 
 spec: packet
 spec_version: 1
-generated_digest: "sha256:e9d7ea6cfbb884aa54b3d096ed9f7ce216450e3ebc0212deb7e8c6c6efa4c589"
+generated_digest: "sha256:19bbd9a31fd7480df3072249bc3d2b2e9f30f16f537fa37c9dba4bd8d0e835f4"
 generated:
   name: RemoveOwnRoomRightsRoom
   direction: incoming
@@ -49,9 +49,10 @@ generated:
     evidence: ev_bd1ffa3a678b
   - origin: vortex
     authority: vortex_emulator
-    field_count: 0
+    field_count: 1
     partial: false
-    types: []
+    types:
+    - int32
     evidence: ev_5589887cff42
   evidence:
   - id: ev_7a60980afc3c

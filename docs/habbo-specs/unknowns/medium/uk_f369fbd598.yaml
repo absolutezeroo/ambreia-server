@@ -10,7 +10,7 @@
 
 spec: unknown
 spec_version: 1
-generated_digest: "sha256:ed5a691c3f3dcca63985f82acd73da73837917660650722428f13e8bea025915"
+generated_digest: "sha256:b2537dcf2d0747612e0b37eba7d0b091fbb4cae5604c8a02d1034de398dd3ebb"
 generated:
   id: uk_f369fbd598
   subject: "room.save_room_settings: what the server sends when it refuses"
@@ -32,7 +32,7 @@ generated:
     origin: vortex
     source: Vortex.Rooms/Grains/RoomGrain.Settings.cs
     symbol: RoomGrain
-    line: 51
+    line: 53
   - id: ev_34bf3ac088e2
     kind: emulator_flow
     authority: vortex_emulator
@@ -47,13 +47,6 @@ generated:
     source: Vortex.Rooms/Grains/RoomDirectoryGrain.cs
     symbol: RoomDirectoryGrain
     line: 50
-  - id: ev_c70390fca34b
-    kind: emulator_flow
-    authority: vortex_emulator
-    origin: vortex
-    source: Vortex.Rooms/Wired/WiredVariableArithmetic.cs
-    symbol: WiredVariableArithmetic
-    line: 165
   - id: ev_cce9824702bc
     kind: emulator_handler
     authority: vortex_emulator

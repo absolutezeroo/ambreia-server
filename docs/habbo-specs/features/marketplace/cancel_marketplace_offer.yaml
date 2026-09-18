@@ -10,7 +10,7 @@
 
 spec: feature
 spec_version: 1
-generated_digest: "sha256:f9416dfcda2f678c7c42c7e7c3f95f159831a0458e0e459d439de0df6f81afef"
+generated_digest: "sha256:f8d0011f6a77abd5998d56012ad573b98c0c9939b28fbd14778976fe3a2b20bf"
 generated:
   id: marketplace.cancel_marketplace_offer
   domain: marketplace
@@ -49,13 +49,17 @@ generated:
     on_fail: return
     observed_in: vortex
     evidence: ev_db53958cdf3b
+  - expression: claimed == 0
+    on_fail: return
+    observed_in: vortex
+    evidence: ev_db53958cdf3b
   - expression: _registry is null
     on_fail: return
     observed_in: vortex
     evidence: ev_34bf3ac088e2
   state_changes:
-  - target: offer.State
-    value: MarketplaceOfferState.Cancelled
+  - target: up
+    value: up.SetProperty(p => p.State, MarketplaceOfferState.Cancelled)
     observed_in: vortex
     evidence: ev_db53958cdf3b
   outgoing:
@@ -100,6 +104,7 @@ generated:
   - marketplace.cancel_marketplace_offer.guard_1
   - marketplace.cancel_marketplace_offer.guard_2
   - marketplace.cancel_marketplace_offer.guard_3
+  - marketplace.cancel_marketplace_offer.guard_4
   - marketplace.cancel_marketplace_offer.success
   unknowns:
   - uk_994a923c89

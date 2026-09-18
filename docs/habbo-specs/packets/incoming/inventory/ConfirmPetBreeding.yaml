@@ -10,7 +10,7 @@
 
 spec: packet
 spec_version: 1
-generated_digest: "sha256:d496794788c969751b2470e1b81ce911a60ffbe170309307a63ede7cb8c906d0"
+generated_digest: "sha256:8898b379f2a9f778c69d9ee4e61077225c1ddc146485389b7d9c31a3014ee1c7"
 generated:
   name: ConfirmPetBreeding
   direction: incoming
@@ -72,9 +72,12 @@ generated:
     evidence: ev_834a5a718393
   - origin: vortex
     authority: vortex_emulator
-    field_count: 1
+    field_count: 4
     partial: false
     types:
+    - int32
+    - string
+    - int32
     - int32
     evidence: ev_20c5d0b4786f
   evidence:
@@ -109,7 +112,5 @@ generated:
     source: Vortex.Revisions/Revision20260701/Parsers/Inventory/Pets/ConfirmPetBreedingMessageParser.cs
     symbol: ConfirmPetBreedingMessageParser
     line: 7
-  conflicts:
-  - cf_c936069c0e
 verified: {}
 manual: {}

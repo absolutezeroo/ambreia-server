@@ -10,7 +10,7 @@
 
 spec: feature
 spec_version: 1
-generated_digest: "sha256:2463782400e5de8d90fa87b1fcacd6a6f4073de4783ebbed8a991dd901451487"
+generated_digest: "sha256:3fec5f2611bc3e4d2353c588c25e83adad3652db7722f54066e3031bf3c42f0e"
 generated:
   id: collectibles.get_nft_transfer_fee
   domain: collectibles
@@ -44,14 +44,14 @@ generated:
     origin: vortex
     source: Vortex.PacketHandlers/Collectibles/GetNftTransferFeeMessageHandler.cs
     symbol: GetNftTransferFeeMessageHandler
-    line: 19
+    line: 24
   - id: ev_ef3cf7edfea4
     kind: emulator_flow
     authority: vortex_emulator
     origin: vortex
     source: Vortex.PacketHandlers/Collectibles/GetNftTransferFeeMessageHandler.cs
     symbol: GetNftTransferFeeMessageHandler
-    line: 26
+    line: 35
   scenarios:
   - collectibles.get_nft_transfer_fee.success
 verified: {}

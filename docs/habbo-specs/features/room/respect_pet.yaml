@@ -10,7 +10,7 @@
 
 spec: feature
 spec_version: 1
-generated_digest: "sha256:6edf4e0b8dada4994d89afbe0077f2e1ffb9373def07b70620a85694bd4fa354"
+generated_digest: "sha256:f6cf6306684017b8b90c683ce30e034793a3e4e4c1b61fb7eb4e93d45fc0385b"
 generated:
   id: room.respect_pet
   domain: room
@@ -44,6 +44,14 @@ generated:
     layer: grain
     symbol: PlayerGrain.GetSummaryAsync
     evidence: ev_1f83e61934ca
+  - order: 5
+    layer: grain
+    symbol: RoomGrain.PublishDetached
+    evidence: ev_b46938ec853d
+  - order: 6
+    layer: module
+    symbol: EventSystem.PublishAsync
+    evidence: ev_34bf3ac088e2
   checks:
   - expression: ctx.PlayerId <= 0 || ctx.RoomId <= 0 || message.PetId <= 0
     on_fail: return
@@ -65,6 +73,10 @@ generated:
     on_fail: return
     observed_in: vortex
     evidence: ev_3b983736fec5
+  - expression: _registry is null
+    on_fail: return
+    observed_in: vortex
+    evidence: ev_34bf3ac088e2
   state_changes:
   - target: motion.IsStatsDirty
     value: "true"
@@ -92,7 +104,7 @@ generated:
     origin: vortex
     source: Vortex.Players/Grains/PlayerGrain.cs
     symbol: PlayerGrain
-    line: 256
+    line: 259
   - id: ev_27dc49cff260
     kind: emulator_handler
     authority: vortex_emulator
@@ -107,6 +119,13 @@ generated:
     source: Vortex.Rooms/Grains/Systems/RoomPetRuntime.cs
     symbol: RoomPetRuntime
     line: 190
+  - id: ev_34bf3ac088e2
+    kind: emulator_flow
+    authority: vortex_emulator
+    origin: vortex
+    source: Vortex.Events/EventSystem.cs
+    symbol: EventSystem
+    line: 14
   - id: ev_3b983736fec5
     kind: emulator_flow
     authority: vortex_emulator
@@ -121,12 +140,20 @@ generated:
     source: Vortex.Rooms/Grains/RoomGrain.Pets.cs
     symbol: RoomGrain
     line: 125
+  - id: ev_b46938ec853d
+    kind: emulator_flow
+    authority: vortex_emulator
+    origin: vortex
+    source: Vortex.Rooms/Grains/RoomGrain.cs
+    symbol: RoomGrain
+    line: 672
   scenarios:
   - room.respect_pet.guard_0
   - room.respect_pet.guard_1
   - room.respect_pet.guard_2
   - room.respect_pet.guard_3
   - room.respect_pet.guard_4
+  - room.respect_pet.guard_5
   - room.respect_pet.success
   unknowns:
   - uk_4048d65186

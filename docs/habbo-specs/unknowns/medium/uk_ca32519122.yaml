@@ -10,7 +10,7 @@
 
 spec: unknown
 spec_version: 1
-generated_digest: "sha256:7170709f7e7092d8b810015fdf5638a42f11f1ed558018b38a87c73daebbd74f"
+generated_digest: "sha256:10b6f689fb8ed98588d6594568f068af9d3bbb0b8269bbc9c9bd173043f9f43b"
 generated:
   id: uk_ca32519122
   subject: "catalog.builders_club_place_room_item: what the server sends when it refuses"
@@ -53,7 +53,7 @@ generated:
     origin: vortex
     source: Vortex.Players/Grains/PlayerPresenceGrain.cs
     symbol: PlayerPresenceGrain
-    line: 123
+    line: 178
   - id: ev_3a5a694b9376
     kind: emulator_flow
     authority: vortex_emulator
@@ -123,7 +123,7 @@ generated:
     origin: vortex
     source: Vortex.Rooms/Grains/Modules/RoomSecurityModule.cs
     symbol: RoomSecurityModule
-    line: 26
+    line: 29
   - id: ev_9f45a8c43da8
     kind: emulator_flow
     authority: vortex_emulator
@@ -151,7 +151,7 @@ generated:
     origin: vortex
     source: Vortex.Rooms/Grains/RoomGrain.cs
     symbol: RoomGrain
-    line: 280
+    line: 294
   - id: ev_b4a557a65d81
     kind: emulator_flow
     authority: vortex_emulator
@@ -172,14 +172,14 @@ generated:
     origin: vortex
     source: Vortex.Rooms/Grains/Systems/RoomFurnitureLocationStore.cs
     symbol: RoomFurnitureLocationStore
-    line: 37
+    line: 38
   - id: ev_c6396662000a
     kind: emulator_flow
     authority: vortex_emulator
     origin: vortex
     source: Vortex.Inventory/Grains/InventoryGrain.Furni.cs
     symbol: InventoryGrain
-    line: 696
+    line: 705
   - id: ev_d720d639bd09
     kind: emulator_flow
     authority: vortex_emulator

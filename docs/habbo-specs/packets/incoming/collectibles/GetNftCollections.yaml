@@ -10,7 +10,7 @@
 
 spec: packet
 spec_version: 1
-generated_digest: "sha256:4538784d0e2fb42a541eb65d4edd2126f858f529428ecd20a5fd027e0d862e8a"
+generated_digest: "sha256:933ed3187ca2e56e62a45805526bce9e5e5578a634ee391ab848168665295300"
 generated:
   name: GetNftCollections
   direction: incoming
@@ -18,7 +18,14 @@ generated:
   structure_confidence: implementation_observed
   mapped_in_vortex: true
   vortex_handler: GetNftCollectionsMessageHandler
-  fields: []
+  fields:
+  - index: 0
+    name: wallet_address
+    type: string
+    name_confidence: implementation_observed
+    type_confidence: implementation_observed
+    evidence:
+    - ev_0c61fa366355
   layouts_by_source:
   - origin: "as3:WIN63-202607011411-782849652"
     authority: client_code
@@ -34,9 +41,10 @@ generated:
     evidence: ev_b53a0897ef3b
   - origin: vortex
     authority: vortex_emulator
-    field_count: 0
+    field_count: 1
     partial: false
-    types: []
+    types:
+    - string
     evidence: ev_0c61fa366355
   evidence:
   - id: ev_da5e8fc0cfe6

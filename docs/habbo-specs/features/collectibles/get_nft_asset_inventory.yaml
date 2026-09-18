@@ -10,7 +10,7 @@
 
 spec: feature
 spec_version: 1
-generated_digest: "sha256:60d58967adfc53ddeaed643d5213569fc54775449cbebe6b2d48ab4f8db136ff"
+generated_digest: "sha256:f72c8c39070ca76c4912786a351877f607fbbe790cc3dc252ab768483ceaf987"
 generated:
   id: collectibles.get_nft_asset_inventory
   domain: collectibles
@@ -89,7 +89,7 @@ generated:
     origin: vortex
     source: Vortex.Collectibles/Grains/PlayerMintGrain.cs
     symbol: PlayerMintGrain
-    line: 389
+    line: 398
   - id: ev_c1fa1245297c
     kind: emulator_flow
     authority: vortex_emulator

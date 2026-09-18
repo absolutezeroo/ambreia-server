@@ -10,7 +10,7 @@
 
 spec: feature
 spec_version: 1
-generated_digest: "sha256:a99e5c79e4b8ac44d1c7a6c4ec60c0b2841591e45d85b434c4eb650078ef01cb"
+generated_digest: "sha256:68900571b7a32bae646bb303d61d4c40b232713d9ad2f4ecb27c8ce574038b32"
 generated:
   id: collectibles.get_mint_token_offers
   domain: collectibles
@@ -48,7 +48,7 @@ generated:
     origin: vortex
     source: Vortex.Collectibles/Grains/NftMintingGrain.cs
     symbol: NftMintingGrain
-    line: 134
+    line: 138
   - id: ev_b5c54b025c32
     kind: emulator_flow
     authority: vortex_emulator

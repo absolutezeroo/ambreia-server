@@ -10,7 +10,7 @@
 
 spec: scenarios
 spec_version: 1
-generated_digest: "sha256:e91be9f8986fd7d33b60a8adcf08fa45fffc7050bee9b32397d4e0705be45aba"
+generated_digest: "sha256:6f418395177e53aecfedc5077b3ad7647ce4363dc6a556bcc766e657186db6ae"
 generated:
   feature: room.set_clothing_change_data
   scenarios:
@@ -104,6 +104,6 @@ generated:
     origin: vortex
     source: Vortex.Rooms/Grains/RoomGrain.Furni.Interactive.cs
     symbol: RoomGrain
-    line: 625
+    line: 642
 verified: {}
 manual: {}

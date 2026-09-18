@@ -10,7 +10,7 @@
 
 spec: unknown
 spec_version: 1
-generated_digest: "sha256:e6010db0d4d0a0fde0a2848439444b5c842da7090236539af0a21cb8c2aa8a07"
+generated_digest: "sha256:6e8a2dec33055a396b01482541a7a9dd087a930a7cf3521cd1f72bfd3f509889"
 generated:
   id: uk_41538e9abb
   subject: "collectibles.nft_store_purchase: what the server sends when it refuses"
@@ -53,14 +53,14 @@ generated:
     origin: vortex
     source: Vortex.Inventory/Grains/InventoryGrain.Furni.cs
     symbol: InventoryGrain
-    line: 544
+    line: 545
   - id: ev_d0cb8ee11644
     kind: emulator_flow
     authority: vortex_emulator
     origin: vortex
     source: Vortex.Players/Grains/PlayerWalletGrain.cs
     symbol: PlayerWalletGrain
-    line: 61
+    line: 62
   - id: ev_e224b6e2fb72
     kind: emulator_flow
     authority: vortex_emulator

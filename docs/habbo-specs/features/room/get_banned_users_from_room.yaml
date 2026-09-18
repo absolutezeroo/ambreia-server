@@ -10,7 +10,7 @@
 
 spec: feature
 spec_version: 1
-generated_digest: "sha256:b924f846ce14bc2588034e7022c3be6adeb9cc8be51d62c3317331f355755298"
+generated_digest: "sha256:39d01281a1a85efe9e6ee83401c635169ef2a21e3c055bbc33998093a7d5a432"
 generated:
   id: room.get_banned_users_from_room
   domain: room
@@ -32,6 +32,10 @@ generated:
     symbol: RoomGrain.GetBannedUsersAsync
     evidence: ev_329537530b13
   - order: 2
+    layer: module
+    symbol: RoomSecurityModule.LoadBannedUsersAsync
+    evidence: ev_82c2d2746361
+  - order: 3
     layer: domain
     symbol: WiredActionBranch.Select
     evidence: ev_f13d6bcce744
@@ -40,6 +44,10 @@ generated:
     on_fail: return
     observed_in: vortex
     evidence: ev_170d536d3818
+  - expression: "!await IsRoomOwnerAsync(actor).ConfigureAwait(true)"
+    on_fail: return
+    observed_in: vortex
+    evidence: ev_329537530b13
   state_changes: []
   outgoing:
     ordering: unknown
@@ -63,7 +71,7 @@ generated:
     origin: vortex
     source: Vortex.Rooms/Grains/RoomGrain.Settings.cs
     symbol: RoomGrain
-    line: 297
+    line: 316
   - id: ev_81a4f0126fb9
     kind: emulator_handler
     authority: vortex_emulator
@@ -71,6 +79,13 @@ generated:
     source: Vortex.PacketHandlers/RoomSettings/GetBannedUsersFromRoomMessageHandler.cs
     symbol: GetBannedUsersFromRoomMessageHandler
     line: 14
+  - id: ev_82c2d2746361
+    kind: emulator_flow
+    authority: vortex_emulator
+    origin: vortex
+    source: Vortex.Rooms/Grains/Modules/RoomSecurityModule.cs
+    symbol: RoomSecurityModule
+    line: 359
   - id: ev_f13d6bcce744
     kind: emulator_flow
     authority: vortex_emulator
@@ -80,6 +95,7 @@ generated:
     line: 23
   scenarios:
   - room.get_banned_users_from_room.guard_0
+  - room.get_banned_users_from_room.guard_1
   - room.get_banned_users_from_room.success
 verified: {}
 manual: {}

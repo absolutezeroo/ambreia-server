@@ -10,7 +10,7 @@
 
 spec: scenarios
 spec_version: 1
-generated_digest: "sha256:ac48be130eeb1d26f267caf2d8421d96bcc739f16341724a70640ca7fa5cd57f"
+generated_digest: "sha256:3bdfa55c4eae5942c508b0314c25d8d75b7027e2d6b7ec065a9ef49e4a2df605"
 generated:
   feature: moderation.get_quiz_questions
   scenarios:
@@ -93,7 +93,7 @@ generated:
     origin: vortex
     source: Vortex.Players/Grains/PlayerPresenceGrain.cs
     symbol: PlayerPresenceGrain
-    line: 123
+    line: 178
   - id: ev_39dcba53e19d
     kind: emulator_flow
     authority: vortex_emulator

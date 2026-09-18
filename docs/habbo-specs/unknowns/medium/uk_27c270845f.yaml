@@ -10,7 +10,7 @@
 
 spec: unknown
 spec_version: 1
-generated_digest: "sha256:1dfca7623f5eb2afdda06c1fa36f32192f3b89c3eb5ebfbd2fcfd8383275645d"
+generated_digest: "sha256:45b2e4d43257625be08cfe01fac7424cf81bc324650dda4bddffa726e58915b7"
 generated:
   id: uk_27c270845f
   subject: "room.assign_rights: who receives FlatControllers, WiredPermissions, YouAreController, YouAreNotController, YouAreOwner"
@@ -25,7 +25,7 @@ generated:
     origin: vortex
     source: Vortex.Rooms/Grains/RoomGrain.Settings.cs
     symbol: RoomGrain
-    line: 451
+    line: 447
   - id: ev_b44ef304d36a
     kind: emulator_flow
     authority: vortex_emulator

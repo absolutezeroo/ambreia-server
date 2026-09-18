@@ -10,7 +10,7 @@
 
 spec: feature
 spec_version: 1
-generated_digest: "sha256:43c0cc16a1e12d10d38d59a7404dfb1ac45fd50f156269f6597310595ab423db"
+generated_digest: "sha256:a0a63f00fd33ba62686994e2dccfc34712f2799a5865924b83c4c2bb770db351"
 generated:
   id: room.set_custom_stacking_height
   domain: room
@@ -139,7 +139,7 @@ generated:
     origin: vortex
     source: Vortex.Rooms/Grains/RoomGrain.Furni.Interactive.cs
     symbol: RoomGrain
-    line: 109
+    line: 110
   - id: ev_6cde100b748d
     kind: emulator_flow
     authority: vortex_emulator

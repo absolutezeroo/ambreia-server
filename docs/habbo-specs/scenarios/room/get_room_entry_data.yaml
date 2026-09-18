@@ -10,7 +10,7 @@
 
 spec: scenarios
 spec_version: 1
-generated_digest: "sha256:f0df1f7c5ce1dcb5d0a0dc5315f043223f13d553c13206fc4f1d5a9d488336cc"
+generated_digest: "sha256:882952621a6ec003eb856bee01a9ae78fd000370559c6fef0b29c6dac16734a5"
 generated:
   feature: room.get_room_entry_data
   scenarios:
@@ -40,16 +40,16 @@ generated:
       - FloorHeightMap
       evidence: ev_fd4c50c7f66d
   - scenario: room.get_room_entry_data.guard_1
-    title: "get room entry data: the guard 'roomId <= 0' holds"
+    title: "get room entry data: the guard 'roomId <= 0 || !pendingRoom.Approved' holds"
     given:
-      guard: roomId <= 0
+      guard: roomId <= 0 || !pendingRoom.Approved
       guard_holds: "true"
     when:
       packet: GetRoomEntryData
     expected:
       status: unknown
       confidence: unknown
-    needs_evidence: "an official capture of GetRoomEntryData sent while 'roomId <= 0' holds: does the server reply, stay silent, or disconnect?"
+    needs_evidence: "an official capture of GetRoomEntryData sent while 'roomId <= 0 || !pendingRoom.Approved' holds: does the server reply, stay silent, or disconnect?"
     executable: false
     claims:
     - origin: vortex
@@ -82,31 +82,6 @@ generated:
       outcome: ignored
       emits: []
       evidence: ev_7aa1dee31dfd
-    - origin: habbo-arcturus-daybreak
-      authority: reference_emulator
-      outcome: success
-      emits:
-      - HeightMap
-      - FloorHeightMap
-      evidence: ev_fd4c50c7f66d
-  - scenario: room.get_room_entry_data.guard_11
-    title: "get room entry data: the guard '_state.ActiveRoomId == roomId' holds"
-    given:
-      guard: _state.ActiveRoomId == roomId
-      guard_holds: "true"
-    when:
-      packet: GetRoomEntryData
-    expected:
-      status: unknown
-      confidence: unknown
-    needs_evidence: "an official capture of GetRoomEntryData sent while '_state.ActiveRoomId == roomId' holds: does the server reply, stay silent, or disconnect?"
-    executable: false
-    claims:
-    - origin: vortex
-      authority: vortex_emulator
-      outcome: ignored
-      emits: []
-      evidence: ev_b44ef304d36a
     - origin: habbo-arcturus-daybreak
       authority: reference_emulator
       outcome: success
@@ -379,7 +354,7 @@ generated:
     origin: vortex
     source: Vortex.Rooms/Grains/Modules/RoomSecurityModule.cs
     symbol: RoomSecurityModule
-    line: 205
+    line: 208
   - id: ev_873d3938edba
     kind: emulator_flow
     authority: vortex_emulator
@@ -387,12 +362,5 @@ generated:
     source: Vortex.PacketHandlers/Room/Engine/GetRoomEntryDataMessageHandler.cs
     symbol: GetRoomEntryDataMessageHandler
     line: 39
-  - id: ev_b44ef304d36a
-    kind: emulator_flow
-    authority: vortex_emulator
-    origin: vortex
-    source: Vortex.Players/Grains/PlayerPresenceGrain.Room.cs
-    symbol: PlayerPresenceGrain
-    line: 52
 verified: {}
 manual: {}

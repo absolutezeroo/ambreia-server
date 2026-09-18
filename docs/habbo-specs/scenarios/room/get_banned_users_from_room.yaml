@@ -10,7 +10,7 @@
 
 spec: scenarios
 spec_version: 1
-generated_digest: "sha256:549a60208fe6cd294bb155540837fe98e319b101e8040204ae549181c8e7318b"
+generated_digest: "sha256:c9d2db821cc1906c571670041fe0543c7e038e5db8fed04bf0b0dbe8f11d9beb"
 generated:
   feature: room.get_banned_users_from_room
   scenarios:
@@ -32,6 +32,24 @@ generated:
       outcome: ignored
       emits: []
       evidence: ev_170d536d3818
+  - scenario: room.get_banned_users_from_room.guard_1
+    title: "get banned users from room: the guard '!await IsRoomOwnerAsync(actor).ConfigureAwait(true)' holds"
+    given:
+      guard: "!await IsRoomOwnerAsync(actor).ConfigureAwait(true)"
+      guard_holds: "true"
+    when:
+      packet: GetBannedUsersFromRoom
+    expected:
+      status: unknown
+      confidence: unknown
+    needs_evidence: "an official capture of GetBannedUsersFromRoom sent while '!await IsRoomOwnerAsync(actor).ConfigureAwait(true)' holds: does the server reply, stay silent, or disconnect?"
+    executable: false
+    claims:
+    - origin: vortex
+      authority: vortex_emulator
+      outcome: ignored
+      emits: []
+      evidence: ev_329537530b13
   - scenario: room.get_banned_users_from_room.success
     title: "get banned users from room: the request is accepted"
     given:
@@ -58,5 +76,12 @@ generated:
     source: Vortex.PacketHandlers/RoomSettings/GetBannedUsersFromRoomMessageHandler.cs
     symbol: GetBannedUsersFromRoomMessageHandler
     line: 23
+  - id: ev_329537530b13
+    kind: emulator_flow
+    authority: vortex_emulator
+    origin: vortex
+    source: Vortex.Rooms/Grains/RoomGrain.Settings.cs
+    symbol: RoomGrain
+    line: 321
 verified: {}
 manual: {}

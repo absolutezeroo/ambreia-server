@@ -10,7 +10,7 @@
 
 spec: unknown
 spec_version: 1
-generated_digest: "sha256:c6ade1376fac4430430b319a878bb6078e62f4009e7a07095a82dc259eb8e8c9"
+generated_digest: "sha256:704a7353eecd1aa85f46f99689149168b784302813081362df2efd6ad47f2b2c"
 generated:
   id: uk_02ed1c912a
   subject: "room.get_room_entry_data: who receives AvatarEffect, CarryObject, Dance"
@@ -25,20 +25,20 @@ generated:
     origin: vortex
     source: Vortex.PacketHandlers/Room/Engine/GetRoomEntryDataMessageHandler.cs
     symbol: GetRoomEntryDataMessageHandler
-    line: 119
+    line: 125
   - id: ev_873d3938edba
     kind: emulator_flow
     authority: vortex_emulator
     origin: vortex
     source: Vortex.PacketHandlers/Room/Engine/GetRoomEntryDataMessageHandler.cs
     symbol: GetRoomEntryDataMessageHandler
-    line: 135
+    line: 141
   - id: ev_873d3938edba
     kind: emulator_flow
     authority: vortex_emulator
     origin: vortex
     source: Vortex.PacketHandlers/Room/Engine/GetRoomEntryDataMessageHandler.cs
     symbol: GetRoomEntryDataMessageHandler
-    line: 101
+    line: 107
 verified: {}
 manual: {}

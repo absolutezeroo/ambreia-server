@@ -10,7 +10,7 @@
 
 spec: feature
 spec_version: 1
-generated_digest: "sha256:666be75dca3ecf77cbb77623222cbfc4d2d39798b8ccd915d9b3445b2486ad1c"
+generated_digest: "sha256:56809e3d8aaf222579ef3a2d873635dcb5d56aca7b38a57ed15e518eb3d68c6d"
 generated:
   id: collectibles.get_collectible_wallet_addresses
   domain: collectibles
@@ -27,6 +27,14 @@ generated:
     layer: handler
     symbol: GetCollectibleWalletAddressesMessageHandler.HandleAsync
     evidence: ev_9647062ec5ec
+  - order: 1
+    layer: grain
+    symbol: PlayerMintGrain.GetLinkedWalletsAsync
+    evidence: ev_a376b354a3ae
+  - order: 2
+    layer: domain
+    symbol: WiredActionBranch.Select
+    evidence: ev_f13d6bcce744
   checks:
   - expression: ctx.PlayerId <= 0
     on_fail: return
@@ -48,14 +56,28 @@ generated:
     origin: vortex
     source: Vortex.PacketHandlers/Collectibles/GetCollectibleWalletAddressesMessageHandler.cs
     symbol: GetCollectibleWalletAddressesMessageHandler
-    line: 41
+    line: 53
   - id: ev_9647062ec5ec
     kind: emulator_handler
     authority: vortex_emulator
     origin: vortex
     source: Vortex.PacketHandlers/Collectibles/GetCollectibleWalletAddressesMessageHandler.cs
     symbol: GetCollectibleWalletAddressesMessageHandler
-    line: 24
+    line: 39
+  - id: ev_a376b354a3ae
+    kind: emulator_flow
+    authority: vortex_emulator
+    origin: vortex
+    source: Vortex.Collectibles/Grains/PlayerMintGrain.cs
+    symbol: PlayerMintGrain
+    line: 481
+  - id: ev_f13d6bcce744
+    kind: emulator_flow
+    authority: vortex_emulator
+    origin: vortex
+    source: Vortex.Rooms/Wired/WiredActionBranch.cs
+    symbol: WiredActionBranch
+    line: 23
   scenarios:
   - collectibles.get_collectible_wallet_addresses.guard_0
   - collectibles.get_collectible_wallet_addresses.success

@@ -10,7 +10,7 @@
 
 spec: unknown
 spec_version: 1
-generated_digest: "sha256:1ad482d04ba53f44d041e77192c96608ec46fc5a7e3016cf0e28835aa5fdb1d6"
+generated_digest: "sha256:d67488249c4a7983d5cd92b83f589ebce682bf2da0965a5260b65460006ac11f"
 generated:
   id: uk_c8a23843a7
   subject: "wired.open_wired_chest: what the server sends when it refuses"
@@ -67,7 +67,7 @@ generated:
     origin: vortex
     source: Vortex.Rooms/Grains/Modules/RoomSecurityModule.cs
     symbol: RoomSecurityModule
-    line: 203
+    line: 206
   - id: ev_84ee82d9d8e2
     kind: emulator_flow
     authority: vortex_emulator

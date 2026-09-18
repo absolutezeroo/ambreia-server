@@ -10,7 +10,7 @@
 
 spec: feature
 spec_version: 1
-generated_digest: "sha256:8bfcef08d1913be3b371b19c6c5aa9c8402e8e4c151b24a3e395f7925a9a18fb"
+generated_digest: "sha256:318eba4568d7e519dad18865d52e9ea3aac3ad7e66763c544febe9a81ae1d1c4"
 generated:
   id: wired.update_addon
   domain: wired
@@ -117,7 +117,7 @@ generated:
     origin: vortex
     source: Vortex.Rooms/Grains/Modules/RoomSecurityModule.cs
     symbol: RoomSecurityModule
-    line: 26
+    line: 29
   - id: ev_e1599f76ae95
     kind: emulator_flow
     authority: vortex_emulator

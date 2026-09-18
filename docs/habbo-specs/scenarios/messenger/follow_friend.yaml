@@ -10,7 +10,7 @@
 
 spec: scenarios
 spec_version: 1
-generated_digest: "sha256:2d8d7f7891970c45376693ccf61ff65e37ab15e3ba2d0f4a5b4078baf92b33fb"
+generated_digest: "sha256:9b4ba0454fe65d4a1e6041942921605cc58e3e37bd861f1e1222f12ec91d6877"
 generated:
   feature: messenger.follow_friend
   scenarios:
@@ -49,46 +49,10 @@ generated:
       authority: vortex_emulator
       outcome: rejected
       emits:
-      - AvatarEffect
       - FollowFriendFailed
-      - Users
+      - GetGuestRoomResult
+      - unresolved
       evidence: ev_40b1e9d27438
-  - scenario: messenger.follow_friend.guard_10
-    title: "follow friend: the guard 'isExplicitOwner' holds"
-    given:
-      guard: isExplicitOwner
-      guard_holds: "true"
-    when:
-      packet: FollowFriend
-    expected:
-      status: unknown
-      confidence: unknown
-    needs_evidence: "an official capture of FollowFriend sent while 'isExplicitOwner' holds: does the server reply, stay silent, or disconnect?"
-    executable: false
-    claims:
-    - origin: vortex
-      authority: vortex_emulator
-      outcome: ignored
-      emits: []
-      evidence: ev_7aa1dee31dfd
-  - scenario: messenger.follow_friend.guard_11
-    title: "follow friend: the guard 'permissions.IsSuperUser || permissions.Has(Capabilities.R...' holds"
-    given:
-      guard: permissions.IsSuperUser || permissions.Has(Capabilities.Room.ModerateAny)
-      guard_holds: "true"
-    when:
-      packet: FollowFriend
-    expected:
-      status: unknown
-      confidence: unknown
-    needs_evidence: "an official capture of FollowFriend sent while 'permissions.IsSuperUser || permissions.Has(Capabilities.Room.ModerateAny)' holds: does the server reply, stay silent, or disconnect?"
-    executable: false
-    claims:
-    - origin: vortex
-      authority: vortex_emulator
-      outcome: ignored
-      emits: []
-      evidence: ev_7aa1dee31dfd
   - scenario: messenger.follow_friend.guard_2
     title: "follow friend: the guard '!isOnline' holds"
     given:
@@ -106,9 +70,9 @@ generated:
       authority: vortex_emulator
       outcome: rejected
       emits:
-      - AvatarEffect
       - FollowFriendFailed
-      - Users
+      - GetGuestRoomResult
+      - unresolved
       evidence: ev_40b1e9d27438
   - scenario: messenger.follow_friend.guard_3
     title: "follow friend: the guard 'activeRoom.RoomId <= 0' holds"
@@ -127,118 +91,10 @@ generated:
       authority: vortex_emulator
       outcome: rejected
       emits:
-      - AvatarEffect
       - FollowFriendFailed
-      - Users
+      - GetGuestRoomResult
+      - unresolved
       evidence: ev_40b1e9d27438
-  - scenario: messenger.follow_friend.guard_4
-    title: "follow friend: the guard 'roomId <= 0' holds"
-    given:
-      guard: roomId <= 0
-      guard_holds: "true"
-    when:
-      packet: FollowFriend
-    expected:
-      status: unknown
-      confidence: unknown
-    needs_evidence: "an official capture of FollowFriend sent while 'roomId <= 0' holds: does the server reply, stay silent, or disconnect?"
-    executable: false
-    claims:
-    - origin: vortex
-      authority: vortex_emulator
-      outcome: ignored
-      emits: []
-      evidence: ev_b44ef304d36a
-  - scenario: messenger.follow_friend.guard_5
-    title: "follow friend: the guard '_state.ActiveRoomId == roomId' holds"
-    given:
-      guard: _state.ActiveRoomId == roomId
-      guard_holds: "true"
-    when:
-      packet: FollowFriend
-    expected:
-      status: unknown
-      confidence: unknown
-    needs_evidence: "an official capture of FollowFriend sent while '_state.ActiveRoomId == roomId' holds: does the server reply, stay silent, or disconnect?"
-    executable: false
-    claims:
-    - origin: vortex
-      authority: vortex_emulator
-      outcome: ignored
-      emits: []
-      evidence: ev_b44ef304d36a
-  - scenario: messenger.follow_friend.guard_6
-    title: "follow friend: the guard '!flags.Has(RoomTileFlags.AvatarOccupied)' holds"
-    given:
-      guard: "!flags.Has(RoomTileFlags.AvatarOccupied)"
-      guard_holds: "true"
-    when:
-      packet: FollowFriend
-    expected:
-      status: unknown
-      confidence: unknown
-    needs_evidence: "an official capture of FollowFriend sent while '!flags.Has(RoomTileFlags.AvatarOccupied)' holds: does the server reply, stay silent, or disconnect?"
-    executable: false
-    claims:
-    - origin: vortex
-      authority: vortex_emulator
-      outcome: ignored
-      emits: []
-      evidence: ev_c26714967e6b
-  - scenario: messenger.follow_friend.guard_7
-    title: "follow friend: the guard 'ctx.Origin == ActionOrigin.System' holds"
-    given:
-      guard: ctx.Origin == ActionOrigin.System
-      guard_holds: "true"
-    when:
-      packet: FollowFriend
-    expected:
-      status: unknown
-      confidence: unknown
-    needs_evidence: "an official capture of FollowFriend sent while 'ctx.Origin == ActionOrigin.System' holds: does the server reply, stay silent, or disconnect?"
-    executable: false
-    claims:
-    - origin: vortex
-      authority: vortex_emulator
-      outcome: ignored
-      emits: []
-      evidence: ev_82c2d2746361
-  - scenario: messenger.follow_friend.guard_8
-    title: "follow friend: the guard 'origin == ActionOrigin.None' holds"
-    given:
-      guard: origin == ActionOrigin.None
-      guard_holds: "true"
-    when:
-      packet: FollowFriend
-    expected:
-      status: unknown
-      confidence: unknown
-    needs_evidence: "an official capture of FollowFriend sent while 'origin == ActionOrigin.None' holds: does the server reply, stay silent, or disconnect?"
-    executable: false
-    claims:
-    - origin: vortex
-      authority: vortex_emulator
-      outcome: ignored
-      emits: []
-      evidence: ev_7aa1dee31dfd
-  - scenario: messenger.follow_friend.guard_9
-    title: "follow friend: the guard 'origin == ActionOrigin.System' holds"
-    given:
-      guard: origin == ActionOrigin.System
-      guard_holds: "true"
-    when:
-      packet: FollowFriend
-    expected:
-      status: unknown
-      confidence: unknown
-    needs_evidence: "an official capture of FollowFriend sent while 'origin == ActionOrigin.System' holds: does the server reply, stay silent, or disconnect?"
-    executable: false
-    claims:
-    - origin: vortex
-      authority: vortex_emulator
-      outcome: ignored
-      emits: []
-      evidence: ev_7aa1dee31dfd
   - scenario: messenger.follow_friend.success
     title: "follow friend: the request is accepted"
     given:
@@ -255,52 +111,24 @@ generated:
       authority: vortex_emulator
       outcome: success
       emits:
-      - AvatarEffect
       - FollowFriendFailed
-      - Users
-      evidence: ev_1f83e61934ca
+      - GetGuestRoomResult
+      - unresolved
+      evidence: ev_25e7df53e794
   evidence:
-  - id: ev_1f83e61934ca
+  - id: ev_25e7df53e794
     kind: emulator_flow
     authority: vortex_emulator
     origin: vortex
-    source: Vortex.Players/Grains/PlayerGrain.cs
-    symbol: PlayerGrain
-    line: 256
+    source: Vortex.Social/Grains/GroupGrain.Read.cs
+    symbol: GroupGrain
+    line: 118
   - id: ev_40b1e9d27438
     kind: emulator_flow
     authority: vortex_emulator
     origin: vortex
     source: Vortex.PacketHandlers/FriendList/FollowFriendMessageHandler.cs
     symbol: FollowFriendMessageHandler
-    line: 26
-  - id: ev_7aa1dee31dfd
-    kind: emulator_flow
-    authority: vortex_emulator
-    origin: vortex
-    source: Vortex.Primitives/Permissions/RoomSecurityPolicy.cs
-    symbol: RoomSecurityPolicy
-    line: 40
-  - id: ev_82c2d2746361
-    kind: emulator_flow
-    authority: vortex_emulator
-    origin: vortex
-    source: Vortex.Rooms/Grains/Modules/RoomSecurityModule.cs
-    symbol: RoomSecurityModule
-    line: 205
-  - id: ev_b44ef304d36a
-    kind: emulator_flow
-    authority: vortex_emulator
-    origin: vortex
-    source: Vortex.Players/Grains/PlayerPresenceGrain.Room.cs
-    symbol: PlayerPresenceGrain
-    line: 47
-  - id: ev_c26714967e6b
-    kind: emulator_flow
-    authority: vortex_emulator
-    origin: vortex
-    source: Vortex.Rooms/Grains/Modules/RoomMapModule.cs
-    symbol: RoomMapModule
-    line: 184
+    line: 27
 verified: {}
 manual: {}

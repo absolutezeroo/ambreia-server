@@ -10,7 +10,7 @@
 
 spec: feature
 spec_version: 1
-generated_digest: "sha256:16eb07a1ae84ec85541fb9dd05bff05fed02f612a4ad67f888b0a8c806341e9f"
+generated_digest: "sha256:08dfbc9dc06be310ee747cabf7842a003f5cbf9d118ea29fbb23d647c6071216"
 generated:
   id: quest.start_campaign
   domain: quest
@@ -64,7 +64,7 @@ generated:
     origin: vortex
     source: Vortex.Players/Grains/PlayerPresenceGrain.cs
     symbol: PlayerPresenceGrain
-    line: 123
+    line: 178
   - id: ev_3e19f38401db
     kind: emulator_flow
     authority: vortex_emulator

@@ -10,7 +10,7 @@
 
 spec: scenarios
 spec_version: 1
-generated_digest: "sha256:9e104112384a1fa738e690a2c598331c21aa41d166e0a876e479744b7e442a3b"
+generated_digest: "sha256:2b7b4bebe36d5bfcadbb52205c3dbe3674d007b0c3d943143183bfce17f0c4f5"
 generated:
   feature: wired.deposit_to_wired_chest
   scenarios:
@@ -286,6 +286,6 @@ generated:
     origin: vortex
     source: Vortex.Rooms/Grains/Modules/RoomSecurityModule.cs
     symbol: RoomSecurityModule
-    line: 205
+    line: 208
 verified: {}
 manual: {}

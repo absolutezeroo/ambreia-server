@@ -10,7 +10,7 @@
 
 spec: scenarios
 spec_version: 1
-generated_digest: "sha256:1c4e821f47f71002d10db1cc8719e72b6fd9d8dc03de4bb796ce4903c9541380"
+generated_digest: "sha256:c5376e4974a3cbfb99e52830363a41f89c7ec693b05615e4e824cc702938134e"
 generated:
   feature: catalog.get_flat_categories
   scenarios:
@@ -418,6 +418,6 @@ generated:
     origin: vortex
     source: Vortex.Rooms/Grains/Modules/RoomSecurityModule.cs
     symbol: RoomSecurityModule
-    line: 205
+    line: 208
 verified: {}
 manual: {}

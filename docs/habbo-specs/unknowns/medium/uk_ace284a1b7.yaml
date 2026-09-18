@@ -10,7 +10,7 @@
 
 spec: unknown
 spec_version: 1
-generated_digest: "sha256:a02bad2aa7efbd9997c676516475fb75cdf1ffe02158874ce9322069308785af"
+generated_digest: "sha256:f66db3b5079b5ccf86bf244810707d7ed96f1f8b9967d2ab3183abe5f38f018a"
 generated:
   id: uk_ace284a1b7
   subject: "room.rentable_space_rent: what the server sends when it refuses"
@@ -53,7 +53,7 @@ generated:
     origin: vortex
     source: Vortex.Players/Grains/PlayerWalletGrain.cs
     symbol: PlayerWalletGrain
-    line: 400
+    line: 439
   - id: ev_f13d6bcce744
     kind: emulator_flow
     authority: vortex_emulator

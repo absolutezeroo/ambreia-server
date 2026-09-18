@@ -10,7 +10,7 @@
 
 spec: scenarios
 spec_version: 1
-generated_digest: "sha256:8ebd3197a8765283f1faeb94ed28991b63d1016475c0abd1f38f4d9c0b0e5dc3"
+generated_digest: "sha256:a6baf0b0b3795a70bcfbf2d0d175c36c76d309cbc8e284a127f2515b3b1e66b6"
 generated:
   feature: wired.wired_get_all_variable_holders
   scenarios:
@@ -118,7 +118,7 @@ generated:
     origin: vortex
     source: Vortex.Rooms/Object/Logic/Furniture/Floor/Wired/Variables/FurnitureWiredVariableLogic.cs
     symbol: FurnitureWiredVariableLogic
-    line: 58
+    line: 63
   - id: ev_cd15b5a31f2d
     kind: emulator_flow
     authority: vortex_emulator
@@ -132,6 +132,6 @@ generated:
     origin: vortex
     source: Vortex.Rooms/Grains/Systems/RoomWiredSystem.Variables.cs
     symbol: RoomWiredSystem
-    line: 124
+    line: 130
 verified: {}
 manual: {}

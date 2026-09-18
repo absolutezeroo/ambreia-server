@@ -10,7 +10,7 @@
 
 spec: feature
 spec_version: 1
-generated_digest: "sha256:4eff8ef9e5c52efccd07b077a44d8bd246fda933f37d5af8418ecefc9468e7db"
+generated_digest: "sha256:b641762a4a41ea6716c34dc1d439c098e53adefdf069a06416ae23d82610593b"
 generated:
   id: navigator.create_room
   domain: navigator
@@ -37,10 +37,6 @@ generated:
     symbol: ServerConfigGrain.GetIntAsync
     evidence: ev_86f81f4f919c
   - order: 3
-    layer: domain
-    symbol: WiredVariableArithmetic.Clamp
-    evidence: ev_c70390fca34b
-  - order: 4
     layer: module
     symbol: EventSystem.PublishAsync
     evidence: ev_34bf3ac088e2
@@ -99,13 +95,6 @@ generated:
     source: Vortex.PacketHandlers/Navigator/CreateFlatMessageHandler.cs
     symbol: CreateFlatMessageHandler
     line: 38
-  - id: ev_c70390fca34b
-    kind: emulator_flow
-    authority: vortex_emulator
-    origin: vortex
-    source: Vortex.Rooms/Wired/WiredVariableArithmetic.cs
-    symbol: WiredVariableArithmetic
-    line: 165
   - id: ev_f8d4827f4b8f
     kind: emulator_flow
     authority: vortex_emulator

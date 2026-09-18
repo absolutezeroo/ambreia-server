@@ -10,7 +10,7 @@
 
 spec: unknown
 spec_version: 1
-generated_digest: "sha256:fe577b9a0e1b7a668432fca9ac9848ae50170dd18a237c30b2b8e67a8dc12343"
+generated_digest: "sha256:a0afb28062b211f5977abeced5225708259d69804e628ada3ba2107344a8f2f9"
 generated:
   id: uk_0bee4d5cef
   subject: "room.update_room_category_and_trade_settings: what the server sends when it refuses"
@@ -25,7 +25,7 @@ generated:
     origin: vortex
     source: Vortex.Rooms/Grains/RoomGrain.Settings.cs
     symbol: RoomGrain
-    line: 334
+    line: 329
   - id: ev_34bf3ac088e2
     kind: emulator_flow
     authority: vortex_emulator

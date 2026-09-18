@@ -10,7 +10,7 @@
 
 spec: feature
 spec_version: 1
-generated_digest: "sha256:cac66d2868373e649778984f3bb1f70c3669370e57d4f3a32fdc01e45247c3c3"
+generated_digest: "sha256:9b86e97476f2a6f42a9bff83abc80c4ab0f271408fdc66d9e58d5fc86f573942"
 generated:
   id: collectibles.claim_nft_claims
   domain: collectibles
@@ -33,9 +33,13 @@ generated:
     evidence: ev_d72434a4527c
   - order: 2
     layer: grain
-    symbol: InventoryGrain.GrantFurnitureDefinitionAsync
+    symbol: InventoryGrain.GrantFurnitureDefinitionCopiesAsync
     evidence: ev_c6396662000a
   - order: 3
+    layer: domain
+    symbol: CommerceOperationId.Deterministic
+    evidence: ev_0ea5d10808d1
+  - order: 4
     layer: module
     symbol: EventSystem.PublishAsync
     evidence: ev_34bf3ac088e2
@@ -66,6 +70,13 @@ generated:
       evidence: ev_b5ea56e36399
   reaches_persistence: true
   evidence:
+  - id: ev_0ea5d10808d1
+    kind: emulator_flow
+    authority: vortex_emulator
+    origin: vortex
+    source: Vortex.Primitives/Commerce/CommerceOperation.cs
+    symbol: CommerceOperationId
+    line: 33
   - id: ev_34bf3ac088e2
     kind: emulator_flow
     authority: vortex_emulator
@@ -93,14 +104,14 @@ generated:
     origin: vortex
     source: Vortex.Inventory/Grains/InventoryGrain.Furni.cs
     symbol: InventoryGrain
-    line: 544
+    line: 551
   - id: ev_d72434a4527c
     kind: emulator_flow
     authority: vortex_emulator
     origin: vortex
     source: Vortex.Collectibles/Grains/PlayerNftClaimsGrain.cs
     symbol: PlayerNftClaimsGrain
-    line: 68
+    line: 109
   scenarios:
   - collectibles.claim_nft_claims.guard_0
   - collectibles.claim_nft_claims.guard_1

@@ -10,7 +10,7 @@
 
 spec: feature
 spec_version: 1
-generated_digest: "sha256:101a3fcd70836a60ea548d071f26639a4bae44d4662aecae8d4f49200c988f4d"
+generated_digest: "sha256:e00d0c3ff06851e9c7a969745a307d36cce90456d3b5868360bbce7670483842"
 generated:
   id: moderation.call_for_help_from_im
   domain: moderation
@@ -45,7 +45,8 @@ generated:
   scenarios:
   - moderation.call_for_help_from_im.success
   conflicts:
-  - cf_b9af7ea3b9
+  - cf_1ed734b059
+  - cf_b81cca96ee
   unknowns:
   - uk_975a9bfc7d
 verified: {}

@@ -10,7 +10,7 @@
 
 spec: scenarios
 spec_version: 1
-generated_digest: "sha256:22cde1fc5574337fd59ddf2ad67440a09d2dcaa96618a003bbb3e54b99f3cdea"
+generated_digest: "sha256:82d67da484559ae1ce7ac480b50b44c82e022fc82ce039e9e4db4ec8278a2035"
 generated:
   feature: collectibles.get_collectible_wallet_addresses
   scenarios:
@@ -57,6 +57,6 @@ generated:
     origin: vortex
     source: Vortex.PacketHandlers/Collectibles/GetCollectibleWalletAddressesMessageHandler.cs
     symbol: GetCollectibleWalletAddressesMessageHandler
-    line: 41
+    line: 53
 verified: {}
 manual: {}

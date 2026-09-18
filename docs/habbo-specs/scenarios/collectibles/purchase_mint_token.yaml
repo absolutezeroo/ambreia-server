@@ -10,7 +10,7 @@
 
 spec: scenarios
 spec_version: 1
-generated_digest: "sha256:0aabfe8e64b8a41587e7e2504b1ed757d1801148b5081ec9dcb0f6facaca431e"
+generated_digest: "sha256:c3ce1622b9a0be61ac24cebc861a18d891c35621930e56de753064cdf3a78d71"
 generated:
   feature: collectibles.purchase_mint_token
   scenarios:
@@ -118,7 +118,7 @@ generated:
     origin: vortex
     source: Vortex.Collectibles/Grains/PlayerMintGrain.cs
     symbol: PlayerMintGrain
-    line: 79
+    line: 83
   - id: ev_ee343dece6c3
     kind: emulator_flow
     authority: vortex_emulator

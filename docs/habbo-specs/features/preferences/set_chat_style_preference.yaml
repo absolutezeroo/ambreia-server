@@ -10,7 +10,7 @@
 
 spec: feature
 spec_version: 1
-generated_digest: "sha256:74637fb1de3364b3dce2fe40efbbf28e5c42b7b566f00c3c0e662568623f2f21"
+generated_digest: "sha256:2ce8b9487d17cdbb9d3ac2cd16a08ed8fecf2c1f0a6450ab0374093e0c5515a2"
 generated:
   id: preferences.set_chat_style_preference
   domain: preferences
@@ -36,10 +36,6 @@ generated:
     layer: grain
     symbol: PlayerGrain.SetChatSizePreferenceAsync
     evidence: ev_630a59578b9c
-  - order: 3
-    layer: domain
-    symbol: WiredVariableArithmetic.Clamp
-    evidence: ev_c70390fca34b
   checks:
   - expression: ctx.PlayerId <= 0
     on_fail: return
@@ -81,7 +77,7 @@ generated:
     origin: vortex
     source: Vortex.Players/Grains/PlayerGrain.cs
     symbol: PlayerGrain
-    line: 232
+    line: 235
   - id: ev_43fea8875098
     kind: emulator_flow
     authority: vortex_emulator
@@ -96,13 +92,6 @@ generated:
     source: Vortex.Players/Grains/PlayerGrain.AccountPreferences.cs
     symbol: PlayerGrain
     line: 105
-  - id: ev_c70390fca34b
-    kind: emulator_flow
-    authority: vortex_emulator
-    origin: vortex
-    source: Vortex.Rooms/Wired/WiredVariableArithmetic.cs
-    symbol: WiredVariableArithmetic
-    line: 165
   - id: ev_c91a3cd2bd1d
     kind: emulator_handler
     authority: vortex_emulator

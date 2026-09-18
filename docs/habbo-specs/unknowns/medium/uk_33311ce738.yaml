@@ -10,7 +10,7 @@
 
 spec: unknown
 spec_version: 1
-generated_digest: "sha256:f4f879a71e1a3838b957a63dfce846d43fda1182f5df5df5b4cb194a3ae53cd8"
+generated_digest: "sha256:8c7bebc6699a96246b6a825c1d0b1e053febddd125f867fa566520e79052d08f"
 generated:
   id: uk_33311ce738
   subject: "wired.wired_set_object_variable_value: what the server sends when it refuses"
@@ -46,7 +46,7 @@ generated:
     origin: vortex
     source: Vortex.Rooms/Grains/Modules/RoomSecurityModule.cs
     symbol: RoomSecurityModule
-    line: 203
+    line: 206
   - id: ev_9ad843db6303
     kind: emulator_handler
     authority: vortex_emulator

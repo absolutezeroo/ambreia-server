@@ -10,7 +10,7 @@
 
 spec: unknown
 spec_version: 1
-generated_digest: "sha256:29f4f2776ceba9327b784d6a6a26b6063c43d7787bd4d508394dd114b6d8005c"
+generated_digest: "sha256:7922122766d3dd075d48592c695e0a236ac889c107ecb0dd5ab6d9400e779d73"
 generated:
   id: uk_9c7d6206fd
   subject: "room.room_dimmer_change_state: what the server sends when it refuses"
@@ -39,7 +39,7 @@ generated:
     origin: vortex
     source: Vortex.Rooms/Grains/RoomGrain.Furni.Interactive.cs
     symbol: RoomGrain
-    line: 537
+    line: 554
   - id: ev_7ac82bc3101b
     kind: emulator_handler
     authority: vortex_emulator

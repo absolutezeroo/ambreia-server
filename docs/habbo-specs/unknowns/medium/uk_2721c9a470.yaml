@@ -10,7 +10,7 @@
 
 spec: unknown
 spec_version: 1
-generated_digest: "sha256:dd3d664fd9240aefec79fa633f8a6fae14f4bd1a2a99d08b5dd6d5c6f76a6ef1"
+generated_digest: "sha256:bad87e408c86a98f5f80f339f8bbcde275563baaf53c2d5663b16ac9d0b2cf81"
 generated:
   id: uk_2721c9a470
   subject: "wired.set_all_wired_chest_locks: what the server sends when it refuses"
@@ -60,7 +60,7 @@ generated:
     origin: vortex
     source: Vortex.Rooms/Grains/Modules/RoomSecurityModule.cs
     symbol: RoomSecurityModule
-    line: 203
+    line: 206
   - id: ev_84ee82d9d8e2
     kind: emulator_flow
     authority: vortex_emulator

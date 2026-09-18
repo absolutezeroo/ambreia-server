@@ -10,7 +10,7 @@
 
 spec: feature
 spec_version: 1
-generated_digest: "sha256:27c6feae96fb34e5a99b3db3515dcffef9ae659d24e0b5ad4b87ac9cba285547"
+generated_digest: "sha256:4a51286faa393187b20fece7327f11a5649dee09b945ece71d6d31fb4252f97d"
 generated:
   id: room.harvest_pet
   domain: room
@@ -75,7 +75,7 @@ generated:
     origin: vortex
     source: Vortex.Rooms/Grains/RoomGrain.Pets.cs
     symbol: RoomGrain
-    line: 432
+    line: 443
   - id: ev_a24ca6ca32d9
     kind: emulator_flow
     authority: vortex_emulator
@@ -96,7 +96,7 @@ generated:
     origin: vortex
     source: Vortex.Inventory/Grains/InventoryGrain.Furni.cs
     symbol: InventoryGrain
-    line: 544
+    line: 545
   scenarios:
   - room.harvest_pet.guard_0
   - room.harvest_pet.guard_1

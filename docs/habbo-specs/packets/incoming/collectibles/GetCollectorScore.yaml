@@ -10,7 +10,7 @@
 
 spec: packet
 spec_version: 1
-generated_digest: "sha256:eb20e26c53bea2d72021fcc94eb141796615045a702f596e068281503a7af244"
+generated_digest: "sha256:17cb3c9dd67d78481db2ab6bd7bb877f249dd25389e34019eec2769b952c3b92"
 generated:
   name: GetCollectorScore
   direction: incoming
@@ -18,7 +18,14 @@ generated:
   structure_confidence: implementation_observed
   mapped_in_vortex: true
   vortex_handler: GetCollectorScoreMessageHandler
-  fields: []
+  fields:
+  - index: 0
+    name: wallet_address
+    type: string
+    name_confidence: implementation_observed
+    type_confidence: implementation_observed
+    evidence:
+    - ev_0bcd1b311867
   layouts_by_source:
   - origin: "as3:WIN63-202607011411-782849652"
     authority: client_code
@@ -34,9 +41,10 @@ generated:
     evidence: ev_25ca27c09649
   - origin: vortex
     authority: vortex_emulator
-    field_count: 0
+    field_count: 1
     partial: false
-    types: []
+    types:
+    - string
     evidence: ev_0bcd1b311867
   evidence:
   - id: ev_40cf4cb2f45c

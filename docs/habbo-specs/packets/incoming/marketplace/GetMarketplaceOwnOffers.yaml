@@ -10,7 +10,7 @@
 
 spec: packet
 spec_version: 1
-generated_digest: "sha256:821f8018feeb3c45acdcccfdf36abaec9e6bd8d1a524743762755d879cda0148"
+generated_digest: "sha256:a53d3a057b60f2db39e98c869881dd20564edc759861748fbd5fc258e38b4bd2"
 generated:
   name: GetMarketplaceOwnOffers
   direction: incoming
@@ -18,7 +18,14 @@ generated:
   structure_confidence: implementation_observed
   mapped_in_vortex: true
   vortex_handler: GetMarketplaceOwnOffersMessageHandler
-  fields: []
+  fields:
+  - index: 0
+    name: unknown1
+    type: int32
+    name_confidence: implementation_observed
+    type_confidence: implementation_observed
+    evidence:
+    - ev_d42ccf5b6f79
   layouts_by_source:
   - origin: "as3:WIN63-202607011411-782849652"
     authority: client_code
@@ -40,9 +47,10 @@ generated:
     evidence: ev_acbc3c0bca7a
   - origin: vortex
     authority: vortex_emulator
-    field_count: 0
+    field_count: 1
     partial: false
-    types: []
+    types:
+    - int32
     evidence: ev_d42ccf5b6f79
   evidence:
   - id: ev_02ee793facb5

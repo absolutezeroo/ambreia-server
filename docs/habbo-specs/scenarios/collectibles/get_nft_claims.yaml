@@ -10,7 +10,7 @@
 
 spec: scenarios
 spec_version: 1
-generated_digest: "sha256:b5070661eb46558743e93526205017d81bd35b4fb7db637947ab7be017213ecb"
+generated_digest: "sha256:fcf03920840cd6b37f5cf62ad10c878218e040ccf4a7ec4c37b833c9c054c187"
 generated:
   feature: collectibles.get_nft_claims
   scenarios:
@@ -33,16 +33,16 @@ generated:
       emits: []
       evidence: ev_67625979fb59
   - scenario: collectibles.get_nft_claims.guard_1
-    title: "get nft claims: the guard 'claims.Length == 0' holds"
+    title: "get nft claims: the guard 'claims.Count == 0 && returned.Count == 0' holds"
     given:
-      guard: claims.Length == 0
+      guard: claims.Count == 0 && returned.Count == 0
       guard_holds: "true"
     when:
       packet: GetNftClaims
     expected:
       status: unknown
       confidence: unknown
-    needs_evidence: "an official capture of GetNftClaims sent while 'claims.Length == 0' holds: does the server reply, stay silent, or disconnect?"
+    needs_evidence: "an official capture of GetNftClaims sent while 'claims.Count == 0 && returned.Count == 0' holds: does the server reply, stay silent, or disconnect?"
     executable: false
     claims:
     - origin: vortex
@@ -82,6 +82,6 @@ generated:
     origin: vortex
     source: Vortex.Collectibles/Grains/PlayerNftClaimsGrain.cs
     symbol: PlayerNftClaimsGrain
-    line: 53
+    line: 87
 verified: {}
 manual: {}

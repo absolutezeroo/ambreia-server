@@ -10,7 +10,7 @@
 
 spec: unknown
 spec_version: 1
-generated_digest: "sha256:cca07cf48eb81e96711846dc9bb2ef920be33fdf433f08da9ab2cee91dd4bf69"
+generated_digest: "sha256:7d3262720527d776380fc0149cf3062384472a7b5e2c5646ea67b284ad540542"
 generated:
   id: uk_30bbfa5722
   subject: "quest.get_community_goal_hall_of_fame: who receives CommunityGoalHallOfFame"
@@ -25,6 +25,6 @@ generated:
     origin: vortex
     source: Vortex.Progression/Grains/CommunityGoalGrain.cs
     symbol: CommunityGoalGrain
-    line: 148
+    line: 166
 verified: {}
 manual: {}

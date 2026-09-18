@@ -10,7 +10,7 @@
 
 spec: scenarios
 spec_version: 1
-generated_digest: "sha256:f1d74d68ebd32db00ff2a548f1f67be6061130a6fcc598c00c478109a03f2df4"
+generated_digest: "sha256:a34608abbf31e96fd1d45970a5b79f0ec152ff0a0731799ea2377d6ce5271fe7"
 generated:
   feature: room.enter_one_way_door
   scenarios:
@@ -336,7 +336,7 @@ generated:
     origin: vortex
     source: Vortex.Rooms/Grains/RoomGrain.Furni.Interactive.cs
     symbol: RoomGrain
-    line: 330
+    line: 331
   - id: ev_6307e5751d5d
     kind: emulator_flow
     authority: vortex_emulator

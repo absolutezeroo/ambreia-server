@@ -10,7 +10,7 @@
 
 spec: unknown
 spec_version: 1
-generated_digest: "sha256:a36a623516f820c74952d76ad786dcc9e59ccea6f6337ba708f99a2c955a139b"
+generated_digest: "sha256:2ee6f5d3fbf5b2479e2ec47783e8bd9450c69ab11c2221ae0d76ff16c55b938b"
 generated:
   id: uk_a9f91ec12d
   subject: "room.remove_rights: what the server sends when it refuses"
@@ -32,7 +32,7 @@ generated:
     origin: vortex
     source: Vortex.Rooms/Grains/RoomGrain.Settings.cs
     symbol: RoomGrain
-    line: 481
+    line: 477
   - id: ev_34bf3ac088e2
     kind: emulator_flow
     authority: vortex_emulator
@@ -46,7 +46,7 @@ generated:
     origin: vortex
     source: Vortex.Rooms/Grains/Modules/RoomSecurityModule.cs
     symbol: RoomSecurityModule
-    line: 282
+    line: 319
   - id: ev_9f45a8c43da8
     kind: emulator_flow
     authority: vortex_emulator
@@ -68,5 +68,12 @@ generated:
     source: Vortex.Players/Grains/PlayerPresenceGrain.Room.cs
     symbol: PlayerPresenceGrain
     line: 193
+  - id: ev_f13d6bcce744
+    kind: emulator_flow
+    authority: vortex_emulator
+    origin: vortex
+    source: Vortex.Rooms/Wired/WiredActionBranch.cs
+    symbol: WiredActionBranch
+    line: 23
 verified: {}
 manual: {}

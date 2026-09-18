@@ -10,7 +10,7 @@
 
 spec: feature
 spec_version: 1
-generated_digest: "sha256:6ff5bad550a3266af9868bf4d086f5b2da7de06e16d4485f9a25a1e2f81ecde8"
+generated_digest: "sha256:4b85ac510f8a37eabc2e6e9801a7c2c6844639314a17f8d6414af0990c57ecd5"
 generated:
   id: room.whisper
   domain: room
@@ -169,7 +169,7 @@ generated:
     origin: vortex
     source: Vortex.Rooms/Grains/Modules/RoomSecurityModule.cs
     symbol: RoomSecurityModule
-    line: 199
+    line: 202
   - id: ev_8916c8b3a33e
     kind: emulator_flow
     authority: vortex_emulator
@@ -183,14 +183,14 @@ generated:
     origin: vortex
     source: Vortex.Rooms/Grains/RoomGrain.Avatar.cs
     symbol: RoomGrain
-    line: 446
+    line: 502
   - id: ev_b46938ec853d
     kind: emulator_flow
     authority: vortex_emulator
     origin: vortex
     source: Vortex.Rooms/Grains/RoomGrain.cs
     symbol: RoomGrain
-    line: 275
+    line: 289
   - id: ev_f0fbc7d68cc3
     kind: emulator_flow
     authority: vortex_emulator

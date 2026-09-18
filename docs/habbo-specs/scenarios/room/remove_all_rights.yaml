@@ -10,21 +10,21 @@
 
 spec: scenarios
 spec_version: 1
-generated_digest: "sha256:a46dca38f9b972895946b586af8bae498a4f0895e0d6ef541f94b0cc84982dc1"
+generated_digest: "sha256:bdfcaeaaaf198401d1a9b5e542401dd3d610ac4081e13c376b202bf4bb6a0839"
 generated:
   feature: room.remove_all_rights
   scenarios:
   - scenario: room.remove_all_rights.guard_0
-    title: "remove all rights: the guard 'ctx.PlayerId <= 0 || ctx.RoomId <= 0' holds"
+    title: "remove all rights: the guard 'ctx.PlayerId <= 0 || targetRoomId <= 0' holds"
     given:
-      guard: ctx.PlayerId <= 0 || ctx.RoomId <= 0
+      guard: ctx.PlayerId <= 0 || targetRoomId <= 0
       guard_holds: "true"
     when:
       packet: RemoveAllRights
     expected:
       status: unknown
       confidence: unknown
-    needs_evidence: "an official capture of RemoveAllRights sent while 'ctx.PlayerId <= 0 || ctx.RoomId <= 0' holds: does the server reply, stay silent, or disconnect?"
+    needs_evidence: "an official capture of RemoveAllRights sent while 'ctx.PlayerId <= 0 || targetRoomId <= 0' holds: does the server reply, stay silent, or disconnect?"
     executable: false
     claims:
     - origin: vortex
@@ -201,14 +201,14 @@ generated:
     origin: vortex
     source: Vortex.PacketHandlers/Room/Action/RemoveAllRightsMessageHandler.cs
     symbol: RemoveAllRightsMessageHandler
-    line: 11
+    line: 12
   - id: ev_329537530b13
     kind: emulator_flow
     authority: vortex_emulator
     origin: vortex
     source: Vortex.Rooms/Grains/RoomGrain.Settings.cs
     symbol: RoomGrain
-    line: 562
+    line: 559
   - id: ev_34bf3ac088e2
     kind: emulator_flow
     authority: vortex_emulator
@@ -222,14 +222,14 @@ generated:
     origin: vortex
     source: Vortex.PacketHandlers/Room/Action/RemoveAllRightsMessageHandler.cs
     symbol: RemoveAllRightsMessageHandler
-    line: 22
+    line: 27
   - id: ev_82c2d2746361
     kind: emulator_flow
     authority: vortex_emulator
     origin: vortex
     source: Vortex.Rooms/Grains/Modules/RoomSecurityModule.cs
     symbol: RoomSecurityModule
-    line: 297
+    line: 300
   - id: ev_b44ef304d36a
     kind: emulator_flow
     authority: vortex_emulator

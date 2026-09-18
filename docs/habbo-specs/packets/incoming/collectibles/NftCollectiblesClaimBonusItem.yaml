@@ -10,7 +10,7 @@
 
 spec: packet
 spec_version: 1
-generated_digest: "sha256:2e441fdd7dfbaa5d869e04aedbbc2b4e669ac99ae0dd5b202e0acfa9076816ca"
+generated_digest: "sha256:2ac81384a536722939a8ae317f7b4770fe5cb10473847ce107dba013c2d87287"
 generated:
   name: NftCollectiblesClaimBonusItem
   direction: incoming
@@ -18,7 +18,21 @@ generated:
   structure_confidence: implementation_observed
   mapped_in_vortex: true
   vortex_handler: NftCollectiblesClaimBonusItemMessageHandler
-  fields: []
+  fields:
+  - index: 0
+    name: collection_id
+    type: string
+    name_confidence: implementation_observed
+    type_confidence: implementation_observed
+    evidence:
+    - ev_dc6a7a515ec6
+  - index: 1
+    name: wallet_address
+    type: string
+    name_confidence: implementation_observed
+    type_confidence: implementation_observed
+    evidence:
+    - ev_dc6a7a515ec6
   layouts_by_source:
   - origin: "as3:WIN63-202607011411-782849652"
     authority: client_code
@@ -34,9 +48,11 @@ generated:
     evidence: ev_8757292c2154
   - origin: vortex
     authority: vortex_emulator
-    field_count: 0
+    field_count: 2
     partial: false
-    types: []
+    types:
+    - string
+    - string
     evidence: ev_dc6a7a515ec6
   evidence:
   - id: ev_d016ffd9c90b

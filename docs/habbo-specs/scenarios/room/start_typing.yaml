@@ -10,7 +10,7 @@
 
 spec: scenarios
 spec_version: 1
-generated_digest: "sha256:d4de38a701a055d5297616e978d985050d5df6a4ef94f42dbefb3eb1f276f4aa"
+generated_digest: "sha256:c3de9dbb1c6186e05ace069710411b9f4c7d2f2a838382633a4e57eb47aec6f0"
 generated:
   feature: room.start_typing
   scenarios:
@@ -128,7 +128,7 @@ generated:
     origin: vortex
     source: Vortex.Rooms/Grains/RoomGrain.Avatar.cs
     symbol: RoomGrain
-    line: 430
+    line: 486
   - id: ev_e6fef545a42a
     kind: emulator_flow
     authority: vortex_emulator

@@ -10,7 +10,7 @@
 
 spec: feature
 spec_version: 1
-generated_digest: "sha256:7f40891066f5e68bd161649946fb32359fb64ca11ff352511bce4870d47d8285"
+generated_digest: "sha256:394fca5dc1eee78f98be9d9bf88ad26121f0f82417285b676a65114f04f16bdf"
 generated:
   id: sound.get_sound_settings
   domain: sound
@@ -70,7 +70,7 @@ generated:
     origin: vortex
     source: Vortex.Players/Grains/PlayerGrain.cs
     symbol: PlayerGrain
-    line: 253
+    line: 256
   - id: ev_630a59578b9c
     kind: emulator_flow
     authority: vortex_emulator

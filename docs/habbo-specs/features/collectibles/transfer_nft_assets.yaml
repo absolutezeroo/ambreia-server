@@ -10,7 +10,7 @@
 
 spec: feature
 spec_version: 1
-generated_digest: "sha256:9a2b4050b89eb198bb02b1a4cbcee80a4b39ba6485df744f42dca39b3cf1109c"
+generated_digest: "sha256:4ba453fca443d6f689c1d9a059f8233f86162fd77b3d1f56372cf51eb07c284c"
 generated:
   id: collectibles.transfer_nft_assets
   domain: collectibles
@@ -27,7 +27,71 @@ generated:
     layer: handler
     symbol: TransferNftAssetsMessageHandler.HandleAsync
     evidence: ev_95f299f9ae5e
-  checks: []
+  - order: 1
+    layer: grain
+    symbol: PlayerMintGrain.TransferAssetsAsync
+    evidence: ev_a376b354a3ae
+  - order: 2
+    layer: grain
+    symbol: PlayerWalletGrain.TryDebitAsync
+    evidence: ev_d0cb8ee11644
+  - order: 3
+    layer: grain
+    symbol: PlayerWalletGrain.CreditBackAsync
+    evidence: ev_d0cb8ee11644
+  - order: 4
+    layer: grain
+    symbol: PlayerMintGrain.GetAssetsAsync
+    evidence: ev_a376b354a3ae
+  - order: 5
+    layer: domain
+    symbol: FurnitureDefinitionLookup.ResolveByClassNameAsync
+    evidence: ev_963651d08ab1
+  - order: 6
+    layer: domain
+    symbol: WiredActionBranch.Select
+    evidence: ev_f13d6bcce744
+  - order: 7
+    layer: domain
+    symbol: CollectibleProductIdentity.ItemTypeId
+    evidence: ev_3bca62ae6f6e
+  checks:
+  - expression: ctx.PlayerId <= 0
+    on_fail: return
+    observed_in: vortex
+    evidence: ev_8bc89a5e2fe4
+  - expression: result.Outcome != NftTransferOutcome.Transferred
+    on_fail: return
+    observed_in: vortex
+    evidence: ev_8bc89a5e2fe4
+  - expression: "!_chain.Enabled"
+    on_fail: return
+    observed_in: vortex
+    evidence: ev_a376b354a3ae
+  - expression: destination is null
+    on_fail: return
+    observed_in: vortex
+    evidence: ev_a376b354a3ae
+  - expression: assets.Count == 0
+    on_fail: return
+    observed_in: vortex
+    evidence: ev_a376b354a3ae
+  - expression: "!debit.Succeeded"
+    on_fail: return
+    observed_in: vortex
+    evidence: ev_a376b354a3ae
+  - expression: transferred == 0
+    on_fail: return
+    observed_in: vortex
+    evidence: ev_a376b354a3ae
+  - expression: assets.Length == 0
+    on_fail: return
+    observed_in: vortex
+    evidence: ev_a376b354a3ae
+  - expression: codes.Length == 0
+    on_fail: return
+    observed_in: vortex
+    evidence: ev_963651d08ab1
   state_changes: []
   outgoing:
     ordering: unknown
@@ -36,23 +100,71 @@ generated:
       recipient: actor
       recipient_confidence: implementation_observed
       evidence: ev_8bc89a5e2fe4
+    - packet: TradeNftAssetInventory
+      recipient: actor
+      recipient_confidence: implementation_observed
+      evidence: ev_8bc89a5e2fe4
   reaches_persistence: false
   evidence:
+  - id: ev_3bca62ae6f6e
+    kind: emulator_flow
+    authority: vortex_emulator
+    origin: vortex
+    source: Vortex.Primitives/Collectibles/CollectibleProductIdentity.cs
+    symbol: CollectibleProductIdentity
+    line: 38
   - id: ev_8bc89a5e2fe4
     kind: emulator_flow
     authority: vortex_emulator
     origin: vortex
     source: Vortex.PacketHandlers/Collectibles/TransferNftAssetsMessageHandler.cs
     symbol: TransferNftAssetsMessageHandler
-    line: 35
+    line: 49
   - id: ev_95f299f9ae5e
     kind: emulator_handler
     authority: vortex_emulator
     origin: vortex
     source: Vortex.PacketHandlers/Collectibles/TransferNftAssetsMessageHandler.cs
     symbol: TransferNftAssetsMessageHandler
-    line: 27
+    line: 38
+  - id: ev_963651d08ab1
+    kind: emulator_flow
+    authority: vortex_emulator
+    origin: vortex
+    source: Vortex.Collectibles/Grains/FurnitureDefinitionLookup.cs
+    symbol: FurnitureDefinitionLookup
+    line: 41
+  - id: ev_a376b354a3ae
+    kind: emulator_flow
+    authority: vortex_emulator
+    origin: vortex
+    source: Vortex.Collectibles/Grains/PlayerMintGrain.cs
+    symbol: PlayerMintGrain
+    line: 499
+  - id: ev_d0cb8ee11644
+    kind: emulator_flow
+    authority: vortex_emulator
+    origin: vortex
+    source: Vortex.Players/Grains/PlayerWalletGrain.cs
+    symbol: PlayerWalletGrain
+    line: 62
+  - id: ev_f13d6bcce744
+    kind: emulator_flow
+    authority: vortex_emulator
+    origin: vortex
+    source: Vortex.Rooms/Wired/WiredActionBranch.cs
+    symbol: WiredActionBranch
+    line: 23
   scenarios:
+  - collectibles.transfer_nft_assets.guard_0
+  - collectibles.transfer_nft_assets.guard_1
+  - collectibles.transfer_nft_assets.guard_2
+  - collectibles.transfer_nft_assets.guard_3
+  - collectibles.transfer_nft_assets.guard_4
+  - collectibles.transfer_nft_assets.guard_5
+  - collectibles.transfer_nft_assets.guard_6
+  - collectibles.transfer_nft_assets.guard_7
+  - collectibles.transfer_nft_assets.guard_8
   - collectibles.transfer_nft_assets.success
 verified: {}
 manual: {}

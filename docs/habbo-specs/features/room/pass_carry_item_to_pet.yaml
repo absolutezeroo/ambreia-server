@@ -10,7 +10,7 @@
 
 spec: feature
 spec_version: 1
-generated_digest: "sha256:f7a5e9f7a6fe51506e34b63c3ae786cb71ce4cc73a5ecd1a5f2bad2894ffebf2"
+generated_digest: "sha256:84bb6b7e9b7bb504c3cef01325782b3aaf034458ba49f0289fba99cb76697cad"
 generated:
   id: room.pass_carry_item_to_pet
   domain: room
@@ -51,6 +51,14 @@ generated:
     layer: domain
     symbol: RoomAvatar.SetCarryItem
     evidence: ev_9f45a8c43da8
+  - order: 7
+    layer: grain
+    symbol: RoomGrain.PublishDetached
+    evidence: ev_b46938ec853d
+  - order: 8
+    layer: module
+    symbol: EventSystem.PublishAsync
+    evidence: ev_34bf3ac088e2
   checks:
   - expression: ctx.PlayerId <= 0 || ctx.RoomId <= 0 || message.PetId <= 0
     on_fail: return
@@ -76,6 +84,10 @@ generated:
     on_fail: return
     observed_in: vortex
     evidence: ev_9f45a8c43da8
+  - expression: _registry is null
+    on_fail: return
+    observed_in: vortex
+    evidence: ev_34bf3ac088e2
   state_changes:
   - target: avatar
     value: avatar.SetCarryItem(0, 0)
@@ -96,7 +108,7 @@ generated:
     origin: vortex
     source: Vortex.Rooms/Grains/Systems/RoomPetSystem.HandItem.cs
     symbol: RoomPetSystem
-    line: 25
+    line: 26
   - id: ev_315e04717bdc
     kind: emulator_flow
     authority: vortex_emulator
@@ -104,6 +116,13 @@ generated:
     source: Vortex.Rooms/Grains/Modules/RoomHandItemModule.cs
     symbol: RoomHandItemModule
     line: 98
+  - id: ev_34bf3ac088e2
+    kind: emulator_flow
+    authority: vortex_emulator
+    origin: vortex
+    source: Vortex.Events/EventSystem.cs
+    symbol: EventSystem
+    line: 14
   - id: ev_85ee1703d909
     kind: emulator_flow
     authority: vortex_emulator
@@ -124,7 +143,14 @@ generated:
     origin: vortex
     source: Vortex.Rooms/Grains/RoomGrain.Avatar.cs
     symbol: RoomGrain
-    line: 243
+    line: 290
+  - id: ev_b46938ec853d
+    kind: emulator_flow
+    authority: vortex_emulator
+    origin: vortex
+    source: Vortex.Rooms/Grains/RoomGrain.cs
+    symbol: RoomGrain
+    line: 672
   - id: ev_b835c9e727ff
     kind: emulator_flow
     authority: vortex_emulator
@@ -146,6 +172,7 @@ generated:
   - room.pass_carry_item_to_pet.guard_3
   - room.pass_carry_item_to_pet.guard_4
   - room.pass_carry_item_to_pet.guard_5
+  - room.pass_carry_item_to_pet.guard_6
   - room.pass_carry_item_to_pet.success
   unknowns:
   - uk_36928f0605
