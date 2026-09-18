@@ -10,7 +10,7 @@
 
 spec: feature
 spec_version: 1
-generated_digest: "sha256:e371c7ccebe14bade67a9e774d26444d5e4c5e4ec5bafa68b25b0e0bea7b658b"
+generated_digest: "sha256:4f96070a3ecaef13da488cd54ee00e946063697be82275c906c4507bdbaf9288"
 generated:
   id: room.present_open
   domain: room
@@ -189,7 +189,7 @@ generated:
     origin: vortex
     source: Vortex.Inventory/Fulfillment/CatalogFulfillmentPlanner.cs
     symbol: CatalogFulfillmentPlanner
-    line: 89
+    line: 90
   - id: ev_0f9ffda870b1
     kind: emulator_flow
     authority: vortex_emulator
@@ -266,7 +266,7 @@ generated:
     origin: vortex
     source: Vortex.Inventory/Fulfillment/Strategies/IFulfillmentStrategy.cs
     symbol: FulfillmentPlanBuilder
-    line: 79
+    line: 82
   - id: ev_b43e4f79cdaa
     kind: emulator_flow
     authority: vortex_emulator

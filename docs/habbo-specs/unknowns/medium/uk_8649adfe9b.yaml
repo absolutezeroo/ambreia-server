@@ -10,7 +10,7 @@
 
 spec: unknown
 spec_version: 1
-generated_digest: "sha256:1d2b943e6df97a140b23e4e24b010637ac550e3a7aff027c13c640cb3b7f06f3"
+generated_digest: "sha256:4f3679c0d25d1908d759c66f774302cc2a5cb7854ed78b8bbb7de322696dbf0e"
 generated:
   id: uk_8649adfe9b
   subject: "room.harvest_pet: what the server sends when it refuses"
@@ -53,6 +53,6 @@ generated:
     origin: vortex
     source: Vortex.Inventory/Grains/InventoryGrain.Furni.cs
     symbol: InventoryGrain
-    line: 545
+    line: 578
 verified: {}
 manual: {}

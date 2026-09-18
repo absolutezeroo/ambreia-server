@@ -10,7 +10,7 @@
 
 spec: feature
 spec_version: 1
-generated_digest: "sha256:20c1c9135e9ea8f3e6474dd901fb8fe77423e64621ccb0aaef66ef90a9f7e4ac"
+generated_digest: "sha256:cb37d7931622ebe55f60f7bc17e86c81eb987d9d1d48b6e7101dbb8243ea66d4"
 generated:
   id: inventory.request_furni_inventory_when_not_in_room
   domain: inventory
@@ -107,7 +107,7 @@ generated:
     origin: vortex
     source: Vortex.Inventory/Grains/InventoryGrain.Furni.cs
     symbol: InventoryGrain
-    line: 832
+    line: 865
   - id: ev_d720d639bd09
     kind: emulator_flow
     authority: vortex_emulator

@@ -10,7 +10,7 @@
 
 spec: feature
 spec_version: 1
-generated_digest: "sha256:871389aac9f45417facf8c440ee081f9eca1656b3c28e03ab11aff81e387c1d2"
+generated_digest: "sha256:b34f11cda24100028990e544f2773fab9d8477f3439529632f5ed0761a3a4338"
 generated:
   id: collectibles.nft_store_purchase
   domain: collectibles
@@ -124,7 +124,7 @@ generated:
     origin: vortex
     source: Vortex.Inventory/Grains/InventoryGrain.Furni.cs
     symbol: InventoryGrain
-    line: 545
+    line: 578
   - id: ev_d0cb8ee11644
     kind: emulator_flow
     authority: vortex_emulator

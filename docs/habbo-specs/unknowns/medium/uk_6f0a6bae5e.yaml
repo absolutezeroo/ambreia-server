@@ -10,7 +10,7 @@
 
 spec: unknown
 spec_version: 1
-generated_digest: "sha256:11c0c0cb2e77079067a12086e8de0aba735ec9043017f22a086441ca417df8ec"
+generated_digest: "sha256:d97b302aaafb285fc482cc0f8d4ad091893550bf69f653324cb6c85b1eb5fe1d"
 generated:
   id: uk_6f0a6bae5e
   subject: "catalog.find_by_product_code: what the server sends when it refuses"
@@ -25,7 +25,7 @@ generated:
     origin: vortex
     source: Vortex.Inventory/Fulfillment/CatalogFulfillmentPlanner.cs
     symbol: CatalogFulfillmentPlanner
-    line: 89
+    line: 90
   - id: ev_1f83e61934ca
     kind: emulator_flow
     authority: vortex_emulator
@@ -95,7 +95,7 @@ generated:
     origin: vortex
     source: Vortex.Inventory/Fulfillment/Strategies/IFulfillmentStrategy.cs
     symbol: FulfillmentPlanBuilder
-    line: 79
+    line: 82
   - id: ev_c6396662000a
     kind: emulator_flow
     authority: vortex_emulator

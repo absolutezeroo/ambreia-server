@@ -10,7 +10,7 @@
 
 spec: feature
 spec_version: 1
-generated_digest: "sha256:4a51286faa393187b20fece7327f11a5649dee09b945ece71d6d31fb4252f97d"
+generated_digest: "sha256:1830adfdca878751e7626d308193cc6184aed139dc31b1dbb219288a36e74403"
 generated:
   id: room.harvest_pet
   domain: room
@@ -96,7 +96,7 @@ generated:
     origin: vortex
     source: Vortex.Inventory/Grains/InventoryGrain.Furni.cs
     symbol: InventoryGrain
-    line: 545
+    line: 578
   scenarios:
   - room.harvest_pet.guard_0
   - room.harvest_pet.guard_1

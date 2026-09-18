@@ -10,7 +10,7 @@
 
 spec: scenarios
 spec_version: 1
-generated_digest: "sha256:fa93edf2ddab4b714358efb40361e5e5e6b0b28dfe591e5abcf4330ee1f68c8a"
+generated_digest: "sha256:dca49ff23cd91d43456ec74588fa1363d81975979a88746000ab27702e5b02fd"
 generated:
   feature: room.present_open
   scenarios:
@@ -407,7 +407,7 @@ generated:
     origin: vortex
     source: Vortex.Inventory/Fulfillment/CatalogFulfillmentPlanner.cs
     symbol: CatalogFulfillmentPlanner
-    line: 89
+    line: 90
   - id: ev_0f9ffda870b1
     kind: emulator_flow
     authority: vortex_emulator

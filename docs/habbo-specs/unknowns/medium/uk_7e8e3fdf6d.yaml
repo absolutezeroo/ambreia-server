@@ -10,7 +10,7 @@
 
 spec: unknown
 spec_version: 1
-generated_digest: "sha256:055cd37204bca0e56ff287dffd97e15c2fcd38a4016652c549630d63b93dc0a6"
+generated_digest: "sha256:52d8c7439d6d2f8a254514e307067e36f20a45588c2f4d5d57ef4651dabb5491"
 generated:
   id: uk_7e8e3fdf6d
   subject: "room.place_wall_item_in_room: what the server sends when it refuses"
@@ -172,7 +172,7 @@ generated:
     origin: vortex
     source: Vortex.Inventory/Grains/InventoryGrain.Furni.cs
     symbol: InventoryGrain
-    line: 824
+    line: 857
   - id: ev_c716d5e1bc87
     kind: emulator_flow
     authority: vortex_emulator

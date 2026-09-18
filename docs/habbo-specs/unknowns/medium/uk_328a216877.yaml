@@ -10,7 +10,7 @@
 
 spec: unknown
 spec_version: 1
-generated_digest: "sha256:56ff9fd32538bfcbc4aee74a779c09e621f336b8c982945b7a6708bb73ba1d13"
+generated_digest: "sha256:9024e7fb5e8a249e44081f700dd41bc454b65f6c2e99faae9686b5346637c889"
 generated:
   id: uk_328a216877
   subject: "catalog.get_flat_categories: what the server sends when it refuses"
@@ -123,7 +123,7 @@ generated:
     origin: vortex
     source: Vortex.Inventory/Grains/InventoryGrain.Furni.cs
     symbol: InventoryGrain
-    line: 458
+    line: 491
   - id: ev_d720d639bd09
     kind: emulator_flow
     authority: vortex_emulator

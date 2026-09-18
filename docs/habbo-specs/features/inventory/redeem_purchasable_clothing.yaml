@@ -10,7 +10,7 @@
 
 spec: feature
 spec_version: 1
-generated_digest: "sha256:2ee468a007e732009035ca10e752868039dbe084fab8221e9f59a0b9cefc7a90"
+generated_digest: "sha256:044e989558bc522e748a1498d2a6b0c6fe936db5e4533008a707fe227064d167"
 generated:
   id: inventory.redeem_purchasable_clothing
   domain: inventory
@@ -208,7 +208,7 @@ generated:
     origin: vortex
     source: Vortex.Inventory/Grains/InventoryGrain.Furni.cs
     symbol: InventoryGrain
-    line: 824
+    line: 857
   - id: ev_d720d639bd09
     kind: emulator_flow
     authority: vortex_emulator

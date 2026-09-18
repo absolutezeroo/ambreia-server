@@ -10,7 +10,7 @@
 
 spec: feature
 spec_version: 1
-generated_digest: "sha256:59e0f9a7544047c37f7da2f53845f5d246b1e56dcea4eaaefd15c43791e7041e"
+generated_digest: "sha256:978b1b291413dc786e19967d6ade05bcee5033a0ffeccfc3cf3467e1c5aa6298"
 generated:
   id: collectibles.mint_item
   domain: collectibles
@@ -227,7 +227,7 @@ generated:
     origin: vortex
     source: Vortex.Inventory/Grains/InventoryGrain.Furni.cs
     symbol: InventoryGrain
-    line: 824
+    line: 857
   - id: ev_d720d639bd09
     kind: emulator_flow
     authority: vortex_emulator

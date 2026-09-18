@@ -10,7 +10,7 @@
 
 spec: feature
 spec_version: 1
-generated_digest: "sha256:13a24c86f02dd8017271eba2e6a3f43188d4d760793c52ba86582a6146d36266"
+generated_digest: "sha256:cf55ec45ed1d66baff4bcd8d1f9b571335aa2eae2fd4a8f42dc9c5e753cf7375"
 generated:
   id: catalog.find_by_product_code
   domain: catalog
@@ -165,7 +165,7 @@ generated:
     origin: vortex
     source: Vortex.Inventory/Fulfillment/CatalogFulfillmentPlanner.cs
     symbol: CatalogFulfillmentPlanner
-    line: 89
+    line: 90
   - id: ev_1f83e61934ca
     kind: emulator_flow
     authority: vortex_emulator
@@ -235,7 +235,7 @@ generated:
     origin: vortex
     source: Vortex.Inventory/Fulfillment/Strategies/IFulfillmentStrategy.cs
     symbol: FulfillmentPlanBuilder
-    line: 79
+    line: 82
   - id: ev_c6396662000a
     kind: emulator_flow
     authority: vortex_emulator

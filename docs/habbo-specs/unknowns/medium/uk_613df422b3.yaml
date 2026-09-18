@@ -10,7 +10,7 @@
 
 spec: unknown
 spec_version: 1
-generated_digest: "sha256:338f772e297e730a30b8edd1db820769366143428ba69d71f59be2af40a5db7c"
+generated_digest: "sha256:9fc2ef1b70eb84f996304c5d0be1281991cfec61293efaa09d32e79269f4ddcd"
 generated:
   id: uk_613df422b3
   subject: "room.present_open: what the server sends when it refuses"
@@ -25,7 +25,7 @@ generated:
     origin: vortex
     source: Vortex.Inventory/Fulfillment/CatalogFulfillmentPlanner.cs
     symbol: CatalogFulfillmentPlanner
-    line: 89
+    line: 90
   - id: ev_0f9ffda870b1
     kind: emulator_flow
     authority: vortex_emulator
@@ -102,7 +102,7 @@ generated:
     origin: vortex
     source: Vortex.Inventory/Fulfillment/Strategies/IFulfillmentStrategy.cs
     symbol: FulfillmentPlanBuilder
-    line: 79
+    line: 82
   - id: ev_b43e4f79cdaa
     kind: emulator_flow
     authority: vortex_emulator

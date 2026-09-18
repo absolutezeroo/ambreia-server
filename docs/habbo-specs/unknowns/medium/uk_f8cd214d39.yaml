@@ -10,7 +10,7 @@
 
 spec: unknown
 spec_version: 1
-generated_digest: "sha256:41023cde09416ef69ddee1abae0ad15213c0bdc71c17395447b15a41f6eb1419"
+generated_digest: "sha256:fee5bee8567448113d9d7bc86054ff029508b146e49d8114b4ee8baf6bf53a05"
 generated:
   id: uk_f8cd214d39
   subject: "room.open_mystery_trophy: what the server sends when it refuses"
@@ -123,7 +123,7 @@ generated:
     origin: vortex
     source: Vortex.Inventory/Grains/InventoryGrain.Furni.cs
     symbol: InventoryGrain
-    line: 691
+    line: 724
   - id: ev_db615f36b20b
     kind: emulator_flow
     authority: vortex_emulator

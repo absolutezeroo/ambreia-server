@@ -10,7 +10,7 @@
 
 spec: unknown
 spec_version: 1
-generated_digest: "sha256:10b6f689fb8ed98588d6594568f068af9d3bbb0b8269bbc9c9bd173043f9f43b"
+generated_digest: "sha256:b766a2a02a0f4a312f02a6d5e4d82c1a2c02860b24c77a71d026c18108d6e0c7"
 generated:
   id: uk_ca32519122
   subject: "catalog.builders_club_place_room_item: what the server sends when it refuses"
@@ -179,7 +179,7 @@ generated:
     origin: vortex
     source: Vortex.Inventory/Grains/InventoryGrain.Furni.cs
     symbol: InventoryGrain
-    line: 705
+    line: 738
   - id: ev_d720d639bd09
     kind: emulator_flow
     authority: vortex_emulator

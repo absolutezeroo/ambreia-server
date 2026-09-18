@@ -10,7 +10,7 @@
 
 spec: feature
 spec_version: 1
-generated_digest: "sha256:7a3cee0a483b0fac55e03b3ff218755f64b9008e20335e2ab9685c3772d0c3ca"
+generated_digest: "sha256:e02581c324e426dc595571107db0552eb280179fd5e9b90e712990459d1302a4"
 generated:
   id: quest.get_concurrent_users_reward
   domain: quest
@@ -130,7 +130,7 @@ generated:
     origin: vortex
     source: Vortex.Inventory/Grains/InventoryGrain.Furni.cs
     symbol: InventoryGrain
-    line: 458
+    line: 491
   - id: ev_d720d639bd09
     kind: emulator_flow
     authority: vortex_emulator

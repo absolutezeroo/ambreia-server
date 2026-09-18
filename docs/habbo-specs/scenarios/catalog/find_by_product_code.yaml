@@ -10,7 +10,7 @@
 
 spec: scenarios
 spec_version: 1
-generated_digest: "sha256:ddfaa13f355374ca9055986e445f9e99109acbe1f42104101fa9b9cf1418578b"
+generated_digest: "sha256:d2eb8cd43cf3f1c34b9c2161bd2e87bc9d019f4b6e3a16938b005e82d0e1967d"
 generated:
   feature: catalog.find_by_product_code
   scenarios:
@@ -349,7 +349,7 @@ generated:
     origin: vortex
     source: Vortex.Inventory/Fulfillment/CatalogFulfillmentPlanner.cs
     symbol: CatalogFulfillmentPlanner
-    line: 89
+    line: 90
   - id: ev_1f83e61934ca
     kind: emulator_flow
     authority: vortex_emulator

@@ -10,7 +10,7 @@
 
 spec: unknown
 spec_version: 1
-generated_digest: "sha256:403c1109673542e24060db9517dd9b49f5043ace01c490470c7ef41696ac55ab"
+generated_digest: "sha256:0b20c73d75c61b152946d045ae52f37518cd006dc9b86b0aa4e0998f71f5685d"
 generated:
   id: uk_68c298b463
   subject: "inventory.add_trade_items: what the server sends when it refuses"
@@ -74,7 +74,7 @@ generated:
     origin: vortex
     source: Vortex.Inventory/Grains/InventoryGrain.Furni.cs
     symbol: InventoryGrain
-    line: 824
+    line: 857
   - id: ev_cb734f7b3876
     kind: emulator_flow
     authority: vortex_emulator

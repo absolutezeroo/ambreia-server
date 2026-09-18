@@ -10,7 +10,7 @@
 
 spec: unknown
 spec_version: 1
-generated_digest: "sha256:2ae2306db23c5d81b23f469b0174e4671c43ff837c33c585d8c26ed9a5f096d7"
+generated_digest: "sha256:7782e503f992bd631483744df212997bd9320dee280d258bd517119780b0f4a4"
 generated:
   id: uk_b851f48f39
   subject: "inventory.redeem_purchasable_clothing: what the server sends when it refuses"
@@ -81,7 +81,7 @@ generated:
     origin: vortex
     source: Vortex.Inventory/Grains/InventoryGrain.Furni.cs
     symbol: InventoryGrain
-    line: 824
+    line: 857
   - id: ev_d720d639bd09
     kind: emulator_flow
     authority: vortex_emulator
