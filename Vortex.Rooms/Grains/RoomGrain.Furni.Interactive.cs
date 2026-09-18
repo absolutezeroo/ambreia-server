@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
@@ -12,6 +12,7 @@ using Vortex.Primitives.Events;
 using Vortex.Primitives.Furniture;
 using Vortex.Primitives.Furniture.StuffData;
 using Vortex.Primitives.Players;
+using Vortex.Primitives.Players.Enums.Wallet;
 using Vortex.Primitives.Rooms.Enums;
 using Vortex.Primitives.Rooms.Object;
 using Vortex.Primitives.Rooms.Object.Avatars;
@@ -428,7 +429,7 @@ public sealed partial class RoomGrain
         return true;
     }
 
-    public async Task<int> RedeemCreditFurniAsync(
+    public async Task<CreditFurniPayout> RedeemCreditFurniAsync(
         ActionContext ctx,
         RoomObjectId itemId,
         CancellationToken ct
@@ -441,10 +442,26 @@ public sealed partial class RoomGrain
             || item.OwnerId != ctx.PlayerId
         )
         {
-            return 0;
+            return CreditFurniPayout.None;
         }
 
-        if (!CreditFurniValue.TryParse(item.Definition.Name, out int credits))
+        CurrencyType currency;
+        int amount;
+
+        if (CreditFurniValue.TryParse(item.Definition.Name, out int credits))
+        {
+            currency = CurrencyType.Credits;
+            amount = credits;
+        }
+        else if (EmeraldFurniValue.TryParse(item.Definition.Name, out int emeralds))
+        {
+            // The collectibles coin. Its own convention, read the way the client's
+            // FurnitureNftCreditLogic reads it, so the prompt's "contains N emeralds" and the payout
+            // are the same number.
+            currency = CurrencyType.Emeralds;
+            amount = emeralds;
+        }
+        else
         {
             _logger.LogWarning(
                 "Credit furni {ObjectId} (definition {DefinitionId}, '{Name}') in room {RoomId} names no value; it cannot be redeemed.",
@@ -454,15 +471,15 @@ public sealed partial class RoomGrain
                 _state.RoomId.Value
             );
 
-            return 0;
+            return CreditFurniPayout.None;
         }
 
         // Consumed before the credits exist, for the reason the crackable is: the reverse order
         // turns one coin still standing on the floor into as many payouts as it can be clicked.
         return await ConsumeItemAsync(ctx, item, ItemDeletionReason.CreditRedeemed, ct)
             .ConfigureAwait(true)
-            ? credits
-            : 0;
+            ? new CreditFurniPayout { Amount = amount, Currency = currency }
+            : CreditFurniPayout.None;
     }
 
     public async Task<PresentContentsSnapshot?> OpenPresentAsync(

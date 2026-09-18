@@ -10,7 +10,7 @@
 
 spec: packet
 spec_version: 1
-generated_digest: "sha256:32c66db2bc7ebb7b706d274b229c1e7e84df9783b1b917d94fd4690d87754278"
+generated_digest: "sha256:23bc020aa7351b62cd4f6fced53782d8e5cfac08d6ae88f1ea4c3eeb61181eeb"
 generated:
   name: CreditFurniRedeem
   direction: incoming
@@ -87,5 +87,7 @@ generated:
     source: Vortex.Revisions/Revision20260701/Parsers/Room/Furniture/CreditFurniRedeemMessageParser.cs
     symbol: CreditFurniRedeemMessageParser
     line: 8
+  conflicts:
+  - cf_93131263dc
 verified: {}
 manual: {}

@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using Vortex.Primitives.Action;
+using Vortex.Primitives.Furniture;
 using Vortex.Primitives.Rooms.Object;
 using Vortex.Primitives.Rooms.Snapshots.Furniture;
 
@@ -151,11 +152,17 @@ public partial interface IRoomFurni
     );
 
     /// <summary>
-    /// Cashes in a credit furni and consumes it. Returns how many credits it was worth, for the
-    /// caller to pay out, or zero when the item is absent, is not the actor's own, or names no
-    /// value.
+    /// Cashes in a credit furni and consumes it. Returns what it was worth and in which currency,
+    /// for the caller to pay out, or <see cref="CreditFurniPayout.None" /> when the item is absent,
+    /// is not the actor's own, or names no value.
     /// </summary>
-    public Task<int> RedeemCreditFurniAsync(
+    /// <remarks>
+    /// Two conventions, not one: a <c>CF_*</c> coin pays credits, an <c>nft_emerald*</c> one pays
+    /// emeralds. The client already tells them apart — it runs a different furniture logic and
+    /// prints a different prompt — so answering with credits for both would pay the wrong purse for
+    /// half of them.
+    /// </remarks>
+    public Task<CreditFurniPayout> RedeemCreditFurniAsync(
         ActionContext ctx,
         RoomObjectId itemId,
         CancellationToken ct

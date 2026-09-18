@@ -10,7 +10,7 @@
 
 spec: feature
 spec_version: 1
-generated_digest: "sha256:8af2546979e7a7b21d4edce36e3a6a3382f76200119a657879b0bbf8dc557144"
+generated_digest: "sha256:eb5b15f249794f6e478322c61fb5db4ea656bf39ca2b4c8e2510fc5b86c7bb8d"
 generated:
   id: room.credit_furni_redeem
   domain: room
@@ -34,14 +34,34 @@ generated:
     evidence: ev_5e51a330c801
   - order: 2
     layer: grain
-    symbol: PlayerWalletGrain.GrantCreditsAsync
+    symbol: PlayerWalletGrain.GrantCurrencyAsync
     evidence: ev_d0cb8ee11644
+  - order: 3
+    layer: domain
+    symbol: CurrencyTypeProvider.GetCurrencyTypeByKind
+    evidence: ev_c8f6f5149cf4
+  - order: 4
+    layer: module
+    symbol: EventSystem.PublishAsync
+    evidence: ev_34bf3ac088e2
+  - order: 5
+    layer: grain
+    symbol: PlayerPresenceGrain.OnCurrencyUpdateAsync
+    evidence: ev_94ddaa174e6d
+  - order: 6
+    layer: module
+    symbol: PlayerWalletModule.OnCurrencyUpdateAsync
+    evidence: ev_432f3c2b73af
+  - order: 7
+    layer: grain
+    symbol: PlayerPresenceGrain.SendComposerAsync
+    evidence: ev_373e76aa8a80
   checks:
   - expression: ctx.PlayerId <= 0 || ctx.RoomId <= 0
     on_fail: return
     observed_in: vortex
     evidence: ev_95434ff15887
-  - expression: credits <= 0
+  - expression: payout.Amount <= 0
     on_fail: return
     observed_in: vortex
     evidence: ev_95434ff15887
@@ -49,15 +69,51 @@ generated:
     on_fail: return
     observed_in: vortex
     evidence: ev_5e51a330c801
-  - expression: "!CreditFurniValue.TryParse(item.Definition.Name, out int credits)"
+  - expression: amount <= 0
     on_fail: return
     observed_in: vortex
-    evidence: ev_5e51a330c801
-  state_changes: []
+    evidence: ev_d0cb8ee11644
+  - expression: entity is null
+    on_fail: return
+    observed_in: vortex
+    evidence: ev_d0cb8ee11644
+  - expression: currencyType is null || !currencyType.Enabled
+    on_fail: return
+    observed_in: vortex
+    evidence: ev_d0cb8ee11644
+  - expression: _registry is null
+    on_fail: return
+    observed_in: vortex
+    evidence: ev_34bf3ac088e2
+  - expression: snapshot is null
+    on_fail: return
+    observed_in: vortex
+    evidence: ev_432f3c2b73af
+  state_changes:
+  - target: entity.Amount
+    value: amount
+    observed_in: vortex
+    evidence: ev_d0cb8ee11644
   outgoing:
     ordering: unknown
-    packets: []
-  reaches_persistence: false
+    packets:
+    - packet: CreditBalance
+      recipient: unknown
+      recipient_confidence: unknown
+      evidence: ev_432f3c2b73af
+    - packet: EmeraldBalance
+      recipient: unknown
+      recipient_confidence: unknown
+      evidence: ev_432f3c2b73af
+    - packet: HabboActivityPointNotification
+      recipient: unknown
+      recipient_confidence: unknown
+      evidence: ev_432f3c2b73af
+    - packet: SilverBalance
+      recipient: unknown
+      recipient_confidence: unknown
+      evidence: ev_432f3c2b73af
+  reaches_persistence: true
   evidence:
   - id: ev_2460f07026b9
     kind: emulator_handler
@@ -65,33 +121,77 @@ generated:
     origin: vortex
     source: Vortex.PacketHandlers/Room/Furniture/CreditFurniRedeemMessageHandler.cs
     symbol: CreditFurniRedeemMessageHandler
+    line: 22
+  - id: ev_34bf3ac088e2
+    kind: emulator_flow
+    authority: vortex_emulator
+    origin: vortex
+    source: Vortex.Events/EventSystem.cs
+    symbol: EventSystem
     line: 14
+  - id: ev_373e76aa8a80
+    kind: emulator_flow
+    authority: vortex_emulator
+    origin: vortex
+    source: Vortex.Players/Grains/PlayerPresenceGrain.cs
+    symbol: PlayerPresenceGrain
+    line: 178
+  - id: ev_432f3c2b73af
+    kind: emulator_flow
+    authority: vortex_emulator
+    origin: vortex
+    source: Vortex.Players/Grains/Modules/PlayerWalletModule.cs
+    symbol: PlayerWalletModule
+    line: 15
   - id: ev_5e51a330c801
     kind: emulator_flow
     authority: vortex_emulator
     origin: vortex
     source: Vortex.Rooms/Grains/RoomGrain.Furni.Interactive.cs
     symbol: RoomGrain
-    line: 431
+    line: 432
+  - id: ev_94ddaa174e6d
+    kind: emulator_flow
+    authority: vortex_emulator
+    origin: vortex
+    source: Vortex.Players/Grains/PlayerPresenceGrain.Wallet.cs
+    symbol: PlayerPresenceGrain
+    line: 9
   - id: ev_95434ff15887
     kind: emulator_flow
     authority: vortex_emulator
     origin: vortex
     source: Vortex.PacketHandlers/Room/Furniture/CreditFurniRedeemMessageHandler.cs
     symbol: CreditFurniRedeemMessageHandler
-    line: 23
+    line: 31
+  - id: ev_c8f6f5149cf4
+    kind: emulator_flow
+    authority: vortex_emulator
+    origin: vortex
+    source: Vortex.Players/Providers/CurrencyTypeProvider.cs
+    symbol: CurrencyTypeProvider
+    line: 43
   - id: ev_d0cb8ee11644
     kind: emulator_flow
     authority: vortex_emulator
     origin: vortex
     source: Vortex.Players/Grains/PlayerWalletGrain.cs
     symbol: PlayerWalletGrain
-    line: 400
+    line: 685
   scenarios:
   - room.credit_furni_redeem.guard_0
   - room.credit_furni_redeem.guard_1
   - room.credit_furni_redeem.guard_2
   - room.credit_furni_redeem.guard_3
+  - room.credit_furni_redeem.guard_4
+  - room.credit_furni_redeem.guard_5
+  - room.credit_furni_redeem.guard_6
+  - room.credit_furni_redeem.guard_7
   - room.credit_furni_redeem.success
+  conflicts:
+  - cf_93131263dc
+  unknowns:
+  - uk_3a03dcf306
+  - uk_69ef735352
 verified: {}
 manual: {}
