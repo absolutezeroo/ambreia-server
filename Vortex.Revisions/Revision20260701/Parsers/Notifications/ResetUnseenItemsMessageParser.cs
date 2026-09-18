@@ -6,5 +6,6 @@ namespace Vortex.Revisions.Revision20260701.Parsers.Notifications;
 
 internal class ResetUnseenItemsMessageParser : IParser
 {
-    public IMessageEvent Parse(IClientPacket packet) => new ResetUnseenItemsMessage();
+    public IMessageEvent Parse(IClientPacket packet) =>
+        new ResetUnseenItemsMessage { Category = packet.PopInt() };
 }
