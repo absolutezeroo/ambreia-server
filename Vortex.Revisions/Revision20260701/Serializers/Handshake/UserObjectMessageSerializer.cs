@@ -8,6 +8,13 @@ namespace Vortex.Revisions.Revision20260701.Serializers.Handshake;
 internal class UserObjectMessageSerializer(int header)
     : AbstractSerializer<UserObjectMessage>(header)
 {
+    /// <summary>
+    /// The shape the official server sends, read off a login capture. No consumer of
+    /// <c>lastAccessDate</c> exists in WIN63-202607011411, so nothing parses this back -- which is
+    /// why the value may still be the creation date rather than a real last access.
+    /// </summary>
+    private const string LastAccessDateFormat = "dd-MM-yyyy HH:mm:ss";
+
     protected override void Serialize(IServerPacket packet, UserObjectMessage message)
     {
         packet.WriteInteger(message.Player.PlayerId);
@@ -25,7 +32,14 @@ internal class UserObjectMessageSerializer(int header)
         packet.WriteInteger(message.Respect.Left);
         packet.WriteInteger(message.Respect.PetLeft);
         packet.WriteBoolean(false); // stream publishing enabled
-        packet.WriteString(message.Player.CreatedAt.ToString(CultureInfo.CurrentCulture)); // last online
+
+        // `lastAccessDate` on the client side. CurrentCulture made these bytes depend on the host's
+        // locale -- the same build sent "18-09-2026 11:06:35" from a dev box and "9/18/2026
+        // 11:06:35 AM" from an invariant container. The official server's format is fixed, and a
+        // capture of it (evidence/captures/login-official-001.json) is what names it.
+        packet.WriteString(
+            message.Player.CreatedAt.ToString(LastAccessDateFormat, CultureInfo.InvariantCulture)
+        );
         packet.WriteBoolean(false); // can name change
         packet.WriteBoolean(message.Player.SafetyLocked); // account safety locked
 

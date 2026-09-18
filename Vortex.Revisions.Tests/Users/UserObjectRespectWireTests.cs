@@ -1,4 +1,5 @@
 using System;
+using System.Globalization;
 using FluentAssertions;
 using Microsoft.Extensions.Options;
 using Vortex.Primitives.Networking;
@@ -62,7 +63,10 @@ public sealed class UserObjectRespectWireTests
         packet.PopInt().Should().Be(3, "petRespectLeft -- the scratch button's only condition");
 
         packet.PopBoolean().Should().BeFalse("stream publishing");
-        packet.PopString().Should().NotBeNull("last online");
+        packet
+            .PopString()
+            .Should()
+            .Be("01-01-1970 00:00:00", "lastAccessDate carries the official server's fixed format");
         packet.PopBoolean().Should().BeFalse("name change allowed");
         packet.PopBoolean().Should().BeFalse("account safety locked");
 
@@ -114,6 +118,51 @@ public sealed class UserObjectRespectWireTests
             .Be(3, "the client defaults this to 3 on its own, but it is still a server number");
         packet.Remaining.Should().Be(0);
     }
+
+    /// <summary>
+    /// The date field used to go out through <c>CultureInfo.CurrentCulture</c>, which made the
+    /// bytes a property of whatever locale the process happened to boot with. A dev box and a
+    /// container running invariant sent two different packets from one build.
+    /// </summary>
+    [Theory]
+    [InlineData("en-US")]
+    [InlineData("fr-FR")]
+    [InlineData("ar-SA")] // a non-Gregorian default calendar, the case that shifts the year itself
+    public void TheLastAccessDate_IsTheSameBytesWhateverTheHostLocaleIs(string culture)
+    {
+        CultureInfo previous = CultureInfo.CurrentCulture;
+
+        try
+        {
+            CultureInfo.CurrentCulture = new CultureInfo(culture);
+
+            ClientPacket packet = Body(
+                new UserObjectMessage { Player = NewPlayer(), Respect = NoRespect }
+            );
+
+            SkipIdentity(packet);
+            packet.PopInt();
+            packet.PopInt();
+            packet.PopInt();
+            packet.PopBoolean();
+
+            packet.PopString().Should().Be("01-01-1970 00:00:00");
+        }
+        finally
+        {
+            CultureInfo.CurrentCulture = previous;
+        }
+    }
+
+    private static PlayerRespectSnapshot NoRespect =>
+        new()
+        {
+            Received = 0,
+            Left = 0,
+            PetLeft = 0,
+            ReplenishesLeft = 0,
+            MaxPerDay = 3,
+        };
 
     /// <summary>The six identity fields and the direct-mail flag that precede the respect block.</summary>
     private static void SkipIdentity(ClientPacket packet)
