@@ -33,16 +33,20 @@ public class EditEventMessageHandler(IRoomAdvertisementService roomAdvertisement
             return;
         }
 
-        int minutesRemaining = Math.Max(0, (int)(updated.ExpiresAt - DateTime.UtcNow).TotalMinutes);
+        DateTime now = DateTime.UtcNow;
 
         await ctx.SendComposerAsync(
                 new RoomEventMessageComposer
                 {
+                    AdvertisementId = updated.AdvertisementId,
+                    OwnerPlayerId = updated.OwnerPlayerId,
+                    OwnerName = updated.OwnerName,
                     RoomId = updated.RoomId,
                     Name = updated.Name,
                     Description = updated.Description,
+                    MinutesSinceCreation = Math.Max(0, (int)(now - updated.CreatedAt).TotalMinutes),
+                    MinutesRemaining = Math.Max(0, (int)(updated.ExpiresAt - now).TotalMinutes),
                     CategoryId = updated.CategoryId,
-                    MinutesRemaining = minutesRemaining,
                 },
                 ct
             )

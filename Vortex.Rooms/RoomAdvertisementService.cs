@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
@@ -33,6 +34,7 @@ internal sealed class RoomAdvertisementService(
 
         RoomAdvertisementEntity? entity = await dbCtx
             .RoomAdvertisements.Include(a => a.RoomEntity)
+                .ThenInclude(r => r!.PlayerEntity)
             .FirstOrDefaultAsync(
                 a => a.Id == advertisementId && a.ExpiresAt > now && a.DeletedAt == null,
                 ct
@@ -62,15 +64,50 @@ internal sealed class RoomAdvertisementService(
             )
             .ConfigureAwait(false);
 
-        return new RoomAdvertisementSnapshot
+        return ToSnapshot(entity);
+    }
+
+    public async Task<RoomAdvertisementSnapshot?> GetActiveAdvertisementAsync(
+        int roomId,
+        CancellationToken ct = default
+    )
+    {
+        await using VortexDbContext dbCtx = await _dbContextFactory
+            .CreateDbContextAsync(ct)
+            .ConfigureAwait(false);
+
+        DateTime now = DateTime.UtcNow;
+
+        // One row per purchase, so a long-lived room has a pile of them. The live one is the
+        // non-expired row that runs out last -- the same rule HasActiveAdvertisementAsync tests.
+        RoomAdvertisementEntity? entity = await dbCtx
+            .RoomAdvertisements.Include(a => a.RoomEntity)
+                .ThenInclude(r => r!.PlayerEntity)
+            .Where(a => a.RoomEntityId == roomId && a.ExpiresAt > now && a.DeletedAt == null)
+            .OrderByDescending(a => a.ExpiresAt)
+            .FirstOrDefaultAsync(ct)
+            .ConfigureAwait(false);
+
+        return entity is null ? null : ToSnapshot(entity);
+    }
+
+    /// <summary>
+    /// The advertisement as the rest of the server sees it. The owner travels with it because the
+    /// client shows an advertisement next to whoever put it up, and reads both the id and the name.
+    /// </summary>
+    private static RoomAdvertisementSnapshot ToSnapshot(RoomAdvertisementEntity entity) =>
+        new()
         {
+            AdvertisementId = entity.Id,
             RoomId = entity.RoomEntityId,
             Name = entity.Name,
             Description = entity.Description,
             CategoryId = entity.CategoryId,
             ExpiresAt = entity.ExpiresAt,
+            CreatedAt = entity.CreatedAt,
+            OwnerPlayerId = entity.RoomEntity?.PlayerEntityId ?? 0,
+            OwnerName = entity.RoomEntity?.PlayerEntity?.Name ?? string.Empty,
         };
-    }
 
     public async Task<RoomId?> CancelAsync(
         int advertisementId,

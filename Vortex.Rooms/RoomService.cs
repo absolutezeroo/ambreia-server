@@ -46,10 +46,12 @@ internal sealed partial class RoomService(
     IGrainFactory grainFactory,
     IDbContextFactory<VortexDbContext> dbContextFactory,
     IRoomModerationStore roomModerationStore,
+    IRoomAdvertisementService roomAdvertisements,
     IEventPublisher events,
     ICancellableEventPublisher cancellableEvents
 ) : IRoomService
 {
+    private readonly IRoomAdvertisementService _roomAdvertisements = roomAdvertisements;
     private readonly IDbContextFactory<VortexDbContext> _dbContextFactory = dbContextFactory;
     private readonly IGrainFactory _grainFactory = grainFactory;
     private readonly ILogger<IRoomService> _logger = logger;
@@ -379,9 +381,51 @@ internal sealed partial class RoomService(
                     CanModify = hasRights,
                     CanRead = hasRights,
                 },
-                new WiredEnvironmentMessageComposer { HasClickUserWired = clickUser.Present }
+                new WiredEnvironmentMessageComposer { HasClickUserWired = clickUser.Present },
+                // Sets chooserDisabled, freeFurniMovementsEnabled and invisibleFurni on the client's
+                // room object, per room id. We write only the first boolean -- the client's parser
+                // guards each of the other two on bytes remaining -- and none of the three is a room
+                // setting here, so this pins them to their defaults rather than leaving the client's
+                // own defaults to decide. The official server sends it on every entry.
+                new HanditemConfigurationMessageComposer { IsHanditemControlBlocked = false }
             )
             .ConfigureAwait(false);
+
+        // The room's advertisement, if it is being advertised right now. There is no "no event"
+        // form to send: this client assigns whatever arrives to roomEventData without testing it,
+        // so an empty one would leave it holding a blank advertisement rather than none. Absence is
+        // how the client is told there is nothing, and RoomEventCancel is how a live one is cleared.
+        RoomAdvertisementSnapshot? advertisement = await _roomAdvertisements
+            .GetActiveAdvertisementAsync(roomId.Value, ct)
+            .ConfigureAwait(false);
+
+        if (advertisement is not null)
+        {
+            DateTime now = DateTime.UtcNow;
+
+            await playerPresence
+                .SendComposerAsync(
+                    new RoomEventMessageComposer
+                    {
+                        AdvertisementId = advertisement.AdvertisementId,
+                        OwnerPlayerId = advertisement.OwnerPlayerId,
+                        OwnerName = advertisement.OwnerName,
+                        RoomId = advertisement.RoomId,
+                        Name = advertisement.Name,
+                        Description = advertisement.Description,
+                        MinutesSinceCreation = Math.Max(
+                            0,
+                            (int)(now - advertisement.CreatedAt).TotalMinutes
+                        ),
+                        MinutesRemaining = Math.Max(
+                            0,
+                            (int)(advertisement.ExpiresAt - now).TotalMinutes
+                        ),
+                        CategoryId = advertisement.CategoryId,
+                    }
+                )
+                .ConfigureAwait(false);
+        }
 
         if (isOwner)
         {

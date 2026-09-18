@@ -36,4 +36,11 @@ public interface IRoomAdvertisementService
 
     /// <summary>Whether a room currently has a non-expired advertisement.</summary>
     Task<bool> HasActiveAdvertisementAsync(int roomId, CancellationToken ct = default);
+
+    /// <summary>The room's current advertisement, or null if it has none. A room is a history of
+    /// purchases, so this is the non-expired row with the latest expiry.</summary>
+    Task<RoomAdvertisementSnapshot?> GetActiveAdvertisementAsync(
+        int roomId,
+        CancellationToken ct = default
+    );
 }

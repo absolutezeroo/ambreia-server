@@ -43,6 +43,12 @@ public sealed class RoomEntryPayloadTests
         "CarryObjectMessageComposer",
         // Occupants' dances, players and bots alike.
         "DanceMessageComposer",
+        // Pins chooserDisabled, freeFurniMovementsEnabled and invisibleFurni on the client's room
+        // object instead of leaving them to whatever the client defaults to.
+        "HanditemConfigurationMessageComposer",
+        // The room's advertisement, when it has one. Sent only then: this client assigns whatever
+        // arrives to roomEventData without testing it, so an empty one reads as a blank event.
+        "RoomEventMessageComposer",
     ];
 
     [Fact]

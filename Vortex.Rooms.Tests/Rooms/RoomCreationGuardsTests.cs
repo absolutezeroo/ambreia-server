@@ -251,6 +251,7 @@ public sealed class RoomCreationGuardsTests : IDisposable
             BuildGrainFactory(),
             new TestDbContextFactory(_options),
             FakeProxy.Create<IRoomModerationStore>(_ => null),
+            FakeProxy.Create<IRoomAdvertisementService>(_ => null),
             FakeProxy.Create<IEventPublisher>(_ => Task.CompletedTask),
             FakeProxy.Create<ICancellableEventPublisher>(_ =>
                 Task.FromResult(new EventContext { CorrelationId = string.Empty, Cancel = false })
