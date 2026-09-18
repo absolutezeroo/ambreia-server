@@ -78,7 +78,21 @@ public sealed class RoomFilterWordsTests
         chat.ApplyFilterWords("nothing to do here").Should().Be("nothing to do here");
     }
 
-    private static RoomChatSystem NewChat(params string[] words)
+    /// <summary>
+    /// The replacement is <c>room.filter.replacement</c>, cached on the room rather than read per
+    /// line. The default only stands in for a read that has not happened.
+    /// </summary>
+    [Fact]
+    public void TheReplacementIsWhateverTheRoomWasToldItIs()
+    {
+        RoomChatSystem chat = NewChatMasking("***", "swear");
+
+        chat.ApplyFilterWords("do not swear here").Should().Be("do not *** here");
+    }
+
+    private static RoomChatSystem NewChat(params string[] words) => NewChatMasking(null, words);
+
+    private static RoomChatSystem NewChatMasking(string? replacement, params string[] words)
     {
         RoomGrain grain = GrainActivationContext.CreateWithIntegerKey<RoomGrain>(
             ROOM_ID,
@@ -113,6 +127,11 @@ public sealed class RoomFilterWordsTests
         foreach (string word in words)
         {
             grain._state.FilterWords.Add(word);
+        }
+
+        if (replacement is not null)
+        {
+            grain._state.FilterReplacement = replacement;
         }
 
         return new RoomChatSystem(grain);

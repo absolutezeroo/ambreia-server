@@ -402,7 +402,7 @@ public sealed class RoomChatSystem(RoomGrain roomGrain)
                 continue;
             }
 
-            parts[i] = _roomGrain._roomConfig.FilterReplacement;
+            parts[i] = _roomGrain._state.FilterReplacement;
             changed = true;
         }
 

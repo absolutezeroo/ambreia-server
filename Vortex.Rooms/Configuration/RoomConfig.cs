@@ -14,15 +14,6 @@ public class RoomConfig : IWiredLimits
     public bool PlaceItemsOnAvatars { get; init; } = true;
     public bool EnableDiagonalChecking { get; init; } = true;
 
-    /// <summary>How many words a room's own chat filter may hold.</summary>
-    public int FilterMaxWords { get; init; } = 50;
-
-    /// <summary>Longest filtered word accepted, which also bounds the column.</summary>
-    public int FilterWordMaxLength { get; init; } = 64;
-
-    /// <summary>What a filtered word is replaced with in the line everyone sees.</summary>
-    public string FilterReplacement { get; init; } = "bobba";
-
     public int RoomCheckMs { get; init; } = 300000;
     public int RoomDeactivationDelayMs { get; init; } = 1800000;
 

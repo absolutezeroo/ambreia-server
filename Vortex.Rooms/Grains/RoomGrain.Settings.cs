@@ -20,9 +20,11 @@ using Vortex.Primitives.Players;
 using Vortex.Primitives.Rooms;
 using Vortex.Primitives.Rooms.Enums;
 using Vortex.Primitives.Rooms.Grains;
+using Vortex.Primitives.Server;
 using Vortex.Protocol.Messages.Outgoing.Room.Chat;
 using Vortex.Protocol.Messages.Outgoing.Room.Engine;
 using Vortex.Protocol.Messages.Outgoing.Roomsettings;
+using Vortex.Rooms.Configuration;
 using Vortex.Rooms.Grains.Systems;
 
 namespace Vortex.Rooms.Grains;
@@ -354,13 +356,38 @@ public sealed partial class RoomGrain
 
         string trimmed = word.Trim();
 
+        // All three in one round trip to the cluster singleton. The replacement is not needed here,
+        // but this is the moment a room's filter is known to matter, so it is also where the chat
+        // path's cached copy is refreshed -- see RoomFilterConfig.
+        ImmutableDictionary<string, string> filterConfig = await _grainFactory
+            .GetServerConfigGrain()
+            .GetManyAsync(RoomFilterConfig.Keys)
+            .ConfigureAwait(true);
+
+        _state.FilterReplacement = ServerConfigValues.GetString(
+            filterConfig,
+            RoomFilterConfig.ReplacementKey,
+            RoomFilterConfig.ReplacementDefault
+        );
+
+        int wordMaxLength = ServerConfigValues.GetInt(
+            filterConfig,
+            RoomFilterConfig.WordMaxLengthKey,
+            RoomFilterConfig.WordMaxLengthDefault
+        );
+        int maxWords = ServerConfigValues.GetInt(
+            filterConfig,
+            RoomFilterConfig.MaxWordsKey,
+            RoomFilterConfig.MaxWordsDefault
+        );
+
         // Silently ignored rather than refused: the dialog has no error path for this, it just
         // redraws from whatever list comes back. A word too long or already there leaves the list
         // as it was, which is exactly what it should then show.
         if (
             trimmed.Length == 0
-            || trimmed.Length > _roomConfig.FilterWordMaxLength
-            || (adding && _state.FilterWords.Count >= _roomConfig.FilterMaxWords)
+            || trimmed.Length > wordMaxLength
+            || (adding && _state.FilterWords.Count >= maxWords)
         )
         {
             return [.. _state.FilterWords.Order(StringComparer.OrdinalIgnoreCase)];

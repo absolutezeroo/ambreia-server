@@ -11,6 +11,7 @@ using Vortex.Primitives.Rooms.Object.Avatars;
 using Vortex.Primitives.Rooms.Object.Furniture;
 using Vortex.Primitives.Rooms.Snapshots.Mapping;
 using Vortex.Primitives.Rooms.Wired.Variable;
+using Vortex.Rooms.Configuration;
 
 namespace Vortex.Rooms.Grains;
 
@@ -43,6 +44,14 @@ public sealed class RoomLiveState
     /// <summary>The room's own banned words, hydrated on load. Case-insensitive because that is how
     /// the filter is applied — an owner who banned "bobba" did not mean to allow "BOBBA".</summary>
     public HashSet<string> FilterWords { get; } = new(StringComparer.OrdinalIgnoreCase);
+
+    /// <summary>
+    /// What a filtered word is replaced with, cached from <c>room.filter.replacement</c>. Cached
+    /// rather than read where it is used because that is the chat path, once per line. The default
+    /// stands in for a read that never happened, so a room whose filter is live never masks a word
+    /// with an empty string.
+    /// </summary>
+    public string FilterReplacement { get; set; } = RoomFilterConfig.ReplacementDefault;
 
     /// <summary>Member ranks for the guild that owns this room, keyed by player id. Empty when the
     /// room has no guild. Hydrated on room load and kept in sync by

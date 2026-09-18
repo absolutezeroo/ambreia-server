@@ -602,6 +602,18 @@ public sealed partial class RoomGrain : Grain, IRoomGrain
                 _state.FilterWords.Add(word);
             }
 
+            // Only worth a config read when there is something to mask. Most rooms have an empty
+            // filter, and ApplyFilterWords returns before it ever looks at the replacement.
+            if (_state.FilterWords.Count > 0)
+            {
+                _state.FilterReplacement =
+                    await _grainFactory
+                        .GetServerConfigGrain()
+                        .GetValueAsync(RoomFilterConfig.ReplacementKey)
+                        .ConfigureAwait(true)
+                    ?? RoomFilterConfig.ReplacementDefault;
+            }
+
             await HydrateGroupMembershipAsync(dbCtx, entity.GroupEntityId, ct).ConfigureAwait(true);
         }
         finally
