@@ -22,6 +22,7 @@ using Vortex.Inventory.Furniture;
 using Vortex.Logging;
 using Vortex.Primitives;
 using Vortex.Primitives.Bots;
+using Vortex.Primitives.Catalog;
 using Vortex.Primitives.Catalog.Snapshots;
 using Vortex.Primitives.Commerce;
 using Vortex.Primitives.Events;
@@ -968,16 +969,17 @@ public sealed partial class InventoryGrain
     }
 
     /// <summary>
-    /// The wrapping's furniture. Stuff type 1 is the plain <c>present_gen</c> and 2-7 are its
-    /// numbered variants — the client offers seven and names them by index, not by classname.
+    /// The wrapping's furniture, named by the class id the gift dialog was given and handed back.
     /// </summary>
-    private FurnitureDefinitionSnapshot? ResolvePresentDefinition(int stuffTypeId)
-    {
-        int index = Math.Clamp(stuffTypeId, 1, 7) - 1;
-        string name = index == 0 ? "present_gen" : $"present_gen{index}";
-
-        return _furnitureDefinitionProvider.TryGetDefinitionByName(name);
-    }
+    /// <remarks>
+    /// This used to read the stuff type as an index into the <c>present_gen*</c> family, clamped to
+    /// 1-7. It is not one: the client draws the parcel preview with
+    /// <c>getFurnitureImage(stuffType)</c>, so the value only ever meant a furniture class id, and
+    /// the clamp turned every id above seven into the same parcel. The two halves now agree because
+    /// both read the same list — see <see cref="GiftWrapping"/>.
+    /// </remarks>
+    private FurnitureDefinitionSnapshot? ResolvePresentDefinition(int stuffTypeId) =>
+        GiftWrapping.ResolvePresent(_furnitureDefinitionProvider, stuffTypeId);
 
     /// <summary>
     /// Both halves of a present in one blob: the "stuff" section every client in the room can read,
