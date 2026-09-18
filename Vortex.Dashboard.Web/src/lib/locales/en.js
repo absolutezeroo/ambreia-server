@@ -3545,7 +3545,7 @@ export default {
     revokeChatStyle: 'Revoke chat style',
     revokeChatStyleSummary: 'Take chat style {id} away from {name}.',
     chatStyleHint:
-      'The id the client’s own style library uses. Only 1000–9999 can be unlocked: below that the client decides for itself, above it reads a message this hotel does not send.',
+      'The id the client’s own style library uses. From 1000 up: below that the client gates the bubble itself and never asks. 1000–9999 is an unlock, 10000 and up is a purchasable style.',
     title: 'Player rewards',
     description:
       'Badges, avatar effects, chat styles and saved outfits. The emulator only reads these one player at a time, so this is the only place a broken grant shows.',

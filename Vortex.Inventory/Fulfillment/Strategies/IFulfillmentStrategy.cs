@@ -65,6 +65,7 @@ internal sealed class FulfillmentPlanBuilder
     private readonly List<PetCreateRequest> _pets = [];
     private readonly List<BotCreateRequest> _bots = [];
     private readonly List<PlannedEffect> _effects = [];
+    private readonly List<int> _chatStyleIds = [];
 
     public void AddFurniture(PlannedFurniture furniture) => _furniture.Add(furniture);
 
@@ -76,6 +77,8 @@ internal sealed class FulfillmentPlanBuilder
 
     public void AddEffect(PlannedEffect effect) => _effects.Add(effect);
 
+    public void AddChatStyle(int chatStyleId) => _chatStyleIds.Add(chatStyleId);
+
     public FulfillmentPlan Build() =>
         new()
         {
@@ -84,5 +87,6 @@ internal sealed class FulfillmentPlanBuilder
             Pets = _pets,
             Bots = _bots,
             Effects = _effects,
+            ChatStyleIds = _chatStyleIds,
         };
 }

@@ -41,8 +41,11 @@ public sealed class ChatStyleUnlockTests
 {
     private const int PlayerId = 733;
 
-    /// <summary>A style id in the band the client asks the server about.</summary>
+    /// <summary>A style id in the band the client reads from the unlock list.</summary>
     private const int UnlockableStyleId = 1004;
+
+    /// <summary>The one purchasable style this client's library carries.</summary>
+    private const int PurchasableStyleId = 10000;
 
     [Fact]
     public async Task AGrantedStyle_ComesBackAsTheClientsOwnId()
@@ -105,13 +108,11 @@ public sealed class ChatStyleUnlockTests
     }
 
     [Theory]
-    // Below the band: the client gates these itself (free, HC, ambassador, staff) and never asks.
+    // Below 1000 the client gates the style itself (free, HC, ambassador, staff) and never asks the
+    // server, so a row here would be one nothing ever reads.
     [InlineData(12)]
     [InlineData(999)]
-    // At and above it the client reads UserPurchasableChatStyles instead, which nothing composes —
-    // a grant here would be an unlock the player could never be told about.
-    [InlineData(10000)]
-    public async Task AnIdOutsideTheUnlockableBand_IsRefusedAndWritesNothing(int styleId)
+    public async Task AnIdBelowTheGrantableFloor_IsRefusedAndWritesNothing(int styleId)
     {
         Harness harness = await Harness.CreateAsync().ConfigureAwait(true);
 
@@ -127,6 +128,75 @@ public sealed class ChatStyleUnlockTests
 
         owned.Should().BeEmpty();
         harness.Pushed.Should().BeEmpty();
+        harness.PushedChanges.Should().BeEmpty();
+    }
+
+    [Fact]
+    public async Task APurchasableStyle_GoesOutOnItsOwnIncrementalMessage()
+    {
+        Harness harness = await Harness.CreateAsync().ConfigureAwait(true);
+
+        await harness
+            .Grain.GrantChatStyleAsync(PurchasableStyleId, CancellationToken.None)
+            .ConfigureAwait(true);
+
+        // Not the unlock list. The client looks an id of 10000 up in _purchasableChatStyles, which
+        // only this message writes — sending it on the other list would leave the bubble locked.
+        harness.Pushed.Should().BeEmpty();
+        harness
+            .PushedChanges.Should()
+            .ContainSingle()
+            .Which.Should()
+            .BeEquivalentTo(new { Added = true, ChatStyleId = PurchasableStyleId });
+    }
+
+    [Fact]
+    public async Task RevokingAPurchasableStyle_SendsTheRemovalRatherThanAList()
+    {
+        Harness harness = await Harness.CreateAsync().ConfigureAwait(true);
+
+        await harness
+            .Grain.GrantChatStyleAsync(PurchasableStyleId, CancellationToken.None)
+            .ConfigureAwait(true);
+
+        await harness
+            .Grain.RevokeChatStyleAsync(PurchasableStyleId, CancellationToken.None)
+            .ConfigureAwait(true);
+
+        harness.Pushed.Should().BeEmpty();
+        harness.PushedChanges.Should().HaveCount(2);
+        harness
+            .PushedChanges[^1]
+            .Should()
+            .BeEquivalentTo(new { Added = false, ChatStyleId = PurchasableStyleId });
+    }
+
+    [Fact]
+    public async Task TheTwoBandsAreOneTableAndTwoLists()
+    {
+        Harness harness = await Harness.CreateAsync().ConfigureAwait(true);
+
+        await harness
+            .Grain.GrantChatStyleAsync(UnlockableStyleId, CancellationToken.None)
+            .ConfigureAwait(true);
+
+        await harness
+            .Grain.GrantChatStyleAsync(PurchasableStyleId, CancellationToken.None)
+            .ConfigureAwait(true);
+
+        List<int> owned = await harness
+            .Grain.GetOwnedChatStyleIdsAsync(CancellationToken.None)
+            .ConfigureAwait(true);
+
+        owned.Should().Equal(UnlockableStyleId, PurchasableStyleId);
+
+        // The unlock list that went out must not carry the purchasable id: the client never looks
+        // one up there, so it would be four bytes that unlock nothing.
+        harness
+            .Pushed.Should()
+            .ContainSingle()
+            .Which.ChatStyleIds.Should()
+            .Equal(UnlockableStyleId);
     }
 
     [Fact]
@@ -226,6 +296,9 @@ public sealed class ChatStyleUnlockTests
         /// <summary>Every <c>UserNftChatStyles</c> the grain handed to the presence grain, in order.</summary>
         public List<UserNftChatStylesMessageComposer> Pushed { get; } = [];
 
+        /// <summary>Every incremental purchasable-band message, in order.</summary>
+        public List<UserPurchasableChatStyleChangedMessageComposer> PushedChanges { get; } = [];
+
         public VortexDbContext NewContext() => new(_options);
 
         public static async Task<Harness> CreateAsync()
@@ -271,14 +344,12 @@ public sealed class ChatStyleUnlockTests
 
         private object Record(ProxyCall call)
         {
-            foreach (
-                UserNftChatStylesMessageComposer composer in (call.Args ?? [])
-                    .OfType<IComposer>()
-                    .OfType<UserNftChatStylesMessageComposer>()
-            )
-            {
-                Pushed.Add(composer);
-            }
+            IComposer[] composers = [.. (call.Args ?? []).OfType<IComposer>()];
+
+            Pushed.AddRange(composers.OfType<UserNftChatStylesMessageComposer>());
+            PushedChanges.AddRange(
+                composers.OfType<UserPurchasableChatStyleChangedMessageComposer>()
+            );
 
             return Task.CompletedTask;
         }

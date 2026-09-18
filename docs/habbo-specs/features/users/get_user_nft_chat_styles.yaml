@@ -10,7 +10,7 @@
 
 spec: feature
 spec_version: 1
-generated_digest: "sha256:59bea1dc6f7fcbe77d3f14923105fb841cc1aa8e12839f9fcf8f5a799f5c7e57"
+generated_digest: "sha256:a1161d6b5e29934b619c6a1b1ad8b0319520bffb221d6ebd0234b501069460a6"
 generated:
   id: users.get_user_nft_chat_styles
   domain: users
@@ -48,6 +48,10 @@ generated:
       recipient: actor
       recipient_confidence: implementation_observed
       evidence: ev_7f8b8b4c7698
+    - packet: UserPurchasableChatStyles
+      recipient: actor
+      recipient_confidence: implementation_observed
+      evidence: ev_7f8b8b4c7698
   reaches_persistence: false
   evidence:
   - id: ev_7ecbcf966855
@@ -56,21 +60,21 @@ generated:
     origin: vortex
     source: Vortex.PacketHandlers/Users/GetUserNftChatStylesMessageHandler.cs
     symbol: GetUserNftChatStylesMessageHandler
-    line: 30
+    line: 34
   - id: ev_7f8b8b4c7698
     kind: emulator_flow
     authority: vortex_emulator
     origin: vortex
     source: Vortex.PacketHandlers/Users/GetUserNftChatStylesMessageHandler.cs
     symbol: GetUserNftChatStylesMessageHandler
-    line: 41
+    line: 45
   - id: ev_a191f35d876d
     kind: emulator_flow
     authority: vortex_emulator
     origin: vortex
     source: Vortex.Players/Grains/PlayerGrain.ChatStyles.cs
     symbol: PlayerGrain
-    line: 30
+    line: 17
   - id: ev_f13d6bcce744
     kind: emulator_flow
     authority: vortex_emulator
@@ -95,12 +99,23 @@ verified:
       symbol: onNftChatStyles
   a_resend_is_the_refresh:
     confidence: client_confirmed
-    claim: Re-sending the whole list unasked is how a mid-session unlock reaches the client; there is no add or remove message for it.
-    reason: onNftChatStyles replaces the vector outright rather than merging, and the registry holds no second NFT chat-style message. The purchasable band has UserPurchasableChatStyleChanged for this; the unlock band has nothing.
+    claim: Re-sending the whole unlock list unasked is how a mid-session unlock reaches the client; there is no add or remove message for that band.
+    reason: onNftChatStyles replaces the vector outright rather than merging, and the registry holds no second message for the unlock band. The purchasable band does have one -- UserPurchasableChatStyleChanged, a boolean and an id, spliced into the vector -- which is why the two bands refresh differently.
     evidence:
     - kind: client_code
       source: com/sulake/habbo/session/SessionDataManager.as
       symbol: onNftChatStyles
+    - kind: client_code
+      source: com/sulake/habbo/session/SessionDataManager.as
+      symbol: onPurchasableChatStyleChanged
+  asked_at_session_init:
+    confidence: client_confirmed
+    claim: The client sends this from SessionDataManager.initSessionData, at login -- not when the Collectors Guild opens.
+    reason: "initSessionData sends the composer alongside the ignore list and the income-reward status. It matters because the chat-style selector needs the answer whether or not the player ever opens the collectibles hub, and because it is the only login-time request in this family: UserPurchasableChatStyles has no request header at all, so the server volunteers it on the back of this one."
+    evidence:
+    - kind: client_code
+      source: com/sulake/habbo/session/SessionDataManager.as
+      symbol: initSessionData
 manual:
-  band_above_9999: "From 10000 up the client asks hasPurchasableChatStyle instead, fed by UserPurchasableChatStyles (header 3774). That header exists in the registry with no composer behind it, so this hotel cannot unlock a purchasable style; the grain refuses a grant there rather than storing one nothing can announce."
+  band_above_9999: "From 10000 up the client asks hasPurchasableChatStyle instead, fed by UserPurchasableChatStyles (3774) and kept current by UserPurchasableChatStyleChanged (3971). Both are answers with no request opposite them, so the list rides on this message's reply and the incremental one is sent when a style moves. A purchasable style is bought as an ordinary catalog product of type \"chat_style\" whose extra param is the id."
   ids_below_1000: Static styles. The client gates them itself on club, ambassador and staff rights and never asks the server, so granting one would write a row nothing reads.

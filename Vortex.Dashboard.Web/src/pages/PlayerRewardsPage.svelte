@@ -69,8 +69,8 @@
       : null);
   let effectDuration = $state(0);
 
-  // The client's own library id, not a row id. Anything outside 1000..9999 is refused by the grain
-  // rather than here, so there is one range rule and the form does not have to restate it.
+  // The client's own library id, not a row id. Anything below 1000 is refused by the grain rather
+  // than here, so there is one range rule and the form does not have to restate it.
   let chatStyleId = $state(0);
 
   async function refresh() {
@@ -533,7 +533,7 @@
            slot would read as "this is what 1004 looks like". -->
       <label>
         {$t('playerRewards.colStyleId')}
-        <input autocomplete="off" spellcheck="false" type="number" bind:value={chatStyleId} min="1000" max="9999" />
+        <input autocomplete="off" spellcheck="false" type="number" bind:value={chatStyleId} min="1000" />
       </label>
       <button type="submit" disabled={!chatStyleId}>{$t('playerRewards.grantChatStyle')}</button>
       <button

@@ -232,5 +232,17 @@ internal sealed class CollectiblesMap : IRevisionMap
                 MessageComposer.UserNftChatStylesMessageComposer
             )
         );
+        builder.MapSerializer(
+            typeof(UserPurchasableChatStylesMessageComposer),
+            new UserPurchasableChatStylesMessageComposerSerializer(
+                MessageComposer.UserPurchasableChatStylesMessageComposer
+            )
+        );
+        builder.MapSerializer(
+            typeof(UserPurchasableChatStyleChangedMessageComposer),
+            new UserPurchasableChatStyleChangedMessageComposerSerializer(
+                MessageComposer.UserPurchasableChatStyleChangedMessageComposer
+            )
+        );
     }
 }

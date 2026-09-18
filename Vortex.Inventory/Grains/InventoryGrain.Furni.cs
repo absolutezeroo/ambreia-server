@@ -198,6 +198,7 @@ public sealed partial class InventoryGrain
         IReadOnlyList<PetCreateRequest> petRequests = plan.Pets;
         IReadOnlyList<BotCreateRequest> botRequests = plan.Bots;
         IReadOnlyList<PlannedEffect> effectGrants = plan.Effects;
+        IReadOnlyList<int> chatStyleGrants = plan.ChatStyleIds;
 
         List<PetEntity> committedPets = [];
         List<BotEntity> committedBots = [];
@@ -342,7 +343,12 @@ public sealed partial class InventoryGrain
         // theirs, or grants an effect in another grain — none of it is a reason to take the purchase
         // back, and none of it runs under the request's cancellation token: the client hanging up is
         // the single most common way this used to fail, and it was being read as "undo the sale".
-        await AnnounceGrantedFamiliesAsync(committedPets, committedBots, effectGrants);
+        await AnnounceGrantedFamiliesAsync(
+            committedPets,
+            committedBots,
+            effectGrants,
+            chatStyleGrants
+        );
     }
 
     /// <summary>
@@ -358,7 +364,8 @@ public sealed partial class InventoryGrain
     private async Task AnnounceGrantedFamiliesAsync(
         List<PetEntity> pets,
         List<BotEntity> bots,
-        IReadOnlyList<PlannedEffect> effectGrants
+        IReadOnlyList<PlannedEffect> effectGrants,
+        IReadOnlyList<int> chatStyleGrants
     )
     {
         // ponytail: CancellationToken.None rather than a host-shutdown token. The requirement is
@@ -427,28 +434,54 @@ public sealed partial class InventoryGrain
             }
         }
 
-        if (effectGrants.Count == 0)
+        if (effectGrants.Count > 0)
+        {
+            // The effect grain owns player_effects and pushes AvatarEffectAdded itself.
+            IPlayerEffectGrain effects = _grainFactory.GetPlayerEffectGrain(
+                this.GetPrimaryKeyLong()
+            );
+
+            foreach (PlannedEffect grant in effectGrants)
+            {
+                try
+                {
+                    await effects
+                        .AddEffectAsync(grant.EffectId, grant.SubType, grant.DurationSeconds, ct)
+                        .ConfigureAwait(true);
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(
+                        ex,
+                        "Effect {EffectId} was bought by player {PlayerId} but could not be granted.",
+                        grant.EffectId,
+                        this.GetPrimaryKeyLong()
+                    );
+                }
+            }
+        }
+
+        if (chatStyleGrants.Count == 0)
         {
             return;
         }
 
-        // The effect grain owns player_effects and pushes AvatarEffectAdded itself.
-        IPlayerEffectGrain effects = _grainFactory.GetPlayerEffectGrain(this.GetPrimaryKeyLong());
+        // Same shape as the effect above: the player grain owns the ownership rows and pushes
+        // whichever chat-style message the id's band calls for, so there is nothing to announce here.
+        IPlayerGrain player = _grainFactory.GetPlayerGrain((int)this.GetPrimaryKeyLong());
 
-        foreach (PlannedEffect grant in effectGrants)
+        foreach (int chatStyleId in chatStyleGrants)
         {
             try
             {
-                await effects
-                    .AddEffectAsync(grant.EffectId, grant.SubType, grant.DurationSeconds, ct)
-                    .ConfigureAwait(true);
+                await player.GrantChatStyleAsync(chatStyleId, ct).ConfigureAwait(true);
             }
             catch (Exception ex)
             {
                 _logger.LogError(
                     ex,
-                    "Effect {EffectId} was bought by player {PlayerId} but could not be granted.",
-                    grant.EffectId,
+                    "Chat style {ChatStyleId} was bought by player {PlayerId} but could not be granted.",
+                    chatStyleId,
                     this.GetPrimaryKeyLong()
                 );
             }

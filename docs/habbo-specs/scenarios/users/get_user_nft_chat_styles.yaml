@@ -10,7 +10,7 @@
 
 spec: scenarios
 spec_version: 1
-generated_digest: "sha256:8811db65e644d7d5243756203b44855c3679c5eda790dd277b6a55dfd2c34291"
+generated_digest: "sha256:e7c2c91ffd699744114abc86729fae997c30d0c8f92b8c9ac9c6609d736fb65c"
 generated:
   feature: users.get_user_nft_chat_styles
   scenarios:
@@ -49,6 +49,7 @@ generated:
       outcome: success
       emits:
       - UserNftChatStyles
+      - UserPurchasableChatStyles
       evidence: ev_7ecbcf966855
   evidence:
   - id: ev_7ecbcf966855
@@ -57,13 +58,13 @@ generated:
     origin: vortex
     source: Vortex.PacketHandlers/Users/GetUserNftChatStylesMessageHandler.cs
     symbol: GetUserNftChatStylesMessageHandler
-    line: 30
+    line: 34
   - id: ev_7f8b8b4c7698
     kind: emulator_flow
     authority: vortex_emulator
     origin: vortex
     source: Vortex.PacketHandlers/Users/GetUserNftChatStylesMessageHandler.cs
     symbol: GetUserNftChatStylesMessageHandler
-    line: 41
+    line: 45
 verified: {}
 manual: {}

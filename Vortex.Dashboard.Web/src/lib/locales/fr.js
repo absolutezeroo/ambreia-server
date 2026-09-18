@@ -3557,7 +3557,7 @@ export default {
     revokeChatStyle: 'Retirer le style de chat',
     revokeChatStyleSummary: 'Retirer le style de chat {id} à {name}.',
     chatStyleHint:
-      "L'identifiant de la bibliothèque de styles du client. Seuls 1000–9999 peuvent être débloqués : en dessous le client décide seul, au-dessus il lit un message que cet hôtel n'envoie pas.",
+      "L'identifiant de la bibliothèque de styles du client. À partir de 1000 : en dessous, le client gère la bulle lui-même et ne demande rien. 1000–9999 = déblocage, 10000 et plus = style achetable.",
     title: 'Récompenses des joueurs',
     description:
       "Badges, effets d'avatar, styles de chat et tenues sauvegardées. L'émulateur ne lit ces tables qu'un joueur à la fois : c'est le seul endroit où une attribution cassée se voit.",

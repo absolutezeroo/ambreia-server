@@ -12,6 +12,9 @@ export const PRODUCT_TYPES = [
   { value: 4, label: 'Robot' },
   { value: 5, label: 'HabboClub' },
   { value: 6, label: 'Pet' },
+  // Extra param is the id in the client's own chat-style library. Only 1000 and up can be granted:
+  // below that the client gates the bubble itself and never asks the server about it.
+  { value: 7, label: 'Chat style' },
 ];
 
 export const FURNITURE_CATEGORIES = [

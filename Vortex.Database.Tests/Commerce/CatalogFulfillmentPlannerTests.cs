@@ -241,6 +241,38 @@ public sealed class CatalogFulfillmentPlannerTests
     }
 
     [Fact]
+    public void AChatStyleProduct_PlansItsClientStyleId()
+    {
+        Plan(quantity: 1, CatalogOffers.Product(1, ProductType.ChatStyle, extraParam: "10000"))
+            .ChatStyleIds.Should()
+            .Equal([10000]);
+    }
+
+    /// <summary>Owned or not, like a badge: five of an offer is not five of the bubble.</summary>
+    [Fact]
+    public void AChatStyle_IsPlannedOnceWhateverTheQuantity()
+    {
+        Plan(quantity: 5, CatalogOffers.Product(1, ProductType.ChatStyle, extraParam: "10000"))
+            .ChatStyleIds.Should()
+            .ContainSingle();
+    }
+
+    /// <summary>
+    /// A mistyped id promises nothing rather than throwing. It runs before the debit either way, but
+    /// refusing the whole purchase over one product of a bundle makes the buyer pay for the mistake.
+    /// </summary>
+    [Theory]
+    [InlineData("")]
+    [InlineData("chat_style")]
+    [InlineData("0")]
+    public void AChatStyleWithNoUsableId_PlansNothing(string extraParam)
+    {
+        Plan(quantity: 1, CatalogOffers.Product(1, ProductType.ChatStyle, extraParam: extraParam))
+            .ChatStyleIds.Should()
+            .BeEmpty();
+    }
+
+    [Fact]
     public void AnOfferOfProductTypesNothingCanGrant_PlansNothing()
     {
         Plan(quantity: 1, CatalogOffers.Product(1, ProductType.Badge, extraParam: "   "))
