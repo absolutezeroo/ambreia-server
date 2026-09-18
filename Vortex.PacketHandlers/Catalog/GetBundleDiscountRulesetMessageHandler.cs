@@ -19,11 +19,17 @@ public class GetBundleDiscountRulesetMessageHandler
         await ctx.SendComposerAsync(
                 new BundleDiscountRulesetMessageComposer
                 {
+                    // No bundle discount. The client prices a multi-buy itself from this ruleset,
+                    // so advertising one it would then apply -- "buy 6, pay 5" was what the sizes
+                    // below used to say -- shows the buyer a total the purchase grain never
+                    // charges. Restoring a discount means teaching CatalogPurchaseGrain the same
+                    // arithmetic first; until then the honest ruleset is the empty one, which is
+                    // also what the official server sends.
                     BundleDiscountRuleset = new BundleDiscountRulesetSnapshot(
                         MaxPurchaseSize: BundleDiscountRulesetSnapshot.DEFAULT_MAX_PURCHASE_SIZE,
-                        BundleSize: 6,
-                        BundleDiscountSize: 1,
-                        BonusThreshold: 0,
+                        BundleSize: 0,
+                        BundleDiscountSize: 0,
+                        BonusThreshold: -1,
                         AdditionalBonusDiscountThresholdQuantities: []
                     ),
                 },
