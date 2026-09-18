@@ -597,8 +597,6 @@ public sealed partial class RoomPetSystem
         entity.Respect = live.Respect;
         entity.Happiness = live.Happiness;
         entity.Thirst = live.Thirst;
-        entity.RespectTodayCount = live.RespectTodayCount;
-        entity.RespectLastResetDate = live.RespectLastResetDate;
         entity.CanBreed = live.CanBreed;
     }
 

@@ -81,26 +81,10 @@ public sealed partial class RoomPetSystem
             }
         }
 
-        DateOnly today = DateOnly.FromDateTime(DateTime.UtcNow);
-
-        if (pet.RespectLastResetDate != today)
-        {
-            pet = pet with { RespectTodayCount = 0, RespectLastResetDate = today };
-            _roomGrain._state.PetsById[petId] = pet;
-        }
-
-        int dailyCap = _roomGrain._roomConfig.Pet.RespectDailyCapPerPet;
-
-        if (pet.RespectTodayCount >= dailyCap)
-        {
-            return pet;
-        }
-
-        // Last of the three gates, and the only one that spends something: the scratcher's own
-        // daily allowance, which is the number the client was told at login and counts down from.
-        // It is taken here rather than earlier so a scratch the per-pet cap was going to refuse
-        // does not cost the player a scratch elsewhere. The per-pet cap stops farming one pet;
-        // this stops farming every pet in the room.
+        // The scratcher's own daily allowance (respect.pet_daily_limit), and the only thing that
+        // limits scratching. It is the number the client was handed at login and counts down from,
+        // so a second rule of our own -- a per-pet cap, say -- would make that number a lie: the
+        // button would still be offered while the server refused, or the other way round.
         if (!await _roomGrain._grainFactory.GetPlayerGrain(ctx.PlayerId).TryGivePetRespectAsync(ct))
         {
             return pet;
@@ -108,12 +92,7 @@ public sealed partial class RoomPetSystem
 
         int respectXp = _roomGrain._roomConfig.Pet.RespectXpReward;
         PetSnapshot updated = await GrantXpAndLevelUpAsync(pet, respectXp, ct);
-        updated = updated with
-        {
-            Respect = updated.Respect + 1,
-            RespectTodayCount = updated.RespectTodayCount + 1,
-            RespectLastResetDate = today,
-        };
+        updated = updated with { Respect = updated.Respect + 1 };
         _roomGrain._state.PetsById[petId] = updated;
 
         if (_motionByPetId.TryGetValue(petId, out PetMotionState? motion))

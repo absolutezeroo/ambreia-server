@@ -57,7 +57,6 @@ public class PetConfig
     public int ThirstThreshold { get; init; } = 50;
     public int VocalIntervalMs { get; init; } = 14_000;
     public int MaxWellBeingSeconds { get; init; } = 86_400;
-    public int RespectDailyCapPerPet { get; init; } = 3;
 
     /// <summary>
     /// How old an account must be, in days, before it may respect a pet. Habbo gates this; the

@@ -49,8 +49,6 @@ internal static class RoomPetRuntime
             Respect = entity.Respect,
             Happiness = entity.Happiness,
             CreatedAt = entity.CreatedAt,
-            RespectTodayCount = entity.RespectTodayCount,
-            RespectLastResetDate = entity.RespectLastResetDate,
             ParentOneId = entity.ParentOneId,
             ParentTwoId = entity.ParentTwoId,
             CanBreed = entity.CanBreed,

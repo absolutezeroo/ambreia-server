@@ -73,13 +73,6 @@ public class PetEntity : VortexEntity
     [DefaultValue(100)]
     public int Happiness { get; set; } = 100;
 
-    [Column("respect_today_count")]
-    [DefaultValue(0)]
-    public int RespectTodayCount { get; set; }
-
-    [Column("respect_last_reset_date")]
-    public DateOnly? RespectLastResetDate { get; set; }
-
     [Column("rarity_level")]
     [DefaultValue(1)]
     public int RarityLevel { get; set; } = 1;

@@ -6009,16 +6009,6 @@ namespace Vortex.Database.Migrations
                         .HasDefaultValue(0)
                         .HasColumnName("respect");
 
-                    b.Property<DateOnly?>("RespectLastResetDate")
-                        .HasColumnType("date")
-                        .HasColumnName("respect_last_reset_date");
-
-                    b.Property<int>("RespectTodayCount")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
-                        .HasDefaultValue(0)
-                        .HasColumnName("respect_today_count");
-
                     b.Property<bool>("RidingPermission")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("tinyint(1)")

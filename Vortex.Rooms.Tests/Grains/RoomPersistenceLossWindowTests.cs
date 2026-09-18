@@ -262,12 +262,12 @@ public sealed class RoomPersistenceLossWindowTests
                     """
                     INSERT INTO pets (id, player_id, room_id, name, type, race, color, gender,
                                       level, experience, energy, nutrition, thirst, respect,
-                                      happiness, respect_today_count, rarity_level, can_breed,
+                                      happiness, rarity_level, can_breed,
                                       has_saddle, riding_permission, x, y, z, direction,
                                       created_at, updated_at)
                     VALUES ({0}, 1, NULL, 'pet', 0, 0, 'ffffff', 0,
                             1, 0, 0, 0, 100, 0,
-                            100, 0, 1, 1,
+                            100, 1, 1,
                             0, 0, 0, 0, 0, 0,
                             datetime('now'), datetime('now'))
                     """,

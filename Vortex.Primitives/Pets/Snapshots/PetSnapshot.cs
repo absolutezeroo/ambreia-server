@@ -59,11 +59,9 @@ public sealed record PetSnapshot
     [Id(16)]
     public required Rotation Direction { get; init; }
 
-    [Id(17)]
-    public int RespectTodayCount { get; init; }
-
-    [Id(18)]
-    public DateOnly? RespectLastResetDate { get; init; }
+    // 17 and 18 were the per-pet daily respect counters. Scratching is limited by the scratcher's
+    // own allowance alone, which is the only budget the client models; the ids stay retired rather
+    // than reused, because an old serialised snapshot must not be read back as something else.
 
     [Id(19)]
     public int? ParentOneId { get; init; }

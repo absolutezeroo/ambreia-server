@@ -57,48 +57,13 @@ public sealed class PetCareTests
             .ConfigureAwait(true);
 
         updated!.Respect.Should().Be(1);
-        updated.RespectTodayCount.Should().Be(1);
         updated.Experience.Should().Be(new PetConfig().RespectXpReward);
     }
 
-    [Fact]
-    public async Task TheDailyRespectCap_StopsTheFarm()
-    {
-        PetConfig config = new();
-        Harness harness = new(
-            Pet(respect: 9, respectToday: config.RespectDailyCapPerPet, resetOn: Today)
-        );
-
-        PetSnapshot? updated = await harness
-            .System.RespectPetAsync(harness.Context, PetId, CancellationToken.None)
-            .ConfigureAwait(true);
-
-        updated!.Respect.Should().Be(9, "the cap was already reached today");
-        updated.RespectTodayCount.Should().Be(config.RespectDailyCapPerPet);
-        updated.Experience.Should().Be(0, "a refused respect must not pay experience either");
-    }
-
-    [Fact]
-    public async Task ANewDay_ClearsTheRespectCount()
-    {
-        PetConfig config = new();
-        Harness harness = new(
-            Pet(respect: 9, respectToday: config.RespectDailyCapPerPet, resetOn: Today.AddDays(-1))
-        );
-
-        PetSnapshot? updated = await harness
-            .System.RespectPetAsync(harness.Context, PetId, CancellationToken.None)
-            .ConfigureAwait(true);
-
-        updated!.Respect.Should().Be(10);
-        updated.RespectTodayCount.Should().Be(1, "yesterday's tally does not carry over");
-        updated.RespectLastResetDate.Should().Be(Today);
-    }
-
     /// <summary>
-    /// The scratcher's own daily allowance, which is a separate budget from the pet's cap: one stops
-    /// a player farming a single pet, the other stops them farming every pet in the room. It is also
-    /// the number the client counts down from, so the two must agree.
+    /// The scratcher's own daily allowance is the only thing that limits scratching. The pet used to
+    /// carry a cap of its own, in two columns of its row; that made the count the client shows a
+    /// lie, because the client only knows about this one and counts down from it.
     /// </summary>
     [Fact]
     public async Task AScratcherOutOfDailyPetRespects_ChangesNothing()
@@ -110,8 +75,24 @@ public sealed class PetCareTests
             .ConfigureAwait(true);
 
         updated!.Respect.Should().Be(0);
-        updated.RespectTodayCount.Should().Be(0, "the pet's own cap was never reached");
         updated.Experience.Should().Be(0, "a refused scratch must not pay experience either");
+    }
+
+    [Fact]
+    public async Task TheSamePetCanBeScratchedTwiceWhileTheScratcherHasBudget()
+    {
+        // What the per-pet cap used to refuse. The allowance belongs to the player now, so the
+        // room's answer is the same whether the second scratch lands on this pet or another.
+        Harness harness = new(Pet());
+
+        _ = await harness
+            .System.RespectPetAsync(harness.Context, PetId, CancellationToken.None)
+            .ConfigureAwait(true);
+        PetSnapshot? updated = await harness
+            .System.RespectPetAsync(harness.Context, PetId, CancellationToken.None)
+            .ConfigureAwait(true);
+
+        updated!.Respect.Should().Be(2);
     }
 
     [Fact]
@@ -178,15 +159,7 @@ public sealed class PetCareTests
         updated.Level.Should().Be(2);
     }
 
-    private static DateOnly Today => DateOnly.FromDateTime(DateTime.UtcNow);
-
-    private static PetSnapshot Pet(
-        int energy = 100,
-        int experience = 0,
-        int respect = 0,
-        int respectToday = 0,
-        DateOnly? resetOn = null
-    ) =>
+    private static PetSnapshot Pet(int energy = 100, int experience = 0, int respect = 0) =>
         new()
         {
             PetId = PetId,
@@ -202,8 +175,6 @@ public sealed class PetCareTests
             Energy = energy,
             Nutrition = 100,
             Respect = respect,
-            RespectTodayCount = respectToday,
-            RespectLastResetDate = resetOn,
             X = 1,
             Y = 1,
             Z = 0,
