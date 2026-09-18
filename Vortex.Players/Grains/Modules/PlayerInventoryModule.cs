@@ -108,11 +108,11 @@ internal sealed class PlayerInventoryModule(PlayerPresenceGrain presenceGrain)
                     ],
                 }
             )
-            .ConfigureAwait(false);
+            .ConfigureAwait(true);
 
         await _presenceGrain
             .SendComposerAsync(new FurniListAddOrUpdateEventMessageComposer { Item = snapshot })
-            .ConfigureAwait(false);
+            .ConfigureAwait(true);
     }
 
     public Task OnFurnitureRemovedAsync(RoomObjectId itemId, CancellationToken ct) =>
