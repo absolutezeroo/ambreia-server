@@ -3321,6 +3321,7 @@ export default {
     colQueryType: 'Recherche',
     colFilter: 'Filtre',
     colLocalization: 'Localisation',
+    colForceClosed: 'Replié par défaut',
   },
   social: {
     title: 'Graphe social et forums',

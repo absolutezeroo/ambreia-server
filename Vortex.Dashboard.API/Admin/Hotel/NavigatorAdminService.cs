@@ -216,6 +216,7 @@ internal sealed class NavigatorAdminService(
             Localization = spec.Localization ?? string.Empty,
             QueryType = spec.QueryType,
             OrderNum = spec.OrderNum,
+            ForceClosed = spec.ForceClosed,
         };
 
         db.NavigatorQuickLinks.Add(entity);
@@ -264,6 +265,7 @@ internal sealed class NavigatorAdminService(
         entity.Localization = spec.Localization ?? string.Empty;
         entity.QueryType = spec.QueryType;
         entity.OrderNum = spec.OrderNum;
+        entity.ForceClosed = spec.ForceClosed;
 
         await db.SaveChangesAsync(ct).ConfigureAwait(false);
         await ReloadAsync(ct).ConfigureAwait(false);

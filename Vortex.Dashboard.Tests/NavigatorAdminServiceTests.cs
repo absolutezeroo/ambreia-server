@@ -193,7 +193,8 @@ public sealed class NavigatorAdminServiceTests
                 string.Empty,
                 string.Empty,
                 NavigatorQueryType.MyRooms,
-                0
+                0,
+                false
             ),
             CancellationToken.None
         );
@@ -220,7 +221,8 @@ public sealed class NavigatorAdminServiceTests
                 string.Empty,
                 string.Empty,
                 NavigatorQueryType.Popular,
-                0
+                0,
+                false
             ),
             CancellationToken.None
         );

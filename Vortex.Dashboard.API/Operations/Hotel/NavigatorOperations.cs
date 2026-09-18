@@ -134,7 +134,8 @@ internal sealed class NavigatorOperations(
                                 request.Filter,
                                 request.Localization,
                                 ToQueryType(request.QueryType),
-                                request.OrderNum
+                                request.OrderNum,
+                                request.ForceClosed
                             ),
                             c
                         )
@@ -171,7 +172,8 @@ internal sealed class NavigatorOperations(
                                 request.Filter,
                                 request.Localization,
                                 ToQueryType(request.QueryType),
-                                request.OrderNum
+                                request.OrderNum,
+                                request.ForceClosed
                             ),
                             c
                         )

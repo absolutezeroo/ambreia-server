@@ -10,5 +10,6 @@ public sealed record UpdateNavigatorQuickLinkRequest(
     string Localization,
     int QueryType,
     int OrderNum,
+    bool ForceClosed,
     string Reason
 ) : IReasonedRequest;

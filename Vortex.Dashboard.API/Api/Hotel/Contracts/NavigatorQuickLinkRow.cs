@@ -9,5 +9,6 @@ public sealed record NavigatorQuickLinkRow(
     int QueryType,
     string QueryTypeLabel,
     int OrderNum,
+    bool ForceClosed,
     bool KnownCode
 );

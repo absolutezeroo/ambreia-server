@@ -676,6 +676,7 @@ public sealed class NavigatorProvider(
                             Filter = q.Filter,
                             Localization = q.Localization,
                             QueryType = q.QueryType,
+                            ForceClosed = q.ForceClosed,
                         }),
                 ],
             }),

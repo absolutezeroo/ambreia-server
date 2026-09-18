@@ -20,4 +20,7 @@ public record NavigatorQuickLinkSnapshot
 
     [Id(4)]
     public NavigatorQueryType QueryType { get; init; } = NavigatorQueryType.AllRooms;
+
+    [Id(5)]
+    public bool ForceClosed { get; init; }
 }

@@ -266,10 +266,12 @@ public sealed class NavigatorSearchRoutingTests
             ]);
     }
 
-    /// <summary>An overview block offers "show more" (Expanded); a drill-down offers "back". Getting
-    /// this wrong leaves the player with no way into or out of a block.</summary>
+    /// <summary>The official hotel sends <c>0</c> on every block of a tab overview -- the collapse
+    /// arrow is the only affordance there -- and reserves "back" for a drill-down. "Show more" on an
+    /// overview block re-searches that code with no filter, so it answers with a different list than
+    /// the one on screen.</summary>
     [Fact]
-    public async Task OverviewBlocksAreExpandable_AndADrillDownOffersBack()
+    public async Task OverviewBlocksOfferNoAction_AndADrillDownOffersBack()
     {
         Recorder overviewRecorder = new() { QuickLinks = [NavigatorSearchCodes.MyRooms] };
 
@@ -286,10 +288,35 @@ public sealed class NavigatorSearchRoutingTests
             .ConfigureAwait(true);
 
         overview.Should().ContainSingle();
-        overview[0].ActionAllowed.Should().Be(NavigatorActionAllowedType.Expanded);
+        overview[0].ActionAllowed.Should().Be(NavigatorActionAllowedType.None);
 
         drillDown.Should().ContainSingle();
         drillDown[0].ActionAllowed.Should().Be(NavigatorActionAllowedType.Back);
+    }
+
+    /// <summary>The client shows a block header as <c>text</c> when it is non-empty and otherwise
+    /// localizes the search code, and starts the block closed on <c>forceClosed</c>. Both live on the
+    /// quick link row, so an operator who fills them gets nothing unless they travel onto the block.
+    /// </summary>
+    [Fact]
+    public async Task OverviewBlock_CarriesTheQuickLinksLabelAndCollapsedDefault()
+    {
+        Recorder recorder = new()
+        {
+            QuickLinks = [NavigatorSearchCodes.MyRooms],
+            QuickLinkLocalization = "Staff picks",
+            QuickLinkForceClosed = true,
+        };
+
+        ImmutableArray<NavigatorSearchResultBlockSnapshot> overview = await BlocksAsync(
+                recorder,
+                NavigatorSearchCodes.MyWorldView
+            )
+            .ConfigureAwait(true);
+
+        overview.Should().ContainSingle();
+        overview[0].Text.Should().Be("Staff picks");
+        overview[0].ForceClosed.Should().BeTrue();
     }
 
     /// <summary>Typing a filter is a question, not a tab: the overview collapses to one list of
@@ -489,6 +516,12 @@ public sealed class NavigatorSearchRoutingTests
         /// Empty means "no navigator configuration", the unseeded-hotel case.</summary>
         public IReadOnlyList<string> QuickLinks { get; init; } = [];
 
+        /// <summary>The label an operator typed on every quick link this fake hands out.</summary>
+        public string QuickLinkLocalization { get; init; } = string.Empty;
+
+        /// <summary>Whether those quick links are configured to start collapsed.</summary>
+        public bool QuickLinkForceClosed { get; init; }
+
         public INavigatorProvider AsProvider() =>
             FakeProxy.Create<INavigatorProvider>(call =>
             {
@@ -545,8 +578,9 @@ public sealed class NavigatorSearchRoutingTests
                                             Id = index + 1,
                                             SearchCode = code,
                                             Filter = string.Empty,
-                                            Localization = string.Empty,
+                                            Localization = QuickLinkLocalization,
                                             QueryType = Resolve(code),
+                                            ForceClosed = QuickLinkForceClosed,
                                         }
                                 ),
                             ],

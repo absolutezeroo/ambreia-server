@@ -5476,6 +5476,12 @@ namespace Vortex.Database.Migrations
                         .HasColumnType("varchar(512)")
                         .HasColumnName("filter");
 
+                    b.Property<bool>("ForceClosed")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("tinyint(1)")
+                        .HasDefaultValue(false)
+                        .HasColumnName("force_closed");
+
                     b.Property<string>("Localization")
                         .IsRequired()
                         .HasMaxLength(512)

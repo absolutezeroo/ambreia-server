@@ -36,7 +36,8 @@ public sealed record NavigatorQuickLinkSpec(
     string Filter,
     string Localization,
     NavigatorQueryType QueryType,
-    int OrderNum
+    int OrderNum,
+    bool ForceClosed
 );
 
 /// <summary>A room category. Rooms point at these through <c>navigator_category_id</c>.</summary>

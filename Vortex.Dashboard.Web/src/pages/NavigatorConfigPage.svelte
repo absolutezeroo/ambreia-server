@@ -51,6 +51,7 @@
     contextId?: number;
     filter?: string;
     localization?: string;
+    forceClosed?: boolean;
     /** category, eventCategory */
     name?: string;
     /** category */
@@ -106,6 +107,7 @@
     localization: '',
     queryType: 0,
     orderNum: 0,
+    forceClosed: false,
   });
   const newCategory = (): NavigatorDraft => ({
     name: '',
@@ -341,6 +343,7 @@
                 <th>{$t('navigatorConfig.colQueryType')}</th>
                 <th>{$t('navigatorConfig.colFilter')}</th>
                 <th>{$t('navigatorConfig.colLocalization')}</th>
+                <th>{$t('navigatorConfig.colForceClosed')}</th>
                 <th>{$t('navigatorConfig.colOrder')}</th>
                 {#if canManage}<th>{$t('common.actions')}</th>{/if}
               </tr>
@@ -357,6 +360,7 @@
                   <td>{queryTypeLabel(link.queryType)}</td>
                   <td>{link.filter || '—'}</td>
                   <td>{link.localization || '—'}</td>
+                  <td>{link.forceClosed ? $t('common.yes') : $t('common.no')}</td>
                   <td>{link.orderNum}</td>
                   {#if canManage}
                     <td class="row-actions">
@@ -585,6 +589,7 @@
                                 localization: open.draft.localization || '',
                                 queryType: open.draft.queryType,
                                 orderNum: open.draft.orderNum,
+                                forceClosed: open.draft.forceClosed ?? false,
                               },
                               $t('navigatorConfig.updateBlock'),
                               $t('navigatorConfig.updateBlockSummary', { code: open.draft.searchCode })
@@ -614,6 +619,10 @@
                           <label>
                             {$t('navigatorConfig.order')}
                             <input autocomplete="off" spellcheck="false" type="number" bind:value={open.draft.orderNum} />
+                          </label>
+                          <label class="check">
+                            <input autocomplete="off" spellcheck="false" type="checkbox" bind:checked={open.draft.forceClosed} />
+                            {$t('navigatorConfig.colForceClosed')}
                           </label>
                         </form>
     {:else if open.kind === 'category'}
@@ -843,6 +852,7 @@
                   localization: quickLinkForms[addingContext!].localization || '',
                   queryType: quickLinkForms[addingContext!].queryType,
                   orderNum: quickLinkForms[addingContext!].orderNum,
+                  forceClosed: quickLinkForms[addingContext!].forceClosed ?? false,
                 },
                 $t('navigatorConfig.addBlock'),
                 $t('navigatorConfig.addBlockSummary', {
@@ -879,6 +889,10 @@
             <label>
               {$t('navigatorConfig.order')}
               <input autocomplete="off" spellcheck="false" type="number" bind:value={quickLinkForms[addingContext!].orderNum} />
+            </label>
+            <label class="check">
+              <input autocomplete="off" spellcheck="false" type="checkbox" bind:checked={quickLinkForms[addingContext!].forceClosed} />
+              {$t('navigatorConfig.colForceClosed')}
             </label>
           </form>
     {:else if kind === 'eventCategory'}

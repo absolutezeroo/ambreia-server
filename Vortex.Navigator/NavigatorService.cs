@@ -87,7 +87,7 @@ public sealed class NavigatorService(
                     // "categories" code made collapsing one collapse the lot.
                     SearchCode = NavigatorSearchCodes.FlatCategoryCode(categories[i].Id),
                     Text = ToCategoryHeader(categories[i]),
-                    ActionAllowed = NavigatorActionAllowedType.Expanded,
+                    ActionAllowed = NavigatorActionAllowedType.None,
                     Localization = string.Empty,
                     ForceClosed = false,
                     ViewMode = NavigatorViewModeType.Rows,
@@ -364,9 +364,9 @@ public sealed class NavigatorService(
     }
 
     /// <summary>
-    /// One block per quick link. Each keeps the quick link's own search code so the client localizes
-    /// its header and so "show more" drills into that one search, and each is expandable/collapsible
-    /// rather than a dead end.
+    /// One block per quick link, carrying that quick link's own search code, label and
+    /// collapsed-by-default flag. The code matters twice over: the client collapses blocks by it and
+    /// falls back to localizing it when the label is empty.
     /// </summary>
     private async Task<ImmutableArray<NavigatorSearchResultBlockSnapshot>> BuildOverviewBlocksAsync(
         ImmutableArray<NavigatorQuickLinkSnapshot> quickLinks,
@@ -390,18 +390,30 @@ public sealed class NavigatorService(
                 continue;
             }
 
+            NavigatorSearchResultBlockSnapshot block = await BuildBlockAsync(
+                    quickLink.SearchCode,
+                    quickLink.SearchCode,
+                    NavigatorSearchFilterType.Anything,
+                    quickLink.Filter,
+                    // The official hotel sends 0 on every overview block. "Show more" would
+                    // re-search this code with no filter, which for a filtered quick link answers
+                    // with a different list than the one the player is looking at.
+                    NavigatorActionAllowedType.None,
+                    playerId,
+                    limits,
+                    ct
+                )
+                .ConfigureAwait(false);
+
+            // The client shows `text` when it is non-empty and otherwise localizes the search code.
+            // An operator's label therefore only reaches the screen if we put it on the wire, and a
+            // quick link on a code the client has no key for renders headerless without it.
             blocks.Add(
-                await BuildBlockAsync(
-                        quickLink.SearchCode,
-                        quickLink.SearchCode,
-                        NavigatorSearchFilterType.Anything,
-                        quickLink.Filter,
-                        NavigatorActionAllowedType.Expanded,
-                        playerId,
-                        limits,
-                        ct
-                    )
-                    .ConfigureAwait(false)
+                block with
+                {
+                    Text = quickLink.Localization,
+                    ForceClosed = quickLink.ForceClosed,
+                }
             );
         }
 

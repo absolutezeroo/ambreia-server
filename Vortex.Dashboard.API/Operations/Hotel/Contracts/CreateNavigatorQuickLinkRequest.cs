@@ -9,5 +9,6 @@ public sealed record CreateNavigatorQuickLinkRequest(
     string Localization,
     int QueryType,
     int OrderNum,
+    bool ForceClosed,
     string Reason
 ) : IReasonedRequest;

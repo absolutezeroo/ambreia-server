@@ -2189,6 +2189,7 @@ export interface NavigatorQuickLinkRow {
   queryType: number;
   queryTypeLabel: string;
   orderNum: number;
+  forceClosed: boolean;
   knownCode: boolean;
 }
 

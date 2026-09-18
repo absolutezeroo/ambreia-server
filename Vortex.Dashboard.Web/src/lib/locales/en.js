@@ -3309,6 +3309,7 @@ export default {
     colQueryType: 'Searches',
     colFilter: 'Filter',
     colLocalization: 'Localization',
+    colForceClosed: 'Starts collapsed',
   },
   social: {
     title: 'Social graph and forums',

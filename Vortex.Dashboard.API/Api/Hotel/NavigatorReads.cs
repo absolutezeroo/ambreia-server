@@ -58,6 +58,7 @@ internal sealed class NavigatorReads(IDbContextFactory<VortexDbContext> dbContex
                         queryType = (int)q.QueryType,
                         queryTypeLabel = q.QueryType.ToString(),
                         q.OrderNum,
+                        q.ForceClosed,
                     })
                     .ToListAsync(ct)
                     .ConfigureAwait(false);
@@ -136,6 +137,7 @@ internal sealed class NavigatorReads(IDbContextFactory<VortexDbContext> dbContex
                                 q.queryType,
                                 q.queryTypeLabel,
                                 q.OrderNum,
+                                q.ForceClosed,
                                 NavigatorSearchCodes.QueryTypeBySearchCode.ContainsKey(q.SearchCode)
                             ))
                             .ToList()

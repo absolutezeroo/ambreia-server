@@ -23,6 +23,15 @@ public class NavigatorQuickLinkEntity : VortexEntity
     [DefaultValue(NavigatorQueryType.AllRooms)]
     public NavigatorQueryType QueryType { get; set; } = NavigatorQueryType.AllRooms;
 
+    /// <summary>
+    /// Whether the block starts collapsed. The official hotel closes the long tail of a tab this
+    /// way -- five of the seven blocks of <c>official_view</c> arrive closed -- so a tab does not
+    /// dump several hundred rooms at once.
+    /// </summary>
+    [Column("force_closed")]
+    [DefaultValue(false)]
+    public bool ForceClosed { get; set; }
+
     [Column("order_num")]
     [DefaultValue(0)]
     public int OrderNum { get; set; } = 0;
