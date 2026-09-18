@@ -83,6 +83,44 @@ public sealed class ChatStyleUnlockTests
             .Equal(UnlockableStyleId);
     }
 
+    /// <summary>
+    /// Room entry repeats both bands, because the client rebuilds its style picker from the session
+    /// sets every time a room's chat input is created and only ever asks for them once, at session
+    /// init. A room entered before that answer lands — the home room, on every login — would
+    /// otherwise build the selector with none of the player's bubbles in it.
+    /// </summary>
+    [Fact]
+    public async Task TheEntryPush_SendsBothBands_SplitByTheirId()
+    {
+        Harness harness = await Harness.CreateAsync().ConfigureAwait(true);
+
+        await harness
+            .Grain.GrantChatStyleAsync(UnlockableStyleId, CancellationToken.None)
+            .ConfigureAwait(true);
+        await harness
+            .Grain.GrantChatStyleAsync(PurchasableStyleId, CancellationToken.None)
+            .ConfigureAwait(true);
+
+        harness.Pushed.Clear();
+        harness.PushedPurchasable.Clear();
+
+        await harness.Grain.PushOwnedChatStylesAsync(CancellationToken.None).ConfigureAwait(true);
+
+        // An id on the wrong list is simply never matched: the client reads each band from its own
+        // message and asks the other nothing.
+        harness
+            .Pushed.Should()
+            .ContainSingle()
+            .Which.ChatStyleIds.Should()
+            .Equal(UnlockableStyleId);
+
+        harness
+            .PushedPurchasable.Should()
+            .ContainSingle()
+            .Which.ChatStyleIds.Should()
+            .Equal(PurchasableStyleId);
+    }
+
     [Fact]
     public async Task GrantingTwice_LeavesOneUnlockAndStillReportsSuccess()
     {
@@ -299,6 +337,9 @@ public sealed class ChatStyleUnlockTests
         /// <summary>Every incremental purchasable-band message, in order.</summary>
         public List<UserPurchasableChatStyleChangedMessageComposer> PushedChanges { get; } = [];
 
+        /// <summary>Every full purchasable-band list, in order.</summary>
+        public List<UserPurchasableChatStylesMessageComposer> PushedPurchasable { get; } = [];
+
         public VortexDbContext NewContext() => new(_options);
 
         public static async Task<Harness> CreateAsync()
@@ -344,11 +385,22 @@ public sealed class ChatStyleUnlockTests
 
         private object Record(ProxyCall call)
         {
-            IComposer[] composers = [.. (call.Args ?? []).OfType<IComposer>()];
+            // Two shapes reach the same method: one composer as a single argument, and several as a
+            // params array, which arrives as one argument that *is* an array. Reading only the
+            // first missed every batched push entirely.
+            object[] args = call.Args ?? [];
+            IComposer[] composers =
+            [
+                .. args.OfType<IComposer>(),
+                .. args.OfType<IComposer[]>().SelectMany(batch => batch),
+            ];
 
             Pushed.AddRange(composers.OfType<UserNftChatStylesMessageComposer>());
             PushedChanges.AddRange(
                 composers.OfType<UserPurchasableChatStyleChangedMessageComposer>()
+            );
+            PushedPurchasable.AddRange(
+                composers.OfType<UserPurchasableChatStylesMessageComposer>()
             );
 
             return Task.CompletedTask;

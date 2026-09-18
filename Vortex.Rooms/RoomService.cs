@@ -88,7 +88,12 @@ internal sealed partial class RoomService(
             return;
         }
 
-        if (pendingRoom.RoomId == roomId)
+        // Only an entry still in flight is a duplicate worth dropping. Once the player is in, the
+        // same room id means a reload -- the navigator forwards to the room you are standing in as
+        // readily as to any other -- and by the time this arrives RoomSessionManager.createSession
+        // has already disposed the session and purged the room content. Returning early there left
+        // the client on a black screen with nothing left to ask for.
+        if (pendingRoom.RoomId == roomId && !pendingRoom.Approved)
         {
             return;
         }
@@ -394,6 +399,16 @@ internal sealed partial class RoomService(
                 // own defaults to decide. The official server sends it on every entry.
                 new HanditemConfigurationMessageComposer { IsHanditemControlBlocked = false }
             )
+            .ConfigureAwait(false);
+
+        // The chat-style selector is rebuilt from scratch when the room's chat input is created, off
+        // whatever the session sets hold at that instant. The client asks for them once at session
+        // init, so a room entered before that answer lands -- the home room, every time -- builds
+        // the picker without a single unlockable bubble in it. The official server repeats them on
+        // entry for this reason.
+        await _grainFactory
+            .GetPlayerGrain(playerId)
+            .PushOwnedChatStylesAsync(ct)
             .ConfigureAwait(false);
 
         // The room's advertisement, if it is being advertised right now. There is no "no event"

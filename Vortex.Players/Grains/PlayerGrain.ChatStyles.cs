@@ -128,6 +128,29 @@ internal sealed partial class PlayerGrain
         return true;
     }
 
+    public async Task PushOwnedChatStylesAsync(CancellationToken ct)
+    {
+        List<int> styleIds = await GetOwnedChatStyleIdsAsync(ct).ConfigureAwait(true);
+
+        // Both bands, because the selector filters both through the session sets and rebuilds
+        // itself per room. GetUserNftChatStylesMessageHandler answers the login request on the
+        // asking context rather than calling this: presence is not necessarily attached yet at
+        // session init, and a push dropped there is the very hole this closes.
+        await _grainFactory
+            .GetPlayerPresenceGrain((long)_state.PlayerId)
+            .SendComposerAsync(
+                new UserNftChatStylesMessageComposer
+                {
+                    ChatStyleIds = styleIds.FindAll(ChatStyleBands.IsUnlockable),
+                },
+                new UserPurchasableChatStylesMessageComposer
+                {
+                    ChatStyleIds = styleIds.FindAll(ChatStyleBands.IsPurchasable),
+                }
+            )
+            .ConfigureAwait(true);
+    }
+
     /// <summary>
     /// Tells a connected client that one style moved, on whichever message its band is read from.
     /// </summary>

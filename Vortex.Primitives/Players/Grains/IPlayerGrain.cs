@@ -62,6 +62,21 @@ public interface IPlayerGrain : IGrainWithIntegerKey
     public Task<List<int>> GetOwnedChatStyleIdsAsync(CancellationToken ct);
 
     /// <summary>
+    /// Sends both chat-style bands to this player, unasked.
+    /// </summary>
+    /// <remarks>
+    /// The client rebuilds its style selector from scratch every time a room's chat input is
+    /// created — <c>RoomChatInputView.createOrUpdateChatStylesView()</c> walks its style library and
+    /// keeps every unlockable id out unless <c>hasNftChatStyle</c> says otherwise, and every
+    /// purchasable one out unless <c>hasPurchasableChatStyle</c> does. Both sets live on
+    /// <c>SessionDataManager</c> and are only ever filled by these two messages, so whatever is in
+    /// them at that moment is the picker for the whole visit. The client asks once, at session init;
+    /// a room entered before that answer lands builds the selector without them. That is why the
+    /// official server repeats this on entry, and why we do.
+    /// </remarks>
+    public Task PushOwnedChatStylesAsync(CancellationToken ct);
+
+    /// <summary>
     /// Gives the player the chat-bubble style the client knows as <paramref name="clientStyleId"/>,
     /// and pushes the refreshed list if they are connected.
     /// </summary>
