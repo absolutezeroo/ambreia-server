@@ -252,6 +252,18 @@ internal static partial class DashboardEndpoints
             (ops, body, actor, ct) => ops.RevokeEffectAsync(body, actor, ct),
             body => body.PlayerId > 0 && body.EffectId > 0
         );
+        Map<ChatStyleGrantRequest>(
+            app,
+            "/chat-styles/grant",
+            (ops, body, actor, ct) => ops.GrantChatStyleAsync(body, actor, ct),
+            body => body.PlayerId > 0 && body.ClientStyleId > 0
+        );
+        Map<ChatStyleGrantRequest>(
+            app,
+            "/chat-styles/revoke",
+            (ops, body, actor, ct) => ops.RevokeChatStyleAsync(body, actor, ct),
+            body => body.PlayerId > 0 && body.ClientStyleId > 0
+        );
     }
 
     /// <summary>

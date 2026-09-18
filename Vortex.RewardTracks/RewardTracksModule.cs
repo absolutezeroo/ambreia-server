@@ -40,6 +40,7 @@ public sealed class RewardTracksModule : IHostPluginModule
         services.AddSingleton<IRewardGranter, WallItemRewardGranter>();
         services.AddSingleton<IRewardGranter, AvatarEffectRewardGranter>();
         services.AddSingleton<IRewardGranter, HabbiconRewardGranter>();
+        services.AddSingleton<IRewardGranter, ChatStyleRewardGranter>();
         services.AddSingleton<IRewardGranter, EntitlementRewardGranter>();
 
         // Registered unconditionally, like every other kind. It refuses at grant time on a hotel

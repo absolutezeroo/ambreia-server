@@ -549,6 +549,52 @@ internal sealed partial class ContentAdminService
         return ContentAdminResult.Ok(playerId);
     }
 
+    public async Task<ContentAdminResult> GrantChatStyleAsync(
+        int playerId,
+        int clientStyleId,
+        CancellationToken ct
+    )
+    {
+        await using VortexDbContext db = await dbContextFactory
+            .CreateDbContextAsync(ct)
+            .ConfigureAwait(false);
+
+        if (!await db.Players.AnyAsync(p => p.Id == playerId, ct).ConfigureAwait(false))
+        {
+            return ContentAdminResult.Fail("player_not_found");
+        }
+
+        // Through the grain, not the table: it is what re-sends UserNftChatStyles, so an unlocked
+        // bubble appears in the selector without a reconnect. It also owns the range rule, which is
+        // why an out-of-range id comes back as a refusal rather than being checked twice.
+        bool granted = await grainFactory
+            .GetPlayerGrain((PlayerId)playerId)
+            .GrantChatStyleAsync(clientStyleId, ct)
+            .ConfigureAwait(false);
+
+        return granted
+            ? ContentAdminResult.Ok(playerId)
+            : ContentAdminResult.Fail("chat_style_not_unlockable");
+    }
+
+    public async Task<ContentAdminResult> RevokeChatStyleAsync(
+        int playerId,
+        int clientStyleId,
+        CancellationToken ct
+    )
+    {
+        // Same grain, same reason: the revocation has to reach the connected client, and a deleted
+        // row on its own would leave the style in the selector until they reconnect.
+        bool revoked = await grainFactory
+            .GetPlayerGrain((PlayerId)playerId)
+            .RevokeChatStyleAsync(clientStyleId, ct)
+            .ConfigureAwait(false);
+
+        return revoked
+            ? ContentAdminResult.Ok(playerId)
+            : ContentAdminResult.Fail("chat_style_not_owned");
+    }
+
     /// <summary>
     /// Moves one item to another player.
     /// </summary>

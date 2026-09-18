@@ -1025,6 +1025,48 @@ internal sealed class ContentOperations(OperationRunner runner, IContentAdminSer
             ct
         );
 
+    public Task<OperationResult> GrantChatStyleAsync(
+        ChatStyleGrantRequest request,
+        string actor,
+        CancellationToken ct
+    ) =>
+        _runner.ExecuteAsync(
+            "ops.content.chatstyle.grant",
+            actor,
+            request.Reason,
+            targetPlayerId: request.PlayerId,
+            roomId: null,
+            detail: new { request.ClientStyleId },
+            work: async c =>
+                Throw(
+                    await _contentAdmin
+                        .GrantChatStyleAsync(request.PlayerId, request.ClientStyleId, c)
+                        .ConfigureAwait(false)
+                ),
+            ct
+        );
+
+    public Task<OperationResult> RevokeChatStyleAsync(
+        ChatStyleGrantRequest request,
+        string actor,
+        CancellationToken ct
+    ) =>
+        _runner.ExecuteAsync(
+            "ops.content.chatstyle.revoke",
+            actor,
+            request.Reason,
+            targetPlayerId: request.PlayerId,
+            roomId: null,
+            detail: new { request.ClientStyleId },
+            work: async c =>
+                Throw(
+                    await _contentAdmin
+                        .RevokeChatStyleAsync(request.PlayerId, request.ClientStyleId, c)
+                        .ConfigureAwait(false)
+                ),
+            ct
+        );
+
     private static void Throw(ContentAdminResult result)
     {
         if (!result.Success)

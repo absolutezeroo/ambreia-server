@@ -10,7 +10,7 @@
 
 spec: feature
 spec_version: 1
-generated_digest: "sha256:f954583086c621db9e760b1677501e4bf2ed275c9bc93d6e3c0d9bafc1052d98"
+generated_digest: "sha256:59bea1dc6f7fcbe77d3f14923105fb841cc1aa8e12839f9fcf8f5a799f5c7e57"
 generated:
   id: users.get_user_nft_chat_styles
   domain: users
@@ -18,7 +18,7 @@ generated:
   trigger_packets:
   - GetUserNftChatStyles
   observed_in:
-    vortex: false
+    vortex: true
     references: []
   official_behavior:
     status: unknown
@@ -27,11 +27,27 @@ generated:
     layer: handler
     symbol: GetUserNftChatStylesMessageHandler.HandleAsync
     evidence: ev_7ecbcf966855
-  checks: []
+  - order: 1
+    layer: grain
+    symbol: PlayerGrain.GetOwnedChatStyleIdsAsync
+    evidence: ev_a191f35d876d
+  - order: 2
+    layer: domain
+    symbol: WiredActionBranch.Select
+    evidence: ev_f13d6bcce744
+  checks:
+  - expression: ctx.PlayerId <= 0
+    on_fail: return
+    observed_in: vortex
+    evidence: ev_7f8b8b4c7698
   state_changes: []
   outgoing:
     ordering: unknown
-    packets: []
+    packets:
+    - packet: UserNftChatStyles
+      recipient: actor
+      recipient_confidence: implementation_observed
+      evidence: ev_7f8b8b4c7698
   reaches_persistence: false
   evidence:
   - id: ev_7ecbcf966855
@@ -40,10 +56,51 @@ generated:
     origin: vortex
     source: Vortex.PacketHandlers/Users/GetUserNftChatStylesMessageHandler.cs
     symbol: GetUserNftChatStylesMessageHandler
-    line: 8
+    line: 30
+  - id: ev_7f8b8b4c7698
+    kind: emulator_flow
+    authority: vortex_emulator
+    origin: vortex
+    source: Vortex.PacketHandlers/Users/GetUserNftChatStylesMessageHandler.cs
+    symbol: GetUserNftChatStylesMessageHandler
+    line: 41
+  - id: ev_a191f35d876d
+    kind: emulator_flow
+    authority: vortex_emulator
+    origin: vortex
+    source: Vortex.Players/Grains/PlayerGrain.ChatStyles.cs
+    symbol: PlayerGrain
+    line: 30
+  - id: ev_f13d6bcce744
+    kind: emulator_flow
+    authority: vortex_emulator
+    origin: vortex
+    source: Vortex.Rooms/Wired/WiredActionBranch.cs
+    symbol: WiredActionBranch
+    line: 23
   scenarios:
+  - users.get_user_nft_chat_styles.guard_0
   - users.get_user_nft_chat_styles.success
-  unknowns:
-  - uk_76e765e42a
-verified: {}
-manual: {}
+verified:
+  the_list_gates_the_selector:
+    confidence: client_confirmed
+    claim: "The answer is the set of style ids the player may pick from the chat-bubble selector, and it is the only thing that unlocks one: RoomChatInputView classes any library id in 1000..9999 as an unlock and skips it unless SessionDataManager.hasNftChatStyle(id) is true, which is true only for an id this message carried."
+    reason: "SessionDataManager.onNftChatStyles assigns the parsed vector straight to _nftChatStyles and nothing else writes it, so an unanswered request leaves the field null and hasNftChatStyle returns false for every id. The hotel's own chatstyles library carries twenty-five ids in that band (1000-1026)."
+    evidence:
+    - kind: client_code
+      source: com/sulake/habbo/ui/widget/chatinput/RoomChatInputView.as
+      symbol: isNftChatStyle
+    - kind: client_code
+      source: com/sulake/habbo/session/SessionDataManager.as
+      symbol: onNftChatStyles
+  a_resend_is_the_refresh:
+    confidence: client_confirmed
+    claim: Re-sending the whole list unasked is how a mid-session unlock reaches the client; there is no add or remove message for it.
+    reason: onNftChatStyles replaces the vector outright rather than merging, and the registry holds no second NFT chat-style message. The purchasable band has UserPurchasableChatStyleChanged for this; the unlock band has nothing.
+    evidence:
+    - kind: client_code
+      source: com/sulake/habbo/session/SessionDataManager.as
+      symbol: onNftChatStyles
+manual:
+  band_above_9999: "From 10000 up the client asks hasPurchasableChatStyle instead, fed by UserPurchasableChatStyles (header 3774). That header exists in the registry with no composer behind it, so this hotel cannot unlock a purchasable style; the grain refuses a grant there rather than storing one nothing can announce."
+  ids_below_1000: Static styles. The client gates them itself on club, ambassador and staff rights and never asks the server, so granting one would write a row nothing reads.

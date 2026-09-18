@@ -3540,6 +3540,12 @@ export default {
     revokeEffect: 'Revoke effect',
     revokeEffectSummary: 'Take effect {id} away from {name}.',
     durationSeconds: 'Duration (s)',
+    grantChatStyle: 'Grant chat style',
+    grantChatStyleSummary: 'Give {name} chat style {id}.',
+    revokeChatStyle: 'Revoke chat style',
+    revokeChatStyleSummary: 'Take chat style {id} away from {name}.',
+    chatStyleHint:
+      'The id the client’s own style library uses. Only 1000–9999 can be unlocked: below that the client decides for itself, above it reads a message this hotel does not send.',
     title: 'Player rewards',
     description:
       'Badges, avatar effects, chat styles and saved outfits. The emulator only reads these one player at a time, so this is the only place a broken grant shows.',

@@ -145,6 +145,27 @@ public interface IContentAdminService
     Task<ContentAdminResult> RevokeEffectAsync(int playerId, int effectId, CancellationToken ct);
 
     /// <summary>
+    /// Unlocks a chat-bubble style for a player, live: the grain is told, and it re-sends the list
+    /// the client filters its selector with.
+    /// </summary>
+    /// <remarks>
+    /// <paramref name="clientStyleId"/> is the id in the client's own style library, not a row id.
+    /// Only 1000..9999 can be unlocked — below that the client gates the style itself and never
+    /// asks, above it reads a message this hotel does not compose.
+    /// </remarks>
+    Task<ContentAdminResult> GrantChatStyleAsync(
+        int playerId,
+        int clientStyleId,
+        CancellationToken ct
+    );
+
+    Task<ContentAdminResult> RevokeChatStyleAsync(
+        int playerId,
+        int clientStyleId,
+        CancellationToken ct
+    );
+
+    /// <summary>
     /// Takes one item back off a player: the counterpart of the item grant.
     /// </summary>
     /// <remarks>

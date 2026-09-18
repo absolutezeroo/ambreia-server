@@ -10,10 +10,28 @@
 
 spec: scenarios
 spec_version: 1
-generated_digest: "sha256:582c6b8d45ac729f63598ce70477f928dbd85c0682067be6a65325adaa7f7578"
+generated_digest: "sha256:8811db65e644d7d5243756203b44855c3679c5eda790dd277b6a55dfd2c34291"
 generated:
   feature: users.get_user_nft_chat_styles
   scenarios:
+  - scenario: users.get_user_nft_chat_styles.guard_0
+    title: "get user nft chat styles: the guard 'ctx.PlayerId <= 0' holds"
+    given:
+      guard: ctx.PlayerId <= 0
+      guard_holds: "true"
+    when:
+      packet: GetUserNftChatStyles
+    expected:
+      status: unknown
+      confidence: unknown
+    needs_evidence: "an official capture of GetUserNftChatStyles sent while 'ctx.PlayerId <= 0' holds: does the server reply, stay silent, or disconnect?"
+    executable: false
+    claims:
+    - origin: vortex
+      authority: vortex_emulator
+      outcome: ignored
+      emits: []
+      evidence: ev_7f8b8b4c7698
   - scenario: users.get_user_nft_chat_styles.success
     title: "get user nft chat styles: the request is accepted"
     given:
@@ -28,8 +46,9 @@ generated:
     claims:
     - origin: vortex
       authority: vortex_emulator
-      outcome: ignored
-      emits: []
+      outcome: success
+      emits:
+      - UserNftChatStyles
       evidence: ev_7ecbcf966855
   evidence:
   - id: ev_7ecbcf966855
@@ -38,6 +57,13 @@ generated:
     origin: vortex
     source: Vortex.PacketHandlers/Users/GetUserNftChatStylesMessageHandler.cs
     symbol: GetUserNftChatStylesMessageHandler
-    line: 8
+    line: 30
+  - id: ev_7f8b8b4c7698
+    kind: emulator_flow
+    authority: vortex_emulator
+    origin: vortex
+    source: Vortex.PacketHandlers/Users/GetUserNftChatStylesMessageHandler.cs
+    symbol: GetUserNftChatStylesMessageHandler
+    line: 41
 verified: {}
 manual: {}

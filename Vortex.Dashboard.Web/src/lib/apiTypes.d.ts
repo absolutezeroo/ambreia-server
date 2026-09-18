@@ -2412,7 +2412,7 @@ export interface PlayerChatRow {
 
 export interface PlayerChatStyleRow {
   id: number;
-  chatStyleId: number;
+  clientStyleId: number;
 }
 
 export interface PlayerDirectoryPage {

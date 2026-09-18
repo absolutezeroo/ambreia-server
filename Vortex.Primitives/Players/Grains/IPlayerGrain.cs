@@ -52,6 +52,31 @@ public interface IPlayerGrain : IGrainWithIntegerKey
     public Task<int> GetChatStylePreferenceAsync(CancellationToken ct);
 
     /// <summary>
+    /// Every chat-bubble style this player has been given, as the client numbers them.
+    /// </summary>
+    /// <remarks>
+    /// Answers <c>GetUserNftChatStyles</c>. The client keeps a style out of the selector unless its
+    /// id came back in this list, so an empty answer is what a player with no unlocks should see —
+    /// and, until this existed, what every player saw.
+    /// </remarks>
+    public Task<List<int>> GetOwnedChatStyleIdsAsync(CancellationToken ct);
+
+    /// <summary>
+    /// Gives the player the chat-bubble style the client knows as <paramref name="clientStyleId"/>,
+    /// and pushes the refreshed list if they are connected.
+    /// </summary>
+    /// <remarks>
+    /// Idempotent: a style already held is a no-op that still reports success, because every caller
+    /// (a reward track step, an operator) can be retried.
+    /// </remarks>
+    /// <returns>False only when the id is one no unlock can reach — see the implementation.</returns>
+    public Task<bool> GrantChatStyleAsync(int clientStyleId, CancellationToken ct);
+
+    /// <summary>Takes the style back, and pushes the shortened list if the player is connected.</summary>
+    /// <returns>False when the player did not have it.</returns>
+    public Task<bool> RevokeChatStyleAsync(int clientStyleId, CancellationToken ct);
+
+    /// <summary>
     /// Adjusts the player's persisted achievement score by <paramref name="delta"/> and returns the
     /// new total. Owned here (not by the achievement grain) because the score is cached in this
     /// grain's state and surfaced on the profile.

@@ -457,6 +457,21 @@ public sealed class GroupDirectoryGrainCreationTests
             throw new NotSupportedException();
         }
 
+        public Task<List<int>> GetOwnedChatStyleIdsAsync(CancellationToken ct)
+        {
+            throw new NotSupportedException();
+        }
+
+        public Task<bool> GrantChatStyleAsync(int clientStyleId, CancellationToken ct)
+        {
+            throw new NotSupportedException();
+        }
+
+        public Task<bool> RevokeChatStyleAsync(int clientStyleId, CancellationToken ct)
+        {
+            throw new NotSupportedException();
+        }
+
         public Task<int> AddAchievementScoreAsync(int delta, CancellationToken ct)
         {
             throw new NotSupportedException();

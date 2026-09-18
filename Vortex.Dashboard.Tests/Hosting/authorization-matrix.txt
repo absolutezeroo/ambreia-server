@@ -161,6 +161,8 @@ POST /api/v1/operations/content/bots -> dashboard.ops.content.manage
 POST /api/v1/operations/content/bots/delete -> dashboard.ops.content.manage
 POST /api/v1/operations/content/builders-club -> dashboard.ops.content.manage
 POST /api/v1/operations/content/builders-club/delete -> dashboard.ops.content.manage
+POST /api/v1/operations/content/chat-styles/grant -> dashboard.ops.content.manage
+POST /api/v1/operations/content/chat-styles/revoke -> dashboard.ops.content.manage
 POST /api/v1/operations/content/claims -> dashboard.ops.content.manage
 POST /api/v1/operations/content/claims/delete -> dashboard.ops.content.manage
 POST /api/v1/operations/content/collections -> dashboard.ops.content.manage

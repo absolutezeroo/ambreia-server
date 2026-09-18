@@ -3552,6 +3552,12 @@ export default {
     revokeEffect: 'Retirer l’effet',
     revokeEffectSummary: 'Retirer l’effet {id} à {name}.',
     durationSeconds: 'Durée (s)',
+    grantChatStyle: 'Donner un style de chat',
+    grantChatStyleSummary: 'Donner le style de chat {id} à {name}.',
+    revokeChatStyle: 'Retirer le style de chat',
+    revokeChatStyleSummary: 'Retirer le style de chat {id} à {name}.',
+    chatStyleHint:
+      "L'identifiant de la bibliothèque de styles du client. Seuls 1000–9999 peuvent être débloqués : en dessous le client décide seul, au-dessus il lit un message que cet hôtel n'envoie pas.",
     title: 'Récompenses des joueurs',
     description:
       "Badges, effets d'avatar, styles de chat et tenues sauvegardées. L'émulateur ne lit ces tables qu'un joueur à la fois : c'est le seul endroit où une attribution cassée se voit.",

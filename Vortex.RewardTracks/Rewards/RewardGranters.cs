@@ -252,6 +252,40 @@ internal sealed class HabbiconRewardGranter(IGrainFactory grainFactory) : IRewar
     }
 }
 
+/// <summary>A chat-bubble style. <c>RewardTypeId</c> is the id the client's own style library uses.</summary>
+/// <remarks>
+/// Only ids 1000..9999 can be handed over, and the grain is where that rule lives: below 1000 the
+/// client gates the style itself (free, HC, ambassador, staff) and never asks the server, and from
+/// 10000 up it reads a different message that nothing composes yet. A content row naming an id
+/// outside that band returns false — the content's fault, not a transient one — so the pipeline
+/// records it as refused rather than owed.
+/// </remarks>
+internal sealed class ChatStyleRewardGranter(IGrainFactory grainFactory) : IRewardGranter
+{
+    public RewardKind Kind => RewardKind.ChatStyle;
+
+    public async Task<bool> GrantAsync(
+        int playerId,
+        RewardGrantSnapshot reward,
+        CommerceOperationId operation,
+        string stepKey,
+        CancellationToken ct
+    )
+    {
+        if (!RewardGranterHelpers.TryParseId(reward.RewardTypeId, out int chatStyleId))
+        {
+            return false;
+        }
+
+        // Idempotent in the grain: a style already held reports success, so a retried claim is a
+        // no-op and needs no receipt of its own.
+        return await grainFactory
+            .GetPlayerGrain(playerId)
+            .GrantChatStyleAsync(chatStyleId, ct)
+            .ConfigureAwait(false);
+    }
+}
+
 /// <summary>
 /// An entitlement: a capability rather than an object. <c>RewardTypeId</c> is a perk code such as
 /// <c>TRADE</c> — the trading pass the Introduction Track hands out.
