@@ -125,6 +125,8 @@ public sealed class MarketplaceOwnershipInvariantsTests : IAsyncLifetime
                     {
                         CommissionPercent = 1,
                         OfferDurationSeconds = 3600,
+                        AveragePricePeriodDays = 7,
+                        HalfTaxLimit = 1_000_000_000,
                     }
                     : null
             ),

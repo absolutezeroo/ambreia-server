@@ -10,4 +10,10 @@ public sealed record MarketplaceSettingsSnapshot
 
     [Id(1)]
     public required int OfferDurationSeconds { get; init; }
+
+    [Id(2)]
+    public required int AveragePricePeriodDays { get; init; }
+
+    [Id(3)]
+    public required int HalfTaxLimit { get; init; }
 }

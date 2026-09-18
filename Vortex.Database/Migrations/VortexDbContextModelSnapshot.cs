@@ -4744,6 +4744,12 @@ namespace Vortex.Database.Migrations
 
                     MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
 
+                    b.Property<int>("AveragePricePeriodDays")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasDefaultValue(7)
+                        .HasColumnName("average_price_period_days");
+
                     b.Property<int>("CommissionPercent")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int")
@@ -4760,6 +4766,12 @@ namespace Vortex.Database.Migrations
                     b.Property<DateTime?>("DeletedAt")
                         .HasColumnType("datetime(6)")
                         .HasColumnName("deleted_at");
+
+                    b.Property<int>("HalfTaxLimit")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasDefaultValue(1000000000)
+                        .HasColumnName("half_tax_limit");
 
                     b.Property<int>("OfferDurationSeconds")
                         .ValueGeneratedOnAdd()

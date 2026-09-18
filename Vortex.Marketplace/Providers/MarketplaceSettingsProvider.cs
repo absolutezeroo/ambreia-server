@@ -20,6 +20,8 @@ public sealed class MarketplaceSettingsProvider(
     {
         CommissionPercent = 1,
         OfferDurationSeconds = 259200,
+        AveragePricePeriodDays = 7,
+        HalfTaxLimit = 1_000_000_000,
     };
 
     public int LoadStage => 0;
@@ -62,6 +64,10 @@ public sealed class MarketplaceSettingsProvider(
         {
             CommissionPercent = entity.CommissionPercent,
             OfferDurationSeconds = entity.OfferDurationSeconds,
+            AveragePricePeriodDays = entity.AveragePricePeriodDays,
+            // Never let a zero reach the wire: the client divides by this to preview the selling
+            // fee, so a misconfigured row would blank the fee for every listing.
+            HalfTaxLimit = entity.HalfTaxLimit > 0 ? entity.HalfTaxLimit : Defaults.HalfTaxLimit,
         };
     }
 }

@@ -181,5 +181,55 @@ generated:
   - cf_dfd8ef8cfe
   unknowns:
   - uk_df387b1069
-verified: {}
-manual: {}
+verified:
+  fields:
+  - index: 0
+    name: is_enabled
+    confidence: client_confirmed
+    evidence: "_SafeCls_1990.as:102 (WIN63-202607011411-782849652, src/unknowns/_SafePkg_1932) - parse() reads a boolean first, exposed as get isEnabled()"
+  - index: 1
+    name: commission
+    confidence: client_confirmed
+    evidence: "_SafeCls_1990.as - get commission()"
+  - index: 2
+    name: token_batch_price
+    confidence: client_confirmed
+    evidence: "_SafeCls_1990.as - get tokenBatchPrice()"
+  - index: 3
+    name: token_batch_size
+    confidence: client_confirmed
+    evidence: "_SafeCls_1990.as - get tokenBatchSize(); get tokensBatchSize() is a second accessor over the same field"
+  - index: 4
+    name: offer_min_price
+    confidence: client_confirmed
+    evidence: "_SafeCls_1990.as - private var _offerMinPrice, left named in the obfuscated source"
+  - index: 5
+    name: offer_max_price
+    confidence: client_confirmed
+    evidence: "_SafeCls_1990.as - private var _offerMaxPrice, left named in the obfuscated source"
+  - index: 6
+    name: expiration_hours
+    confidence: client_confirmed
+    evidence: "_SafeCls_1990.as - private var _expirationHours. MarketplaceView.as:152 divides it by 24 to fill inventory.marketplace.make_offer.expiration_info_days, so the unit is hours."
+  - index: 7
+    name: average_price_period
+    confidence: client_confirmed
+    evidence: "_SafeCls_1990.as - get averagePricePeriod(). MarketPlaceCatalogWidget.as:651 and MarketplaceConfirmationDialog.as:114 substitute it into a %days% parameter, so the unit is days."
+  - index: 8
+    name: selling_fee_percentage
+    confidence: client_confirmed
+    evidence: "_SafeCls_1990.as - get sellingFeePercentage()"
+  - index: 9
+    name: revenue_limit
+    confidence: client_confirmed
+    evidence: "_SafeCls_1990.as - get revenueLimit(). Assigned into MarketplaceModel at _SafeCls_1951.as:1051 and never read back anywhere in this build."
+  - index: 10
+    name: half_tax_limit
+    confidence: client_confirmed
+    evidence: "_SafeCls_1990.as - get halfTaxLimit(). MarketplaceView.as:380 divides by it unguarded - price * (sellingFeePercentage / 100 + 0.5 * price / halfTaxLimit) - so a zero breaks the fee the seller is shown before listing."
+manual:
+  official_values:
+    source: "capture of habbo.fr, 2026-09-18, on opening the shop"
+    note: "true, 1, 0, 0, 2, 99999, 168, 7, 2, 100000, 400000. Useful as a sanity range rather than as a target. 168 hours is seven days and the averagePricePeriod beside it is 7 days - two fields, two units, one duration."
+  unknowns_settled:
+    uk_df387b1069: "The eight placeholder names came from the 2016 client, whose layout stops at field 7. All eleven are named above from the WIN63 parser's own accessors."
