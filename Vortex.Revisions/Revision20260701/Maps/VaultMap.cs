@@ -33,6 +33,12 @@ internal sealed class VaultMap : IRevisionMap
             )
         );
         builder.MapSerializer(
+            typeof(IncomeRewardNotificationMessageComposer),
+            new IncomeRewardNotificationMessageComposerSerializer(
+                MessageComposer.IncomeRewardNotificationMessageComposer
+            )
+        );
+        builder.MapSerializer(
             typeof(IncomeRewardStatusMessageComposer),
             new IncomeRewardStatusMessageComposerSerializer(
                 MessageComposer.IncomeRewardStatusMessageComposer
