@@ -50,4 +50,18 @@ ENV VORTEX_CHAIN_ARTIFACTS=/chain/artifacts \
 EXPOSE 8545
 VOLUME ["/data"]
 
+# Liveness only: does the node answer JSON-RPC. `cast chain-id` is the same probe the entrypoint
+# already waits on before it does anything else, and `cast` ships in this image — nothing is
+# installed for this.
+#
+# Deliberately NOT "are the contracts deployed". docker-entrypoint.sh keeps the node up when a
+# deployment fails, on the grounds that a stateful service in a restart loop is worse than one
+# running with a loud complaint. A healthcheck that failed on missing contracts would restore
+# exactly the crash loop that decision avoids, and roll the deployment back on top of it.
+#
+# start-period covers anvil loading the state file plus the first-boot deployment behind it; the
+# entrypoint itself allows 60s for anvil to answer.
+HEALTHCHECK --interval=30s --timeout=5s --start-period=90s --retries=3 \
+    CMD cast chain-id --rpc-url "$VORTEX_CHAIN_RPC_URL" >/dev/null 2>&1 || exit 1
+
 ENTRYPOINT ["/bin/sh", "/usr/local/bin/vortex-chain-entrypoint.sh"]
