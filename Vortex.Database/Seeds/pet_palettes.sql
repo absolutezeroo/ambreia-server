@@ -10,9 +10,19 @@
 -- For simple pets  : breed_index = color = color_one
 -- For horses (15)  : breed_index = color = sequential 0–59
 --                    (client uses breedId directly as visual identifier)
+--
+-- INSERT IGNORE, like group_badge_parts.sql and every other reference seed here. A plain INSERT
+-- took the live hotel down on 2026-09-19: the table was assumed empty because it is empty on a
+-- fresh install, and a hotel that had been seeded by hand already held (0, 0, rare=0). Every
+-- startup then died on the unique index over (pet_type, breed_index, rare), the healthcheck never
+-- answered, and the deployment rolled back.
+--
+-- IGNORE rather than a DELETE-and-rebuild on purpose: `sellable` decides what the catalogue offers
+-- and is exactly the column an operator tunes. A hotel that has customised it keeps its own rows
+-- and gains the ones it was missing.
 -- ---------------------------------------------------------------------------
 
-INSERT INTO `pet_palettes` (`pet_type`, `breed_index`, `color`, `sellable`, `rare`, `created_at`, `updated_at`) VALUES
+INSERT IGNORE INTO `pet_palettes` (`pet_type`, `breed_index`, `color`, `sellable`, `rare`, `created_at`, `updated_at`) VALUES
 
 -- -------------------------
 -- 0 Dog (25 breeds, 0–24)

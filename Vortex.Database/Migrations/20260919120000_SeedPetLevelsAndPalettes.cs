@@ -17,6 +17,12 @@ namespace Vortex.Database.Migrations
     /// The level table is also rebuilt here — the thresholds and caps it used to carry were our own
     /// invention, and a capture of the live hotel contradicts them. See the header of
     /// <c>pet_levels.sql</c>.
+    ///
+    /// "Shipped empty" was true of a fresh install and not of the live hotel, which had been seeded
+    /// by hand. <c>pet_palettes.sql</c> was a plain INSERT, so the first deployment carrying this
+    /// migration died on the unique index and rolled back. Both scripts are re-runnable now — the
+    /// levels one clears what it owns, the palettes one ignores what is already there — which is
+    /// what a seed migration has to be when it cannot know what the database it meets looks like.
     /// </summary>
     [DbContext(typeof(VortexDbContext))]
     [Migration("20260919120000_SeedPetLevelsAndPalettes")]
