@@ -559,7 +559,7 @@ public static class ConfigKeyCatalog
             "camera.external_image_prefixes",
             "",
             ConfigValueKind.String,
-            "Semicolon-separated url prefixes a photo may fetch an image from — badges, other photos on the wall. A sprite's name can be an absolute url the payload chose, so anything not on this list is a request this hotel would make on a stranger's behalf. EMPTY MEANS NONE, which is the safe default; add your own asset host (e.g. https://assets.example/c_images/) to let badges appear in photos. Matched on the parsed url, so a lookalike host does not pass.",
+            "Semicolon-separated url prefixes a photo may fetch images from: badges, photos on a wall. A sprite's name can be a url the payload chose, so this list is what stops the hotel fetching a stranger's. Empty means none. Give the full prefix, path included.",
             "Camera"
         ),
         new(
