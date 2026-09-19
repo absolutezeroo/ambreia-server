@@ -10,7 +10,7 @@
 
 spec: feature
 spec_version: 1
-generated_digest: "sha256:f82b94b2f55ce267f26da86f0785b3b2f1585b3b052c5b9b100e254148ad3135"
+generated_digest: "sha256:32b4e3fb07ad26e52a96937baa246d9d2167d61640e7f77a59efd6a01f6bc68b"
 generated:
   id: room.get_room_settings
   domain: room
@@ -22,7 +22,7 @@ generated:
     references:
     - habbo-arcturus-daybreak
   official_behavior:
-    status: unknown
+    status: capture_confirmed
   flow:
   - order: 0
     layer: handler
@@ -68,7 +68,7 @@ generated:
     origin: vortex
     source: Vortex.Rooms/Grains/RoomGrain.Settings.cs
     symbol: RoomGrain
-    line: 43
+    line: 45
   - id: ev_41f50501910b
     kind: emulator_handler
     authority: vortex_emulator

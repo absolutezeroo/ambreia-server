@@ -1,0 +1,128 @@
+{
+  "id": "room-settings-open-official-001",
+  "source": "official",
+  "revision": "AIR-1.0.31",
+  "recordedUtc": "2026-09-19T00:00:00Z",
+  "note": "Opening the room settings dialog on the live Habbo hotel, as the owner of the room, then walking the dialog's tabs. Four moments 25-54 seconds apart, not one burst. Header ids are AIR-1.0.31's (3860/3798/2762/742 resolve as composers and 1489/283 as events in com/sulake/habbo/communication/_SafeCls_2127.as) and are NOT the emulator target build's, so the evidence here is the order, the membership and the field values. WHAT IT SETTLES. (1) GetRoomSettings is answered by exactly one packet, RoomSettingsData, and its body is 119 bytes laid out exactly as this emulator already serializes it -- 26 fields, byte for byte, confirmed field by field against the AIR parser _SafePkg_2536/_SafeCls_3826.as. The five fields the generated spec still calls unknown_10..unknown_13 and unknown_26 are allow_pets, allow_food_consume, allow_walk_through, hide_walls and hidden_by_bc, in that order; the four middle ones are 4-byte integers compared against 1, not booleans, and hidden_by_bc is a single byte. (2) The moderation block is three plain integers (who_can_mute, who_can_kick, who_can_ban) with no length prefix, which is what _SafePkg_1786/_SafeCls_3052.as reads. (3) Habbo sent hidden_by_bc = true on an ordinary user room with door_mode 0; the only thing the client does with it is show the 'doormode_override_info' label to anyone without security rank 4 (RoomSettingsCtrl.as:726). This emulator hardcodes false there, so that label never appears -- cosmetic, and the only delta found. (4) Selecting a door mode in the dialog sends NO request: the client emits one EventLog and nothing else, so door mode is not persisted until the dialog is saved. (5) GetFlatControllers and GetBannedUsersFromRoom each carry nothing but the room id, and BannedUsersFromRoom answers with room_id + count and no entries when the list is empty -- it is not skipped. CAVEAT ON THE EVENTLOG FIELDS: its last six bytes are all zero, which reads equally well as string-then-int and as int-then-string, and the capture tool guessed int-then-string. WIN63's EventLogMessageComposer.as is unambiguous -- [category, type, action, extraString, extraInt] -- and that is what the fields below record and what this emulator parses. The zero bytes are not evidence of a swap. THE UNRESOLVED PART: the hotel answered the second and third GetBannedUsersFromRoom with header 2826 carrying a single integer 3293, twice. 2826 is absent from the AIR-1.0.31 registry entirely -- neither a composer nor an event binds it -- so the client this capture came from drops it on the floor. The live hotel is ahead of the client build. Recorded as unnamed; what it means is unknown. CAVEAT ON PAIRING: the client's own EventLog goes out in the millisecond after GetRoomSettings and before the answer arrives, so the derived observations hang RoomSettingsData off EventLog. It answers GetRoomSettings; the pairing is an artefact of the file. The two trailing GetBannedUsersFromRoom read as unanswered for the same reason -- their answers were the unnamed 2826 packets, which the import dropped rather than guess at.",
+  "messages": [
+    {
+      "index": 0,
+      "direction": "client_to_server",
+      "name": "GetRoomSettings",
+      "header": 3860,
+      "fields": { "room_id": "47006506" }
+    },
+    {
+      "index": 1,
+      "direction": "client_to_server",
+      "name": "EventLog",
+      "header": 742,
+      "fields": {
+        "category": "Tutorial",
+        "type": "interaction",
+        "action": "viewed.room.settings",
+        "extra_string": "",
+        "extra_int": "0"
+      }
+    },
+    {
+      "index": 2,
+      "direction": "server_to_client",
+      "name": "RoomSettingsData",
+      "header": 1489,
+      "recipient": "actor",
+      "fields": {
+        "room_id": "47006506",
+        "name": "Appart de Akikazu",
+        "description": "Appart de Akikazu",
+        "door_mode": "0",
+        "category_id": "10",
+        "players_max": "75",
+        "max_visitors_limit": "75",
+        "length": "0",
+        "trade_type": "0",
+        "allow_pets": "1",
+        "allow_food_consume": "0",
+        "allow_walk_through": "1",
+        "hide_walls": "0",
+        "wall_thickness": "0",
+        "floor_thickness": "0",
+        "flood_sensitivity": "1",
+        "leave_on_door_tile": "true",
+        "idle_sleep_enabled": "true",
+        "idle_sleep_timeout_seconds": "300",
+        "idle_autokick_enabled": "true",
+        "idle_autokick_timeout_seconds": "900",
+        "mute_all_pets": "false",
+        "who_can_mute": "0",
+        "who_can_kick": "0",
+        "who_can_ban": "0",
+        "hidden_by_bc": "true",
+        "body_bytes": "119"
+      }
+    },
+    {
+      "index": 3,
+      "direction": "client_to_server",
+      "name": "EventLog",
+      "header": 742,
+      "fields": {
+        "category": "InterfaceExplorer",
+        "type": "select",
+        "action": "room.settings.doormode.seen",
+        "extra_string": "",
+        "extra_int": "0"
+      }
+    },
+    {
+      "index": 4,
+      "direction": "client_to_server",
+      "name": "GetFlatControllers",
+      "header": 3798,
+      "fields": { "room_id": "47006506" }
+    },
+    {
+      "index": 5,
+      "direction": "client_to_server",
+      "name": "GetBannedUsersFromRoom",
+      "header": 2762,
+      "fields": { "room_id": "47006506" }
+    },
+    {
+      "index": 6,
+      "direction": "server_to_client",
+      "name": "BannedUsersFromRoom",
+      "header": 283,
+      "recipient": "actor",
+      "fields": { "room_id": "47006506", "length": "0", "body_bytes": "8" }
+    },
+    {
+      "index": 7,
+      "direction": "client_to_server",
+      "name": "GetBannedUsersFromRoom",
+      "header": 2762,
+      "fields": { "room_id": "47006506" }
+    },
+    {
+      "index": 8,
+      "direction": "client_to_server",
+      "name": "GetBannedUsersFromRoom",
+      "header": 2762,
+      "fields": { "room_id": "47006506" }
+    },
+    {
+      "index": 9,
+      "direction": "server_to_client",
+      "header": 2826,
+      "recipient": "actor",
+      "fields": { "unknown_0": "3293", "body_bytes": "4" }
+    },
+    {
+      "index": 10,
+      "direction": "server_to_client",
+      "header": 2826,
+      "recipient": "actor",
+      "fields": { "unknown_0": "3293", "body_bytes": "4" }
+    }
+  ]
+}
