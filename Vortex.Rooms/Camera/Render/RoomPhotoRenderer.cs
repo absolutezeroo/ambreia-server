@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
@@ -47,9 +48,12 @@ internal sealed class RoomPhotoRenderer(
             .ResolveAsync(scene.Sprites, limits, ct)
             .ConfigureAwait(false);
 
-        byte[] png = new CameraSceneRenderer(limits.MaxDimension).Render(
+        CameraSceneRenderer renderer = new(limits.MaxDimension);
+        CameraViewport viewport = renderer.ViewportFor(scene);
+
+        byte[] png = renderer.Render(
             scene,
-            viewport => new SkiaCameraCanvas(viewport, name => Lookup(resolved, name))
+            _ => new SkiaCameraCanvas(viewport, name => Lookup(resolved, name))
         );
 
         if (!await store.SavePhotoAsync(photoKey, png, ct).ConfigureAwait(false))
@@ -58,14 +62,64 @@ internal sealed class RoomPhotoRenderer(
             return false;
         }
 
-        logger.LogDebug(
-            "Camera photo {PhotoKey}: {Planes} plane(s), {Sprites} sprite(s), {Resolved} resolved, {Bytes} bytes.",
+        // Information, not Debug, and it prints the scene rather than a count.
+        //
+        // Four rounds of this feature were spent reasoning backwards from the finished photo —
+        // measuring colour regions, comparing silhouettes — to guess what the payload had said. That
+        // is the wrong end. The payload is the only ground truth, the server is the only thing that
+        // sees it, and one line of it here settles in seconds what an afternoon of looking at
+        // pictures could not.
+        logger.LogInformation(
+            "Camera photo {PhotoKey}: viewport {Width}x{Height}, {Planes} plane(s), "
+                + "{Sprites} sprite(s) of which {Resolved} resolved, {Unresolved} not, {Bytes} bytes.",
             photoKey,
+            viewport.Width,
+            viewport.Height,
             scene.Planes.Length,
             scene.Sprites.Length,
             resolved.Count,
+            scene.Sprites.Select(sprite => sprite.Name).Distinct(StringComparer.Ordinal).Count()
+                - resolved.Count,
             png.Length
         );
+
+        // The names nothing could draw, which is the difference between "the client never sent it"
+        // and "it was sent and I could not find it".
+        string[] missing =
+        [
+            .. scene
+                .Sprites.Select(sprite => sprite.Name)
+                .Distinct(StringComparer.Ordinal)
+                .Where(name => !resolved.ContainsKey(name))
+                .Take(12),
+        ];
+
+        if (missing.Length != 0)
+        {
+            logger.LogInformation(
+                "Camera photo {PhotoKey}: unresolved sprites {Missing}.",
+                photoKey,
+                string.Join(", ", missing)
+            );
+        }
+
+        // The first planes, in the order they are painted, with the corners the client actually
+        // sent. This is what a local reproduction needs and cannot otherwise get.
+        foreach (CameraScenePlane plane in scene.Planes.Take(6))
+        {
+            logger.LogInformation(
+                "Camera photo {PhotoKey}: plane z={Z} colour=#{Colour:X6} corners {Corners}.",
+                photoKey,
+                plane.Z,
+                plane.Color & 0xFFFFFF,
+                string.Join(
+                    " ",
+                    plane.CornerPoints.Select(corner =>
+                        FormattableString.Invariant($"({corner.X:0.#},{corner.Y:0.#})")
+                    )
+                )
+            );
+        }
 
         return true;
     }
