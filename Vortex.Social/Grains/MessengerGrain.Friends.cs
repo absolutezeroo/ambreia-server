@@ -64,6 +64,7 @@ internal sealed partial class MessengerGrain
                     Count = g.Count(),
                     Name = first.Name,
                     Figure = first.Figure,
+                    RandomFriendId = first.PlayerId.Value,
                 };
             })
             .ToList();

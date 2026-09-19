@@ -55,5 +55,7 @@ generated:
     line: 7
   official:
     status: unknown
-verified: {}
+verified:
+  resolution: client_code
+  note: "The client is right and this emulator was wrong. One entry is int, int, int, string, string (WIN63 unknowns/_SafePkg_1731/_SafeCls_3266.as:22-26); the serializer wrote a short for the type and omitted randomFriendId, so every entry desynchronised the read by two bytes and one field. Fixed 2026-09-19. The reference emulator's 17 fields are the same five-field entry unrolled three times, not a different layout. Capture room-click-own-avatar-001 shows the official hotel answering an account with no decorators as user_id + 0, which agrees with the header but exercises no entry."
 manual: {}

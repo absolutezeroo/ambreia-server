@@ -55,5 +55,6 @@ generated:
     line: 7
   official:
     status: unknown
-verified: {}
-manual: {}
+verified:
+  resolution: client_code
+  note: "Settled by capture room-click-own-avatar-001, official: the hotel sent user_id, 2, then four values per badge (slot, code, owner_count, badge_rarity_id), body 79 bytes, consumed exactly. The AS3 parser's six fields are correct and nitro's four are the community client running two short. This emulator already writes all four."

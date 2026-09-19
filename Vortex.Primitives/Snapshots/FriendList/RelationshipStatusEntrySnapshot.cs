@@ -16,4 +16,11 @@ public record RelationshipStatusEntrySnapshot
 
     [Id(3)]
     public required string Figure { get; init; }
+
+    /// <summary>
+    ///     Id of the friend whose <see cref="Name" /> and <see cref="Figure" /> represent the group.
+    ///     The client reads it as <c>randomFriendId</c> and uses it to open that friend's profile.
+    /// </summary>
+    [Id(4)]
+    public required int RandomFriendId { get; init; }
 }

@@ -17,10 +17,17 @@ internal class RelationshipStatusInfoEventMessageComposerSerializer(int header)
 
         foreach (RelationshipStatusEntrySnapshot rel in message.Relations)
         {
-            packet.WriteShort(rel.RelationType);
-            packet.WriteInteger(rel.Count);
-            packet.WriteString(rel.Name);
-            packet.WriteString(rel.Figure);
+            // Five fields per entry, all read by one data class the scanner never opened:
+            // WIN63 unknowns/_SafePkg_1731/_SafeCls_3266.as:22 reads relationshipStatusType,
+            // friendCount, randomFriendId, randomFriendName, randomFriendFigure -- three ints then
+            // two strings. A short for the type and no friend id left the client reading the rest
+            // of the packet two bytes early and one field short per entry.
+            packet
+                .WriteInteger(rel.RelationType)
+                .WriteInteger(rel.Count)
+                .WriteInteger(rel.RandomFriendId)
+                .WriteString(rel.Name)
+                .WriteString(rel.Figure);
         }
     }
 }
