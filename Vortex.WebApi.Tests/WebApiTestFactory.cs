@@ -15,6 +15,7 @@ using Vortex.Crypto.Configuration;
 using Vortex.Crypto.Ethereum;
 using Vortex.Database.Context;
 using Vortex.Primitives.Authentication;
+using Vortex.Primitives.Camera;
 using Vortex.Primitives.Chain;
 using Vortex.Primitives.Crypto;
 using Vortex.Primitives.Hosting;
@@ -124,6 +125,13 @@ internal sealed class WebApiTestFactory : IAsyncDisposable
         // the report endpoint fails to build here, where it is cheap to find out.
         builder.Services.AddSingleton<IAuditSink>(Audit);
 
+        // Both of these were forwarded in production and missing here, which is the half of the trap
+        // the comment above does not cover: a [FromServices] parameter is NOT read as the body, so
+        // the route builds, no test can reach it, and it answers 500 to everyone else. Found by
+        // scripts/hooks/check-webapi-forwarding.mjs, which now compares the three lists.
+        builder.Services.AddSingleton<IChainLeaderboard>(new FakeChainLeaderboard());
+        builder.Services.AddSingleton<ICameraPhotoStore>(Photos);
+
         DbContexts = new TestDbContextFactory(
             new DbContextOptionsBuilder<VortexDbContext>()
                 .UseInMemoryDatabase($"webapi-health-{Guid.NewGuid():N}")
@@ -197,6 +205,9 @@ internal sealed class WebApiTestFactory : IAsyncDisposable
 
     /// <summary>What the endpoints emitted, in order, so a test can assert on the record itself.</summary>
     public RecordingAuditSink Audit { get; } = new();
+
+    /// <summary>Seed a photo with <c>Photos.Add(bytes)</c> and fetch it by the key it returns.</summary>
+    public FakeCameraPhotoStore Photos { get; } = new();
 
     /// <summary>The in-memory database behind the app, so a test can seed the rows it is about.</summary>
     public IDbContextFactory<VortexDbContext> DbContexts { get; }

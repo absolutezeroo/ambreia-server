@@ -1,11 +1,14 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Collections.Immutable;
+using System.Linq;
 using System.Numerics;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Vortex.Primitives.Authentication;
+using Vortex.Primitives.Camera;
 using Vortex.Primitives.Chain;
 using Vortex.Primitives.Observability;
 using Vortex.Primitives.Shop;
@@ -622,4 +625,76 @@ internal sealed class FakeChainService : IChainService
 
     private static InvalidOperationException Off() =>
         new("No chain is configured; check IChainService.Enabled before calling.");
+}
+
+/// <summary>
+/// The coin standings, empty. A hotel with no chain has none, which is the state the leaderboard
+/// route has to render rather than throw in.
+/// </summary>
+internal sealed class FakeChainLeaderboard : IChainLeaderboard
+{
+    public ImmutableArray<ChainLeaderboardEntry> Standings { get; init; } = [];
+
+    public DateTime? TakenAtUtc { get; init; }
+}
+
+/// <summary>
+/// Photos in a dictionary.
+/// </summary>
+/// <remarks>
+/// Keys are minted and validated exactly as the real store does, because that shape is what the
+/// public route leans on: it hands a url segment straight to <see cref="ReadPhotoAsync"/> and trusts
+/// the store to refuse anything it did not mint. A fake that accepted any string would let a test
+/// pass over a route that serves arbitrary paths.
+/// </remarks>
+internal sealed class FakeCameraPhotoStore : ICameraPhotoStore
+{
+    private readonly ConcurrentDictionary<string, byte[]> _photos = new(StringComparer.Ordinal);
+
+    public string NewPhotoKey() => Guid.NewGuid().ToString("N").ToUpperInvariant();
+
+    /// <summary>Puts a photo in the store without going through a render.</summary>
+    public string Add(byte[] png)
+    {
+        string key = NewPhotoKey();
+
+        _photos[key] = png;
+
+        return key;
+    }
+
+    public Task<bool> SaveSceneAsync(
+        string photoKey,
+        ReadOnlyMemory<byte> deflatedScene,
+        CancellationToken ct
+    ) => Task.FromResult(IsMintedKey(photoKey));
+
+    public Task<bool> SavePhotoAsync(
+        string photoKey,
+        ReadOnlyMemory<byte> png,
+        CancellationToken ct
+    )
+    {
+        if (!IsMintedKey(photoKey))
+        {
+            return Task.FromResult(false);
+        }
+
+        _photos[photoKey] = png.ToArray();
+
+        return Task.FromResult(true);
+    }
+
+    public Task<ReadOnlyMemory<byte>> ReadPhotoAsync(string photoKey, CancellationToken ct) =>
+        Task.FromResult(
+            IsMintedKey(photoKey) && _photos.TryGetValue(photoKey, out byte[]? png)
+                ? new ReadOnlyMemory<byte>(png)
+                : ReadOnlyMemory<byte>.Empty
+        );
+
+    public string PublicPath(string photoKey, string urlPathPrefix) =>
+        IsMintedKey(photoKey) ? $"{urlPathPrefix}{photoKey}.png" : string.Empty;
+
+    private static bool IsMintedKey(string photoKey) =>
+        photoKey.Length == 32 && photoKey.All(char.IsAsciiHexDigitUpper);
 }

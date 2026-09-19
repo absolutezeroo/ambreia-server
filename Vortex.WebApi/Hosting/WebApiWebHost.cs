@@ -13,6 +13,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Vortex.Database.Context;
 using Vortex.Primitives.Authentication;
+using Vortex.Primitives.Camera;
 using Vortex.Primitives.Chain;
 using Vortex.Primitives.Crypto;
 using Vortex.Primitives.Hosting;
@@ -302,6 +303,10 @@ internal sealed class WebApiWebHost(
         // request body, and an endpoint that already has one dies at startup and takes the whole
         // web API with it.
         services.AddSingleton(rootServices.GetRequiredService<IAuditSink>());
+
+        // Serving a room photo. The store lives in Vortex.Rooms and mints the keys, so this container
+        // gets the same instance rather than a second one pointed at the same directory.
+        services.AddSingleton(rootServices.GetRequiredService<ICameraPhotoStore>());
         services.AddSingleton(
             rootServices.GetRequiredService<IDbContextFactory<VortexDbContext>>()
         );
