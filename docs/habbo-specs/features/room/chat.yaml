@@ -10,7 +10,7 @@
 
 spec: feature
 spec_version: 1
-generated_digest: "sha256:fa5f939e0b45aa9b87bb9ec1480247dca10d8ccd0c7988cd51319d158fb5ba14"
+generated_digest: "sha256:f8ab1d082605c9abd7a6caa355e31d39df5f40368fa25238ea5f1974599637e0"
 generated:
   id: room.chat
   domain: room
@@ -22,7 +22,7 @@ generated:
     references:
     - habbo-arcturus-daybreak
   official_behavior:
-    status: unknown
+    status: capture_confirmed
   flow:
   - order: 0
     layer: handler

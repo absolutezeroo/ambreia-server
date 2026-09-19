@@ -10,7 +10,7 @@
 
 spec: scenarios
 spec_version: 1
-generated_digest: "sha256:10e99da92f8a976fb52a4bd1002af89fa043ba8e858dd74954884575a9892623"
+generated_digest: "sha256:7ccc1bb3de2fddaf345861187c1c533a4f192f6c8d103be71a4f26dbd0b8902a"
 generated:
   feature: room.get_enabled_command_ids
   scenarios:
@@ -69,10 +69,9 @@ generated:
     when:
       packet: GetPetCommands
     expected:
-      status: unknown
-      confidence: unknown
-    needs_evidence: an official capture of GetPetCommands succeeding, with every packet the server sends back and in what order
-    executable: false
+      status: success
+      confidence: capture_confirmed
+    executable: true
     claims:
     - origin: vortex
       authority: vortex_emulator
@@ -86,7 +85,19 @@ generated:
       emits:
       - PetTrainingPanel
       evidence: ev_ab4e8a640b16
+    - origin: capture (1 observations)
+      authority: official_capture
+      outcome: success
+      emits:
+      - PetCommands
+      evidence: ev_a236235b3b6c
   evidence:
+  - id: ev_a236235b3b6c
+    kind: capture
+    authority: official_capture
+    origin: capture
+    source: docs/habbo-specs/evidence/captures
+    symbol: GetPetCommands
   - id: ev_ab4e8a640b16
     kind: reference_handler
     authority: reference_emulator

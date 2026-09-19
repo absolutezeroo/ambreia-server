@@ -130,6 +130,7 @@ public sealed class PetToyAndTuningTests
             PetTuning.SleepWakeEnergyThresholdKey,
             PetTuning.HungerThresholdKey,
             PetTuning.ThirstThresholdKey,
+            PetTuning.RespectHappinessRewardKey,
             PetTuning.CommandHappinessRewardKey,
             PetTuning.ToyHappinessRewardKey,
             PetTuning.BoredHappinessThresholdKey,

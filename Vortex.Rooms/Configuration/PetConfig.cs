@@ -74,8 +74,12 @@ public class PetConfig
 
     public int CommandXpReward { get; init; } = 3;
 
-    /// <summary>Obeying pleases a pet. Habbo pays 5 to 25 depending on how fun the trick is.</summary>
-    public int CommandHappinessReward { get; init; } = 5;
+    /// <summary>
+    /// Obeying pays nothing. A capture of the live hotel caught a pet obeying three commands with
+    /// its happiness pinned at 35 the whole way through, so this is 0 rather than the 5 it guessed.
+    /// Scratching and toys are what lift a pet's mood; the knob stays because a hotel may disagree.
+    /// </summary>
+    public int CommandHappinessReward { get; init; }
 
     /// <summary>What a toy is worth. Habbo's guides say toys are what cheer a pet up; 25 is the
     /// figure Arcturus pays for a ball or a trampoline.</summary>

@@ -1,0 +1,56 @@
+{
+  "id": "room-pet-commands-official-001",
+  "source": "official",
+  "revision": "AIR-1.0.31",
+  "recordedUtc": "2026-09-19T00:00:00Z",
+  "note": "Opening a pet's training panel and giving it nine orders, on the live Habbo hotel. The pet is 'filou', a level 8 animal of type 4 with 35/100 happiness. Header ids are the live build's, not the emulator target's. WHAT IT SETTLES. (1) PetCommands is TWO length-prefixed arrays: every command the species can ever learn (23) and the ones this pet has learned (13). The second is exactly the first thirteen entries of the first, so the full list is ordered by unlock level, not by id. The hotel's order is 46 0 1 14 43 2 3 4 17 5 6 7 8 | 9 10 11 12 13 15 16 24 25 26, and 46 is Breed. That bounds every level without naming one: left of the bar is <= 8, right of it is > 8. Jump(9), Speak(10), Play(11) and Nest(13) are all on the right -- this emulator had them at 3, 2, 3 and 2, and Arcturus at 6, 7, 8 and 5; both are wrong. Play football(17) is on the LEFT where Arcturus says level 10, so that one is wrong in the other direction. (2) There is no packet for giving an order: the client posts it as ordinary room chat, '<pet name> <localised command>', and the hotel echoes it back like any other line -- it even counts towards the reward-track task chat_with_users. (3) A command costs energy and pays experience, and both are about double what this emulator had: Sit measured twice at exactly -10 energy and +10 experience (258 -> 248 -> 238), Play dead at +20 experience and -28 energy. (4) Obeying pays NO happiness: it sat at 35 through three obeyed commands. (5) THE PET REFUSES. Four of the nine orders were ignored, each with a chat line of its own -- '*t'ignore*' three times, plus '*a le blues*' and '*deprime*', which are pet.mood.2 (Blue) and pet.mood.1 (Depressed) from the client's own text bundle. This emulator always obeys. The refusal rate cannot be read off nine samples and neither can the rule behind it, so the mechanic is recorded here and not implemented. (6) EVERY pet speaks, not just the two types with pet.vocals.* rows: the lines above come from pet.mood.*, pet.hunger.*, pet.thirst.*, pet.enrg.* and pet.frnd.* -- 42 keys that exist for all pets and are the 'Nature' the pet panel shows. What decides which band is spoken is not derivable here: the pet said Ecstatic (mood.6) at 37/100 happiness in the scratch capture and Blue (mood.2) at 35/100 in this one. (7) A sleeping pet gets Sleep(true) and speaks a line of its own.",
+  "messages": [
+    { "index": 0, "direction": "client_to_server", "name": "GetPetCommands", "header": 2778, "fields": { "pet_id": "353056" } },
+    {
+      "index": 1,
+      "direction": "server_to_client",
+      "name": "PetCommands",
+      "header": 1607,
+      "respondsTo": 0,
+      "fields": {
+        "pet_id": "353056",
+        "all_command_ids": "46,0,1,14,43,2,3,4,17,5,6,7,8,9,10,11,12,13,15,16,24,25,26",
+        "enabled_command_ids": "46,0,1,14,43,2,3,4,17,5,6,7,8"
+      }
+    },
+    { "index": 2, "direction": "client_to_server", "name": "Chat", "header": 2004, "fields": { "text": "filou Debout" } },
+    { "index": 3, "direction": "server_to_client", "name": "Chat", "header": 3812, "respondsTo": 2, "fields": { "object_id": "4", "text": "filou Debout" } },
+    { "index": 4, "direction": "server_to_client", "name": "Chat", "header": 3812, "respondsTo": 2, "fields": { "object_id": "1", "text": "*a le blues*" } },
+    { "index": 5, "direction": "server_to_client", "name": "RewardTrackProgress", "header": 844, "respondsTo": 2, "fields": { "track_id": "introduction", "task_id": "chat_with_users" } },
+    { "index": 6, "direction": "client_to_server", "name": "Chat", "header": 2004, "fields": { "text": "filou Assis" } },
+    { "index": 7, "direction": "server_to_client", "name": "Chat", "header": 3812, "respondsTo": 6, "fields": { "object_id": "4", "text": "filou Assis" } },
+    { "index": 8, "direction": "server_to_client", "name": "RewardTrackProgress", "header": 844, "respondsTo": 6, "fields": { "track_id": "introduction", "task_id": "chat_with_users" } },
+    { "index": 9, "direction": "server_to_client", "name": "PetExperience", "header": 3712, "respondsTo": 6, "fields": { "pet_id": "353056", "pet_room_index": "1", "gained_experience": "10" } },
+    { "index": 10, "direction": "client_to_server", "name": "GetPetInfo", "header": 781, "fields": { "pet_id": "353056" } },
+    {
+      "index": 11,
+      "direction": "server_to_client",
+      "name": "PetInfo",
+      "header": 3930,
+      "respondsTo": 10,
+      "fields": { "pet_id": "353056", "level": "8", "experience": "1850", "energy": "248", "max_energy": "260", "nutrition": "35", "max_nutrition": "100" }
+    },
+    { "index": 12, "direction": "client_to_server", "name": "Chat", "header": 2004, "fields": { "text": "filou Fais le mort" } },
+    { "index": 13, "direction": "server_to_client", "name": "Chat", "header": 3812, "respondsTo": 12, "fields": { "object_id": "4", "text": "filou Fais le mort" } },
+    { "index": 14, "direction": "server_to_client", "name": "Chat", "header": 3812, "respondsTo": 12, "fields": { "object_id": "1", "text": "*t'ignore*" } },
+    { "index": 15, "direction": "client_to_server", "name": "Chat", "header": 2004, "fields": { "text": "filou Fais le mort" } },
+    { "index": 16, "direction": "server_to_client", "name": "Chat", "header": 3812, "respondsTo": 15, "fields": { "object_id": "4", "text": "filou Fais le mort" } },
+    { "index": 17, "direction": "server_to_client", "name": "PetExperience", "header": 3712, "respondsTo": 15, "fields": { "pet_id": "353056", "pet_room_index": "1", "gained_experience": "20" } },
+    { "index": 18, "direction": "client_to_server", "name": "GetPetInfo", "header": 781, "fields": { "pet_id": "353056" } },
+    {
+      "index": 19,
+      "direction": "server_to_client",
+      "name": "PetInfo",
+      "header": 3930,
+      "respondsTo": 18,
+      "fields": { "pet_id": "353056", "level": "8", "experience": "1880", "energy": "210", "max_energy": "260", "nutrition": "35", "max_nutrition": "100" }
+    },
+    { "index": 20, "direction": "server_to_client", "name": "Sleep", "header": 1273, "fields": { "object_id": "2", "sleeping": "true" } },
+    { "index": 21, "direction": "server_to_client", "name": "Chat", "header": 3812, "fields": { "object_id": "2", "text": "Zzz... la pluie..." } }
+  ]
+}

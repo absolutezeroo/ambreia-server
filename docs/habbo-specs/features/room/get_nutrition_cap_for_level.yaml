@@ -10,7 +10,7 @@
 
 spec: feature
 spec_version: 1
-generated_digest: "sha256:051423cf9a1fa07933b021540560333a073fc560968ca4492d89cc801ece6d68"
+generated_digest: "sha256:0b3c9417dcfe37b7f7c5b28b76f9017c4a4b75d8fb6bacc8c659ef0ef372397f"
 generated:
   id: room.get_nutrition_cap_for_level
   domain: room
@@ -95,7 +95,7 @@ generated:
     evidence: ev_85ee1703d909
   state_changes: []
   outgoing:
-    ordering: strict
+    ordering: unknown
     packets:
     - packet: PetInfo
       recipient: target_user

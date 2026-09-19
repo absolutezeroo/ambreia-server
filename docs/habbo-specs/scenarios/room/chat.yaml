@@ -10,7 +10,7 @@
 
 spec: scenarios
 spec_version: 1
-generated_digest: "sha256:e285cf3154e9cafe27dd1df4c4e94e4f1bb8991e29ee4827886ab214766ff454"
+generated_digest: "sha256:afe9c0d59dcafcf0306a8c47e8f6e7b1b6ac62e8a5ad93e17f58d04d07615d6b"
 generated:
   feature: room.chat
   scenarios:
@@ -209,10 +209,9 @@ generated:
     when:
       packet: Chat
     expected:
-      status: unknown
-      confidence: unknown
-    needs_evidence: an official capture of Chat succeeding, with every packet the server sends back and in what order
-    executable: false
+      status: success
+      confidence: capture_confirmed
+    executable: true
     claims:
     - origin: vortex
       authority: vortex_emulator
@@ -226,7 +225,20 @@ generated:
       outcome: ignored
       emits: []
       evidence: ev_87cfcd3253bb
+    - origin: capture (4 observations)
+      authority: official_capture
+      outcome: success
+      emits:
+      - Chat
+      - Chat
+      evidence: ev_bab6a35e47fb
   evidence:
+  - id: ev_bab6a35e47fb
+    kind: capture
+    authority: official_capture
+    origin: capture
+    source: docs/habbo-specs/evidence/captures
+    symbol: Chat
   - id: ev_87cfcd3253bb
     kind: reference_handler
     authority: reference_emulator

@@ -10,7 +10,7 @@
 
 spec: scenarios
 spec_version: 1
-generated_digest: "sha256:2ebf2277604775b5f7fd1ea91b95a2cd1bce81043d46942489c914e72799f233"
+generated_digest: "sha256:2b6e9583f19677ad2b0804cef7e7ee24d9617f6ff088c7db0eb41819a12ac506"
 generated:
   feature: room.get_nutrition_cap_for_level
   scenarios:
@@ -181,7 +181,7 @@ generated:
       emits:
       - PetInfo
       evidence: ev_eff3eb411455
-    - origin: capture (2 observations)
+    - origin: capture (4 observations)
       authority: official_capture
       outcome: success
       emits:

@@ -10,13 +10,17 @@
 
 spec: conflict
 spec_version: 1
-generated_digest: "sha256:ecc3b768c9f56f94d581ec527c7e1601fc0d6c8367c53c6ff8c7275560167e97"
+generated_digest: "sha256:fe66e4f6d0370e8831513792ca66a7b0b1a4ead8e53ce66eba50457b6c386c44"
 generated:
   id: cf_1a3cff2e2c
   kind: behaviour
   subject: "GetPetCommands: packets emitted in response"
   packet: GetPetCommands
   positions:
+  - origin: capture (1 observations)
+    authority: official_capture
+    claim: PetCommands
+    evidence: ev_a236235b3b6c
   - origin: habbo-arcturus-daybreak
     authority: reference_emulator
     claim: PetTrainingPanel
@@ -26,6 +30,12 @@ generated:
     claim: PetCommands
     evidence: ev_27f95296070c
   evidence:
+  - id: ev_a236235b3b6c
+    kind: capture
+    authority: official_capture
+    origin: capture
+    source: docs/habbo-specs/evidence/captures
+    symbol: GetPetCommands
   - id: ev_ab4e8a640b16
     kind: reference_handler
     authority: reference_emulator

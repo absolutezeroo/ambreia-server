@@ -24,17 +24,33 @@ INSERT INTO `pet_commands`
 SELECT t.pet_type, c.command, c.level_required, c.posture, c.energy_cost, c.xp_reward, NOW(), NOW()
 FROM (
     -- command, level, posture, energy, xp
-    SELECT  0 AS command, 0 AS level_required, ''    AS posture, 0 AS energy_cost, 1 AS xp_reward UNION ALL -- Free
-    SELECT  1, 0, 'sit',  5, 3 UNION ALL -- Sit
-    SELECT  2, 0, 'lay',  5, 3 UNION ALL -- Down
-    SELECT  4, 1, 'beg',  5, 3 UNION ALL -- Beg
-    SELECT  5, 4, 'ded', 10, 5 UNION ALL -- Play dead
-    SELECT  8, 0, 'std',  5, 3 UNION ALL -- Stand
-    SELECT  9, 3, 'jmp', 10, 5 UNION ALL -- Jump
-    SELECT 10, 2, 'spk',  5, 3 UNION ALL -- Speak
-    SELECT 11, 3, 'pla', 10, 5 UNION ALL -- Play
-    SELECT 13, 2, 'lay',  0, 1 UNION ALL -- Nest: the room walks it to its nest
-    SELECT 43, 2, 'eat',  0, 1           -- Eat: the room walks it to a bowl
+    -- Levels, energy and experience rebuilt 2026-09-19 against a capture of the live hotel
+    -- (room-pet-commands-official-001). Three tiers, each anchored on a measured command:
+    --   errand   0 energy,  5 xp   -- the pet walks somewhere; nothing was measured, kept cheap
+    --   easy    10 energy, 10 xp   -- MEASURED on Sit, twice: 258 -> 248 -> 238 energy, +10 xp each
+    --   hard    28 energy, 20 xp   -- MEASURED on Play dead: +20 xp, 238 -> 210 energy
+    -- The old numbers (3/5 xp, 5/10 energy) were roughly a third of what Habbo pays and half what
+    -- it charges.
+    --
+    -- The capture also pins the LEVELS, by bounding them rather than naming them. A level 8 dog was
+    -- sent 23 commands of which the first 13 were enabled, in this order:
+    --   46 0 1 14 43 2 3 4 17 5 6 7 8 | 9 10 11 12 13 15 16 24 25 26
+    -- so everything left of the bar is level <= 8 and everything right of it is level > 8. Jump(9),
+    -- Speak(10), Play(11) and Nest(13) were seeded here at 3, 2, 3 and 2 -- a level 2 pet could
+    -- nest and speak, which Habbo does not allow until past level 8. They move to the smallest
+    -- levels that satisfy the bound while keeping the hotel's own order. The rest keep Arcturus's
+    -- values, which the bound and the ordering both agree with.
+    SELECT  0 AS command, 1 AS level_required, ''    AS posture,  0 AS energy_cost,  5 AS xp_reward UNION ALL -- Free
+    SELECT  1, 1, 'sit', 10, 10 UNION ALL -- Sit
+    SELECT 43, 1, 'eat',  0,  5 UNION ALL -- Eat: the room walks it to a bowl
+    SELECT  2, 2, 'lay', 10, 10 UNION ALL -- Down
+    SELECT  4, 2, 'beg', 10, 10 UNION ALL -- Beg
+    SELECT  5, 3, 'ded', 28, 20 UNION ALL -- Play dead
+    SELECT  8, 6, 'std', 10, 10 UNION ALL -- Stand
+    SELECT  9, 9, 'jmp', 28, 20 UNION ALL -- Jump
+    SELECT 10, 10, 'spk', 10, 10 UNION ALL -- Speak
+    SELECT 11, 11, 'pla', 28, 20 UNION ALL -- Play
+    SELECT 13, 13, 'lay',  0,  5           -- Nest: the room walks it to its nest
 ) c
 CROSS JOIN (
     -- Every pet type the catalogue sells, minus the monsterplant, which is rooted and obeys nothing.
