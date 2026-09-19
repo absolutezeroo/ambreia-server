@@ -68,7 +68,7 @@ public sealed class NitroAssetManifest
             ReadLinks(root, "aliases", "link", links);
             ReadLinks(root, "assets", "source", links);
 
-            read = new NitroAssetManifest(links, ReadFrames(root));
+            read = new NitroAssetManifest(links, ReadFrames(root, BundleName(root)));
 
             return true;
         }
@@ -159,7 +159,15 @@ public sealed class NitroAssetManifest
         }
     }
 
-    private static Dictionary<string, NitroSpriteFrame> ReadFrames(JsonElement root)
+    /// <summary>
+    /// The bundle's own name, which every frame key is prefixed with.
+    /// </summary>
+    private static string BundleName(JsonElement root) =>
+        root.TryGetProperty("name", out JsonElement name) && name.ValueKind == JsonValueKind.String
+            ? name.GetString() ?? string.Empty
+            : string.Empty;
+
+    private static Dictionary<string, NitroSpriteFrame> ReadFrames(JsonElement root, string bundle)
     {
         Dictionary<string, NitroSpriteFrame> frames = new(StringComparer.Ordinal);
 
@@ -194,18 +202,28 @@ public sealed class NitroAssetManifest
                 continue;
             }
 
-            frames[entry.Name] = new NitroSpriteFrame(
-                Number(rect, "x"),
-                Number(rect, "y"),
-                width,
-                height,
-                FlipH: false,
-                FlipV: false
-            );
+            // A frame is keyed by the bundle's name and then the asset's: the duck bundle calls
+            // `duck_64_a_4_0`'s rectangle `duck_duck_64_a_4_0`. The payload names the asset, never
+            // the frame, so the stripped key is the one lookups arrive on -- and the raw key is kept
+            // beside it, because nothing in the format promises the prefix is there.
+            if (
+                bundle.Length != 0
+                && entry.Name.Length > bundle.Length + 1
+                && entry.Name.StartsWith(bundle, StringComparison.Ordinal)
+                && entry.Name[bundle.Length] == '_'
+            )
+            {
+                frames[entry.Name[(bundle.Length + 1)..]] = Frame(rect, width, height);
+            }
+
+            frames[entry.Name] = Frame(rect, width, height);
         }
 
         return frames;
     }
+
+    private static NitroSpriteFrame Frame(JsonElement rect, int width, int height) =>
+        new(Number(rect, "x"), Number(rect, "y"), width, height, FlipH: false, FlipV: false);
 
     private static bool Flag(JsonElement element, string name) =>
         element.TryGetProperty(name, out JsonElement value)

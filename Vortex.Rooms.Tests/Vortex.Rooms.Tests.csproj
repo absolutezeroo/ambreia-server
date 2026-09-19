@@ -33,4 +33,12 @@
     <ProjectReference Include="..\Vortex.Rooms\Vortex.Rooms.csproj" />
     <ProjectReference Include="..\Vortex.Tests.Support\Vortex.Tests.Support.csproj" />
   </ItemGroup>
+  <ItemGroup>
+    <!--
+      One real furniture bundle, 1.6 KB, straight off the hotel's own asset host. The synthetic
+      packs beside it are written to the format as documented; this one is written by whatever
+      actually packed the hotel, which is the only thing that can disagree.
+    -->
+    <None Include="Furniture\Fixtures\*.nitro" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
 </Project>
