@@ -14,8 +14,9 @@ public sealed record BadgeReceivedEventMessageComposer : IComposer
     [Id(1)]
     public required string BadgeCode { get; init; }
 
-    /// <summary>How many players own the badge, and its rarity tier. The emulator tracks neither,
-    /// but the client reads both unconditionally -- it used to read them off the end of the packet.</summary>
+    /// <summary>How many players own the badge, and its rarity tier — both hotel figures, filled
+    /// from the badge directory. The client reads them unconditionally, so leaving them at zero was
+    /// not "unknown": it was the claim that the badge is common and nobody else has it.</summary>
     [Id(2)]
     public int OwnerCount { get; init; }
 

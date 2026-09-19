@@ -4,6 +4,7 @@ using System.Collections.Immutable;
 using System.Threading;
 using System.Threading.Tasks;
 using Orleans;
+using Vortex.Primitives.Badges.Snapshots;
 using Vortex.Primitives.Inventory.Enums;
 using Vortex.Primitives.Inventory.Grains;
 using Vortex.Primitives.Inventory.Snapshots;
@@ -123,10 +124,27 @@ internal sealed class PlayerInventoryModule(PlayerPresenceGrain presenceGrain)
     public Task OnFurnitureListInvalidatedAsync(CancellationToken ct) =>
         _presenceGrain.SendComposerAsync(new FurniListInvalidateEventMessageComposer());
 
-    public Task OnBadgeGrantedAsync(string badgeCode, CancellationToken ct) =>
-        _presenceGrain.SendComposerAsync(
-            new BadgeReceivedEventMessageComposer { BadgeCode = badgeCode }
-        );
+    public async Task OnBadgeGrantedAsync(string badgeCode, CancellationToken ct)
+    {
+        // The badge that was just handed out is counted a moment before this asks, so the very
+        // first holder of a code sees zero owners here until the directory's next recount. Every
+        // other grant carries real figures, which is why it asks rather than sending zeros.
+        BadgeInfoSnapshot info = await _presenceGrain
+            ._grainFactory.GetBadgeDirectoryGrain()
+            .GetInfoAsync(badgeCode, ct)
+            .ConfigureAwait(true);
+
+        await _presenceGrain
+            .SendComposerAsync(
+                new BadgeReceivedEventMessageComposer
+                {
+                    BadgeCode = badgeCode,
+                    OwnerCount = info.OwnerCount,
+                    BadgeRarityId = (int)info.Rarity,
+                }
+            )
+            .ConfigureAwait(true);
+    }
 
     public Task OnPetAddedToInventoryAsync(PetSnapshot pet, CancellationToken ct) =>
         _presenceGrain.SendComposerAsync(new PetAddedToInventoryEventMessageComposer { Pet = pet });

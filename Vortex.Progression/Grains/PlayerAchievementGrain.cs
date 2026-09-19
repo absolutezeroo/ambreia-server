@@ -11,6 +11,7 @@ using Microsoft.Extensions.Options;
 using Orleans;
 using Vortex.Database.Context;
 using Vortex.Database.Entities.Achievements;
+using Vortex.Primitives.Badges.Snapshots;
 using Vortex.Primitives.Commerce;
 using Vortex.Primitives.Events;
 using Vortex.Primitives.Inventory.Grains;
@@ -384,6 +385,14 @@ internal sealed class PlayerAchievementGrain(
 
         AchievementLevelUp lastLevel = result.LevelUps[^1];
 
+        // The badge the player just earned is counted a moment before this notification claims its
+        // figures, so a first-ever holder reads as zero owners here until the directory recounts.
+        // Asking anyway is still right: every other badge in the same dialog carries real numbers.
+        BadgeInfoSnapshot badgeInfo = await _grainFactory
+            .GetBadgeDirectoryGrain()
+            .GetInfoAsync(finalBadge, ct)
+            .ConfigureAwait(true);
+
         await presence
             .SendComposerAsync(
                 new HabboAchievementNotificationMessageComposer
@@ -400,8 +409,8 @@ internal sealed class PlayerAchievementGrain(
                     RemovedBadgeCode = badgeHeldBefore,
                     Category = definition.Category,
                     ShowDialogToUser = true,
-                    OwnerCount = 0,
-                    BadgeRarityId = 0,
+                    OwnerCount = badgeInfo.OwnerCount,
+                    BadgeRarityId = (int)badgeInfo.Rarity,
                 }
             )
             .ConfigureAwait(true);

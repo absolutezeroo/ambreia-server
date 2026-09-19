@@ -62,6 +62,7 @@ internal sealed class InventoryMap : IRevisionMap
             new GetBadgePointLimitsMessageParser()
         );
         builder.MapParser(MessageEvent.GetBadgesEvent, new GetBadgesMessageParser());
+        builder.MapParser(MessageEvent.GetBadgeInfoEvent, new GetBadgeInfoMessageParser());
         builder.MapParser(
             MessageEvent.GetIsBadgeRequestFulfilledEvent,
             new GetIsBadgeRequestFulfilledMessageParser()
@@ -189,6 +190,10 @@ internal sealed class InventoryMap : IRevisionMap
         builder.MapSerializer(
             typeof(BadgeReceivedEventMessageComposer),
             new BadgeReceivedEventMessageComposerSerializer(MessageComposer.BadgeReceivedComposer)
+        );
+        builder.MapSerializer(
+            typeof(BadgeInfoMessageComposer),
+            new BadgeInfoMessageComposerSerializer(MessageComposer.BadgeInfoComposer)
         );
         builder.MapSerializer(
             typeof(BadgesEventMessageComposer),

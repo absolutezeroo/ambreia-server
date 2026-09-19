@@ -1,8 +1,11 @@
 using System.Collections.Generic;
+using System.Collections.Immutable;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Orleans;
 using Vortex.Messages.Registry;
+using Vortex.Primitives.Badges.Snapshots;
 using Vortex.Primitives.Groups.Snapshots;
 using Vortex.Primitives.Orleans;
 using Vortex.Primitives.Orleans.Snapshots.Players;
@@ -46,6 +49,11 @@ public class GetExtendedProfileMessageHandler : IMessageHandler<GetExtendedProfi
             .GetMembershipsAsync(targetUserId, ct)
             .ConfigureAwait(false);
 
+        ImmutableArray<BadgeRarityCountSnapshot> rarities = await _grainFactory
+            .GetPlayerBadgeGrain(targetUserId)
+            .GetRarityCountsAsync(ct)
+            .ConfigureAwait(false);
+
         await ctx.SendComposerAsync(
                 new ExtendedProfileMessageComposer
                 {
@@ -73,14 +81,20 @@ public class GetExtendedProfileMessageHandler : IMessageHandler<GetExtendedProfi
                     StarGemCount = snapshot.StarGemCount,
                     BooleanField26 = snapshot.BooleanField26,
                     BooleanField27 = snapshot.BooleanField27,
-                    // The two counts are real. The rarity breakdown has nothing to compute it from:
-                    // `player_badges` stores neither a rarity tier nor an owner count. The rank is
-                    // -1, the client's own "unranked" value — it hides the row below zero and would
-                    // otherwise print "(#0)" on every profile (groups/ExtendedProfileWindowCtrl.as:318).
-                    // All four stay on the wire because the client reads them unconditionally.
+                    // The rank stays -1, the client's own "unranked" value — it hides the row below
+                    // zero and would otherwise print "(#0)" on every profile
+                    // (groups/ExtendedProfileWindowCtrl.as:318). Filling it means ranking the
+                    // player against the whole hotel, which is the badge leaderboard's job.
                     TotalBadges = snapshot.TotalBadges,
                     AchievementLevel = snapshot.AchievementLevel,
-                    BadgeRarityCounts = [],
+                    BadgeRarityCounts =
+                    [
+                        .. rarities.Select(r => new BadgeRarityCount
+                        {
+                            RarityId = (int)r.Rarity,
+                            Count = r.Count,
+                        }),
+                    ],
                     TotalBadgesRank = -1,
                 },
                 ct

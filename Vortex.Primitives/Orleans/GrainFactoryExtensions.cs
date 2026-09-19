@@ -1,4 +1,5 @@
 using Orleans;
+using Vortex.Primitives.Badges.Grains;
 using Vortex.Primitives.Camera.Grains;
 using Vortex.Primitives.Catalog.Grains;
 using Vortex.Primitives.Collectibles.Grains;
@@ -233,6 +234,9 @@ public static class GrainFactoryExtensions
 
     public static IServerConfigGrain GetServerConfigGrain(this IGrainFactory factory) =>
         factory.GetGrain<IServerConfigGrain>(SingletonGrainId.GLOBAL);
+
+    public static IBadgeDirectoryGrain GetBadgeDirectoryGrain(this IGrainFactory factory) =>
+        factory.GetGrain<IBadgeDirectoryGrain>(SingletonGrainId.GLOBAL);
 
     public static IPlayerAchievementGrain GetPlayerAchievementGrain(
         this IGrainFactory factory,

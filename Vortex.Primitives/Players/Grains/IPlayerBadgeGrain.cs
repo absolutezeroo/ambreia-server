@@ -3,6 +3,7 @@ using System.Collections.Immutable;
 using System.Threading;
 using System.Threading.Tasks;
 using Orleans;
+using Vortex.Primitives.Badges.Snapshots;
 using Vortex.Primitives.Players.Snapshots;
 
 namespace Vortex.Primitives.Players.Grains;
@@ -10,6 +11,15 @@ namespace Vortex.Primitives.Players.Grains;
 public interface IPlayerBadgeGrain : IGrainWithIntegerKey
 {
     public Task<ImmutableArray<PlayerBadgeSnapshot>> GetBadgesAsync(CancellationToken ct);
+
+    /// <summary>
+    /// How many of this player's badges sit in each rarity tier, which is what the extended profile
+    /// puts on the wire. Grouped here rather than by the caller: the tier of a badge is a decision
+    /// this side owns, and a handler that groups them would be re-deciding it.
+    /// </summary>
+    public Task<ImmutableArray<BadgeRarityCountSnapshot>> GetRarityCountsAsync(
+        CancellationToken ct
+    );
 
     /// <summary>Applies the five display slots the client just sent and answers with the badges
     /// that ended up worn — the requested codes the player actually owns, ordered by slot. The

@@ -248,6 +248,8 @@ internal static class MessageEvent
     public const int GetBotCommandConfigurationDataEvent = 2311; // AS3-verified (direct read, both revisions): BotSkillConfigurationViewBase::open() -> _SafeCls_3415
     public const int GetBadgePointLimitsEvent = 2944; // AS3-verified 2026-08-22 (WIN63 registry + sender): _composers[2944] = _SafeCls_2019(), HabboInventory.as:207. The request trigger the old comment could not find is this one; 981 was in no registry table.
     public const int GetBadgesEvent = 770;
+    public const int GetBadgeInfoEvent = 3159; // AS3-verified 2026-09-19 (WIN63 registry + sender): _composers[3159] = _SafePkg_2020/_SafeCls_3448(String), sent by ui/handler/FurnitureBadgeDisplayWidgetHandler.as:151. Outgoing 3159 is NftEmeraldConvertResult -- separate id spaces, not a collision
+    public const int GetBadgeLeaderboardEvent = 1225; // AS3-verified 2026-09-19 (WIN63 registry + sender): _composers[1225] = _SafePkg_1789/_SafeCls_3493(type, rarity, chunkIndex, size), sent by groups/badge_leaderboard/server/BadgeLeaderboardDataServer.synchronizeChunk
     public const int GetIsBadgeRequestFulfilledEvent = 2236; // AS3-verified 2026-08-13: _composers[2236] = _SafeCls_3765, sent with the badge request code by the landing view's badge widget. 2236 is also an AvatarEffectExpired *composer* -- the two directions are separate id spaces, so that is not a collision. Was 9112, invented
     public const int RequestABadgeEvent = 3258;
     public const int SetActivatedBadgesEvent = 2764;
@@ -1095,6 +1097,8 @@ internal static class MessageComposer
     public const int BotRemovedFromInventoryComposer = 2032; // AS3-verified (old-revision trace): still exists in current revision at 2032
     public const int BadgePointLimitsComposer = 3510; // AS3-verified (ghost fix): onBadgePointLimits
     public const int BadgeReceivedComposer = 2840; // AS3-verified (ghost fix): onBadgeReceived
+    public const int BadgeInfoComposer = 1153; // AS3-verified 2026-09-19 (WIN63 registry + consumer): _SafeStr_4546[1153] = _SafeCls_3875, parser unknowns/_SafePkg_3206/_SafeCls_4369 (badgeId, badgeCode, ownerCount, badgeRarityId), read by FurnitureBadgeDisplayWidgetHandler.onBadgeInfo
+    public const int BadgeLeaderboardResultComposer = 2503; // AS3-verified 2026-09-19 (WIN63 registry + consumer): _SafeStr_4546[2503] = _SafeCls_3446, parser unknowns/_SafePkg_1891/_SafeCls_3883, read by groups/badge_leaderboard/BadgeLeaderboardController.onBadgeLeaderboardResult
     public const int BadgesComposer = 2748;
     public const int IsBadgeRequestFulfilledComposer = 2121; // AS3-verified (direct read, both revisions): moderation handler::onBadgeRequestFulfilledEvent() -> _SafeCls_2930 @2121 (old _SafeCls_3282@2295)
     public const int NavigatorCollapsedCategoriesMessageComposer = 1754;

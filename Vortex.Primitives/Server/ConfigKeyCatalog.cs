@@ -50,6 +50,62 @@ public static class ConfigKeyCatalog
             "General"
         ),
         new(
+            "badge.rarity.minimum_players",
+            "100",
+            ConfigValueKind.Int,
+            "Registered players the hotel needs before badge rarity means anything. Under this, every badge is drawn as common — a hotel with eleven accounts would otherwise call its welcome badge legendary.",
+            "Badges"
+        ),
+        new(
+            "badge.rarity.unique_max_owners",
+            "1",
+            ConfigValueKind.Int,
+            "A badge this many players or fewer hold is unique, whatever the hotel's size. The only tier set by an absolute count rather than a share.",
+            "Badges"
+        ),
+        new(
+            "badge.rarity.legendary_max_share",
+            "0.001",
+            ConfigValueKind.String,
+            "Share of registered players who may hold a badge for it to be legendary (0.001 = 0.1%).",
+            "Badges"
+        ),
+        new(
+            "badge.rarity.mythical_max_share",
+            "0.005",
+            ConfigValueKind.String,
+            "Share of registered players who may hold a badge for it to be mythical (0.005 = 0.5%).",
+            "Badges"
+        ),
+        new(
+            "badge.rarity.epic_max_share",
+            "0.02",
+            ConfigValueKind.String,
+            "Share of registered players who may hold a badge for it to be epic (0.02 = 2%).",
+            "Badges"
+        ),
+        new(
+            "badge.rarity.rare_max_share",
+            "0.08",
+            ConfigValueKind.String,
+            "Share of registered players who may hold a badge for it to be rare (0.08 = 8%). Rare is the lowest tier the client always draws on its own; anything below is drawn as common.",
+            "Badges"
+        ),
+        new(
+            "badge.rarity.uncommon_max_share",
+            "0.25",
+            ConfigValueKind.String,
+            "Share of registered players who may hold a badge for it to be uncommon (0.25 = 25%). Changes nothing a player sees until the client is served 'badge_rarity.uncommon' in its external variables — without that flag the client draws this tier as common.",
+            "Badges"
+        ),
+        new(
+            "badge.rarity.refresh_seconds",
+            "300",
+            ConfigValueKind.Int,
+            "How often badge owner counts are recounted from the database. Grants and revokes adjust the counts in between, so this only corrects drift.",
+            "Badges"
+        ),
+        new(
             "respect.daily_limit",
             "3",
             ConfigValueKind.Int,

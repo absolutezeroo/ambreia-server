@@ -9,7 +9,9 @@ using Microsoft.Extensions.Logging;
 using Orleans;
 using Vortex.Database.Context;
 using Vortex.Database.Entities.Players;
+using Vortex.Primitives.Badges.Snapshots;
 using Vortex.Primitives.Events;
+using Vortex.Primitives.Orleans;
 using Vortex.Primitives.Players.Grains;
 using Vortex.Primitives.Players.Snapshots;
 
@@ -17,6 +19,7 @@ namespace Vortex.Progression.Grains;
 
 internal sealed class PlayerBadgeGrain(
     IDbContextFactory<VortexDbContext> dbCtxFactory,
+    IGrainFactory grainFactory,
     IEventPublisher events,
     ILogger<PlayerBadgeGrain> logger
 ) : Grain, IPlayerBadgeGrain
@@ -25,6 +28,7 @@ internal sealed class PlayerBadgeGrain(
     private const int MaxSlot = 5;
 
     private readonly IDbContextFactory<VortexDbContext> _dbCtxFactory = dbCtxFactory;
+    private readonly IGrainFactory _grainFactory = grainFactory;
     private readonly IEventPublisher _events = events;
     private readonly ILogger<PlayerBadgeGrain> _logger = logger;
 
@@ -44,17 +48,15 @@ internal sealed class PlayerBadgeGrain(
                 .ToListAsync(ct)
                 .ConfigureAwait(true);
 
-            // OwnerCount and BadgeRarityId are left at 0: `player_badges` stores neither, so
-            // there is nothing to read them from yet. They are still on the wire because the
-            // client reads four fields per badge either way -- omitting them desynced the packet,
-            // which is a different and much worse failure than a badge with no rarity tier.
-            return entities
-                .Select(b => new PlayerBadgeSnapshot
-                {
-                    SlotId = b.SlotId ?? 0,
-                    BadgeCode = b.BadgeCode,
-                })
-                .ToImmutableArray();
+            // The owner count and the rarity tier are hotel figures, not this player's, so they
+            // come from the badge directory rather than from `player_badges`. Sending them as 0
+            // was not "no opinion": the client draws whatever arrives in those two fields, so it
+            // was the claim that every badge in the hotel is common.
+            return await DescribeAsync(
+                    entities.Select(b => (b.SlotId ?? 0, b.BadgeCode)).ToList(),
+                    ct
+                )
+                .ConfigureAwait(true);
         }
         catch (Exception ex)
         {
@@ -69,6 +71,75 @@ internal sealed class PlayerBadgeGrain(
     ///     twice would make <c>ToDictionary</c> throw — after the update that clears every slot had
     ///     already committed, so a crafted packet wiped the selection instead of changing it.
     /// </summary>
+    public async Task<ImmutableArray<BadgeRarityCountSnapshot>> GetRarityCountsAsync(
+        CancellationToken ct
+    )
+    {
+        try
+        {
+            await using VortexDbContext dbCtx = await _dbCtxFactory
+                .CreateDbContextAsync(ct)
+                .ConfigureAwait(true);
+
+            List<string> codes = await dbCtx
+                .PlayerBadges.AsNoTracking()
+                .Where(b => b.PlayerEntityId == PlayerId)
+                .Select(b => b.BadgeCode)
+                .ToListAsync(ct)
+                .ConfigureAwait(true);
+
+            if (codes.Count == 0)
+            {
+                return [];
+            }
+
+            return await _grainFactory
+                .GetBadgeDirectoryGrain()
+                .CountByRarityAsync(codes, ct)
+                .ConfigureAwait(true);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Failed to count badge rarities for player {PlayerId}", PlayerId);
+            return [];
+        }
+    }
+
+    /// <summary>
+    /// Attaches the hotel's owner count and rarity tier to each badge. One call to the directory
+    /// for the whole list, not one per badge: the wire carries the four fields together and a
+    /// player with forty badges would otherwise make forty grain calls to fill one packet.
+    /// </summary>
+    private async Task<ImmutableArray<PlayerBadgeSnapshot>> DescribeAsync(
+        List<(int SlotId, string BadgeCode)> badges,
+        CancellationToken ct
+    )
+    {
+        if (badges.Count == 0)
+        {
+            return [];
+        }
+
+        ImmutableArray<BadgeInfoSnapshot> info = await _grainFactory
+            .GetBadgeDirectoryGrain()
+            .GetInfoAsync([.. badges.Select(b => b.BadgeCode)], ct)
+            .ConfigureAwait(true);
+
+        return
+        [
+            .. badges.Select(
+                (badge, index) =>
+                    new PlayerBadgeSnapshot
+                    {
+                        SlotId = badge.SlotId,
+                        BadgeCode = badge.BadgeCode,
+                        OwnerCount = info[index].OwnerCount,
+                        BadgeRarityId = (int)info[index].Rarity,
+                    }
+            ),
+        ];
+    }
+
     internal static Dictionary<string, int> NormalizeSlots(
         List<(int SlotId, string BadgeCode)> slots
     ) =>
@@ -119,16 +190,14 @@ internal sealed class PlayerBadgeGrain(
                 // The rows that were found, not the codes that were asked for: a request naming a
                 // badge the player does not own equips nothing, and reporting it worn would put a
                 // badge on the avatar that no row backs.
-                equipped =
-                [
-                    .. toActivate
-                        .OrderBy(b => b.SlotId)
-                        .Select(b => new PlayerBadgeSnapshot
-                        {
-                            SlotId = b.SlotId ?? 0,
-                            BadgeCode = b.BadgeCode,
-                        }),
-                ];
+                equipped = await DescribeAsync(
+                        toActivate
+                            .OrderBy(b => b.SlotId)
+                            .Select(b => (b.SlotId ?? 0, b.BadgeCode))
+                            .ToList(),
+                        ct
+                    )
+                    .ConfigureAwait(true);
             }
 
             // Published for an empty selection too: taking every badge off is a change worth a line,

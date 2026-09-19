@@ -11,6 +11,9 @@ using Microsoft.Extensions.Options;
 using Orleans;
 using Vortex.Database.Context;
 using Vortex.Database.Entities.Achievements;
+using Vortex.Primitives.Badges;
+using Vortex.Primitives.Badges.Grains;
+using Vortex.Primitives.Badges.Snapshots;
 using Vortex.Primitives.Commerce;
 using Vortex.Primitives.Events;
 using Vortex.Primitives.Players.Grains;
@@ -365,12 +368,30 @@ public sealed class PlayerAchievementGrainTests
                 }
             );
 
+            // A level-up now asks the badge directory for the figures it puts on the notification,
+            // so the fallback proxy -- whose methods all answer null -- is no longer enough for
+            // this one: awaiting a null Task is what the four failures here were.
+            IBadgeDirectoryGrain badges = FakeProxy.Create<IBadgeDirectoryGrain>(call =>
+                call.Method.Name == nameof(IBadgeDirectoryGrain.GetInfoAsync)
+                    ? Task.FromResult(
+                        new BadgeInfoSnapshot
+                        {
+                            BadgeCode = call.Args?[0] as string ?? string.Empty,
+                            OwnerCount = 0,
+                            Rarity = BadgeRarityTier.Common,
+                        }
+                    )
+                    : null
+            );
+
             return FakeProxy.Create<IGrainFactory>(call =>
                 call.Method.IsGenericMethod
-                    ? call.Method.GetGenericArguments()[0] is Type grainType
-                    && grainType == typeof(IAchievementManagerGrain)
-                        ? manager
-                        : FakeProxy.CreateFor(call.Method.GetGenericArguments()[0], _ => null)
+                    ? call.Method.GetGenericArguments()[0] switch
+                    {
+                        Type t when t == typeof(IAchievementManagerGrain) => manager,
+                        Type t when t == typeof(IBadgeDirectoryGrain) => badges,
+                        Type t => FakeProxy.CreateFor(t, _ => null),
+                    }
                     : null
             );
         }

@@ -22,6 +22,10 @@ internal sealed class UsersMap : IRevisionMap
             new ApproveMembershipRequestMessageParser()
         );
         builder.MapParser(MessageEvent.ApproveNameMessageEvent, new ApproveNameMessageParser());
+        builder.MapParser(
+            MessageEvent.GetBadgeLeaderboardEvent,
+            new GetBadgeLeaderboardMessageParser()
+        );
         builder.MapParser(MessageEvent.ChangeEmailEvent, new ChangeEmailMessageParser());
         builder.MapParser(MessageEvent.CreateGuildMessageEvent, new CreateGuildMessageParser());
         builder.MapParser(
@@ -146,6 +150,12 @@ internal sealed class UsersMap : IRevisionMap
             new UpdateGuildSettingsMessageParser()
         );
 
+        builder.MapSerializer(
+            typeof(BadgeLeaderboardResultMessageComposer),
+            new BadgeLeaderboardResultMessageComposerSerializer(
+                MessageComposer.BadgeLeaderboardResultComposer
+            )
+        );
         builder.MapSerializer(
             typeof(GuildCreatedMessageComposer),
             new GuildCreatedMessageComposerSerializer(MessageComposer.GuildCreatedMessageComposer)
