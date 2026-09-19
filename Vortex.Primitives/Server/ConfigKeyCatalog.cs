@@ -534,6 +534,97 @@ public static class ConfigKeyCatalog
             "Duckets charged to publish a photo to the hotel's feed, on top of taking it.",
             "Camera"
         ),
+        new(
+            "camera.renders_per_hour",
+            "30",
+            ConfigValueKind.Int,
+            "Photos one player may take per hour. The rate limit, not the price, is what stops a scripted client turning the renderer into the hotel's most expensive loop — it is checked before the payload is even decompressed.",
+            "Camera"
+        ),
+        new(
+            "camera.publish_cooldown_seconds",
+            "1800",
+            ConfigValueKind.Int,
+            "Seconds between two publishes by the same player. The client turns a refusal into \"wait N minutes\" from this number.",
+            "Camera"
+        ),
+        new(
+            "camera.competition_entries_per_day",
+            "3",
+            ConfigValueKind.Int,
+            "Competition entries per player per day. Past it the client is told 'too-many-submits', which it has its own wording for.",
+            "Camera"
+        ),
+        new(
+            "camera.external_image_prefixes",
+            "",
+            ConfigValueKind.String,
+            "Semicolon-separated url prefixes a photo may fetch an image from — badges, other photos on the wall. A sprite's name can be an absolute url the payload chose, so anything not on this list is a request this hotel would make on a stranger's behalf. EMPTY MEANS NONE, which is the safe default; add your own asset host (e.g. https://assets.example/c_images/) to let badges appear in photos. Matched on the parsed url, so a lookalike host does not pass.",
+            "Camera"
+        ),
+        new(
+            "camera.max_payload_bytes",
+            "524288",
+            ConfigValueKind.Int,
+            "Largest compressed scene accepted from the client, refused before a byte is inflated. The client caps nothing itself.",
+            "Camera"
+        ),
+        new(
+            "camera.max_scene_bytes",
+            "4194304",
+            ConfigValueKind.Int,
+            "Ceiling on the scene once decompressed, applied WHILE inflating. This is the compression-bomb guard: a small upload can expand to gigabytes, and measuring afterwards measures the damage.",
+            "Camera"
+        ),
+        new(
+            "camera.max_planes",
+            "256",
+            ConfigValueKind.Int,
+            "Most floor and wall planes one photo may describe. Lower it if the renderer is costing more than a photo is worth.",
+            "Camera"
+        ),
+        new(
+            "camera.max_sprites",
+            "4096",
+            ConfigValueKind.Int,
+            "Most sprites one photo may describe — furniture parts, avatar limbs, badges. A crowded room in a wide shot is the honest upper end.",
+            "Camera"
+        ),
+        new(
+            "camera.max_masks_per_plane",
+            "64",
+            ConfigValueKind.Int,
+            "Most door and window cut-outs on a single plane.",
+            "Camera"
+        ),
+        new(
+            "camera.max_texture_columns_per_plane",
+            "128",
+            ConfigValueKind.Int,
+            "Most texture columns painted onto a single plane.",
+            "Camera"
+        ),
+        new(
+            "camera.timestamp_skew_seconds",
+            "900",
+            ConfigValueKind.Int,
+            "How far a photo's own timestamp may sit from server time. The client's seal carries no secret and authenticates nothing; a freshness window is the one thing it honestly buys, and it stops one scene being replayed all afternoon.",
+            "Camera"
+        ),
+        new(
+            "camera.url_path_prefix",
+            "photos/",
+            ConfigValueKind.String,
+            "Path prefix of the url handed to the client, which prepends its own stories.image_url_base external variable. The two have to agree or every photo is fetched from somewhere that has never heard of this hotel.",
+            "Camera"
+        ),
+        new(
+            "camera.photo_furni_classname",
+            "external_image_wallitem_photo",
+            ConfigValueKind.String,
+            "Classname of the furniture a bought photo becomes. Nothing is charged if no definition carries this name.",
+            "Camera"
+        ),
     ];
 
     /// <summary>The descriptor for <paramref name="key"/>, or null if the key is not a known config key.</summary>
