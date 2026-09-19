@@ -10,15 +10,22 @@
 
 spec: unknown
 spec_version: 1
-generated_digest: "sha256:fa0637ba169f38fc01c5080779f8ebc671c1e1523c5465429f519806b2325539"
+generated_digest: "sha256:1847eb1b0f9c82df1516a7443bc39b1f0249e5b82a5b8e1a877be33c1c5a66ff"
 generated:
   id: uk_8e01c5f212
   subject: "messenger.set_relationship_status: what the server sends when it refuses"
   severity: medium
-  question: messenger.set_relationship_status changes state and has 3 guards whose refusal behaviour nothing here attests. Does the official server answer a refused request, and with what?
+  question: messenger.set_relationship_status changes state and has 4 guards whose refusal behaviour nothing here attests. Does the official server answer a refused request, and with what?
   resolved_by: an official capture of each guard being tripped
   feature: messenger.set_relationship_status
   known_evidence:
+  - id: ev_373e76aa8a80
+    kind: emulator_flow
+    authority: vortex_emulator
+    origin: vortex
+    source: Vortex.Players/Grains/PlayerPresenceGrain.cs
+    symbol: PlayerPresenceGrain
+    line: 178
   - id: ev_755dc7c0e2b5
     kind: emulator_flow
     authority: vortex_emulator

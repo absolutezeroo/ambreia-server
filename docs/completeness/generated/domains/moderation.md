@@ -7,10 +7,10 @@ Target client: `WIN63-202607011411-782849652`
 
 | status | count |
 |---|---|
-| obligations | 48 |
+| obligations | 49 |
 | missing | 0 |
 | partial | 5 |
-| implemented | 43 |
+| implemented | 44 |
 | complete | 0 |
 | unknown | 0 |
 | not_applicable | 0 |
@@ -25,6 +25,7 @@ Target client: `WIN63-202607011411-782849652`
 
 ## implemented
 
+- `AppealCfh` (3028) — moderation.appeal_ticket reaches a domain operation from AppealCfhMessageHandler
 - `CallForHelpFromForumMessage` (2991) — moderation.call_for_help_from_forum_message reaches a domain operation from CallForHelpFromForumMessageMessageHandler
 - `CallForHelpFromForumThread` (380) — moderation.call_for_help_from_forum_thread reaches a domain operation from CallForHelpFromForumThreadMessageHandler
 - `CallForHelpFromSelfie` (201) — moderation.call_for_help_from_selfie reaches a domain operation from CallForHelpFromSelfieMessageHandler

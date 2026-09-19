@@ -8,16 +8,12 @@ Target client: `WIN63-202607011411-782849652`
 | status | count |
 |---|---|
 | obligations | 16 |
-| missing | 1 |
+| missing | 0 |
 | partial | 2 |
-| implemented | 13 |
+| implemented | 14 |
 | complete | 0 |
 | unknown | 0 |
 | not_applicable | 0 |
-
-## missing
-
-- `SetRelationshipStatus` (1773) — the packet is described but no revision map binds it, so it cannot arrive
 
 ## partial
 
@@ -38,4 +34,5 @@ Target client: `WIN63-202607011411-782849652`
 - `RequestFriend` (1) — messenger.request_friend reaches a domain operation from RequestFriendMessageHandler
 - `SendMsg` (3357) — messenger.send_msg reaches a domain operation from SendMsgMessageHandler
 - `SendRoomInvite` (617) — messenger.send_room_invite reaches a domain operation from SendRoomInviteMessageHandler
+- `SetRelationshipStatus` (1773) — messenger.set_relationship_status reaches a domain operation from SetRelationshipStatusMessageHandler
 - `VisitUser` (1515) — messenger.open_room_for_player_id reaches a domain operation from VisitUserMessageHandler

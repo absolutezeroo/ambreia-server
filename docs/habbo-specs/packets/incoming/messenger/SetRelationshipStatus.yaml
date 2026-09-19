@@ -10,13 +10,14 @@
 
 spec: packet
 spec_version: 1
-generated_digest: "sha256:d3e286e106643ebabde260878e822b5699d027bdbe07288a9fff6a09f88f04e2"
+generated_digest: "sha256:06564394a636280d9e39e485d3d7de6e697e4be95ba840e3966696b627df7c86"
 generated:
   name: SetRelationshipStatus
   direction: incoming
   domain: messenger
   structure_confidence: client_confirmed
-  mapped_in_vortex: false
+  mapped_in_vortex: true
+  vortex_handler: SetRelationshipStatusMessageHandler
   fields:
   - index: 0
     name: user_id
@@ -57,6 +58,14 @@ generated:
     - int32
     - int32
     evidence: ev_5a3988a750fc
+  - origin: vortex
+    authority: vortex_emulator
+    field_count: 2
+    partial: false
+    types:
+    - int32
+    - int32
+    evidence: ev_3a00f0f0ff41
   evidence:
   - id: ev_f3d9003af4d3
     kind: client_call_site
@@ -82,5 +91,12 @@ generated:
     symbol: SetRelationshipStatusMessageEvent
     line: 11
     note: third-party server implementation; evidence, not authority
+  - id: ev_3a00f0f0ff41
+    kind: emulator_parser
+    authority: vortex_emulator
+    origin: vortex
+    source: Vortex.Revisions/Revision20260701/Parsers/FriendList/SetRelationshipStatusMessageParser.cs
+    symbol: SetRelationshipStatusMessageParser
+    line: 8
 verified: {}
 manual: {}

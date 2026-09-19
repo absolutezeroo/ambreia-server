@@ -7,7 +7,7 @@ reproduced from the target client and the current code on the next run.
 
 | status | domain | obligation | header | handler | feature | why |
 |---|---|---|---|---|---|---|
-| partial | advertisement | GetInterstitial | 1369 | GetInterstitialMessageHandler | advertisement.get_interstitial | advertisement.get_interstitial exists but the handler reaches no domain operation |
+| implemented | advertisement | GetInterstitial | 1369 | GetInterstitialMessageHandler | advertisement.get_interstitial | advertisement.get_interstitial reaches a domain operation from GetInterstitialMessageHandler |
 | partial | advertisement | InterstitialShown | 1408 | InterstitialShownMessageHandler | advertisement.interstitial_shown | advertisement.interstitial_shown exists but the handler reaches no domain operation |
 | implemented | avatar | ChangeUserName | 1703 | ChangeUserNameMessageHandler | avatar.change_user_name | avatar.change_user_name reaches a domain operation from ChangeUserNameMessageHandler |
 | implemented | avatar | CheckUserName | 413 | CheckUserNameMessageHandler | avatar.check_user_name | avatar.check_user_name reaches a domain operation from CheckUserNameMessageHandler |
@@ -18,7 +18,7 @@ reproduced from the target client and the current code on the next run.
 | partial | camera | PublishPhoto | 375 | PublishPhotoMessageHandler | camera.publish_photo | camera.publish_photo exists but the handler reaches no domain operation |
 | partial | camera | PurchasePhoto | 753 | PurchasePhotoMessageHandler | camera.purchase_photo | camera.purchase_photo exists but the handler reaches no domain operation |
 | partial | camera | RenderRoom | 3332 | RenderRoomMessageHandler | camera.render_room | camera.render_room exists but the handler reaches no domain operation |
-| partial | camera | RequestCameraConfiguration | 3010 | RequestCameraConfigurationMessageHandler | camera.request_camera_configuration | camera.request_camera_configuration exists but the handler reaches no domain operation |
+| implemented | camera | RequestCameraConfiguration | 3010 | RequestCameraConfigurationMessageHandler | camera.request_camera_configuration | camera.request_camera_configuration reaches a domain operation from RequestCameraConfigurationMessageHandler |
 | partial | campaign | OpenCampaignCalendarDoor | 3643 | OpenCampaignCalendarDoorMessageHandler | campaign.open_campaign_calendar_door | campaign.open_campaign_calendar_door exists but the handler reaches no domain operation |
 | partial | campaign | OpenCampaignCalendarDoorAsStaff | 3863 | OpenCampaignCalendarDoorAsStaffMessageHandler | campaign.open_campaign_calendar_door_as_staff | campaign.open_campaign_calendar_door_as_staff exists but the handler reaches no domain operation |
 | implemented | catalog | BuildersClubPlaceRoomItem | 3849 | BuildersClubPlaceRoomItemMessageHandler | catalog.builders_club_place_room_item | catalog.builders_club_place_room_item reaches a domain operation from BuildersClubPlaceRoomItemMessageHandler |
@@ -49,7 +49,7 @@ reproduced from the target client and the current code on the next run.
 | implemented | catalog | PurchaseTargetedOffer | 2497 | PurchaseTargetedOfferMessageHandler | catalog.purchase_targeted_offer | catalog.purchase_targeted_offer reaches a domain operation from PurchaseTargetedOfferMessageHandler |
 | implemented | catalog | PurchaseVipMembershipExtension | 2441 | PurchaseVipMembershipExtensionMessageHandler | catalog.find_by_id | catalog.find_by_id reaches a domain operation from PurchaseVipMembershipExtensionMessageHandler |
 | missing | catalog | RecycleItems | 1796 | - | - | the packet is described but no revision map binds it, so it cannot arrive |
-| implemented | catalog | RedeemVoucher | 2779 | RedeemVoucherMessageHandler | catalog.redeem_voucher | catalog.redeem_voucher reaches a domain operation from RedeemVoucherMessageHandler |
+| implemented | catalog | RedeemVoucher | 2779 | RedeemVoucherMessageHandler | catalog.record_failure | catalog.record_failure reaches a domain operation from RedeemVoucherMessageHandler |
 | partial | catalog | RoomAdPurchaseInitiated | 3607 | RoomAdPurchaseInitiatedMessageHandler | catalog.room_ad_purchase_initiated | catalog.room_ad_purchase_initiated exists but the handler reaches no domain operation |
 | implemented | catalog | SelectClubGift | 2087 | SelectClubGiftMessageHandler | catalog.find_by_product_code | catalog.find_by_product_code reaches a domain operation from SelectClubGiftMessageHandler |
 | implemented | catalog | SetTargetedOfferState | 2874 | SetTargetedOfferStateMessageHandler | catalog.set_targeted_offer_state | catalog.set_targeted_offer_state reaches a domain operation from SetTargetedOfferStateMessageHandler |
@@ -203,8 +203,9 @@ reproduced from the target client and the current code on the next run.
 | implemented | messenger | RequestFriend | 1 | RequestFriendMessageHandler | messenger.request_friend | messenger.request_friend reaches a domain operation from RequestFriendMessageHandler |
 | implemented | messenger | SendMsg | 3357 | SendMsgMessageHandler | messenger.send_msg | messenger.send_msg reaches a domain operation from SendMsgMessageHandler |
 | implemented | messenger | SendRoomInvite | 617 | SendRoomInviteMessageHandler | messenger.send_room_invite | messenger.send_room_invite reaches a domain operation from SendRoomInviteMessageHandler |
-| missing | messenger | SetRelationshipStatus | 1773 | - | - | the packet is described but no revision map binds it, so it cannot arrive |
+| implemented | messenger | SetRelationshipStatus | 1773 | SetRelationshipStatusMessageHandler | messenger.set_relationship_status | messenger.set_relationship_status reaches a domain operation from SetRelationshipStatusMessageHandler |
 | implemented | messenger | VisitUser | 1515 | VisitUserMessageHandler | messenger.open_room_for_player_id | messenger.open_room_for_player_id reaches a domain operation from VisitUserMessageHandler |
+| implemented | moderation | AppealCfh | 3028 | AppealCfhMessageHandler | moderation.appeal_ticket | moderation.appeal_ticket reaches a domain operation from AppealCfhMessageHandler |
 | partial | moderation | CallForHelp | 732 | CallForHelpMessageHandler | moderation.call_for_help | moderation.call_for_help exists but the handler reaches no domain operation |
 | implemented | moderation | CallForHelpFromForumMessage | 2991 | CallForHelpFromForumMessageMessageHandler | moderation.call_for_help_from_forum_message | moderation.call_for_help_from_forum_message reaches a domain operation from CallForHelpFromForumMessageMessageHandler |
 | implemented | moderation | CallForHelpFromForumThread | 380 | CallForHelpFromForumThreadMessageHandler | moderation.call_for_help_from_forum_thread | moderation.call_for_help_from_forum_thread reaches a domain operation from CallForHelpFromForumThreadMessageHandler |
@@ -369,14 +370,14 @@ reproduced from the target client and the current code on the next run.
 | partial | room | ExtendRentOrBuyoutStripItem | 1029 | ExtendRentOrBuyoutStripItemMessageHandler | room.extend_rent_or_buyout_strip_item | room.extend_rent_or_buyout_strip_item exists but the handler reaches no domain operation |
 | implemented | room | GetBannedUsersFromRoom | 2702 | GetBannedUsersFromRoomMessageHandler | room.get_banned_users_from_room | room.get_banned_users_from_room reaches a domain operation from GetBannedUsersFromRoomMessageHandler |
 | implemented | room | GetBotCommandConfigurationData | 2311 | GetBotCommandConfigurationDataMessageHandler | room.get_bot_command_configuration_data | room.get_bot_command_configuration_data reaches a domain operation from GetBotCommandConfigurationDataMessageHandler |
-| partial | room | GetCustomRoomFilter | 790 | GetCustomRoomFilterMessageHandler | room.get_custom_room_filter | room.get_custom_room_filter exists but the handler reaches no domain operation |
+| implemented | room | GetCustomRoomFilter | 790 | GetCustomRoomFilterMessageHandler | room.get_custom_room_filter | room.get_custom_room_filter reaches a domain operation from GetCustomRoomFilterMessageHandler |
 | implemented | room | GetFlatControllers | 342 | GetFlatControllersMessageHandler | room.get_flat_controllers | room.get_flat_controllers reaches a domain operation from GetFlatControllersMessageHandler |
 | implemented | room | GetFurnitureAliases | 1901 | GetFurnitureAliasesMessageHandler | room.get_furniture_aliases | room.get_furniture_aliases reaches a domain operation from GetFurnitureAliasesMessageHandler |
 | implemented | room | GetGuildFurniContextMenuInfo | 826 | GetGuildFurniContextMenuInfoMessageHandler | room.get_guild_furni_context_menu_info | room.get_guild_furni_context_menu_info reaches a domain operation from GetGuildFurniContextMenuInfoMessageHandler |
 | implemented | room | GetItemData | 350 | GetItemDataMessageHandler | room.get_item_data | room.get_item_data reaches a domain operation from GetItemDataMessageHandler |
 | implemented | room | GetOccupiedTiles | 3426 | GetOccupiedTilesMessageHandler | room.get_occupied_tiles | room.get_occupied_tiles reaches a domain operation from GetOccupiedTilesMessageHandler |
 | implemented | room | GetPetCommands | 2425 | GetPetCommandsMessageHandler | room.get_enabled_command_ids | room.get_enabled_command_ids reaches a domain operation from GetPetCommandsMessageHandler |
-| implemented | room | GetPetInfo | 3899 | GetPetInfoMessageHandler | room.get_pet_info | room.get_pet_info reaches a domain operation from GetPetInfoMessageHandler |
+| implemented | room | GetPetInfo | 3899 | GetPetInfoMessageHandler | room.get_nutrition_cap_for_level | room.get_nutrition_cap_for_level reaches a domain operation from GetPetInfoMessageHandler |
 | partial | room | GetRentOrBuyoutOffer | 1583 | GetRentOrBuyoutOfferMessageHandler | room.get_rent_or_buyout_offer | room.get_rent_or_buyout_offer exists but the handler reaches no domain operation |
 | implemented | room | GetRoomEntryTile | 880 | GetRoomEntryTileMessageHandler | room.get_room_entry_tile | room.get_room_entry_tile reaches a domain operation from GetRoomEntryTileMessageHandler |
 | implemented | room | GetRoomSettings | 256 | GetRoomSettingsMessageHandler | room.get_room_settings | room.get_room_settings reaches a domain operation from GetRoomSettingsMessageHandler |
@@ -420,6 +421,7 @@ reproduced from the target client and the current code on the next run.
 | implemented | room | RoomDimmerSavePreset | 130 | RoomDimmerSavePresetMessageHandler | room.room_dimmer_save_preset | room.room_dimmer_save_preset reaches a domain operation from RoomDimmerSavePresetMessageHandler |
 | partial | room | RoomNetworkOpenConnection | 2045 | RoomNetworkOpenConnectionMessageHandler | room.room_network_open_connection | room.room_network_open_connection exists but the handler reaches no domain operation |
 | implemented | room | SaveRoomSettings | 725 | SaveRoomSettingsMessageHandler | room.save_room_settings | room.save_room_settings reaches a domain operation from SaveRoomSettingsMessageHandler |
+| implemented | room | SetAdjacentCustomStackingHeight | 3315 | SetAdjacentCustomStackingHeightMessageHandler | room.set_adjacent_custom_stacking_height | room.set_adjacent_custom_stacking_height reaches a domain operation from SetAdjacentCustomStackingHeightMessageHandler |
 | partial | room | SetAreaHideData | 1954 | SetAreaHideDataMessageHandler | room.set_area_hide_data | room.set_area_hide_data exists but the handler reaches no domain operation |
 | implemented | room | SetClothingChangeData | 1220 | SetClothingChangeDataMessageHandler | room.set_clothing_change_data | room.set_clothing_change_data reaches a domain operation from SetClothingChangeDataMessageHandler |
 | implemented | room | SetCustomStackingHeight | 3045 | SetCustomStackingHeightMessageHandler | room.set_custom_stacking_height | room.set_custom_stacking_height reaches a domain operation from SetCustomStackingHeightMessageHandler |
@@ -441,7 +443,7 @@ reproduced from the target client and the current code on the next run.
 | implemented | room | UnmuteUser | 498 | UnmuteUserMessageHandler | room.unmute_user | room.unmute_user reaches a domain operation from UnmuteUserMessageHandler |
 | implemented | room | UpdateFloorProperties | 2937 | UpdateFloorPropertiesMessageHandler | room.update_floor_properties | room.update_floor_properties reaches a domain operation from UpdateFloorPropertiesMessageHandler |
 | implemented | room | UpdateRoomCategoryAndTradeSettings | 3946 | UpdateRoomCategoryAndTradeSettingsMessageHandler | room.update_room_category_and_trade_settings | room.update_room_category_and_trade_settings reaches a domain operation from UpdateRoomCategoryAndTradeSettingsMessageHandler |
-| partial | room | UpdateRoomFilter | 1622 | UpdateRoomFilterMessageHandler | room.update_room_filter | room.update_room_filter exists but the handler reaches no domain operation |
+| implemented | room | UpdateRoomFilter | 1622 | UpdateRoomFilterMessageHandler | room.update_room_filter | room.update_room_filter reaches a domain operation from UpdateRoomFilterMessageHandler |
 | implemented | room | UseFurniture | 3353 | UseFurnitureMessageHandler | room.use_item_in_room | room.use_item_in_room reaches a domain operation from UseFurnitureMessageHandler |
 | implemented | room | UseWallItem | 3590 | UseWallItemMessageHandler | room.use_item_in_room | room.use_item_in_room reaches a domain operation from UseWallItemMessageHandler |
 | implemented | room | Whisper | 1697 | WhisperMessageHandler | room.whisper | room.whisper reaches a domain operation from WhisperMessageHandler |
@@ -462,11 +464,9 @@ reproduced from the target client and the current code on the next run.
 | partial | tracking | LatencyPingReport | 1744 | LatencyPingReportMessageHandler | tracking.latency_ping_report | tracking.latency_ping_report exists but the handler reaches no domain operation |
 | partial | tracking | LatencyPingRequest | 544 | LatencyPingRequestMessageHandler | tracking.latency_ping_request | tracking.latency_ping_request exists but the handler reaches no domain operation |
 | partial | tracking | PerformanceLog | 3983 | PerformanceLogMessageHandler | tracking.performance_log | tracking.performance_log exists but the handler reaches no domain operation |
-| missing | unsorted | AppealCfh | 3028 | - | - | the packet is described but no revision map binds it, so it cannot arrive |
 | missing | unsorted | GetRecyclerPrizes | 3669 | - | - | the packet is described but no revision map binds it, so it cannot arrive |
 | missing | unsorted | GetSnowWarGameTokensOffer | 2447 | - | - | the packet is described but no revision map binds it, so it cannot arrive |
 | missing | unsorted | PurchaseSnowWarGameTokensOffer | 3243 | - | - | the packet is described but no revision map binds it, so it cannot arrive |
-| missing | unsorted | ReplenishRespect | 426 | - | - | the packet is described but no revision map binds it, so it cannot arrive |
 | not_applicable | unsorted | header:1016 | 1016 | - | - | _SafeCls_2544 is registered at 1016 and referenced nowhere in the client but the registry: no call site constructs it |
 | missing | unsorted | header:1119 | 1119 | - | - | the client sends header 1119 and nothing in this repository is bound to it |
 | missing | unsorted | header:1225 | 1225 | - | - | the client sends header 1225 and nothing in this repository is bound to it |
@@ -485,7 +485,6 @@ reproduced from the target client and the current code on the next run.
 | not_applicable | unsorted | header:2708 | 2708 | - | - | _SafeCls_3532 is registered at 2708 and referenced nowhere in the client but the registry: no call site constructs it |
 | missing | unsorted | header:293 | 293 | - | - | the client sends header 293 and nothing in this repository is bound to it |
 | missing | unsorted | header:3159 | 3159 | - | - | the client sends header 3159 and nothing in this repository is bound to it |
-| missing | unsorted | header:3315 | 3315 | - | - | the client sends header 3315 and nothing in this repository is bound to it |
 | not_applicable | unsorted | header:3349 | 3349 | - | - | _SafeCls_3900 is registered at 3349 and referenced nowhere in the client but the registry: no call site constructs it |
 | missing | unsorted | header:3422 | 3422 | - | - | the client sends header 3422 and nothing in this repository is bound to it |
 | not_applicable | unsorted | header:3517 | 3517 | - | - | _SafeCls_2558 is registered at 3517 and referenced nowhere in the client but the registry: no call site constructs it |
@@ -521,12 +520,13 @@ reproduced from the target client and the current code on the next run.
 | implemented | users | GetMemberGuildItemCount | 781 | GetMemberGuildItemCountMessageHandler | users.get_member_guild_item_count | users.get_member_guild_item_count reaches a domain operation from GetMemberGuildItemCountMessageHandler |
 | implemented | users | GetRelationshipStatusInfo | 3219 | GetRelationshipStatusInfoMessageHandler | users.get_relationship_status_info | users.get_relationship_status_info reaches a domain operation from GetRelationshipStatusInfoMessageHandler |
 | implemented | users | GetSelectedBadges | 3726 | GetSelectedBadgesMessageHandler | users.get_selected_badges | users.get_selected_badges reaches a domain operation from GetSelectedBadgesMessageHandler |
-| partial | users | GetUserNftChatStyles | 3642 | GetUserNftChatStylesMessageHandler | users.get_user_nft_chat_styles | users.get_user_nft_chat_styles exists but the handler reaches no domain operation |
+| implemented | users | GetUserNftChatStyles | 3642 | GetUserNftChatStylesMessageHandler | users.get_user_nft_chat_styles | users.get_user_nft_chat_styles reaches a domain operation from GetUserNftChatStylesMessageHandler |
 | implemented | users | IgnoreUser | 2070 | IgnoreUserMessageHandler | users.ignore_user | users.ignore_user reaches a domain operation from IgnoreUserMessageHandler |
 | implemented | users | JoinHabboGroup | 1469 | JoinHabboGroupMessageHandler | users.join_habbo_group | users.join_habbo_group reaches a domain operation from JoinHabboGroupMessageHandler |
 | implemented | users | KickMember | 3156 | KickMemberMessageHandler | users.kick_member | users.kick_member reaches a domain operation from KickMemberMessageHandler |
 | implemented | users | RejectMembershipRequest | 3200 | RejectMembershipRequestMessageHandler | users.reject_membership_request | users.reject_membership_request reaches a domain operation from RejectMembershipRequestMessageHandler |
 | implemented | users | RemoveAdminRightsFromMember | 3999 | RemoveAdminRightsFromMemberMessageHandler | users.remove_admin_rights_from_member | users.remove_admin_rights_from_member reaches a domain operation from RemoveAdminRightsFromMemberMessageHandler |
+| implemented | users | ReplenishRespect | 426 | ReplenishRespectMessageHandler | users.replenish_respect | users.replenish_respect reaches a domain operation from ReplenishRespectMessageHandler |
 | implemented | users | RespectUser | 3770 | RespectUserMessageHandler | users.respect_user | users.respect_user reaches a domain operation from RespectUserMessageHandler |
 | implemented | users | ScrGetKickbackInfo | 1111 | ScrGetKickbackInfoMessageHandler | users.scr_get_kickback_info | users.scr_get_kickback_info reaches a domain operation from ScrGetKickbackInfoMessageHandler |
 | implemented | users | ScrGetUserInfo | 1071 | ScrGetUserInfoMessageHandler | users.scr_get_user_info | users.scr_get_user_info reaches a domain operation from ScrGetUserInfoMessageHandler |

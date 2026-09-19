@@ -5145,6 +5145,18 @@ namespace Vortex.Database.Migrations
 
                     MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
 
+                    b.Property<DateTime?>("AppealCreatedAt")
+                        .HasColumnType("datetime(6)")
+                        .HasColumnName("appeal_created_at");
+
+                    b.Property<DateTime?>("AppealResolvedAt")
+                        .HasColumnType("datetime(6)")
+                        .HasColumnName("appeal_resolved_at");
+
+                    b.Property<int>("AppealStatus")
+                        .HasColumnType("int")
+                        .HasColumnName("appeal_status");
+
                     b.Property<int>("CfhTopicEntityId")
                         .HasColumnType("int")
                         .HasColumnName("topic_id");

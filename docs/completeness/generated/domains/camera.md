@@ -9,8 +9,8 @@ Target client: `WIN63-202607011411-782849652`
 |---|---|
 | obligations | 5 |
 | missing | 0 |
-| partial | 5 |
-| implemented | 0 |
+| partial | 4 |
+| implemented | 1 |
 | complete | 0 |
 | unknown | 0 |
 | not_applicable | 0 |
@@ -21,4 +21,7 @@ Target client: `WIN63-202607011411-782849652`
 - `PublishPhoto` (375) — camera.publish_photo exists but the handler reaches no domain operation
 - `PurchasePhoto` (753) — camera.purchase_photo exists but the handler reaches no domain operation
 - `RenderRoom` (3332) — camera.render_room exists but the handler reaches no domain operation
-- `RequestCameraConfiguration` (3010) — camera.request_camera_configuration exists but the handler reaches no domain operation
+
+## implemented
+
+- `RequestCameraConfiguration` (3010) — camera.request_camera_configuration reaches a domain operation from RequestCameraConfigurationMessageHandler

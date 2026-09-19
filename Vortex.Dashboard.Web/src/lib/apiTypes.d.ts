@@ -630,6 +630,19 @@ export interface CatalogPurchaseTotals {
   totalQuantity: number;
 }
 
+export interface CfhAppealSnapshot {
+  issueId: number;
+  topicId: number;
+  message: string;
+  reporterPlayerId: number;
+  reporterName: string;
+  reportedPlayerId: number;
+  reportedName: string;
+  closedAt: string | null;
+  closeReason: number | null;
+  appealCreatedAt: string | null;
+}
+
 export interface CfhCloseReasonCount {
   reason: string;
   count: number;
@@ -663,6 +676,9 @@ export interface CfhStats {
   byCloseReason: CfhCloseReasonCount[];
   topTopics: CfhTopicCount[];
   topReportedPlayers: CfhReportedPlayer[];
+}
+
+export interface CfhTicketCloseReason {
 }
 
 export interface CfhTicketState {

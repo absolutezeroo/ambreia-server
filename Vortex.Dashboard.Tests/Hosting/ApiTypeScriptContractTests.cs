@@ -155,6 +155,7 @@ public sealed class ApiTypeScriptContractTests
         typeof(ConsoleCommandInfo),
         typeof(RunConsoleCommandResponse),
         typeof(CfhIssueQueueEntrySnapshot),
+        typeof(CfhAppealSnapshot),
         typeof(VoucherSnapshot),
     ];
 

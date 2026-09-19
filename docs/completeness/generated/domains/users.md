@@ -7,10 +7,10 @@ Target client: `WIN63-202607011411-782849652`
 
 | status | count |
 |---|---|
-| obligations | 42 |
+| obligations | 43 |
 | missing | 0 |
-| partial | 3 |
-| implemented | 39 |
+| partial | 2 |
+| implemented | 41 |
 | complete | 0 |
 | unknown | 0 |
 | not_applicable | 0 |
@@ -19,7 +19,6 @@ Target client: `WIN63-202607011411-782849652`
 
 - `ChangeEmail` (3706) — users.change_email exists but the handler reaches no domain operation
 - `GetEmailStatus` (2306) — users.get_email_status exists but the handler reaches no domain operation
-- `GetUserNftChatStyles` (3642) — users.get_user_nft_chat_styles exists but the handler reaches no domain operation
 
 ## implemented
 
@@ -46,11 +45,13 @@ Target client: `WIN63-202607011411-782849652`
 - `GetMemberGuildItemCount` (781) — users.get_member_guild_item_count reaches a domain operation from GetMemberGuildItemCountMessageHandler
 - `GetRelationshipStatusInfo` (3219) — users.get_relationship_status_info reaches a domain operation from GetRelationshipStatusInfoMessageHandler
 - `GetSelectedBadges` (3726) — users.get_selected_badges reaches a domain operation from GetSelectedBadgesMessageHandler
+- `GetUserNftChatStyles` (3642) — users.get_user_nft_chat_styles reaches a domain operation from GetUserNftChatStylesMessageHandler
 - `IgnoreUser` (2070) — users.ignore_user reaches a domain operation from IgnoreUserMessageHandler
 - `JoinHabboGroup` (1469) — users.join_habbo_group reaches a domain operation from JoinHabboGroupMessageHandler
 - `KickMember` (3156) — users.kick_member reaches a domain operation from KickMemberMessageHandler
 - `RejectMembershipRequest` (3200) — users.reject_membership_request reaches a domain operation from RejectMembershipRequestMessageHandler
 - `RemoveAdminRightsFromMember` (3999) — users.remove_admin_rights_from_member reaches a domain operation from RemoveAdminRightsFromMemberMessageHandler
+- `ReplenishRespect` (426) — users.replenish_respect reaches a domain operation from ReplenishRespectMessageHandler
 - `RespectUser` (3770) — users.respect_user reaches a domain operation from RespectUserMessageHandler
 - `ScrGetKickbackInfo` (1111) — users.scr_get_kickback_info reaches a domain operation from ScrGetKickbackInfoMessageHandler
 - `ScrGetUserInfo` (1071) — users.scr_get_user_info reaches a domain operation from ScrGetUserInfoMessageHandler

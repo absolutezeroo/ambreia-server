@@ -52,7 +52,7 @@ Target client: `WIN63-202607011411-782849652`
 - `PurchaseRoomAd` (2928) — catalog.get_flat_categories reaches a domain operation from PurchaseRoomAdMessageMessageHandler
 - `PurchaseTargetedOffer` (2497) — catalog.purchase_targeted_offer reaches a domain operation from PurchaseTargetedOfferMessageHandler
 - `PurchaseVipMembershipExtension` (2441) — catalog.find_by_id reaches a domain operation from PurchaseVipMembershipExtensionMessageHandler
-- `RedeemVoucher` (2779) — catalog.redeem_voucher reaches a domain operation from RedeemVoucherMessageHandler
+- `RedeemVoucher` (2779) — catalog.record_failure reaches a domain operation from RedeemVoucherMessageHandler
 - `SelectClubGift` (2087) — catalog.find_by_product_code reaches a domain operation from SelectClubGiftMessageHandler
 - `SetTargetedOfferState` (2874) — catalog.set_targeted_offer_state reaches a domain operation from SetTargetedOfferStateMessageHandler
 - `ShopTargetedOfferViewed` (3046) — catalog.shop_targeted_offer_viewed reaches a domain operation from ShopTargetedOfferViewedMessageHandler

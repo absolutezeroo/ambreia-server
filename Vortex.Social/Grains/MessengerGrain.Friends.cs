@@ -468,13 +468,25 @@ internal sealed partial class MessengerGrain
         CancellationToken ct
     )
     {
+        // The wire carries a bare int and the client only ever offers its four buttons. Anything
+        // else would be written straight into the short the friend-list entry serializes, so an
+        // unknown value is dropped here rather than decorated onto somebody's console.
+        if (!Enum.IsDefined(relationType))
+        {
+            return;
+        }
+
         PlayerId friendKey = PlayerId.Parse(friendId);
         if (!_friends.TryGetValue(friendKey, out MessengerFriendSnapshot? existing))
         {
             return;
         }
 
-        _friends[friendKey] = existing with { RelationshipStatus = (short)relationType };
+        MessengerFriendSnapshot updated = existing with
+        {
+            RelationshipStatus = (short)relationType,
+        };
+        _friends[friendKey] = updated;
 
         await using VortexDbContext dbCtx = await dbCtxFactory.CreateDbContextAsync(ct);
         await dbCtx
@@ -485,6 +497,28 @@ internal sealed partial class MessengerGrain
             )
             .ExecuteUpdateAsync(up => up.SetProperty(p => p.RelationType, relationType), ct)
             .ConfigureAwait(true);
+
+        // The picker closes on its own, but the heart beside the friend's name is drawn from the
+        // console's own copy of the entry. Without this the player sees their choice take effect
+        // only on the next login, on their own action.
+        IPlayerPresenceGrain presence = grainFactory.GetPlayerPresenceGrain(SelfId);
+        LogAndForget(
+            presence.SendComposerAsync(
+                new FriendListUpdateMessageComposer
+                {
+                    FriendCategories = [],
+                    Updates =
+                    [
+                        new FriendListUpdateSnapshot
+                        {
+                            ActionType = FriendListUpdateActionType.Updated,
+                            FriendId = friendKey.Value,
+                            Friend = updated,
+                        },
+                    ],
+                }
+            )
+        );
     }
 
     public async Task BlockUserAsync(PlayerId targetId, CancellationToken ct)

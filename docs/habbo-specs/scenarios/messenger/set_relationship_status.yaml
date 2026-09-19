@@ -10,7 +10,7 @@
 
 spec: scenarios
 spec_version: 1
-generated_digest: "sha256:3cedad9bdba3bee17bdd401e03188fcc2746b9a92c5229c2c03449b4550cb334"
+generated_digest: "sha256:fbf1f6c10abfe8765d81b1c22608828bffef94526c715ab5c263fb4b72db4219"
 generated:
   feature: messenger.set_relationship_status
   scenarios:
@@ -39,6 +39,30 @@ generated:
       - FriendListUpdate
       evidence: ev_5a3988a750fc
   - scenario: messenger.set_relationship_status.guard_1
+    title: "set relationship status: the guard '!Enum.IsDefined(relationType)' holds"
+    given:
+      guard: "!Enum.IsDefined(relationType)"
+      guard_holds: "true"
+    when:
+      packet: SetRelationshipStatus
+    expected:
+      status: unknown
+      confidence: unknown
+    needs_evidence: "an official capture of SetRelationshipStatus sent while '!Enum.IsDefined(relationType)' holds: does the server reply, stay silent, or disconnect?"
+    executable: false
+    claims:
+    - origin: vortex
+      authority: vortex_emulator
+      outcome: ignored
+      emits: []
+      evidence: ev_e805723a88fe
+    - origin: habbo-arcturus-daybreak
+      authority: reference_emulator
+      outcome: success
+      emits:
+      - FriendListUpdate
+      evidence: ev_5a3988a750fc
+  - scenario: messenger.set_relationship_status.guard_2
     title: "set relationship status: the guard '!_friends.TryGetValue(friendKey, out MessengerFriendSnaps...' holds"
     given:
       guard: "!_friends.TryGetValue(friendKey, out MessengerFriendSnapshot? existing)"
@@ -76,9 +100,10 @@ generated:
     claims:
     - origin: vortex
       authority: vortex_emulator
-      outcome: ignored
-      emits: []
-      evidence: ev_755dc7c0e2b5
+      outcome: success
+      emits:
+      - FriendListUpdate
+      evidence: ev_373e76aa8a80
     - origin: habbo-arcturus-daybreak
       authority: reference_emulator
       outcome: success
@@ -94,6 +119,13 @@ generated:
     symbol: SetRelationshipStatusMessageEvent
     line: 11
     note: third-party server implementation; evidence, not authority
+  - id: ev_373e76aa8a80
+    kind: emulator_flow
+    authority: vortex_emulator
+    origin: vortex
+    source: Vortex.Players/Grains/PlayerPresenceGrain.cs
+    symbol: PlayerPresenceGrain
+    line: 178
   - id: ev_755dc7c0e2b5
     kind: emulator_flow
     authority: vortex_emulator
@@ -107,6 +139,6 @@ generated:
     origin: vortex
     source: Vortex.Social/Grains/MessengerGrain.Friends.cs
     symbol: MessengerGrain
-    line: 472
+    line: 474
 verified: {}
 manual: {}

@@ -10,7 +10,7 @@
 
 spec: packet
 spec_version: 1
-generated_digest: "sha256:7d2dc18d576d319494502e507c07e4036e4b8468349fbddcd323720e65067254"
+generated_digest: "sha256:19b51c008f705b3f6471c0d123ad4945552f595bd8c83cafe01c1c34ad30ca4e"
 generated:
   name: MyCfhReportStatus
   direction: outgoing
@@ -99,7 +99,7 @@ generated:
     evidence:
     - ev_621602a2defe
   - index: 9
-    name: appeal_status_none
+    name: appeal_status
     type: byte
     name_confidence: implementation_observed
     type_confidence: client_confirmed
@@ -108,23 +108,23 @@ generated:
     - ev_621602a2defe
     - ev_52a7c18465aa
   - index: 10
-    name: unknown_10
+    name: appeal_creation_time
     type: long
-    name_is_placeholder: true
-    name_confidence: unknown
+    name_confidence: implementation_observed
     type_confidence: client_confirmed
     note: inside a repeated block
     evidence:
     - ev_621602a2defe
+    - ev_52a7c18465aa
   - index: 11
-    name: unknown_11
+    name: appeal_resolution_time
     type: long
-    name_is_placeholder: true
-    name_confidence: unknown
+    name_confidence: implementation_observed
     type_confidence: client_confirmed
     note: inside a repeated block
     evidence:
     - ev_621602a2defe
+    - ev_52a7c18465aa
   layouts_by_source:
   - origin: "as3:WIN63-202607011411-782849652"
     authority: client_code

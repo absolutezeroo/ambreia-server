@@ -10,7 +10,7 @@
 
 spec: unknown
 spec_version: 1
-generated_digest: "sha256:6556d517007d9839d05b46e14889dcfc3379f0b1fe155a89f43d1b1e1870a7fc"
+generated_digest: "sha256:6229e3d15b784ad8f94b3c981a5858682c0e542aaa344d73bc2a62aec1e524dd"
 generated:
   id: uk_1ac976c4bf
   subject: "users.unignore_user: what the server sends when it refuses"
@@ -39,6 +39,6 @@ generated:
     origin: vortex
     source: Vortex.Social/Grains/MessengerGrain.Friends.cs
     symbol: MessengerGrain
-    line: 580
+    line: 614
 verified: {}
 manual: {}

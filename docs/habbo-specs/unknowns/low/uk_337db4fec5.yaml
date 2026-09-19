@@ -10,12 +10,12 @@
 
 spec: unknown
 spec_version: 1
-generated_digest: "sha256:47810a246ac33cffd2a0970e43a770756785204d41ebd6d61b072d83b41bc036"
+generated_digest: "sha256:f3c7781227ff96c3ed28a6cbf9cf89684d6853b7fa37c386e16688bb97a94bc5"
 generated:
   id: uk_337db4fec5
   subject: "outgoing/MyCfhReportStatus: unnamed fields"
   severity: low
-  question: Fields 8, 10, 11 carry no name from any source. What are they?
+  question: Fields 8 carry no name from any source. What are they?
   resolved_by: a client getter or call site that names the value, or a decoded capture showing what it contains
   packet: MyCfhReportStatus
   known_evidence:

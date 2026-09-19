@@ -45,6 +45,10 @@ internal sealed class FriendListMap : IRevisionMap
         builder.MapParser(MessageEvent.RequestFriendMessageEvent, new RequestFriendMessageParser());
         builder.MapParser(MessageEvent.SendMsgMessageEvent, new SendMsgMessageParser());
         builder.MapParser(
+            MessageEvent.SetRelationshipStatusMessageEvent,
+            new SetRelationshipStatusMessageParser()
+        );
+        builder.MapParser(
             MessageEvent.SendRoomInviteMessageEvent,
             new SendRoomInviteMessageParser()
         );

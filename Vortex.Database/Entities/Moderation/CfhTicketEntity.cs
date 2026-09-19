@@ -58,6 +58,18 @@ public class CfhTicketEntity : VortexEntity
     [Column("sanctioned")]
     public bool Sanctioned { get; set; }
 
+    /// <summary>The reporter's appeal against their own closed report, if they filed one. Kept on
+    /// the ticket rather than in a child table because the client shows exactly one appeal per
+    /// report and offers no way to file a second.</summary>
+    [Column("appeal_status")]
+    public CfhAppealStatus AppealStatus { get; set; }
+
+    [Column("appeal_created_at")]
+    public DateTime? AppealCreatedAt { get; set; }
+
+    [Column("appeal_resolved_at")]
+    public DateTime? AppealResolvedAt { get; set; }
+
     [ForeignKey(nameof(CfhTopicEntityId))]
     public CfhTopicEntity? CfhTopicEntity { get; set; }
 

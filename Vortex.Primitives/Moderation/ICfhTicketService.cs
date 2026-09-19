@@ -110,6 +110,33 @@ public interface ICfhTicketService
     );
 
     /// <summary>
+    /// The reporter contesting the closure of their own report. Every condition the client's appeal
+    /// button tests is re-tested server-side, because the request carries a ticket id and nothing
+    /// else.
+    /// </summary>
+    /// <returns>False when the ticket is not this player's, is not closed, was closed with a
+    /// sanction, or has already been appealed — all four are "the button should not have been
+    /// enabled", so there is nothing to tell the client beyond leaving the row as it was.</returns>
+    Task<bool> AppealTicketAsync(int issueId, int reporterPlayerId, CancellationToken ct = default);
+
+    /// <summary>Appeals nobody has looked at yet, oldest first — the staff dashboard's work list.
+    /// The client's own moderation tool has no appeal screen, so this is the only place they
+    /// surface.</summary>
+    Task<ImmutableArray<CfhAppealSnapshot>> GetPendingAppealsAsync(CancellationToken ct = default);
+
+    /// <summary>
+    /// Settles pending appeals. <paramref name="upheld"/> true marks the report sanctioned after
+    /// all; false leaves the original decision standing. Either way the appeal stops being pending,
+    /// which is what takes the row off the reporter's "appealed" state.
+    /// </summary>
+    /// <returns>The ids actually resolved — the rest had no pending appeal.</returns>
+    Task<ImmutableArray<int>> ResolveAppealsAsync(
+        IReadOnlyList<int> issueIds,
+        bool upheld,
+        CancellationToken ct = default
+    );
+
+    /// <summary>
     /// This player's own sanction history, newest first — what their client shows under "my
     /// sanctions". Bans that have already expired are included: it is a record, not a list of what
     /// is currently in force, and a player looking at an empty screen after serving one would read

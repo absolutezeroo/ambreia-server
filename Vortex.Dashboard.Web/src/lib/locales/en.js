@@ -949,6 +949,15 @@ export default {
     confirmBan: 'Confirm ban',
     close: 'Close',
     player: 'player',
+    tabQueue: 'Queue',
+    tabAppeals: 'Appeals',
+    appealsDescription:
+      'Reports the reporter contested after they were closed without a sanction. Upholding one marks the report sanctioned after all; dismissing leaves the original decision standing. Either way the reporter stops waiting.',
+    colClosedAt: 'Closed',
+    colAppealedAt: 'Appealed',
+    upholdAppeal: 'Uphold',
+    dismissAppeal: 'Dismiss',
+    noAppeals: 'No appeals waiting.',
   },
   console: {
     title: 'Server console',

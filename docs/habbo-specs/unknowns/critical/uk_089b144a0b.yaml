@@ -10,12 +10,12 @@
 
 spec: unknown
 spec_version: 1
-generated_digest: "sha256:4438519479c056f2f39b4eff668fdff0a9111fb1cc263c895031e9be79b346cf"
+generated_digest: "sha256:9af62f2b621947d11b526d158f329d86e503ef881a907a45e76f15b094979402"
 generated:
   id: uk_089b144a0b
   subject: "as3:AIR-1.0.31: client-to-server messages this emulator has no header for"
   severity: critical
-  question: "The official client can send 491 messages whose header ids appear nowhere in this emulator's table (for example 4, 7, 10, 12, 19, 33, 43, 60). What are they, and does the hotel need them?"
+  question: "The official client can send 490 messages whose header ids appear nowhere in this emulator's table (for example 4, 7, 10, 12, 19, 33, 43, 60). What are they, and does the hotel need them?"
   resolved_by: read the client class bound to each id in its message registry, then either map the header or record why the hotel does not need it
   known_evidence:
   - id: ev_07974c3d923b

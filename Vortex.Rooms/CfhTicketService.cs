@@ -557,6 +557,9 @@ internal sealed class CfhTicketService(
                 ReportedName = t.ReportedPlayerEntity != null ? t.ReportedPlayerEntity.Name : null,
                 t.ClosedAt,
                 t.Sanctioned,
+                t.AppealStatus,
+                t.AppealCreatedAt,
+                t.AppealResolvedAt,
             })
             .ToListAsync(ct)
             .ConfigureAwait(false);
@@ -575,8 +578,133 @@ internal sealed class CfhTicketService(
                     ? new DateTimeOffset(closed, TimeSpan.Zero).ToUnixTimeMilliseconds()
                     : -1,
                 Sanctioned = r.Sanctioned,
+                AppealStatus = r.AppealStatus,
+                AppealCreationTime = ToEpochMillisOrOpen(r.AppealCreatedAt),
+                AppealResolutionTime = ToEpochMillisOrOpen(r.AppealResolvedAt),
             })
             .ToImmutableArray();
+    }
+
+    /// <summary>Epoch milliseconds, or the client's -1 "not yet" sentinel for a null.</summary>
+    private static long ToEpochMillisOrOpen(DateTime? value) =>
+        value is { } at ? new DateTimeOffset(at, TimeSpan.Zero).ToUnixTimeMilliseconds() : -1;
+
+    public async Task<bool> AppealTicketAsync(
+        int issueId,
+        int reporterPlayerId,
+        CancellationToken ct = default
+    )
+    {
+        if (issueId <= 0 || reporterPlayerId <= 0)
+        {
+            return false;
+        }
+
+        await using VortexDbContext dbCtx = await _dbContextFactory
+            .CreateDbContextAsync(ct)
+            .ConfigureAwait(false);
+
+        // Every condition the client's own appeal button tests, re-tested here: the request carries
+        // nothing but a ticket id, so a crafted one would otherwise appeal somebody else's report,
+        // an open one, or the same one twice.
+        CfhTicketEntity? ticket = await dbCtx
+            .CfhTickets.Where(t =>
+                t.Id == issueId
+                && t.ReporterPlayerEntityId == reporterPlayerId
+                && t.State == CfhTicketState.Closed
+                && !t.Sanctioned
+                && t.AppealStatus == CfhAppealStatus.None
+                && t.DeletedAt == null
+            )
+            .FirstOrDefaultAsync(ct)
+            .ConfigureAwait(false);
+
+        if (ticket is null)
+        {
+            return false;
+        }
+
+        ticket.AppealStatus = CfhAppealStatus.Pending;
+        ticket.AppealCreatedAt = DateTime.UtcNow;
+
+        await dbCtx.SaveChangesAsync(ct).ConfigureAwait(false);
+        return true;
+    }
+
+    public async Task<ImmutableArray<CfhAppealSnapshot>> GetPendingAppealsAsync(
+        CancellationToken ct = default
+    )
+    {
+        await using VortexDbContext dbCtx = await _dbContextFactory
+            .CreateDbContextAsync(ct)
+            .ConfigureAwait(false);
+
+        List<CfhAppealSnapshot> rows = await dbCtx
+            .CfhTickets.AsNoTracking()
+            .Where(t => t.AppealStatus == CfhAppealStatus.Pending && t.DeletedAt == null)
+            .OrderBy(t => t.AppealCreatedAt)
+            .Select(t => new CfhAppealSnapshot
+            {
+                IssueId = t.Id,
+                TopicId = t.CfhTopicEntityId,
+                Message = t.Message ?? string.Empty,
+                ReporterPlayerId = t.ReporterPlayerEntityId,
+                ReporterName =
+                    t.ReporterPlayerEntity != null ? t.ReporterPlayerEntity.Name : string.Empty,
+                ReportedPlayerId = t.ReportedPlayerEntityId ?? 0,
+                ReportedName =
+                    t.ReportedPlayerEntity != null ? t.ReportedPlayerEntity.Name : string.Empty,
+                ClosedAt = t.ClosedAt,
+                CloseReason = t.CloseReason,
+                AppealCreatedAt = t.AppealCreatedAt,
+            })
+            .ToListAsync(ct)
+            .ConfigureAwait(false);
+
+        return [.. rows];
+    }
+
+    public async Task<ImmutableArray<int>> ResolveAppealsAsync(
+        IReadOnlyList<int> issueIds,
+        bool upheld,
+        CancellationToken ct = default
+    )
+    {
+        if (issueIds.Count == 0)
+        {
+            return [];
+        }
+
+        await using VortexDbContext dbCtx = await _dbContextFactory
+            .CreateDbContextAsync(ct)
+            .ConfigureAwait(false);
+
+        List<CfhTicketEntity> tickets = await dbCtx
+            .CfhTickets.Where(t =>
+                issueIds.Contains(t.Id)
+                && t.AppealStatus == CfhAppealStatus.Pending
+                && t.DeletedAt == null
+            )
+            .ToListAsync(ct)
+            .ConfigureAwait(false);
+
+        DateTime now = DateTime.UtcNow;
+        foreach (CfhTicketEntity ticket in tickets)
+        {
+            ticket.AppealStatus = upheld ? CfhAppealStatus.ActionTaken : CfhAppealStatus.NoAction;
+            ticket.AppealResolvedAt = now;
+
+            // Upholding an appeal means the second look found what the first one missed, so the
+            // report itself becomes a sanctioned one. The close time stays where it was: the client
+            // prints the appeal's own resolution date once an appeal exists.
+            if (upheld)
+            {
+                ticket.Sanctioned = true;
+            }
+        }
+
+        await dbCtx.SaveChangesAsync(ct).ConfigureAwait(false);
+        return [.. tickets.Select(t => t.Id)];
     }
 
     public async Task<ImmutableArray<PlayerSanctionSnapshot>> GetSanctionHistoryAsync(

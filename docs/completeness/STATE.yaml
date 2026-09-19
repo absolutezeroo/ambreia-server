@@ -4,7 +4,7 @@ status: started
 
 repository:
   name: absolutezeroo/vortex-cloud
-  observed_head: 06ed6352d9f19acac509ed6e731dabbb3908208c
+  observed_head: 294ce301f0ec073cf19b2e8133631be54c8027fd
 
 codebase_documentation:
   state_file: docs/codebase/.documentation-state.json
@@ -19,7 +19,7 @@ target_client:
   incoming: 580
   outgoing: 588
 
-phase: FC-F1
+phase: FC-6
 active_slice: null
 
 # Reproduce with: dotnet run --project Vortex.Specs.Cli -- completeness
@@ -27,14 +27,14 @@ active_slice: null
 coverage:
   denominator: 578
   unresolved_surface: 2
-  protocol_mapping: 536
-  implementation: 422
+  protocol_mapping: 540
+  implementation: 431
   verified_complete: 0
-  missing: 26
-  partial: 114
+  missing: 22
+  partial: 109
   unknown: 0
   not_applicable: 16
-  measured_at_commit: 06ed6352d9f19acac509ed6e731dabbb3908208c
+  measured_at_commit: 294ce301f0ec073cf19b2e8133631be54c8027fd
   note: "implementation means Vortex has a meaningful path, never that Habbo behaviour was verified"
 
 # A SECOND surface, and not comparable with the packet one. The packet matrix scores the wired
@@ -42,9 +42,9 @@ coverage:
 # configure. Reproduce with the same command; written to generated/WIRED-BOXES.md.
 wired_box_surface:
   denominator: 184
-  implemented: 162
-  missing: 22
-  by_family: "trigger 26/26, action 49/58, condition 43/45, selector 20/20, addon 16/26, variable 8/9"
+  implemented: 164
+  missing: 20
+  by_family: "trigger 26/26, action 49/58, condition 43/45, selector 20/20, addon 18/26, variable 8/9"
   bound_here_absent_from_client: 6
   note: "an enum member is not a box: a code with no logic behind it is still missing"
   newer_client_note: |
@@ -60,9 +60,9 @@ wired_box_surface:
 furniture_logic_surface:
   logic_names: 73
   definitions_covered: 42059
-  answered: 38112
-  stranded: 3947
-  worst: "furniture_purchasable_clothing 2862, furniture_soundblock 418, furniture_credit 135"
+  answered: 40976
+  stranded: 1083
+  worst: "furniture_soundblock 418, furniture_credit 135, furniture_trophy 61"
   limit: "name-level, not family-level: the provider keys by name AND family, so 90.6% is an upper bound"
   # protocol_mapping is the denominator less missing and not_applicable, restated. It is not a
   # second axis; implementation and verified_complete are.
@@ -103,6 +103,10 @@ slices:
   FC-4: "RemoveNftFromTrade@521 — a Relic could be put on the trade table and never taken off; docs/completeness/reviews/FC-4-remove-nft-from-trade.md"
   FC-W1: "the wired box surface, 154/184, generated beside the packet matrix; docs/completeness/reviews/FC-W1-wired-box-surface.md"
   FC-F1: "the furniture logic surface, 3947 definitions stranded; docs/completeness/reviews/FC-F1-furniture-logic-surface.md"
+  FC-5: "SetRelationshipStatus@1773 — message, parser, handler and grain all existed and no map bound the header, so the console's relationship picker reached nothing"
+  FC-6: "AppealCfh@3028 — the appeal button in 'my reports' had no request bound and no columns behind it; the three trailing wire fields were written as constants"
 
 next:
+  # SnowWar / Game2 (game 2/27) is the largest MISSING cluster and is deliberately deferred by the
+  # user, not N/A: it stays visible in the matrix and out of the recommendation.
   - FC-RC

@@ -7,10 +7,6 @@ namespace Vortex.Revisions.Revision20260701.Serializers.CallForHelp;
 internal class MyCfhReportStatusMessageComposerSerializer(int header)
     : AbstractSerializer<MyCfhReportStatusMessageComposer>(header)
 {
-    /// <summary>The client's APPEAL_NONE. It gates the whole appeal half of the window: anything
-    /// else and it prints an appeal date and outcome for an appeal that was never filed.</summary>
-    private const byte AppealStatusNone = 0;
-
     protected override void Serialize(
         IServerPacket packet,
         MyCfhReportStatusMessageComposer message
@@ -32,11 +28,10 @@ internal class MyCfhReportStatusMessageComposerSerializer(int header)
                 // No auto-moderation in this hotel: every sanction on a report came from a
                 // moderator closing it, which is the branch this false selects.
                 .WriteBoolean(false)
-                .WriteByte(AppealStatusNone)
-                // Appeals are not implemented (the button's request, header 3028, is unmapped).
+                .WriteByte((byte)report.AppealStatus)
                 // -1, not 0, for the same reason CloseTime uses it on an open report.
-                .WriteLong(-1)
-                .WriteLong(-1);
+                .WriteLong(report.AppealCreationTime)
+                .WriteLong(report.AppealResolutionTime);
         }
     }
 }

@@ -40,4 +40,15 @@ public sealed record CfhReportStatusSnapshot
 
     [Id(6)]
     public required bool Sanctioned { get; init; }
+
+    [Id(7)]
+    public required CfhAppealStatus AppealStatus { get; init; }
+
+    /// <summary>-1 while no appeal was filed, for the same reason <see cref="CloseTime"/> is.</summary>
+    [Id(8)]
+    public required long AppealCreationTime { get; init; }
+
+    /// <summary>-1 while the appeal is still pending; the client prints "-" on that exact value.</summary>
+    [Id(9)]
+    public required long AppealResolutionTime { get; init; }
 }

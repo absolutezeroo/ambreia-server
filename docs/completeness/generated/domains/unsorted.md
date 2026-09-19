@@ -7,8 +7,8 @@ Target client: `WIN63-202607011411-782849652`
 
 | status | count |
 |---|---|
-| obligations | 31 |
-| missing | 17 |
+| obligations | 28 |
+| missing | 14 |
 | partial | 0 |
 | implemented | 0 |
 | complete | 0 |
@@ -17,11 +17,9 @@ Target client: `WIN63-202607011411-782849652`
 
 ## missing
 
-- `AppealCfh` (3028) — the packet is described but no revision map binds it, so it cannot arrive
 - `GetRecyclerPrizes` (3669) — the packet is described but no revision map binds it, so it cannot arrive
 - `GetSnowWarGameTokensOffer` (2447) — the packet is described but no revision map binds it, so it cannot arrive
 - `PurchaseSnowWarGameTokensOffer` (3243) — the packet is described but no revision map binds it, so it cannot arrive
-- `ReplenishRespect` (426) — the packet is described but no revision map binds it, so it cannot arrive
 - `header:1119` (1119) — the client sends header 1119 and nothing in this repository is bound to it
 - `header:1225` (1225) — the client sends header 1225 and nothing in this repository is bound to it
 - `header:1242` (1242) — the client sends header 1242 and nothing in this repository is bound to it
@@ -30,7 +28,6 @@ Target client: `WIN63-202607011411-782849652`
 - `header:2668` (2668) — the client sends header 2668 and nothing in this repository is bound to it
 - `header:293` (293) — the client sends header 293 and nothing in this repository is bound to it
 - `header:3159` (3159) — the client sends header 3159 and nothing in this repository is bound to it
-- `header:3315` (3315) — the client sends header 3315 and nothing in this repository is bound to it
 - `header:3422` (3422) — the client sends header 3422 and nothing in this repository is bound to it
 - `header:3608` (3608) — the client sends header 3608 and nothing in this repository is bound to it
 - `header:831` (831) — the client sends header 831 and nothing in this repository is bound to it

@@ -9,13 +9,16 @@ Target client: `WIN63-202607011411-782849652`
 |---|---|
 | obligations | 2 |
 | missing | 0 |
-| partial | 2 |
-| implemented | 0 |
+| partial | 1 |
+| implemented | 1 |
 | complete | 0 |
 | unknown | 0 |
 | not_applicable | 0 |
 
 ## partial
 
-- `GetInterstitial` (1369) — advertisement.get_interstitial exists but the handler reaches no domain operation
 - `InterstitialShown` (1408) — advertisement.interstitial_shown exists but the handler reaches no domain operation
+
+## implemented
+
+- `GetInterstitial` (1369) — advertisement.get_interstitial reaches a domain operation from GetInterstitialMessageHandler

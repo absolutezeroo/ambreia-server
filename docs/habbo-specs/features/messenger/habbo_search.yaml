@@ -10,7 +10,7 @@
 
 spec: feature
 spec_version: 1
-generated_digest: "sha256:3fec558cd95c197fd2754f17050b9acbef830ee273ae9b77b3e287ba6aca95b0"
+generated_digest: "sha256:64226a619157fcbae63d4919686c5193b8226faa4cf55d648554d46f5cc87ee6"
 generated:
   id: messenger.habbo_search
   domain: messenger
@@ -90,7 +90,7 @@ generated:
     origin: vortex
     source: Vortex.Social/Grains/MessengerGrain.Friends.cs
     symbol: MessengerGrain
-    line: 598
+    line: 632
   - id: ev_f111c9b32405
     kind: emulator_handler
     authority: vortex_emulator

@@ -949,6 +949,15 @@ export default {
     confirmBan: 'Confirmer le ban',
     close: 'Fermer',
     player: 'joueur',
+    tabQueue: 'File',
+    tabAppeals: 'Appels',
+    appealsDescription:
+      "Signalements contestés par leur auteur après avoir été fermés sans sanction. Accepter l'appel marque le signalement comme sanctionné ; le rejeter laisse la décision d'origine. Dans les deux cas, l'auteur cesse d'attendre.",
+    colClosedAt: 'Fermé le',
+    colAppealedAt: 'Appel du',
+    upholdAppeal: 'Accepter',
+    dismissAppeal: 'Rejeter',
+    noAppeals: 'Aucun appel en attente.',
   },
   console: {
     title: 'Console serveur',

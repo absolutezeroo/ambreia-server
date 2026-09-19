@@ -10,7 +10,7 @@
 
 spec: feature
 spec_version: 1
-generated_digest: "sha256:9cf4b4828aea33a538aa45350a837f1cf775bb0fc21aabd3775208d7c1a19734"
+generated_digest: "sha256:589fcbd64fc92d88217a5ff4424aa35540fe7f676da918c06a432b25dc984ddd"
 generated:
   id: users.block_user
   domain: users
@@ -100,7 +100,7 @@ generated:
     origin: vortex
     source: Vortex.Social/Grains/MessengerGrain.Friends.cs
     symbol: MessengerGrain
-    line: 490
+    line: 524
   scenarios:
   - users.block_user.guard_0
   - users.block_user.guard_1

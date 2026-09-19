@@ -10,7 +10,7 @@
 
 spec: feature
 spec_version: 1
-generated_digest: "sha256:632a0c1de9d1d2f67ff5480d05c302b4a4de2e8a262046d86e2fcd41b7c6f21d"
+generated_digest: "sha256:926d5f4051767208361e916c3283c99b17fe70d5904a901e288309bd082143c3"
 generated:
   id: messenger.set_relationship_status
   domain: messenger
@@ -32,11 +32,19 @@ generated:
     layer: grain
     symbol: MessengerGrain.SetRelationshipStatusAsync
     evidence: ev_e805723a88fe
+  - order: 2
+    layer: grain
+    symbol: PlayerPresenceGrain.SendComposerAsync
+    evidence: ev_373e76aa8a80
   checks:
   - expression: ctx.PlayerId <= 0
     on_fail: return
     observed_in: vortex
     evidence: ev_755dc7c0e2b5
+  - expression: "!Enum.IsDefined(relationType)"
+    on_fail: return
+    observed_in: vortex
+    evidence: ev_e805723a88fe
   - expression: "!_friends.TryGetValue(friendKey, out MessengerFriendSnapshot? existing)"
     on_fail: return
     observed_in: vortex
@@ -52,9 +60,20 @@ generated:
     evidence: ev_e805723a88fe
   outgoing:
     ordering: unknown
-    packets: []
+    packets:
+    - packet: FriendListUpdate
+      recipient: target_user
+      recipient_confidence: inferred
+      evidence: ev_e805723a88fe
   reaches_persistence: true
   evidence:
+  - id: ev_373e76aa8a80
+    kind: emulator_flow
+    authority: vortex_emulator
+    origin: vortex
+    source: Vortex.Players/Grains/PlayerPresenceGrain.cs
+    symbol: PlayerPresenceGrain
+    line: 178
   - id: ev_755dc7c0e2b5
     kind: emulator_flow
     authority: vortex_emulator
@@ -79,6 +98,7 @@ generated:
   scenarios:
   - messenger.set_relationship_status.guard_0
   - messenger.set_relationship_status.guard_1
+  - messenger.set_relationship_status.guard_2
   - messenger.set_relationship_status.success
   unknowns:
   - uk_8e01c5f212

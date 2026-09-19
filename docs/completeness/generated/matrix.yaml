@@ -5,12 +5,12 @@ version: 1
 target_revision: WIN63-202607011411-782849652
 target_origin: "as3:WIN63-202607011411-782849652"
 obligation_count: 578
-mapped: 536
+mapped: 540
 unresolved_surface_count: 2
 counts:
-  missing: 26
-  partial: 114
-  implemented: 422
+  missing: 22
+  partial: 109
+  implemented: 431
   complete: 0
   unknown: 0
   not_applicable: 16
@@ -18,13 +18,13 @@ obligations:
 - id: incoming/GetInterstitial
   name: GetInterstitial
   domain: advertisement
-  status: partial
+  status: implemented
   client_class: _SafeCls_2242
   header_id: 1369
   mapped_in_vortex: true
   vortex_handler: GetInterstitialMessageHandler
   feature: advertisement.get_interstitial
-  reason: advertisement.get_interstitial exists but the handler reaches no domain operation
+  reason: advertisement.get_interstitial reaches a domain operation from GetInterstitialMessageHandler
 - id: incoming/InterstitialShown
   name: InterstitialShown
   domain: advertisement
@@ -132,13 +132,13 @@ obligations:
 - id: incoming/RequestCameraConfiguration
   name: RequestCameraConfiguration
   domain: camera
-  status: partial
+  status: implemented
   client_class: _SafeCls_3555
   header_id: 3010
   mapped_in_vortex: true
   vortex_handler: RequestCameraConfigurationMessageHandler
   feature: camera.request_camera_configuration
-  reason: camera.request_camera_configuration exists but the handler reaches no domain operation
+  reason: camera.request_camera_configuration reaches a domain operation from RequestCameraConfigurationMessageHandler
 - id: incoming/OpenCampaignCalendarDoor
   name: OpenCampaignCalendarDoor
   domain: campaign
@@ -459,8 +459,8 @@ obligations:
   header_id: 2779
   mapped_in_vortex: true
   vortex_handler: RedeemVoucherMessageHandler
-  feature: catalog.redeem_voucher
-  reason: catalog.redeem_voucher reaches a domain operation from RedeemVoucherMessageHandler
+  feature: catalog.record_failure
+  reason: catalog.record_failure reaches a domain operation from RedeemVoucherMessageHandler
   conflicts:
   - cf_ac0a01b901
 - id: incoming/RoomAdPurchaseInitiated
@@ -575,6 +575,8 @@ obligations:
   vortex_handler: GetCollectorScoreMessageHandler
   feature: collectibles.get_collector_score
   reason: collectibles.get_collector_score reaches a domain operation from GetCollectorScoreMessageHandler
+  conflicts:
+  - cf_864969a63e
 - id: incoming/GetMintTokenOffers
   name: GetMintTokenOffers
   domain: collectibles
@@ -605,6 +607,8 @@ obligations:
   vortex_handler: GetNftClaimsMessageHandler
   feature: collectibles.get_nft_claims
   reason: collectibles.get_nft_claims reaches a domain operation from GetNftClaimsMessageHandler
+  conflicts:
+  - cf_3f219506ea
 - id: incoming/GetNftCollections
   name: GetNftCollections
   domain: collectibles
@@ -625,6 +629,8 @@ obligations:
   vortex_handler: GetNftStoreOffersMessageHandler
   feature: collectibles.get_nft_store_offers
   reason: collectibles.get_nft_store_offers reaches a domain operation from GetNftStoreOffersMessageHandler
+  conflicts:
+  - cf_890ada2f15
 - id: incoming/GetNftTransferFee
   name: GetNftTransferFee
   domain: collectibles
@@ -745,8 +751,6 @@ obligations:
   vortex_handler: GetCurrentTimingCodeMessageHandler
   feature: competition.get_current_timing_code
   reason: competition.get_current_timing_code reaches a domain operation from GetCurrentTimingCodeMessageHandler
-  conflicts:
-  - cf_eae075b660
 - id: incoming/GetIsUserPartOfCompetition
   name: GetIsUserPartOfCompetition
   domain: competition
@@ -1591,8 +1595,6 @@ obligations:
   vortex_handler: ConfirmPetBreedingMessageHandler
   feature: inventory.confirm_pet_breeding
   reason: inventory.confirm_pet_breeding reaches a domain operation from ConfirmPetBreedingMessageHandler
-  conflicts:
-  - cf_c936069c0e
 - id: incoming/GetAchievements
   name: GetAchievements
   domain: inventory
@@ -1623,8 +1625,6 @@ obligations:
   vortex_handler: GetBadgesMessageHandler
   feature: inventory.get_badges
   reason: inventory.get_badges reaches a domain operation from GetBadgesMessageHandler
-  conflicts:
-  - cf_33332b81bb
 - id: incoming/GetBotInventory
   name: GetBotInventory
   domain: inventory
@@ -1717,8 +1717,6 @@ obligations:
   vortex_handler: RequestFurniInventoryMessageHandler
   feature: inventory.request_furni_inventory
   reason: inventory.request_furni_inventory reaches a domain operation from RequestFurniInventoryMessageHandler
-  conflicts:
-  - cf_46960f7b8a
 - id: incoming/RequestFurniInventoryWhenNotInRoom
   name: RequestFurniInventoryWhenNotInRoom
   domain: inventory
@@ -1753,6 +1751,7 @@ obligations:
   reason: inventory.set_activated_badges reaches a domain operation from SetActivatedBadgesMessageHandler
   conflicts:
   - cf_b732eef0cd
+  - cf_6c3e997f75
   unknowns:
   - uk_3941a11fdd
 - id: incoming/SilverFee
@@ -1869,6 +1868,8 @@ obligations:
   vortex_handler: GetMarketplaceOffersMessageHandler
   feature: marketplace.get_marketplace_offers
   reason: marketplace.get_marketplace_offers reaches a domain operation from GetMarketplaceOffersMessageHandler
+  conflicts:
+  - cf_5bc3ea38d3
 - id: incoming/GetMarketplaceOwnOffers
   name: GetMarketplaceOwnOffers
   domain: marketplace
@@ -1890,7 +1891,10 @@ obligations:
   feature: marketplace.make_offer
   reason: marketplace.make_offer reaches a domain operation from MakeOfferMessageHandler
   conflicts:
+  - cf_491a5091d7
   - cf_38b88d4432
+  unknowns:
+  - uk_f1ce403ccb
 - id: incoming/RedeemMarketplaceOfferCredits
   name: RedeemMarketplaceOfferCredits
   domain: marketplace
@@ -1985,6 +1989,8 @@ obligations:
   vortex_handler: GetFriendRequestsMessageHandler
   feature: messenger.get_friend_requests
   reason: messenger.get_friend_requests reaches a domain operation from GetFriendRequestsMessageHandler
+  conflicts:
+  - cf_f6dac9cfb2
 - id: incoming/GetMessengerHistory
   name: GetMessengerHistory
   domain: messenger
@@ -2075,11 +2081,13 @@ obligations:
 - id: incoming/SetRelationshipStatus
   name: SetRelationshipStatus
   domain: messenger
-  status: missing
+  status: implemented
   client_class: _SafeCls_1913
   header_id: 1773
-  mapped_in_vortex: false
-  reason: the packet is described but no revision map binds it, so it cannot arrive
+  mapped_in_vortex: true
+  vortex_handler: SetRelationshipStatusMessageHandler
+  feature: messenger.set_relationship_status
+  reason: messenger.set_relationship_status reaches a domain operation from SetRelationshipStatusMessageHandler
 - id: incoming/VisitUser
   name: VisitUser
   domain: messenger
@@ -2093,6 +2101,16 @@ obligations:
   conflicts:
   - cf_446b34883e
   - cf_d70c23525d
+- id: incoming/AppealCfh
+  name: AppealCfh
+  domain: moderation
+  status: implemented
+  client_class: _SafeCls_3470
+  header_id: 3028
+  mapped_in_vortex: true
+  vortex_handler: AppealCfhMessageHandler
+  feature: moderation.appeal_ticket
+  reason: moderation.appeal_ticket reaches a domain operation from AppealCfhMessageHandler
 - id: incoming/CallForHelp
   name: CallForHelp
   domain: moderation
@@ -2117,6 +2135,8 @@ obligations:
   vortex_handler: CallForHelpFromForumMessageMessageHandler
   feature: moderation.call_for_help_from_forum_message
   reason: moderation.call_for_help_from_forum_message reaches a domain operation from CallForHelpFromForumMessageMessageHandler
+  conflicts:
+  - cf_c9ac71bec2
 - id: incoming/CallForHelpFromForumThread
   name: CallForHelpFromForumThread
   domain: moderation
@@ -2127,6 +2147,8 @@ obligations:
   vortex_handler: CallForHelpFromForumThreadMessageHandler
   feature: moderation.call_for_help_from_forum_thread
   reason: moderation.call_for_help_from_forum_thread reaches a domain operation from CallForHelpFromForumThreadMessageHandler
+  conflicts:
+  - cf_fedb56063c
 - id: incoming/CallForHelpFromIM
   name: CallForHelpFromIM
   domain: moderation
@@ -2138,7 +2160,8 @@ obligations:
   feature: moderation.call_for_help_from_im
   reason: moderation.call_for_help_from_im exists but the handler reaches no domain operation
   conflicts:
-  - cf_b9af7ea3b9
+  - cf_1ed734b059
+  - cf_b81cca96ee
   unknowns:
   - uk_41b826a380
 - id: incoming/CallForHelpFromPhoto
@@ -2789,8 +2812,6 @@ obligations:
   vortex_handler: GetUserEventCatsMessageHandler
   feature: navigator.get_event_categories
   reason: navigator.get_event_categories reaches a domain operation from GetUserEventCatsMessageHandler
-  conflicts:
-  - cf_f644964686
 - id: incoming/GetUserFlatCats
   name: GetUserFlatCats
   domain: navigator
@@ -2951,8 +2972,6 @@ obligations:
   vortex_handler: NewNavigatorInitMessageHandler
   feature: navigator.get_category_visitor_counts
   reason: navigator.get_category_visitor_counts reaches a domain operation from NewNavigatorInitMessageHandler
-  conflicts:
-  - cf_74f7b78578
 - id: incoming/NewNavigatorSearch
   name: NewNavigatorSearch
   domain: navigator
@@ -3249,6 +3268,8 @@ obligations:
   vortex_handler: GetDiscordPreferencesMessageHandler
   feature: preferences.get_discord_preferences
   reason: preferences.get_discord_preferences reaches a domain operation from GetDiscordPreferencesMessageHandler
+  conflicts:
+  - cf_1b83994848
 - id: incoming/RemoveFromCustomFilter
   name: RemoveFromCustomFilter
   domain: preferences
@@ -3617,10 +3638,6 @@ obligations:
   vortex_handler: BreedPetsMessageHandler
   feature: room.breed_pets
   reason: room.breed_pets reaches a domain operation from BreedPetsMessageHandler
-  conflicts:
-  - cf_e6bbe57625
-  unknowns:
-  - uk_6b173bdcd9
 - id: incoming/CancelTyping
   name: CancelTyping
   domain: room
@@ -3729,6 +3746,8 @@ obligations:
   vortex_handler: CreditFurniRedeemMessageHandler
   feature: room.credit_furni_redeem
   reason: room.credit_furni_redeem reaches a domain operation from CreditFurniRedeemMessageHandler
+  conflicts:
+  - cf_93131263dc
 - id: incoming/CustomizePetWithFurni
   name: CustomizePetWithFurni
   domain: room
@@ -3834,13 +3853,13 @@ obligations:
 - id: incoming/GetCustomRoomFilter
   name: GetCustomRoomFilter
   domain: room
-  status: partial
+  status: implemented
   client_class: _SafeCls_3522
   header_id: 790
   mapped_in_vortex: true
   vortex_handler: GetCustomRoomFilterMessageHandler
   feature: room.get_custom_room_filter
-  reason: room.get_custom_room_filter exists but the handler reaches no domain operation
+  reason: room.get_custom_room_filter reaches a domain operation from GetCustomRoomFilterMessageHandler
 - id: incoming/GetFlatControllers
   name: GetFlatControllers
   domain: room
@@ -3911,8 +3930,8 @@ obligations:
   header_id: 3899
   mapped_in_vortex: true
   vortex_handler: GetPetInfoMessageHandler
-  feature: room.get_pet_info
-  reason: room.get_pet_info reaches a domain operation from GetPetInfoMessageHandler
+  feature: room.get_nutrition_cap_for_level
+  reason: room.get_nutrition_cap_for_level reaches a domain operation from GetPetInfoMessageHandler
 - id: incoming/GetRentOrBuyoutOffer
   name: GetRentOrBuyoutOffer
   domain: room
@@ -4379,6 +4398,16 @@ obligations:
   conflicts:
   - cf_796fcaa1f8
   - cf_39e86c0767
+- id: incoming/SetAdjacentCustomStackingHeight
+  name: SetAdjacentCustomStackingHeight
+  domain: room
+  status: implemented
+  client_class: _SafeCls_3040
+  header_id: 3315
+  mapped_in_vortex: true
+  vortex_handler: SetAdjacentCustomStackingHeightMessageHandler
+  feature: room.set_adjacent_custom_stacking_height
+  reason: room.set_adjacent_custom_stacking_height reaches a domain operation from SetAdjacentCustomStackingHeightMessageHandler
 - id: incoming/SetAreaHideData
   name: SetAreaHideData
   domain: room
@@ -4565,8 +4594,6 @@ obligations:
   vortex_handler: UnbanUserFromRoomMessageHandler
   feature: room.unban_user_from_room
   reason: room.unban_user_from_room reaches a domain operation from UnbanUserFromRoomMessageHandler
-  conflicts:
-  - cf_058004abb7
 - id: incoming/UnmuteUser
   name: UnmuteUser
   domain: room
@@ -4611,13 +4638,13 @@ obligations:
 - id: incoming/UpdateRoomFilter
   name: UpdateRoomFilter
   domain: room
-  status: partial
+  status: implemented
   client_class: _SafeCls_2890
   header_id: 1622
   mapped_in_vortex: true
   vortex_handler: UpdateRoomFilterMessageHandler
   feature: room.update_room_filter
-  reason: room.update_room_filter exists but the handler reaches no domain operation
+  reason: room.update_room_filter reaches a domain operation from UpdateRoomFilterMessageHandler
 - id: incoming/UseFurniture
   name: UseFurniture
   domain: room
@@ -4724,8 +4751,6 @@ obligations:
   vortex_handler: GetSoundSettingsMessageHandler
   feature: sound.get_sound_settings
   reason: sound.get_sound_settings reaches a domain operation from GetSoundSettingsMessageHandler
-  conflicts:
-  - cf_c1edb85792
 - id: incoming/GetUserSongDisks
   name: GetUserSongDisks
   domain: sound
@@ -4834,16 +4859,6 @@ obligations:
   reason: tracking.performance_log exists but the handler reaches no domain operation
   unknowns:
   - uk_98cdcc01c0
-- id: incoming/AppealCfh
-  name: AppealCfh
-  domain: unsorted
-  status: missing
-  client_class: _SafeCls_3470
-  header_id: 3028
-  mapped_in_vortex: false
-  reason: the packet is described but no revision map binds it, so it cannot arrive
-  unknowns:
-  - uk_aa24e61a4e
 - id: incoming/GetRecyclerPrizes
   name: GetRecyclerPrizes
   domain: unsorted
@@ -4866,14 +4881,6 @@ obligations:
   status: missing
   client_class: PurchaseSnowWarGameTokensOfferComposer
   header_id: 3243
-  mapped_in_vortex: false
-  reason: the packet is described but no revision map binds it, so it cannot arrive
-- id: incoming/ReplenishRespect
-  name: ReplenishRespect
-  domain: unsorted
-  status: missing
-  client_class: _SafeCls_1865
-  header_id: 426
   mapped_in_vortex: false
   reason: the packet is described but no revision map binds it, so it cannot arrive
 - id: "incoming/header:1016"
@@ -5030,14 +5037,6 @@ obligations:
   header_id: 3159
   mapped_in_vortex: false
   reason: the client sends header 3159 and nothing in this repository is bound to it
-- id: "incoming/header:3315"
-  name: "header:3315"
-  domain: unsorted
-  status: missing
-  client_class: _SafeCls_3040
-  header_id: 3315
-  mapped_in_vortex: false
-  reason: the client sends header 3315 and nothing in this repository is bound to it
 - id: "incoming/header:3349"
   name: "header:3349"
   domain: unsorted
@@ -5402,18 +5401,16 @@ obligations:
   vortex_handler: GetSelectedBadgesMessageHandler
   feature: users.get_selected_badges
   reason: users.get_selected_badges reaches a domain operation from GetSelectedBadgesMessageHandler
-  conflicts:
-  - cf_ac8af1cc7f
 - id: incoming/GetUserNftChatStyles
   name: GetUserNftChatStyles
   domain: users
-  status: partial
+  status: implemented
   client_class: _SafeCls_1848
   header_id: 3642
   mapped_in_vortex: true
   vortex_handler: GetUserNftChatStylesMessageHandler
   feature: users.get_user_nft_chat_styles
-  reason: users.get_user_nft_chat_styles exists but the handler reaches no domain operation
+  reason: users.get_user_nft_chat_styles reaches a domain operation from GetUserNftChatStylesMessageHandler
 - id: incoming/IgnoreUser
   name: IgnoreUser
   domain: users
@@ -5473,6 +5470,16 @@ obligations:
   reason: users.remove_admin_rights_from_member reaches a domain operation from RemoveAdminRightsFromMemberMessageHandler
   conflicts:
   - cf_eaaa0c324f
+- id: incoming/ReplenishRespect
+  name: ReplenishRespect
+  domain: users
+  status: implemented
+  client_class: _SafeCls_1865
+  header_id: 426
+  mapped_in_vortex: true
+  vortex_handler: ReplenishRespectMessageHandler
+  feature: users.replenish_respect
+  reason: users.replenish_respect reaches a domain operation from ReplenishRespectMessageHandler
 - id: incoming/RespectUser
   name: RespectUser
   domain: users
@@ -5503,8 +5510,6 @@ obligations:
   vortex_handler: ScrGetUserInfoMessageHandler
   feature: users.scr_get_user_info
   reason: users.scr_get_user_info reaches a domain operation from ScrGetUserInfoMessageHandler
-  conflicts:
-  - cf_b690cecb82
 - id: incoming/SelectFavouriteHabboGroup
   name: SelectFavouriteHabboGroup
   domain: users

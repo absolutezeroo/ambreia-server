@@ -10,7 +10,7 @@
 
 spec: revision
 spec_version: 1
-generated_digest: "sha256:340114de108497a4b0611b26e69faf19844d5d824cde6f03602c9958d254d356"
+generated_digest: "sha256:fb89a464230a8de8a61bed932d7357c3c421ceae0b7da250dfa57e1586b0dbfa"
 generated:
   revision: WIN63-202607011411-782849652
   origin: vortex
@@ -158,6 +158,7 @@ generated:
     Game2StartSnowWar: 2109
     Game2ThrowSnowballAtHuman: 3738
     Game2ThrowSnowballAtPosition: 2567
+    GenerateWiredApiKey: 2819
     GetAchievements: 2435
     GetBadgePointLimits: 2944
     GetBadges: 770
@@ -1077,7 +1078,7 @@ generated:
     UserUnbannedFromRoom: 2089
     UserUpdate: 2613
     Users: 996
-    VariableFxConfigUpdate: 267
+    VariableFxConfigUpdate: 3390
     VariableFxStatusRemove: 3388
     VariableFxStatusUpdate: 3889
     VortexFishSighted: 8106
@@ -1100,6 +1101,7 @@ generated:
     WiredAllVariableHolders: 3506
     WiredAllVariablesDiffs: 2733
     WiredAllVariablesHash: 3287
+    WiredApiKeyResult: 59
     WiredChestCoins: 1022
     WiredChestItems: 2323
     WiredChestItemsUpdate: 2738

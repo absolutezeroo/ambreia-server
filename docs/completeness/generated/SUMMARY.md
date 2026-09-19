@@ -16,8 +16,8 @@ reproduced from the target client and the current code on the next run.
 
 | axis | value |
 |---|---|
-| protocol mapping | 536 / 578 (92.7%) |
-| implementation | 422 / 578 (73.0%) |
+| protocol mapping | 540 / 578 (93.4%) |
+| implementation | 431 / 578 (74.6%) |
 | verified complete | 0 / 578 (0.0%) |
 
 `protocol mapping` counts obligations Vortex can receive at all. `implementation`
@@ -38,9 +38,9 @@ checked against the protocol and wrote the evidence down.
 
 | status | count |
 |---|---|
-| missing | 26 |
-| partial | 114 |
-| implemented | 422 |
+| missing | 22 |
+| partial | 109 |
+| implemented | 431 |
 | complete | 0 |
 | unknown | 0 |
 | not_applicable | 16 |
@@ -49,9 +49,9 @@ checked against the protocol and wrote the evidence down.
 
 | domain | obligations | missing | partial | implemented | complete | unknown | not_applicable |
 |---|---|---|---|---|---|---|---|
-| advertisement | 2 | 0 | 2 | 0 | 0 | 0 | 0 |
+| advertisement | 2 | 0 | 1 | 1 | 0 | 0 | 0 |
 | avatar | 5 | 0 | 0 | 5 | 0 | 0 | 0 |
-| camera | 5 | 0 | 5 | 0 | 0 | 0 | 0 |
+| camera | 5 | 0 | 4 | 1 | 0 | 0 | 0 |
 | campaign | 2 | 0 | 2 | 0 | 0 | 0 | 0 |
 | catalog | 33 | 2 | 3 | 28 | 0 | 0 | 0 |
 | collectibles | 20 | 0 | 0 | 20 | 0 | 0 | 0 |
@@ -66,8 +66,8 @@ checked against the protocol and wrote the evidence down.
 | inventory | 27 | 0 | 1 | 26 | 0 | 0 | 0 |
 | landing_view | 2 | 0 | 2 | 0 | 0 | 0 | 0 |
 | marketplace | 10 | 0 | 1 | 9 | 0 | 0 | 0 |
-| messenger | 16 | 1 | 2 | 13 | 0 | 0 | 0 |
-| moderation | 48 | 0 | 5 | 43 | 0 | 0 | 0 |
+| messenger | 16 | 0 | 2 | 14 | 0 | 0 | 0 |
+| moderation | 49 | 0 | 5 | 44 | 0 | 0 | 0 |
 | mystery_box | 1 | 0 | 0 | 1 | 0 | 0 | 0 |
 | navigator | 43 | 0 | 2 | 41 | 0 | 0 | 0 |
 | nft | 5 | 0 | 0 | 5 | 0 | 0 | 0 |
@@ -78,14 +78,14 @@ checked against the protocol and wrote the evidence down.
 | quest | 18 | 0 | 4 | 12 | 0 | 0 | 2 |
 | register | 1 | 0 | 0 | 1 | 0 | 0 | 0 |
 | reward_tracks | 2 | 0 | 2 | 0 | 0 | 0 | 0 |
-| room | 102 | 0 | 13 | 89 | 0 | 0 | 0 |
+| room | 103 | 0 | 11 | 92 | 0 | 0 | 0 |
 | sound | 9 | 0 | 0 | 9 | 0 | 0 | 0 |
 | talent | 3 | 0 | 3 | 0 | 0 | 0 | 0 |
 | tracking | 5 | 0 | 5 | 0 | 0 | 0 | 0 |
-| unsorted | 31 | 17 | 0 | 0 | 0 | 0 | 14 |
+| unsorted | 28 | 14 | 0 | 0 | 0 | 0 | 14 |
 | user_classification | 2 | 0 | 0 | 2 | 0 | 0 | 0 |
 | userdefinedroomevents | 1 | 1 | 0 | 0 | 0 | 0 | 0 |
-| users | 42 | 0 | 3 | 39 | 0 | 0 | 0 |
+| users | 43 | 0 | 2 | 41 | 0 | 0 | 0 |
 | vault | 4 | 0 | 2 | 2 | 0 | 0 | 0 |
 | wired | 43 | 0 | 1 | 42 | 0 | 0 | 0 |
 

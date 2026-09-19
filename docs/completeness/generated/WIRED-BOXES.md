@@ -13,7 +13,7 @@ save it, get a success reply — and it never fires.
 |---|---|
 | target client | WIN63-202607011411-782849652 |
 | configurable boxes | 184 |
-| bound to a logic | 162 / 184 (88.0%) |
+| bound to a logic | 164 / 184 (89.1%) |
 | bound here, absent from the client | 6 |
 
 ## Families
@@ -24,7 +24,7 @@ save it, get a success reply — and it never fires.
 | action | 58 | 49 | 9 |
 | condition | 45 | 43 | 2 |
 | selector | 20 | 20 | 0 |
-| addon | 26 | 16 | 10 |
+| addon | 26 | 18 | 8 |
 | variable | 9 | 8 | 1 |
 
 ## action — missing
@@ -48,11 +48,9 @@ save it, get a success reply — and it never fires.
 
 - `16` VARIABLE_CAPTURER
 - `17` EXECUTE_IN_ORDER
-- `18` CHEST_ITEM_TYPE_SCANNER
 - `21` PROJECTILE
 - `22` JUMP_STRENGTH
 - `1000` VARIABLE_TEXT_CONVERTER
-- `1001` VARIABLE_LEVEL_UP
 - `1002` VARIABLE_TIME_UTIL
 - `2000` GLOBAL_PLACEHOLDER
 - `2001` ACHIEVEMENT_ENABLER

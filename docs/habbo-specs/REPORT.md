@@ -23,42 +23,42 @@ actually produced against the trees listed under Sources.
 
 | | Count |
 |---|---:|
-| Features | 520 |
-| Scenarios | 2017 |
-| Captures imported | 8 |
-| Capture observations | 79 |
+| Features | 521 |
+| Scenarios | 2025 |
+| Captures imported | 9 |
+| Capture observations | 85 |
 
 ## Confidence in packet structure
 
 | Level | Packets | Share |
 |---|---:|---:|
 | confirmed | 64 | 4.3% |
-| client_confirmed | 617 | 41.3% |
+| client_confirmed | 616 | 41.2% |
 | multi_reference_confirmed | 88 | 5.9% |
 | reference_observed | 238 | 15.9% |
-| implementation_observed | 276 | 18.5% |
+| implementation_observed | 277 | 18.5% |
 | unknown | 212 | 14.2% |
 
 ## Open questions
 
 | | Count |
 |---|---:|
-| Conflicts | 368 |
+| Conflicts | 367 |
 | Critical unknowns | 125 |
-| Unknowns in total | 683 |
-| Fields with no attested name | 1584 of 5844 |
+| Unknowns in total | 682 |
+| Fields with no attested name | 1581 of 5863 |
 
 ## Files
 
 - written: 0
-- unchanged: 3605
+- unchanged: 3606
 - blocked by hand edits: 0
 
 ## Coverage the scan bounded
 
 - as3:AIR-1.0.31: 1134 classes carry no usable name and no header id that joins to this build, so they are absent from the specs
 - as3:PRODUCTION-201601012205-226667486: 810 classes carry no usable name and no header id that joins to this build, so they are absent from the specs
-- as3:WIN63-202607011411-782849652: 92 classes carry no usable name and no header id that joins to this build, so they are absent from the specs
+- as3:WIN63-202607011411-782849652: 93 classes carry no usable name and no header id that joins to this build, so they are absent from the specs
 - catalog.builders_club_place_room_item: 33 guards observed, 12 turned into scenarios; the rest are listed in the feature spec's checks
 - catalog.builders_club_place_wall_item: 23 guards observed, 12 turned into scenarios; the rest are listed in the feature spec's checks
 - catalog.get_flat_categories: 20 guards observed, 12 turned into scenarios; the rest are listed in the feature spec's checks

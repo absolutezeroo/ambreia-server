@@ -235,6 +235,36 @@ internal sealed class ModerationOperations(
         CancellationToken ct
     ) => _cfhTickets.GetOpenQueueAsync(ct);
 
+    public Task<ImmutableArray<CfhAppealSnapshot>> GetCfhAppealsAsync(CancellationToken ct) =>
+        _cfhTickets.GetPendingAppealsAsync(ct);
+
+    /// <remarks>
+    /// Straight to the ticket service rather than through the moderation queue grain: an appeal
+    /// resolution leaves the ticket closed and the in-client mod tool has no appeal screen to keep
+    /// in sync, so there is no queue state for the grain to arbitrate.
+    /// </remarks>
+    public Task<OperationResult> ResolveCfhAppealsAsync(
+        ResolveCfhAppealsRequest request,
+        string actor,
+        CancellationToken ct
+    ) =>
+        _runner.ExecuteAsync(
+            "ops.cfh.appeal.resolve",
+            actor,
+            "cfh appeal resolve",
+            targetPlayerId: null,
+            roomId: null,
+            detail: new { request.IssueIds, request.Upheld },
+            work: async c =>
+            {
+                await _cfhTickets
+                    .ResolveAppealsAsync(request.IssueIds, request.Upheld, c)
+                    .ConfigureAwait(false);
+            },
+            ct,
+            AuditCategory.Moderation
+        );
+
     public Task<OperationResult> PickCfhTicketsAsync(
         PickCfhTicketsRequest request,
         string actor,

@@ -10,7 +10,7 @@
 
 spec: scenarios
 spec_version: 1
-generated_digest: "sha256:22e9576ac833a0feeede2fc3c28a59887deb406972128f38753157f7a31a72ea"
+generated_digest: "sha256:cc5bf39583c9d7c07703c4d2fa6cec2594823dbf5daf40846469c82fdf93616d"
 generated:
   feature: users.unignore_user
   scenarios:
@@ -114,6 +114,6 @@ generated:
     origin: vortex
     source: Vortex.Social/Grains/MessengerGrain.Friends.cs
     symbol: MessengerGrain
-    line: 582
+    line: 616
 verified: {}
 manual: {}

@@ -10,29 +10,152 @@
 
 spec: packet
 spec_version: 1
-generated_digest: "sha256:0a954107d89c25c02a207bfb0bc6403dc0d791b418c145337a65bd490d88825d"
+generated_digest: "sha256:6c2038a03dafb0be0ecdb10ed0516a4beb43306f76d8103a337144f26dad277c"
 generated:
   name: VariableFxConfigUpdate
   direction: outgoing
   domain: wired
-  structure_confidence: client_confirmed
+  structure_confidence: implementation_observed
   mapped_in_vortex: true
   fields:
   - index: 0
-    name: stuff_id
+    name: length
     type: int32
-    name_confidence: client_confirmed
-    type_confidence: client_confirmed
+    name_confidence: implementation_observed
+    type_confidence: implementation_observed
     evidence:
-    - ev_f3a5e0d672af
+    - ev_d46d895be467
+  - index: 1
+    name: configs
+    type: array
+    name_confidence: implementation_observed
+    type_confidence: implementation_observed
+    note: "source comment: repeated block; the element count is the int written immediately before it"
+    evidence:
+    - ev_d46d895be467
+    fields:
+    - index: 0
+      name: config_id
+      type: int32
+      name_confidence: implementation_observed
+      type_confidence: implementation_observed
+      evidence:
+      - ev_d46d895be467
+    - index: 1
+      name: is_user_fx
+      type: boolean
+      name_confidence: implementation_observed
+      type_confidence: implementation_observed
+      evidence:
+      - ev_d46d895be467
+    - index: 2
+      name: show_mode
+      type: int32
+      name_confidence: implementation_observed
+      type_confidence: implementation_observed
+      evidence:
+      - ev_d46d895be467
+    - index: 3
+      name: field4
+      type: int32
+      name_confidence: implementation_observed
+      type_confidence: implementation_observed
+      evidence:
+      - ev_d46d895be467
+    - index: 4
+      name: show_on_mouse_hover
+      type: boolean
+      name_confidence: implementation_observed
+      type_confidence: implementation_observed
+      evidence:
+      - ev_d46d895be467
+    - index: 5
+      name: show_duration
+      type: int32
+      name_confidence: implementation_observed
+      type_confidence: implementation_observed
+      evidence:
+      - ev_d46d895be467
+    - index: 6
+      name: category_id
+      type: int32
+      name_confidence: implementation_observed
+      type_confidence: implementation_observed
+      evidence:
+      - ev_d46d895be467
+    - index: 7
+      name: field8
+      type: int32
+      name_confidence: implementation_observed
+      type_confidence: implementation_observed
+      evidence:
+      - ev_d46d895be467
+    - index: 8
+      name: color_id
+      type: int32
+      name_confidence: implementation_observed
+      type_confidence: implementation_observed
+      evidence:
+      - ev_d46d895be467
+    - index: 9
+      name: field10
+      type: int32
+      name_confidence: implementation_observed
+      type_confidence: implementation_observed
+      evidence:
+      - ev_d46d895be467
+    - index: 10
+      name: renderer_id
+      type: int32
+      name_confidence: implementation_observed
+      type_confidence: implementation_observed
+      evidence:
+      - ev_d46d895be467
+    - index: 11
+      name: default_min_value
+      type: long
+      name_confidence: implementation_observed
+      type_confidence: implementation_observed
+      evidence:
+      - ev_d46d895be467
+    - index: 12
+      name: default_max_value
+      type: long
+      name_confidence: implementation_observed
+      type_confidence: implementation_observed
+      evidence:
+      - ev_d46d895be467
+    - index: 13
+      name: length
+      type: int32
+      name_confidence: implementation_observed
+      type_confidence: implementation_observed
+      evidence:
+      - ev_d46d895be467
+    - index: 14
+      name: extra
+      type: array
+      name_confidence: implementation_observed
+      type_confidence: implementation_observed
+      note: "source comment: repeated block; the element count is the int written immediately before it"
+      evidence:
+      - ev_d46d895be467
+      fields:
+      - index: 0
+        name: key
+        type: string
+        name_confidence: implementation_observed
+        type_confidence: implementation_observed
+        evidence:
+        - ev_d46d895be467
+      - index: 1
+        name: value
+        type: string
+        name_confidence: implementation_observed
+        type_confidence: implementation_observed
+        evidence:
+        - ev_d46d895be467
   layouts_by_source:
-  - origin: "as3:WIN63-202607011411-782849652"
-    authority: client_code
-    field_count: 1
-    partial: false
-    types:
-    - int32
-    evidence: ev_f3a5e0d672af
   - origin: vortex
     authority: vortex_emulator
     field_count: 2
@@ -42,14 +165,6 @@ generated:
     - array
     evidence: ev_d46d895be467
   evidence:
-  - id: ev_f3a5e0d672af
-    kind: client_parser
-    authority: client_code
-    origin: "as3:WIN63-202607011411-782849652"
-    source: ../vortex-modern-client/sources/WIN63-202607011411-782849652/src/unknowns/_SafePkg_4264/_SafeCls_4263.as
-    symbol: _SafeCls_4263
-    line: 28
-    note: official client build WIN63-202607011411-782849652
   - id: ev_d46d895be467
     kind: emulator_serializer
     authority: vortex_emulator
@@ -57,7 +172,5 @@ generated:
     source: Vortex.Revisions/Revision20260701/Serializers/UserDefinedRoomEvents/VariableFxConfigUpdateMessageComposerSerializer.cs
     symbol: VariableFxConfigUpdateMessageComposerSerializer
     line: 11
-  conflicts:
-  - cf_e501679c76
 verified: {}
 manual: {}

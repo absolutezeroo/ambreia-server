@@ -86,6 +86,7 @@ GET /api/v1/mystery-box -> dashboard.mystery_box.read
 GET /api/v1/mystery-box/colors -> dashboard.mystery_box.read
 GET /api/v1/mystery-box/stats -> dashboard.mystery_box.read
 GET /api/v1/navigator/config -> dashboard.navigator.read
+GET /api/v1/operations/cfh/appeals -> dashboard.ops.cfh.manage
 GET /api/v1/operations/cfh/queue -> dashboard.ops.cfh.manage
 GET /api/v1/operations/console/commands -> dashboard.ops.server.console
 GET /api/v1/operations/console/stream -> dashboard.server.console.read
@@ -143,6 +144,7 @@ POST /api/v1/operations/catalog/pages/update -> dashboard.ops.catalog.manage
 POST /api/v1/operations/catalog/products -> dashboard.ops.catalog.manage
 POST /api/v1/operations/catalog/products/delete -> dashboard.ops.catalog.manage
 POST /api/v1/operations/catalog/products/update -> dashboard.ops.catalog.manage
+POST /api/v1/operations/cfh/appeals/resolve -> dashboard.ops.cfh.manage
 POST /api/v1/operations/cfh/close -> dashboard.ops.cfh.manage
 POST /api/v1/operations/cfh/pick -> dashboard.ops.cfh.manage
 POST /api/v1/operations/cfh/release -> dashboard.ops.cfh.manage

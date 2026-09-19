@@ -71,6 +71,7 @@ internal sealed class HelpMap : IRevisionMap
             MessageEvent.GetMyCfhReportStatusMessageEvent,
             new GetMyCfhReportStatusMessageParser()
         );
+        builder.MapParser(MessageEvent.AppealCfhMessageEvent, new AppealCfhMessageParser());
         builder.MapParser(MessageEvent.GetQuizQuestionsEvent, new GetQuizQuestionsMessageParser());
         builder.MapParser(
             MessageEvent.GuideSessionCreateMessageEvent,

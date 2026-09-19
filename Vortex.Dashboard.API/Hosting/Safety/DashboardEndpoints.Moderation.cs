@@ -196,6 +196,37 @@ internal static partial class DashboardEndpoints
             Capabilities.Dashboard.OpsCfhManage,
             TagOperations
         );
+        MapReadGet<ImmutableArray<CfhAppealSnapshot>>(
+            app,
+            ApiOperations + "/cfh/appeals",
+            async (ModerationOperations ops, CancellationToken ct) =>
+                Results.Ok(await ops.GetCfhAppealsAsync(ct).ConfigureAwait(false)),
+            Capabilities.Dashboard.OpsCfhManage,
+            TagOperations
+        );
+        MapPost(
+            app,
+            ApiOperations + "/cfh/appeals/resolve",
+            async (
+                HttpContext ctx,
+                ResolveCfhAppealsRequest body,
+                ModerationOperations ops,
+                CancellationToken ct
+            ) =>
+            {
+                if (body.IssueIds is null || body.IssueIds.Length == 0)
+                {
+                    return Results.BadRequest(new { error = "invalid_request" });
+                }
+
+                return Results.Ok(
+                    await ops.ResolveCfhAppealsAsync(body, ctx.ActorEmail(), ct)
+                        .ConfigureAwait(false)
+                );
+            },
+            Capabilities.Dashboard.OpsCfhManage,
+            TagOperations
+        );
         MapPost(
             app,
             ApiOperations + "/cfh/pick",
