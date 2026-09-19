@@ -81,11 +81,16 @@ public sealed class NitroSpriteLibraryTests
     }
 
     /// <summary>
-    /// The guard that keeps a payload from becoming a request generator: a scene may name thousands
-    /// of sprites, and a name matching no classname this hotel sells never leaves the process.
+    /// A name matching no classname this hotel sells never reaches the furniture host.
     /// </summary>
+    /// <remarks>
+    /// It does reach the avatar host, and that is the honest limit of this guard rather than a hole
+    /// in it: a pet's bundle name is the head of its own sprite name, so there is nothing to check it
+    /// against before asking. What bounds that family is the caller's per-photo fetch budget, not
+    /// this index. Only furniture can be refused for free, and it is.
+    /// </remarks>
     [Fact]
-    public async Task AnAssetNoClassnameClaims_IsNeverFetched()
+    public async Task AnAssetNoClassnameClaims_NeverReachesTheFurnitureHost()
     {
         using Serving serving = new(DuckBundle());
         using HttpClient http = new(serving, disposeHandler: false);
@@ -93,7 +98,22 @@ public sealed class NitroSpriteLibraryTests
         byte[]? sprite = await Library(http)
             .GetSpriteAsync("not_a_real_furni_64_a_0_0", Limits(), CancellationToken.None);
 
-        sprite.Should().BeNull();
+        sprite.Should().BeNull("the duck bundle holds no asset by that name");
+        serving.LastPath.Should().NotContain("hof_furni");
+    }
+
+    /// <summary>With no avatar url configured, an unknown name costs nothing at all.</summary>
+    [Fact]
+    public async Task WithNoAvatarUrl_AnUnknownNameIsNeverFetched()
+    {
+        using Serving serving = new(DuckBundle());
+        using HttpClient http = new(serving, disposeHandler: false);
+
+        CameraRenderLimits limits = Limits() with { AvatarAssetUrl = "", FiguremapUrl = "" };
+
+        await Library(http)
+            .GetSpriteAsync("not_a_real_furni_64_a_0_0", limits, CancellationToken.None);
+
         serving.Requests.Should().Be(0);
     }
 
@@ -113,6 +133,51 @@ public sealed class NitroSpriteLibraryTests
             .GetSpriteAsync("chair_basic_64_a_0_0", Limits(), CancellationToken.None);
 
         serving.LastPath.Should().EndWith("chair_basic.nitro");
+    }
+
+    /// <summary>
+    /// A pet's bundle name is simply the head of its sprite name — <c>dog_64_a_0_100</c> lives in
+    /// <c>dog.nitro</c> — and it is served from the avatar url, not the furniture one.
+    /// </summary>
+    [Fact]
+    public async Task APetIsAddressedByTheHeadOfItsName()
+    {
+        using Serving serving = new(DuckBundle());
+        using HttpClient http = new(serving, disposeHandler: false);
+
+        await Library(http).GetSpriteAsync("dog_64_a_0_100", Limits(), CancellationToken.None);
+
+        serving.LastPath.Should().Be("/gordon/dog.nitro");
+    }
+
+    /// <summary>
+    /// An avatar part names a part, not a library, so the figuremap is what turns
+    /// <c>h_std_bd_1_2_0</c> into <c>hh_human_body.nitro</c>.
+    /// </summary>
+    [Fact]
+    public async Task AnAvatarPartIsAddressedThroughTheFiguremap()
+    {
+        using Serving serving = new(DuckBundle());
+        using HttpClient http = new(serving, disposeHandler: false);
+
+        await Library(http).GetSpriteAsync("h_std_bd_1_2_0", Limits(), CancellationToken.None);
+
+        serving.LastPath.Should().Be("/gordon/hh_human_body.nitro");
+    }
+
+    /// <summary>
+    /// Furniture is answered out of the catalogue, so it never reaches the avatar url — which is
+    /// also what keeps an invented furniture name from costing a request.
+    /// </summary>
+    [Fact]
+    public async Task FurnitureIsStillAddressedFromTheCatalogue()
+    {
+        using Serving serving = new(DuckBundle());
+        using HttpClient http = new(serving, disposeHandler: false);
+
+        await Library(http).GetSpriteAsync("duck_64_a_0_0", Limits(), CancellationToken.None);
+
+        serving.LastPath.Should().Be("/dcr/hof_furni/duck.nitro");
     }
 
     /// <summary>A bundle is fetched once, however many sprites a photo takes out of it.</summary>
@@ -177,6 +242,8 @@ public sealed class NitroSpriteLibraryTests
         CameraRenderLimits.Defaults with
         {
             FurnitureAssetUrl = url,
+            AvatarAssetUrl = "https://assets.test/gordon/",
+            FiguremapUrl = "https://assets.test/gamedata/figuremap.xml",
         };
 
     private sealed class Serving(byte[] bundle) : HttpMessageHandler
@@ -187,13 +254,31 @@ public sealed class NitroSpriteLibraryTests
 
         public HttpStatusCode Status { get; init; } = HttpStatusCode.OK;
 
+        /// <summary>One lib, so an avatar part has somewhere to resolve to.</summary>
+        private const string Figuremap =
+            """<?xml version="1.0"?><map><lib id="hh_human_body"><part id="1" type="bd"/></lib></map>""";
+
         protected override Task<HttpResponseMessage> SendAsync(
             HttpRequestMessage request,
             CancellationToken cancellationToken
         )
         {
+            string path = request.RequestUri!.AbsolutePath;
+
+            // The figuremap is not a bundle and is not counted as one: it is fetched once for the
+            // life of the library, not once per photo.
+            if (path.EndsWith("figuremap.xml", StringComparison.Ordinal))
+            {
+                return Task.FromResult(
+                    new HttpResponseMessage(HttpStatusCode.OK)
+                    {
+                        Content = new StringContent(Figuremap),
+                    }
+                );
+            }
+
             Requests++;
-            LastPath = request.RequestUri!.AbsolutePath;
+            LastPath = path;
 
             return Task.FromResult(
                 new HttpResponseMessage(Status) { Content = new ByteArrayContent(bundle) }

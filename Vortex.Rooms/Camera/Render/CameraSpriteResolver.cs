@@ -85,6 +85,7 @@ internal sealed class CameraSpriteResolver(
     {
         Dictionary<string, byte[]> resolved = new(StringComparer.Ordinal);
         int fetches = 0;
+        int bundles = 0;
 
         // Distinct: a tiled floor names one asset a hundred times, and reading it a hundred times
         // would be the whole cost of a render.
@@ -103,9 +104,22 @@ internal sealed class CameraSpriteResolver(
                 // one: the pack is the source of truth and needs no maintenance, and a PNG dropped
                 // in the directory is then an operator's override of one asset rather than the only
                 // way to have any.
-                bytes =
-                    ReadLocal(sprite.Name)
-                    ?? await library.GetSpriteAsync(sprite.Name, limits, ct).ConfigureAwait(false);
+                bytes = ReadLocal(sprite.Name);
+
+                if (bytes is null && bundles < limits.MaxBundleFetches)
+                {
+                    bytes = await library
+                        .GetSpriteAsync(sprite.Name, limits, ct)
+                        .ConfigureAwait(false);
+
+                    // Counted per distinct name rather than per request, because the library caches
+                    // and most names in a room resolve to a bundle it already holds. A furniture
+                    // name is refused against the catalogue without any request at all, so what this
+                    // really bounds is the one family that cannot be checked first: a pet's bundle
+                    // name is simply the head of its sprite name, which makes any invented name an
+                    // address.
+                    bundles++;
+                }
             }
             else if (fetches < limits.MaxExternalFetches)
             {

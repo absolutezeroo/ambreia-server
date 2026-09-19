@@ -97,6 +97,32 @@ public static class CameraConfig
     /// </summary>
     public const string FurnitureAssetUrlKey = "camera.furniture_asset_url";
 
+    /// <summary>
+    /// Where pet and avatar bundles are served, ending in a slash — the client's
+    /// <c>flash.client.url</c>, the versioned <c>gordon</c> directory. Pets are addressed by their
+    /// type (<c>dog.nitro</c>) and avatar parts by their library (<c>hh_human_body.nitro</c>), which
+    /// is why one url serves both.
+    /// </summary>
+    public const string AvatarAssetUrlKey = "camera.avatar_asset_url";
+
+    /// <summary>
+    /// The client's <c>figuremap.xml</c>. An avatar sprite names a part and not a library —
+    /// <c>h_std_bd_1_2_0</c> is part type <c>bd</c>, part id <c>1</c> — and this is the only thing
+    /// that says which bundle those live in.
+    /// </summary>
+    public const string FiguremapUrlKey = "camera.figuremap_url";
+
+    /// <summary>
+    /// How many asset bundles one photo may fetch.
+    /// </summary>
+    /// <remarks>
+    /// A furniture name is checked against this hotel's own catalogue before anything is fetched, so
+    /// it needs no budget. A pet and an avatar part cannot be: their bundle name comes out of the
+    /// sprite name itself, so an invented name is an address. This is what stops a scene full of them
+    /// becoming a burst against the asset host. A real room is a few dozen bundles.
+    /// </remarks>
+    public const string MaxBundleFetchesKey = "camera.max_bundle_fetches";
+
     /// <summary>Ceiling on either side of a rendered photo. Nothing in the payload bounds a
     /// coordinate, so this is what stands between a corner at a billion and a failed allocation.</summary>
     public const string MaxPhotoDimensionKey = "camera.max_photo_dimension";
@@ -143,6 +169,13 @@ public static class CameraConfig
     /// <summary>Nothing. Every hotel serves its pack somewhere different.</summary>
     public const string DefaultFurnitureAssetUrl = "";
 
+    public const string DefaultAvatarAssetUrl = "";
+
+    public const string DefaultFiguremapUrl = "";
+
+    /// <summary>Generous for a room, small enough that a crafted scene is not a burst.</summary>
+    public const int DefaultMaxBundleFetches = 64;
+
     /// <summary>Every key of the group, for the one-round-trip batch resolve.</summary>
     public static readonly ImmutableArray<string> AllKeys =
     [
@@ -167,6 +200,9 @@ public static class CameraConfig
         ExternalTimeoutSecondsKey,
         MaxExternalBytesKey,
         FurnitureAssetUrlKey,
+        AvatarAssetUrlKey,
+        FiguremapUrlKey,
+        MaxBundleFetchesKey,
     ];
 
     /// <summary>The three prices the client is told at room entry, and nothing else.</summary>

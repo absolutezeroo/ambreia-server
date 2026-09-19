@@ -436,6 +436,21 @@ internal sealed class PlayerCameraGrain(
                 CameraConfig.FurnitureAssetUrlKey,
                 CameraConfig.DefaultFurnitureAssetUrl
             ),
+            AvatarAssetUrl = ServerConfigValues.GetString(
+                config,
+                CameraConfig.AvatarAssetUrlKey,
+                CameraConfig.DefaultAvatarAssetUrl
+            ),
+            FiguremapUrl = ServerConfigValues.GetString(
+                config,
+                CameraConfig.FiguremapUrlKey,
+                CameraConfig.DefaultFiguremapUrl
+            ),
+            MaxBundleFetches = ServerConfigValues.GetInt(
+                config,
+                CameraConfig.MaxBundleFetchesKey,
+                CameraConfig.DefaultMaxBundleFetches
+            ),
         };
 
     private static CameraSceneLimits ReadLimits(IReadOnlyDictionary<string, string> config) =>

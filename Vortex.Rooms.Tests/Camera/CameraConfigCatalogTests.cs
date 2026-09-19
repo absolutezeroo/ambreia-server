@@ -85,6 +85,9 @@ public sealed class CameraConfigCatalogTests
         ];
         yield return [CameraConfig.MaxExternalBytesKey, I(CameraConfig.DefaultMaxExternalBytes)];
         yield return [CameraConfig.FurnitureAssetUrlKey, CameraConfig.DefaultFurnitureAssetUrl];
+        yield return [CameraConfig.AvatarAssetUrlKey, CameraConfig.DefaultAvatarAssetUrl];
+        yield return [CameraConfig.FiguremapUrlKey, CameraConfig.DefaultFiguremapUrl];
+        yield return [CameraConfig.MaxBundleFetchesKey, I(CameraConfig.DefaultMaxBundleFetches)];
     }
 
     [Theory]

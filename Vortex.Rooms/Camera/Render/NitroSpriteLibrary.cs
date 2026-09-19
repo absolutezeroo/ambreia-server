@@ -58,6 +58,8 @@ internal sealed class NitroSpriteLibrary(
 
     private Task<ClassNameIndex>? _index;
 
+    private Task<FiguremapIndex>? _figuremap;
+
     /// <summary>The sprite's own PNG, or null when this hotel's pack cannot produce it.</summary>
     public async Task<byte[]?> GetSpriteAsync(
         string assetName,
@@ -65,7 +67,7 @@ internal sealed class NitroSpriteLibrary(
         CancellationToken ct
     )
     {
-        if (limits.FurnitureAssetUrl.Length == 0)
+        if (limits.FurnitureAssetUrl.Length == 0 && limits.AvatarAssetUrl.Length == 0)
         {
             return null;
         }
@@ -90,14 +92,15 @@ internal sealed class NitroSpriteLibrary(
         CancellationToken ct
     )
     {
-        ClassNameIndex index = await IndexAsync(ct).ConfigureAwait(false);
+        NitroBundleAddress? address = await AddressAsync(assetName, limits, ct)
+            .ConfigureAwait(false);
 
-        if (!index.TryClassName(assetName, out string? className) || className is null)
+        if (address is not { } found)
         {
             return null;
         }
 
-        Bundle? bundle = await BundleAsync(className, limits, ct).ConfigureAwait(false);
+        Bundle? bundle = await BundleAsync(found, limits, ct).ConfigureAwait(false);
 
         if (bundle is null || !bundle.Manifest.TryResolve(assetName, out NitroSpriteFrame frame))
         {
@@ -107,22 +110,112 @@ internal sealed class NitroSpriteLibrary(
         return Crop(bundle.Sheet, frame);
     }
 
-    private Task<Bundle?> BundleAsync(
-        string className,
-        CameraRenderLimits limits,
-        CancellationToken ct
-    ) => _bundles.GetOrAdd(className, name => FetchBundleAsync(name, limits, ct));
-
-    private async Task<Bundle?> FetchBundleAsync(
-        string className,
+    /// <summary>
+    /// Which bundle a sprite name belongs to. Three families, tried in the order that costs least.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// <b>Furniture</b> is checked against this hotel's own catalogue, so an invented name is refused
+    /// without a request ever leaving the process — which is why it goes first and needs no budget.
+    /// </para>
+    /// <para>
+    /// <b>An avatar part</b> names a part and not a library (<c>h_std_bd_1_2_0</c> is part type
+    /// <c>bd</c>, id <c>1</c>), so the figuremap answers it — also without a request, since the map
+    /// is already in hand.
+    /// </para>
+    /// <para>
+    /// <b>A pet</b> is the one that cannot be checked: its bundle name is simply the first segment of
+    /// the sprite name (<c>dog_64_a_0_100</c> lives in <c>dog.nitro</c>), so any name is an address.
+    /// That is what the caller's fetch budget is for, and why this is tried last.
+    /// </para>
+    /// </remarks>
+    private async Task<NitroBundleAddress?> AddressAsync(
+        string assetName,
         CameraRenderLimits limits,
         CancellationToken ct
     )
     {
-        // The classname came out of this hotel's own catalogue, so it is not a payload-chosen
-        // address the way an external image is -- but it is still concatenated into a url, so it is
-        // escaped rather than trusted.
-        string url = $"{limits.FurnitureAssetUrl}{Uri.EscapeDataString(className)}.nitro";
+        ClassNameIndex index = await IndexAsync(ct).ConfigureAwait(false);
+
+        if (index.TryClassName(assetName, out string? className) && className is not null)
+        {
+            return Address(limits.FurnitureAssetUrl, className);
+        }
+
+        if (limits.AvatarAssetUrl.Length == 0)
+        {
+            return null;
+        }
+
+        FiguremapIndex figuremap = await FiguremapAsync(limits, ct).ConfigureAwait(false);
+
+        if (figuremap.TryLibrary(assetName, out string? library) && library is not null)
+        {
+            return Address(limits.AvatarAssetUrl, library);
+        }
+
+        int cut = assetName.IndexOf('_', StringComparison.Ordinal);
+
+        return cut > 0 ? Address(limits.AvatarAssetUrl, assetName[..cut]) : null;
+    }
+
+    private static NitroBundleAddress? Address(string baseUrl, string bundle)
+    {
+        if (baseUrl.Length == 0 || bundle.Length == 0)
+        {
+            return null;
+        }
+
+        // The bundle name is derived from a payload-supplied string in two of the three cases, so it
+        // is escaped rather than trusted: this is the only place a name becomes a url.
+        return new NitroBundleAddress($"{baseUrl}{Uri.EscapeDataString(bundle)}.nitro", bundle);
+    }
+
+    private Task<FiguremapIndex> FiguremapAsync(CameraRenderLimits limits, CancellationToken ct) =>
+        _figuremap ??= LoadFiguremapAsync(limits, ct);
+
+    private async Task<FiguremapIndex> LoadFiguremapAsync(
+        CameraRenderLimits limits,
+        CancellationToken ct
+    )
+    {
+        if (limits.FiguremapUrl.Length == 0)
+        {
+            return FiguremapIndex.Empty;
+        }
+
+        try
+        {
+            string xml = await http.GetStringAsync(limits.FiguremapUrl, ct).ConfigureAwait(false);
+            FiguremapIndex index = FiguremapIndex.Read(xml);
+
+            logger.LogInformation("Camera: {Count} avatar parts indexed.", index.Count);
+
+            return index;
+        }
+        catch (HttpRequestException ex)
+        {
+            logger.LogWarning(
+                ex,
+                "Camera: the figuremap could not be fetched; avatars will be absent."
+            );
+            return FiguremapIndex.Empty;
+        }
+    }
+
+    private Task<Bundle?> BundleAsync(
+        NitroBundleAddress address,
+        CameraRenderLimits limits,
+        CancellationToken ct
+    ) => _bundles.GetOrAdd(address.Url, _ => FetchBundleAsync(address, limits, ct));
+
+    private async Task<Bundle?> FetchBundleAsync(
+        NitroBundleAddress address,
+        CameraRenderLimits limits,
+        CancellationToken ct
+    )
+    {
+        (string url, string className) = address;
 
         using CancellationTokenSource timeout = CancellationTokenSource.CreateLinkedTokenSource(ct);
         timeout.CancelAfter(limits.ExternalTimeout);

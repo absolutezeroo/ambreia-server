@@ -46,6 +46,21 @@ public sealed record CameraRenderLimits
     [Id(4)]
     public required string FurnitureAssetUrl { get; init; }
 
+    /// <summary>Where pet and avatar bundles are served — the client's versioned gordon directory.</summary>
+    [Id(5)]
+    public required string AvatarAssetUrl { get; init; }
+
+    /// <summary>The client's figuremap, which says which library an avatar part lives in.</summary>
+    [Id(6)]
+    public required string FiguremapUrl { get; init; }
+
+    /// <summary>
+    /// How many bundles one photo may fetch. Furniture is checked against the catalogue first and
+    /// costs nothing to refuse; a pet or an avatar part cannot be, so this is their bound.
+    /// </summary>
+    [Id(7)]
+    public required int MaxBundleFetches { get; init; }
+
     public static CameraRenderLimits Defaults { get; } =
         new()
         {
@@ -54,5 +69,8 @@ public sealed record CameraRenderLimits
             ExternalTimeout = TimeSpan.FromSeconds(CameraConfig.DefaultExternalTimeoutSeconds),
             MaxExternalBytes = CameraConfig.DefaultMaxExternalBytes,
             FurnitureAssetUrl = CameraConfig.DefaultFurnitureAssetUrl,
+            AvatarAssetUrl = CameraConfig.DefaultAvatarAssetUrl,
+            FiguremapUrl = CameraConfig.DefaultFiguremapUrl,
+            MaxBundleFetches = CameraConfig.DefaultMaxBundleFetches,
         };
 }

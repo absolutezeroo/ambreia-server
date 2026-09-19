@@ -716,6 +716,27 @@ public static class ConfigKeyCatalog
             "Where furniture .nitro bundles are served, ending in a slash. Empty means photos show no furniture.",
             "Camera"
         ),
+        new(
+            "camera.avatar_asset_url",
+            "",
+            ConfigValueKind.String,
+            "Where pet and avatar bundles are served (the client's gordon directory), ending in a slash.",
+            "Camera"
+        ),
+        new(
+            "camera.figuremap_url",
+            "",
+            ConfigValueKind.String,
+            "The client's figuremap.xml. Without it an avatar's parts cannot be traced to their bundles.",
+            "Camera"
+        ),
+        new(
+            "camera.max_bundle_fetches",
+            "64",
+            ConfigValueKind.Int,
+            "How many asset bundles one photo may fetch. Bounds the pet and avatar families, whose bundle name comes from the payload.",
+            "Camera"
+        ),
     ];
 
     /// <summary>The descriptor for <paramref name="key"/>, or null if the key is not a known config key.</summary>
