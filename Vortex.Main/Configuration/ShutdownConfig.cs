@@ -35,4 +35,20 @@ public sealed class ShutdownConfig
     /// </para>
     /// </summary>
     public int DowntimeMinutes { get; set; } = 2;
+
+    /// <summary>
+    /// Seconds allowed for the actual shutdown once the notice has elapsed: closing the two game
+    /// listeners (5s each, in parallel) and then Orleans deactivating every grain — which is where
+    /// the writing happens. No grain in this codebase uses <c>[PersistentState]</c>; they all
+    /// persist through EF Core, and a room's moved furniture, a player's row and a messenger's
+    /// delivery marks are all written from <c>OnDeactivateAsync</c>.
+    ///
+    /// <para>
+    /// 30 is the .NET host's own default and therefore what every shutdown before this one had. It
+    /// is a budget, not a promise: a host that runs out of it stops waiting and exits, and whatever
+    /// had not been written is gone. A hotel with hundreds of live rooms should raise it — and its
+    /// grace period with it.
+    /// </para>
+    /// </summary>
+    public int DrainSeconds { get; set; } = 30;
 }

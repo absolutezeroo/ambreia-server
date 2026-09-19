@@ -98,12 +98,14 @@ services:
       context: .
       dockerfile: Dockerfile
     restart: unless-stopped
-    # Long enough for the shutdown notice below plus the flushes that follow it. Docker's default is
-    # TEN SECONDS, and it is not a wait — it is a countdown to SIGKILL. A hotel told to give players
-    # three minutes of warning, running under the default, is killed 170 seconds into that promise:
-    # no room persistence flush, no Orleans drain, on every single deploy, and nothing in the log
-    # says it was killed rather than stopped. Raise this BEFORE raising the notice, never after.
-    stop_grace_period: 210s
+    # Longer than the shutdown notice below PLUS the drain that follows it (3min + 30s = 210s here),
+    # with slack on top: at exactly 210 the kill and the last write race each other. Docker's own
+    # default is TEN SECONDS, and it is not a wait — it is a countdown to SIGKILL. A hotel told to
+    # give players three minutes of warning, running under that default, is killed 170 seconds into
+    # its own promise: no room persistence flush, no Orleans drain, on every single deploy, and
+    # nothing in the log says it was killed rather than stopped.
+    # Raise this BEFORE raising the notice, never after.
+    stop_grace_period: 240s
     depends_on:
       mysql:
         # NOT optional, and not merely a convenience for the retry policy.

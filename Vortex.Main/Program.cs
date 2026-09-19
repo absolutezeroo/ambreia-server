@@ -177,11 +177,13 @@ internal class Program
         {
             // The host cancels the token it hands StoppingAsync once this elapses, and it defaults
             // to 30 seconds — which would cut every notice longer than that off at the knees, from
-            // inside, with the orchestrator still patiently waiting. The extra 30s is the shutdown
-            // the notice is holding open: flushes, drains, and the socket teardown that follow it.
+            // inside, with the orchestrator still patiently waiting. DrainSeconds is the shutdown
+            // the notice is holding open: the socket teardown and the grain deactivations that do
+            // the writing.
             builder.Services.Configure<HostOptions>(options =>
                 options.ShutdownTimeout =
-                    TimeSpan.FromMinutes(shutdown.NoticeMinutes) + TimeSpan.FromSeconds(30)
+                    TimeSpan.FromMinutes(shutdown.NoticeMinutes)
+                    + TimeSpan.FromSeconds(shutdown.DrainSeconds)
             );
         }
 

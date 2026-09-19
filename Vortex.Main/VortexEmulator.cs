@@ -127,7 +127,7 @@ public class VortexEmulator(
                 + "least {Seconds}s (docker stop --time / compose stop_grace_period) or it will be "
                 + "killed mid-notice, with no persistence flush.",
             _shutdownConfig.NoticeMinutes,
-            (_shutdownConfig.NoticeMinutes * 60) + 30
+            (_shutdownConfig.NoticeMinutes * 60) + _shutdownConfig.DrainSeconds
         );
     }
 
