@@ -19,24 +19,41 @@ public sealed class PetActionFlagsTests
     private const int MonsterplantMaxLevel = 7;
     private const int DogType = 0;
 
+    /// <summary>
+    /// The two breeding bits are not the same bit. A capture of the live hotel (2026-09-19) caught
+    /// two animals whose owner had breeding switched on: both were announced with the permission
+    /// true and <c>canBreed</c> false. <c>canBreed</c> is the plant's "grown enough to breed", and
+    /// reading it as "this animal may be paired" is what this used to do.
+    /// </summary>
     [Fact]
-    public void AnOrdinaryPetThatMayBreed_OffersBreeding()
+    public void AnOrdinaryPetThatMayBreed_CarriesThePermissionButNotTheGrownFlag()
     {
         PetSnapshot dog = Pet(DogType, canBreed: true);
 
-        RoomPetRuntime.CanBreed(dog).Should().BeTrue();
+        RoomPetRuntime.CanBreed(dog).Should().BeFalse();
         RoomPetRuntime.HasBreedingPermission(dog).Should().BeTrue();
     }
 
     [Fact]
     public void APetAlreadyBred_OffersNothingFurther() =>
-        RoomPetRuntime.CanBreed(Pet(DogType, canBreed: false)).Should().BeFalse();
+        RoomPetRuntime.HasBreedingPermission(Pet(DogType, canBreed: false)).Should().BeFalse();
+
+    [Theory]
+    [InlineData(1, false)]
+    [InlineData(MonsterplantMaxLevel - 1, false)]
+    [InlineData(MonsterplantMaxLevel, true)]
+    public void AMonsterplantBreedsOnlyOnceFullyGrown(int level, bool expected) =>
+        RoomPetRuntime
+            .CanBreed(Pet(MonsterplantType, level: level, canBreed: true))
+            .Should()
+            .Be(expected);
 
     [Fact]
-    public void AMonsterplantNeverBreeds_WhateverItsFlagSays() =>
-        // Monsterplants propagate by harvesting, not by pairing, and the entity flag defaults to
-        // true — so reading the flag alone offers a plant a breeding button that leads nowhere.
-        RoomPetRuntime.CanBreed(Pet(MonsterplantType, canBreed: true)).Should().BeFalse();
+    public void AMonsterplantThatSpentItsSeed_StopsOfferingToBreed() =>
+        RoomPetRuntime
+            .CanBreed(Pet(MonsterplantType, level: MonsterplantMaxLevel, canBreed: false))
+            .Should()
+            .BeFalse();
 
     [Theory]
     [InlineData(1, false)]

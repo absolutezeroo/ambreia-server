@@ -61,6 +61,36 @@ public sealed class PetCareTests
     }
 
     /// <summary>
+    /// Scratching is what the happiness bar is for, and it used to move nothing at all: a scratch
+    /// paid experience and respect and left the pet exactly as miserable as it was.
+    /// </summary>
+    [Fact]
+    public async Task RespectingAPet_CheersItUp()
+    {
+        PetConfig config = new();
+        Harness harness = new(Pet() with { Happiness = 20 });
+
+        PetSnapshot? updated = await harness
+            .System.RespectPetAsync(harness.Context, PetId, CancellationToken.None)
+            .ConfigureAwait(true);
+
+        updated!.Happiness.Should().Be(20 + config.RespectHappinessReward);
+    }
+
+    [Fact]
+    public async Task RespectingAnAlreadyHappyPet_StopsAtTheCap()
+    {
+        PetConfig config = new();
+        Harness harness = new(Pet() with { Happiness = config.HappinessCap });
+
+        PetSnapshot? updated = await harness
+            .System.RespectPetAsync(harness.Context, PetId, CancellationToken.None)
+            .ConfigureAwait(true);
+
+        updated!.Happiness.Should().Be(config.HappinessCap);
+    }
+
+    /// <summary>
     /// The scratcher's own daily allowance is the only thing that limits scratching. The pet used to
     /// carry a cap of its own, in two columns of its row; that made the count the client shows a
     /// lie, because the client only knows about this one and counts down from it.
@@ -148,8 +178,9 @@ public sealed class PetCareTests
     [Fact]
     public async Task EnoughExperience_LevelsThePetUp()
     {
-        // The stub levels a pet every ten points; a respect is worth five, so the second one crosses.
-        Harness harness = new(Pet(experience: 6));
+        // The stub levels a pet every ten points, so one scratch away from the threshold crosses it.
+        int respectXp = new PetConfig().RespectXpReward;
+        Harness harness = new(Pet(experience: 10 - respectXp + 1));
 
         PetSnapshot? updated = await harness
             .System.RespectPetAsync(harness.Context, PetId, CancellationToken.None)

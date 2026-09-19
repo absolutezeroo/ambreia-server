@@ -23,6 +23,7 @@ using Vortex.Primitives.Rooms.Object.Furniture;
 using Vortex.Primitives.Rooms.Snapshots.Avatars;
 using Vortex.Protocol.Messages.Outgoing.Inventory.Pets;
 using Vortex.Protocol.Messages.Outgoing.Notifications;
+using Vortex.Protocol.Messages.Outgoing.Room.Action;
 using Vortex.Protocol.Messages.Outgoing.Room.Chat;
 using Vortex.Protocol.Messages.Outgoing.Room.Engine;
 using Vortex.Protocol.Messages.Outgoing.Room.Pets;
@@ -90,9 +91,25 @@ public sealed partial class RoomPetSystem
             return pet;
         }
 
+        // The scratching arm. 999999999 is the client's CARRY_ITEM_EMPTY_HAND (AvatarLogic): no
+        // object is drawn, the avatar plays the reach-out gesture for 1.5s and clears it itself, so
+        // nothing here has to hold or expire a hand item. The live hotel sends this first, before
+        // the experience.
+        await BroadcastScratchGestureAsync(ctx.PlayerId);
+
         int respectXp = _roomGrain._roomConfig.Pet.RespectXpReward;
         PetSnapshot updated = await GrantXpAndLevelUpAsync(pet, respectXp, ct);
-        updated = updated with { Respect = updated.Respect + 1 };
+        updated = updated with
+        {
+            Respect = updated.Respect + 1,
+            // Scratching is what a pet's happiness is for -- the live hotel pays 10 a scratch,
+            // measured twice on the same pet.
+            Happiness = Math.Clamp(
+                updated.Happiness + Tuning.RespectHappinessReward,
+                0,
+                _roomGrain._roomConfig.Pet.HappinessCap
+            ),
+        };
         _roomGrain._state.PetsById[petId] = updated;
 
         if (_motionByPetId.TryGetValue(petId, out PetMotionState? motion))
@@ -215,6 +232,22 @@ public sealed partial class RoomPetSystem
         );
     }
 
+    private Task BroadcastScratchGestureAsync(PlayerId playerId)
+    {
+        if (!_roomGrain._state.AvatarsByPlayerId.TryGetValue(playerId, out RoomObjectId objectId))
+        {
+            return Task.CompletedTask;
+        }
+
+        return _roomGrain.SendComposerToRoomAsync(
+            new CarryObjectMessageComposer
+            {
+                UserId = objectId.Value,
+                ItemType = RoomPetRuntime.ScratchGestureItemType,
+            }
+        );
+    }
+
     private Task BroadcastPetRespectNotificationAsync(PetSnapshot pet)
     {
         return _roomGrain.SendComposerToRoomAsync(
@@ -222,13 +255,7 @@ public sealed partial class RoomPetSystem
             {
                 PetRespect = pet.Respect,
                 PetOwnerId = pet.OwnerId.Value,
-                PetId = pet.PetId,
-                PetName = pet.Name,
-                PetType = pet.Type,
-                PetColor = pet.Color,
-                PetRace = pet.Race,
-                PetLevel = pet.Level,
-                PetRarityLevel = pet.RarityLevel,
+                Pet = pet,
             }
         );
     }

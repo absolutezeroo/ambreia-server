@@ -64,7 +64,14 @@ public class PetConfig
     /// asked for.
     /// </summary>
     public int RespectMinimumAccountAgeDays { get; init; }
-    public int RespectXpReward { get; init; } = 5;
+
+    /// <summary>What a scratch pays. 10, measured on the live hotel (PetExperience/3712).</summary>
+    public int RespectXpReward { get; init; } = 10;
+
+    /// <summary>A scratch is also the main way a pet is cheered up: the live hotel raises the
+    /// happiness bar by 10 per scratch, measured twice on the same pet.</summary>
+    public int RespectHappinessReward { get; init; } = 10;
+
     public int CommandXpReward { get; init; } = 3;
 
     /// <summary>Obeying pleases a pet. Habbo pays 5 to 25 depending on how fun the trick is.</summary>

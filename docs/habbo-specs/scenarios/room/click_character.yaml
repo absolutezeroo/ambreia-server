@@ -10,7 +10,7 @@
 
 spec: scenarios
 spec_version: 1
-generated_digest: "sha256:fe823de5475b960d6a9020915b787023a5da172e2c6843c31583f4a0fca444ae"
+generated_digest: "sha256:8010132a7a1776eb716154feb61bbb77e78ebc08dfcc90d9ca3c6fe92b587b9c"
 generated:
   feature: room.click_character
   scenarios:
@@ -84,7 +84,7 @@ generated:
       outcome: ignored
       emits: []
       evidence: ev_4f7fa7efaeda
-    - origin: capture (1 observations)
+    - origin: capture (2 observations)
       authority: official_capture
       outcome: success
       emits: []

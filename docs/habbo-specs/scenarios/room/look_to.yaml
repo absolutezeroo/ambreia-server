@@ -10,7 +10,7 @@
 
 spec: scenarios
 spec_version: 1
-generated_digest: "sha256:937e0206ac21ad1ff05abda86476e61eb114d1cdd0c07d1333ae9ef80b3f9b0e"
+generated_digest: "sha256:dc09de4a18bb61d6d8b15a1a88c5ca36618bef73f0e822ce57c422c7355255d3"
 generated:
   feature: room.look_to
   scenarios:
@@ -312,7 +312,7 @@ generated:
       outcome: ignored
       emits: []
       evidence: ev_cbbbf87ab4e3
-    - origin: capture (1 observations)
+    - origin: capture (2 observations)
       authority: official_capture
       outcome: success
       emits: []

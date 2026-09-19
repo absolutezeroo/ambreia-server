@@ -10,12 +10,12 @@
 
 spec: unknown
 spec_version: 1
-generated_digest: "sha256:67c65e16071d6c5091c8063d83fe9426c6f718dfc229765631b227c7e8c21790"
+generated_digest: "sha256:bb46955c750e4831b366a5b394c4f7aaf44b646afd171d2c717b17d0848b785e"
 generated:
   id: uk_4048d65186
   subject: "room.respect_pet: what the server sends when it refuses"
   severity: medium
-  question: room.respect_pet changes state and has 8 guards whose refusal behaviour nothing here attests. Does the official server answer a refused request, and with what?
+  question: room.respect_pet changes state and has 7 guards whose refusal behaviour nothing here attests. Does the official server answer a refused request, and with what?
   resolved_by: an official capture of each guard being tripped
   feature: room.respect_pet
   known_evidence:
@@ -53,7 +53,7 @@ generated:
     origin: vortex
     source: Vortex.Rooms/Grains/Systems/RoomPetRuntime.cs
     symbol: RoomPetRuntime
-    line: 188
+    line: 203
   - id: ev_34bf3ac088e2
     kind: emulator_flow
     authority: vortex_emulator
@@ -67,7 +67,7 @@ generated:
     origin: vortex
     source: Vortex.Rooms/Grains/Systems/RoomPetSystem.Care.cs
     symbol: RoomPetSystem
-    line: 35
+    line: 36
   - id: ev_7e53d81cbdc8
     kind: emulator_flow
     authority: vortex_emulator

@@ -1,0 +1,163 @@
+{
+  "id": "room-scratch-pet-official-001",
+  "source": "official",
+  "revision": "AIR-1.0.31",
+  "recordedUtc": "2026-09-19T00:00:00Z",
+  "note": "Opening a pet's panel and scratching it, in a room on the live Habbo hotel. The pet is 'filou', a level 8 animal of type 4 owned by the account doing the scratching. Header ids are the live build's and are NOT the emulator target build's (this hotel announces PetInfo on 3930 where WIN63-202607011411 binds 3192, and PetRespectNotification on 2316 where it binds 1784), so the order, the membership and the field values are the evidence here, never the numbers. WHAT IT SETTLES. (1) The scratch has an ANIMATION and it is a hand item: CarryObject carries the scratcher's own room index and 999999999, which is the client's AvatarLogic.CARRY_ITEM_EMPTY_HAND -- no object is drawn, the avatar plays the reach-out gesture for CARRY_ITEM_EMPTY_HAND_ANIMATION_LENGTH (1500ms) and clears it itself, so the server never has to take it back. It goes out FIRST, before the experience. (2) A scratch is worth 10 experience (PetExperience) and 1 respect, and it raises the pet's nutrition field -- the panel's happiness bar -- by 10: measured twice on a second pet in the same capture, 1 -> 11 -> 21. (3) PetInfo's ceilings are real numbers and not the pet's own values: level 8 reads a goal of 2400 and a max energy of 260, level 7 reads 1800 and 240, and max nutrition is a flat 100 at both. That is Habbo's experience table (100, 200, 400, 600, 900, 1300, 1800, 2400 ...) and an energy cap of 100 + 20 * level; Arcturus says 100 * level, which this refutes. Max level is 20. (4) For an ordinary animal the three monsterplant timers are -1, not 0, and the rarity is 0; canBreed is FALSE while hasBreedingPermission is TRUE, on a pet whose owner has breeding switched on -- canBreed is the plant's grown flag, not a pairing offer. (5) The booleans are one byte: the body is exactly 34 bytes past the owner name, which no other width fits. (6) PetSelected is answered by nothing; the panel is filled by the GetPetInfo the client sends alongside it. (7) A scratch also raises two achievements (PetRespectGiver for the scratcher, PetRespectReceiver for the owner -- here the same account) and the reward-track task 'pet_a_pet' on the introduction track, and the pet REACTS: its status gains 'gst joy' and it speaks a mood line ('*est euphorique*' on a French session). Neither the reaction text nor its localization key is in any source in this workspace, so what a pet says when scratched stays unknown.",
+  "messages": [
+    { "index": 0, "direction": "client_to_server", "name": "ClickCharacter", "header": 338, "fields": { "object_id": "1" } },
+    { "index": 1, "direction": "client_to_server", "name": "LookTo", "header": 2020, "fields": { "x": "1", "y": "15" } },
+    { "index": 2, "direction": "client_to_server", "name": "PetSelected", "header": 1497, "fields": { "pet_id": "353056" } },
+    { "index": 3, "direction": "client_to_server", "name": "GetPetInfo", "header": 781, "fields": { "pet_id": "353056" } },
+    {
+      "index": 4,
+      "direction": "server_to_client",
+      "name": "PetInfo",
+      "header": 3930,
+      "respondsTo": 3,
+      "fields": {
+        "pet_id": "353056",
+        "name": "filou",
+        "level": "8",
+        "max_level": "20",
+        "experience": "1830",
+        "experience_required_to_level": "2400",
+        "energy": "260",
+        "max_energy": "260",
+        "nutrition": "26",
+        "max_nutrition": "100",
+        "respect": "60",
+        "owner_id": "12111328",
+        "age": "5919",
+        "owner_name": "claytonxy",
+        "breed_id": "1",
+        "has_free_saddle": "false",
+        "is_riding": "false",
+        "length": "0",
+        "access_rights": "0",
+        "can_breed": "false",
+        "can_harvest": "false",
+        "can_revive": "false",
+        "rarity_level": "0",
+        "max_well_being_seconds": "-1",
+        "remaining_well_being_seconds": "-1",
+        "remaining_growing_seconds": "-1",
+        "has_breeding_permission": "true"
+      }
+    },
+    { "index": 5, "direction": "client_to_server", "name": "RespectPet", "header": 3757, "fields": { "pet_id": "353056" } },
+    {
+      "index": 6,
+      "direction": "server_to_client",
+      "name": "CarryObject",
+      "header": 2753,
+      "respondsTo": 5,
+      "fields": { "object_id": "4", "item_type": "999999999" }
+    },
+    {
+      "index": 7,
+      "direction": "server_to_client",
+      "name": "PetExperience",
+      "header": 3712,
+      "respondsTo": 5,
+      "fields": { "pet_id": "353056", "pet_room_index": "1", "gained_experience": "10" }
+    },
+    {
+      "index": 8,
+      "direction": "server_to_client",
+      "name": "PetRespectNotification",
+      "header": 2316,
+      "respondsTo": 5,
+      "fields": {
+        "respect": "61",
+        "pet_owner_id": "12111328",
+        "pet_id": "353056",
+        "name": "filou",
+        "type_id": "4",
+        "palette_id": "1",
+        "color": "E4FEFF",
+        "breed_id": "1",
+        "custom_part_count": "0",
+        "level": "8",
+        "rarity_level": "-1"
+      }
+    },
+    {
+      "index": 9,
+      "direction": "server_to_client",
+      "name": "Achievement",
+      "header": 2388,
+      "respondsTo": 5,
+      "fields": { "achievement_id": "26", "level": "8", "badge_id": "ACH_PetRespectGiver8", "category": "pets" }
+    },
+    {
+      "index": 10,
+      "direction": "server_to_client",
+      "name": "Achievement",
+      "header": 2388,
+      "respondsTo": 5,
+      "fields": { "achievement_id": "27", "level": "7", "badge_id": "ACH_PetRespectReceiver7", "category": "pets" }
+    },
+    {
+      "index": 11,
+      "direction": "server_to_client",
+      "name": "RewardTrackProgress",
+      "header": 844,
+      "respondsTo": 5,
+      "fields": { "track_id": "introduction", "task_id": "pet_a_pet", "progress": "7", "points": "220" }
+    },
+    {
+      "index": 12,
+      "direction": "server_to_client",
+      "name": "UserUpdate",
+      "header": 552,
+      "respondsTo": 5,
+      "fields": { "status": "//std/gst joy" }
+    },
+    {
+      "index": 13,
+      "direction": "server_to_client",
+      "name": "Chat",
+      "header": 3812,
+      "respondsTo": 5,
+      "fields": { "object_id": "1", "text": "*est euphorique*" }
+    },
+    { "index": 14, "direction": "client_to_server", "name": "GetPetInfo", "header": 781, "fields": { "pet_id": "353056" } },
+    {
+      "index": 15,
+      "direction": "server_to_client",
+      "name": "PetInfo",
+      "header": 3930,
+      "respondsTo": 14,
+      "fields": {
+        "pet_id": "353056",
+        "name": "filou",
+        "level": "8",
+        "max_level": "20",
+        "experience": "1840",
+        "experience_required_to_level": "2400",
+        "energy": "260",
+        "max_energy": "260",
+        "nutrition": "37",
+        "max_nutrition": "100",
+        "respect": "61",
+        "owner_id": "12111328",
+        "age": "5919",
+        "owner_name": "claytonxy",
+        "breed_id": "1",
+        "has_free_saddle": "false",
+        "is_riding": "false",
+        "length": "0",
+        "access_rights": "0",
+        "can_breed": "false",
+        "can_harvest": "false",
+        "can_revive": "false",
+        "rarity_level": "0",
+        "max_well_being_seconds": "-1",
+        "remaining_well_being_seconds": "-1",
+        "remaining_growing_seconds": "-1",
+        "has_breeding_permission": "true"
+      }
+    }
+  ]
+}

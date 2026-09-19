@@ -30,6 +30,14 @@ internal static class RoomPetRuntime
     /// <summary>Thirst runs 0-100 like the other needs.</summary>
     public const int ThirstCap = 100;
 
+    /// <summary>
+    /// The hand item that draws nothing. Above the client's CARRY_ITEM_LAST_CONSUMABLE it stops
+    /// being an object at all: <c>AvatarLogic.CARRY_ITEM_EMPTY_HAND</c> plays the reach-out gesture
+    /// for 1.5s and then clears itself, which is how a scratched pet gets an arm reaching for it.
+    /// Never route it through the hand-item module -- there is no item to hold or expire.
+    /// </summary>
+    public const int ScratchGestureItemType = 999_999_999;
+
     public static PetSnapshot ToSnapshot(PetEntity entity) =>
         new()
         {
@@ -162,8 +170,15 @@ internal static class RoomPetRuntime
     /// <summary>
     /// Which actions a pet offers. Shared with the status push so the room list and the status
     /// message can never disagree about whether a pet can be bred, harvested or revived.
+    ///
+    /// Plant-only, whatever the name suggests. This used to read <c>Type != Monsterplant</c> and was
+    /// the inverse of the truth: a capture of the live hotel (2026-09-19) shows two animals, both
+    /// with their owner's breeding permission on, sent <c>false</c> here and <c>true</c> in
+    /// <see cref="HasBreedingPermission"/>; Arcturus writes the same flag as "State Grown". Breeding
+    /// an animal is driven by the nest, not by this bit.
     /// </summary>
-    public static bool CanBreed(PetSnapshot pet) => pet.Type != MonsterplantPetType && pet.CanBreed;
+    public static bool CanBreed(PetSnapshot pet) =>
+        pet is { Type: MonsterplantPetType, Level: >= MonsterplantMaxLevel } && pet.CanBreed;
 
     /// <summary>
     /// A grown plant offers its seed once. <c>CanBreed</c> is that charge: harvesting spends it and

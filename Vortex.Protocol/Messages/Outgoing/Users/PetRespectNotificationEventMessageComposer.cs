@@ -1,5 +1,6 @@
 using Orleans;
 using Vortex.Primitives.Networking;
+using Vortex.Primitives.Pets.Snapshots;
 
 namespace Vortex.Protocol.Messages.Outgoing.Users;
 
@@ -12,29 +13,12 @@ public sealed record PetRespectNotificationEventMessageComposer : IComposer
     [Id(1)]
     public required int PetOwnerId { get; init; }
 
+    /// <summary>
+    /// The pet block the client reads after the two counters is the same one it reads everywhere a
+    /// pet is drawn, so the snapshot travels whole rather than being spread over flat fields. It
+    /// used to be: the palette id was one of them, nobody set it, and every pet was announced in
+    /// breed 1's colours.
+    /// </summary>
     [Id(2)]
-    public required int PetId { get; init; }
-
-    [Id(3)]
-    public required string PetName { get; init; }
-
-    [Id(4)]
-    public required int PetType { get; init; }
-
-    [Id(5)]
-    public int PetPaletteId { get; init; } = 1;
-
-    [Id(6)]
-    public required string PetColor { get; init; }
-
-    [Id(7)]
-    public required int PetRace { get; init; }
-
-    [Id(8)]
-    public required int PetLevel { get; init; }
-
-    /// <summary>Closes the pet block. The client reads it unconditionally right after the level, so
-    /// omitting it leaves the packet four bytes short of what the parser consumes.</summary>
-    [Id(9)]
-    public int PetRarityLevel { get; init; } = 1;
+    public required PetSnapshot Pet { get; init; }
 }

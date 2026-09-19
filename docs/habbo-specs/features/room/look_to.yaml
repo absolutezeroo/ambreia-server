@@ -10,7 +10,7 @@
 
 spec: feature
 spec_version: 1
-generated_digest: "sha256:0606353c0aa7aa9cc73460b88ecc7d1035243705743505993388f134af62f811"
+generated_digest: "sha256:e0ddc7bf9574f04ce88b8c3aefe4068c5ae7b7c0725de5dd5be3cd8d1c512428"
 generated:
   id: room.look_to
   domain: room
@@ -119,7 +119,7 @@ generated:
     observed_in: vortex
     evidence: ev_e6fef545a42a
   outgoing:
-    ordering: unknown
+    ordering: strict
     packets:
     - packet: UserUpdate
       recipient: room_users

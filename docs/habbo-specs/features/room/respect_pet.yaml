@@ -10,7 +10,7 @@
 
 spec: feature
 spec_version: 1
-generated_digest: "sha256:aec1483ab60bb153c4415ab1ca2f8d4da64821d2d1c893c0369c834d01774779"
+generated_digest: "sha256:1c68efd0ca0b831ac5d68eebc0060c32265ba1cc58614714851c179e54e33e90"
 generated:
   id: room.respect_pet
   domain: room
@@ -22,7 +22,7 @@ generated:
     references:
     - habbo-arcturus-daybreak
   official_behavior:
-    status: unknown
+    status: capture_confirmed
   flow:
   - order: 0
     layer: handler
@@ -145,7 +145,7 @@ generated:
     origin: vortex
     source: Vortex.Rooms/Grains/Systems/RoomPetRuntime.cs
     symbol: RoomPetRuntime
-    line: 188
+    line: 203
   - id: ev_34bf3ac088e2
     kind: emulator_flow
     authority: vortex_emulator
@@ -159,7 +159,7 @@ generated:
     origin: vortex
     source: Vortex.Rooms/Grains/Systems/RoomPetSystem.Care.cs
     symbol: RoomPetSystem
-    line: 35
+    line: 36
   - id: ev_7e53d81cbdc8
     kind: emulator_flow
     authority: vortex_emulator

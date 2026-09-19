@@ -10,7 +10,7 @@
 
 spec: scenarios
 spec_version: 1
-generated_digest: "sha256:7472e91cca73c5ca7836ce4f3700ec6acbe15ed152692dbc0c5b66d5fc96bbbe"
+generated_digest: "sha256:93da5fca9d18bd260e0f9263697c57d44bfb5ce0fcccaadc0c1914caac0d1f0f"
 generated:
   feature: room.respect_pet
   scenarios:
@@ -183,10 +183,9 @@ generated:
     when:
       packet: RespectPet
     expected:
-      status: unknown
-      confidence: unknown
-    needs_evidence: an official capture of RespectPet succeeding, with every packet the server sends back and in what order
-    executable: false
+      status: success
+      confidence: capture_confirmed
+    executable: true
     claims:
     - origin: vortex
       authority: vortex_emulator
@@ -199,7 +198,26 @@ generated:
       outcome: ignored
       emits: []
       evidence: ev_cb9974479c1a
+    - origin: capture (1 observations)
+      authority: official_capture
+      outcome: success
+      emits:
+      - CarryObject
+      - PetExperience
+      - PetRespectNotification
+      - Achievement
+      - Achievement
+      - RewardTrackProgress
+      - UserUpdate
+      - Chat
+      evidence: ev_21269217dfa2
   evidence:
+  - id: ev_21269217dfa2
+    kind: capture
+    authority: official_capture
+    origin: capture
+    source: docs/habbo-specs/evidence/captures
+    symbol: RespectPet
   - id: ev_cb9974479c1a
     kind: reference_handler
     authority: reference_emulator
@@ -242,6 +260,6 @@ generated:
     origin: vortex
     source: Vortex.Rooms/Grains/Systems/RoomPetSystem.Care.cs
     symbol: RoomPetSystem
-    line: 43
+    line: 44
 verified: {}
 manual: {}

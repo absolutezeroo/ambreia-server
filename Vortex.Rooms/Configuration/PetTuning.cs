@@ -31,6 +31,7 @@ public sealed record PetTuning
     public const string SleepWakeEnergyThresholdKey = "pets.sleep_wake_energy_threshold";
     public const string HungerThresholdKey = "pets.hunger_threshold";
     public const string ThirstThresholdKey = "pets.thirst_threshold";
+    public const string RespectHappinessRewardKey = "pets.respect_happiness_reward";
     public const string CommandHappinessRewardKey = "pets.command_happiness_reward";
     public const string ToyHappinessRewardKey = "pets.toy_happiness_reward";
     public const string BoredHappinessThresholdKey = "pets.bored_happiness_threshold";
@@ -54,6 +55,7 @@ public sealed record PetTuning
     public required int SleepWakeEnergyThreshold { get; init; }
     public required int HungerThreshold { get; init; }
     public required int ThirstThreshold { get; init; }
+    public required int RespectHappinessReward { get; init; }
     public required int CommandHappinessReward { get; init; }
     public required int ToyHappinessReward { get; init; }
     public required int BoredHappinessThreshold { get; init; }
@@ -81,6 +83,7 @@ public sealed record PetTuning
             SleepWakeEnergyThreshold = config.SleepWakeEnergyThreshold,
             HungerThreshold = config.HungerThreshold,
             ThirstThreshold = config.ThirstThreshold,
+            RespectHappinessReward = config.RespectHappinessReward,
             CommandHappinessReward = config.CommandHappinessReward,
             ToyHappinessReward = config.ToyHappinessReward,
             BoredHappinessThreshold = config.BoredHappinessThreshold,
@@ -125,6 +128,9 @@ public sealed record PetTuning
                 .ConfigureAwait(false),
             ThirstThreshold = await config
                 .GetIntAsync(ThirstThresholdKey, defaults.ThirstThreshold)
+                .ConfigureAwait(false),
+            RespectHappinessReward = await config
+                .GetIntAsync(RespectHappinessRewardKey, defaults.RespectHappinessReward)
                 .ConfigureAwait(false),
             CommandHappinessReward = await config
                 .GetIntAsync(CommandHappinessRewardKey, defaults.CommandHappinessReward)

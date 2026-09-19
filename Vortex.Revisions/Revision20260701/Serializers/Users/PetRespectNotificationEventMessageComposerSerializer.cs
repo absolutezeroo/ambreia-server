@@ -1,5 +1,6 @@
 using Vortex.Primitives.Packets;
 using Vortex.Protocol.Messages.Outgoing.Users;
+using Vortex.Revisions.Revision20260701.Serializers.Room.Pets.Snapshots;
 
 namespace Vortex.Revisions.Revision20260701.Serializers.Users;
 
@@ -11,17 +12,12 @@ internal class PetRespectNotificationEventMessageComposerSerializer(int header)
         PetRespectNotificationEventMessageComposer message
     )
     {
-        packet
-            .WriteInteger(message.PetRespect)
-            .WriteInteger(message.PetOwnerId)
-            .WriteInteger(message.PetId)
-            .WriteString(message.PetName)
-            .WriteInteger(message.PetType)
-            .WriteInteger(message.PetPaletteId)
-            .WriteString(message.PetColor)
-            .WriteInteger(message.PetRace)
-            .WriteInteger(0) // customPartCount
-            .WriteInteger(message.PetLevel)
-            .WriteInteger(message.PetRarityLevel);
+        packet.WriteInteger(message.PetRespect).WriteInteger(message.PetOwnerId);
+
+        // Pet block: id, name, then the shared figure block, then level and rarity. The client
+        // closes on the rarity whatever the pet is, so it is written unconditionally.
+        packet.WriteInteger(message.Pet.PetId).WriteString(message.Pet.Name);
+        PetFigureDataSerializer.Serialize(packet, message.Pet);
+        packet.WriteInteger(message.Pet.Level).WriteInteger(message.Pet.RarityLevel);
     }
 }

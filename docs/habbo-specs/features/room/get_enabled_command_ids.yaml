@@ -10,7 +10,7 @@
 
 spec: feature
 spec_version: 1
-generated_digest: "sha256:546185067dd5a6731b3b7eb8172ec4291aadef2317ba68ce026177b2eb9de7a3"
+generated_digest: "sha256:da103941d365b030e888c93574d742f60518cdd6adb762e3ba1ac2296a29a2cc"
 generated:
   id: room.get_enabled_command_ids
   domain: room
@@ -23,7 +23,7 @@ generated:
     references:
     - habbo-arcturus-daybreak
   official_behavior:
-    status: unknown
+    status: capture_confirmed
   flow:
   - order: 0
     layer: handler

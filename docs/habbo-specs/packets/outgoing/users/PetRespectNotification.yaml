@@ -10,7 +10,7 @@
 
 spec: packet
 spec_version: 1
-generated_digest: "sha256:5b59c25a732fe6245f5d2c8c787fe7305fa99889b4b9c93f435b4a59664b0ce1"
+generated_digest: "sha256:a6deb66e295bd745a104b43239745ea45b52d1b8882f9947c77f20741ab8cb62"
 generated:
   name: PetRespectNotification
   direction: outgoing
@@ -40,58 +40,66 @@ generated:
     evidence:
     - ev_cec2552dbc27
   - index: 3
-    name: pet_name
+    name: name
     type: string
     name_confidence: implementation_observed
     type_confidence: implementation_observed
     evidence:
     - ev_cec2552dbc27
   - index: 4
-    name: pet_type
-    type: int32
+    name: pet_figure_data
+    type: block
     name_confidence: implementation_observed
     type_confidence: implementation_observed
     evidence:
     - ev_cec2552dbc27
+    fields:
+    - index: 0
+      name: type
+      type: int32
+      name_confidence: implementation_observed
+      type_confidence: implementation_observed
+      evidence:
+      - ev_cec2552dbc27
+    - index: 1
+      name: race
+      type: int32
+      name_confidence: implementation_observed
+      type_confidence: implementation_observed
+      evidence:
+      - ev_cec2552dbc27
+    - index: 2
+      name: color
+      type: string
+      name_confidence: implementation_observed
+      type_confidence: implementation_observed
+      evidence:
+      - ev_cec2552dbc27
+    - index: 3
+      name: race
+      type: int32
+      name_confidence: implementation_observed
+      type_confidence: implementation_observed
+      evidence:
+      - ev_cec2552dbc27
+    - index: 4
+      name: unknown_4
+      type: int32
+      name_is_placeholder: true
+      name_confidence: unknown
+      type_confidence: implementation_observed
+      note: written as the constant 0
+      evidence:
+      - ev_cec2552dbc27
   - index: 5
-    name: pet_palette_id
+    name: level
     type: int32
     name_confidence: implementation_observed
     type_confidence: implementation_observed
     evidence:
     - ev_cec2552dbc27
   - index: 6
-    name: pet_color
-    type: string
-    name_confidence: implementation_observed
-    type_confidence: implementation_observed
-    evidence:
-    - ev_cec2552dbc27
-  - index: 7
-    name: pet_race
-    type: int32
-    name_confidence: implementation_observed
-    type_confidence: implementation_observed
-    evidence:
-    - ev_cec2552dbc27
-  - index: 8
-    name: unknown_8
-    type: int32
-    name_is_placeholder: true
-    name_confidence: unknown
-    type_confidence: implementation_observed
-    note: "written as the constant 0; source comment: customPartCount"
-    evidence:
-    - ev_cec2552dbc27
-  - index: 9
-    name: pet_level
-    type: int32
-    name_confidence: implementation_observed
-    type_confidence: implementation_observed
-    evidence:
-    - ev_cec2552dbc27
-  - index: 10
-    name: pet_rarity_level
+    name: rarity_level
     type: int32
     name_confidence: implementation_observed
     type_confidence: implementation_observed
@@ -120,18 +128,14 @@ generated:
     evidence: ev_6b8279f40c50
   - origin: vortex
     authority: vortex_emulator
-    field_count: 11
+    field_count: 7
     partial: false
     types:
     - int32
     - int32
     - int32
     - string
-    - int32
-    - int32
-    - string
-    - int32
-    - int32
+    - block
     - int32
     - int32
     evidence: ev_cec2552dbc27
@@ -158,8 +162,6 @@ generated:
     origin: vortex
     source: Vortex.Revisions/Revision20260701/Serializers/Users/PetRespectNotificationEventMessageComposerSerializer.cs
     symbol: PetRespectNotificationEventMessageComposerSerializer
-    line: 6
-  unknowns:
-  - uk_9692c150e2
+    line: 7
 verified: {}
 manual: {}
