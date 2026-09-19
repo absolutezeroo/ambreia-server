@@ -10,7 +10,7 @@
 
 spec: scenarios
 spec_version: 1
-generated_digest: "sha256:b0c51573f398d4724808fc6f00a15ac971f3af994f990e7a57508a6b80f28eb7"
+generated_digest: "sha256:3c72b90a4306586a41203260a347cc5c7391bbae814c7e63f0c98a8d9ff2c568"
 generated:
   feature: inventory.get_pet_inventory
   scenarios:
@@ -45,10 +45,9 @@ generated:
     when:
       packet: GetPetInventory
     expected:
-      status: unknown
-      confidence: unknown
-    needs_evidence: an official capture of GetPetInventory succeeding, with every packet the server sends back and in what order
-    executable: false
+      status: success
+      confidence: capture_confirmed
+    executable: true
     claims:
     - origin: vortex
       authority: vortex_emulator
@@ -62,7 +61,19 @@ generated:
       emits:
       - PetInventory
       evidence: ev_a264b10e15f6
+    - origin: capture (1 observations)
+      authority: official_capture
+      outcome: success
+      emits:
+      - PetInventory
+      evidence: ev_294cfac02099
   evidence:
+  - id: ev_294cfac02099
+    kind: capture
+    authority: official_capture
+    origin: capture
+    source: docs/habbo-specs/evidence/captures
+    symbol: GetPetInventory
   - id: ev_a264b10e15f6
     kind: reference_handler
     authority: reference_emulator

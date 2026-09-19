@@ -10,7 +10,7 @@
 
 spec: feature
 spec_version: 1
-generated_digest: "sha256:2a5ffbe24ed12105b39a9277f4dbaae69f0145ff3c4c64f22f97e8be8c196154"
+generated_digest: "sha256:b59631ccb94f25cfff53897d943dc67e4a9e791ac97d436c9aff62338f2118ba"
 generated:
   id: marketplace.get_settings
   domain: marketplace
@@ -34,7 +34,7 @@ generated:
   checks: []
   state_changes: []
   outgoing:
-    ordering: unknown
+    ordering: strict
     packets:
     - packet: MarketplaceConfiguration
       recipient: actor
@@ -48,14 +48,14 @@ generated:
     origin: vortex
     source: Vortex.PacketHandlers/Marketplace/GetMarketplaceConfigurationMessageHandler.cs
     symbol: GetMarketplaceConfigurationMessageHandler
-    line: 26
+    line: 28
   - id: ev_69c38a5cc246
     kind: emulator_flow
     authority: vortex_emulator
     origin: vortex
     source: Vortex.Marketplace/Providers/MarketplaceSettingsProvider.cs
     symbol: MarketplaceSettingsProvider
-    line: 34
+    line: 36
   - id: ev_e52982af96c0
     kind: emulator_handler
     authority: vortex_emulator

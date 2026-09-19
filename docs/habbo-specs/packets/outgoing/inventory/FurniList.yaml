@@ -237,5 +237,73 @@ generated:
   - cf_0678b43ee5
   unknowns:
   - uk_9aec983546
-verified: {}
-manual: {}
+verified:
+  fields:
+  - index: 2
+    name: length
+    confidence: client_confirmed
+    evidence: _SafeCls_2513.as (WIN63-202607011411-782849652, src/unknowns/_SafePkg_2514) - parse() reads it as the loop bound before building one _SafeCls_3243 per item
+  - index: 3
+    name: item_id
+    confidence: client_confirmed
+    evidence: "_SafeCls_3243.as - get itemId(). Negative for a floor item in the official capture inventory-open-official-001; FurnitureItem.as:56 keeps it as .id and FurniModel.as:1368 passes it to initializeRoomObjectInsert as the placed object's id."
+  - index: 4
+    name: item_type
+    confidence: client_confirmed
+    evidence: "_SafeCls_3243.as - get itemType(), compared against the class constants \"S\" and \"I\"; isWallItem is itemType == \"I\"."
+  - index: 5
+    name: room_item_id
+    confidence: client_confirmed
+    evidence: "_SafeCls_3243.as - get roomItemId(). Positive for a floor item in the official capture; FurnitureItem.as:59 keeps it as .ref, which is what MarketplaceModel.makeOffer(), the recycler and wired trading send back to the server."
+  - index: 6
+    name: item_type_id
+    confidence: client_confirmed
+    evidence: "_SafeCls_3243.as - get itemTypeId(); FurnitureItem.as exposes it as .type, the furniture definition's sprite id."
+  - index: 7
+    name: category
+    confidence: client_confirmed
+    evidence: "_SafeCls_3243.as - get category(). FurniModel.as:1367 branches on category == 6 to place an item by its legacy string instead of its stuff data."
+  - index: 8
+    name: is_recyclable
+    confidence: client_confirmed
+    evidence: _SafeCls_3243.as - first of the four booleans, exposed as get isRecyclable()
+  - index: 9
+    name: is_tradeable
+    confidence: client_confirmed
+    evidence: _SafeCls_3243.as - get isTradeable()
+  - index: 10
+    name: is_groupable
+    confidence: client_confirmed
+    evidence: "_SafeCls_3243.as - get isGroupable(). FurnitureItem.as:60 stores it as isGroupable && !isRented, so an item the server marks rented cannot stack in the strip."
+  - index: 11
+    name: is_sellable
+    confidence: client_confirmed
+    evidence: _SafeCls_3243.as - get isSellable(), the marketplace's own gate on the item
+  - index: 12
+    name: seconds_to_expiration
+    confidence: client_confirmed
+    evidence: "_SafeCls_3243.as - get secondsToExpiration(). The constructor sets isRented = secondsToExpiration > -1 and forces the field back to -1 when it is not, so -1 is the only value that means \"not rented\" and 0 marks the item rented."
+  - index: 13
+    name: has_rent_period_started
+    confidence: client_confirmed
+    evidence: _SafeCls_3243.as - get hasRentPeriodStarted()
+  - index: 14
+    name: flat_id
+    confidence: client_confirmed
+    evidence: _SafeCls_3243.as - _flatId, exposed as get flatId(); -1 for an item that sits in no room, which is what the official capture carries for both items.
+  - index: 15
+    name: slot_id
+    confidence: client_confirmed
+    evidence: "_SafeCls_3243.as - get slotId(), read only when itemType == \"S\""
+  - index: 16
+    name: extra
+    confidence: client_confirmed
+    evidence: "_SafeCls_3243.as - get extra(), read only when itemType == \"S\", right after slotId"
+manual:
+  scanner_blind_spot:
+    note: "The layout above is missing one field the client really reads. Between category (7) and is_recyclable (8) the constructor calls _SafeCls_4400.parseStuffData(), which consumes an int type tag and then whatever that tag's class reads -- a legacy string for tag 0. The scanner does not follow into it, so it is absent from every field count here and from the field_count conflict. The official capture records it as stuff_data_type 0 followed by an empty legacy string."
+  official_values:
+    source: capture inventory-open-official-001, habbo.fr, 2026-09-19, on opening the furni tab
+    note: "totalFragments 1 / fragmentNo 0, then two floor items. Each one: itemId -424403720 / roomItemId +424403720 and itemId -425256255 / roomItemId +425256255 -- the same number twice with opposite signs, itemId negative and roomItemId positive on the floor. Vortex serializes the mirror of that. The client only enforces the relation (FurniModel.as:1482 tests -objectId == ref on the floor and objectId == ref on the wall), so both pass; what differs is which server handler receives a negative id. Both items also carry secondsToExpiration -1 and flatId -1, not 0."
+  unknowns_settled:
+    uk_9aec983546: "Fields 2 to 16 are named above from the item class's own getters (_SafeCls_3243), with the official capture supplying the values. The repeated block is read by a data class the scanner does not enter, which is why the generated names were all placeholders."

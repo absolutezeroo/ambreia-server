@@ -1,0 +1,238 @@
+{
+  "id": "inventory-open-official-001",
+  "source": "official",
+  "revision": "WIN63-202609091217-117204808",
+  "recordedUtc": "2026-09-19T01:33:36Z",
+  "note": "Opening the inventory on habbo.fr and walking its four tabs: furni, pets, badges, bots. The build is WIN63-202609091217-117204808, NOT the workspace target WIN63-202607011411-782849652, so the header ids below belong to that newer build and must not be read as ours -- each message carries its name, which is what resolves it. Four things this settles. (1) Every fragmented list here is numbered from zero: FurniList, PetInventory and Badges all arrive as totalFragments 1 / fragmentNo 0. (2) FurniList sends each item's id twice with opposite signs -- itemId negative and roomItemId positive for a floor item ('S') -- which is the mirror of what Vortex serializes; the client only enforces the relation (FurniModel.as:1482 tests -objectId == ref on the floor and objectId == ref on the wall), so both satisfy it, but which of the two a client flow sends to the server differs: .id goes to placement and AddItemsToTrade, .ref goes to MakeOffer, the recycler and wired trading. (3) A non-rented item carries secondsToExpiration -1 and flatId -1, not zero -- the client sets isRented from secondsToExpiration > -1 and then suppresses grouping for a rented item, so a zero there would mark the whole inventory rented. (4) The badge tab gets HabboUserBadges unprompted alongside Badges; the client asks for nothing between GetBadges and the two replies. Every badge in both messages reports ownerCount 1000 and badgeRarityId 0, confirming the four-field badge layout. The account has 2 floor items, no pets and no bots, so the pet and bot bodies are only established as empty here.",
+  "messages": [
+    {
+      "index": 0,
+      "direction": "client_to_server",
+      "name": "RequestFurniInventory",
+      "header": 281
+    },
+    {
+      "index": 1,
+      "direction": "client_to_server",
+      "name": "GetMarketplaceConfiguration",
+      "header": 2796
+    },
+    {
+      "index": 2,
+      "direction": "client_to_server",
+      "name": "EventLog",
+      "header": 742,
+      "fields": {
+        "category": "Toolbar",
+        "action": "INVENTORY",
+        "event": "client.toolbar.clicked",
+        "value": "0",
+        "extra": ""
+      }
+    },
+    {
+      "index": 3,
+      "direction": "server_to_client",
+      "name": "MarketplaceConfiguration",
+      "header": 3840,
+      "fields": {
+        "is_enabled": "true",
+        "commission": "1",
+        "token_batch_price": "0",
+        "token_batch_size": "0",
+        "offer_min_price": "2",
+        "offer_max_price": "99999",
+        "expiration_hours": "168",
+        "average_price_period": "7",
+        "selling_fee_percentage": "2",
+        "revenue_limit": "100000",
+        "half_tax_limit": "400000"
+      }
+    },
+    {
+      "index": 4,
+      "direction": "server_to_client",
+      "name": "FurniList",
+      "header": 1049,
+      "fields": {
+        "total_fragments": "1",
+        "fragment_no": "0",
+        "count": "2",
+        "item_0_item_id": "-424403720",
+        "item_0_item_type": "S",
+        "item_0_room_item_id": "424403720",
+        "item_0_item_type_id": "11124",
+        "item_0_category": "1",
+        "item_0_stuff_data_type": "0",
+        "item_0_stuff_data_legacy_string": "",
+        "item_0_is_recyclable": "false",
+        "item_0_is_tradeable": "false",
+        "item_0_is_groupable": "true",
+        "item_0_is_sellable": "false",
+        "item_0_seconds_to_expiration": "-1",
+        "item_0_has_rent_period_started": "false",
+        "item_0_flat_id": "-1",
+        "item_0_slot_id": "",
+        "item_0_extra": "0",
+        "item_1_item_id": "-425256255",
+        "item_1_item_type": "S",
+        "item_1_room_item_id": "425256255",
+        "item_1_item_type_id": "18424",
+        "item_1_category": "1",
+        "item_1_stuff_data_type": "0",
+        "item_1_stuff_data_legacy_string": "",
+        "item_1_is_recyclable": "false",
+        "item_1_is_tradeable": "false",
+        "item_1_is_groupable": "true",
+        "item_1_is_sellable": "false",
+        "item_1_seconds_to_expiration": "-1",
+        "item_1_has_rent_period_started": "false",
+        "item_1_flat_id": "-1",
+        "item_1_slot_id": "",
+        "item_1_extra": "0"
+      }
+    },
+    {
+      "index": 5,
+      "direction": "client_to_server",
+      "name": "GetPetInventory",
+      "header": 3281
+    },
+    {
+      "index": 6,
+      "direction": "server_to_client",
+      "name": "PetInventory",
+      "header": 1711,
+      "fields": {
+        "total_fragments": "1",
+        "fragment_no": "0",
+        "count": "0"
+      }
+    },
+    {
+      "index": 7,
+      "direction": "client_to_server",
+      "name": "GetBadges",
+      "header": 708
+    },
+    {
+      "index": 8,
+      "direction": "client_to_server",
+      "name": "LatencyPingRequest",
+      "header": 2015,
+      "fields": {
+        "timestamp": "4"
+      }
+    },
+    {
+      "index": 9,
+      "direction": "server_to_client",
+      "name": "Badges",
+      "header": 1319,
+      "fields": {
+        "total_fragments": "1",
+        "fragment_no": "0",
+        "count": "13",
+        "badge_0_id": "226",
+        "badge_0_code": "ACH_AllTimeHotelPresence5",
+        "badge_0_owner_count": "1000",
+        "badge_0_rarity_id": "0",
+        "badge_1_id": "137",
+        "badge_1_code": "ACH_EmailVerification1",
+        "badge_1_owner_count": "1000",
+        "badge_1_rarity_id": "0",
+        "badge_2_id": "14745",
+        "badge_2_code": "ACH_HabbiconCollected2",
+        "badge_2_owner_count": "1000",
+        "badge_2_rarity_id": "0",
+        "badge_3_id": "14729",
+        "badge_3_code": "ACH_HabbiconUsed1",
+        "badge_3_owner_count": "1000",
+        "badge_3_rarity_id": "0",
+        "badge_4_id": "10294",
+        "badge_4_code": "ACH_HabboExplorer1",
+        "badge_4_owner_count": "1000",
+        "badge_4_rarity_id": "0",
+        "badge_5_id": "154",
+        "badge_5_code": "ACH_HappyHour1",
+        "badge_5_owner_count": "1000",
+        "badge_5_rarity_id": "0",
+        "badge_6_id": "13925",
+        "badge_6_code": "ACH_LegDay2",
+        "badge_6_owner_count": "1000",
+        "badge_6_rarity_id": "0",
+        "badge_7_id": "138",
+        "badge_7_code": "ACH_Login1",
+        "badge_7_owner_count": "1000",
+        "badge_7_rarity_id": "0",
+        "badge_8_id": "456",
+        "badge_8_code": "ACH_Name1",
+        "badge_8_owner_count": "1000",
+        "badge_8_rarity_id": "0",
+        "badge_9_id": "9972",
+        "badge_9_code": "ACH_Profile_Gimmegimme_2",
+        "badge_9_owner_count": "1000",
+        "badge_9_rarity_id": "0",
+        "badge_10_id": "159",
+        "badge_10_code": "ACH_RegistrationDuration5",
+        "badge_10_owner_count": "1000",
+        "badge_10_rarity_id": "0",
+        "badge_11_id": "4431",
+        "badge_11_code": "ACH_RoomDecoBC4",
+        "badge_11_owner_count": "1000",
+        "badge_11_rarity_id": "0",
+        "badge_12_id": "4781",
+        "badge_12_code": "ACH_SelfModDoorModeSeen1",
+        "badge_12_owner_count": "1000",
+        "badge_12_rarity_id": "0"
+      }
+    },
+    {
+      "index": 10,
+      "direction": "server_to_client",
+      "name": "HabboUserBadges",
+      "header": 335,
+      "fields": {
+        "user_id": "26020248",
+        "count": "1",
+        "badge_0_slot": "1",
+        "badge_0_code": "ACH_HabbiconCollected2",
+        "badge_0_owner_count": "1000",
+        "badge_0_rarity_id": "0"
+      }
+    },
+    {
+      "index": 11,
+      "direction": "server_to_client",
+      "name": "LatencyPingResponse",
+      "header": 970,
+      "fields": {
+        "timestamp": "4"
+      }
+    },
+    {
+      "index": 12,
+      "direction": "client_to_server",
+      "name": "ResetUnseenItems",
+      "header": 2723,
+      "fields": {
+        "category": "4"
+      }
+    },
+    {
+      "index": 13,
+      "direction": "client_to_server",
+      "name": "GetBotInventory",
+      "header": 3441
+    },
+    {
+      "index": 14,
+      "direction": "server_to_client",
+      "name": "BotInventory",
+      "header": 810,
+      "fields": {
+        "count": "0"
+      }
+    }
+  ]
+}

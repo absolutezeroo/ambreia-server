@@ -192,5 +192,19 @@ generated:
     line: 8
   unknowns:
   - uk_877bf4e4c9
-verified: {}
-manual: {}
+verified:
+  fields:
+  - index: 0
+    name: total_fragments
+    confidence: client_confirmed
+    evidence: _SafeCls_2926.as (WIN63-202607011411-782849652, src/unknowns/_SafePkg_2554) - first int of parse(), exposed as get totalFragments()
+  - index: 1
+    name: fragment_no
+    confidence: client_confirmed
+    evidence: _SafeCls_2926.as - second int of parse(), exposed as get fragmentNo(); zero-based, and the official capture confirms 1 / 0 for a single fragment
+manual:
+  official_values:
+    source: capture inventory-open-official-001, habbo.fr, 2026-09-19, on opening the pet tab
+    note: 1, 0, 0 -- the account has no pets, so this establishes the three-int header and nothing about the pet block that follows it. The two constants Vortex writes are the right ones.
+  unknowns_settled:
+    uk_877bf4e4c9: "Fields 0 and 1 are the fragment header, named from the parser's own accessors and confirmed by the official capture."

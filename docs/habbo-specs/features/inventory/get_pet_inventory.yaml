@@ -10,7 +10,7 @@
 
 spec: feature
 spec_version: 1
-generated_digest: "sha256:832ceb44a3208e3e6ba72e65e21d8eb80737ec4da2ef7b23c2f2ceee29c123c0"
+generated_digest: "sha256:e05d0f3f76072dbe73841d90226224d3f703007291490d5e5f285ab0565d776c"
 generated:
   id: inventory.get_pet_inventory
   domain: inventory
@@ -22,7 +22,7 @@ generated:
     references:
     - habbo-arcturus-daybreak
   official_behavior:
-    status: unknown
+    status: capture_confirmed
   flow:
   - order: 0
     layer: handler

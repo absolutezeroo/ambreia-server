@@ -10,7 +10,7 @@
 
 spec: packet
 spec_version: 1
-generated_digest: "sha256:eaf947a1d04ecf03653b7585073f46f2e624d48e0dcee3051e8deb1914193987"
+generated_digest: "sha256:b816eea56670e9d8504e970c767e43caf177b127d2aec445a88d55dcf3b26937"
 generated:
   name: MakeOffer
   direction: incoming
@@ -27,13 +27,13 @@ generated:
     evidence:
     - ev_1ad66ef63462
   - index: 1
-    name: furni_type
+    name: unknown_1
     type: int32
-    name_confidence: implementation_observed
+    name_is_placeholder: true
+    name_confidence: unknown
     type_confidence: reference_observed
     evidence:
     - ev_1ad66ef63462
-    - ev_9920236e40e9
   - index: 2
     name: item_id
     type: int32
@@ -65,12 +65,13 @@ generated:
     evidence: ev_1ad66ef63462
   - origin: vortex
     authority: vortex_emulator
-    field_count: 3
+    field_count: 4
     partial: false
     types:
     - int32
     - int32
     - int32
+    - array
     evidence: ev_9920236e40e9
   evidence:
   - id: ev_65010cbc0f61
@@ -103,8 +104,32 @@ generated:
     origin: vortex
     source: Vortex.Revisions/Revision20260701/Parsers/Marketplace/MakeOfferMessageParser.cs
     symbol: MakeOfferMessageParser
-    line: 7
+    line: 16
   conflicts:
+  - cf_491a5091d7
   - cf_38b88d4432
-verified: {}
-manual: {}
+  unknowns:
+  - uk_f1ce403ccb
+verified:
+  fields:
+  - index: 0
+    name: price
+    confidence: client_confirmed
+    evidence: _SafeCls_2606.as (WIN63-202607011411-782849652, src/unknowns/_SafePkg_1746) - first value pushed by the composer; MarketplaceModel.makeOffer(price, count) is the only caller and passes the asking price, not a credit balance.
+  - index: 1
+    name: furni_type
+    confidence: client_confirmed
+    evidence: "MarketplaceModel.as:282 - the composer's second argument is `_offerItems[0].isWallItem ? 2 : 1`, matching the class constants 1 and 2 declared on _SafeCls_2606 itself."
+  - index: 2
+    name: length
+    confidence: client_confirmed
+    evidence: _SafeCls_2606.as - the composer pushes refs.length and then every ref, or a bare 0 when the vector is null. This is a count, not an item id.
+  - index: 3
+    name: item_ids
+    confidence: client_confirmed
+    evidence: _SafeCls_2606.as - one int per selected item, taken from FurnitureItem.ref (MarketplaceModel.makeOffer). A whole selection is listed at one price in a single message.
+manual:
+  generated_names_are_wrong:
+    note: "The generated field list above is the reference emulator's, and it is wrong on all three counts it names: Arcturus reads three bare ints as credits / unknown / itemId, which is the same mistake Vortex made until 2026-09-19 -- it takes the array length for the item id. The names under `verified:` come from the client's own composer and supersede it."
+  unknowns_settled:
+    uk_f1ce403ccb: "Field 1 is furni_type, 1 for a floor item and 2 for a wall item, named from the composer's call site and its own class constants."

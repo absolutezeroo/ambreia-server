@@ -10,7 +10,7 @@
 
 spec: scenarios
 spec_version: 1
-generated_digest: "sha256:b65bb91c9e5d17089207c3716b0cada39636a74d26a4e2167c59b707231c0c07"
+generated_digest: "sha256:9ce956533c04813c83b178e54d8653f2e1d6124f95c8dc1ab0425e61f9c16852"
 generated:
   feature: tracking.latency_ping_request
   scenarios:
@@ -21,10 +21,9 @@ generated:
     when:
       packet: LatencyPingRequest
     expected:
-      status: unknown
-      confidence: unknown
-    needs_evidence: an official capture of LatencyPingRequest succeeding, with every packet the server sends back and in what order
-    executable: false
+      status: success
+      confidence: capture_confirmed
+    executable: true
     claims:
     - origin: vortex
       authority: vortex_emulator
@@ -37,7 +36,21 @@ generated:
       emits:
       - LatencyPingResponse
       evidence: ev_c430de160900
+    - origin: capture (2 observations)
+      authority: official_capture
+      outcome: success
+      emits:
+      - Badges
+      - HabboUserBadges
+      - LatencyPingResponse
+      evidence: ev_f0026518c5e0
   evidence:
+  - id: ev_f0026518c5e0
+    kind: capture
+    authority: official_capture
+    origin: capture
+    source: docs/habbo-specs/evidence/captures
+    symbol: LatencyPingRequest
   - id: ev_c430de160900
     kind: reference_handler
     authority: reference_emulator

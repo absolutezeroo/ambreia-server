@@ -10,7 +10,7 @@
 
 spec: feature
 spec_version: 1
-generated_digest: "sha256:17053057807ccafdd1ffbf45bcc976787149061fc1c44d44fba7de4e6a8196d4"
+generated_digest: "sha256:034b72e6c9078777a4faafe3517480c8a3c6d6b72157a281f6c8b7a29f998dd7"
 generated:
   id: marketplace.make_offer
   domain: marketplace
@@ -79,6 +79,10 @@ generated:
     evidence: ev_0d41314ab8c9
   - expression: await Catalog .SafetyLockGuard.IsLockedAsync(_grainFactory, ctx, ct) .ConfigureAwait(false)
     on_fail: send_and_return
+    observed_in: vortex
+    evidence: ev_0d41314ab8c9
+  - expression: message.FurnitureItemIds.IsDefaultOrEmpty
+    on_fail: return
     observed_in: vortex
     evidence: ev_0d41314ab8c9
   - expression: price <= 0
@@ -153,7 +157,7 @@ generated:
     origin: vortex
     source: Vortex.PacketHandlers/Marketplace/MakeOfferMessageHandler.cs
     symbol: MakeOfferMessageHandler
-    line: 21
+    line: 23
   - id: ev_34bf3ac088e2
     kind: emulator_flow
     authority: vortex_emulator
@@ -181,7 +185,7 @@ generated:
     origin: vortex
     source: Vortex.PacketHandlers/Marketplace/MakeOfferMessageHandler.cs
     symbol: MakeOfferMessageHandler
-    line: 11
+    line: 13
   - id: ev_48fa24e8d4a2
     kind: emulator_flow
     authority: vortex_emulator
@@ -202,21 +206,21 @@ generated:
     origin: vortex
     source: Vortex.Marketplace/Providers/MarketplaceSettingsProvider.cs
     symbol: MarketplaceSettingsProvider
-    line: 34
+    line: 36
   - id: ev_c6396662000a
     kind: emulator_flow
     authority: vortex_emulator
     origin: vortex
     source: Vortex.Inventory/Grains/InventoryGrain.Furni.cs
     symbol: InventoryGrain
-    line: 857
+    line: 858
   - id: ev_d720d639bd09
     kind: emulator_flow
     authority: vortex_emulator
     origin: vortex
     source: Vortex.Players/Grains/Modules/PlayerInventoryModule.cs
     symbol: PlayerInventoryModule
-    line: 76
+    line: 118
   - id: ev_db53958cdf3b
     kind: emulator_flow
     authority: vortex_emulator
@@ -228,6 +232,7 @@ generated:
   - marketplace.make_offer.guard_0
   - marketplace.make_offer.guard_1
   - marketplace.make_offer.guard_10
+  - marketplace.make_offer.guard_11
   - marketplace.make_offer.guard_2
   - marketplace.make_offer.guard_3
   - marketplace.make_offer.guard_4
@@ -239,6 +244,7 @@ generated:
   - marketplace.make_offer.success
   conflicts:
   - cf_38b88d4432
+  - cf_491a5091d7
   unknowns:
   - uk_42069960b6
   - uk_fd7d1382ec

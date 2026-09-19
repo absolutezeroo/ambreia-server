@@ -10,7 +10,7 @@
 
 spec: scenarios
 spec_version: 1
-generated_digest: "sha256:3a9367b13ad8b3ef4fb9e7e4735589749895ddf59ce2157ac84862a7b09d6ec2"
+generated_digest: "sha256:5d1750f5721e83e8adea07256aa4a861e27b30c730b1863c6f923c8bed0e57fa"
 generated:
   feature: marketplace.make_offer
   scenarios:
@@ -73,6 +73,34 @@ generated:
       - MarketplaceMakeOfferResult
       evidence: ev_1ad66ef63462
   - scenario: marketplace.make_offer.guard_10
+    title: "make offer: the guard '!_state.FurnitureById.Remove(itemId, out IFurnitureItem? ...' holds"
+    given:
+      guard: "!_state.FurnitureById.Remove(itemId, out IFurnitureItem? item)"
+      guard_holds: "true"
+    when:
+      packet: MakeOffer
+    expected:
+      status: unknown
+      confidence: unknown
+    needs_evidence: "an official capture of MakeOffer sent while '!_state.FurnitureById.Remove(itemId, out IFurnitureItem? item)' holds: does the server reply, stay silent, or disconnect?"
+    executable: false
+    claims:
+    - origin: vortex
+      authority: vortex_emulator
+      outcome: ignored
+      emits: []
+      evidence: ev_48fa24e8d4a2
+    - origin: habbo-arcturus-daybreak
+      authority: reference_emulator
+      outcome: success
+      emits:
+      - MarketplaceMakeOfferResult
+      - PurchaseError
+      - PurchaseError
+      - MarketplaceMakeOfferResult
+      - MarketplaceMakeOfferResult
+      evidence: ev_1ad66ef63462
+  - scenario: marketplace.make_offer.guard_11
     title: "make offer: the guard '_registry is null' holds"
     given:
       guard: _registry is null
@@ -101,6 +129,34 @@ generated:
       - MarketplaceMakeOfferResult
       evidence: ev_1ad66ef63462
   - scenario: marketplace.make_offer.guard_2
+    title: "make offer: the guard 'message.FurnitureItemIds.IsDefaultOrEmpty' holds"
+    given:
+      guard: message.FurnitureItemIds.IsDefaultOrEmpty
+      guard_holds: "true"
+    when:
+      packet: MakeOffer
+    expected:
+      status: unknown
+      confidence: unknown
+    needs_evidence: "an official capture of MakeOffer sent while 'message.FurnitureItemIds.IsDefaultOrEmpty' holds: does the server reply, stay silent, or disconnect?"
+    executable: false
+    claims:
+    - origin: vortex
+      authority: vortex_emulator
+      outcome: ignored
+      emits: []
+      evidence: ev_0d41314ab8c9
+    - origin: habbo-arcturus-daybreak
+      authority: reference_emulator
+      outcome: success
+      emits:
+      - MarketplaceMakeOfferResult
+      - PurchaseError
+      - PurchaseError
+      - MarketplaceMakeOfferResult
+      - MarketplaceMakeOfferResult
+      evidence: ev_1ad66ef63462
+  - scenario: marketplace.make_offer.guard_3
     title: "make offer: the guard 'price <= 0' holds"
     given:
       guard: price <= 0
@@ -128,7 +184,7 @@ generated:
       - MarketplaceMakeOfferResult
       - MarketplaceMakeOfferResult
       evidence: ev_1ad66ef63462
-  - scenario: marketplace.make_offer.guard_3
+  - scenario: marketplace.make_offer.guard_4
     title: "make offer: the guard 'snapshot is null' holds"
     given:
       guard: snapshot is null
@@ -156,7 +212,7 @@ generated:
       - MarketplaceMakeOfferResult
       - MarketplaceMakeOfferResult
       evidence: ev_1ad66ef63462
-  - scenario: marketplace.make_offer.guard_4
+  - scenario: marketplace.make_offer.guard_5
     title: "make offer: the guard 'snapshot.RoomId.Value > 0' holds"
     given:
       guard: snapshot.RoomId.Value > 0
@@ -184,7 +240,7 @@ generated:
       - MarketplaceMakeOfferResult
       - MarketplaceMakeOfferResult
       evidence: ev_1ad66ef63462
-  - scenario: marketplace.make_offer.guard_5
+  - scenario: marketplace.make_offer.guard_6
     title: "make offer: the guard '!snapshot.Definition.CanSell' holds"
     given:
       guard: "!snapshot.Definition.CanSell"
@@ -212,7 +268,7 @@ generated:
       - MarketplaceMakeOfferResult
       - MarketplaceMakeOfferResult
       evidence: ev_1ad66ef63462
-  - scenario: marketplace.make_offer.guard_6
+  - scenario: marketplace.make_offer.guard_7
     title: "make offer: the guard '!removed' holds"
     given:
       guard: "!removed"
@@ -240,7 +296,7 @@ generated:
       - MarketplaceMakeOfferResult
       - MarketplaceMakeOfferResult
       evidence: ev_1ad66ef63462
-  - scenario: marketplace.make_offer.guard_7
+  - scenario: marketplace.make_offer.guard_8
     title: "make offer: the guard 'claimed == 0' holds"
     given:
       guard: claimed == 0
@@ -268,7 +324,7 @@ generated:
       - MarketplaceMakeOfferResult
       - MarketplaceMakeOfferResult
       evidence: ev_1ad66ef63462
-  - scenario: marketplace.make_offer.guard_8
+  - scenario: marketplace.make_offer.guard_9
     title: "make offer: the guard '!await _furniModule.RemoveFurnitureAsync(itemId, ct)' holds"
     given:
       guard: "!await _furniModule.RemoveFurnitureAsync(itemId, ct)"
@@ -286,34 +342,6 @@ generated:
       outcome: ignored
       emits: []
       evidence: ev_c6396662000a
-    - origin: habbo-arcturus-daybreak
-      authority: reference_emulator
-      outcome: success
-      emits:
-      - MarketplaceMakeOfferResult
-      - PurchaseError
-      - PurchaseError
-      - MarketplaceMakeOfferResult
-      - MarketplaceMakeOfferResult
-      evidence: ev_1ad66ef63462
-  - scenario: marketplace.make_offer.guard_9
-    title: "make offer: the guard '!_state.FurnitureById.Remove(itemId, out IFurnitureItem? ...' holds"
-    given:
-      guard: "!_state.FurnitureById.Remove(itemId, out IFurnitureItem? item)"
-      guard_holds: "true"
-    when:
-      packet: MakeOffer
-    expected:
-      status: unknown
-      confidence: unknown
-    needs_evidence: "an official capture of MakeOffer sent while '!_state.FurnitureById.Remove(itemId, out IFurnitureItem? item)' holds: does the server reply, stay silent, or disconnect?"
-    executable: false
-    claims:
-    - origin: vortex
-      authority: vortex_emulator
-      outcome: ignored
-      emits: []
-      evidence: ev_48fa24e8d4a2
     - origin: habbo-arcturus-daybreak
       authority: reference_emulator
       outcome: success
@@ -368,7 +396,7 @@ generated:
     origin: vortex
     source: Vortex.PacketHandlers/Marketplace/MakeOfferMessageHandler.cs
     symbol: MakeOfferMessageHandler
-    line: 21
+    line: 23
   - id: ev_34bf3ac088e2
     kind: emulator_flow
     authority: vortex_emulator
@@ -389,7 +417,7 @@ generated:
     origin: vortex
     source: Vortex.Inventory/Grains/InventoryGrain.Furni.cs
     symbol: InventoryGrain
-    line: 118
+    line: 119
   - id: ev_db53958cdf3b
     kind: emulator_flow
     authority: vortex_emulator

@@ -10,12 +10,12 @@
 
 spec: unknown
 spec_version: 1
-generated_digest: "sha256:202e796b28f2bab5a0cfca4f6b0829e9939f428edd762f30ccf1ef5379f24224"
+generated_digest: "sha256:e1665f1edec35ad7ed264428afdfe940993d36e9af709187fa3ddb9933c966c1"
 generated:
   id: uk_7cbcaeeb8d
   subject: "inventory.get_pet_inventory: what the server sends when it refuses"
   severity: medium
-  question: inventory.get_pet_inventory changes state and has 2 guards whose refusal behaviour nothing here attests. Does the official server answer a refused request, and with what?
+  question: inventory.get_pet_inventory changes state and has 1 guards whose refusal behaviour nothing here attests. Does the official server answer a refused request, and with what?
   resolved_by: an official capture of each guard being tripped
   feature: inventory.get_pet_inventory
   known_evidence:

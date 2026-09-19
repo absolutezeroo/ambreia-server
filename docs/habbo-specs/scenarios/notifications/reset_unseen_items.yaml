@@ -10,7 +10,7 @@
 
 spec: scenarios
 spec_version: 1
-generated_digest: "sha256:a40a115f83d09e2a31236081a0d15905da12df24eb56b6583d0716a495b489d1"
+generated_digest: "sha256:f9a1aa92d54c5ca59fb0f8844a302864cb75dd83fe52335a0c3dae418b880f55"
 generated:
   feature: notifications.reset_unseen_items
   scenarios:
@@ -21,23 +21,33 @@ generated:
     when:
       packet: ResetUnseenItems
     expected:
-      status: unknown
-      confidence: unknown
-    needs_evidence: an official capture of ResetUnseenItems succeeding, with every packet the server sends back and in what order
-    executable: false
+      status: success
+      confidence: capture_confirmed
+    executable: true
     claims:
     - origin: vortex
       authority: vortex_emulator
       outcome: ignored
       emits: []
       evidence: ev_760275575a72
+    - origin: capture (1 observations)
+      authority: official_capture
+      outcome: success
+      emits: []
+      evidence: ev_d6460f33e85c
   evidence:
+  - id: ev_d6460f33e85c
+    kind: capture
+    authority: official_capture
+    origin: capture
+    source: docs/habbo-specs/evidence/captures
+    symbol: ResetUnseenItems
   - id: ev_760275575a72
     kind: emulator_handler
     authority: vortex_emulator
     origin: vortex
     source: Vortex.PacketHandlers/Notifications/ResetUnseenItemsMessageHandler.cs
     symbol: ResetUnseenItemsMessageHandler
-    line: 8
+    line: 17
 verified: {}
 manual: {}

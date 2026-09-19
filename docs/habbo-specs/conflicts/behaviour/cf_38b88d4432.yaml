@@ -10,7 +10,7 @@
 
 spec: conflict
 spec_version: 1
-generated_digest: "sha256:0cf18637faaf301b68a5b0e611b46831da38911134cfb032602940359cc972e7"
+generated_digest: "sha256:dc26b0cf4496594972744b3951684a7cc48f10afb244de5898ad7be5ca3bdf2e"
 generated:
   id: cf_38b88d4432
   kind: behaviour
@@ -40,8 +40,10 @@ generated:
     origin: vortex
     source: Vortex.PacketHandlers/Marketplace/MakeOfferMessageHandler.cs
     symbol: MakeOfferMessageHandler
-    line: 11
+    line: 13
   official:
     status: unknown
 verified: {}
-manual: {}
+manual:
+  still_unknown:
+    note: "Official behaviour is not captured. What is known: one MakeOffer can carry several items, and the client's own result handler reads a single result code, so whatever the server answers it answers once for the batch. Vortex sends MarketplaceMakeOfferResult plus a FurniListRemove per item that left the inventory; the reference emulator's extra PurchaseError branches are its own policy and are evidence, not authority. A capture of a real listing, and of a listing that fails, is what would settle this."

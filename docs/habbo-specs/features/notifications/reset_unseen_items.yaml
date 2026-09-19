@@ -10,7 +10,7 @@
 
 spec: feature
 spec_version: 1
-generated_digest: "sha256:eb319a83c53d66374724cc67d15d7b8c256a270933e224fe4a85a4a3886fb55e"
+generated_digest: "sha256:b877235977fdfa1e01162b857ca12da53279f84701a0588f60c4c050f0c25257"
 generated:
   id: notifications.reset_unseen_items
   domain: notifications
@@ -21,7 +21,7 @@ generated:
     vortex: false
     references: []
   official_behavior:
-    status: unknown
+    status: capture_confirmed
   flow:
   - order: 0
     layer: handler
@@ -40,7 +40,7 @@ generated:
     origin: vortex
     source: Vortex.PacketHandlers/Notifications/ResetUnseenItemsMessageHandler.cs
     symbol: ResetUnseenItemsMessageHandler
-    line: 8
+    line: 17
   scenarios:
   - notifications.reset_unseen_items.success
   unknowns:

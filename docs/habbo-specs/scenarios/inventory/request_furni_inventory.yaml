@@ -10,7 +10,7 @@
 
 spec: scenarios
 spec_version: 1
-generated_digest: "sha256:271c8699c3d69b70e33d5847c1b61875b38c4c9c6402700fcd650e55d2d3c8c0"
+generated_digest: "sha256:a20cb2ac4b33db83841d107eef752e984e737accf72a845fe9b64741e5f0ce5c"
 generated:
   feature: inventory.request_furni_inventory
   scenarios:
@@ -47,10 +47,9 @@ generated:
     when:
       packet: RequestFurniInventory
     expected:
-      status: unknown
-      confidence: unknown
-    needs_evidence: an official capture of RequestFurniInventory succeeding, with every packet the server sends back and in what order
-    executable: false
+      status: success
+      confidence: capture_confirmed
+    executable: true
     claims:
     - origin: vortex
       authority: vortex_emulator
@@ -66,7 +65,18 @@ generated:
       - FurniList
       - FurniList
       evidence: ev_81d201b35257
+    - origin: capture (1 observations)
+      authority: official_capture
+      outcome: success
+      emits: []
+      evidence: ev_47c9653b30ff
   evidence:
+  - id: ev_47c9653b30ff
+    kind: capture
+    authority: official_capture
+    origin: capture
+    source: docs/habbo-specs/evidence/captures
+    symbol: RequestFurniInventory
   - id: ev_81d201b35257
     kind: reference_handler
     authority: reference_emulator

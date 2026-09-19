@@ -10,7 +10,7 @@
 
 spec: feature
 spec_version: 1
-generated_digest: "sha256:6068478824e88f145a22b5f68e2500416ac2664c8172c9bf7c2c2e0d3c8ba7a1"
+generated_digest: "sha256:f568591cdbc30dc3c959bbbcfa5845c31b35e5fd263ef48e66b28d3d9a66f8a5"
 generated:
   id: inventory.request_furni_inventory
   domain: inventory
@@ -22,7 +22,7 @@ generated:
     references:
     - habbo-arcturus-daybreak
   official_behavior:
-    status: unknown
+    status: capture_confirmed
   flow:
   - order: 0
     layer: handler
@@ -94,7 +94,7 @@ generated:
     origin: vortex
     source: Vortex.Inventory/Grains/InventoryGrain.Furni.cs
     symbol: InventoryGrain
-    line: 865
+    line: 866
   - id: ev_c67e24bb8d9c
     kind: emulator_handler
     authority: vortex_emulator
@@ -108,7 +108,7 @@ generated:
     origin: vortex
     source: Vortex.Players/Grains/Modules/PlayerInventoryModule.cs
     symbol: PlayerInventoryModule
-    line: 22
+    line: 24
   - id: ev_e3cca687e112
     kind: emulator_flow
     authority: vortex_emulator
@@ -126,8 +126,6 @@ generated:
   scenarios:
   - inventory.request_furni_inventory.guard_0
   - inventory.request_furni_inventory.success
-  conflicts:
-  - cf_46960f7b8a
   unknowns:
   - uk_14f922b785
 verified: {}

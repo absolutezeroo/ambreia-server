@@ -138,5 +138,29 @@ generated:
     line: 7
   conflicts:
   - cf_d2a90b4b9d
-verified: {}
-manual: {}
+verified:
+  fields:
+  - index: 3
+    name: badge_id
+    confidence: client_confirmed
+    evidence: "_SafeCls_3564.as (WIN63-202607011411-782849652, src/unknowns/_SafePkg_3206) - parse() reads it first in the loop and hands it to _SafeCls_3762 as badgeId, NOT as a slot. BadgesModel.as:198-202 is the only consumer: it keeps the code -> id map when badgeId > 0 and calls unseenItemTracker.isUnseen(4, badgeId), which is what marks a badge new."
+  - index: 4
+    name: badge_code
+    confidence: client_confirmed
+    evidence: "_SafeCls_3564.as - the string read after the id; it is also the key the fragment collection is stored under, and BadgesModel resolves the badge's name and description from it."
+  - index: 5
+    name: owner_count
+    confidence: client_confirmed
+    evidence: _SafeCls_3762.as - get ownerCount(), third constructor argument
+  - index: 6
+    name: badge_rarity_id
+    confidence: client_confirmed
+    evidence: _SafeCls_3762.as - get badgeRarityId(), fourth constructor argument
+manual:
+  official_values:
+    source: capture inventory-open-official-001, habbo.fr, 2026-09-19, on opening the badge tab
+    note: "totalFragments 1 / fragmentNo 0 -- the fragment number is zero-based even for a single fragment -- then 13 badges. Their first field holds real badge ids (226, 137, 14745, 10294, ...), which is what settles it as badgeId rather than a slot: thirteen distinct large values in a message that is not about equipping. Every badge reports ownerCount 1000 and badgeRarityId 0, so neither is per-badge data on this hotel."
+  vortex_divergence:
+    note: "BadgesEventMessageComposerSerializer writes badge.SlotId into field 3. The client reads it as badgeId, so every unequipped badge arrives as 0: the code -> id map stays empty (the guard is badgeId > 0) and every badge shares the unseen key 0, which is the key ResetUnseenItems(4) clears. Fixing it needs a badge id on PlayerBadgeSnapshot, which does not carry one today."
+  unknowns_settled:
+    cf_d2a90b4b9d: "Not settled here, but narrowed: the four-field badge layout matches the client and the capture. The remaining count difference is the reference emulator's, which stops at two fields per badge and then appends an equipped list the WIN63 parser never reads."

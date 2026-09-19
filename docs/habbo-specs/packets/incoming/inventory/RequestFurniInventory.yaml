@@ -10,7 +10,7 @@
 
 spec: packet
 spec_version: 1
-generated_digest: "sha256:aef00496d1f0a07fa96c935a8b839ce506318116aee31c393ef2b5c262b1f474"
+generated_digest: "sha256:8ca76526577ba16051fe8b3223f2ca76344a93499f46b59ecc88ef9f0644ab2a"
 generated:
   name: RequestFurniInventory
   direction: incoming
@@ -76,7 +76,5 @@ generated:
     source: Vortex.Revisions/Revision20260701/Parsers/Inventory/Furni/RequestFurniInventoryMessageParser.cs
     symbol: RequestFurniInventoryMessageParser
     line: 7
-  conflicts:
-  - cf_46960f7b8a
 verified: {}
 manual: {}

@@ -10,7 +10,7 @@
 
 spec: scenarios
 spec_version: 1
-generated_digest: "sha256:5e98430d9d6470733294375afaedb50e4808b1491a2f45b6cefaf30e9d414b0a"
+generated_digest: "sha256:55a385dee4429556aa1591e325af40e94afa9bebdc5cbf5eb431d37af87765ce"
 generated:
   feature: inventory.get_bot_inventory
   scenarios:
@@ -45,10 +45,9 @@ generated:
     when:
       packet: GetBotInventory
     expected:
-      status: unknown
-      confidence: unknown
-    needs_evidence: an official capture of GetBotInventory succeeding, with every packet the server sends back and in what order
-    executable: false
+      status: success
+      confidence: capture_confirmed
+    executable: true
     claims:
     - origin: vortex
       authority: vortex_emulator
@@ -62,7 +61,19 @@ generated:
       emits:
       - BotInventory
       evidence: ev_bbff9e09af23
+    - origin: capture (1 observations)
+      authority: official_capture
+      outcome: success
+      emits:
+      - BotInventory
+      evidence: ev_189e181118a1
   evidence:
+  - id: ev_189e181118a1
+    kind: capture
+    authority: official_capture
+    origin: capture
+    source: docs/habbo-specs/evidence/captures
+    symbol: GetBotInventory
   - id: ev_bbff9e09af23
     kind: reference_handler
     authority: reference_emulator

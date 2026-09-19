@@ -10,7 +10,7 @@
 
 spec: scenarios
 spec_version: 1
-generated_digest: "sha256:dea3b576287a127730ca23662cdf3cf1290e28f1000b3c4dad3d175dcb303c58"
+generated_digest: "sha256:319e4a1e0f53be145639a1d29c5e75d9ed521ebf86396405e9507ce9f5ab9f17"
 generated:
   feature: tracking.event_log
   scenarios:
@@ -21,10 +21,9 @@ generated:
     when:
       packet: EventLog
     expected:
-      status: unknown
-      confidence: unknown
-    needs_evidence: an official capture of EventLog succeeding, with every packet the server sends back and in what order
-    executable: false
+      status: success
+      confidence: capture_confirmed
+    executable: true
     claims:
     - origin: vortex
       authority: vortex_emulator
@@ -36,7 +35,18 @@ generated:
       outcome: ignored
       emits: []
       evidence: ev_ac1f4508f6c7
+    - origin: capture (4 observations)
+      authority: official_capture
+      outcome: success
+      emits: []
+      evidence: ev_093bbee20638
   evidence:
+  - id: ev_093bbee20638
+    kind: capture
+    authority: official_capture
+    origin: capture
+    source: docs/habbo-specs/evidence/captures
+    symbol: EventLog
   - id: ev_ac1f4508f6c7
     kind: reference_handler
     authority: reference_emulator

@@ -132,5 +132,15 @@ generated:
   - cf_a8b057acc2
   unknowns:
   - uk_31064e1893
-verified: {}
-manual: {}
+verified:
+  fields:
+  - index: 4
+    name: gender
+    confidence: client_confirmed
+    evidence: "_SafeCls_3143.as (WIN63-202607011411-782849652, src/unknowns/_SafePkg_3095) - the constructor reads id, name, motto, gender, figure in that order. Its getters list figure before gender, which is the trap: reading them in getter order swaps a bot's look and its sex on every row."
+manual:
+  official_values:
+    source: capture inventory-open-official-001, habbo.fr, 2026-09-19, on opening the bot tab
+    note: A single int, 0 -- the account owns no bot, so the capture establishes only that the message has no fragment header and starts straight at the count. The bot block itself stays client-evidence only.
+  unknowns_settled:
+    uk_31064e1893: "Field 4 is gender, named from the item class's constructor order rather than from its getters."

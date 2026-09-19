@@ -10,7 +10,7 @@
 
 spec: scenarios
 spec_version: 1
-generated_digest: "sha256:7b614e914921ea3aa49c9a956754705da72640fbed3909a2c372497611222880"
+generated_digest: "sha256:ddc8c235c9bdf2be05d4eefb5e3111855ae6f49c2e70da8e16ac7cfafb53eb0e"
 generated:
   feature: marketplace.get_settings
   scenarios:
@@ -31,7 +31,7 @@ generated:
       emits:
       - MarketplaceConfiguration
       evidence: ev_3269baae7de7
-    - origin: capture (1 observations)
+    - origin: capture (2 observations)
       authority: official_capture
       outcome: success
       emits: []
@@ -49,6 +49,6 @@ generated:
     origin: vortex
     source: Vortex.PacketHandlers/Marketplace/GetMarketplaceConfigurationMessageHandler.cs
     symbol: GetMarketplaceConfigurationMessageHandler
-    line: 26
+    line: 28
 verified: {}
 manual: {}

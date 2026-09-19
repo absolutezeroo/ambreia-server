@@ -10,7 +10,7 @@
 
 spec: feature
 spec_version: 1
-generated_digest: "sha256:748286aacdd8fef3bb0f4c5f6104c9dabed366660e4e1ab794d446b0bee4db5a"
+generated_digest: "sha256:6594afee6b45dbdac2108d48c52b6d46dbc475db89b8f81989478d8a9f4a86d3"
 generated:
   id: inventory.get_badges
   domain: inventory
@@ -22,7 +22,7 @@ generated:
     references:
     - habbo-arcturus-daybreak
   official_behavior:
-    status: unknown
+    status: capture_confirmed
   flow:
   - order: 0
     layer: handler
@@ -64,7 +64,5 @@ generated:
   scenarios:
   - inventory.get_badges.guard_0
   - inventory.get_badges.success
-  conflicts:
-  - cf_33332b81bb
 verified: {}
 manual: {}
