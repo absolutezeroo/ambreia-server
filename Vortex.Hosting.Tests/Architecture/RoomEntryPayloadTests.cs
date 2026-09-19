@@ -51,6 +51,39 @@ public sealed class RoomEntryPayloadTests
         "RoomEventMessageComposer",
     ];
 
+    /// <summary>
+    /// The entry burst in the order an official room entry was captured sending it.
+    /// </summary>
+    /// <remarks>
+    /// The chat styles go first, immediately after OpenConnection. Then the room's shell: ready, the
+    /// door tile, the paint, the geometry, the visualisation settings. Then who is here, then what is
+    /// here, then whose room it is. Then the advertisement, the furniture configuration, the wired
+    /// environment and the rights. The rating comes last of the room's own state, after the client
+    /// has been told whether the player owns the place.
+    /// </remarks>
+    private static readonly string[] CapturedOrder =
+    [
+        "PushOwnedChatStylesAsync",
+        "RoomReadyMessageComposer",
+        "RoomEntryTileMessageComposer",
+        "RoomPropertyMessageComposer",
+        "HeightMapMessageComposer",
+        "FloorHeightMapMessageComposer",
+        "RoomVisualizationSettingsMessageComposer",
+        "UsersMessageComposer",
+        "ObjectsMessageComposer",
+        "ItemsMessageComposer",
+        "RoomEntryInfoMessageComposer",
+        "RoomEventMessageComposer",
+        "HanditemConfigurationMessageComposer",
+        "WiredEnvironmentMessageComposer",
+        "YouAreControllerMessageComposer",
+        "WiredPermissionsEventMessageComposer",
+        "YouAreOwnerMessageComposer",
+        "RoomRatingMessageComposer",
+        "RaidProtectionCapabilityMessageComposer",
+    ];
+
     [Fact]
     public void RoomService_SendsTheWholeEntryPayload()
     {
@@ -91,5 +124,69 @@ public sealed class RoomEntryPayloadTests
                 "a bot's dance reaches the arriving client through the same replay as a player's, "
                     + "and through nothing else"
             );
+    }
+
+    /// <summary>
+    /// The burst goes out in the order Sulake sends it.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// A source-order check, and honest about being one: it reads where each composer is built in
+    /// <c>CompleteRoomEntryAsync</c> rather than watching a socket. That is enough for what it
+    /// guards, because the method sends in the order it builds, and the order is a decision taken
+    /// against a captured entry rather than an accident of how the code grew — it drifted once
+    /// already, with the rating second and the paint arriving after the geometry it paints.
+    /// </para>
+    /// <para>
+    /// The replay set (dances, effects, hand items) is deliberately absent: those are ours, the
+    /// capture's room was empty, and there is no official order to hold them to.
+    /// </para>
+    /// </remarks>
+    [Fact]
+    public void TheEntryBurst_GoesOutInTheCapturedOrder()
+    {
+        string source = EntryMethodSource();
+
+        int previous = -1;
+        string previousName = "the start of the method";
+
+        foreach (string name in CapturedOrder)
+        {
+            int at = source.IndexOf(name, StringComparison.Ordinal);
+
+            at.Should().BeGreaterThan(-1, "{0} is part of the entry burst", name);
+            at.Should()
+                .BeGreaterThan(
+                    previous,
+                    "an official entry sends {0} after {1}",
+                    name,
+                    previousName
+                );
+
+            previous = at;
+            previousName = name;
+        }
+    }
+
+    /// <summary>Just <c>CompleteRoomEntryAsync</c>, so the gates above it cannot skew an index.</summary>
+    private static string EntryMethodSource()
+    {
+        string source = File.ReadAllText(
+            Path.Combine(RepositoryPaths.Root(), "Vortex.Rooms", "RoomService.cs")
+        );
+
+        int start = source.IndexOf(
+            "private async Task CompleteRoomEntryAsync",
+            StringComparison.Ordinal
+        );
+        int end = source.IndexOf(
+            "public async Task CloseRoomForPlayerAsync",
+            StringComparison.Ordinal
+        );
+
+        start.Should().BeGreaterThan(-1);
+        end.Should().BeGreaterThan(start);
+
+        return source[start..end];
     }
 }

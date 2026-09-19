@@ -251,20 +251,55 @@ internal sealed partial class RoomService(
         RoomMapSnapshot mapSnapshot = await room.GetMapSnapshotAsync(ct).ConfigureAwait(false);
         bool canRate = await room.CanRateAsync(playerId, ct).ConfigureAwait(false);
 
+        ImmutableArray<KeyValuePair<string, string>> roomProperties =
+            await room.GetRoomPropertiesAsync().ConfigureAwait(false);
+
+        // Order below follows an official room entry, captured packet by packet. It is not
+        // cosmetic: the client builds the room as the burst arrives, and every message here lands
+        // on a session that already exists rather than being queued against one. Reads are gathered
+        // before the sends so the sequence reads as the sequence, with no grain round trip wedged
+        // between two packets that Sulake sends back to back.
+
+        // The chat-style selector is rebuilt from scratch when the room's chat input is created, off
+        // whatever the session sets hold at that instant. The client asks for them once at session
+        // init, so a room entered before that answer lands -- the home room, every time -- builds
+        // the picker without a single unlockable bubble in it. The official server sends them here,
+        // immediately after OpenConnection, which is as early as our gates allow: a refused entry
+        // has returned well above this line.
+        await _grainFactory
+            .GetPlayerGrain(playerId)
+            .PushOwnedChatStylesAsync(ct)
+            .ConfigureAwait(false);
+
         await playerPresence
             .SendComposerAsync(
                 new RoomReadyMessageComposer { WorldType = snapshot.WorldType, RoomId = roomId },
-                // Score rides along on the snapshot already in hand; only "may this player still
-                // vote" costs a lookup. The client shows the like button off canRate alone and
-                // never withdraws it by itself, so a blanket false hid the button in every room and
-                // a blanket true offered a vote the grain would refuse.
-                new RoomRatingMessageComposer { Rating = snapshot.Score, CanRate = canRate },
                 new RoomEntryTileMessageComposer
                 {
                     X = mapSnapshot.DoorX,
                     Y = mapSnapshot.DoorY,
                     Rotation = mapSnapshot.DoorRotation,
-                },
+                }
+            )
+            .ConfigureAwait(false);
+
+        // Wallpaper, floor and landscape, before the maps rather than after the visualisation
+        // settings. This is where the official server puts them, and it is the order in which the
+        // client has the paint in hand before it is handed the geometry to paint.
+        if (roomProperties.Length > 0)
+        {
+            await playerPresence
+                .SendComposerAsync([
+                    .. roomProperties.Select(
+                        IComposer (x) =>
+                            new RoomPropertyMessageComposer { Key = x.Key, Value = x.Value }
+                    ),
+                ])
+                .ConfigureAwait(false);
+        }
+
+        await playerPresence
+            .SendComposerAsync(
                 new HeightMapMessageComposer
                 {
                     Width = mapSnapshot.Width,
@@ -293,21 +328,6 @@ internal sealed partial class RoomService(
                 }
             )
             .ConfigureAwait(false);
-
-        ImmutableArray<KeyValuePair<string, string>> roomProperties =
-            await room.GetRoomPropertiesAsync().ConfigureAwait(false);
-
-        if (roomProperties.Length > 0)
-        {
-            await playerPresence
-                .SendComposerAsync([
-                    .. roomProperties.Select(
-                        IComposer (x) =>
-                            new RoomPropertyMessageComposer { Key = x.Key, Value = x.Value }
-                    ),
-                ])
-                .ConfigureAwait(false);
-        }
 
         ImmutableDictionary<PlayerId, string> ownersSnapshot = await room.GetAllOwnersAsync(ct)
             .ConfigureAwait(false);
@@ -370,53 +390,31 @@ internal sealed partial class RoomService(
                 ),
         ];
 
-        await playerPresence
-            .SendComposerAsync(
-                new RoomEntryInfoMessageComposer { RoomId = roomId, IsOwner = isOwner },
-                new ObjectsMessageComposer
-                {
-                    OwnerNames = ownersSnapshot,
-                    FloorItems = floorSnapshot,
-                },
-                new ItemsMessageComposer { OwnerNames = ownersSnapshot, WallItems = wallSnapshot },
-                new UsersMessageComposer { Avatars = avatarSnapshots },
-                new UserUpdateMessageComposer { Avatars = avatarSnapshots },
-                new YouAreControllerMessageComposer
-                {
-                    RoomId = roomId,
-                    ControllerLevel = controllerLevel,
-                },
-                new WiredPermissionsEventMessageComposer
-                {
-                    CanModify = hasRights,
-                    CanRead = hasRights,
-                },
-                new WiredEnvironmentMessageComposer { HasClickUserWired = clickUser.Present },
-                // Sets chooserDisabled, freeFurniMovementsEnabled and invisibleFurni on the client's
-                // room object, per room id. We write only the first boolean -- the client's parser
-                // guards each of the other two on bytes remaining -- and none of the three is a room
-                // setting here, so this pins them to their defaults rather than leaving the client's
-                // own defaults to decide. The official server sends it on every entry.
-                new HanditemConfigurationMessageComposer { IsHanditemControlBlocked = false }
-            )
-            .ConfigureAwait(false);
-
-        // The chat-style selector is rebuilt from scratch when the room's chat input is created, off
-        // whatever the session sets hold at that instant. The client asks for them once at session
-        // init, so a room entered before that answer lands -- the home room, every time -- builds
-        // the picker without a single unlockable bubble in it. The official server repeats them on
-        // entry for this reason.
-        await _grainFactory
-            .GetPlayerGrain(playerId)
-            .PushOwnedChatStylesAsync(ct)
-            .ConfigureAwait(false);
-
         // The room's advertisement, if it is being advertised right now. There is no "no event"
         // form to send: this client assigns whatever arrives to roomEventData without testing it,
         // so an empty one would leave it holding a blank advertisement rather than none. Absence is
         // how the client is told there is nothing, and RoomEventCancel is how a live one is cleared.
         RoomAdvertisementSnapshot? advertisement = await _roomAdvertisements
             .GetActiveAdvertisementAsync(roomId.Value, ct)
+            .ConfigureAwait(false);
+
+        // Who is here, then what is here, then whose room it is -- Sulake's order. Neither list
+        // carries the arriving player: their avatar is created by SetActiveRoomAsync at the end of
+        // this method and broadcast to the whole room, which is the second Users an official capture
+        // shows. The first one is the occupants who were already standing here, and it is empty in
+        // that capture only because the room was.
+        await playerPresence
+            .SendComposerAsync(
+                new UsersMessageComposer { Avatars = avatarSnapshots },
+                new UserUpdateMessageComposer { Avatars = avatarSnapshots },
+                new ObjectsMessageComposer
+                {
+                    OwnerNames = ownersSnapshot,
+                    FloorItems = floorSnapshot,
+                },
+                new ItemsMessageComposer { OwnerNames = ownersSnapshot, WallItems = wallSnapshot },
+                new RoomEntryInfoMessageComposer { RoomId = roomId, IsOwner = isOwner }
+            )
             .ConfigureAwait(false);
 
         if (advertisement is not null)
@@ -447,12 +445,44 @@ internal sealed partial class RoomService(
                 .ConfigureAwait(false);
         }
 
+        await playerPresence
+            .SendComposerAsync(
+                // Sets chooserDisabled, freeFurniMovementsEnabled and invisibleFurni on the client's
+                // room object, per room id. We write only the first boolean -- the client's parser
+                // guards each of the other two on bytes remaining -- and none of the three is a room
+                // setting here, so this pins them to their defaults rather than leaving the client's
+                // own defaults to decide. The official server sends it on every entry.
+                new HanditemConfigurationMessageComposer { IsHanditemControlBlocked = false },
+                new WiredEnvironmentMessageComposer { HasClickUserWired = clickUser.Present },
+                new YouAreControllerMessageComposer
+                {
+                    RoomId = roomId,
+                    ControllerLevel = controllerLevel,
+                },
+                new WiredPermissionsEventMessageComposer
+                {
+                    CanModify = hasRights,
+                    CanRead = hasRights,
+                }
+            )
+            .ConfigureAwait(false);
+
         if (isOwner)
         {
             await playerPresence
                 .SendComposerAsync(new YouAreOwnerMessageComposer { RoomId = roomId })
                 .ConfigureAwait(false);
         }
+
+        // After the rights, not before the map. The score rides along on the snapshot already in
+        // hand; only "may this player still vote" costs a lookup. The client shows the like button
+        // off canRate alone and never withdraws it by itself, so a blanket false hid the button in
+        // every room and a blanket true offered a vote the grain would refuse.
+        await playerPresence
+            .SendComposerAsync(
+                new RoomRatingMessageComposer { Rating = snapshot.Score, CanRate = canRate }
+            )
+            .ConfigureAwait(false);
 
         if (replayComposers.Length > 0)
         {
