@@ -142,12 +142,48 @@ public sealed class CameraSceneRendererTests
         Render(SceneWith(planes: [], sprites: [])).ClearedWith.Should().Be(0x00000000);
     }
 
+    /// <summary>
+    /// The plane the canvas is asked to fill encloses the area the plane actually covers.
+    /// </summary>
+    /// <remarks>
+    /// Stated as an area rather than as the expected corner order, because the area is the thing that
+    /// was wrong and the order is only how. The client sorts its corners bottom-right, bottom-left,
+    /// top-right, top-left; walked in that order the path crosses itself, and a symmetric bowtie
+    /// encloses its two halves with opposite winding — so the shoelace area comes out at exactly
+    /// zero, whatever the plane's size. Every plane in the first real photo was drawn that way.
+    /// </remarks>
+    [Fact]
+    public void APlaneEnclosesItsOwnArea()
+    {
+        Recording recording = Render(SceneWith(planes: [Plane(100, 50, 0xFF0000)], sprites: []));
+
+        ImmutableArray<CameraScenePoint> quad = recording.Quads.Should().ContainSingle().Subject;
+
+        ShoelaceArea(quad).Should().Be(100 * 50);
+    }
+
+    private static double ShoelaceArea(ImmutableArray<CameraScenePoint> polygon)
+    {
+        double twice = 0;
+
+        for (int i = 0; i < polygon.Length; i++)
+        {
+            CameraScenePoint current = polygon[i];
+            CameraScenePoint next = polygon[(i + 1) % polygon.Length];
+
+            twice += (current.X * next.Y) - (next.X * current.Y);
+        }
+
+        return Math.Abs(twice) / 2;
+    }
+
     /// <summary>What the canvas was asked to do, once the renderer has finished with it.</summary>
     private sealed record Recording(
         List<string> Calls,
         List<CameraSpriteDraw> Draws,
         int? ClearedWith,
-        CameraViewport Viewport
+        CameraViewport Viewport,
+        List<ImmutableArray<CameraScenePoint>> Quads
     );
 
     private static Recording Render(CameraScene scene)
@@ -167,19 +203,31 @@ public sealed class CameraSceneRendererTests
             }
         );
 
-        return new Recording(canvas.Calls, canvas.Draws, canvas.ClearedWith, viewport);
+        return new Recording(
+            canvas.Calls,
+            canvas.Draws,
+            canvas.ClearedWith,
+            viewport,
+            canvas.Quads
+        );
     }
 
+    /// <summary>
+    /// A plane with its corners in the order the client actually sends them: bottom-right,
+    /// bottom-left, top-right, top-left, as <c>SpriteDataCollector.sortQuadPoints</c> leaves them.
+    /// That is a sort order, not a path — feeding these tests a tidy perimeter instead was how the
+    /// renderer passed every one of them while drawing bowties.
+    /// </summary>
     private static CameraScenePlane Plane(double right, double bottom, int color) =>
         new()
         {
             Z = 0,
             CornerPoints =
             [
-                new CameraScenePoint(0, 0),
-                new CameraScenePoint(right, 0),
                 new CameraScenePoint(right, bottom),
                 new CameraScenePoint(0, bottom),
+                new CameraScenePoint(right, 0),
+                new CameraScenePoint(0, 0),
             ],
             Color = color,
             Masks = [],
@@ -236,11 +284,14 @@ public sealed class CameraSceneRendererTests
             Calls.Add("clear");
         }
 
+        public List<ImmutableArray<CameraScenePoint>> Quads { get; } = [];
+
         public void FillQuad(ImmutableArray<CameraScenePoint> corners, int argb)
         {
             corners
                 .Should()
                 .HaveCount(4, "a plane is a quad and the decoder refuses anything else");
+            Quads.Add(corners);
             Calls.Add($"quad:{argb}");
         }
 

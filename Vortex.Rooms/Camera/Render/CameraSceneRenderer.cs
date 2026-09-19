@@ -43,7 +43,7 @@ public sealed class CameraSceneRenderer(int maxDimension)
             // it are read and validated by the decoder and not yet drawn, so a photo today has the
             // room's shape and its flat colours: recognisably the room, without its wallpaper or its
             // doorway cut out.
-            canvas.FillQuad(plane.CornerPoints, plane.Color);
+            canvas.FillQuad(Perimeter(plane.CornerPoints), plane.Color);
         }
 
         foreach (CameraSceneSprite sprite in scene.Sprites)
@@ -106,4 +106,25 @@ public sealed class CameraSceneRenderer(int maxDimension)
 
     private int Clamp(double value) =>
         double.IsFinite(value) ? Math.Clamp((int)Math.Ceiling(value), 1, maxDimension) : 1;
+
+    /// <summary>
+    /// The client's four corners, in the order a polygon has to walk them.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// A plane arrives sorted by the client's <c>SpriteDataCollector.sortQuadPoints</c>, whose two
+    /// normalising swaps leave <c>points[0].x >= points[1].x</c> and <c>points[0].y >=
+    /// points[2].y</c> — bottom-right, bottom-left, top-right, top-left. That is a sort order, not a
+    /// path: walking it 0,1,2,3 goes along the bottom edge, across a diagonal, along the top edge and
+    /// back across the other diagonal, which is a bowtie rather than a quad.
+    /// </para>
+    /// <para>
+    /// The first real photo was every plane in the room drawn as two triangles meeting at a point. It
+    /// looked like a rendering bug deep in the rasteriser and it was one transposition here. The
+    /// perimeter is 0, 1, 3, 2.
+    /// </para>
+    /// </remarks>
+    private static ImmutableArray<CameraScenePoint> Perimeter(
+        ImmutableArray<CameraScenePoint> corners
+    ) => corners.Length == 4 ? [corners[0], corners[1], corners[3], corners[2]] : corners;
 }
