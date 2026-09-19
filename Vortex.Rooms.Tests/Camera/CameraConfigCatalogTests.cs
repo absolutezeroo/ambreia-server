@@ -72,6 +72,18 @@ public sealed class CameraConfigCatalogTests
         ];
         yield return [CameraConfig.UrlPathPrefixKey, CameraConfig.DefaultUrlPathPrefix];
         yield return [CameraConfig.PhotoFurniClassNameKey, CameraConfig.DefaultPhotoFurniClassName];
+        yield return [CameraConfig.MaxPhotoDimensionKey, I(CameraConfig.DefaultMaxPhotoDimension)];
+        yield return
+        [
+            CameraConfig.MaxExternalFetchesKey,
+            I(CameraConfig.DefaultMaxExternalFetches),
+        ];
+        yield return
+        [
+            CameraConfig.ExternalTimeoutSecondsKey,
+            I(CameraConfig.DefaultExternalTimeoutSeconds),
+        ];
+        yield return [CameraConfig.MaxExternalBytesKey, I(CameraConfig.DefaultMaxExternalBytes)];
     }
 
     [Theory]

@@ -180,6 +180,29 @@
         }
       }
     },
+    "/api/public/camera/photos/{photoKey}.png": {
+      "get": {
+        "tags": [
+          "Camera"
+        ],
+        "operationId": "GetCameraPhoto",
+        "parameters": [
+          {
+            "name": "photoKey",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
     "/api/public/chain": {
       "get": {
         "tags": [
@@ -3978,6 +4001,9 @@
   "tags": [
     {
       "name": "Authentication"
+    },
+    {
+      "name": "Camera"
     },
     {
       "name": "Chain"

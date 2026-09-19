@@ -28,6 +28,22 @@ public interface ICameraPhotoStore
         CancellationToken ct
     );
 
+    /// <summary>
+    /// Writes the rendered PNG under <paramref name="photoKey"/>, replacing any previous one.
+    /// </summary>
+    /// <returns>False when the key is not one this store minted, or the write failed.</returns>
+    Task<bool> SavePhotoAsync(string photoKey, ReadOnlyMemory<byte> png, CancellationToken ct);
+
+    /// <summary>
+    /// The rendered PNG, or empty when there is none yet.
+    /// </summary>
+    /// <remarks>
+    /// The route that serves photos goes through here rather than mapping a url onto the filesystem
+    /// itself: the key is validated in one place, and nothing outside this class ever turns a
+    /// request into a path.
+    /// </remarks>
+    Task<ReadOnlyMemory<byte>> ReadPhotoAsync(string photoKey, CancellationToken ct);
+
     /// <summary>The path the client is told, relative to its own <c>stories.image_url_base</c>.</summary>
     string PublicPath(string photoKey, string urlPathPrefix);
 }

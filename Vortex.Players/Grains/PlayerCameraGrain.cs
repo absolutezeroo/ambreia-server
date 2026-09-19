@@ -35,6 +35,7 @@ internal sealed class PlayerCameraGrain(
     IDbContextFactory<VortexDbContext> dbCtxFactory,
     IGrainFactory grainFactory,
     ICameraPhotoStore photoStore,
+    IRoomPhotoRenderer photoRenderer,
     ILogger<PlayerCameraGrain> logger
 ) : Grain, IPlayerCameraGrain
 {
@@ -129,6 +130,18 @@ internal sealed class PlayerCameraGrain(
                 (int)SelfId,
                 scene.RejectedExternalSprites
             );
+        }
+
+        // Drawn after the row exists, so a photo that fails to render still leaves a record of the
+        // attempt: the quota counted it, and an operator looking at a player's history sees what
+        // happened rather than a gap.
+        if (
+            !await photoRenderer
+                .RenderAsync(scene, photoKey, ReadRenderLimits(config), ct)
+                .ConfigureAwait(true)
+        )
+        {
+            return Refuse(CameraRenderRefusal.StorageFailed);
         }
 
         _heldPhotoKey = photoKey;
@@ -390,6 +403,35 @@ internal sealed class PlayerCameraGrain(
 
         return CameraRenderOutcome.Refused(refusal);
     }
+
+    private static CameraRenderLimits ReadRenderLimits(
+        IReadOnlyDictionary<string, string> config
+    ) =>
+        new()
+        {
+            MaxDimension = ServerConfigValues.GetInt(
+                config,
+                CameraConfig.MaxPhotoDimensionKey,
+                CameraConfig.DefaultMaxPhotoDimension
+            ),
+            MaxExternalFetches = ServerConfigValues.GetInt(
+                config,
+                CameraConfig.MaxExternalFetchesKey,
+                CameraConfig.DefaultMaxExternalFetches
+            ),
+            ExternalTimeout = TimeSpan.FromSeconds(
+                ServerConfigValues.GetInt(
+                    config,
+                    CameraConfig.ExternalTimeoutSecondsKey,
+                    CameraConfig.DefaultExternalTimeoutSeconds
+                )
+            ),
+            MaxExternalBytes = ServerConfigValues.GetInt(
+                config,
+                CameraConfig.MaxExternalBytesKey,
+                CameraConfig.DefaultMaxExternalBytes
+            ),
+        };
 
     private static CameraSceneLimits ReadLimits(IReadOnlyDictionary<string, string> config) =>
         new()

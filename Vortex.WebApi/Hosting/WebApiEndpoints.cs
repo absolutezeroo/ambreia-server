@@ -75,6 +75,8 @@ internal static partial class WebApiEndpoints
         // The coin contest. Public for the same reason the chain routes are: every balance in it is
         // readable off the chain by anyone who has the addresses, and the addresses are public.
         WebApiEndpointsLeaderboard.MapLeaderboard(app, TagPublic);
+
+        WebApiEndpointsCamera.MapCamera(app);
     }
 
     /// <summary>

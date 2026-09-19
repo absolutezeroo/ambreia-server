@@ -35,6 +35,7 @@ internal sealed class CameraPhotoStore : ICameraPhotoStore
     private const int KeyLength = KeyBytes * 2;
 
     private const string SceneExtension = ".scene.z";
+    private const string PhotoExtension = ".png";
 
     private readonly string _root;
     private readonly ILogger<CameraPhotoStore> _logger;
@@ -52,13 +53,44 @@ internal sealed class CameraPhotoStore : ICameraPhotoStore
 
     public string NewPhotoKey() => Convert.ToHexString(RandomNumberGenerator.GetBytes(KeyBytes));
 
-    public async Task<bool> SaveSceneAsync(
+    public Task<bool> SaveSceneAsync(
         string photoKey,
         ReadOnlyMemory<byte> deflatedScene,
         CancellationToken ct
+    ) => WriteAsync(photoKey, SceneExtension, deflatedScene, ct);
+
+    public Task<bool> SavePhotoAsync(
+        string photoKey,
+        ReadOnlyMemory<byte> png,
+        CancellationToken ct
+    ) => WriteAsync(photoKey, PhotoExtension, png, ct);
+
+    public async Task<ReadOnlyMemory<byte>> ReadPhotoAsync(string photoKey, CancellationToken ct)
+    {
+        if (!TryResolve(photoKey, PhotoExtension, out string? path) || !File.Exists(path))
+        {
+            return ReadOnlyMemory<byte>.Empty;
+        }
+
+        try
+        {
+            return await File.ReadAllBytesAsync(path, ct).ConfigureAwait(false);
+        }
+        catch (IOException ex)
+        {
+            _logger.LogError(ex, "Camera photo {PhotoKey} could not be read.", photoKey);
+            return ReadOnlyMemory<byte>.Empty;
+        }
+    }
+
+    private async Task<bool> WriteAsync(
+        string photoKey,
+        string extension,
+        ReadOnlyMemory<byte> bytes,
+        CancellationToken ct
     )
     {
-        if (!TryResolve(photoKey, SceneExtension, out string? path))
+        if (!TryResolve(photoKey, extension, out string? path))
         {
             return false;
         }
@@ -72,7 +104,7 @@ internal sealed class CameraPhotoStore : ICameraPhotoStore
             // rather than an orphan nobody dares delete.
             string temporary = path + ".partial";
 
-            await File.WriteAllBytesAsync(temporary, deflatedScene, ct).ConfigureAwait(false);
+            await File.WriteAllBytesAsync(temporary, bytes, ct).ConfigureAwait(false);
             File.Move(temporary, path, overwrite: true);
 
             return true;

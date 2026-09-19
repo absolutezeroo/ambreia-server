@@ -1,5 +1,7 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Vortex.Primitives.Camera;
 using Vortex.Primitives.Hosting;
 using Vortex.Primitives.Moderation;
@@ -7,6 +9,7 @@ using Vortex.Primitives.Plugins;
 using Vortex.Primitives.Rooms;
 using Vortex.Primitives.Rooms.Providers;
 using Vortex.Rooms.Camera;
+using Vortex.Rooms.Camera.Render;
 using Vortex.Rooms.Configuration;
 using Vortex.Rooms.Events;
 using Vortex.Rooms.Games;
@@ -48,6 +51,13 @@ public sealed class RoomModule : IHostPluginModule
         services.AddSingleton<IModeratorRoomVisitService, ModeratorRoomVisitService>();
         services.AddSingleton<ICfhTicketService, CfhTicketService>();
         services.AddSingleton<ICameraPhotoStore, CameraPhotoStore>();
+
+        services.AddSingleton<ICameraSpriteSource>(provider => new CameraSpriteResolver(
+            provider.GetRequiredService<IOptions<RoomConfig>>().Value.CameraSpriteRoot,
+            CameraSpriteResolver.CreateHttpClient(),
+            provider.GetRequiredService<ILogger<CameraSpriteResolver>>()
+        ));
+        services.AddSingleton<IRoomPhotoRenderer, RoomPhotoRenderer>();
         services.AddSingleton<IRoomAdvertisementService, RoomAdvertisementService>();
 
         // Wired room-logs pipeline: one bounded channel -> single background writer (no DB on

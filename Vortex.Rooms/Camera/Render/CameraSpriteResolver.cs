@@ -26,15 +26,49 @@ namespace Vortex.Rooms.Camera.Render;
 /// burst against the asset host or a render that never ends because a host stopped answering.
 /// </para>
 /// </remarks>
-internal sealed class CameraSpriteResolver(
-    string spriteRoot,
-    int maxExternalFetches,
-    TimeSpan externalTimeout,
-    int maxExternalBytes,
-    HttpClient http,
-    ILogger logger
-) : ICameraSpriteSource
+internal sealed class CameraSpriteResolver(string spriteRoot, HttpClient http, ILogger logger)
+    : ICameraSpriteSource,
+        IDisposable
 {
+    /// <summary>Disposes the client this was given. Harmless when a caller owns it too: disposing an
+    /// <c>HttpClient</c> twice does nothing the second time.</summary>
+    public void Dispose() => http.Dispose();
+
+    /// <summary>
+    /// The client the hotel uses for camera fetches.
+    /// </summary>
+    /// <remarks>
+    /// One long-lived instance rather than one per photo: a new <c>HttpClient</c> per render leaks
+    /// sockets in TIME_WAIT until the machine runs out of them, which is the oldest trap in this
+    /// library. <c>PooledConnectionLifetime</c> is what a long-lived one still needs — without it a
+    /// pooled connection outlives the DNS record behind it, and the asset host moving becomes a
+    /// camera that fetches from wherever it used to be until the process restarts.
+    /// </remarks>
+    public static HttpClient CreateHttpClient()
+    {
+        SocketsHttpHandler? handler = new()
+        {
+            PooledConnectionLifetime = TimeSpan.FromMinutes(2),
+            // The allowlist matched the url the payload named. A redirect is a second address that
+            // was never checked, so it is not followed.
+            AllowAutoRedirect = false,
+        };
+
+        try
+        {
+            HttpClient client = new(handler, disposeHandler: true);
+
+            // Ownership has moved to the client; the finally below must not take it back.
+            handler = null;
+
+            return client;
+        }
+        finally
+        {
+            handler?.Dispose();
+        }
+    }
+
     private readonly string _root =
         Path.GetFullPath(spriteRoot)
             .TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar)
@@ -42,6 +76,7 @@ internal sealed class CameraSpriteResolver(
 
     public async Task<IReadOnlyDictionary<string, byte[]>> ResolveAsync(
         ImmutableArray<CameraSceneSprite> sprites,
+        CameraRenderLimits limits,
         CancellationToken ct
     )
     {
@@ -63,10 +98,10 @@ internal sealed class CameraSpriteResolver(
             {
                 bytes = ReadLocal(sprite.Name);
             }
-            else if (fetches < maxExternalFetches)
+            else if (fetches < limits.MaxExternalFetches)
             {
                 fetches++;
-                bytes = await FetchAsync(sprite.Name, ct).ConfigureAwait(false);
+                bytes = await FetchAsync(sprite.Name, limits, ct).ConfigureAwait(false);
             }
             else
             {
@@ -74,7 +109,7 @@ internal sealed class CameraSpriteResolver(
                 // same to its own past thirty external images, so this is a shape it already makes.
                 logger.LogDebug(
                     "Camera photo passed its external image budget of {Budget}; {Name} was not fetched.",
-                    maxExternalFetches,
+                    limits.MaxExternalFetches,
                     sprite.Name
                 );
                 continue;
@@ -117,10 +152,14 @@ internal sealed class CameraSpriteResolver(
         }
     }
 
-    private async Task<byte[]?> FetchAsync(string url, CancellationToken ct)
+    private async Task<byte[]?> FetchAsync(
+        string url,
+        CameraRenderLimits limits,
+        CancellationToken ct
+    )
     {
         using CancellationTokenSource timeout = CancellationTokenSource.CreateLinkedTokenSource(ct);
-        timeout.CancelAfter(externalTimeout);
+        timeout.CancelAfter(limits.ExternalTimeout);
 
         try
         {
@@ -139,7 +178,7 @@ internal sealed class CameraSpriteResolver(
 
             // Bounded before it is read, not measured after: a host that answers with a stream of
             // zeroes forever is a host this hotel asked, and Content-Length is the sender's claim.
-            if (response.Content.Headers.ContentLength > maxExternalBytes)
+            if (response.Content.Headers.ContentLength > limits.MaxExternalBytes)
             {
                 return null;
             }
@@ -148,7 +187,8 @@ internal sealed class CameraSpriteResolver(
                 .Content.ReadAsStreamAsync(timeout.Token)
                 .ConfigureAwait(false);
 
-            return await ReadBoundedAsync(body, timeout.Token).ConfigureAwait(false);
+            return await ReadBoundedAsync(body, limits.MaxExternalBytes, timeout.Token)
+                .ConfigureAwait(false);
         }
         catch (HttpRequestException ex)
         {
@@ -162,7 +202,11 @@ internal sealed class CameraSpriteResolver(
         }
     }
 
-    private async Task<byte[]?> ReadBoundedAsync(Stream body, CancellationToken ct)
+    private static async Task<byte[]?> ReadBoundedAsync(
+        Stream body,
+        int maxBytes,
+        CancellationToken ct
+    )
     {
         using MemoryStream buffer = new();
         byte[] chunk = new byte[8192];
@@ -176,12 +220,12 @@ internal sealed class CameraSpriteResolver(
                 return buffer.Length == 0 ? null : buffer.ToArray();
             }
 
-            if (buffer.Length + read > maxExternalBytes)
+            if (buffer.Length + read > maxBytes)
             {
                 return null;
             }
 
-            buffer.Write(chunk, 0, read);
+            await buffer.WriteAsync(chunk, 0, read);
         }
     }
 }

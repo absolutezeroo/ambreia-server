@@ -89,6 +89,17 @@ public static class CameraConfig
     /// </summary>
     public const string PhotoFurniClassNameKey = "camera.photo_furni_classname";
 
+    /// <summary>Ceiling on either side of a rendered photo. Nothing in the payload bounds a
+    /// coordinate, so this is what stands between a corner at a billion and a failed allocation.</summary>
+    public const string MaxPhotoDimensionKey = "camera.max_photo_dimension";
+
+    /// <summary>How many images one photo may fetch. The allowlist says where, this says how often.</summary>
+    public const string MaxExternalFetchesKey = "camera.max_external_fetches";
+
+    public const string ExternalTimeoutSecondsKey = "camera.external_timeout_seconds";
+
+    public const string MaxExternalBytesKey = "camera.max_external_bytes";
+
     public const int DefaultCreditPrice = 2;
     public const int DefaultDucketPrice = 0;
     public const int DefaultPublishDucketPrice = 10;
@@ -109,6 +120,14 @@ public static class CameraConfig
 
     /// <summary>The classname the official pack uses, and the one the logic binding pass found.</summary>
     public const string DefaultPhotoFurniClassName = "external_image_wallitem_photo";
+
+    public const int DefaultMaxPhotoDimension = 1600;
+
+    /// <summary>Thirty, the same number the client stops at before replacing the rest with a box.</summary>
+    public const int DefaultMaxExternalFetches = 30;
+
+    public const int DefaultExternalTimeoutSeconds = 5;
+    public const int DefaultMaxExternalBytes = 1024 * 1024;
 
     /// <summary>Nothing. An operator opts external images in; they are not on by accident.</summary>
     public const string DefaultExternalImagePrefixes = "";
@@ -132,6 +151,10 @@ public static class CameraConfig
         ExternalImagePrefixesKey,
         UrlPathPrefixKey,
         PhotoFurniClassNameKey,
+        MaxPhotoDimensionKey,
+        MaxExternalFetchesKey,
+        ExternalTimeoutSecondsKey,
+        MaxExternalBytesKey,
     ];
 
     /// <summary>The three prices the client is told at room entry, and nothing else.</summary>

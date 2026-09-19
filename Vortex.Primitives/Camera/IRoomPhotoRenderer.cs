@@ -21,5 +21,10 @@ public interface IRoomPhotoRenderer
     /// False when the photo could not be produced. The player is told the same thing either way —
     /// an empty url — so the reason belongs in the log, not in the return.
     /// </returns>
-    Task<bool> RenderAsync(CameraScene scene, string photoKey, CancellationToken ct);
+    Task<bool> RenderAsync(
+        CameraScene scene,
+        string photoKey,
+        CameraRenderLimits limits,
+        CancellationToken ct
+    );
 }

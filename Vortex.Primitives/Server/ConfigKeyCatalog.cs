@@ -619,6 +619,34 @@ public static class ConfigKeyCatalog
             "Camera"
         ),
         new(
+            "camera.max_photo_dimension",
+            "1600",
+            ConfigValueKind.Int,
+            "Ceiling on either side of a rendered photo. Nothing in the payload bounds a coordinate, so this is what stands between a corner at a billion and an allocation that fails.",
+            "Camera"
+        ),
+        new(
+            "camera.max_external_fetches",
+            "30",
+            ConfigValueKind.Int,
+            "How many images one photo may fetch. The allowlist says where, this says how often, so one photo cannot become a burst against the asset host. Thirty is where the client stops too.",
+            "Camera"
+        ),
+        new(
+            "camera.external_timeout_seconds",
+            "5",
+            ConfigValueKind.Int,
+            "How long one external image may take before the photo goes on without it. A host that stops answering must not become a render that never ends.",
+            "Camera"
+        ),
+        new(
+            "camera.max_external_bytes",
+            "1048576",
+            ConfigValueKind.Int,
+            "Largest external image accepted, counted while reading rather than taken from the sender's Content-Length.",
+            "Camera"
+        ),
+        new(
             "camera.photo_furni_classname",
             "external_image_wallitem_photo",
             ConfigValueKind.String,

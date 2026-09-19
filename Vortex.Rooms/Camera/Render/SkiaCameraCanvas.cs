@@ -29,6 +29,8 @@ internal sealed class SkiaCameraCanvas : ICameraCanvas
     private readonly Func<string, byte[]?> _readSprite;
     private readonly Dictionary<string, SKImage?> _sprites = new(StringComparer.Ordinal);
 
+    private static readonly SKSamplingOptions NearestNeighbour = new(SKFilterMode.Nearest);
+
     public SkiaCameraCanvas(CameraViewport viewport, Func<string, byte[]?> readSprite)
     {
         _readSprite = readSprite;
@@ -46,16 +48,18 @@ internal sealed class SkiaCameraCanvas : ICameraCanvas
 
     public void FillQuad(ImmutableArray<CameraScenePoint> corners, int argb)
     {
-        using SKPath path = new();
+        using SKPathBuilder builder = new();
 
-        path.MoveTo((float)corners[0].X, (float)corners[0].Y);
+        builder.MoveTo((float)corners[0].X, (float)corners[0].Y);
 
         for (int i = 1; i < corners.Length; i++)
         {
-            path.LineTo((float)corners[i].X, (float)corners[i].Y);
+            builder.LineTo((float)corners[i].X, (float)corners[i].Y);
         }
 
-        path.Close();
+        builder.Close();
+
+        using SKPath path = builder.Detach();
 
         using SKPaint paint = new()
         {
@@ -104,7 +108,9 @@ internal sealed class SkiaCameraCanvas : ICameraCanvas
             _surface.Canvas.Translate(-image.Width, 0);
         }
 
-        _surface.Canvas.DrawImage(image, 0, 0, paint);
+        // Nearest, never bilinear: these are pixel-art sprites drawn at their own scale, and
+        // smoothing them is how a Habbo photo stops looking like Habbo.
+        _surface.Canvas.DrawImage(image, new SKPoint(0, 0), NearestNeighbour, paint);
         _surface.Canvas.RestoreToCount(saved);
 
         return true;

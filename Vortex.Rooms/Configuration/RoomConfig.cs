@@ -176,4 +176,18 @@ public class RoomConfig : IWiredLimits
     /// </para>
     /// </remarks>
     public string CameraPhotoRoot { get; init; } = "data/camera-photos";
+
+    /// <summary>
+    /// Where the hotel's sprites are extracted to. A camera photo resolves every name in its scene
+    /// against this directory.
+    /// </summary>
+    /// <remarks>
+    /// Loose PNG files, one per asset key, extracted once from the asset pack — the same thing the
+    /// reference emulator asks of its operator. The server does not read <c>.nitro</c> bundles and
+    /// has no business learning to: a photo that is missing a frame is a hole in a picture, and a
+    /// server that decodes bundles is a second asset pipeline to keep in step with the client's.
+    /// A hotel with nothing here still takes photos; they come out as the room's shape and colours
+    /// with no furniture in them, which is a legible way to find out the directory is empty.
+    /// </remarks>
+    public string CameraSpriteRoot { get; init; } = "data/camera-sprites";
 }

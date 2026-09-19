@@ -38,6 +38,7 @@ public interface ICameraSpriteSource
     /// </remarks>
     Task<IReadOnlyDictionary<string, byte[]>> ResolveAsync(
         ImmutableArray<CameraSceneSprite> sprites,
+        CameraRenderLimits limits,
         CancellationToken ct
     );
 }

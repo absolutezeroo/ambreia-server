@@ -45,20 +45,20 @@ public sealed class CameraSpriteResolverTests : IDisposable
     }
 
     [Fact]
-    public async Task ALocalSpriteIsReadFromTheAssetDirectory()
+    public async Task ALocalSpriteIsReadFromTheAssetDirectoryAsync()
     {
         await File.WriteAllBytesAsync(Path.Combine(_root, "chair_a_0.png"), [1, 2, 3]);
 
-        IReadOnlyDictionary<string, byte[]> resolved = await Resolve(Local("chair_a_0"));
+        IReadOnlyDictionary<string, byte[]> resolved = await ResolveAsync(Local("chair_a_0"));
 
         resolved.Should().ContainKey("chair_a_0").WhoseValue.Should().Equal([1, 2, 3]);
     }
 
     [Fact]
-    public async Task ALocalSpriteThatIsNotThere_IsSimplyAbsent()
+    public async Task ALocalSpriteThatIsNotThere_IsSimplyAbsentAsync()
     {
         // A pack one frame short leaves a hole in the photo, which beats refusing to take it.
-        IReadOnlyDictionary<string, byte[]> resolved = await Resolve(Local("never_extracted"));
+        IReadOnlyDictionary<string, byte[]> resolved = await ResolveAsync(Local("never_extracted"));
 
         resolved.Should().BeEmpty();
     }
@@ -66,7 +66,7 @@ public sealed class CameraSpriteResolverTests : IDisposable
     [Theory]
     [InlineData("../secrets")]
     [InlineData("../../etc/passwd")]
-    public async Task ANameThatClimbsOutOfTheAssetDirectory_IsRefused(string key)
+    public async Task ANameThatClimbsOutOfTheAssetDirectory_IsRefusedAsync(string key)
     {
         // The decoder already refuses a separator in a key. This is the lock that still holds the
         // day somebody joins a name to a path without asking it first.
@@ -75,17 +75,17 @@ public sealed class CameraSpriteResolverTests : IDisposable
             [9, 9, 9]
         );
 
-        IReadOnlyDictionary<string, byte[]> resolved = await Resolve(Local(key));
+        IReadOnlyDictionary<string, byte[]> resolved = await ResolveAsync(Local(key));
 
         resolved.Should().BeEmpty();
     }
 
     [Fact]
-    public async Task OneSpriteNamedManyTimes_IsReadOnce()
+    public async Task OneSpriteNamedManyTimes_IsReadOnceAsync()
     {
         await File.WriteAllBytesAsync(Path.Combine(_root, "floor.png"), [7]);
 
-        IReadOnlyDictionary<string, byte[]> resolved = await Resolve(
+        IReadOnlyDictionary<string, byte[]> resolved = await ResolveAsync(
             Local("floor"),
             Local("floor"),
             Local("floor")
@@ -97,11 +97,11 @@ public sealed class CameraSpriteResolverTests : IDisposable
     }
 
     [Fact]
-    public async Task ExternalImagesAreFetchedUpToTheBudgetAndNoFurther()
+    public async Task ExternalImagesAreFetchedUpToTheBudgetAndNoFurtherAsync()
     {
         using CountingHandler handler = new();
 
-        IReadOnlyDictionary<string, byte[]> resolved = await Resolve(
+        IReadOnlyDictionary<string, byte[]> resolved = await ResolveAsync(
             handler,
             maxFetches: 2,
             External("https://assets.test/a.png"),
@@ -116,11 +116,11 @@ public sealed class CameraSpriteResolverTests : IDisposable
     }
 
     [Fact]
-    public async Task AnExternalImageBiggerThanAllowed_IsDropped()
+    public async Task AnExternalImageBiggerThanAllowed_IsDroppedAsync()
     {
         using CountingHandler handler = new() { Body = new byte[4096] };
 
-        IReadOnlyDictionary<string, byte[]> resolved = await Resolve(
+        IReadOnlyDictionary<string, byte[]> resolved = await ResolveAsync(
             handler,
             maxFetches: 4,
             maxBytes: 64,
@@ -131,11 +131,11 @@ public sealed class CameraSpriteResolverTests : IDisposable
     }
 
     [Fact]
-    public async Task AnExternalImageThatAnswersAnError_IsDropped()
+    public async Task AnExternalImageThatAnswersAnError_IsDroppedAsync()
     {
         using CountingHandler handler = new() { Status = HttpStatusCode.NotFound };
 
-        IReadOnlyDictionary<string, byte[]> resolved = await Resolve(
+        IReadOnlyDictionary<string, byte[]> resolved = await ResolveAsync(
             handler,
             maxFetches: 4,
             External("https://assets.test/gone.png")
@@ -144,22 +144,22 @@ public sealed class CameraSpriteResolverTests : IDisposable
         resolved.Should().BeEmpty();
     }
 
-    private async Task<IReadOnlyDictionary<string, byte[]>> Resolve(
+    private async Task<IReadOnlyDictionary<string, byte[]>> ResolveAsync(
         params CameraSceneSprite[] sprites
     )
     {
         using CountingHandler handler = new();
 
-        return await Resolve(handler, maxFetches: 0, sprites);
+        return await ResolveAsync(handler, maxFetches: 0, sprites);
     }
 
-    private Task<IReadOnlyDictionary<string, byte[]>> Resolve(
+    private Task<IReadOnlyDictionary<string, byte[]>> ResolveAsync(
         CountingHandler handler,
         int maxFetches,
         params CameraSceneSprite[] sprites
-    ) => Resolve(handler, maxFetches, 1024 * 1024, sprites);
+    ) => ResolveAsync(handler, maxFetches, 1024 * 1024, sprites);
 
-    private async Task<IReadOnlyDictionary<string, byte[]>> Resolve(
+    private async Task<IReadOnlyDictionary<string, byte[]>> ResolveAsync(
         CountingHandler handler,
         int maxFetches,
         int maxBytes,
@@ -169,16 +169,16 @@ public sealed class CameraSpriteResolverTests : IDisposable
         // The scope that made the handler disposes it, so this must not do it a second time.
         using HttpClient http = new(handler, disposeHandler: false);
 
-        CameraSpriteResolver resolver = new(
-            _root,
-            maxFetches,
-            TimeSpan.FromSeconds(5),
-            maxBytes,
-            http,
-            NullLogger.Instance
-        );
+        using CameraSpriteResolver resolver = new(_root, http, NullLogger.Instance);
 
-        return await resolver.ResolveAsync([.. sprites], CancellationToken.None);
+        CameraRenderLimits limits = CameraRenderLimits.Defaults with
+        {
+            MaxExternalFetches = maxFetches,
+            ExternalTimeout = TimeSpan.FromSeconds(5),
+            MaxExternalBytes = maxBytes,
+        };
+
+        return await resolver.ResolveAsync([.. sprites], limits, CancellationToken.None);
     }
 
     private static CameraSceneSprite Local(string name) =>
