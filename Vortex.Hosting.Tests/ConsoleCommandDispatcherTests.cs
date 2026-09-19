@@ -8,7 +8,10 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Vortex.Main.Console;
 using Vortex.Primitives.Console;
+using Vortex.Primitives.Networking;
+using Vortex.Primitives.Orleans.Observers;
 using Vortex.Primitives.Permissions;
+using Vortex.Primitives.Players;
 using Xunit;
 
 namespace Vortex.Hosting.Tests;
@@ -136,6 +139,49 @@ public sealed class ConsoleCommandDispatcherTests
     }
 
     [Fact]
+    public void Announce_RequiresTheServerControlCapability() =>
+        Dispatcher()
+            .Dispatcher.Find("announce")!
+            ?.RequiredCapability.Should()
+            .Be(Capabilities.Dashboard.OpsServerControl);
+
+    /// <summary>
+    /// The downtime is optional and defaults, so a second argument that is not a number must be
+    /// refused rather than read as "back in 0 minutes" — <c>int.TryParse</c> writes 0 into its out
+    /// parameter on failure, which is a perfectly plausible number for this field.
+    /// </summary>
+    [Theory]
+    [InlineData("announce")]
+    [InlineData("announce later")]
+    [InlineData("announce -5")]
+    [InlineData("announce 5 soon")]
+    [InlineData("announce 5 -2")]
+    public async Task Announce_WithoutAUsableNumber_AnswersWithItsUsage(string input)
+    {
+        (ConsoleCommandDispatcher dispatcher, List<string> output, _) = Dispatcher();
+
+        await dispatcher.ExecuteAsync(input, output.Add, CancellationToken.None);
+
+        output
+            .Should()
+            .ContainSingle()
+            .Which.Should()
+            .Contain("Usage: announce <minutes> [downtime]");
+    }
+
+    [Theory]
+    [InlineData("announce 5")]
+    [InlineData("announce 5 10")]
+    public async Task Announce_OnAnEmptyHotel_SaysSoRatherThanClaimingASweep(string input)
+    {
+        (ConsoleCommandDispatcher dispatcher, List<string> output, _) = Dispatcher();
+
+        await dispatcher.ExecuteAsync(input, output.Add, CancellationToken.None);
+
+        output.Should().ContainSingle().Which.Should().Contain("Nobody is connected");
+    }
+
+    [Fact]
     public async Task ReloadPlugin_WithoutAKey_AnswersWithItsUsage()
     {
         (ConsoleCommandDispatcher dispatcher, List<string> output, _) = Dispatcher();
@@ -155,8 +201,41 @@ public sealed class ConsoleCommandDispatcherTests
 
         ServiceCollection services = new();
         services.AddSingleton<IHostApplicationLifetime>(lifetime);
+        services.AddSingleton<ISessionGateway>(new EmptyHotel());
 
         return (new ConsoleCommandDispatcher(services.BuildServiceProvider()), [], lifetime);
+    }
+
+    /// <summary>A hotel nobody is connected to, which is every hotel a unit test runs against.</summary>
+    private sealed class EmptyHotel : ISessionGateway
+    {
+        public IReadOnlyCollection<PlayerId> GetOnlinePlayerIds() => [];
+
+        public int GetOnlinePlayerCount() => 0;
+
+        public int GetActiveSessionCount() => 0;
+
+        public bool IsOnline(PlayerId playerId) => false;
+
+        public ISessionContext? GetSession(SessionKey key) => null;
+
+        public ISessionContextObserver? GetSessionObserver(SessionKey key) => null;
+
+        public PlayerId GetPlayerId(SessionKey key) => -1;
+
+        public Task<bool> AddSessionAsync(SessionKey key, ISessionContext ctx) =>
+            Task.FromResult(true);
+
+        public Task RemoveSessionAsync(SessionKey key, CancellationToken ct) => Task.CompletedTask;
+
+        public Task AddSessionToPlayerAsync(
+            SessionKey key,
+            PlayerId playerId,
+            CancellationToken ct = default
+        ) => Task.CompletedTask;
+
+        public Task RemoveSessionFromPlayerAsync(PlayerId playerId, CancellationToken ct) =>
+            Task.CompletedTask;
     }
 
     private sealed class FakeLifetime : IHostApplicationLifetime
