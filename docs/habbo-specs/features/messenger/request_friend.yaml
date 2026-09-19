@@ -10,7 +10,7 @@
 
 spec: feature
 spec_version: 1
-generated_digest: "sha256:1f0955a8bc21030fa2bcf042a6a9bac8606ff48ed3d4ef9a7afc5e735b406691"
+generated_digest: "sha256:523699a4c1675cdf5c5dcb7d7fbe6efa4fcce7138483ff10e56d51fdca0ca20b"
 generated:
   id: messenger.request_friend
   domain: messenger
@@ -125,7 +125,7 @@ generated:
     origin: vortex
     source: Vortex.Primitives/Orleans/GrainFactoryExtensions.cs
     symbol: GrainFactoryExtensions
-    line: 228
+    line: 234
   - id: ev_22d108ba3e5f
     kind: emulator_handler
     authority: vortex_emulator

@@ -10,10 +10,150 @@
 
 spec: scenarios
 spec_version: 1
-generated_digest: "sha256:23e78d4ffef92646e056071167476327d0c0e56a59d8f7c2fbf42e19856ed3f1"
+generated_digest: "sha256:606e55d0c159edf3cc145a1e113faf7b7b81815d5136efffdc60f5a04bed7887"
 generated:
   feature: camera.purchase_photo
   scenarios:
+  - scenario: camera.purchase_photo.guard_0
+    title: "purchase photo: the guard 'ctx.PlayerId <= 0' holds"
+    given:
+      guard: ctx.PlayerId <= 0
+      guard_holds: "true"
+    when:
+      packet: PurchasePhoto
+    expected:
+      status: unknown
+      confidence: unknown
+    needs_evidence: "an official capture of PurchasePhoto sent while 'ctx.PlayerId <= 0' holds: does the server reply, stay silent, or disconnect?"
+    executable: false
+    claims:
+    - origin: vortex
+      authority: vortex_emulator
+      outcome: ignored
+      emits: []
+      evidence: ev_623fd8a39a51
+    - origin: habbo-arcturus-daybreak
+      authority: reference_emulator
+      outcome: success
+      emits:
+      - NotEnoughBalance
+      - NotEnoughBalance
+      - CameraPurchaseOK
+      - UnseenItems
+      - FurniListInvalidate
+      evidence: ev_eb5c12f3b0e3
+  - scenario: camera.purchase_photo.guard_1
+    title: "purchase photo: the guard '_heldPhotoKey is null' holds"
+    given:
+      guard: _heldPhotoKey is null
+      guard_holds: "true"
+    when:
+      packet: PurchasePhoto
+    expected:
+      status: unknown
+      confidence: unknown
+    needs_evidence: "an official capture of PurchasePhoto sent while '_heldPhotoKey is null' holds: does the server reply, stay silent, or disconnect?"
+    executable: false
+    claims:
+    - origin: vortex
+      authority: vortex_emulator
+      outcome: ignored
+      emits: []
+      evidence: ev_f9dc5b28688c
+    - origin: habbo-arcturus-daybreak
+      authority: reference_emulator
+      outcome: success
+      emits:
+      - NotEnoughBalance
+      - NotEnoughBalance
+      - CameraPurchaseOK
+      - UnseenItems
+      - FurniListInvalidate
+      evidence: ev_eb5c12f3b0e3
+  - scenario: camera.purchase_photo.guard_2
+    title: "purchase photo: the guard 'photo is null || photo.PurchasedAt is not null' holds"
+    given:
+      guard: photo is null || photo.PurchasedAt is not null
+      guard_holds: "true"
+    when:
+      packet: PurchasePhoto
+    expected:
+      status: unknown
+      confidence: unknown
+    needs_evidence: "an official capture of PurchasePhoto sent while 'photo is null || photo.PurchasedAt is not null' holds: does the server reply, stay silent, or disconnect?"
+    executable: false
+    claims:
+    - origin: vortex
+      authority: vortex_emulator
+      outcome: ignored
+      emits: []
+      evidence: ev_f9dc5b28688c
+    - origin: habbo-arcturus-daybreak
+      authority: reference_emulator
+      outcome: success
+      emits:
+      - NotEnoughBalance
+      - NotEnoughBalance
+      - CameraPurchaseOK
+      - UnseenItems
+      - FurniListInvalidate
+      evidence: ev_eb5c12f3b0e3
+  - scenario: camera.purchase_photo.guard_3
+    title: "purchase photo: the guard 'definitionId <= 0' holds"
+    given:
+      guard: definitionId <= 0
+      guard_holds: "true"
+    when:
+      packet: PurchasePhoto
+    expected:
+      status: unknown
+      confidence: unknown
+    needs_evidence: "an official capture of PurchasePhoto sent while 'definitionId <= 0' holds: does the server reply, stay silent, or disconnect?"
+    executable: false
+    claims:
+    - origin: vortex
+      authority: vortex_emulator
+      outcome: ignored
+      emits: []
+      evidence: ev_f9dc5b28688c
+    - origin: habbo-arcturus-daybreak
+      authority: reference_emulator
+      outcome: success
+      emits:
+      - NotEnoughBalance
+      - NotEnoughBalance
+      - CameraPurchaseOK
+      - UnseenItems
+      - FurniListInvalidate
+      evidence: ev_eb5c12f3b0e3
+  - scenario: camera.purchase_photo.guard_4
+    title: "purchase photo: the guard '!result.Succeeded' holds"
+    given:
+      guard: "!result.Succeeded"
+      guard_holds: "true"
+    when:
+      packet: PurchasePhoto
+    expected:
+      status: unknown
+      confidence: unknown
+    needs_evidence: "an official capture of PurchasePhoto sent while '!result.Succeeded' holds: does the server reply, stay silent, or disconnect?"
+    executable: false
+    claims:
+    - origin: vortex
+      authority: vortex_emulator
+      outcome: ignored
+      emits: []
+      evidence: ev_f9dc5b28688c
+    - origin: habbo-arcturus-daybreak
+      authority: reference_emulator
+      outcome: success
+      emits:
+      - NotEnoughBalance
+      - NotEnoughBalance
+      - CameraPurchaseOK
+      - UnseenItems
+      - FurniListInvalidate
+      evidence: ev_eb5c12f3b0e3
   - scenario: camera.purchase_photo.success
     title: "purchase photo: the request is accepted"
     given:
@@ -28,8 +168,9 @@ generated:
     claims:
     - origin: vortex
       authority: vortex_emulator
-      outcome: ignored
-      emits: []
+      outcome: success
+      emits:
+      - CameraPurchaseOK
       evidence: ev_4c9f3999a78d
     - origin: habbo-arcturus-daybreak
       authority: reference_emulator
@@ -56,6 +197,20 @@ generated:
     origin: vortex
     source: Vortex.PacketHandlers/Camera/PurchasePhotoMessageHandler.cs
     symbol: PurchasePhotoMessageHandler
-    line: 8
+    line: 19
+  - id: ev_623fd8a39a51
+    kind: emulator_flow
+    authority: vortex_emulator
+    origin: vortex
+    source: Vortex.PacketHandlers/Camera/PurchasePhotoMessageHandler.cs
+    symbol: PurchasePhotoMessageHandler
+    line: 28
+  - id: ev_f9dc5b28688c
+    kind: emulator_flow
+    authority: vortex_emulator
+    origin: vortex
+    source: Vortex.Players/Grains/PlayerCameraGrain.cs
+    symbol: PlayerCameraGrain
+    line: 150
 verified: {}
 manual: {}

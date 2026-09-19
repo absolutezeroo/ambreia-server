@@ -4,7 +4,7 @@ status: started
 
 repository:
   name: absolutezeroo/vortex-cloud
-  observed_head: 294ce301f0ec073cf19b2e8133631be54c8027fd
+  observed_head: 64eb2ab08e8dbe76d65f22df7e0e4d88c320fc81
 
 codebase_documentation:
   state_file: docs/codebase/.documentation-state.json
@@ -19,7 +19,7 @@ target_client:
   incoming: 580
   outgoing: 588
 
-phase: FC-6
+phase: FC-7
 active_slice: null
 
 # Reproduce with: dotnet run --project Vortex.Specs.Cli -- completeness
@@ -28,13 +28,13 @@ coverage:
   denominator: 578
   unresolved_surface: 2
   protocol_mapping: 540
-  implementation: 431
+  implementation: 435
   verified_complete: 0
   missing: 22
-  partial: 109
+  partial: 105
   unknown: 0
   not_applicable: 16
-  measured_at_commit: 294ce301f0ec073cf19b2e8133631be54c8027fd
+  measured_at_commit: 64eb2ab08e8dbe76d65f22df7e0e4d88c320fc81
   note: "implementation means Vortex has a meaningful path, never that Habbo behaviour was verified"
 
 # A SECOND surface, and not comparable with the packet one. The packet matrix scores the wired
@@ -105,6 +105,7 @@ slices:
   FC-F1: "the furniture logic surface, 3947 definitions stranded; docs/completeness/reviews/FC-F1-furniture-logic-surface.md"
   FC-5: "SetRelationshipStatus@1773 — message, parser, handler and grain all existed and no map bound the header, so the console's relationship picker reached nothing"
   FC-6: "AppealCfh@3028 — the appeal button in 'my reports' had no request bound and no columns behind it; the three trailing wire fields were written as constants"
+  FC-7: "the camera, 5/5 — the scene intake and its limits, the three argument-less confirmations, and the three composers that were describing an empty body while the client read fields. The rasteriser is the one piece still missing"
 
 next:
   # SnowWar / Game2 (game 2/27) is the largest MISSING cluster and is deliberately deferred by the

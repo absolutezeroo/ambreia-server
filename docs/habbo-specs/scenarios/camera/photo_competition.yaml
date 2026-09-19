@@ -10,10 +10,100 @@
 
 spec: scenarios
 spec_version: 1
-generated_digest: "sha256:0318dcac72e0ede4ef17c77797f8da9cccc641c00b04ab36a4fb4982e4217d14"
+generated_digest: "sha256:7ab7f179e979b350a7c3d25b74584f5984cbcc986da03c6e63e6f96c5ce38a60"
 generated:
   feature: camera.photo_competition
   scenarios:
+  - scenario: camera.photo_competition.guard_0
+    title: "photo competition: the guard 'ctx.PlayerId <= 0' holds"
+    given:
+      guard: ctx.PlayerId <= 0
+      guard_holds: "true"
+    when:
+      packet: PhotoCompetition
+    expected:
+      status: unknown
+      confidence: unknown
+    needs_evidence: "an official capture of PhotoCompetition sent while 'ctx.PlayerId <= 0' holds: does the server reply, stay silent, or disconnect?"
+    executable: false
+    claims:
+    - origin: vortex
+      authority: vortex_emulator
+      outcome: ignored
+      emits: []
+      evidence: ev_49f8de9464ef
+  - scenario: camera.photo_competition.guard_1
+    title: "photo competition: the guard '_heldPhotoKey is null' holds"
+    given:
+      guard: _heldPhotoKey is null
+      guard_holds: "true"
+    when:
+      packet: PhotoCompetition
+    expected:
+      status: unknown
+      confidence: unknown
+    needs_evidence: "an official capture of PhotoCompetition sent while '_heldPhotoKey is null' holds: does the server reply, stay silent, or disconnect?"
+    executable: false
+    claims:
+    - origin: vortex
+      authority: vortex_emulator
+      outcome: ignored
+      emits: []
+      evidence: ev_f9dc5b28688c
+  - scenario: camera.photo_competition.guard_2
+    title: "photo competition: the guard 'photo is null' holds"
+    given:
+      guard: photo is null
+      guard_holds: "true"
+    when:
+      packet: PhotoCompetition
+    expected:
+      status: unknown
+      confidence: unknown
+    needs_evidence: "an official capture of PhotoCompetition sent while 'photo is null' holds: does the server reply, stay silent, or disconnect?"
+    executable: false
+    claims:
+    - origin: vortex
+      authority: vortex_emulator
+      outcome: ignored
+      emits: []
+      evidence: ev_f9dc5b28688c
+  - scenario: camera.photo_competition.guard_3
+    title: "photo competition: the guard 'photo.CompetitionSubmittedAt is not null' holds"
+    given:
+      guard: photo.CompetitionSubmittedAt is not null
+      guard_holds: "true"
+    when:
+      packet: PhotoCompetition
+    expected:
+      status: unknown
+      confidence: unknown
+    needs_evidence: "an official capture of PhotoCompetition sent while 'photo.CompetitionSubmittedAt is not null' holds: does the server reply, stay silent, or disconnect?"
+    executable: false
+    claims:
+    - origin: vortex
+      authority: vortex_emulator
+      outcome: ignored
+      emits: []
+      evidence: ev_f9dc5b28688c
+  - scenario: camera.photo_competition.guard_4
+    title: "photo competition: the guard 'today >= entriesPerDay' holds"
+    given:
+      guard: today >= entriesPerDay
+      guard_holds: "true"
+    when:
+      packet: PhotoCompetition
+    expected:
+      status: unknown
+      confidence: unknown
+    needs_evidence: "an official capture of PhotoCompetition sent while 'today >= entriesPerDay' holds: does the server reply, stay silent, or disconnect?"
+    executable: false
+    claims:
+    - origin: vortex
+      authority: vortex_emulator
+      outcome: ignored
+      emits: []
+      evidence: ev_f9dc5b28688c
   - scenario: camera.photo_competition.success
     title: "photo competition: the request is accepted"
     given:
@@ -28,16 +118,24 @@ generated:
     claims:
     - origin: vortex
       authority: vortex_emulator
-      outcome: ignored
-      emits: []
-      evidence: ev_fd3592a2e25d
+      outcome: success
+      emits:
+      - CompetitionStatus
+      evidence: ev_49f8de9464ef
   evidence:
-  - id: ev_fd3592a2e25d
-    kind: emulator_handler
+  - id: ev_49f8de9464ef
+    kind: emulator_flow
     authority: vortex_emulator
     origin: vortex
     source: Vortex.PacketHandlers/Camera/PhotoCompetitionMessageHandler.cs
     symbol: PhotoCompetitionMessageHandler
-    line: 8
+    line: 22
+  - id: ev_f9dc5b28688c
+    kind: emulator_flow
+    authority: vortex_emulator
+    origin: vortex
+    source: Vortex.Players/Grains/PlayerCameraGrain.cs
+    symbol: PlayerCameraGrain
+    line: 315
 verified: {}
 manual: {}

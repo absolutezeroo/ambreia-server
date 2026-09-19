@@ -10,7 +10,7 @@
 
 spec: scenarios
 spec_version: 1
-generated_digest: "sha256:93da5fca9d18bd260e0f9263697c57d44bfb5ce0fcccaadc0c1914caac0d1f0f"
+generated_digest: "sha256:ff09b733cafd919f8efb72ed1700407076fc40739dea218d855790d17717257e"
 generated:
   feature: room.respect_pet
   scenarios:
@@ -232,7 +232,7 @@ generated:
     origin: vortex
     source: Vortex.Primitives/Orleans/GrainFactoryExtensions.cs
     symbol: GrainFactoryExtensions
-    line: 228
+    line: 234
   - id: ev_1557b71ceec2
     kind: emulator_flow
     authority: vortex_emulator

@@ -9,8 +9,8 @@ mapped: 540
 unresolved_surface_count: 2
 counts:
   missing: 22
-  partial: 109
-  implemented: 431
+  partial: 105
+  implemented: 435
   complete: 0
   unknown: 0
   not_applicable: 16
@@ -92,43 +92,47 @@ obligations:
 - id: incoming/PhotoCompetition
   name: PhotoCompetition
   domain: camera
-  status: partial
+  status: implemented
   client_class: _SafeCls_3963
   header_id: 2707
   mapped_in_vortex: true
   vortex_handler: PhotoCompetitionMessageHandler
   feature: camera.photo_competition
-  reason: camera.photo_competition exists but the handler reaches no domain operation
+  reason: camera.photo_competition reaches a domain operation from PhotoCompetitionMessageHandler
 - id: incoming/PublishPhoto
   name: PublishPhoto
   domain: camera
-  status: partial
+  status: implemented
   client_class: _SafeCls_3566
   header_id: 375
   mapped_in_vortex: true
   vortex_handler: PublishPhotoMessageHandler
   feature: camera.publish_photo
-  reason: camera.publish_photo exists but the handler reaches no domain operation
+  reason: camera.publish_photo reaches a domain operation from PublishPhotoMessageHandler
+  conflicts:
+  - cf_5df9d394df
 - id: incoming/PurchasePhoto
   name: PurchasePhoto
   domain: camera
-  status: partial
+  status: implemented
   client_class: _SafeCls_3166
   header_id: 753
   mapped_in_vortex: true
   vortex_handler: PurchasePhotoMessageHandler
   feature: camera.purchase_photo
-  reason: camera.purchase_photo exists but the handler reaches no domain operation
+  reason: camera.purchase_photo reaches a domain operation from PurchasePhotoMessageHandler
+  conflicts:
+  - cf_e4f774d4a4
 - id: incoming/RenderRoom
   name: RenderRoom
   domain: camera
-  status: partial
+  status: implemented
   client_class: _SafeCls_2050
   header_id: 3332
   mapped_in_vortex: true
   vortex_handler: RenderRoomMessageHandler
   feature: camera.render_room
-  reason: camera.render_room exists but the handler reaches no domain operation
+  reason: camera.render_room reaches a domain operation from RenderRoomMessageHandler
 - id: incoming/RequestCameraConfiguration
   name: RequestCameraConfiguration
   domain: camera

@@ -10,7 +10,7 @@
 
 spec: packet
 spec_version: 1
-generated_digest: "sha256:debb048d05802046375df536e034160464f95b5f6727217513540783e79d92c6"
+generated_digest: "sha256:f1a0743b5f17249ca74335d92f20b5bed21d77e48f6335bd89816b2493b7a0a3"
 generated:
   name: CompetitionStatus
   direction: outgoing
@@ -19,21 +19,21 @@ generated:
   mapped_in_vortex: true
   fields:
   - index: 0
-    name: unknown_0
+    name: ok
     type: boolean
-    name_is_placeholder: true
-    name_confidence: unknown
+    name_confidence: implementation_observed
     type_confidence: client_confirmed
     evidence:
     - ev_cbc5ecbe063c
+    - ev_becca4847c9c
   - index: 1
-    name: unknown_1
+    name: error_reason
     type: string
-    name_is_placeholder: true
-    name_confidence: unknown
+    name_confidence: implementation_observed
     type_confidence: client_confirmed
     evidence:
     - ev_cbc5ecbe063c
+    - ev_becca4847c9c
   layouts_by_source:
   - origin: "as3:WIN63-202607011411-782849652"
     authority: client_code
@@ -59,9 +59,11 @@ generated:
     evidence: ev_b1d97a66dc6e
   - origin: vortex
     authority: vortex_emulator
-    field_count: 0
+    field_count: 2
     partial: false
-    types: []
+    types:
+    - boolean
+    - string
     evidence: ev_becca4847c9c
   evidence:
   - id: ev_cbc5ecbe063c
@@ -94,8 +96,6 @@ generated:
     origin: vortex
     source: Vortex.Revisions/Revision20260701/Serializers/Camera/CompetitionStatusMessageComposerSerializer.cs
     symbol: CompetitionStatusMessageComposerSerializer
-    line: 6
-  unknowns:
-  - uk_d8efa8a438
+    line: 11
 verified: {}
 manual: {}

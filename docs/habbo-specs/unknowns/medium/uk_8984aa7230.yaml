@@ -10,7 +10,7 @@
 
 spec: unknown
 spec_version: 1
-generated_digest: "sha256:0336bd205594f45e9fa6f24981eff55228b49cf17abe3ee7af8b345d74fcf6df"
+generated_digest: "sha256:5aa9af52e268a3afce3d001c64a748fb392ef919d741ef8cdedcf00a0bb22f35"
 generated:
   id: uk_8984aa7230
   subject: "users.respect_user: what the server sends when it refuses"
@@ -25,7 +25,7 @@ generated:
     origin: vortex
     source: Vortex.Primitives/Orleans/GrainFactoryExtensions.cs
     symbol: GrainFactoryExtensions
-    line: 228
+    line: 234
   - id: ev_1f83e61934ca
     kind: emulator_flow
     authority: vortex_emulator

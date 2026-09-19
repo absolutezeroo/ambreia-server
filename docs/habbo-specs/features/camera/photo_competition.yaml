@@ -10,7 +10,7 @@
 
 spec: feature
 spec_version: 1
-generated_digest: "sha256:987af315566d15c65889c73ad865ed77eaafe9c97f1df66245d77b8407f0eb8d"
+generated_digest: "sha256:0d0c6ad4a9a7691ec8797c258311a0a01a48c3e72d6b2ef3d9078907d4b2ecdc"
 generated:
   id: camera.photo_competition
   domain: camera
@@ -18,7 +18,7 @@ generated:
   trigger_packets:
   - PhotoCompetition
   observed_in:
-    vortex: false
+    vortex: true
     references: []
   official_behavior:
     status: unknown
@@ -27,23 +27,111 @@ generated:
     layer: handler
     symbol: PhotoCompetitionMessageHandler.HandleAsync
     evidence: ev_fd3592a2e25d
-  checks: []
-  state_changes: []
+  - order: 1
+    layer: grain
+    symbol: PlayerCameraGrain.SubmitHeldPhotoToCompetitionAsync
+    evidence: ev_f9dc5b28688c
+  - order: 2
+    layer: grain
+    symbol: ServerConfigGrain.GetManyAsync
+    evidence: ev_86f81f4f919c
+  - order: 3
+    layer: domain
+    symbol: CameraCompetitionOutcome.Submitted
+    evidence: ev_e0aa283712bb
+  - order: 4
+    layer: domain
+    symbol: ServerConfigValues.GetInt
+    evidence: ev_77b64770ea16
+  checks:
+  - expression: ctx.PlayerId <= 0
+    on_fail: return
+    observed_in: vortex
+    evidence: ev_49f8de9464ef
+  - expression: _heldPhotoKey is null
+    on_fail: return
+    observed_in: vortex
+    evidence: ev_f9dc5b28688c
+  - expression: photo is null
+    on_fail: return
+    observed_in: vortex
+    evidence: ev_f9dc5b28688c
+  - expression: photo.CompetitionSubmittedAt is not null
+    on_fail: return
+    observed_in: vortex
+    evidence: ev_f9dc5b28688c
+  - expression: today >= entriesPerDay
+    on_fail: return
+    observed_in: vortex
+    evidence: ev_f9dc5b28688c
+  state_changes:
+  - target: now
+    value: now.AddDays(-1)
+    observed_in: vortex
+    evidence: ev_f9dc5b28688c
+  - target: photo.CompetitionSubmittedAt
+    value: now
+    observed_in: vortex
+    evidence: ev_f9dc5b28688c
   outgoing:
     ordering: unknown
-    packets: []
-  reaches_persistence: false
+    packets:
+    - packet: CompetitionStatus
+      recipient: actor
+      recipient_confidence: implementation_observed
+      evidence: ev_49f8de9464ef
+  reaches_persistence: true
   evidence:
+  - id: ev_49f8de9464ef
+    kind: emulator_flow
+    authority: vortex_emulator
+    origin: vortex
+    source: Vortex.PacketHandlers/Camera/PhotoCompetitionMessageHandler.cs
+    symbol: PhotoCompetitionMessageHandler
+    line: 22
+  - id: ev_77b64770ea16
+    kind: emulator_flow
+    authority: vortex_emulator
+    origin: vortex
+    source: Vortex.Primitives/Server/ServerConfigValues.cs
+    symbol: ServerConfigValues
+    line: 14
+  - id: ev_86f81f4f919c
+    kind: emulator_flow
+    authority: vortex_emulator
+    origin: vortex
+    source: Vortex.Players/Grains/ServerConfigGrain.cs
+    symbol: ServerConfigGrain
+    line: 109
+  - id: ev_e0aa283712bb
+    kind: emulator_flow
+    authority: vortex_emulator
+    origin: vortex
+    source: Vortex.Primitives/Camera/CameraCompetitionOutcome.cs
+    symbol: CameraCompetitionOutcome
+    line: 24
+  - id: ev_f9dc5b28688c
+    kind: emulator_flow
+    authority: vortex_emulator
+    origin: vortex
+    source: Vortex.Players/Grains/PlayerCameraGrain.cs
+    symbol: PlayerCameraGrain
+    line: 311
   - id: ev_fd3592a2e25d
     kind: emulator_handler
     authority: vortex_emulator
     origin: vortex
     source: Vortex.PacketHandlers/Camera/PhotoCompetitionMessageHandler.cs
     symbol: PhotoCompetitionMessageHandler
-    line: 8
+    line: 13
   scenarios:
+  - camera.photo_competition.guard_0
+  - camera.photo_competition.guard_1
+  - camera.photo_competition.guard_2
+  - camera.photo_competition.guard_3
+  - camera.photo_competition.guard_4
   - camera.photo_competition.success
   unknowns:
-  - uk_e4be13a8d9
+  - uk_01bb066b19
 verified: {}
 manual: {}

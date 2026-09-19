@@ -156,4 +156,15 @@ public class RoomConfig : IWiredLimits
     /// somebody types quickly, and reads as the chat being broken rather than protected.
     /// </summary>
     public int ChatFloodAllowance { get; init; } = 5;
+
+    /// <summary>
+    /// Where camera photos are written: the scene as it arrived, and later the rendered PNG.
+    /// </summary>
+    /// <remarks>
+    /// Deployment config, not hotel config — it names a disk, so it belongs in appsettings rather
+    /// than in the admin-editable server config the camera's prices and limits live in. It must sit
+    /// outside anything served statically: these files are reached through a route that maps a key to
+    /// a path, never by a web server walking a directory.
+    /// </remarks>
+    public string CameraPhotoRoot { get; init; } = "data/camera-photos";
 }

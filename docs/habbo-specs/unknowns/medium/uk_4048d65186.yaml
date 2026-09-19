@@ -10,7 +10,7 @@
 
 spec: unknown
 spec_version: 1
-generated_digest: "sha256:1e1690599c2a2023f26249b0c9c6484bc2184cdb5b91895de0214135c2b654e8"
+generated_digest: "sha256:b0f78d224a26e15a8c6f32f503383eb754db4c0eadbdb6e231762e78858745e0"
 generated:
   id: uk_4048d65186
   subject: "room.respect_pet: what the server sends when it refuses"
@@ -25,7 +25,7 @@ generated:
     origin: vortex
     source: Vortex.Primitives/Orleans/GrainFactoryExtensions.cs
     symbol: GrainFactoryExtensions
-    line: 228
+    line: 234
   - id: ev_1557b71ceec2
     kind: emulator_flow
     authority: vortex_emulator

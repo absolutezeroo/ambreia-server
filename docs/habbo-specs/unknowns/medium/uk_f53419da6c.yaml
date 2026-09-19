@@ -10,7 +10,7 @@
 
 spec: unknown
 spec_version: 1
-generated_digest: "sha256:f8c05835bef07f0a122286a51d7551b84b2cda82821df345b003f079d4b51164"
+generated_digest: "sha256:c1372aa6eb879f1f7369990680e4333356719cf83b344d4b4d1952f3be15c9c3"
 generated:
   id: uk_f53419da6c
   subject: "users.replenish_respect: what the server sends when it refuses"
@@ -25,7 +25,7 @@ generated:
     origin: vortex
     source: Vortex.Primitives/Orleans/GrainFactoryExtensions.cs
     symbol: GrainFactoryExtensions
-    line: 228
+    line: 234
   - id: ev_1f83e61934ca
     kind: emulator_flow
     authority: vortex_emulator

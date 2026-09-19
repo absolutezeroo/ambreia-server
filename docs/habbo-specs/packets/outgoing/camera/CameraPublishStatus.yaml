@@ -10,7 +10,7 @@
 
 spec: packet
 spec_version: 1
-generated_digest: "sha256:ec300def7ab8430ffd6b353da1c88a3e1f95b83d8452e7a84bdda6cbe487b3cc"
+generated_digest: "sha256:44f14d44407563d27ae94714b9ae484f22b991277b7df93fa194b7a059053c7e"
 generated:
   name: CameraPublishStatus
   direction: outgoing
@@ -19,30 +19,30 @@ generated:
   mapped_in_vortex: true
   fields:
   - index: 0
-    name: unknown_0
+    name: ok
     type: boolean
-    name_is_placeholder: true
-    name_confidence: unknown
+    name_confidence: implementation_observed
     type_confidence: client_confirmed
     evidence:
     - ev_8d0f66cab92e
+    - ev_74ab11b1c69e
   - index: 1
-    name: unknown_1
+    name: seconds_to_wait
     type: int32
-    name_is_placeholder: true
-    name_confidence: unknown
+    name_confidence: implementation_observed
     type_confidence: client_confirmed
     evidence:
     - ev_8d0f66cab92e
+    - ev_74ab11b1c69e
   - index: 2
-    name: unknown_2
+    name: extra_data_id
     type: string
-    name_is_placeholder: true
-    name_confidence: unknown
+    name_confidence: implementation_observed
     type_confidence: client_confirmed
     note: inside a repeated block
     evidence:
     - ev_8d0f66cab92e
+    - ev_74ab11b1c69e
   layouts_by_source:
   - origin: "as3:WIN63-202607011411-782849652"
     authority: client_code
@@ -70,9 +70,12 @@ generated:
     evidence: ev_4b18aae22b1a
   - origin: vortex
     authority: vortex_emulator
-    field_count: 0
+    field_count: 3
     partial: false
-    types: []
+    types:
+    - boolean
+    - int32
+    - string
     evidence: ev_74ab11b1c69e
   evidence:
   - id: ev_8d0f66cab92e
@@ -105,8 +108,6 @@ generated:
     origin: vortex
     source: Vortex.Revisions/Revision20260701/Serializers/Camera/CameraPublishStatusMessageComposerSerializer.cs
     symbol: CameraPublishStatusMessageComposerSerializer
-    line: 6
-  unknowns:
-  - uk_cd5cd5c70f
+    line: 14
 verified: {}
 manual: {}

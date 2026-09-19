@@ -17,7 +17,7 @@ reproduced from the target client and the current code on the next run.
 | axis | value |
 |---|---|
 | protocol mapping | 540 / 578 (93.4%) |
-| implementation | 431 / 578 (74.6%) |
+| implementation | 435 / 578 (75.3%) |
 | verified complete | 0 / 578 (0.0%) |
 
 `protocol mapping` counts obligations Vortex can receive at all. `implementation`
@@ -39,8 +39,8 @@ checked against the protocol and wrote the evidence down.
 | status | count |
 |---|---|
 | missing | 22 |
-| partial | 109 |
-| implemented | 431 |
+| partial | 105 |
+| implemented | 435 |
 | complete | 0 |
 | unknown | 0 |
 | not_applicable | 16 |
@@ -51,7 +51,7 @@ checked against the protocol and wrote the evidence down.
 |---|---|---|---|---|---|---|---|
 | advertisement | 2 | 0 | 1 | 1 | 0 | 0 | 0 |
 | avatar | 5 | 0 | 0 | 5 | 0 | 0 | 0 |
-| camera | 5 | 0 | 4 | 1 | 0 | 0 | 0 |
+| camera | 5 | 0 | 0 | 5 | 0 | 0 | 0 |
 | campaign | 2 | 0 | 2 | 0 | 0 | 0 | 0 |
 | catalog | 33 | 2 | 3 | 28 | 0 | 0 | 0 |
 | collectibles | 20 | 0 | 0 | 20 | 0 | 0 | 0 |

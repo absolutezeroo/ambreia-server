@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Vortex.Database.Entities.Achievements;
 using Vortex.Database.Entities.Audit;
+using Vortex.Database.Entities.Camera;
 using Vortex.Database.Entities.Catalog;
 using Vortex.Database.Entities.Collectibles;
 using Vortex.Database.Entities.Commerce;
@@ -141,6 +142,8 @@ public class VortexDbContext(DbContextOptions<VortexDbContext> options)
     public DbSet<CfhTopicEntity> CfhTopics { get; init; } = null!;
 
     public DbSet<CfhTicketEntity> CfhTickets { get; init; } = null!;
+
+    public DbSet<CameraPhotoEntity> CameraPhotos { get; init; } = null!;
 
     public DbSet<NavigatorTopLevelContextEntity> NavigatorTopLevelContexts { get; init; } = null!;
 

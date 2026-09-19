@@ -10,7 +10,7 @@
 
 spec: feature
 spec_version: 1
-generated_digest: "sha256:b641d87e68bb5396788d136fd8c44bc2f8ee70df07774838e56f2b60fa76886b"
+generated_digest: "sha256:1b1b9fc14a32eef76d647ea771fe2a04390b677ffd6825eb72c1ae84d21753b3"
 generated:
   id: camera.purchase_photo
   domain: camera
@@ -18,7 +18,7 @@ generated:
   trigger_packets:
   - PurchasePhoto
   observed_in:
-    vortex: false
+    vortex: true
     references:
     - habbo-arcturus-daybreak
   official_behavior:
@@ -28,12 +28,72 @@ generated:
     layer: handler
     symbol: PurchasePhotoMessageHandler.HandleAsync
     evidence: ev_4c9f3999a78d
-  checks: []
-  state_changes: []
+  - order: 1
+    layer: grain
+    symbol: PlayerCameraGrain.PurchaseHeldPhotoAsync
+    evidence: ev_f9dc5b28688c
+  - order: 2
+    layer: grain
+    symbol: ServerConfigGrain.GetManyAsync
+    evidence: ev_86f81f4f919c
+  - order: 3
+    layer: domain
+    symbol: ServerConfigValues.GetInt
+    evidence: ev_77b64770ea16
+  - order: 4
+    layer: grain
+    symbol: InventoryGrain.GrantFurnitureWithLegacyStuffDataAsync
+    evidence: ev_c6396662000a
+  - order: 5
+    layer: domain
+    symbol: ExtraData.UpdateSection
+    evidence: ev_7bc4f7ccb5ef
+  - order: 6
+    layer: domain
+    symbol: ExtraDataWriter.UpdateSection
+    evidence: ev_b533730b6457
+  - order: 7
+    layer: domain
+    symbol: ExtraData.GetJsonString
+    evidence: ev_7bc4f7ccb5ef
+  checks:
+  - expression: ctx.PlayerId <= 0
+    on_fail: return
+    observed_in: vortex
+    evidence: ev_623fd8a39a51
+  - expression: _heldPhotoKey is null
+    on_fail: return
+    observed_in: vortex
+    evidence: ev_f9dc5b28688c
+  - expression: photo is null || photo.PurchasedAt is not null
+    on_fail: return
+    observed_in: vortex
+    evidence: ev_f9dc5b28688c
+  - expression: definitionId <= 0
+    on_fail: return
+    observed_in: vortex
+    evidence: ev_f9dc5b28688c
+  - expression: "!result.Succeeded"
+    on_fail: return
+    observed_in: vortex
+    evidence: ev_f9dc5b28688c
+  state_changes:
+  - target: _writer
+    value: _writer.UpdateSection(name, section)
+    observed_in: vortex
+    evidence: ev_7bc4f7ccb5ef
+  - target: photo.PurchasedAt
+    value: DateTime.UtcNow
+    observed_in: vortex
+    evidence: ev_f9dc5b28688c
   outgoing:
     ordering: unknown
-    packets: []
-  reaches_persistence: false
+    packets:
+    - packet: CameraPurchaseOK
+      recipient: actor
+      recipient_confidence: implementation_observed
+      evidence: ev_623fd8a39a51
+  reaches_persistence: true
   evidence:
   - id: ev_4c9f3999a78d
     kind: emulator_handler
@@ -41,10 +101,66 @@ generated:
     origin: vortex
     source: Vortex.PacketHandlers/Camera/PurchasePhotoMessageHandler.cs
     symbol: PurchasePhotoMessageHandler
-    line: 8
+    line: 19
+  - id: ev_623fd8a39a51
+    kind: emulator_flow
+    authority: vortex_emulator
+    origin: vortex
+    source: Vortex.PacketHandlers/Camera/PurchasePhotoMessageHandler.cs
+    symbol: PurchasePhotoMessageHandler
+    line: 28
+  - id: ev_77b64770ea16
+    kind: emulator_flow
+    authority: vortex_emulator
+    origin: vortex
+    source: Vortex.Primitives/Server/ServerConfigValues.cs
+    symbol: ServerConfigValues
+    line: 14
+  - id: ev_7bc4f7ccb5ef
+    kind: emulator_flow
+    authority: vortex_emulator
+    origin: vortex
+    source: Vortex.Furniture/ExtraData.cs
+    symbol: ExtraData
+    line: 21
+  - id: ev_86f81f4f919c
+    kind: emulator_flow
+    authority: vortex_emulator
+    origin: vortex
+    source: Vortex.Players/Grains/ServerConfigGrain.cs
+    symbol: ServerConfigGrain
+    line: 109
+  - id: ev_b533730b6457
+    kind: emulator_flow
+    authority: vortex_emulator
+    origin: vortex
+    source: Vortex.Furniture/ExtraDataWriter.cs
+    symbol: ExtraDataWriter
+    line: 31
+  - id: ev_c6396662000a
+    kind: emulator_flow
+    authority: vortex_emulator
+    origin: vortex
+    source: Vortex.Inventory/Grains/InventoryGrain.Furni.cs
+    symbol: InventoryGrain
+    line: 725
+  - id: ev_f9dc5b28688c
+    kind: emulator_flow
+    authority: vortex_emulator
+    origin: vortex
+    source: Vortex.Players/Grains/PlayerCameraGrain.cs
+    symbol: PlayerCameraGrain
+    line: 148
   scenarios:
+  - camera.purchase_photo.guard_0
+  - camera.purchase_photo.guard_1
+  - camera.purchase_photo.guard_2
+  - camera.purchase_photo.guard_3
+  - camera.purchase_photo.guard_4
   - camera.purchase_photo.success
+  conflicts:
+  - cf_e4f774d4a4
   unknowns:
-  - uk_b5570f98a3
+  - uk_19adc2d22c
 verified: {}
 manual: {}

@@ -10,7 +10,7 @@
 
 spec: packet
 spec_version: 1
-generated_digest: "sha256:014ecf0e1e617cb7b9f7f0d15f4cb3a647fc61cd8f5561c399e0cd484800d672"
+generated_digest: "sha256:0748b4ba30de0f6923e77be2976d73a80a41cd17fa45bb33cfd79ab8de66ac23"
 generated:
   name: PurchasePhoto
   direction: incoming
@@ -90,5 +90,7 @@ generated:
     source: Vortex.Revisions/Revision20260701/Parsers/Camera/PurchasePhotoMessageParser.cs
     symbol: PurchasePhotoMessageParser
     line: 7
+  conflicts:
+  - cf_e4f774d4a4
 verified: {}
 manual: {}

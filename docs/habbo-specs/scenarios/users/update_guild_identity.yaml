@@ -10,7 +10,7 @@
 
 spec: scenarios
 spec_version: 1
-generated_digest: "sha256:2a69d1e69ce15cd94d82946f46bc779b1e9ee6c5ec3b401c460966f93408aa7a"
+generated_digest: "sha256:28f39de70292b46aeb50ec7834dbb88fd4646a3583e7b7e3930d2bb319c2cfc1"
 generated:
   feature: users.update_guild_identity
   scenarios:
@@ -99,7 +99,7 @@ generated:
     origin: vortex
     source: Vortex.Primitives/Orleans/GrainFactoryExtensions.cs
     symbol: GrainFactoryExtensions
-    line: 228
+    line: 234
   - id: ev_861d7eb0e4b2
     kind: emulator_flow
     authority: vortex_emulator

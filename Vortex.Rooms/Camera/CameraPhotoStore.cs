@@ -1,0 +1,146 @@
+using System;
+using System.Diagnostics.CodeAnalysis;
+using System.Globalization;
+using System.IO;
+using System.Security.Cryptography;
+using System.Threading;
+using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
+using Vortex.Primitives.Camera;
+using Vortex.Rooms.Configuration;
+
+namespace Vortex.Rooms.Camera;
+
+/// <summary>
+/// Photo files under one configured root, named by minted keys.
+/// </summary>
+/// <remarks>
+/// <para>
+/// The key is generated here and never taken from the payload, which is what keeps a path out of the
+/// attacker's hands. It is still validated on the way back in: a key that came from somewhere else
+/// is refused rather than resolved, because the day this class is called from somewhere new is the
+/// day "the key is always ours" stops being true by construction.
+/// </para>
+/// <para>
+/// Writes land on a temporary name and are then moved into place. A photo is fetched by url the
+/// moment the client is told about it, and a reader that arrives mid-write would otherwise get a
+/// file that is half a photo — the same way a half-written dump once became the newest backup.
+/// </para>
+/// </remarks>
+internal sealed class CameraPhotoStore : ICameraPhotoStore
+{
+    /// <summary>16 bytes of randomness, hex. Unguessable, and every character is safe in a path.</summary>
+    private const int KeyBytes = 16;
+    private const int KeyLength = KeyBytes * 2;
+
+    private const string SceneExtension = ".scene.z";
+
+    private readonly string _root;
+    private readonly ILogger<CameraPhotoStore> _logger;
+
+    public CameraPhotoStore(IOptions<RoomConfig> roomConfig, ILogger<CameraPhotoStore> logger)
+    {
+        _logger = logger;
+        // Trailing separator on purpose: without it "…/photos" is a prefix of "…/photos-public",
+        // and the containment check below would wave through a sibling directory.
+        _root =
+            Path.GetFullPath(roomConfig.Value.CameraPhotoRoot)
+                .TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar)
+            + Path.DirectorySeparatorChar;
+    }
+
+    public string NewPhotoKey() => Convert.ToHexString(RandomNumberGenerator.GetBytes(KeyBytes));
+
+    public async Task<bool> SaveSceneAsync(
+        string photoKey,
+        ReadOnlyMemory<byte> deflatedScene,
+        CancellationToken ct
+    )
+    {
+        if (!TryResolve(photoKey, SceneExtension, out string? path))
+        {
+            return false;
+        }
+
+        try
+        {
+            Directory.CreateDirectory(_root);
+
+            // Same directory as the destination: a move across volumes is a copy, and a copy is not
+            // atomic. The temporary name carries the key so a crash leaves something identifiable
+            // rather than an orphan nobody dares delete.
+            string temporary = path + ".partial";
+
+            await File.WriteAllBytesAsync(temporary, deflatedScene, ct).ConfigureAwait(false);
+            File.Move(temporary, path, overwrite: true);
+
+            return true;
+        }
+        catch (IOException ex)
+        {
+            _logger.LogError(ex, "Camera photo {PhotoKey} could not be written.", photoKey);
+            return false;
+        }
+        catch (UnauthorizedAccessException ex)
+        {
+            _logger.LogError(ex, "Camera photo {PhotoKey} could not be written.", photoKey);
+            return false;
+        }
+    }
+
+    public string PublicPath(string photoKey, string urlPathPrefix) =>
+        !IsMintedKey(photoKey)
+            ? string.Empty
+            : string.Create(CultureInfo.InvariantCulture, $"{urlPathPrefix}{photoKey}.png");
+
+    /// <summary>
+    /// Turns a key into a path under the root, or refuses.
+    /// </summary>
+    /// <remarks>
+    /// The shape check alone would do it — a key is thirty-two hex characters and none of those is a
+    /// separator — but the resolved path is compared against the root as well. Two locks, because
+    /// the cost is one comparison and the failure mode is writing wherever the caller likes.
+    /// </remarks>
+    private bool TryResolve(string photoKey, string extension, [NotNullWhen(true)] out string? path)
+    {
+        path = null;
+
+        if (!IsMintedKey(photoKey))
+        {
+            _logger.LogWarning(
+                "Camera photo key {PhotoKey} is not one this store minted.",
+                photoKey
+            );
+            return false;
+        }
+
+        string candidate = Path.GetFullPath(Path.Combine(_root, photoKey + extension));
+
+        if (!candidate.StartsWith(_root, StringComparison.Ordinal))
+        {
+            return false;
+        }
+
+        path = candidate;
+        return true;
+    }
+
+    private static bool IsMintedKey(string photoKey)
+    {
+        if (photoKey.Length != KeyLength)
+        {
+            return false;
+        }
+
+        foreach (char c in photoKey)
+        {
+            if (!char.IsAsciiHexDigitUpper(c))
+            {
+                return false;
+            }
+        }
+
+        return true;
+    }
+}

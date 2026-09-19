@@ -14,10 +14,10 @@ reproduced from the target client and the current code on the next run.
 | implemented | avatar | ClaimNewUserName | 879 | ChangeUserNameMessageHandler | avatar.change_user_name | avatar.change_user_name reaches a domain operation from ChangeUserNameMessageHandler |
 | implemented | avatar | GetWardrobe | 2210 | GetWardrobeMessageHandler | avatar.get_wardrobe | avatar.get_wardrobe reaches a domain operation from GetWardrobeMessageHandler |
 | implemented | avatar | SaveWardrobeOutfit | 116 | SaveWardrobeOutfitMessageHandler | avatar.save_wardrobe_outfit | avatar.save_wardrobe_outfit reaches a domain operation from SaveWardrobeOutfitMessageHandler |
-| partial | camera | PhotoCompetition | 2707 | PhotoCompetitionMessageHandler | camera.photo_competition | camera.photo_competition exists but the handler reaches no domain operation |
-| partial | camera | PublishPhoto | 375 | PublishPhotoMessageHandler | camera.publish_photo | camera.publish_photo exists but the handler reaches no domain operation |
-| partial | camera | PurchasePhoto | 753 | PurchasePhotoMessageHandler | camera.purchase_photo | camera.purchase_photo exists but the handler reaches no domain operation |
-| partial | camera | RenderRoom | 3332 | RenderRoomMessageHandler | camera.render_room | camera.render_room exists but the handler reaches no domain operation |
+| implemented | camera | PhotoCompetition | 2707 | PhotoCompetitionMessageHandler | camera.photo_competition | camera.photo_competition reaches a domain operation from PhotoCompetitionMessageHandler |
+| implemented | camera | PublishPhoto | 375 | PublishPhotoMessageHandler | camera.publish_photo | camera.publish_photo reaches a domain operation from PublishPhotoMessageHandler |
+| implemented | camera | PurchasePhoto | 753 | PurchasePhotoMessageHandler | camera.purchase_photo | camera.purchase_photo reaches a domain operation from PurchasePhotoMessageHandler |
+| implemented | camera | RenderRoom | 3332 | RenderRoomMessageHandler | camera.render_room | camera.render_room reaches a domain operation from RenderRoomMessageHandler |
 | implemented | camera | RequestCameraConfiguration | 3010 | RequestCameraConfigurationMessageHandler | camera.request_camera_configuration | camera.request_camera_configuration reaches a domain operation from RequestCameraConfigurationMessageHandler |
 | partial | campaign | OpenCampaignCalendarDoor | 3643 | OpenCampaignCalendarDoorMessageHandler | campaign.open_campaign_calendar_door | campaign.open_campaign_calendar_door exists but the handler reaches no domain operation |
 | partial | campaign | OpenCampaignCalendarDoorAsStaff | 3863 | OpenCampaignCalendarDoorAsStaffMessageHandler | campaign.open_campaign_calendar_door_as_staff | campaign.open_campaign_calendar_door_as_staff exists but the handler reaches no domain operation |

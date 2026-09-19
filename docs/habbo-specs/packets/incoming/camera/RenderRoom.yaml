@@ -10,7 +10,7 @@
 
 spec: packet
 spec_version: 1
-generated_digest: "sha256:680d6e4411afa10ce8039cab3ea5d4e2dc81a08a948a45a9bb411b58850c469b"
+generated_digest: "sha256:6317e987ab58e011ce6f550f945eab020563d9eda7a8e80b4aa074d9346da78f"
 generated:
   name: RenderRoom
   direction: incoming
@@ -18,7 +18,14 @@ generated:
   structure_confidence: implementation_observed
   mapped_in_vortex: true
   vortex_handler: RenderRoomMessageHandler
-  fields: []
+  fields:
+  - index: 0
+    name: length
+    type: int32
+    name_confidence: implementation_observed
+    type_confidence: implementation_observed
+    evidence:
+    - ev_f1dd1e0a1dfa
   layouts_by_source:
   - origin: "as3:PRODUCTION-201601012205-226667486"
     authority: client_code
@@ -46,9 +53,10 @@ generated:
     evidence: ev_4a708ba19eae
   - origin: vortex
     authority: vortex_emulator
-    field_count: 0
+    field_count: 1
     partial: false
-    types: []
+    types:
+    - int32
     evidence: ev_f1dd1e0a1dfa
   evidence:
   - id: ev_86322739f7f6
@@ -89,6 +97,6 @@ generated:
     origin: vortex
     source: Vortex.Revisions/Revision20260701/Parsers/Camera/RenderRoomMessageParser.cs
     symbol: RenderRoomMessageParser
-    line: 7
+    line: 18
 verified: {}
 manual: {}

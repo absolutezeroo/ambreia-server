@@ -24,9 +24,9 @@ actually produced against the trees listed under Sources.
 | | Count |
 |---|---:|
 | Features | 521 |
-| Scenarios | 2025 |
-| Captures imported | 9 |
-| Capture observations | 85 |
+| Scenarios | 2049 |
+| Captures imported | 10 |
+| Capture observations | 92 |
 
 ## Confidence in packet structure
 
@@ -43,15 +43,15 @@ actually produced against the trees listed under Sources.
 
 | | Count |
 |---|---:|
-| Conflicts | 367 |
-| Critical unknowns | 125 |
-| Unknowns in total | 682 |
-| Fields with no attested name | 1581 of 5863 |
+| Conflicts | 369 |
+| Critical unknowns | 121 |
+| Unknowns in total | 680 |
+| Fields with no attested name | 1576 of 5864 |
 
 ## Files
 
-- written: 0
-- unchanged: 3606
+- written: 50
+- unchanged: 3557
 - blocked by hand edits: 0
 
 ## Coverage the scan bounded

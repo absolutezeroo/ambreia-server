@@ -9,19 +9,16 @@ Target client: `WIN63-202607011411-782849652`
 |---|---|
 | obligations | 5 |
 | missing | 0 |
-| partial | 4 |
-| implemented | 1 |
+| partial | 0 |
+| implemented | 5 |
 | complete | 0 |
 | unknown | 0 |
 | not_applicable | 0 |
 
-## partial
-
-- `PhotoCompetition` (2707) — camera.photo_competition exists but the handler reaches no domain operation
-- `PublishPhoto` (375) — camera.publish_photo exists but the handler reaches no domain operation
-- `PurchasePhoto` (753) — camera.purchase_photo exists but the handler reaches no domain operation
-- `RenderRoom` (3332) — camera.render_room exists but the handler reaches no domain operation
-
 ## implemented
 
+- `PhotoCompetition` (2707) — camera.photo_competition reaches a domain operation from PhotoCompetitionMessageHandler
+- `PublishPhoto` (375) — camera.publish_photo reaches a domain operation from PublishPhotoMessageHandler
+- `PurchasePhoto` (753) — camera.purchase_photo reaches a domain operation from PurchasePhotoMessageHandler
+- `RenderRoom` (3332) — camera.render_room reaches a domain operation from RenderRoomMessageHandler
 - `RequestCameraConfiguration` (3010) — camera.request_camera_configuration reaches a domain operation from RequestCameraConfigurationMessageHandler

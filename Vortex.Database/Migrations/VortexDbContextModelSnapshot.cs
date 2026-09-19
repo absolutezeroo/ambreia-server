@@ -578,6 +578,79 @@ namespace Vortex.Database.Migrations
                     b.ToTable("item_events");
                 });
 
+            modelBuilder.Entity("Vortex.Database.Entities.Camera.CameraPhotoEntity", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasColumnName("id");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime?>("CompetitionSubmittedAt")
+                        .HasColumnType("datetime(6)")
+                        .HasColumnName("competition_submitted_at");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime(6)")
+                        .HasColumnName("created_at");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<DateTime>("CreatedAt"));
+
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("datetime(6)")
+                        .HasColumnName("deleted_at");
+
+                    b.Property<string>("PhotoKey")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("varchar(64)")
+                        .HasColumnName("photo_key");
+
+                    b.Property<int>("PlayerEntityId")
+                        .HasColumnType("int")
+                        .HasColumnName("player_id");
+
+                    b.Property<DateTime?>("PublishedAt")
+                        .HasColumnType("datetime(6)")
+                        .HasColumnName("published_at");
+
+                    b.Property<DateTime?>("PurchasedAt")
+                        .HasColumnType("datetime(6)")
+                        .HasColumnName("purchased_at");
+
+                    b.Property<int>("RejectedExternalSprites")
+                        .HasColumnType("int")
+                        .HasColumnName("rejected_external_sprites");
+
+                    b.Property<int?>("RoomEntityId")
+                        .HasColumnType("int")
+                        .HasColumnName("room_id");
+
+                    b.Property<int>("SceneBytes")
+                        .HasColumnType("int")
+                        .HasColumnName("scene_bytes");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("datetime(6)")
+                        .HasColumnName("updated_at");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlComputedColumn(b.Property<DateTime>("UpdatedAt"));
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("PhotoKey")
+                        .IsUnique();
+
+                    b.HasIndex("RoomEntityId");
+
+                    b.HasIndex("PlayerEntityId", "CreatedAt");
+
+                    b.ToTable("camera_photos");
+                });
+
             modelBuilder.Entity("Vortex.Database.Entities.Catalog.CatalogClubGiftEntity", b =>
                 {
                     b.Property<int>("Id")
@@ -12290,6 +12363,23 @@ namespace Vortex.Database.Migrations
                     b.Navigation("AchievementEntity");
 
                     b.Navigation("PlayerEntity");
+                });
+
+            modelBuilder.Entity("Vortex.Database.Entities.Camera.CameraPhotoEntity", b =>
+                {
+                    b.HasOne("Vortex.Database.Entities.Players.PlayerEntity", "PlayerEntity")
+                        .WithMany()
+                        .HasForeignKey("PlayerEntityId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Vortex.Database.Entities.Room.RoomEntity", "RoomEntity")
+                        .WithMany()
+                        .HasForeignKey("RoomEntityId");
+
+                    b.Navigation("PlayerEntity");
+
+                    b.Navigation("RoomEntity");
                 });
 
             modelBuilder.Entity("Vortex.Database.Entities.Catalog.CatalogOfferEntity", b =>

@@ -1,10 +1,12 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Vortex.Primitives.Camera;
 using Vortex.Primitives.Hosting;
 using Vortex.Primitives.Moderation;
 using Vortex.Primitives.Plugins;
 using Vortex.Primitives.Rooms;
 using Vortex.Primitives.Rooms.Providers;
+using Vortex.Rooms.Camera;
 using Vortex.Rooms.Configuration;
 using Vortex.Rooms.Events;
 using Vortex.Rooms.Games;
@@ -45,6 +47,7 @@ public sealed class RoomModule : IHostPluginModule
         services.AddSingleton<IModeratorChatlogService, ModeratorChatlogService>();
         services.AddSingleton<IModeratorRoomVisitService, ModeratorRoomVisitService>();
         services.AddSingleton<ICfhTicketService, CfhTicketService>();
+        services.AddSingleton<ICameraPhotoStore, CameraPhotoStore>();
         services.AddSingleton<IRoomAdvertisementService, RoomAdvertisementService>();
 
         // Wired room-logs pipeline: one bounded channel -> single background writer (no DB on

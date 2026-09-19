@@ -10,7 +10,7 @@
 
 spec: feature
 spec_version: 1
-generated_digest: "sha256:f8949ba01fa4dd6580def5690f3345b86d4f2f273dc389ae7de53b7548e6f406"
+generated_digest: "sha256:774a84a9b62efd3fb87b459d386b7b838eda6ca1653ef311cfb20791bb205706"
 generated:
   id: handshake.info_retrieve
   domain: handshake
@@ -65,7 +65,7 @@ generated:
     origin: vortex
     source: Vortex.Primitives/Orleans/GrainFactoryExtensions.cs
     symbol: GrainFactoryExtensions
-    line: 228
+    line: 234
   - id: ev_1f83e61934ca
     kind: emulator_flow
     authority: vortex_emulator

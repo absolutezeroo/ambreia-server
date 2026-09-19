@@ -10,7 +10,7 @@
 
 spec: feature
 spec_version: 1
-generated_digest: "sha256:9f11cb7832fe99bd379c36e0fb786576db7a8ff5ba639ad7c31a024e8d3b77cb"
+generated_digest: "sha256:7b3e48bbc6f2c073360d48cf4fda5e463b13d7409a2a3276b74936104e1104e0"
 generated:
   id: room.respect_pet
   domain: room
@@ -117,7 +117,7 @@ generated:
     origin: vortex
     source: Vortex.Primitives/Orleans/GrainFactoryExtensions.cs
     symbol: GrainFactoryExtensions
-    line: 228
+    line: 234
   - id: ev_1557b71ceec2
     kind: emulator_flow
     authority: vortex_emulator

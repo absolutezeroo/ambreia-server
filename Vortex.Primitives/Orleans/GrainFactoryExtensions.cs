@@ -1,4 +1,5 @@
 using Orleans;
+using Vortex.Primitives.Camera.Grains;
 using Vortex.Primitives.Catalog.Grains;
 using Vortex.Primitives.Collectibles.Grains;
 using Vortex.Primitives.Fishing.Grains;
@@ -221,6 +222,11 @@ public static class GrainFactoryExtensions
         this IGrainFactory factory,
         long playerId
     ) => factory.GetGrain<IPlayerEffectGrain>(playerId);
+
+    public static IPlayerCameraGrain GetPlayerCameraGrain(
+        this IGrainFactory factory,
+        PlayerId playerId
+    ) => factory.GetGrain<IPlayerCameraGrain>(playerId.Value);
 
     public static IAchievementManagerGrain GetAchievementManagerGrain(this IGrainFactory factory) =>
         factory.GetGrain<IAchievementManagerGrain>(SingletonGrainId.GLOBAL);
