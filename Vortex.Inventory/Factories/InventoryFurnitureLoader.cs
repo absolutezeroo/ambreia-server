@@ -81,10 +81,14 @@ internal sealed class InventoryFurnitureLoader(
                 }
                 catch (Exception ex)
                 {
+                    // The definition id is the whole diagnosis when this is the usual cause -- a
+                    // furniture row pointing at a definition the catalogue no longer has -- and
+                    // without it the warning names an item nobody can look up.
                     _logger.LogWarning(
                         ex,
-                        "Failed to load inventory furniture {ItemId} for player {PlayerId}; skipping item.",
+                        "Failed to load inventory furniture {ItemId} (definition {DefinitionId}) for player {PlayerId}; skipping item.",
                         entity.Id,
+                        entity.FurnitureDefinitionEntityId,
                         playerId
                     );
                 }

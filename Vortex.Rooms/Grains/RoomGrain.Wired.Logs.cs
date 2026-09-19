@@ -8,6 +8,7 @@ using Vortex.Database.Context;
 using Vortex.Database.Entities.Wired;
 using Vortex.Primitives.Rooms.Enums.Wired;
 using Vortex.Primitives.Rooms.Snapshots.Wired;
+using Vortex.Rooms.Wired.Logs;
 
 namespace Vortex.Rooms.Grains;
 
@@ -28,18 +29,14 @@ public sealed partial class RoomGrain
             .RoomWiredLogs.AsNoTracking()
             .Where(l => l.RoomEntityId == _state.RoomId.Value);
 
-        WiredLogLevel? logLevel = Enum.IsDefined(typeof(WiredLogLevel), logLevelFilter)
-            ? (WiredLogLevel)logLevelFilter
-            : null;
+        WiredLogLevel? logLevel = WiredLogFilter.FromWire<WiredLogLevel>(logLevelFilter);
 
         if (logLevel.HasValue)
         {
             logs = logs.Where(l => l.LogLevel == logLevel.Value);
         }
 
-        WiredLogSource? logSource = Enum.IsDefined(typeof(WiredLogSource), logSourceFilter)
-            ? (WiredLogSource)logSourceFilter
-            : null;
+        WiredLogSource? logSource = WiredLogFilter.FromWire<WiredLogSource>(logSourceFilter);
 
         if (logSource.HasValue)
         {
