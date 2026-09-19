@@ -709,6 +709,13 @@ public static class ConfigKeyCatalog
             "Classname of the furniture a bought photo becomes. Nothing is charged if no definition carries this name.",
             "Camera"
         ),
+        new(
+            "camera.furniture_asset_url",
+            "",
+            ConfigValueKind.String,
+            "Where furniture .nitro bundles are served, ending in a slash. Empty means photos show no furniture.",
+            "Camera"
+        ),
     ];
 
     /// <summary>The descriptor for <paramref name="key"/>, or null if the key is not a known config key.</summary>

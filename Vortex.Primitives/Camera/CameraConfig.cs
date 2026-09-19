@@ -89,6 +89,14 @@ public static class CameraConfig
     /// </summary>
     public const string PhotoFurniClassNameKey = "camera.photo_furni_classname";
 
+    /// <summary>
+    /// Where the hotel's furniture bundles are served from, ending in a slash. The renderer joins a
+    /// classname and <c>.nitro</c> to it, which is the url the client builds from
+    /// <c>flash.dynamic.download.url</c> — there is no revision in that template, so the classname
+    /// alone addresses a bundle. Empty means no furniture is drawn in a photo.
+    /// </summary>
+    public const string FurnitureAssetUrlKey = "camera.furniture_asset_url";
+
     /// <summary>Ceiling on either side of a rendered photo. Nothing in the payload bounds a
     /// coordinate, so this is what stands between a corner at a billion and a failed allocation.</summary>
     public const string MaxPhotoDimensionKey = "camera.max_photo_dimension";
@@ -132,6 +140,9 @@ public static class CameraConfig
     /// <summary>Nothing. An operator opts external images in; they are not on by accident.</summary>
     public const string DefaultExternalImagePrefixes = "";
 
+    /// <summary>Nothing. Every hotel serves its pack somewhere different.</summary>
+    public const string DefaultFurnitureAssetUrl = "";
+
     /// <summary>Every key of the group, for the one-round-trip batch resolve.</summary>
     public static readonly ImmutableArray<string> AllKeys =
     [
@@ -155,6 +166,7 @@ public static class CameraConfig
         MaxExternalFetchesKey,
         ExternalTimeoutSecondsKey,
         MaxExternalBytesKey,
+        FurnitureAssetUrlKey,
     ];
 
     /// <summary>The three prices the client is told at room entry, and nothing else.</summary>

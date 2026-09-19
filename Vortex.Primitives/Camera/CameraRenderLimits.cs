@@ -38,6 +38,14 @@ public sealed record CameraRenderLimits
     [Id(3)]
     public required int MaxExternalBytes { get; init; }
 
+    /// <summary>
+    /// Where furniture bundles are served, ending in a slash. Carried here rather than fixed when the
+    /// library is built, so an operator moving their asset host takes effect on the next photo rather
+    /// than on the next restart — the same way every other number in this record does.
+    /// </summary>
+    [Id(4)]
+    public required string FurnitureAssetUrl { get; init; }
+
     public static CameraRenderLimits Defaults { get; } =
         new()
         {
@@ -45,5 +53,6 @@ public sealed record CameraRenderLimits
             MaxExternalFetches = CameraConfig.DefaultMaxExternalFetches,
             ExternalTimeout = TimeSpan.FromSeconds(CameraConfig.DefaultExternalTimeoutSeconds),
             MaxExternalBytes = CameraConfig.DefaultMaxExternalBytes,
+            FurnitureAssetUrl = CameraConfig.DefaultFurnitureAssetUrl,
         };
 }

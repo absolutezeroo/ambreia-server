@@ -431,6 +431,11 @@ internal sealed class PlayerCameraGrain(
                 CameraConfig.MaxExternalBytesKey,
                 CameraConfig.DefaultMaxExternalBytes
             ),
+            FurnitureAssetUrl = ServerConfigValues.GetString(
+                config,
+                CameraConfig.FurnitureAssetUrlKey,
+                CameraConfig.DefaultFurnitureAssetUrl
+            ),
         };
 
     private static CameraSceneLimits ReadLimits(IReadOnlyDictionary<string, string> config) =>

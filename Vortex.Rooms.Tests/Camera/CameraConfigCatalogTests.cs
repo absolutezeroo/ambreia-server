@@ -84,6 +84,7 @@ public sealed class CameraConfigCatalogTests
             I(CameraConfig.DefaultExternalTimeoutSeconds),
         ];
         yield return [CameraConfig.MaxExternalBytesKey, I(CameraConfig.DefaultMaxExternalBytes)];
+        yield return [CameraConfig.FurnitureAssetUrlKey, CameraConfig.DefaultFurnitureAssetUrl];
     }
 
     [Theory]

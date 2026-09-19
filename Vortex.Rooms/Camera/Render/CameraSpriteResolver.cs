@@ -26,9 +26,12 @@ namespace Vortex.Rooms.Camera.Render;
 /// burst against the asset host or a render that never ends because a host stopped answering.
 /// </para>
 /// </remarks>
-internal sealed class CameraSpriteResolver(string spriteRoot, HttpClient http, ILogger logger)
-    : ICameraSpriteSource,
-        IDisposable
+internal sealed class CameraSpriteResolver(
+    string spriteRoot,
+    HttpClient http,
+    NitroSpriteLibrary library,
+    ILogger logger
+) : ICameraSpriteSource, IDisposable
 {
     /// <summary>Disposes the client this was given. Harmless when a caller owns it too: disposing an
     /// <c>HttpClient</c> twice does nothing the second time.</summary>
@@ -96,7 +99,13 @@ internal sealed class CameraSpriteResolver(string spriteRoot, HttpClient http, I
 
             if (sprite.Source == CameraSpriteSource.LocalAsset)
             {
-                bytes = ReadLocal(sprite.Name);
+                // The directory first, the hotel's own .nitro pack second. That order is the useful
+                // one: the pack is the source of truth and needs no maintenance, and a PNG dropped
+                // in the directory is then an operator's override of one asset rather than the only
+                // way to have any.
+                bytes =
+                    ReadLocal(sprite.Name)
+                    ?? await library.GetSpriteAsync(sprite.Name, limits, ct).ConfigureAwait(false);
             }
             else if (fetches < limits.MaxExternalFetches)
             {

@@ -169,7 +169,15 @@ public sealed class CameraSpriteResolverTests : IDisposable
         // The scope that made the handler disposes it, so this must not do it a second time.
         using HttpClient http = new(handler, disposeHandler: false);
 
-        using CameraSpriteResolver resolver = new(_root, http, NullLogger.Instance);
+        // A library with nowhere to fetch from: these tests are about the directory and the
+        // allowlist, and the pack answers null before it looks at anything when no url is set.
+        NitroSpriteLibrary library = new(
+            _ => Task.FromResult<IReadOnlyCollection<string>>([]),
+            http,
+            NullLogger.Instance
+        );
+
+        using CameraSpriteResolver resolver = new(_root, http, library, NullLogger.Instance);
 
         CameraRenderLimits limits = CameraRenderLimits.Defaults with
         {
