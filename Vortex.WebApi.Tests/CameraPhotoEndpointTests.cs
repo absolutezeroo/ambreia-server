@@ -52,6 +52,54 @@ public sealed class CameraPhotoEndpointTests
     }
 
     /// <summary>
+    /// The client reads a photo with <c>fetch()</c> from its own origin, so the browser applies CORS
+    /// to it. The default policy is credentialed — it cannot answer a wildcard, and it answers
+    /// nothing at all to an origin the operator has not listed — which is how a photo that was taken,
+    /// stored, billed and served with a 200 still failed to appear.
+    /// </summary>
+    [Fact]
+    public async Task APhoto_IsReadableFromAnOriginNobodyListed()
+    {
+        await using WebApiTestFactory factory = new();
+
+        string key = factory.Photos.Add([1, 2, 3]);
+
+        using HttpRequestMessage request = new(
+            HttpMethod.Get,
+            $"/api/public/camera/photos/{key}.png"
+        );
+        request.Headers.Add("Origin", "https://some-other-hotel.example");
+
+        using HttpResponseMessage response = await factory.Client.SendAsync(request);
+
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        response
+            .Headers.GetValues("Access-Control-Allow-Origin")
+            .Should()
+            .ContainSingle()
+            .Which.Should()
+            .Be("*");
+    }
+
+    /// <summary>
+    /// The half that matters more. An open policy is only safe while it stays on the routes that
+    /// carry no session, so this asserts the credentialed default is still the default: the same
+    /// unlisted origin gets nothing from a route that is not the photo.
+    /// </summary>
+    [Fact]
+    public async Task TheOpenPolicy_DoesNotReachTheRestOfTheApi()
+    {
+        await using WebApiTestFactory factory = new();
+
+        using HttpRequestMessage request = new(HttpMethod.Get, "/api/public/chain");
+        request.Headers.Add("Origin", "https://some-other-hotel.example");
+
+        using HttpResponseMessage response = await factory.Client.SendAsync(request);
+
+        response.Headers.Contains("Access-Control-Allow-Origin").Should().BeFalse();
+    }
+
+    /// <summary>
     /// A key the store did not mint is refused by the store, not by the route — which is the point of
     /// the arrangement. Nothing outside <c>ICameraPhotoStore</c> turns a url segment into a path.
     /// </summary>

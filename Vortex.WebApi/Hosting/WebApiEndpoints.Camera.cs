@@ -63,6 +63,10 @@ internal static partial class WebApiEndpointsCamera
             )
             .WithName("GetCameraPhoto")
             .WithTags("Camera")
-            .AllowAnonymous();
+            .AllowAnonymous()
+            // The client reads this with fetch() rather than an <img>, so the browser applies CORS
+            // to it — and the default policy answers nothing to an origin the operator has not
+            // listed. This one is open and uncredentialed, which is what a public image wants.
+            .RequireCors(WebApiAppConfigurator.PublicAssetCorsPolicyName);
     }
 }

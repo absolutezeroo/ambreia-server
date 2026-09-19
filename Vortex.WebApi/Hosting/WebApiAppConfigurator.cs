@@ -21,6 +21,13 @@ internal static class WebApiAppConfigurator
 {
     public const string CorsPolicyName = "webapi";
 
+    /// <summary>
+    /// For routes that serve something public and carry no session. Opt in with
+    /// <c>.RequireCors(PublicAssetCorsPolicyName)</c>, and only on an endpoint where a cookie is
+    /// meaningless.
+    /// </summary>
+    public const string PublicAssetCorsPolicyName = "webapi-public-asset";
+
     public static void ConfigureServices(IServiceCollection services, WebApiConfig config)
     {
         AddCors(services, config);
@@ -75,6 +82,7 @@ internal static class WebApiAppConfigurator
     private static void AddCors(IServiceCollection services, WebApiConfig config)
     {
         services.AddCors(options =>
+        {
             options.AddPolicy(
                 CorsPolicyName,
                 policy =>
@@ -83,8 +91,23 @@ internal static class WebApiAppConfigurator
                         .AllowCredentials()
                         .AllowAnyHeader()
                         .WithMethods("GET", "POST", "OPTIONS")
-            )
-        );
+            );
+
+            // A room photo is fetched by the client with fetch(), from its own origin, with no
+            // session — so the policy above cannot serve it: it is credentialed, which forbids a
+            // wildcard, and it answers nothing at all to an origin the operator has not listed.
+            //
+            // This one is deliberately open and deliberately separate. Dropping AllowCredentials is
+            // what makes that safe: a page on any site can read these bytes, and could already have
+            // read them from its own server, because the only thing guarding a photo is a key of
+            // thirty-two random hex characters. CORS was never what protected it. What must not
+            // happen is this policy touching a route that carries the session cookie, which is why
+            // it is opt-in per endpoint rather than the default.
+            options.AddPolicy(
+                PublicAssetCorsPolicyName,
+                policy => policy.AllowAnyOrigin().AllowAnyHeader().WithMethods("GET", "OPTIONS")
+            );
+        });
     }
 
     private static void AddRateLimiting(IServiceCollection services, WebApiConfig config)
