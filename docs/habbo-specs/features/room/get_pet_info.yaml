@@ -10,7 +10,7 @@
 
 spec: feature
 spec_version: 1
-generated_digest: "sha256:7e73dc518debb3a1e21d5b62724ccf795e3b07d0557ee78d060d4ade55142014"
+generated_digest: "sha256:f1126804b9df1e55eed1c3202fde00a4bb3f2cd783185b467cba7e6697139459"
 generated:
   id: room.get_pet_info
   domain: room
@@ -134,7 +134,7 @@ generated:
     origin: vortex
     source: Vortex.Primitives/Pets/Snapshots/PetSnapshot.cs
     symbol: PetSnapshot
-    line: 119
+    line: 117
   scenarios:
   - room.get_pet_info.guard_0
   - room.get_pet_info.guard_1

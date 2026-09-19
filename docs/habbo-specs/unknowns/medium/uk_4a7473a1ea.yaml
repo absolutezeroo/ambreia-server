@@ -10,7 +10,7 @@
 
 spec: unknown
 spec_version: 1
-generated_digest: "sha256:b0afb804d7d937f47180d72e8331fad9c1bcb7b30ec476a4b572f7dc03ca3ef3"
+generated_digest: "sha256:272e5a094d09cc13334e276297d02d99e07e49564ee6206dace5759841096f1e"
 generated:
   id: uk_4a7473a1ea
   subject: "navigator.resolve_for_player: what the server sends when it refuses"
@@ -32,7 +32,7 @@ generated:
     origin: vortex
     source: Vortex.Rooms/Grains/RoomGrain.Settings.cs
     symbol: RoomGrain
-    line: 761
+    line: 827
   - id: ev_3fdb23ee39cd
     kind: emulator_flow
     authority: vortex_emulator

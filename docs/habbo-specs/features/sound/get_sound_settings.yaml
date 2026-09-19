@@ -10,7 +10,7 @@
 
 spec: feature
 spec_version: 1
-generated_digest: "sha256:394fca5dc1eee78f98be9d9bf88ad26121f0f82417285b676a65114f04f16bdf"
+generated_digest: "sha256:7632dc8c2b30a1c8a797f6d7a0c93f012c07c060d3a88b6f7b88d3fe022c0f94"
 generated:
   id: sound.get_sound_settings
   domain: sound
@@ -22,7 +22,7 @@ generated:
     references:
     - habbo-arcturus-daybreak
   official_behavior:
-    status: unknown
+    status: capture_confirmed
   flow:
   - order: 0
     layer: handler
@@ -70,7 +70,7 @@ generated:
     origin: vortex
     source: Vortex.Players/Grains/PlayerGrain.cs
     symbol: PlayerGrain
-    line: 256
+    line: 379
   - id: ev_630a59578b9c
     kind: emulator_flow
     authority: vortex_emulator
@@ -109,8 +109,6 @@ generated:
   scenarios:
   - sound.get_sound_settings.guard_0
   - sound.get_sound_settings.success
-  conflicts:
-  - cf_c1edb85792
   unknowns:
   - uk_741e1b1c55
 verified: {}

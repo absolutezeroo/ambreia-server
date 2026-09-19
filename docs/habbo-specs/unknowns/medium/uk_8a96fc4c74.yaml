@@ -10,7 +10,7 @@
 
 spec: unknown
 spec_version: 1
-generated_digest: "sha256:44cd53e31d2c2d1845099b752cb779883f3039c78a76935c55936b58893a4edd"
+generated_digest: "sha256:c1a66a8568c5a130bc4d7a5157e312a52bc81fef5de4f2afaa18eb03c30aede9"
 generated:
   id: uk_8a96fc4c74
   subject: "room.give_supplement_to_pet: what the server sends when it refuses"
@@ -25,7 +25,7 @@ generated:
     origin: vortex
     source: Vortex.Rooms/Grains/Systems/RoomPetSystem.Care.cs
     symbol: RoomPetSystem
-    line: 152
+    line: 141
   - id: ev_7e53d81cbdc8
     kind: emulator_flow
     authority: vortex_emulator

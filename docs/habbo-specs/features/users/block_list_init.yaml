@@ -10,7 +10,7 @@
 
 spec: feature
 spec_version: 1
-generated_digest: "sha256:6df4d5cbd912f498a648c4c225182b36c1267f3d33e61845e8ff4c5934abbfea"
+generated_digest: "sha256:29de2dff5add196d5fd61455c7fe425f19e04ba1430a58387a4bb7fd8581c183"
 generated:
   id: users.block_list_init
   domain: users
@@ -21,7 +21,7 @@ generated:
     vortex: true
     references: []
   official_behavior:
-    status: unknown
+    status: capture_confirmed
   flow:
   - order: 0
     layer: handler

@@ -10,7 +10,7 @@
 
 spec: unknown
 spec_version: 1
-generated_digest: "sha256:1b234aab935ebe055b2e31f22bcedea2268935ba7837f18869f343e3e2b30a3e"
+generated_digest: "sha256:cea29f44322f7021dc4bf56643831f007f9a703aaf4c150a7d0d3ebe9596cfb6"
 generated:
   id: uk_14f922b785
   subject: "inventory.request_furni_inventory: who receives FurniList"
@@ -25,6 +25,6 @@ generated:
     origin: vortex
     source: Vortex.Players/Grains/Modules/PlayerInventoryModule.cs
     symbol: PlayerInventoryModule
-    line: 47
+    line: 49
 verified: {}
 manual: {}

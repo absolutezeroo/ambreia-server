@@ -10,7 +10,7 @@
 
 spec: scenarios
 spec_version: 1
-generated_digest: "sha256:8720af0896f8465a2ccf45056d60467049a7b221854764fd785704ba01fc39bf"
+generated_digest: "sha256:eb5260dbdfe99838ceb682f496944c4c502b2ba437002a4e8b8207545b7ebdd8"
 generated:
   feature: room.get_furniture_aliases
   scenarios:
@@ -21,10 +21,9 @@ generated:
     when:
       packet: GetFurnitureAliases
     expected:
-      status: unknown
-      confidence: unknown
-    needs_evidence: an official capture of GetFurnitureAliases succeeding, with every packet the server sends back and in what order
-    executable: false
+      status: success
+      confidence: capture_confirmed
+    executable: true
     claims:
     - origin: vortex
       authority: vortex_emulator
@@ -37,7 +36,18 @@ generated:
       outcome: ignored
       emits: []
       evidence: ev_4047cc3f1a79
+    - origin: capture (1 observations)
+      authority: official_capture
+      outcome: success
+      emits: []
+      evidence: ev_98f080689f45
   evidence:
+  - id: ev_98f080689f45
+    kind: capture
+    authority: official_capture
+    origin: capture
+    source: docs/habbo-specs/evidence/captures
+    symbol: GetFurnitureAliases
   - id: ev_4047cc3f1a79
     kind: reference_handler
     authority: reference_emulator

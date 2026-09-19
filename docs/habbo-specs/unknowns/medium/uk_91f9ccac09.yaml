@@ -10,7 +10,7 @@
 
 spec: unknown
 spec_version: 1
-generated_digest: "sha256:7650b038cd979e7893f4a4c3b87fa88ae19bafc18ff14d7427b4a96d4a10e93b"
+generated_digest: "sha256:83736f39b9a0c2fc344ae54f2c7b728552eacdf4224c79c1e377505a94c65c03"
 generated:
   id: uk_91f9ccac09
   subject: "marketplace.buy_marketplace_offer: what the server sends when it refuses"
@@ -39,7 +39,7 @@ generated:
     origin: vortex
     source: Vortex.Marketplace/Providers/MarketplaceSettingsProvider.cs
     symbol: MarketplaceSettingsProvider
-    line: 34
+    line: 36
   - id: ev_783f83e7a23e
     kind: emulator_handler
     authority: vortex_emulator

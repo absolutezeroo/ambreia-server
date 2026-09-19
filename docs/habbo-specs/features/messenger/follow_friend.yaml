@@ -10,7 +10,7 @@
 
 spec: feature
 spec_version: 1
-generated_digest: "sha256:06a82ddd7641dcb46f7bb63a637c099d086efabae876918c5474b9629d503050"
+generated_digest: "sha256:6b25a6e9e11c5fbd43dc4b97dcbba1aec495b20b6be4b7a799f7ddf40ab6e97c"
 generated:
   id: messenger.follow_friend
   domain: messenger
@@ -162,7 +162,7 @@ generated:
     origin: vortex
     source: Vortex.Rooms/Grains/RoomGrain.cs
     symbol: RoomGrain
-    line: 258
+    line: 260
   - id: ev_bb859d4f21b2
     kind: emulator_flow
     authority: vortex_emulator
@@ -183,7 +183,7 @@ generated:
     origin: vortex
     source: Vortex.Social/Grains/MessengerGrain.Friends.cs
     symbol: MessengerGrain
-    line: 74
+    line: 75
   - id: ev_f13d6bcce744
     kind: emulator_flow
     authority: vortex_emulator

@@ -10,7 +10,7 @@
 
 spec: feature
 spec_version: 1
-generated_digest: "sha256:94128465ce4361790d8d9debb6790ed8b6a63f034732acd28cbf28ba01dddb33"
+generated_digest: "sha256:cbcf4734938bd0f606291f5d7d9929190e12d17a9710d9d1d1944a9d2b2383be"
 generated:
   id: handshake.pong
   domain: handshake
@@ -21,7 +21,7 @@ generated:
     vortex: false
     references: []
   official_behavior:
-    status: unknown
+    status: capture_confirmed
   flow:
   - order: 0
     layer: handler

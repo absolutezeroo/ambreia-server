@@ -10,7 +10,7 @@
 
 spec: packet
 spec_version: 1
-generated_digest: "sha256:9151205044b5ca14d2179fea920ff781c408ea6be478ea2bfd39438b07269871"
+generated_digest: "sha256:ffbbbeee816cfcf8d0021713e61f2111d68fbbffbb356349a8bcc6884344ff18"
 generated:
   name: ResetUnseenItems
   direction: incoming
@@ -18,7 +18,14 @@ generated:
   structure_confidence: implementation_observed
   mapped_in_vortex: true
   vortex_handler: ResetUnseenItemsMessageHandler
-  fields: []
+  fields:
+  - index: 0
+    name: category
+    type: int32
+    name_confidence: implementation_observed
+    type_confidence: implementation_observed
+    evidence:
+    - ev_2d53bd271496
   layouts_by_source:
   - origin: "as3:WIN63-202607011411-782849652"
     authority: client_code
@@ -34,9 +41,10 @@ generated:
     evidence: ev_e1c4ffcd3577
   - origin: vortex
     authority: vortex_emulator
-    field_count: 0
+    field_count: 1
     partial: false
-    types: []
+    types:
+    - int32
     evidence: ev_2d53bd271496
   evidence:
   - id: ev_ac30b8f8fced

@@ -10,7 +10,7 @@
 
 spec: unknown
 spec_version: 1
-generated_digest: "sha256:68770bfa4fa2edd4348606c2c975bbdcb84536743083ec8f3be33b22ca75f0b6"
+generated_digest: "sha256:73930db52cb985bcf4cd7bd2eaf6a92e4b2c592736ee4a99a4f013d2429d2c36"
 generated:
   id: uk_64f8c369bb
   subject: "wired.withdraw_wired_chest_items: what the server sends when it refuses"
@@ -130,7 +130,7 @@ generated:
     origin: vortex
     source: Vortex.Inventory/Grains/InventoryGrain.Furni.cs
     symbol: InventoryGrain
-    line: 62
+    line: 63
   - id: ev_d3a71568179c
     kind: emulator_flow
     authority: vortex_emulator

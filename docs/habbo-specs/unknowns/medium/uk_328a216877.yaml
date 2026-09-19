@@ -10,7 +10,7 @@
 
 spec: unknown
 spec_version: 1
-generated_digest: "sha256:9024e7fb5e8a249e44081f700dd41bc454b65f6c2e99faae9686b5346637c889"
+generated_digest: "sha256:cf530e72f0028b7073dcbbadbcf7ac2dd23e5c377d599790e3c8a20034757a73"
 generated:
   id: uk_328a216877
   subject: "catalog.get_flat_categories: what the server sends when it refuses"
@@ -32,7 +32,7 @@ generated:
     origin: vortex
     source: Vortex.Players/Grains/PlayerGrain.cs
     symbol: PlayerGrain
-    line: 279
+    line: 402
   - id: ev_234fbe9c2c98
     kind: emulator_flow
     authority: vortex_emulator
@@ -109,7 +109,7 @@ generated:
     origin: vortex
     source: Vortex.Rooms/RoomAdvertisementService.cs
     symbol: RoomAdvertisementService
-    line: 135
+    line: 172
   - id: ev_bca43a79b6c9
     kind: emulator_flow
     authority: vortex_emulator
@@ -123,14 +123,14 @@ generated:
     origin: vortex
     source: Vortex.Inventory/Grains/InventoryGrain.Furni.cs
     symbol: InventoryGrain
-    line: 491
+    line: 492
   - id: ev_d720d639bd09
     kind: emulator_flow
     authority: vortex_emulator
     origin: vortex
     source: Vortex.Players/Grains/Modules/PlayerInventoryModule.cs
     symbol: PlayerInventoryModule
-    line: 84
+    line: 126
   - id: ev_ec0b4c2b0a97
     kind: emulator_flow
     authority: vortex_emulator

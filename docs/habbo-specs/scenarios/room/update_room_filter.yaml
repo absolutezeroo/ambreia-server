@@ -10,10 +10,102 @@
 
 spec: scenarios
 spec_version: 1
-generated_digest: "sha256:4aba143e0d49be564852a60e827a409fad1972071595d1e90c700a1d3327542c"
+generated_digest: "sha256:a524a688232112bd41c9bf2d243049c2bb524a303f3bd8d177a5b7396167cc8a"
 generated:
   feature: room.update_room_filter
   scenarios:
+  - scenario: room.update_room_filter.guard_0
+    title: "update room filter: the guard 'ctx.PlayerId <= 0 || message.RoomId <= 0' holds"
+    given:
+      guard: ctx.PlayerId <= 0 || message.RoomId <= 0
+      guard_holds: "true"
+    when:
+      packet: UpdateRoomFilter
+    expected:
+      status: unknown
+      confidence: unknown
+    needs_evidence: "an official capture of UpdateRoomFilter sent while 'ctx.PlayerId <= 0 || message.RoomId <= 0' holds: does the server reply, stay silent, or disconnect?"
+    executable: false
+    claims:
+    - origin: vortex
+      authority: vortex_emulator
+      outcome: ignored
+      emits: []
+      evidence: ev_1a3a0750a11c
+    - origin: habbo-arcturus-daybreak
+      authority: reference_emulator
+      outcome: ignored
+      emits: []
+      evidence: ev_384624cdf5c4
+  - scenario: room.update_room_filter.guard_1
+    title: "update room filter: the guard '!await IsRoomOwnerAsync(actor).ConfigureAwait(true)' holds"
+    given:
+      guard: "!await IsRoomOwnerAsync(actor).ConfigureAwait(true)"
+      guard_holds: "true"
+    when:
+      packet: UpdateRoomFilter
+    expected:
+      status: unknown
+      confidence: unknown
+    needs_evidence: "an official capture of UpdateRoomFilter sent while '!await IsRoomOwnerAsync(actor).ConfigureAwait(true)' holds: does the server reply, stay silent, or disconnect?"
+    executable: false
+    claims:
+    - origin: vortex
+      authority: vortex_emulator
+      outcome: ignored
+      emits: []
+      evidence: ev_329537530b13
+    - origin: habbo-arcturus-daybreak
+      authority: reference_emulator
+      outcome: ignored
+      emits: []
+      evidence: ev_384624cdf5c4
+  - scenario: room.update_room_filter.guard_2
+    title: "update room filter: the guard 'trimmed.Length == 0 || trimmed.Length > wordMaxLength || ...' holds"
+    given:
+      guard: trimmed.Length == 0 || trimmed.Length > wordMaxLength || (adding && _state.FilterWords.Count >= maxWords)
+      guard_holds: "true"
+    when:
+      packet: UpdateRoomFilter
+    expected:
+      status: unknown
+      confidence: unknown
+    needs_evidence: "an official capture of UpdateRoomFilter sent while 'trimmed.Length == 0 || trimmed.Length > wordMaxLength || (adding && _state.FilterWords.Count >= maxWords)' holds: does the server reply, stay silent, or disconnect?"
+    executable: false
+    claims:
+    - origin: vortex
+      authority: vortex_emulator
+      outcome: ignored
+      emits: []
+      evidence: ev_329537530b13
+    - origin: habbo-arcturus-daybreak
+      authority: reference_emulator
+      outcome: ignored
+      emits: []
+      evidence: ev_384624cdf5c4
+  - scenario: room.update_room_filter.guard_3
+    title: "update room filter: the guard '!changed' holds"
+    given:
+      guard: "!changed"
+      guard_holds: "true"
+    when:
+      packet: UpdateRoomFilter
+    expected:
+      status: unknown
+      confidence: unknown
+    needs_evidence: "an official capture of UpdateRoomFilter sent while '!changed' holds: does the server reply, stay silent, or disconnect?"
+    executable: false
+    claims:
+    - origin: vortex
+      authority: vortex_emulator
+      outcome: ignored
+      emits: []
+      evidence: ev_329537530b13
+    - origin: habbo-arcturus-daybreak
+      authority: reference_emulator
+      outcome: ignored
+      emits: []
+      evidence: ev_384624cdf5c4
   - scenario: room.update_room_filter.success
     title: "update room filter: the request is accepted"
     given:
@@ -28,9 +120,10 @@ generated:
     claims:
     - origin: vortex
       authority: vortex_emulator
-      outcome: ignored
-      emits: []
-      evidence: ev_b0bc6af39047
+      outcome: success
+      emits:
+      - RoomFilterSettings
+      evidence: ev_1a3a0750a11c
     - origin: habbo-arcturus-daybreak
       authority: reference_emulator
       outcome: ignored
@@ -45,12 +138,19 @@ generated:
     symbol: UpdateRoomFilterMessageEvent
     line: 9
     note: third-party server implementation; evidence, not authority
-  - id: ev_b0bc6af39047
-    kind: emulator_handler
+  - id: ev_1a3a0750a11c
+    kind: emulator_flow
     authority: vortex_emulator
     origin: vortex
     source: Vortex.PacketHandlers/RoomSettings/UpdateRoomFilterMessageHandler.cs
     symbol: UpdateRoomFilterMessageHandler
-    line: 8
+    line: 26
+  - id: ev_329537530b13
+    kind: emulator_flow
+    authority: vortex_emulator
+    origin: vortex
+    source: Vortex.Rooms/Grains/RoomGrain.Settings.cs
+    symbol: RoomGrain
+    line: 352
 verified: {}
 manual: {}

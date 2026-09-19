@@ -10,7 +10,7 @@
 
 spec: scenarios
 spec_version: 1
-generated_digest: "sha256:7da34b17c64da02042dc644e5cda8ed9b18ccc9fd8db0c106bb3969961460863"
+generated_digest: "sha256:38c15b7a1463fbd85e30badda3731376a0967d2a190dffafdffc813dadc95c7d"
 generated:
   feature: room.get_room_settings
   scenarios:
@@ -93,10 +93,9 @@ generated:
     when:
       packet: GetRoomSettings
     expected:
-      status: unknown
-      confidence: unknown
-    needs_evidence: an official capture of GetRoomSettings succeeding, with every packet the server sends back and in what order
-    executable: false
+      status: success
+      confidence: capture_confirmed
+    executable: true
     claims:
     - origin: vortex
       authority: vortex_emulator
@@ -110,7 +109,18 @@ generated:
       emits:
       - RoomSettingsData
       evidence: ev_92eea08f9ac2
+    - origin: capture (1 observations)
+      authority: official_capture
+      outcome: success
+      emits: []
+      evidence: ev_91eb4d9ebfa2
   evidence:
+  - id: ev_91eb4d9ebfa2
+    kind: capture
+    authority: official_capture
+    origin: capture
+    source: docs/habbo-specs/evidence/captures
+    symbol: GetRoomSettings
   - id: ev_92eea08f9ac2
     kind: reference_handler
     authority: reference_emulator
@@ -132,6 +142,6 @@ generated:
     origin: vortex
     source: Vortex.Rooms/Grains/RoomGrain.Settings.cs
     symbol: RoomGrain
-    line: 45
+    line: 47
 verified: {}
 manual: {}

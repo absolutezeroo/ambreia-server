@@ -10,7 +10,7 @@
 
 spec: scenarios
 spec_version: 1
-generated_digest: "sha256:b68792969165077da13db1d54c2c15e90a527f171f46179f1a5f5b09330c5c24"
+generated_digest: "sha256:9c58fc8b1f8ecfc926129edda173d13a47d30971fd4f520eb6cfeef3e04faf7a"
 generated:
   feature: navigator.get_event_categories
   scenarios:
@@ -45,10 +45,9 @@ generated:
     when:
       packet: GetUserEventCats
     expected:
-      status: unknown
-      confidence: unknown
-    needs_evidence: an official capture of GetUserEventCats succeeding, with every packet the server sends back and in what order
-    executable: false
+      status: success
+      confidence: capture_confirmed
+    executable: true
     claims:
     - origin: vortex
       authority: vortex_emulator
@@ -63,7 +62,18 @@ generated:
       emits:
       - UserEventCats
       evidence: ev_940f8a9b5ec1
+    - origin: capture (1 observations)
+      authority: official_capture
+      outcome: success
+      emits: []
+      evidence: ev_f092bc0c2f26
   evidence:
+  - id: ev_f092bc0c2f26
+    kind: capture
+    authority: official_capture
+    origin: capture
+    source: docs/habbo-specs/evidence/captures
+    symbol: GetUserEventCats
   - id: ev_940f8a9b5ec1
     kind: reference_handler
     authority: reference_emulator
@@ -78,7 +88,7 @@ generated:
     origin: vortex
     source: Vortex.Rooms/Grains/RoomGrain.cs
     symbol: RoomGrain
-    line: 258
+    line: 260
   - id: ev_ccbd19c08c4a
     kind: emulator_flow
     authority: vortex_emulator

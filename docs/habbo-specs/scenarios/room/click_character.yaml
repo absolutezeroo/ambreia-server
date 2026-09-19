@@ -10,7 +10,7 @@
 
 spec: scenarios
 spec_version: 1
-generated_digest: "sha256:e1ac54994ad21dfcb47650c4c362e5eddab782102041fa7d1bfccfef54625188"
+generated_digest: "sha256:fe823de5475b960d6a9020915b787023a5da172e2c6843c31583f4a0fca444ae"
 generated:
   feature: room.click_character
   scenarios:
@@ -75,17 +75,27 @@ generated:
     when:
       packet: ClickCharacter
     expected:
-      status: unknown
-      confidence: unknown
-    needs_evidence: an official capture of ClickCharacter succeeding, with every packet the server sends back and in what order
-    executable: false
+      status: success
+      confidence: capture_confirmed
+    executable: true
     claims:
     - origin: vortex
       authority: vortex_emulator
       outcome: ignored
       emits: []
       evidence: ev_4f7fa7efaeda
+    - origin: capture (1 observations)
+      authority: official_capture
+      outcome: success
+      emits: []
+      evidence: ev_45de50d3e3be
   evidence:
+  - id: ev_45de50d3e3be
+    kind: capture
+    authority: official_capture
+    origin: capture
+    source: docs/habbo-specs/evidence/captures
+    symbol: ClickCharacter
   - id: ev_4f7fa7efaeda
     kind: emulator_handler
     authority: vortex_emulator

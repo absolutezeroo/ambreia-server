@@ -10,7 +10,7 @@
 
 spec: feature
 spec_version: 1
-generated_digest: "sha256:8e631a37b6da6d79232085de27e8c1716842d3ea7cc0713a12621b3d6e52eba0"
+generated_digest: "sha256:6c468a8ea986ecd86cb777eabf2c380ec2d5a1764b33726923e84399d0b23dcc"
 generated:
   id: tracking.event_log
   domain: tracking
@@ -22,7 +22,7 @@ generated:
     references:
     - habbo-arcturus-daybreak
   official_behavior:
-    status: unknown
+    status: capture_confirmed
   flow:
   - order: 0
     layer: handler

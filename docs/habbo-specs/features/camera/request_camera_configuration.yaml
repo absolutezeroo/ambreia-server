@@ -10,7 +10,7 @@
 
 spec: feature
 spec_version: 1
-generated_digest: "sha256:d1b08cfb653aa694b70d831b693a54375307ed2006e0ee44f15af24d3e35e1ca"
+generated_digest: "sha256:b643dfc9fb10d90ba827a315ac3156b96bec63a161d1a720798dfabe3bf43ba3"
 generated:
   id: camera.request_camera_configuration
   domain: camera
@@ -18,7 +18,7 @@ generated:
   trigger_packets:
   - RequestCameraConfiguration
   observed_in:
-    vortex: false
+    vortex: true
     references:
     - habbo-arcturus-daybreak
   official_behavior:
@@ -28,23 +28,59 @@ generated:
     layer: handler
     symbol: RequestCameraConfigurationMessageHandler.HandleAsync
     evidence: ev_9eb857a07346
-  checks: []
+  - order: 1
+    layer: grain
+    symbol: ServerConfigGrain.GetManyAsync
+    evidence: ev_86f81f4f919c
+  - order: 2
+    layer: domain
+    symbol: ServerConfigValues.GetInt
+    evidence: ev_77b64770ea16
+  checks:
+  - expression: ctx.PlayerId <= 0
+    on_fail: return
+    observed_in: vortex
+    evidence: ev_e56f716f3ee4
   state_changes: []
   outgoing:
     ordering: unknown
-    packets: []
+    packets:
+    - packet: InitCamera
+      recipient: actor
+      recipient_confidence: implementation_observed
+      evidence: ev_e56f716f3ee4
   reaches_persistence: false
   evidence:
+  - id: ev_77b64770ea16
+    kind: emulator_flow
+    authority: vortex_emulator
+    origin: vortex
+    source: Vortex.Primitives/Server/ServerConfigValues.cs
+    symbol: ServerConfigValues
+    line: 14
+  - id: ev_86f81f4f919c
+    kind: emulator_flow
+    authority: vortex_emulator
+    origin: vortex
+    source: Vortex.Players/Grains/ServerConfigGrain.cs
+    symbol: ServerConfigGrain
+    line: 109
   - id: ev_9eb857a07346
     kind: emulator_handler
     authority: vortex_emulator
     origin: vortex
     source: Vortex.PacketHandlers/Camera/RequestCameraConfigurationMessageHandler.cs
     symbol: RequestCameraConfigurationMessageHandler
-    line: 8
+    line: 23
+  - id: ev_e56f716f3ee4
+    kind: emulator_flow
+    authority: vortex_emulator
+    origin: vortex
+    source: Vortex.PacketHandlers/Camera/RequestCameraConfigurationMessageHandler.cs
+    symbol: RequestCameraConfigurationMessageHandler
+    line: 34
   scenarios:
+  - camera.request_camera_configuration.guard_0
   - camera.request_camera_configuration.success
-  unknowns:
-  - uk_e1ee85d123
 verified: {}
 manual: {}

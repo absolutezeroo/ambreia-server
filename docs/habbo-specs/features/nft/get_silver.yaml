@@ -10,7 +10,7 @@
 
 spec: feature
 spec_version: 1
-generated_digest: "sha256:9bf7c84a2d98468b7c9e8a6a930ec3ebbb93b125307503f9929fe9d47cf0a80a"
+generated_digest: "sha256:93beaea9c2fd149239291bff7cd47cda9d134c78a8870c62bd5fa12cb0018448"
 generated:
   id: nft.get_silver
   domain: nft
@@ -21,7 +21,7 @@ generated:
     vortex: true
     references: []
   official_behavior:
-    status: unknown
+    status: capture_confirmed
   flow:
   - order: 0
     layer: handler

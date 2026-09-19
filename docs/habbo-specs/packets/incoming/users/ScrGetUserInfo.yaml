@@ -10,7 +10,7 @@
 
 spec: packet
 spec_version: 1
-generated_digest: "sha256:62141d5c33d0bb0d624781072a77f1241a78585e3eb1949a702ab337d1834c96"
+generated_digest: "sha256:b7877a3e06838dddb4817a42acf86ce5eb4b40068e4e49a76aa0b10270cb15d5"
 generated:
   name: ScrGetUserInfo
   direction: incoming
@@ -86,7 +86,5 @@ generated:
     source: Vortex.Revisions/Revision20260701/Parsers/Users/ScrGetUserInfoMessageParser.cs
     symbol: ScrGetUserInfoMessageParser
     line: 7
-  conflicts:
-  - cf_b690cecb82
 verified: {}
 manual: {}

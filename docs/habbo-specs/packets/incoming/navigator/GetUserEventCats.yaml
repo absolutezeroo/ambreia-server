@@ -10,7 +10,7 @@
 
 spec: packet
 spec_version: 1
-generated_digest: "sha256:ef9a655eae92c2e92f7eacb2c6ecf03ad61c0d397ac051d657cde09543a99d91"
+generated_digest: "sha256:999d33aa7e05f2e8272523959544c879225725d5850d57862c9f5d737d24c9dc"
 generated:
   name: GetUserEventCats
   direction: incoming
@@ -76,7 +76,5 @@ generated:
     source: Vortex.Revisions/Revision20260701/Parsers/Navigator/GetUserEventCatsMessageParser.cs
     symbol: GetUserEventCatsMessageParser
     line: 7
-  conflicts:
-  - cf_f644964686
 verified: {}
 manual: {}

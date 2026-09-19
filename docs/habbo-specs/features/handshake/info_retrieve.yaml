@@ -10,7 +10,7 @@
 
 spec: feature
 spec_version: 1
-generated_digest: "sha256:10db10c1afb45d8ebc0ff4c3cfb2723ea0e5d5e8ef8a2e8cbc836c7d6e27a4d5"
+generated_digest: "sha256:f8949ba01fa4dd6580def5690f3345b86d4f2f273dc389ae7de53b7548e6f406"
 generated:
   id: handshake.info_retrieve
   domain: handshake
@@ -22,7 +22,7 @@ generated:
     references:
     - habbo-arcturus-daybreak
   official_behavior:
-    status: unknown
+    status: capture_confirmed
   flow:
   - order: 0
     layer: handler
@@ -32,6 +32,22 @@ generated:
     layer: grain
     symbol: PlayerGrain.GetSummaryAsync
     evidence: ev_1f83e61934ca
+  - order: 2
+    layer: grain
+    symbol: PlayerGrain.GetRespectStateAsync
+    evidence: ev_1f83e61934ca
+  - order: 3
+    layer: domain
+    symbol: GrainFactoryExtensions.GetServerConfigGrain
+    evidence: ev_09932710687b
+  - order: 4
+    layer: grain
+    symbol: ServerConfigGrain.GetIntAsync
+    evidence: ev_86f81f4f919c
+  - order: 5
+    layer: domain
+    symbol: RespectBudget.Remaining
+    evidence: ev_2c9dca8e07f3
   checks:
   - expression: ctx.PlayerId <= 0
     on_fail: return
@@ -43,13 +59,34 @@ generated:
     packets: []
   reaches_persistence: false
   evidence:
+  - id: ev_09932710687b
+    kind: emulator_flow
+    authority: vortex_emulator
+    origin: vortex
+    source: Vortex.Primitives/Orleans/GrainFactoryExtensions.cs
+    symbol: GrainFactoryExtensions
+    line: 228
   - id: ev_1f83e61934ca
     kind: emulator_flow
     authority: vortex_emulator
     origin: vortex
     source: Vortex.Players/Grains/PlayerGrain.cs
     symbol: PlayerGrain
-    line: 259
+    line: 382
+  - id: ev_2c9dca8e07f3
+    kind: emulator_flow
+    authority: vortex_emulator
+    origin: vortex
+    source: Vortex.Players/RespectBudget.cs
+    symbol: RespectBudget
+    line: 37
+  - id: ev_86f81f4f919c
+    kind: emulator_flow
+    authority: vortex_emulator
+    origin: vortex
+    source: Vortex.Players/Grains/ServerConfigGrain.cs
+    symbol: ServerConfigGrain
+    line: 43
   - id: ev_bc151838dd5f
     kind: emulator_flow
     authority: vortex_emulator

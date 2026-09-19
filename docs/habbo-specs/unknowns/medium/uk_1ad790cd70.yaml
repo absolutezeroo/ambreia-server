@@ -10,7 +10,7 @@
 
 spec: unknown
 spec_version: 1
-generated_digest: "sha256:92c57d504593e5a975d616cb2aa23ec7e019f23d9a0093547dbc155b44919707"
+generated_digest: "sha256:275161a8d3a952b75532ea341b11ae8bdb6e86b6d7705958731a75e8e5a103b4"
 generated:
   id: uk_1ad790cd70
   subject: "room.assign_rights: what the server sends when it refuses"
@@ -25,7 +25,7 @@ generated:
     origin: vortex
     source: Vortex.Rooms/Grains/RoomGrain.Settings.cs
     symbol: RoomGrain
-    line: 400
+    line: 529
   - id: ev_34bf3ac088e2
     kind: emulator_flow
     authority: vortex_emulator

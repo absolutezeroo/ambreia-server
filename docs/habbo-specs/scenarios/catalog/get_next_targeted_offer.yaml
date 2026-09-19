@@ -10,7 +10,7 @@
 
 spec: scenarios
 spec_version: 1
-generated_digest: "sha256:ba4357f48951deaf86b1ea3c28f18315b922e4a984dd27be5d8db471ef650a87"
+generated_digest: "sha256:8a94c54f17c205a79658385ef002f02ec7cc6ab22244281d32c3a9fbb1bec616"
 generated:
   feature: catalog.get_next_targeted_offer
   scenarios:
@@ -39,17 +39,28 @@ generated:
     when:
       packet: GetNextTargetedOffer
     expected:
-      status: unknown
-      confidence: unknown
-    needs_evidence: an official capture of GetNextTargetedOffer succeeding, with every packet the server sends back and in what order
-    executable: false
+      status: success
+      confidence: capture_confirmed
+    executable: true
     claims:
     - origin: vortex
       authority: vortex_emulator
       outcome: ignored
       emits: []
       evidence: ev_0f24ea6318f8
+    - origin: capture (1 observations)
+      authority: official_capture
+      outcome: success
+      emits:
+      - TargetedOfferNotFound
+      evidence: ev_a70ebb9b0ae1
   evidence:
+  - id: ev_a70ebb9b0ae1
+    kind: capture
+    authority: official_capture
+    origin: capture
+    source: docs/habbo-specs/evidence/captures
+    symbol: GetNextTargetedOffer
   - id: ev_0f24ea6318f8
     kind: emulator_flow
     authority: vortex_emulator

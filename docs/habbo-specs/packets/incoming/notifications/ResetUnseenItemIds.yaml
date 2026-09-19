@@ -10,7 +10,7 @@
 
 spec: packet
 spec_version: 1
-generated_digest: "sha256:79cbd872a770f3ab78f365e697d16df98773fb258b4cc131b11fb3f8416d7067"
+generated_digest: "sha256:51b52595c9a5c2b142a6f51e8e3d8cd236e87197df96c79965d6256a1f6a1aa3"
 generated:
   name: ResetUnseenItemIds
   direction: incoming
@@ -18,7 +18,38 @@ generated:
   structure_confidence: implementation_observed
   mapped_in_vortex: true
   vortex_handler: ResetUnseenItemIdsMessageHandler
-  fields: []
+  fields:
+  - index: 0
+    name: category
+    type: int32
+    name_confidence: implementation_observed
+    type_confidence: implementation_observed
+    evidence:
+    - ev_96d32ab73c75
+  - index: 1
+    name: claimed
+    type: int32
+    name_confidence: implementation_observed
+    type_confidence: implementation_observed
+    evidence:
+    - ev_96d32ab73c75
+  - index: 2
+    name: count
+    type: array
+    name_confidence: implementation_observed
+    type_confidence: implementation_observed
+    note: "source comment: repeated block; the element count is the int written immediately before it"
+    evidence:
+    - ev_96d32ab73c75
+    fields:
+    - index: 0
+      name: unknown_0
+      type: int32
+      name_is_placeholder: true
+      name_confidence: unknown
+      type_confidence: implementation_observed
+      evidence:
+      - ev_96d32ab73c75
   layouts_by_source:
   - origin: "as3:WIN63-202607011411-782849652"
     authority: client_code
@@ -34,9 +65,12 @@ generated:
     evidence: ev_5d730124ba62
   - origin: vortex
     authority: vortex_emulator
-    field_count: 0
+    field_count: 3
     partial: false
-    types: []
+    types:
+    - int32
+    - int32
+    - array
     evidence: ev_96d32ab73c75
   evidence:
   - id: ev_8f8da36b8d15
@@ -61,6 +95,6 @@ generated:
     origin: vortex
     source: Vortex.Revisions/Revision20260701/Parsers/Notifications/ResetUnseenItemIdsMessageParser.cs
     symbol: ResetUnseenItemIdsMessageParser
-    line: 7
+    line: 9
 verified: {}
 manual: {}

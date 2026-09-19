@@ -10,7 +10,7 @@
 
 spec: feature
 spec_version: 1
-generated_digest: "sha256:abeef262f39bb255e58a9e6b20800f3a0a963da80317d77217554a61074e281f"
+generated_digest: "sha256:c6676c8c33c4a53d009a2d89a794ad83b584f6937a93edd8008958b8a1f5f165"
 generated:
   id: room.click_tile
   domain: room
@@ -99,7 +99,7 @@ generated:
     origin: vortex
     source: Vortex.Rooms/RoomService.cs
     symbol: RoomService
-    line: 451
+    line: 545
   - id: ev_8badf22bc1c3
     kind: emulator_handler
     authority: vortex_emulator
@@ -120,7 +120,7 @@ generated:
     origin: vortex
     source: Vortex.Rooms/Grains/RoomGrain.cs
     symbol: RoomGrain
-    line: 289
+    line: 291
   - id: ev_c26714967e6b
     kind: emulator_flow
     authority: vortex_emulator
@@ -134,7 +134,7 @@ generated:
     origin: vortex
     source: Vortex.Rooms/Grains/Modules/RoomAvatarModule.cs
     symbol: RoomAvatarModule
-    line: 220
+    line: 219
   scenarios:
   - room.click_tile.guard_0
   - room.click_tile.guard_1

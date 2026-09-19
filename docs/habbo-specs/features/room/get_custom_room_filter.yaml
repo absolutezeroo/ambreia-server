@@ -10,7 +10,7 @@
 
 spec: feature
 spec_version: 1
-generated_digest: "sha256:1bae73809e1a31ea986394b1849d501cd89822b38930f0affc0966f48c87c22d"
+generated_digest: "sha256:44457ff3d2171744082af9fc350307fd6a36fc4b78b449cf5d06ccb80edb5c66"
 generated:
   id: room.get_custom_room_filter
   domain: room
@@ -18,7 +18,7 @@ generated:
   trigger_packets:
   - GetCustomRoomFilter
   observed_in:
-    vortex: false
+    vortex: true
     references:
     - habbo-arcturus-daybreak
   official_behavior:
@@ -28,23 +28,53 @@ generated:
     layer: handler
     symbol: GetCustomRoomFilterMessageHandler.HandleAsync
     evidence: ev_5fbb63890d81
-  checks: []
+  - order: 1
+    layer: grain
+    symbol: RoomGrain.GetFilterWordsAsync
+    evidence: ev_329537530b13
+  checks:
+  - expression: ctx.PlayerId <= 0 || message.RoomId <= 0
+    on_fail: return
+    observed_in: vortex
+    evidence: ev_dfc3acec327c
+  - expression: "!await IsRoomOwnerAsync(actor).ConfigureAwait(true)"
+    on_fail: return
+    observed_in: vortex
+    evidence: ev_329537530b13
   state_changes: []
   outgoing:
     ordering: unknown
-    packets: []
+    packets:
+    - packet: RoomFilterSettings
+      recipient: actor
+      recipient_confidence: implementation_observed
+      evidence: ev_dfc3acec327c
   reaches_persistence: false
   evidence:
+  - id: ev_329537530b13
+    kind: emulator_flow
+    authority: vortex_emulator
+    origin: vortex
+    source: Vortex.Rooms/Grains/RoomGrain.Settings.cs
+    symbol: RoomGrain
+    line: 332
   - id: ev_5fbb63890d81
     kind: emulator_handler
     authority: vortex_emulator
     origin: vortex
     source: Vortex.PacketHandlers/RoomSettings/GetCustomRoomFilterMessageHandler.cs
     symbol: GetCustomRoomFilterMessageHandler
-    line: 8
+    line: 17
+  - id: ev_dfc3acec327c
+    kind: emulator_flow
+    authority: vortex_emulator
+    origin: vortex
+    source: Vortex.PacketHandlers/RoomSettings/GetCustomRoomFilterMessageHandler.cs
+    symbol: GetCustomRoomFilterMessageHandler
+    line: 26
   scenarios:
+  - room.get_custom_room_filter.guard_0
+  - room.get_custom_room_filter.guard_1
   - room.get_custom_room_filter.success
-  unknowns:
-  - uk_58c361bbd1
 verified: {}
 manual: {}

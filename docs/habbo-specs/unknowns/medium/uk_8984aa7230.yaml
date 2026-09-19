@@ -10,7 +10,7 @@
 
 spec: unknown
 spec_version: 1
-generated_digest: "sha256:f15444036d83c3e08e4b07ed81fcf968975f4723c18375ef9a08fb85ac05bc90"
+generated_digest: "sha256:0336bd205594f45e9fa6f24981eff55228b49cf17abe3ee7af8b345d74fcf6df"
 generated:
   id: uk_8984aa7230
   subject: "users.respect_user: what the server sends when it refuses"
@@ -19,6 +19,13 @@ generated:
   resolved_by: an official capture of each guard being tripped
   feature: users.respect_user
   known_evidence:
+  - id: ev_09932710687b
+    kind: emulator_flow
+    authority: vortex_emulator
+    origin: vortex
+    source: Vortex.Primitives/Orleans/GrainFactoryExtensions.cs
+    symbol: GrainFactoryExtensions
+    line: 228
   - id: ev_1f83e61934ca
     kind: emulator_flow
     authority: vortex_emulator
@@ -39,14 +46,21 @@ generated:
     origin: vortex
     source: Vortex.PacketHandlers/Users/RespectUserMessageHandler.cs
     symbol: RespectUserMessageHandler
-    line: 23
+    line: 21
   - id: ev_664fad0f0fde
     kind: emulator_handler
     authority: vortex_emulator
     origin: vortex
     source: Vortex.PacketHandlers/Users/RespectUserMessageHandler.cs
     symbol: RespectUserMessageHandler
-    line: 11
+    line: 10
+  - id: ev_86f81f4f919c
+    kind: emulator_flow
+    authority: vortex_emulator
+    origin: vortex
+    source: Vortex.Players/Grains/ServerConfigGrain.cs
+    symbol: ServerConfigGrain
+    line: 43
   - id: ev_ac641f7283b9
     kind: emulator_flow
     authority: vortex_emulator
@@ -60,7 +74,7 @@ generated:
     origin: vortex
     source: Vortex.Rooms/Grains/RoomGrain.cs
     symbol: RoomGrain
-    line: 294
+    line: 296
   - id: ev_e6fef545a42a
     kind: emulator_flow
     authority: vortex_emulator

@@ -10,7 +10,7 @@
 
 spec: unknown
 spec_version: 1
-generated_digest: "sha256:0581ab8144943357129065105756cbe8f0659ff6f80ca77dd3ac8ef903a95083"
+generated_digest: "sha256:fa0637ba169f38fc01c5080779f8ebc671c1e1523c5465429f519806b2325539"
 generated:
   id: uk_8e01c5f212
   subject: "messenger.set_relationship_status: what the server sends when it refuses"
@@ -39,6 +39,6 @@ generated:
     origin: vortex
     source: Vortex.Social/Grains/MessengerGrain.Friends.cs
     symbol: MessengerGrain
-    line: 464
+    line: 465
 verified: {}
 manual: {}

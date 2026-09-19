@@ -10,7 +10,7 @@
 
 spec: feature
 spec_version: 1
-generated_digest: "sha256:a1161d6b5e29934b619c6a1b1ad8b0319520bffb221d6ebd0234b501069460a6"
+generated_digest: "sha256:50447ca95c856d52ecfef33d3ec10bdcb8d47aa38a1b34a46ab8beb54a818d0d"
 generated:
   id: users.get_user_nft_chat_styles
   domain: users
@@ -21,7 +21,7 @@ generated:
     vortex: true
     references: []
   official_behavior:
-    status: unknown
+    status: capture_confirmed
   flow:
   - order: 0
     layer: handler

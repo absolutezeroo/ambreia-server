@@ -10,7 +10,7 @@
 
 spec: feature
 spec_version: 1
-generated_digest: "sha256:ab753f12bddc4d5ecc82fca73f3b6126a70ac6393de5b11cd9b2e984ca4737ec"
+generated_digest: "sha256:53fefaa72d92256f5756a1731a22785bd191da73cf497a5360af3c12b1d48ac0"
 generated:
   id: room.pass_carry_item
   domain: room
@@ -112,7 +112,7 @@ generated:
     origin: vortex
     source: Vortex.Rooms/Grains/RoomGrain.cs
     symbol: RoomGrain
-    line: 682
+    line: 710
   scenarios:
   - room.pass_carry_item.guard_0
   - room.pass_carry_item.guard_1

@@ -10,7 +10,7 @@
 
 spec: scenarios
 spec_version: 1
-generated_digest: "sha256:d7f3fce17ea7ce22123689b5f9fee08337ae81d8ff041ed8fb5e9e38cb73e3ac"
+generated_digest: "sha256:7488aa5179e01da07c85759ea837cddc57b3e68c9432d557407bfd22f3f90345"
 generated:
   feature: inventory.get_badge_point_limits
   scenarios:
@@ -45,10 +45,9 @@ generated:
     when:
       packet: GetBadgePointLimits
     expected:
-      status: unknown
-      confidence: unknown
-    needs_evidence: an official capture of GetBadgePointLimits succeeding, with every packet the server sends back and in what order
-    executable: false
+      status: success
+      confidence: capture_confirmed
+    executable: true
     claims:
     - origin: vortex
       authority: vortex_emulator
@@ -62,7 +61,18 @@ generated:
       emits:
       - BadgePointLimits
       evidence: ev_9acec307ae42
+    - origin: capture (1 observations)
+      authority: official_capture
+      outcome: success
+      emits: []
+      evidence: ev_c20968b98278
   evidence:
+  - id: ev_c20968b98278
+    kind: capture
+    authority: official_capture
+    origin: capture
+    source: docs/habbo-specs/evidence/captures
+    symbol: GetBadgePointLimits
   - id: ev_9acec307ae42
     kind: reference_handler
     authority: reference_emulator

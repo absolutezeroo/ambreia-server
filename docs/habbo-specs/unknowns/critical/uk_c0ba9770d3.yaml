@@ -10,12 +10,12 @@
 
 spec: unknown
 spec_version: 1
-generated_digest: "sha256:4eb866d0379185482c442b8844eb4c7e8ebe96438e86b747574abe81e69e511b"
+generated_digest: "sha256:afb1b1522262443e0ca4ae632fc3a00ff7bf7051dc530c34f55cf60d56b5d468"
 generated:
   id: uk_c0ba9770d3
   subject: "as3:WIN63-202607011411-782849652: client-to-server messages this emulator has no header for"
   severity: critical
-  question: "The official client can send 34 messages whose header ids appear nowhere in this emulator's table (for example 129, 145, 245, 293, 501, 758, 831, 983). What are they, and does the hotel need them?"
+  question: "The official client can send 33 messages whose header ids appear nowhere in this emulator's table (for example 129, 145, 245, 293, 501, 758, 831, 983). What are they, and does the hotel need them?"
   resolved_by: read the client class bound to each id in its message registry, then either map the header or record why the hotel does not need it
   known_evidence:
   - id: ev_d2d771529a88

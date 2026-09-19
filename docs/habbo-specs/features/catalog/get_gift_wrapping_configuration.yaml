@@ -10,7 +10,7 @@
 
 spec: feature
 spec_version: 1
-generated_digest: "sha256:0ef776de46389128d0a2a5163f1a64f83d4f94a070c282ab1beca004ed42898b"
+generated_digest: "sha256:db4feee9476fd0516f1effba678241ab6e2f31ef28a9ac91c39b20ba4ba12bbe"
 generated:
   id: catalog.get_gift_wrapping_configuration
   domain: catalog
@@ -28,6 +28,14 @@ generated:
     layer: handler
     symbol: GetGiftWrappingConfigurationMessageHandler.HandleAsync
     evidence: ev_4838deaee1b1
+  - order: 1
+    layer: domain
+    symbol: GiftWrapping.ResolveStuffTypes
+    evidence: ev_5ac5d87cdba1
+  - order: 2
+    layer: domain
+    symbol: FurnitureDefinitionProvider.TryGetDefinitionByName
+    evidence: ev_2ec03446aa2a
   checks: []
   state_changes: []
   outgoing:
@@ -39,20 +47,34 @@ generated:
       evidence: ev_f364751e00e8
   reaches_persistence: false
   evidence:
+  - id: ev_2ec03446aa2a
+    kind: emulator_flow
+    authority: vortex_emulator
+    origin: vortex
+    source: Vortex.Furniture/Providers/FurnitureDefinitionProvider.cs
+    symbol: FurnitureDefinitionProvider
+    line: 77
   - id: ev_4838deaee1b1
     kind: emulator_handler
     authority: vortex_emulator
     origin: vortex
     source: Vortex.PacketHandlers/Catalog/GetGiftWrappingConfigurationMessageHandler.cs
     symbol: GetGiftWrappingConfigurationMessageHandler
-    line: 10
+    line: 13
+  - id: ev_5ac5d87cdba1
+    kind: emulator_flow
+    authority: vortex_emulator
+    origin: vortex
+    source: Vortex.Primitives/Catalog/GiftWrapping.cs
+    symbol: GiftWrapping
+    line: 56
   - id: ev_f364751e00e8
     kind: emulator_flow
     authority: vortex_emulator
     origin: vortex
     source: Vortex.PacketHandlers/Catalog/GetGiftWrappingConfigurationMessageHandler.cs
     symbol: GetGiftWrappingConfigurationMessageHandler
-    line: 20
+    line: 31
   scenarios:
   - catalog.get_gift_wrapping_configuration.success
 verified: {}

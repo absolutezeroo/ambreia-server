@@ -10,7 +10,7 @@
 
 spec: scenarios
 spec_version: 1
-generated_digest: "sha256:0d0ee3af5fe68f3028f857f96ae88495b9bd33e53093250ffec282029d799f7f"
+generated_digest: "sha256:d07792709398fe49c5e691e27a62de9ccf81833cca1bc973ed1c85c20718f367"
 generated:
   feature: inventory.set_activated_badges
   scenarios:
@@ -69,15 +69,15 @@ generated:
     when:
       packet: SetActivatedBadges
     expected:
-      status: unknown
-      confidence: unknown
-    needs_evidence: an official capture of SetActivatedBadges succeeding, with every packet the server sends back and in what order
-    executable: false
+      status: success
+      confidence: capture_confirmed
+    executable: true
     claims:
     - origin: vortex
       authority: vortex_emulator
-      outcome: ignored
-      emits: []
+      outcome: success
+      emits:
+      - HabboUserBadges
       evidence: ev_34bf3ac088e2
     - origin: habbo-arcturus-daybreak
       authority: reference_emulator
@@ -85,7 +85,20 @@ generated:
       emits:
       - UserBadges
       evidence: ev_8bd531ed9453
+    - origin: capture (1 observations)
+      authority: official_capture
+      outcome: success
+      emits:
+      - HabboUserBadges
+      - HabboUserBadges
+      evidence: ev_822d8c8fbfe7
   evidence:
+  - id: ev_822d8c8fbfe7
+    kind: capture
+    authority: official_capture
+    origin: capture
+    source: docs/habbo-specs/evidence/captures
+    symbol: SetActivatedBadges
   - id: ev_8bd531ed9453
     kind: reference_handler
     authority: reference_emulator
@@ -107,6 +120,6 @@ generated:
     origin: vortex
     source: Vortex.PacketHandlers/Inventory/Badges/SetActivatedBadgesMessageHandler.cs
     symbol: SetActivatedBadgesMessageHandler
-    line: 21
+    line: 24
 verified: {}
 manual: {}

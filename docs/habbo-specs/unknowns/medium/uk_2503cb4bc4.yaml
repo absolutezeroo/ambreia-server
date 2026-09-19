@@ -10,12 +10,12 @@
 
 spec: unknown
 spec_version: 1
-generated_digest: "sha256:48a5f7c245503f8bca6683f8102707266e75667aa7caf50d01f4f2f539e0c1e3"
+generated_digest: "sha256:170c7351bb9737362f7abebdebb5dada8279b05fa37a3da2a3dbf4567abdbb72"
 generated:
   id: uk_2503cb4bc4
   subject: "room.look_to: what the server sends when it refuses"
   severity: medium
-  question: room.look_to changes state and has 13 guards whose refusal behaviour nothing here attests. Does the official server answer a refused request, and with what?
+  question: room.look_to changes state and has 12 guards whose refusal behaviour nothing here attests. Does the official server answer a refused request, and with what?
   resolved_by: an official capture of each guard being tripped
   feature: room.look_to
   known_evidence:
@@ -39,21 +39,21 @@ generated:
     origin: vortex
     source: Vortex.Rooms/Grains/RoomGrain.Avatar.cs
     symbol: RoomGrain
-    line: 452
+    line: 446
   - id: ev_b46938ec853d
     kind: emulator_flow
     authority: vortex_emulator
     origin: vortex
     source: Vortex.Rooms/Grains/RoomGrain.cs
     symbol: RoomGrain
-    line: 294
+    line: 296
   - id: ev_e6fef545a42a
     kind: emulator_flow
     authority: vortex_emulator
     origin: vortex
     source: Vortex.Rooms/Grains/Modules/RoomAvatarModule.cs
     symbol: RoomAvatarModule
-    line: 763
+    line: 762
   - id: ev_ec05fa1b0194
     kind: emulator_flow
     authority: vortex_emulator

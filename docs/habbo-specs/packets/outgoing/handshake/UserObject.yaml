@@ -10,7 +10,7 @@
 
 spec: packet
 spec_version: 1
-generated_digest: "sha256:511616427b02bd28f1b93099cdfe9dbfd1cff881b94bf362f9c76980108c548a"
+generated_digest: "sha256:ac8c9aeb33a1cc16c806b4efdec02fcb0f44861dc2f459f2f6b6a27a27c766ca"
 generated:
   name: UserObject
   direction: outgoing
@@ -19,53 +19,53 @@ generated:
   mapped_in_vortex: true
   fields:
   - index: 0
-    name: unknown_0
+    name: player_id
     type: int32
-    name_is_placeholder: true
-    name_confidence: unknown
+    name_confidence: implementation_observed
     type_confidence: client_confirmed
     evidence:
     - ev_7767cf187e1e
+    - ev_4980e675a61a
   - index: 1
-    name: unknown_1
+    name: name
     type: string
-    name_is_placeholder: true
-    name_confidence: unknown
+    name_confidence: implementation_observed
     type_confidence: client_confirmed
     evidence:
     - ev_7767cf187e1e
+    - ev_4980e675a61a
   - index: 2
-    name: unknown_2
+    name: figure
     type: string
-    name_is_placeholder: true
-    name_confidence: unknown
+    name_confidence: implementation_observed
     type_confidence: client_confirmed
     evidence:
     - ev_7767cf187e1e
+    - ev_4980e675a61a
   - index: 3
-    name: unknown_3
+    name: gender
     type: string
-    name_is_placeholder: true
-    name_confidence: unknown
+    name_confidence: implementation_observed
     type_confidence: client_confirmed
     evidence:
     - ev_7767cf187e1e
+    - ev_4980e675a61a
   - index: 4
-    name: unknown_4
+    name: motto
     type: string
-    name_is_placeholder: true
-    name_confidence: unknown
+    name_confidence: implementation_observed
     type_confidence: client_confirmed
     evidence:
     - ev_7767cf187e1e
+    - ev_4980e675a61a
   - index: 5
-    name: unknown_5
+    name: name
     type: string
-    name_is_placeholder: true
-    name_confidence: unknown
+    name_confidence: implementation_observed
     type_confidence: client_confirmed
     evidence:
     - ev_7767cf187e1e
+    - ev_4980e675a61a
   - index: 6
     name: unknown_6
     type: boolean
@@ -75,29 +75,29 @@ generated:
     evidence:
     - ev_7767cf187e1e
   - index: 7
-    name: unknown_7
+    name: received
     type: int32
-    name_is_placeholder: true
-    name_confidence: unknown
+    name_confidence: implementation_observed
     type_confidence: client_confirmed
     evidence:
     - ev_7767cf187e1e
+    - ev_4980e675a61a
   - index: 8
-    name: unknown_8
+    name: left
     type: int32
-    name_is_placeholder: true
-    name_confidence: unknown
+    name_confidence: implementation_observed
     type_confidence: client_confirmed
     evidence:
     - ev_7767cf187e1e
+    - ev_4980e675a61a
   - index: 9
-    name: unknown_9
+    name: pet_left
     type: int32
-    name_is_placeholder: true
-    name_confidence: unknown
+    name_confidence: implementation_observed
     type_confidence: client_confirmed
     evidence:
     - ev_7767cf187e1e
+    - ev_4980e675a61a
   - index: 10
     name: unknown_10
     type: boolean
@@ -107,13 +107,13 @@ generated:
     evidence:
     - ev_7767cf187e1e
   - index: 11
-    name: unknown_11
+    name: created_at
     type: string
-    name_is_placeholder: true
-    name_confidence: unknown
+    name_confidence: implementation_observed
     type_confidence: client_confirmed
     evidence:
     - ev_7767cf187e1e
+    - ev_4980e675a61a
   - index: 12
     name: unknown_12
     type: boolean
@@ -228,7 +228,7 @@ generated:
     evidence: ev_90668e4a182d
   - origin: vortex
     authority: vortex_emulator
-    field_count: 14
+    field_count: 18
     partial: false
     types:
     - int32
@@ -245,6 +245,10 @@ generated:
     - string
     - boolean
     - boolean
+    - boolean
+    - string
+    - int32
+    - int32
     evidence: ev_4980e675a61a
   evidence:
   - id: ev_7767cf187e1e

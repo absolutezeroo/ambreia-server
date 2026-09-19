@@ -10,7 +10,7 @@
 
 spec: packet
 spec_version: 1
-generated_digest: "sha256:6cfac35f680d1445fdadd49518a17e27daa9da5bf7907af663e2517d7217fe09"
+generated_digest: "sha256:bdc2e009d590b11ba7e65d972e39800679ed53245bde0848a0ca865359930d87"
 generated:
   name: ClubGiftInfo
   direction: outgoing
@@ -223,7 +223,7 @@ generated:
         name_is_placeholder: true
         name_confidence: unknown
         type_confidence: implementation_observed
-        note: "written as the constant false; source comment: unknownBoolean"
+        note: written as the constant false
         evidence:
         - ev_69171afe9918
       - index: 13
@@ -231,7 +231,6 @@ generated:
         type: string
         name_confidence: implementation_observed
         type_confidence: implementation_observed
-        note: "source comment: previewImage"
         evidence:
         - ev_69171afe9918
   - index: 4

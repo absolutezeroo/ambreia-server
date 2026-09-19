@@ -10,7 +10,7 @@
 
 spec: scenarios
 spec_version: 1
-generated_digest: "sha256:c5f6d262c282f6ee57cba0abefcefa461762bbb8ae3b2edc75cf03cc2d06ca23"
+generated_digest: "sha256:5d427f3d32dfe6916d4b7f08cfe3b06543d4d258f9f1502dd952b03053276dda"
 generated:
   feature: users.get_selected_badges
   scenarios:
@@ -46,10 +46,9 @@ generated:
     when:
       packet: GetSelectedBadges
     expected:
-      status: unknown
-      confidence: unknown
-    needs_evidence: an official capture of GetSelectedBadges succeeding, with every packet the server sends back and in what order
-    executable: false
+      status: success
+      confidence: capture_confirmed
+    executable: true
     claims:
     - origin: vortex
       authority: vortex_emulator
@@ -64,7 +63,18 @@ generated:
       - UserBadges
       - UserBadges
       evidence: ev_40595359bd6b
+    - origin: capture (1 observations)
+      authority: official_capture
+      outcome: success
+      emits: []
+      evidence: ev_2245d766a5cd
   evidence:
+  - id: ev_2245d766a5cd
+    kind: capture
+    authority: official_capture
+    origin: capture
+    source: docs/habbo-specs/evidence/captures
+    symbol: GetSelectedBadges
   - id: ev_40595359bd6b
     kind: reference_handler
     authority: reference_emulator

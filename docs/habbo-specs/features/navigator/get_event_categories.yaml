@@ -10,7 +10,7 @@
 
 spec: feature
 spec_version: 1
-generated_digest: "sha256:d034c472ffce8afb08b816a24debba6d786b99e5052c5916d3d9c100586da0cf"
+generated_digest: "sha256:981cd07b4cdae8b6899a870f9c9074fe824ef7a8283b551cd6368f66e0f83d44"
 generated:
   id: navigator.get_event_categories
   domain: navigator
@@ -22,7 +22,7 @@ generated:
     references:
     - habbo-arcturus-daybreak
   official_behavior:
-    status: unknown
+    status: capture_confirmed
   flow:
   - order: 0
     layer: handler
@@ -65,7 +65,7 @@ generated:
     origin: vortex
     source: Vortex.Rooms/Grains/RoomGrain.cs
     symbol: RoomGrain
-    line: 258
+    line: 260
   - id: ev_bca43a79b6c9
     kind: emulator_flow
     authority: vortex_emulator
@@ -97,7 +97,5 @@ generated:
   scenarios:
   - navigator.get_event_categories.guard_0
   - navigator.get_event_categories.success
-  conflicts:
-  - cf_f644964686
 verified: {}
 manual: {}

@@ -10,7 +10,7 @@
 
 spec: scenarios
 spec_version: 1
-generated_digest: "sha256:c9d2db821cc1906c571670041fe0543c7e038e5db8fed04bf0b0dbe8f11d9beb"
+generated_digest: "sha256:92ca582334f096c56dd50636ba521a99c3a758448a9e8aecf164161beefc2633"
 generated:
   feature: room.get_banned_users_from_room
   scenarios:
@@ -57,10 +57,9 @@ generated:
     when:
       packet: GetBannedUsersFromRoom
     expected:
-      status: unknown
-      confidence: unknown
-    needs_evidence: an official capture of GetBannedUsersFromRoom succeeding, with every packet the server sends back and in what order
-    executable: false
+      status: success
+      confidence: capture_confirmed
+    executable: true
     claims:
     - origin: vortex
       authority: vortex_emulator
@@ -68,7 +67,18 @@ generated:
       emits:
       - BannedUsersFromRoom
       evidence: ev_170d536d3818
+    - origin: capture (3 observations)
+      authority: official_capture
+      outcome: success
+      emits: []
+      evidence: ev_5ecd08c0f205
   evidence:
+  - id: ev_5ecd08c0f205
+    kind: capture
+    authority: official_capture
+    origin: capture
+    source: docs/habbo-specs/evidence/captures
+    symbol: GetBannedUsersFromRoom
   - id: ev_170d536d3818
     kind: emulator_flow
     authority: vortex_emulator
@@ -82,6 +92,6 @@ generated:
     origin: vortex
     source: Vortex.Rooms/Grains/RoomGrain.Settings.cs
     symbol: RoomGrain
-    line: 321
+    line: 323
 verified: {}
 manual: {}

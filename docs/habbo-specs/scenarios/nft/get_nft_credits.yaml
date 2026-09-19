@@ -10,7 +10,7 @@
 
 spec: scenarios
 spec_version: 1
-generated_digest: "sha256:9acc4df3bcbae555d1faa5c45c80b4598249b7447a601e8b5903997023f831a6"
+generated_digest: "sha256:f2671bd8b5731ffb0cd01d0a131f0213a47fde92a6e1e1c398a8da75a0d1d2f0"
 generated:
   feature: nft.get_nft_credits
   scenarios:
@@ -39,10 +39,9 @@ generated:
     when:
       packet: GetNftCredits
     expected:
-      status: unknown
-      confidence: unknown
-    needs_evidence: an official capture of GetNftCredits succeeding, with every packet the server sends back and in what order
-    executable: false
+      status: success
+      confidence: capture_confirmed
+    executable: true
     claims:
     - origin: vortex
       authority: vortex_emulator
@@ -51,7 +50,18 @@ generated:
       - EmeraldBalance
       - SilverBalance
       evidence: ev_8a9033c422d1
+    - origin: capture (1 observations)
+      authority: official_capture
+      outcome: success
+      emits: []
+      evidence: ev_0d6ab41a9181
   evidence:
+  - id: ev_0d6ab41a9181
+    kind: capture
+    authority: official_capture
+    origin: capture
+    source: docs/habbo-specs/evidence/captures
+    symbol: GetNftCredits
   - id: ev_8a9033c422d1
     kind: emulator_handler
     authority: vortex_emulator

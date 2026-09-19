@@ -10,7 +10,7 @@
 
 spec: unknown
 spec_version: 1
-generated_digest: "sha256:c4d744401889fb43e3c2aa699e7fc1fd9fd641e9c30164600469fad119139932"
+generated_digest: "sha256:0ef62b194a28d7ad800b974fc24b1a9b846bc962e03ea45668ff2476ea711a9d"
 generated:
   id: uk_6d068fa586
   subject: "quest.get_concurrent_users_reward: what the server sends when it refuses"
@@ -67,14 +67,14 @@ generated:
     origin: vortex
     source: Vortex.Inventory/Grains/InventoryGrain.Furni.cs
     symbol: InventoryGrain
-    line: 491
+    line: 492
   - id: ev_d720d639bd09
     kind: emulator_flow
     authority: vortex_emulator
     origin: vortex
     source: Vortex.Players/Grains/Modules/PlayerInventoryModule.cs
     symbol: PlayerInventoryModule
-    line: 84
+    line: 126
   - id: ev_e46df41dce67
     kind: emulator_flow
     authority: vortex_emulator

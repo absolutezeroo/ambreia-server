@@ -10,7 +10,7 @@
 
 spec: feature
 spec_version: 1
-generated_digest: "sha256:ffad30f96814a6a1d30db94cb37e74e2ea785977195737768e1b88d325fd7575"
+generated_digest: "sha256:68ac46ecd33d448d2ffb0d4eb870465e74491d47478f398ce7d01221501c4445"
 generated:
   id: catalog.get_bonus_rare_info
   domain: catalog
@@ -22,7 +22,7 @@ generated:
     references:
     - habbo-arcturus-daybreak
   official_behavior:
-    status: unknown
+    status: capture_confirmed
   flow:
   - order: 0
     layer: handler
@@ -31,7 +31,7 @@ generated:
   checks: []
   state_changes: []
   outgoing:
-    ordering: unknown
+    ordering: strict
     packets:
     - packet: BonusRareInfo
       recipient: actor

@@ -10,7 +10,7 @@
 
 spec: scenarios
 spec_version: 1
-generated_digest: "sha256:ab76dc90143b0e3b97250024555362436951526bd2325ceabc00878f4831eb29"
+generated_digest: "sha256:8a41ee4611ab88409f2a615444c5a3f433011e0ac91706258126287ee5ee4099"
 generated:
   feature: handshake.init_diffie_handshake
   scenarios:
@@ -21,10 +21,9 @@ generated:
     when:
       packet: InitDiffieHandshake
     expected:
-      status: unknown
-      confidence: unknown
-    needs_evidence: an official capture of InitDiffieHandshake succeeding, with every packet the server sends back and in what order
-    executable: false
+      status: success
+      confidence: capture_confirmed
+    executable: true
     claims:
     - origin: vortex
       authority: vortex_emulator
@@ -38,7 +37,19 @@ generated:
       emits:
       - InitDiffieHandshake
       evidence: ev_f38d4ebaaf91
+    - origin: capture (1 observations)
+      authority: official_capture
+      outcome: success
+      emits:
+      - InitDiffieHandshake
+      evidence: ev_7da95062af25
   evidence:
+  - id: ev_7da95062af25
+    kind: capture
+    authority: official_capture
+    origin: capture
+    source: docs/habbo-specs/evidence/captures
+    symbol: InitDiffieHandshake
   - id: ev_f38d4ebaaf91
     kind: reference_handler
     authority: reference_emulator

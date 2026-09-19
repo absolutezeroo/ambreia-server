@@ -10,7 +10,7 @@
 
 spec: feature
 spec_version: 1
-generated_digest: "sha256:313d56168195024f41a2f7314e81679ce709b9746b002e0a7102b3b5b9d73bbf"
+generated_digest: "sha256:1766bae762fb99c93792daab808a7ffd873c176eae0050ff6ceaff85d026b02f"
 generated:
   id: wired.withdraw_wired_chest_items
   domain: wired
@@ -362,7 +362,7 @@ generated:
     origin: vortex
     source: Vortex.Inventory/Grains/InventoryGrain.Furni.cs
     symbol: InventoryGrain
-    line: 62
+    line: 63
   - id: ev_d3a71568179c
     kind: emulator_flow
     authority: vortex_emulator

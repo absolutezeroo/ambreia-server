@@ -10,7 +10,7 @@
 
 spec: scenarios
 spec_version: 1
-generated_digest: "sha256:d002c3322eb7d3f102f79b8ddd411ba8032e910dbd49e13ebb980503a539e0e2"
+generated_digest: "sha256:329a4c8d3d915a8c7f4ddf4ab82b9b4fdc8945a7fbed6966c86ce99d7867aee9"
 generated:
   feature: inventory.get_credits_info
   scenarios:
@@ -46,10 +46,9 @@ generated:
     when:
       packet: GetCreditsInfo
     expected:
-      status: unknown
-      confidence: unknown
-    needs_evidence: an official capture of GetCreditsInfo succeeding, with every packet the server sends back and in what order
-    executable: false
+      status: success
+      confidence: capture_confirmed
+    executable: true
     claims:
     - origin: vortex
       authority: vortex_emulator
@@ -65,7 +64,18 @@ generated:
       - CreditBalance
       - ActivityPoints
       evidence: ev_02ccc7dac0b8
+    - origin: capture (1 observations)
+      authority: official_capture
+      outcome: success
+      emits: []
+      evidence: ev_928e8b8da2e7
   evidence:
+  - id: ev_928e8b8da2e7
+    kind: capture
+    authority: official_capture
+    origin: capture
+    source: docs/habbo-specs/evidence/captures
+    symbol: GetCreditsInfo
   - id: ev_02ccc7dac0b8
     kind: reference_handler
     authority: reference_emulator

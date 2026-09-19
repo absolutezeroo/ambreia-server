@@ -10,7 +10,7 @@
 
 spec: scenarios
 spec_version: 1
-generated_digest: "sha256:8acec3ede1ad9e86185ad851589643eba739f64d95c70dc3ac6c37ef76c2d90e"
+generated_digest: "sha256:9bcadafbaed1e2fdf28a8d5448e5c7055a735cad1c73910e3f54b26f9f1edbc5"
 generated:
   feature: room.close_room_for_player
   scenarios:
@@ -269,7 +269,7 @@ generated:
     origin: vortex
     source: Vortex.Rooms/RoomService.cs
     symbol: RoomService
-    line: 423
+    line: 517
   - id: ev_b44ef304d36a
     kind: emulator_flow
     authority: vortex_emulator
@@ -283,6 +283,6 @@ generated:
     origin: vortex
     source: Vortex.Rooms/Grains/Modules/RoomAvatarModule.cs
     symbol: RoomAvatarModule
-    line: 164
+    line: 163
 verified: {}
 manual: {}

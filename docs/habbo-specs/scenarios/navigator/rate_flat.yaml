@@ -10,7 +10,7 @@
 
 spec: scenarios
 spec_version: 1
-generated_digest: "sha256:21f19f07fccd2732e8515f9ca87d85e15ad5ef620cde74750ace035818a20868"
+generated_digest: "sha256:14c2c0cc017398092bb587eb47241c4f8a6cfd2b68f2fd6540593dd2b6a4fb5a"
 generated:
   feature: navigator.rate_flat
   scenarios:
@@ -38,52 +38,75 @@ generated:
       emits: []
       evidence: ev_09ad6301bf9e
   - scenario: navigator.rate_flat.guard_1
-    title: "rate flat: the guard 'sign == 0 || _state.RoomSnapshot.OwnerId == actor' holds"
+    title: "rate flat: the guard 'newScore is null' holds"
     given:
-      guard: sign == 0 || _state.RoomSnapshot.OwnerId == actor
+      guard: newScore is null
       guard_holds: "true"
     when:
       packet: RateFlat
     expected:
       status: unknown
       confidence: unknown
-    needs_evidence: "an official capture of RateFlat sent while 'sign == 0 || _state.RoomSnapshot.OwnerId == actor' holds: does the server reply, stay silent, or disconnect?"
+    needs_evidence: "an official capture of RateFlat sent while 'newScore is null' holds: does the server reply, stay silent, or disconnect?"
     executable: false
     claims:
     - origin: vortex
       authority: vortex_emulator
       outcome: ignored
       emits: []
-      evidence: ev_329537530b13
+      evidence: ev_87f8b30763fe
     - origin: habbo-arcturus-daybreak
       authority: reference_emulator
       outcome: ignored
       emits: []
       evidence: ev_09ad6301bf9e
   - scenario: navigator.rate_flat.guard_2
-    title: "rate flat: the guard 'alreadyRated' holds"
+    title: "rate flat: the guard 'sign == 0 || _roomGrain._state.RoomSnapshot.OwnerId == actor' holds"
     given:
-      guard: alreadyRated
+      guard: sign == 0 || _roomGrain._state.RoomSnapshot.OwnerId == actor
       guard_holds: "true"
     when:
       packet: RateFlat
     expected:
       status: unknown
       confidence: unknown
-    needs_evidence: "an official capture of RateFlat sent while 'alreadyRated' holds: does the server reply, stay silent, or disconnect?"
+    needs_evidence: "an official capture of RateFlat sent while 'sign == 0 || _roomGrain._state.RoomSnapshot.OwnerId == actor' holds: does the server reply, stay silent, or disconnect?"
     executable: false
     claims:
     - origin: vortex
       authority: vortex_emulator
       outcome: ignored
       emits: []
-      evidence: ev_329537530b13
+      evidence: ev_23be541c2f63
     - origin: habbo-arcturus-daybreak
       authority: reference_emulator
       outcome: ignored
       emits: []
       evidence: ev_09ad6301bf9e
   - scenario: navigator.rate_flat.guard_3
+    title: "rate flat: the guard 'await HasVotedAsync(dbCtx, actor, ct).ConfigureAwait(true)' holds"
+    given:
+      guard: await HasVotedAsync(dbCtx, actor, ct).ConfigureAwait(true)
+      guard_holds: "true"
+    when:
+      packet: RateFlat
+    expected:
+      status: unknown
+      confidence: unknown
+    needs_evidence: "an official capture of RateFlat sent while 'await HasVotedAsync(dbCtx, actor, ct).ConfigureAwait(true)' holds: does the server reply, stay silent, or disconnect?"
+    executable: false
+    claims:
+    - origin: vortex
+      authority: vortex_emulator
+      outcome: ignored
+      emits: []
+      evidence: ev_23be541c2f63
+    - origin: habbo-arcturus-daybreak
+      authority: reference_emulator
+      outcome: ignored
+      emits: []
+      evidence: ev_09ad6301bf9e
+  - scenario: navigator.rate_flat.guard_4
     title: "rate flat: the guard 'entity is null' holds"
     given:
       guard: entity is null
@@ -100,13 +123,13 @@ generated:
       authority: vortex_emulator
       outcome: ignored
       emits: []
-      evidence: ev_329537530b13
+      evidence: ev_23be541c2f63
     - origin: habbo-arcturus-daybreak
       authority: reference_emulator
       outcome: ignored
       emits: []
       evidence: ev_09ad6301bf9e
-  - scenario: navigator.rate_flat.guard_4
+  - scenario: navigator.rate_flat.guard_5
     title: "rate flat: the guard '_registry is null' holds"
     given:
       guard: _registry is null
@@ -143,9 +166,10 @@ generated:
     claims:
     - origin: vortex
       authority: vortex_emulator
-      outcome: ignored
-      emits: []
-      evidence: ev_329537530b13
+      outcome: success
+      emits:
+      - RoomRating
+      evidence: ev_23be541c2f63
     - origin: habbo-arcturus-daybreak
       authority: reference_emulator
       outcome: ignored
@@ -160,13 +184,13 @@ generated:
     symbol: RateFlatMessageEvent
     line: 8
     note: third-party server implementation; evidence, not authority
-  - id: ev_329537530b13
+  - id: ev_23be541c2f63
     kind: emulator_flow
     authority: vortex_emulator
     origin: vortex
-    source: Vortex.Rooms/Grains/RoomGrain.Settings.cs
-    symbol: RoomGrain
-    line: 696
+    source: Vortex.Rooms/Grains/Systems/RoomRatingSystem.cs
+    symbol: RoomRatingSystem
+    line: 74
   - id: ev_34bf3ac088e2
     kind: emulator_flow
     authority: vortex_emulator
@@ -180,6 +204,6 @@ generated:
     origin: vortex
     source: Vortex.PacketHandlers/Navigator/RateFlatMessageHandler.cs
     symbol: RateFlatMessageHandler
-    line: 19
+    line: 20
 verified: {}
 manual: {}

@@ -10,7 +10,7 @@
 
 spec: feature
 spec_version: 1
-generated_digest: "sha256:044e989558bc522e748a1498d2a6b0c6fe936db5e4533008a707fe227064d167"
+generated_digest: "sha256:0b7ea6ca1453efdf11ff61fc1e5d3f85bdc33b2e1f5ebbd4eaef946f45094dac"
 generated:
   id: inventory.redeem_purchasable_clothing
   domain: inventory
@@ -208,14 +208,14 @@ generated:
     origin: vortex
     source: Vortex.Inventory/Grains/InventoryGrain.Furni.cs
     symbol: InventoryGrain
-    line: 857
+    line: 858
   - id: ev_d720d639bd09
     kind: emulator_flow
     authority: vortex_emulator
     origin: vortex
     source: Vortex.Players/Grains/Modules/PlayerInventoryModule.cs
     symbol: PlayerInventoryModule
-    line: 76
+    line: 118
   - id: ev_f13d6bcce744
     kind: emulator_flow
     authority: vortex_emulator

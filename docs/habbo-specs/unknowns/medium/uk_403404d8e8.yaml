@@ -10,7 +10,7 @@
 
 spec: unknown
 spec_version: 1
-generated_digest: "sha256:145b88b4e22af39647250d2302f49661d64fd85dbfdc52248680f9e3a4745fd0"
+generated_digest: "sha256:70f047d84d89284c5d4f8155d4816966552258c3fe9b37350e78412a56c72bd3"
 generated:
   id: uk_403404d8e8
   subject: "moderation.post_quiz_answers: who receives BadgeReceived"
@@ -25,6 +25,6 @@ generated:
     origin: vortex
     source: Vortex.Players/Grains/Modules/PlayerInventoryModule.cs
     symbol: PlayerInventoryModule
-    line: 86
+    line: 128
 verified: {}
 manual: {}

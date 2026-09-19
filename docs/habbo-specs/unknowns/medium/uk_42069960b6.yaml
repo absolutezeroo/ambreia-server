@@ -10,7 +10,7 @@
 
 spec: unknown
 spec_version: 1
-generated_digest: "sha256:2b4508647dbc868ff4e1e91e3f36d9ccff87bda148188c7687c5b67bd8e15c68"
+generated_digest: "sha256:d85660575b5ce9316c3925d9526445c6e1eb8bbe590cb6af0dd4d65f8037a99d"
 generated:
   id: uk_42069960b6
   subject: "marketplace.make_offer: who receives FurniListRemove"
@@ -25,6 +25,6 @@ generated:
     origin: vortex
     source: Vortex.Players/Grains/Modules/PlayerInventoryModule.cs
     symbol: PlayerInventoryModule
-    line: 78
+    line: 120
 verified: {}
 manual: {}

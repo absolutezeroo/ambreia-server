@@ -10,15 +10,22 @@
 
 spec: unknown
 spec_version: 1
-generated_digest: "sha256:0f20ab23ae5eab8c2193f96a22dee733c1b2dca6c77020194deffd692ab6a5df"
+generated_digest: "sha256:67c65e16071d6c5091c8063d83fe9426c6f718dfc229765631b227c7e8c21790"
 generated:
   id: uk_4048d65186
   subject: "room.respect_pet: what the server sends when it refuses"
   severity: medium
-  question: room.respect_pet changes state and has 7 guards whose refusal behaviour nothing here attests. Does the official server answer a refused request, and with what?
+  question: room.respect_pet changes state and has 8 guards whose refusal behaviour nothing here attests. Does the official server answer a refused request, and with what?
   resolved_by: an official capture of each guard being tripped
   feature: room.respect_pet
   known_evidence:
+  - id: ev_09932710687b
+    kind: emulator_flow
+    authority: vortex_emulator
+    origin: vortex
+    source: Vortex.Primitives/Orleans/GrainFactoryExtensions.cs
+    symbol: GrainFactoryExtensions
+    line: 228
   - id: ev_1557b71ceec2
     kind: emulator_flow
     authority: vortex_emulator
@@ -32,7 +39,7 @@ generated:
     origin: vortex
     source: Vortex.Players/Grains/PlayerGrain.cs
     symbol: PlayerGrain
-    line: 259
+    line: 382
   - id: ev_27dc49cff260
     kind: emulator_handler
     authority: vortex_emulator
@@ -46,7 +53,7 @@ generated:
     origin: vortex
     source: Vortex.Rooms/Grains/Systems/RoomPetRuntime.cs
     symbol: RoomPetRuntime
-    line: 190
+    line: 188
   - id: ev_34bf3ac088e2
     kind: emulator_flow
     authority: vortex_emulator
@@ -68,12 +75,19 @@ generated:
     source: Vortex.Rooms/Grains/RoomGrain.Pets.cs
     symbol: RoomGrain
     line: 125
+  - id: ev_86f81f4f919c
+    kind: emulator_flow
+    authority: vortex_emulator
+    origin: vortex
+    source: Vortex.Players/Grains/ServerConfigGrain.cs
+    symbol: ServerConfigGrain
+    line: 43
   - id: ev_b46938ec853d
     kind: emulator_flow
     authority: vortex_emulator
     origin: vortex
     source: Vortex.Rooms/Grains/RoomGrain.cs
     symbol: RoomGrain
-    line: 672
+    line: 700
 verified: {}
 manual: {}

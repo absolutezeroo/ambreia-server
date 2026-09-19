@@ -10,7 +10,7 @@
 
 spec: feature
 spec_version: 1
-generated_digest: "sha256:cddb275615040d2fa498fdd717549090b44fc1cf58bfab8fbb67a29519935fbe"
+generated_digest: "sha256:1bd1df9f7619801b784e503ea3905b4899fa5d3bdfc2baa4330419af2ab68455"
 generated:
   id: marketplace.buy_marketplace_offer
   domain: marketplace
@@ -99,7 +99,7 @@ generated:
     origin: vortex
     source: Vortex.Marketplace/Providers/MarketplaceSettingsProvider.cs
     symbol: MarketplaceSettingsProvider
-    line: 34
+    line: 36
   - id: ev_783f83e7a23e
     kind: emulator_handler
     authority: vortex_emulator

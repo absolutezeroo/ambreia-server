@@ -10,7 +10,7 @@
 
 spec: feature
 spec_version: 1
-generated_digest: "sha256:dbd20fceb72097b910bfd78550cb4d5f57d95adff34eefa8e8b4be339a579f87"
+generated_digest: "sha256:e120d9b5ba7699bb62a368a6274741be7143686ae0c1a4e30a6029a0da518766"
 generated:
   id: avatar.change_user_name
   domain: avatar
@@ -166,7 +166,7 @@ generated:
     origin: vortex
     source: Vortex.Players/Grains/PlayerGrain.cs
     symbol: PlayerGrain
-    line: 132
+    line: 255
   - id: ev_26f996b19e2c
     kind: emulator_flow
     authority: vortex_emulator
@@ -222,14 +222,14 @@ generated:
     origin: vortex
     source: Vortex.Rooms/Grains/RoomGrain.cs
     symbol: RoomGrain
-    line: 294
+    line: 296
   - id: ev_e6fef545a42a
     kind: emulator_flow
     authority: vortex_emulator
     origin: vortex
     source: Vortex.Rooms/Grains/Modules/RoomAvatarModule.cs
     symbol: RoomAvatarModule
-    line: 509
+    line: 508
   - id: ev_ede91c591c8c
     kind: emulator_flow
     authority: vortex_emulator

@@ -10,13 +10,17 @@
 
 spec: conflict
 spec_version: 1
-generated_digest: "sha256:783f0d500603a92a21b99e3215778838eeffff6cb2f007fd3f2abac1f5553118"
+generated_digest: "sha256:bd932124d8a5d89b9884c5f8b53c98a23e9e8f5a5c91e72faaec4caf883786d7"
 generated:
   id: cf_19d153d071
   kind: behaviour
   subject: "GetRelationshipStatusInfo: packets emitted in response"
   packet: GetRelationshipStatusInfo
   positions:
+  - origin: capture (1 observations)
+    authority: official_capture
+    claim: HabboUserBadges then RelationshipStatusInfo
+    evidence: ev_12cfbcb7ba0d
   - origin: habbo-arcturus-daybreak
     authority: reference_emulator
     claim: RelationshipStatusInfo then RelationshipStatusInfo
@@ -26,6 +30,12 @@ generated:
     claim: RelationshipStatusInfo
     evidence: ev_c2d88087cd11
   evidence:
+  - id: ev_12cfbcb7ba0d
+    kind: capture
+    authority: official_capture
+    origin: capture
+    source: docs/habbo-specs/evidence/captures
+    symbol: GetRelationshipStatusInfo
   - id: ev_463c147f250f
     kind: reference_handler
     authority: reference_emulator

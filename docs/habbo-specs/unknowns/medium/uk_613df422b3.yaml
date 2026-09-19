@@ -10,7 +10,7 @@
 
 spec: unknown
 spec_version: 1
-generated_digest: "sha256:9fc2ef1b70eb84f996304c5d0be1281991cfec61293efaa09d32e79269f4ddcd"
+generated_digest: "sha256:80f5b34519a70efbdc34672a9701e3dee9f761d2f33a0335980f960f54953b27"
 generated:
   id: uk_613df422b3
   subject: "room.present_open: what the server sends when it refuses"
@@ -74,7 +74,7 @@ generated:
     origin: vortex
     source: Vortex.Rooms/Grains/RoomGrain.Furni.Interactive.cs
     symbol: RoomGrain
-    line: 485
+    line: 552
   - id: ev_7a660921f135
     kind: emulator_flow
     authority: vortex_emulator
@@ -116,7 +116,7 @@ generated:
     origin: vortex
     source: Vortex.Inventory/Grains/InventoryGrain.Furni.cs
     symbol: InventoryGrain
-    line: 162
+    line: 163
   - id: ev_d0f936c872c4
     kind: emulator_handler
     authority: vortex_emulator
@@ -137,7 +137,7 @@ generated:
     origin: vortex
     source: Vortex.Players/Grains/Modules/PlayerInventoryModule.cs
     symbol: PlayerInventoryModule
-    line: 84
+    line: 126
   - id: ev_dfd698b29c69
     kind: emulator_flow
     authority: vortex_emulator

@@ -10,7 +10,7 @@
 
 spec: feature
 spec_version: 1
-generated_digest: "sha256:1d331b7c8949e6f59120279050ca849d29e7a5af6ba465c61d6e8499fc3e72e3"
+generated_digest: "sha256:138a1742ef21d2e751cd3f7b285d39ff46380c079a4f70fb607c19892adbb269"
 generated:
   id: room.open_mystery_trophy
   domain: room
@@ -260,7 +260,7 @@ generated:
     origin: vortex
     source: Vortex.Rooms/Grains/RoomGrain.Furni.Interactive.cs
     symbol: RoomGrain
-    line: 185
+    line: 252
   - id: ev_761b76967e2f
     kind: emulator_flow
     authority: vortex_emulator
@@ -323,7 +323,7 @@ generated:
     origin: vortex
     source: Vortex.Rooms/Grains/RoomGrain.cs
     symbol: RoomGrain
-    line: 294
+    line: 296
   - id: ev_b533730b6457
     kind: emulator_flow
     authority: vortex_emulator
@@ -344,7 +344,7 @@ generated:
     origin: vortex
     source: Vortex.Inventory/Grains/InventoryGrain.Furni.cs
     symbol: InventoryGrain
-    line: 724
+    line: 725
   - id: ev_db615f36b20b
     kind: emulator_flow
     authority: vortex_emulator
@@ -365,7 +365,7 @@ generated:
     origin: vortex
     source: Vortex.Rooms/Grains/Modules/RoomAvatarModule.cs
     symbol: RoomAvatarModule
-    line: 435
+    line: 434
   - id: ev_f13d6bcce744
     kind: emulator_flow
     authority: vortex_emulator

@@ -10,7 +10,7 @@
 
 spec: scenarios
 spec_version: 1
-generated_digest: "sha256:ce4602cab2be4d95ef28c53497b8bc538963a7a6ade28552b11176aeec7674f6"
+generated_digest: "sha256:3fbfeb32d4ae6501a126be51f02a7b391eccb2d52abd9ba8394d7f9120709885"
 generated:
   feature: vault.income_reward_status
   scenarios:
@@ -39,10 +39,9 @@ generated:
     when:
       packet: IncomeRewardStatus
     expected:
-      status: unknown
-      confidence: unknown
-    needs_evidence: an official capture of IncomeRewardStatus succeeding, with every packet the server sends back and in what order
-    executable: false
+      status: success
+      confidence: capture_confirmed
+    executable: true
     claims:
     - origin: vortex
       authority: vortex_emulator
@@ -50,7 +49,18 @@ generated:
       emits:
       - IncomeRewardStatus
       evidence: ev_64a16635906e
+    - origin: capture (1 observations)
+      authority: official_capture
+      outcome: success
+      emits: []
+      evidence: ev_de4499b3c356
   evidence:
+  - id: ev_de4499b3c356
+    kind: capture
+    authority: official_capture
+    origin: capture
+    source: docs/habbo-specs/evidence/captures
+    symbol: IncomeRewardStatus
   - id: ev_64a16635906e
     kind: emulator_flow
     authority: vortex_emulator

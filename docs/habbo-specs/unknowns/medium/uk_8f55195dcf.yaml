@@ -10,7 +10,7 @@
 
 spec: unknown
 spec_version: 1
-generated_digest: "sha256:bbf7e2d5a8303f1f58c56304d33d5de8b584792538909141138bf5c5370311b9"
+generated_digest: "sha256:ea9c49a36eaeb9eceef6ce85f7503bc6f9f0f3d0db6053a4744d19e5d2632c75"
 generated:
   id: uk_8f55195dcf
   subject: "room.update_room_category_and_trade_settings: who receives RoomSettingsSaved"
@@ -25,6 +25,6 @@ generated:
     origin: vortex
     source: Vortex.Rooms/Grains/RoomGrain.Settings.cs
     symbol: RoomGrain
-    line: 371
+    line: 500
 verified: {}
 manual: {}

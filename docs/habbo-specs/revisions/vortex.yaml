@@ -10,7 +10,7 @@
 
 spec: revision
 spec_version: 1
-generated_digest: "sha256:e283f079d8e3067fe67753c00ed64c440bd77840e99384b15cf80430df9f60d0"
+generated_digest: "sha256:340114de108497a4b0611b26e69faf19844d5d824cde6f03602c9958d254d356"
 generated:
   revision: WIN63-202607011411-782849652
   origin: vortex
@@ -479,6 +479,7 @@ generated:
     SendMsg: 3357
     SendRoomInvite: 617
     SetActivatedBadges: 2764
+    SetAdjacentCustomStackingHeight: 3315
     SetAllWiredChestLocks: 1630
     SetAreaHideData: 1954
     SetChatPreferences: 1149

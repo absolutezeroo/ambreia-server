@@ -10,7 +10,7 @@
 
 spec: scenarios
 spec_version: 1
-generated_digest: "sha256:bff6019e4b8389dab7325b2324a88b5d1001a27f7ca1e92c97afdf479ec251ff"
+generated_digest: "sha256:b66d57f3ffc0dda7f366c08f9c375904bea63cdeef60d52d45215e26ea6a5ce9"
 generated:
   feature: handshake.get_subscription
   scenarios:
@@ -290,10 +290,9 @@ generated:
     when:
       packet: SSOTicket
     expected:
-      status: unknown
-      confidence: unknown
-    needs_evidence: an official capture of SSOTicket succeeding, with every packet the server sends back and in what order
-    executable: false
+      status: success
+      confidence: capture_confirmed
+    executable: true
     claims:
     - origin: vortex
       authority: vortex_emulator
@@ -327,7 +326,43 @@ generated:
       - HabboBroadcast
       - NavigatorSavedSearches
       evidence: ev_1111fd915cdf
+    - origin: capture (1 observations)
+      authority: official_capture
+      outcome: success
+      emits:
+      - AuthenticationOK
+      - AvatarEffects
+      - NavigatorSettings
+      - Favourites
+      - ScrSendUserInfo
+      - BuildersClubSubscriptionStatus
+      - UnseenItems
+      - FigureSetIds
+      - RewardTracks
+      - UserHabbicons
+      - HabbiconShopData
+      - NoobnessLevel
+      - UserRights
+      - AvailabilityStatus
+      - InfoFeedEnable
+      - ActivityPoints
+      - AchievementsScore
+      - IsFirstLoginOfDay
+      - MysteryBoxKeys
+      - BuildersClubSubscriptionStatus
+      - CfhTopicsInit
+      - Achievement
+      - Achievement
+      - Achievement
+      - PerkAllowances
+      evidence: ev_8be3ccd340ed
   evidence:
+  - id: ev_8be3ccd340ed
+    kind: capture
+    authority: official_capture
+    origin: capture
+    source: docs/habbo-specs/evidence/captures
+    symbol: SSOTicket
   - id: ev_1111fd915cdf
     kind: reference_handler
     authority: reference_emulator
@@ -349,7 +384,7 @@ generated:
     origin: vortex
     source: Vortex.Players/Grains/PlayerGrain.cs
     symbol: PlayerGrain
-    line: 969
+    line: 1092
   - id: ev_34bf3ac088e2
     kind: emulator_flow
     authority: vortex_emulator

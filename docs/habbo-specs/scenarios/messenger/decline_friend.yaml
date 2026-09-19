@@ -10,7 +10,7 @@
 
 spec: scenarios
 spec_version: 1
-generated_digest: "sha256:ded491dd9c490c614b6f74472e2f14cabb5d928651aa0d6544bf719036d3469e"
+generated_digest: "sha256:9c0938f844ec47b1a6387ac533ab98eeaec2b4407443f69273705ecb3558fb1e"
 generated:
   feature: messenger.decline_friend
   scenarios:
@@ -124,6 +124,6 @@ generated:
     origin: vortex
     source: Vortex.Social/Grains/MessengerGrain.Friends.cs
     symbol: MessengerGrain
-    line: 353
+    line: 354
 verified: {}
 manual: {}

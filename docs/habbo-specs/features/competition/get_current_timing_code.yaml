@@ -10,7 +10,7 @@
 
 spec: feature
 spec_version: 1
-generated_digest: "sha256:46330ea7bf02e81360872eb13093d8cceb710b9c2909fff7df38dcc8fd2c3831"
+generated_digest: "sha256:e5e7638ad38a875880fc0a69e485676538b302a30135f2a31b8fa5592b8e7182"
 generated:
   id: competition.get_current_timing_code
   domain: competition
@@ -22,7 +22,7 @@ generated:
     references:
     - habbo-arcturus-daybreak
   official_behavior:
-    status: unknown
+    status: capture_confirmed
   flow:
   - order: 0
     layer: handler
@@ -31,7 +31,7 @@ generated:
   checks: []
   state_changes: []
   outgoing:
-    ordering: unknown
+    ordering: strict
     packets:
     - packet: CurrentTimingCode
       recipient: actor
@@ -55,8 +55,6 @@ generated:
     line: 26
   scenarios:
   - competition.get_current_timing_code.success
-  conflicts:
-  - cf_eae075b660
 verified: {}
 manual:
   schedule_format: "The request payload is one of the client's own `landing.view.*` schedule strings, echoed back beside the code it resolves to. Official server behaviour stays unknown, but the format is not in doubt: every shipped value in ../vortex-modern-client/sources/external_variables.txt is `<yyyy-MM-dd HH:mm>,<code>` pairs joined by `;`, in ascending date order (landing.view.dynamic.slot.{2,3,4,5}.conf, competition.timing). Vortex answers with the code of the latest pair whose date has passed, and empty when none has. `competition.timing` ends on a pair with an EMPTY code, which only makes sense if each pair means \"from this moment, this code\" and an empty one switches the campaign off."

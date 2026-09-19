@@ -10,7 +10,7 @@
 
 spec: scenarios
 spec_version: 1
-generated_digest: "sha256:64fb02f5172ae1d191b995fe4997d5e64a6d32b8d60bfce4aa46320ac1a81c51"
+generated_digest: "sha256:5b105415d9a310bd5f67e6a403da505e5bd93e04b5dc226e7a924d3672872d7c"
 generated:
   feature: competition.get_current_timing_code
   scenarios:
@@ -21,10 +21,9 @@ generated:
     when:
       packet: GetCurrentTimingCode
     expected:
-      status: unknown
-      confidence: unknown
-    needs_evidence: an official capture of GetCurrentTimingCode succeeding, with every packet the server sends back and in what order
-    executable: false
+      status: success
+      confidence: capture_confirmed
+    executable: true
     claims:
     - origin: vortex
       authority: vortex_emulator
@@ -40,7 +39,18 @@ generated:
       - CurrentTimingCode
       - CurrentTimingCode
       evidence: ev_a20ef386df4a
+    - origin: capture (5 observations)
+      authority: official_capture
+      outcome: success
+      emits: []
+      evidence: ev_5df9bb2ce87c
   evidence:
+  - id: ev_5df9bb2ce87c
+    kind: capture
+    authority: official_capture
+    origin: capture
+    source: docs/habbo-specs/evidence/captures
+    symbol: GetCurrentTimingCode
   - id: ev_a20ef386df4a
     kind: reference_handler
     authority: reference_emulator

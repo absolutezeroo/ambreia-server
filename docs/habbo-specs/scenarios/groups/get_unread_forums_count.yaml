@@ -10,7 +10,7 @@
 
 spec: scenarios
 spec_version: 1
-generated_digest: "sha256:443de5911a4fdc3ec89123e9ef7f3d5bbb28d7b18fda5c69b1a754840524da6f"
+generated_digest: "sha256:213ceb1d38130381b2195fc5879b8b8c59557385205e6bbf38ad2267936caa65"
 generated:
   feature: groups.get_unread_forums_count
   scenarios:
@@ -93,10 +93,9 @@ generated:
     when:
       packet: GetUnreadForumsCount
     expected:
-      status: unknown
-      confidence: unknown
-    needs_evidence: an official capture of GetUnreadForumsCount succeeding, with every packet the server sends back and in what order
-    executable: false
+      status: success
+      confidence: capture_confirmed
+    executable: true
     claims:
     - origin: vortex
       authority: vortex_emulator
@@ -110,7 +109,18 @@ generated:
       emits:
       - UnreadForumsCount
       evidence: ev_c0a5a54402ef
+    - origin: capture (1 observations)
+      authority: official_capture
+      outcome: success
+      emits: []
+      evidence: ev_8b05a90b0093
   evidence:
+  - id: ev_8b05a90b0093
+    kind: capture
+    authority: official_capture
+    origin: capture
+    source: docs/habbo-specs/evidence/captures
+    symbol: GetUnreadForumsCount
   - id: ev_c0a5a54402ef
     kind: reference_handler
     authority: reference_emulator

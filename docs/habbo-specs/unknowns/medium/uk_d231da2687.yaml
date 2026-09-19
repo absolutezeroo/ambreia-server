@@ -10,7 +10,7 @@
 
 spec: unknown
 spec_version: 1
-generated_digest: "sha256:f7c76feb5f6f7d354eb39b4e3791157e53ee18d33705c205b7362d6162180b18"
+generated_digest: "sha256:591736570bac9a2b2c77a4433df09d20d47f37bbe7df35c4cf5b906f370531a6"
 generated:
   id: uk_d231da2687
   subject: "messenger.remove_friend: what the server sends when it refuses"
@@ -53,6 +53,6 @@ generated:
     origin: vortex
     source: Vortex.Social/Grains/MessengerGrain.Friends.cs
     symbol: MessengerGrain
-    line: 399
+    line: 400
 verified: {}
 manual: {}

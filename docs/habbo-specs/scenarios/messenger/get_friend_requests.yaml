@@ -10,7 +10,7 @@
 
 spec: scenarios
 spec_version: 1
-generated_digest: "sha256:720f1462d5e0f9b4e131009bd0fafce2be9dbc8325730b62187a37b5ac09eb8d"
+generated_digest: "sha256:336b0f5fa08f5f0f9011501821befb579597349c0e8aa1c67ab6d578e68a6b99"
 generated:
   feature: messenger.get_friend_requests
   scenarios:
@@ -39,10 +39,9 @@ generated:
     when:
       packet: GetFriendRequests
     expected:
-      status: unknown
-      confidence: unknown
-    needs_evidence: an official capture of GetFriendRequests succeeding, with every packet the server sends back and in what order
-    executable: false
+      status: success
+      confidence: capture_confirmed
+    executable: true
     claims:
     - origin: vortex
       authority: vortex_emulator
@@ -50,7 +49,28 @@ generated:
       emits:
       - FriendRequests
       evidence: ev_a523caad8115
+    - origin: capture (1 observations)
+      authority: official_capture
+      outcome: success
+      emits:
+      - UserFlatCats
+      - UserEventCats
+      - FriendRequests
+      - EmeraldBalance
+      - SilverBalance
+      - ScrSendUserInfo
+      - BadgePointLimits
+      - AccountPreferences
+      - UnreadForumsCount
+      - DiscordPreferences
+      evidence: ev_9a7f788d5b04
   evidence:
+  - id: ev_9a7f788d5b04
+    kind: capture
+    authority: official_capture
+    origin: capture
+    source: docs/habbo-specs/evidence/captures
+    symbol: GetFriendRequests
   - id: ev_a523caad8115
     kind: emulator_flow
     authority: vortex_emulator

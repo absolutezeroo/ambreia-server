@@ -10,7 +10,7 @@
 
 spec: scenarios
 spec_version: 1
-generated_digest: "sha256:b4ebbeb6b1c383391e8de0de362b2d29d9f2812a698df20a7d15c43cb8295747"
+generated_digest: "sha256:5d7ca9aa17e0e2ff9f6f87773ac48fe042bfb0911622976a33b33a154e647e69"
 generated:
   feature: room.get_room_entry_tile
   scenarios:
@@ -46,10 +46,9 @@ generated:
     when:
       packet: GetRoomEntryTile
     expected:
-      status: unknown
-      confidence: unknown
-    needs_evidence: an official capture of GetRoomEntryTile succeeding, with every packet the server sends back and in what order
-    executable: false
+      status: success
+      confidence: capture_confirmed
+    executable: true
     claims:
     - origin: vortex
       authority: vortex_emulator
@@ -64,7 +63,19 @@ generated:
       - RoomEntryTile
       - RoomFloorThicknessUpdated
       evidence: ev_5def21d0052f
+    - origin: capture (1 observations)
+      authority: official_capture
+      outcome: success
+      emits:
+      - RoomEntryTile
+      evidence: ev_de569090fa7b
   evidence:
+  - id: ev_de569090fa7b
+    kind: capture
+    authority: official_capture
+    origin: capture
+    source: docs/habbo-specs/evidence/captures
+    symbol: GetRoomEntryTile
   - id: ev_5def21d0052f
     kind: reference_handler
     authority: reference_emulator

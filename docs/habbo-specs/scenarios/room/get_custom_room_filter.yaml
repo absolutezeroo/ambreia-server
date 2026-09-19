@@ -10,10 +10,58 @@
 
 spec: scenarios
 spec_version: 1
-generated_digest: "sha256:1183abc867a3de09d34bde5aed2c8e295dd9de4e842f9ce990c40314c27c355c"
+generated_digest: "sha256:629c40f57809ef542074a9d222af090ee89a19ac978f35fd5ccc65e66057e9e9"
 generated:
   feature: room.get_custom_room_filter
   scenarios:
+  - scenario: room.get_custom_room_filter.guard_0
+    title: "get custom room filter: the guard 'ctx.PlayerId <= 0 || message.RoomId <= 0' holds"
+    given:
+      guard: ctx.PlayerId <= 0 || message.RoomId <= 0
+      guard_holds: "true"
+    when:
+      packet: GetCustomRoomFilter
+    expected:
+      status: unknown
+      confidence: unknown
+    needs_evidence: "an official capture of GetCustomRoomFilter sent while 'ctx.PlayerId <= 0 || message.RoomId <= 0' holds: does the server reply, stay silent, or disconnect?"
+    executable: false
+    claims:
+    - origin: vortex
+      authority: vortex_emulator
+      outcome: ignored
+      emits: []
+      evidence: ev_dfc3acec327c
+    - origin: habbo-arcturus-daybreak
+      authority: reference_emulator
+      outcome: success
+      emits:
+      - RoomFilterSettings
+      evidence: ev_e222f50acdfc
+  - scenario: room.get_custom_room_filter.guard_1
+    title: "get custom room filter: the guard '!await IsRoomOwnerAsync(actor).ConfigureAwait(true)' holds"
+    given:
+      guard: "!await IsRoomOwnerAsync(actor).ConfigureAwait(true)"
+      guard_holds: "true"
+    when:
+      packet: GetCustomRoomFilter
+    expected:
+      status: unknown
+      confidence: unknown
+    needs_evidence: "an official capture of GetCustomRoomFilter sent while '!await IsRoomOwnerAsync(actor).ConfigureAwait(true)' holds: does the server reply, stay silent, or disconnect?"
+    executable: false
+    claims:
+    - origin: vortex
+      authority: vortex_emulator
+      outcome: ignored
+      emits: []
+      evidence: ev_329537530b13
+    - origin: habbo-arcturus-daybreak
+      authority: reference_emulator
+      outcome: success
+      emits:
+      - RoomFilterSettings
+      evidence: ev_e222f50acdfc
   - scenario: room.get_custom_room_filter.success
     title: "get custom room filter: the request is accepted"
     given:
@@ -28,9 +76,10 @@ generated:
     claims:
     - origin: vortex
       authority: vortex_emulator
-      outcome: ignored
-      emits: []
-      evidence: ev_5fbb63890d81
+      outcome: success
+      emits:
+      - RoomFilterSettings
+      evidence: ev_329537530b13
     - origin: habbo-arcturus-daybreak
       authority: reference_emulator
       outcome: success
@@ -46,12 +95,19 @@ generated:
     symbol: GetCustomRoomFilterMessageEvent
     line: 11
     note: third-party server implementation; evidence, not authority
-  - id: ev_5fbb63890d81
-    kind: emulator_handler
+  - id: ev_329537530b13
+    kind: emulator_flow
+    authority: vortex_emulator
+    origin: vortex
+    source: Vortex.Rooms/Grains/RoomGrain.Settings.cs
+    symbol: RoomGrain
+    line: 337
+  - id: ev_dfc3acec327c
+    kind: emulator_flow
     authority: vortex_emulator
     origin: vortex
     source: Vortex.PacketHandlers/RoomSettings/GetCustomRoomFilterMessageHandler.cs
     symbol: GetCustomRoomFilterMessageHandler
-    line: 8
+    line: 26
 verified: {}
 manual: {}

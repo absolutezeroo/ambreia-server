@@ -10,7 +10,7 @@
 
 spec: feature
 spec_version: 1
-generated_digest: "sha256:0abb57d92ff0479a14d8d8fde44ae5d0a09935c0c517ae422e546ebe68842495"
+generated_digest: "sha256:22e150093d9d1de9cfd5fba7518d5d2303d19edfef27466862680847db21adde"
 generated:
   id: users.scr_get_user_info
   domain: users
@@ -22,7 +22,7 @@ generated:
     references:
     - habbo-arcturus-daybreak
   official_behavior:
-    status: unknown
+    status: capture_confirmed
   flow:
   - order: 0
     layer: handler
@@ -74,7 +74,7 @@ generated:
     origin: vortex
     source: Vortex.Players/Grains/PlayerGrain.cs
     symbol: PlayerGrain
-    line: 469
+    line: 592
   - id: ev_630a59578b9c
     kind: emulator_flow
     authority: vortex_emulator
@@ -113,8 +113,6 @@ generated:
   scenarios:
   - users.scr_get_user_info.guard_0
   - users.scr_get_user_info.success
-  conflicts:
-  - cf_b690cecb82
   unknowns:
   - uk_bd95e4728a
 verified: {}

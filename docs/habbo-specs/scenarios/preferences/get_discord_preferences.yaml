@@ -10,7 +10,7 @@
 
 spec: scenarios
 spec_version: 1
-generated_digest: "sha256:d507606501b3a30f393b356aa2f508ca8243749c71d8fdfca912fdbe8cc1f299"
+generated_digest: "sha256:e4443ad564a321bd71876c555e9cfee384fa2b70716775b831791809975e2f3f"
 generated:
   feature: preferences.get_discord_preferences
   scenarios:
@@ -31,7 +31,7 @@ generated:
       authority: vortex_emulator
       outcome: ignored
       emits: []
-      evidence: ev_36fbf55f14c1
+      evidence: ev_33ee9011b2cb
   - scenario: preferences.get_discord_preferences.success
     title: "get discord preferences: the request is accepted"
     given:
@@ -39,10 +39,9 @@ generated:
     when:
       packet: GetDiscordPreferences
     expected:
-      status: unknown
-      confidence: unknown
-    needs_evidence: an official capture of GetDiscordPreferences succeeding, with every packet the server sends back and in what order
-    executable: false
+      status: success
+      confidence: capture_confirmed
+    executable: true
     claims:
     - origin: vortex
       authority: vortex_emulator
@@ -50,14 +49,48 @@ generated:
       emits:
       - DiscordPreferences
       - VortexFurniDefinition
-      evidence: ev_36fbf55f14c1
+      evidence: ev_33ee9011b2cb
+    - origin: capture (1 observations)
+      authority: official_capture
+      outcome: success
+      emits:
+      - BonusRareInfo
+      - BonusRareInfo
+      - CurrentTimingCode
+      - CurrentTimingCode
+      - CurrentTimingCode
+      - CurrentTimingCode
+      - CurrentTimingCode
+      - Game2AccountGameStatus
+      - UserObject
+      - FurnitureAliases
+      - IgnoredUsers
+      - BlockList
+      - MessengerInit
+      - FriendListFragment
+      - NavigatorMetaData
+      - NavigatorLiftedRooms
+      - NavigatorCollapsedCategories
+      - NavigatorSavedSearches
+      - NewNavigatorPreferences
+      - Achievement
+      - DailyTasksActiveList
+      - IncomeRewardStatus
+      - CreditBalance
+      evidence: ev_200e2c24d672
   evidence:
-  - id: ev_36fbf55f14c1
+  - id: ev_200e2c24d672
+    kind: capture
+    authority: official_capture
+    origin: capture
+    source: docs/habbo-specs/evidence/captures
+    symbol: GetDiscordPreferences
+  - id: ev_33ee9011b2cb
     kind: emulator_flow
     authority: vortex_emulator
     origin: vortex
-    source: Vortex.PacketHandlers/Preferences/DiscordPreferencesHandlers.cs
+    source: Vortex.PacketHandlers/Preferences/GetDiscordPreferencesMessageHandler.cs
     symbol: GetDiscordPreferencesMessageHandler
-    line: 36
+    line: 35
 verified: {}
 manual: {}

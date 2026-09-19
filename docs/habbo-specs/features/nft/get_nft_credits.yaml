@@ -10,7 +10,7 @@
 
 spec: feature
 spec_version: 1
-generated_digest: "sha256:51e38338b85e7cc2d30710fdbaf965c67e5279f5725928fcb99a07a183a0291f"
+generated_digest: "sha256:9b6b884d1809481c3d58cfdcad2779fc0d26b952fa202811c564b91534759d6e"
 generated:
   id: nft.get_nft_credits
   domain: nft
@@ -21,7 +21,7 @@ generated:
     vortex: true
     references: []
   official_behavior:
-    status: unknown
+    status: capture_confirmed
   flow:
   - order: 0
     layer: handler

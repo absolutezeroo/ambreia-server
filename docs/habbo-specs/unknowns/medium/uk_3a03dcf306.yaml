@@ -10,7 +10,7 @@
 
 spec: unknown
 spec_version: 1
-generated_digest: "sha256:4f372f3ec163063ba6f453fd3ef2927127a9ec5bbfa7eb7213535455293916de"
+generated_digest: "sha256:f95aa984b50fba70b5550880a435922b7590e867665e83201d79960e1381a349"
 generated:
   id: uk_3a03dcf306
   subject: "room.credit_furni_redeem: what the server sends when it refuses"
@@ -53,7 +53,7 @@ generated:
     origin: vortex
     source: Vortex.Rooms/Grains/RoomGrain.Furni.Interactive.cs
     symbol: RoomGrain
-    line: 432
+    line: 499
   - id: ev_94ddaa174e6d
     kind: emulator_flow
     authority: vortex_emulator

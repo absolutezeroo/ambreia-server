@@ -10,7 +10,7 @@
 
 spec: unknown
 spec_version: 1
-generated_digest: "sha256:cf8dfdfd288c4256628f39e06591760296bd3d1b98a7b233d220dc0b6ff9e527"
+generated_digest: "sha256:5318a721e24fa843bf1426a86467f29dc10c7ef8c5a03bef8cc6df190509a37d"
 generated:
   id: uk_d15076ca7c
   subject: "room.ban_user_with_duration: what the server sends when it refuses"
@@ -109,7 +109,7 @@ generated:
     origin: vortex
     source: Vortex.Rooms/Grains/RoomGrain.cs
     symbol: RoomGrain
-    line: 294
+    line: 296
   - id: ev_bb859d4f21b2
     kind: emulator_flow
     authority: vortex_emulator
@@ -151,7 +151,7 @@ generated:
     origin: vortex
     source: Vortex.Rooms/Grains/Modules/RoomAvatarModule.cs
     symbol: RoomAvatarModule
-    line: 156
+    line: 155
   - id: ev_ede1461ee378
     kind: emulator_flow
     authority: vortex_emulator

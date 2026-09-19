@@ -10,7 +10,7 @@
 
 spec: unknown
 spec_version: 1
-generated_digest: "sha256:ffaa5f2d34d9075b671fffc963497f059323c55f2a0060646a7444adf0965227"
+generated_digest: "sha256:7cc9f5eebec9fd11a7e985a3e9aa3ac5ec69b637b86e96a30d4c820a0d5f20c9"
 generated:
   id: uk_0a9133f0b3
   subject: "messenger.request_friend: what the server sends when it refuses"
@@ -81,7 +81,7 @@ generated:
     origin: vortex
     source: Vortex.Social/Grains/MessengerGrain.Friends.cs
     symbol: MessengerGrain
-    line: 89
+    line: 90
   - id: ev_f13d6bcce744
     kind: emulator_flow
     authority: vortex_emulator

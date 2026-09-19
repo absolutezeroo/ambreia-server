@@ -10,7 +10,7 @@
 
 spec: feature
 spec_version: 1
-generated_digest: "sha256:25d06aa2b5bbaa70e468205fc468cd4a34d301a079376b375241205fd31f7113"
+generated_digest: "sha256:46e06e712c8fc95100b1dece9f427781bbaa6eb214a7e6b5d451e72f842734fc"
 generated:
   id: game.game2get_account_game_status
   domain: game
@@ -22,7 +22,7 @@ generated:
     references:
     - habbo-arcturus-daybreak
   official_behavior:
-    status: unknown
+    status: capture_confirmed
   flow:
   - order: 0
     layer: handler

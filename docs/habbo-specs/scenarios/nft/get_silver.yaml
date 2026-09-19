@@ -10,7 +10,7 @@
 
 spec: scenarios
 spec_version: 1
-generated_digest: "sha256:a310a7541c9a8530d5c232c6917a5553e4606a231ade0e7fd6ceaed9b57df299"
+generated_digest: "sha256:ae795893ffa3a9eb485d168dd6360372342e00f7114e7d6f3ecc40545f2ddc15"
 generated:
   feature: nft.get_silver
   scenarios:
@@ -39,10 +39,9 @@ generated:
     when:
       packet: GetSilver
     expected:
-      status: unknown
-      confidence: unknown
-    needs_evidence: an official capture of GetSilver succeeding, with every packet the server sends back and in what order
-    executable: false
+      status: success
+      confidence: capture_confirmed
+    executable: true
     claims:
     - origin: vortex
       authority: vortex_emulator
@@ -50,7 +49,18 @@ generated:
       emits:
       - SilverBalance
       evidence: ev_8f169b1609b2
+    - origin: capture (1 observations)
+      authority: official_capture
+      outcome: success
+      emits: []
+      evidence: ev_e8e6144dd70e
   evidence:
+  - id: ev_e8e6144dd70e
+    kind: capture
+    authority: official_capture
+    origin: capture
+    source: docs/habbo-specs/evidence/captures
+    symbol: GetSilver
   - id: ev_8f169b1609b2
     kind: emulator_handler
     authority: vortex_emulator

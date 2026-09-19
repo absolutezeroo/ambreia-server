@@ -10,7 +10,7 @@
 
 spec: scenarios
 spec_version: 1
-generated_digest: "sha256:4c02e1ac66d55b446036bed5f0b0bcda1a87547ddf6212f71736023ff8efa98a"
+generated_digest: "sha256:674417bd4e0f59d1e1dcce59cb4d04a30a0b06fe73845f3858d3f3e2d63c22dc"
 generated:
   feature: competition.room_competition_init
   scenarios:
@@ -21,17 +21,27 @@ generated:
     when:
       packet: RoomCompetitionInit
     expected:
-      status: unknown
-      confidence: unknown
-    needs_evidence: an official capture of RoomCompetitionInit succeeding, with every packet the server sends back and in what order
-    executable: false
+      status: success
+      confidence: capture_confirmed
+    executable: true
     claims:
     - origin: vortex
       authority: vortex_emulator
       outcome: ignored
       emits: []
       evidence: ev_1cdd259d9b16
+    - origin: capture (1 observations)
+      authority: official_capture
+      outcome: success
+      emits: []
+      evidence: ev_a27a6a6fa36c
   evidence:
+  - id: ev_a27a6a6fa36c
+    kind: capture
+    authority: official_capture
+    origin: capture
+    source: docs/habbo-specs/evidence/captures
+    symbol: RoomCompetitionInit
   - id: ev_1cdd259d9b16
     kind: emulator_handler
     authority: vortex_emulator

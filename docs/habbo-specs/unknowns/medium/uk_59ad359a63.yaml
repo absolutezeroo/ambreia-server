@@ -10,12 +10,12 @@
 
 spec: unknown
 spec_version: 1
-generated_digest: "sha256:c02c63c29ebccef2a3ae1334ee751ea09cabe4192d82408563efb9a8e575932d"
+generated_digest: "sha256:1217da7725ced4fe4ecd2506f75958fb15fa5f46a1d4e91b859a2b0bb70c281e"
 generated:
   id: uk_59ad359a63
   subject: "handshake.get_subscription: what the server sends when it refuses"
   severity: medium
-  question: handshake.get_subscription changes state and has 10 guards whose refusal behaviour nothing here attests. Does the official server answer a refused request, and with what?
+  question: handshake.get_subscription changes state and has 9 guards whose refusal behaviour nothing here attests. Does the official server answer a refused request, and with what?
   resolved_by: an official capture of each guard being tripped
   feature: handshake.get_subscription
   known_evidence:
@@ -32,7 +32,7 @@ generated:
     origin: vortex
     source: Vortex.Players/Grains/PlayerGrain.cs
     symbol: PlayerGrain
-    line: 963
+    line: 1086
   - id: ev_34bf3ac088e2
     kind: emulator_flow
     authority: vortex_emulator

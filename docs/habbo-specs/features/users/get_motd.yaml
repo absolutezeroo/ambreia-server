@@ -10,7 +10,7 @@
 
 spec: feature
 spec_version: 1
-generated_digest: "sha256:4070e6097f80fe19ffc565c06ba082e9450d3802fb948f28c41fa87a7a54667a"
+generated_digest: "sha256:9a7174ddc7f806d481d0e87975b089ec64573b8ffe37fba0833674c1febeec5b"
 generated:
   id: users.get_motd
   domain: users
@@ -22,7 +22,7 @@ generated:
     references:
     - habbo-arcturus-daybreak
   official_behavior:
-    status: unknown
+    status: capture_confirmed
   flow:
   - order: 0
     layer: handler

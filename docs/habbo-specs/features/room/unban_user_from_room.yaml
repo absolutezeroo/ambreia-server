@@ -10,7 +10,7 @@
 
 spec: feature
 spec_version: 1
-generated_digest: "sha256:7fd0de6d1533056c311ad635feec941522c2b4eebe20611ba5e580035db71f48"
+generated_digest: "sha256:6541108e2eea1d772c47fcb707f37964703d506b7a9b0b601f1508300e8f6e6b"
 generated:
   id: room.unban_user_from_room
   domain: room
@@ -73,6 +73,10 @@ generated:
     on_fail: return
     observed_in: vortex
     evidence: ev_420bde327a4b
+  - expression: applied
+    on_fail: send_and_return
+    observed_in: vortex
+    evidence: ev_420bde327a4b
   - expression: ModerationPolicy.CanActOnTarget(actorPermissions, targetPermissions)
     on_fail: return
     observed_in: vortex
@@ -108,7 +112,11 @@ generated:
     evidence: ev_2747c101d5f4
   outgoing:
     ordering: unknown
-    packets: []
+    packets:
+    - packet: UserUnbannedFromRoom
+      recipient: actor
+      recipient_confidence: implementation_observed
+      evidence: ev_420bde327a4b
   reaches_persistence: true
   evidence:
   - id: ev_2747c101d5f4
@@ -131,7 +139,7 @@ generated:
     origin: vortex
     source: Vortex.PacketHandlers/Room/Action/UnbanUserFromRoomMessageHandler.cs
     symbol: UnbanUserFromRoomMessageHandler
-    line: 27
+    line: 28
   - id: ev_743940bb69f7
     kind: emulator_flow
     authority: vortex_emulator
@@ -152,7 +160,7 @@ generated:
     origin: vortex
     source: Vortex.PacketHandlers/Room/Action/UnbanUserFromRoomMessageHandler.cs
     symbol: UnbanUserFromRoomMessageHandler
-    line: 15
+    line: 16
   - id: ev_bb859d4f21b2
     kind: emulator_flow
     authority: vortex_emulator
@@ -177,6 +185,7 @@ generated:
   scenarios:
   - room.unban_user_from_room.guard_0
   - room.unban_user_from_room.guard_1
+  - room.unban_user_from_room.guard_10
   - room.unban_user_from_room.guard_2
   - room.unban_user_from_room.guard_3
   - room.unban_user_from_room.guard_4

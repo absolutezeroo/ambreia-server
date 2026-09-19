@@ -10,7 +10,7 @@
 
 spec: feature
 spec_version: 1
-generated_digest: "sha256:49e212a07d93a22e660973865dd26d14f6b5a8ffa563561faf39c20fe70870f3"
+generated_digest: "sha256:f9511307878a8cebfcc2dc85eede2f9ddd7b40e651ec8b6f924bbc15d58b1dc0"
 generated:
   id: messenger.remove_friend
   domain: messenger
@@ -109,7 +109,7 @@ generated:
     origin: vortex
     source: Vortex.Social/Grains/MessengerGrain.Friends.cs
     symbol: MessengerGrain
-    line: 399
+    line: 400
   scenarios:
   - messenger.remove_friend.guard_0
   - messenger.remove_friend.guard_1

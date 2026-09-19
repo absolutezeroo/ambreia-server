@@ -10,7 +10,7 @@
 
 spec: packet
 spec_version: 1
-generated_digest: "sha256:ba6efaf9896e625c1b69c18a94a1f554d411f4d2385e66e0520dae0b3aefed99"
+generated_digest: "sha256:0d5cf5897c21bc584dc6288fb663540e054bd488d5b17b372746cef086a945b9"
 generated:
   name: GetDiscordPreferences
   direction: incoming
@@ -48,5 +48,7 @@ generated:
     source: Vortex.Revisions/Revision20260701/Parsers/Preferences/GetDiscordPreferencesMessageParser.cs
     symbol: GetDiscordPreferencesMessageParser
     line: 7
+  conflicts:
+  - cf_1b83994848
 verified: {}
 manual: {}

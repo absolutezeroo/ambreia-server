@@ -10,22 +10,29 @@
 
 spec: unknown
 spec_version: 1
-generated_digest: "sha256:8c7c9c5b7296c20ddfb25418214fe02e035d59305599a8754fe09a632973efee"
+generated_digest: "sha256:09a05821e82ad07cf64ad15770661114bcef4c38c25829f09b1cca91d59e2848"
 generated:
   id: uk_cfeb4c623c
   subject: "navigator.rate_flat: what the server sends when it refuses"
   severity: medium
-  question: navigator.rate_flat changes state and has 6 guards whose refusal behaviour nothing here attests. Does the official server answer a refused request, and with what?
+  question: navigator.rate_flat changes state and has 7 guards whose refusal behaviour nothing here attests. Does the official server answer a refused request, and with what?
   resolved_by: an official capture of each guard being tripped
   feature: navigator.rate_flat
   known_evidence:
+  - id: ev_23be541c2f63
+    kind: emulator_flow
+    authority: vortex_emulator
+    origin: vortex
+    source: Vortex.Rooms/Grains/Systems/RoomRatingSystem.cs
+    symbol: RoomRatingSystem
+    line: 70
   - id: ev_329537530b13
     kind: emulator_flow
     authority: vortex_emulator
     origin: vortex
     source: Vortex.Rooms/Grains/RoomGrain.Settings.cs
     symbol: RoomGrain
-    line: 692
+    line: 824
   - id: ev_34bf3ac088e2
     kind: emulator_flow
     authority: vortex_emulator
@@ -39,13 +46,13 @@ generated:
     origin: vortex
     source: Vortex.PacketHandlers/Navigator/RateFlatMessageHandler.cs
     symbol: RateFlatMessageHandler
-    line: 19
+    line: 20
   - id: ev_e3224564d8ca
     kind: emulator_handler
     authority: vortex_emulator
     origin: vortex
     source: Vortex.PacketHandlers/Navigator/RateFlatMessageHandler.cs
     symbol: RateFlatMessageHandler
-    line: 11
+    line: 12
 verified: {}
 manual: {}

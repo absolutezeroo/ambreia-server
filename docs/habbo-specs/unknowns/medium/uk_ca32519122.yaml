@@ -10,7 +10,7 @@
 
 spec: unknown
 spec_version: 1
-generated_digest: "sha256:b766a2a02a0f4a312f02a6d5e4d82c1a2c02860b24c77a71d026c18108d6e0c7"
+generated_digest: "sha256:30fece77a6677291bc8f3dd7f800ed095203c55a908f97217c5398a5fd5b5aa8"
 generated:
   id: uk_ca32519122
   subject: "catalog.builders_club_place_room_item: what the server sends when it refuses"
@@ -151,7 +151,7 @@ generated:
     origin: vortex
     source: Vortex.Rooms/Grains/RoomGrain.cs
     symbol: RoomGrain
-    line: 294
+    line: 296
   - id: ev_b4a557a65d81
     kind: emulator_flow
     authority: vortex_emulator
@@ -179,14 +179,14 @@ generated:
     origin: vortex
     source: Vortex.Inventory/Grains/InventoryGrain.Furni.cs
     symbol: InventoryGrain
-    line: 738
+    line: 739
   - id: ev_d720d639bd09
     kind: emulator_flow
     authority: vortex_emulator
     origin: vortex
     source: Vortex.Players/Grains/Modules/PlayerInventoryModule.cs
     symbol: PlayerInventoryModule
-    line: 76
+    line: 118
   - id: ev_db615f36b20b
     kind: emulator_flow
     authority: vortex_emulator
@@ -221,7 +221,7 @@ generated:
     origin: vortex
     source: Vortex.Rooms/Grains/Modules/RoomAvatarModule.cs
     symbol: RoomAvatarModule
-    line: 468
+    line: 467
   - id: ev_e81f0934fd67
     kind: emulator_flow
     authority: vortex_emulator

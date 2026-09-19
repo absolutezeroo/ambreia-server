@@ -10,7 +10,7 @@
 
 spec: feature
 spec_version: 1
-generated_digest: "sha256:7a384217e6dc3aa2c284beeaa764e4339a5467f337d01924827a303da8a3b513"
+generated_digest: "sha256:57fe5997598b2ed0591f92e99f36284a510faaec08f23cc8119dea3167015ec5"
 generated:
   id: tracking.latency_ping_request
   domain: tracking
@@ -22,7 +22,7 @@ generated:
     references:
     - habbo-arcturus-daybreak
   official_behavior:
-    status: unknown
+    status: capture_confirmed
   flow:
   - order: 0
     layer: handler

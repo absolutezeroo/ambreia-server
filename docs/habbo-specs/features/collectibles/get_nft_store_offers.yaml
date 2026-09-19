@@ -84,5 +84,5 @@ verified:
     note: "The client shows the mint counter on mintLimit > 0 and enables the buy button on mintedCount < mintLimit || mintLimit === -1. Zero is therefore neither: no counter and a dead button. This hotel stores 0 as no limit, so NftStoreGrain.ToSnapshot converts it to -1 on the way out."
   a_sold_out_offer_is_meant_to_be_sent:
     evidence: "client_code ShopTab.as::initItemPreview (WIN63-202607011411-782849652)"
-    note: "When mintedCount has reached mintLimit the client draws the full counter and disables the buy button, which is a rendering that only exists if the server still lists the offer. Withholding it makes a limited edition disappear from the shop instead."
+    note: When mintedCount has reached mintLimit the client draws the full counter and disables the buy button, which is a rendering that only exists if the server still lists the offer. Withholding it makes a limited edition disappear from the shop instead.
 manual: {}

@@ -10,7 +10,7 @@
 
 spec: feature
 spec_version: 1
-generated_digest: "sha256:05e68b913e578a850089c18d328a0e8f801af0fb0eaf679afd0be32f66a784c5"
+generated_digest: "sha256:7e38d3c9ab96dff43e3c117f69475701b295285abfebc9a43ebb78c808687df0"
 generated:
   id: room.place_wall_item_in_room
   domain: room
@@ -638,7 +638,7 @@ generated:
     origin: vortex
     source: Vortex.Rooms/Grains/RoomGrain.cs
     symbol: RoomGrain
-    line: 294
+    line: 296
   - id: ev_b4a557a65d81
     kind: emulator_flow
     authority: vortex_emulator
@@ -673,7 +673,7 @@ generated:
     origin: vortex
     source: Vortex.Inventory/Grains/InventoryGrain.Furni.cs
     symbol: InventoryGrain
-    line: 857
+    line: 858
   - id: ev_c716d5e1bc87
     kind: emulator_flow
     authority: vortex_emulator
@@ -701,7 +701,7 @@ generated:
     origin: vortex
     source: Vortex.Players/Grains/Modules/PlayerInventoryModule.cs
     symbol: PlayerInventoryModule
-    line: 76
+    line: 118
   - id: ev_db02cb0a1e67
     kind: emulator_flow
     authority: vortex_emulator
@@ -743,7 +743,7 @@ generated:
     origin: vortex
     source: Vortex.Rooms/Grains/Modules/RoomAvatarModule.cs
     symbol: RoomAvatarModule
-    line: 468
+    line: 467
   scenarios:
   - room.place_wall_item_in_room.guard_0
   - room.place_wall_item_in_room.guard_1

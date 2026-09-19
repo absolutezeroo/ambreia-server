@@ -10,7 +10,7 @@
 
 spec: unknown
 spec_version: 1
-generated_digest: "sha256:dd1c43f3cf1870b9715967087bd7c342934448057c5fc43ebca68bb54963e9c6"
+generated_digest: "sha256:ec21ac1eee1886ad74b316764c0e3d3d38bb98b0b0eb0599484d7b41d7dee4f3"
 generated:
   id: uk_6a2740b1d2
   subject: "collectibles.mint_item: who receives FurniListRemove"
@@ -25,6 +25,6 @@ generated:
     origin: vortex
     source: Vortex.Players/Grains/Modules/PlayerInventoryModule.cs
     symbol: PlayerInventoryModule
-    line: 78
+    line: 120
 verified: {}
 manual: {}

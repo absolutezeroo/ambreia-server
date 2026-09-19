@@ -10,7 +10,7 @@
 
 spec: packet
 spec_version: 1
-generated_digest: "sha256:80db646f84dc3ce97f80a464a916a6f5fadd80405030840d54fe11de5ec2f34b"
+generated_digest: "sha256:2f833a4b5767538b6aaddd9ae6ee4fc15af5c2fc0eb7fd46126bc140e89fbc8e"
 generated:
   name: ProductOffer
   direction: outgoing
@@ -193,7 +193,7 @@ generated:
       name_is_placeholder: true
       name_confidence: unknown
       type_confidence: implementation_observed
-      note: "written as the constant false; source comment: unknownBoolean"
+      note: written as the constant false
       evidence:
       - ev_12110154f520
     - index: 13
@@ -201,7 +201,6 @@ generated:
       type: string
       name_confidence: implementation_observed
       type_confidence: implementation_observed
-      note: "source comment: previewImage"
       evidence:
       - ev_12110154f520
   layouts_by_source:

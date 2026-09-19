@@ -10,7 +10,7 @@
 
 spec: scenarios
 spec_version: 1
-generated_digest: "sha256:e7c2c91ffd699744114abc86729fae997c30d0c8f92b8c9ac9c6609d736fb65c"
+generated_digest: "sha256:e7ad1e15d110ac15fc689840dc60270e590a294911f3f5b31ebb031cb64337c7"
 generated:
   feature: users.get_user_nft_chat_styles
   scenarios:
@@ -39,10 +39,9 @@ generated:
     when:
       packet: GetUserNftChatStyles
     expected:
-      status: unknown
-      confidence: unknown
-    needs_evidence: an official capture of GetUserNftChatStyles succeeding, with every packet the server sends back and in what order
-    executable: false
+      status: success
+      confidence: capture_confirmed
+    executable: true
     claims:
     - origin: vortex
       authority: vortex_emulator
@@ -51,7 +50,18 @@ generated:
       - UserNftChatStyles
       - UserPurchasableChatStyles
       evidence: ev_7ecbcf966855
+    - origin: capture (1 observations)
+      authority: official_capture
+      outcome: success
+      emits: []
+      evidence: ev_9f6a07e52ffa
   evidence:
+  - id: ev_9f6a07e52ffa
+    kind: capture
+    authority: official_capture
+    origin: capture
+    source: docs/habbo-specs/evidence/captures
+    symbol: GetUserNftChatStyles
   - id: ev_7ecbcf966855
     kind: emulator_handler
     authority: vortex_emulator

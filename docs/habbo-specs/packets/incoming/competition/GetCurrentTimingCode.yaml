@@ -10,7 +10,7 @@
 
 spec: packet
 spec_version: 1
-generated_digest: "sha256:99cd549011c17878f8060382af9ddafd4d44491e36fdbfd7edea64cfb3c485ff"
+generated_digest: "sha256:3c6555034545ac048fc2e233adbc54b6f76148adb58de7b9f5f72bbf360dc6d9"
 generated:
   name: GetCurrentTimingCode
   direction: incoming
@@ -86,7 +86,5 @@ generated:
     source: Vortex.Revisions/Revision20260701/Parsers/Competition/GetCurrentTimingCodeMessageParser.cs
     symbol: GetCurrentTimingCodeMessageParser
     line: 7
-  conflicts:
-  - cf_eae075b660
 verified: {}
 manual: {}

@@ -10,7 +10,7 @@
 
 spec: feature
 spec_version: 1
-generated_digest: "sha256:8e4bbab862149d1d8a6114e59eece00dcbc842c0bc412a05aa31cf4cb56d1e7f"
+generated_digest: "sha256:a04155bd005e73d4b6ff123f9fc7ae3d8ee135042430d4737b05516f7d2b146c"
 generated:
   id: navigator.get_category_visitor_counts
   domain: navigator
@@ -22,7 +22,7 @@ generated:
     references:
     - habbo-arcturus-daybreak
   official_behavior:
-    status: unknown
+    status: capture_confirmed
   flow:
   - order: 0
     layer: handler
@@ -123,7 +123,5 @@ generated:
     line: 23
   scenarios:
   - navigator.get_category_visitor_counts.success
-  conflicts:
-  - cf_74f7b78578
 verified: {}
 manual: {}

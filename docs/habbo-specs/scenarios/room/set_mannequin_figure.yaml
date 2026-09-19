@@ -10,7 +10,7 @@
 
 spec: scenarios
 spec_version: 1
-generated_digest: "sha256:8db5614a5875eba197ed3d3170f27e4d02d2d22fa4c12499f175b70d0f2b95fd"
+generated_digest: "sha256:4673089cc7cb3ca413ab3f55bb2a198450b4112b308112e7fa7806aafb722e4f"
 generated:
   feature: room.set_mannequin_figure
   scenarios:
@@ -97,7 +97,7 @@ generated:
     origin: vortex
     source: Vortex.Players/Grains/PlayerGrain.cs
     symbol: PlayerGrain
-    line: 259
+    line: 382
   - id: ev_58aef42e59c4
     kind: emulator_flow
     authority: vortex_emulator

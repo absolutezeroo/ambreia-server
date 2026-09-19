@@ -10,7 +10,7 @@
 
 spec: feature
 spec_version: 1
-generated_digest: "sha256:fd8253c849abb7a6f478dcb508a03213c669c6e08ba31f1ffcca9ecf5ac0c1f4"
+generated_digest: "sha256:948e0b8ee081411d697a4dd110ec93252f77fa7cc4b1ad53d37919b7de2fac99"
 generated:
   id: room.get_furniture_aliases
   domain: room
@@ -22,7 +22,7 @@ generated:
     references:
     - habbo-arcturus-daybreak
   official_behavior:
-    status: unknown
+    status: capture_confirmed
   flow:
   - order: 0
     layer: handler

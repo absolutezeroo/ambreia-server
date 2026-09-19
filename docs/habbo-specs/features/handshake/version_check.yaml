@@ -10,7 +10,7 @@
 
 spec: feature
 spec_version: 1
-generated_digest: "sha256:077a23d527d5fc2e039f25f022230ec285100eb6283b5d5110fe7def05fad28b"
+generated_digest: "sha256:258bcb295a94d1a58d728cb9049ad29dd6f3376428138009099b398b7b3774fb"
 generated:
   id: handshake.version_check
   domain: handshake
@@ -21,7 +21,7 @@ generated:
     vortex: false
     references: []
   official_behavior:
-    status: unknown
+    status: capture_confirmed
   flow:
   - order: 0
     layer: handler

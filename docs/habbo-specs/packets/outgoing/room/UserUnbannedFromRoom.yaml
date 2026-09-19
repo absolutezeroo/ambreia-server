@@ -10,13 +10,13 @@
 
 spec: packet
 spec_version: 1
-generated_digest: "sha256:909b7cfd288fa14048abba2f20a42ac2e061720962ad11fc16edbdbbee2f6d6c"
+generated_digest: "sha256:0bda7f8f77783c4bd83544fee8a57f8fe0eca9730bffd29f359484c395216820"
 generated:
   name: UserUnbannedFromRoom
   direction: outgoing
   domain: room
   structure_confidence: client_confirmed
-  mapped_in_vortex: false
+  mapped_in_vortex: true
   fields:
   - index: 0
     name: room_id
@@ -49,6 +49,14 @@ generated:
     - int32
     - int32
     evidence: ev_f021d04bceaa
+  - origin: vortex
+    authority: vortex_emulator
+    field_count: 2
+    partial: false
+    types:
+    - int32
+    - int32
+    evidence: ev_52b0e642589c
   evidence:
   - id: ev_0bc2b4fbb500
     kind: client_parser
@@ -66,5 +74,12 @@ generated:
     symbol: UserUnbannedFromRoomMessageComposer
     line: 18
     note: third-party server implementation; evidence, not authority
+  - id: ev_52b0e642589c
+    kind: emulator_serializer
+    authority: vortex_emulator
+    origin: vortex
+    source: Vortex.Revisions/Revision20260701/Serializers/RoomSettings/UserUnbannedFromRoomEventMessageComposerSerializer.cs
+    symbol: UserUnbannedFromRoomEventMessageComposerSerializer
+    line: 6
 verified: {}
 manual: {}

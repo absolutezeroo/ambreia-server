@@ -10,7 +10,7 @@
 
 spec: scenarios
 spec_version: 1
-generated_digest: "sha256:ea1ef3c9a9ac9de466fafef2a6082812bc245170ad236239ab3ca765b94416be"
+generated_digest: "sha256:0acf173a1fd63be08f3be155a1812ee718d8e71df81e8ae7b5b944d91acc44b5"
 generated:
   feature: users.get_motd
   scenarios:
@@ -67,10 +67,9 @@ generated:
     when:
       packet: GetMOTD
     expected:
-      status: unknown
-      confidence: unknown
-    needs_evidence: an official capture of GetMOTD succeeding, with every packet the server sends back and in what order
-    executable: false
+      status: success
+      confidence: capture_confirmed
+    executable: true
     claims:
     - origin: vortex
       authority: vortex_emulator
@@ -83,7 +82,18 @@ generated:
       outcome: ignored
       emits: []
       evidence: ev_9cb025d331d5
+    - origin: capture (1 observations)
+      authority: official_capture
+      outcome: success
+      emits: []
+      evidence: ev_fa13586bae72
   evidence:
+  - id: ev_fa13586bae72
+    kind: capture
+    authority: official_capture
+    origin: capture
+    source: docs/habbo-specs/evidence/captures
+    symbol: GetMOTD
   - id: ev_9cb025d331d5
     kind: reference_handler
     authority: reference_emulator

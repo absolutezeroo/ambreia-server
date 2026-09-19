@@ -10,7 +10,7 @@
 
 spec: unknown
 spec_version: 1
-generated_digest: "sha256:d97b302aaafb285fc482cc0f8d4ad091893550bf69f653324cb6c85b1eb5fe1d"
+generated_digest: "sha256:fd2b0ac51d646336b1991006bfea2c9597c186430cb6a5ce5c5508997e2d859b"
 generated:
   id: uk_6f0a6bae5e
   subject: "catalog.find_by_product_code: what the server sends when it refuses"
@@ -32,7 +32,7 @@ generated:
     origin: vortex
     source: Vortex.Players/Grains/PlayerGrain.cs
     symbol: PlayerGrain
-    line: 469
+    line: 592
   - id: ev_2ec03446aa2a
     kind: emulator_flow
     authority: vortex_emulator
@@ -102,7 +102,7 @@ generated:
     origin: vortex
     source: Vortex.Inventory/Grains/InventoryGrain.Furni.cs
     symbol: InventoryGrain
-    line: 162
+    line: 163
   - id: ev_d53218d99bdd
     kind: emulator_flow
     authority: vortex_emulator
@@ -116,7 +116,7 @@ generated:
     origin: vortex
     source: Vortex.Players/Grains/Modules/PlayerInventoryModule.cs
     symbol: PlayerInventoryModule
-    line: 84
+    line: 126
   - id: ev_db00239c6a21
     kind: emulator_flow
     authority: vortex_emulator

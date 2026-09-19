@@ -10,7 +10,7 @@
 
 spec: feature
 spec_version: 1
-generated_digest: "sha256:39ae994703a9f8fc2517f5a4a3371d351dbd2bd19d1c6b00e04611dfa763f28e"
+generated_digest: "sha256:361584a9f698a0da61634e7f6cb33e352fca98cd0f2d3c0d5d7f4c9f25d9b8bb"
 generated:
   id: advertisement.get_interstitial
   domain: advertisement
@@ -18,7 +18,7 @@ generated:
   trigger_packets:
   - GetInterstitial
   observed_in:
-    vortex: false
+    vortex: true
     references: []
   official_behavior:
     status: unknown
@@ -31,7 +31,11 @@ generated:
   state_changes: []
   outgoing:
     ordering: unknown
-    packets: []
+    packets:
+    - packet: Interstitial
+      recipient: actor
+      recipient_confidence: implementation_observed
+      evidence: ev_e836baf43e6c
   reaches_persistence: false
   evidence:
   - id: ev_be806705584a
@@ -40,10 +44,15 @@ generated:
     origin: vortex
     source: Vortex.PacketHandlers/Advertisement/GetInterstitialMessageHandler.cs
     symbol: GetInterstitialMessageHandler
-    line: 8
+    line: 18
+  - id: ev_e836baf43e6c
+    kind: emulator_flow
+    authority: vortex_emulator
+    origin: vortex
+    source: Vortex.PacketHandlers/Advertisement/GetInterstitialMessageHandler.cs
+    symbol: GetInterstitialMessageHandler
+    line: 27
   scenarios:
   - advertisement.get_interstitial.success
-  unknowns:
-  - uk_a4c5e49f04
 verified: {}
 manual: {}

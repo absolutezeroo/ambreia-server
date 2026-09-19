@@ -10,12 +10,12 @@
 
 spec: unknown
 spec_version: 1
-generated_digest: "sha256:3f73074dfd0584dda507e49436da48ed46ac5e4578be711f2cf6836cd05a43eb"
+generated_digest: "sha256:9b7b086bb252ec257b3c78443fb08174b23323cd9114aa7027205deb64ac41a7"
 generated:
   id: uk_d8fc1f1fda
   subject: "outgoing/Room: unnamed fields"
   severity: low
-  question: Fields 2 carry no name from any source. What are they?
+  question: Fields 6 carry no name from any source. What are they?
   resolved_by: a client getter or call site that names the value, or a decoded capture showing what it contains
   packet: Room
   known_evidence:
@@ -33,6 +33,6 @@ generated:
     origin: vortex
     source: Vortex.Revisions/Revision20260701/Serializers/Navigator/RoomEventMessageComposerSerializer.cs
     symbol: RoomEventMessageComposerSerializer
-    line: 6
+    line: 10
 verified: {}
 manual: {}

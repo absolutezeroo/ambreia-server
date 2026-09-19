@@ -10,7 +10,7 @@
 
 spec: scenarios
 spec_version: 1
-generated_digest: "sha256:fd77cfecb997356adc4941dddc84eb4f58bb311db3362aaba870371e3f33a320"
+generated_digest: "sha256:082a503282880d951b6d0e21048b9168e407abdfd965c0fbfd6737b814c9df59"
 generated:
   feature: catalog.get_gift_wrapping_configuration
   scenarios:
@@ -31,7 +31,7 @@ generated:
       outcome: success
       emits:
       - GiftWrappingConfiguration
-      evidence: ev_4838deaee1b1
+      evidence: ev_2ec03446aa2a
     - origin: habbo-arcturus-daybreak
       authority: reference_emulator
       outcome: success
@@ -47,12 +47,12 @@ generated:
     symbol: GetGiftWrappingConfigurationEvent
     line: 8
     note: third-party server implementation; evidence, not authority
-  - id: ev_4838deaee1b1
-    kind: emulator_handler
+  - id: ev_2ec03446aa2a
+    kind: emulator_flow
     authority: vortex_emulator
     origin: vortex
-    source: Vortex.PacketHandlers/Catalog/GetGiftWrappingConfigurationMessageHandler.cs
-    symbol: GetGiftWrappingConfigurationMessageHandler
-    line: 10
+    source: Vortex.Furniture/Providers/FurnitureDefinitionProvider.cs
+    symbol: FurnitureDefinitionProvider
+    line: 77
 verified: {}
 manual: {}

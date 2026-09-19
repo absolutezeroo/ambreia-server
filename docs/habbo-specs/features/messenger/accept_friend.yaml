@@ -10,7 +10,7 @@
 
 spec: feature
 spec_version: 1
-generated_digest: "sha256:4cf0b20ab0e6ca8b0ac4597cf3911674cb3173e1a175315dfb16824038687ab9"
+generated_digest: "sha256:6e76025f8fa39518b243cdaf70a607ac4d4dbc1079c059b942131c5cccc13ec8"
 generated:
   id: messenger.accept_friend
   domain: messenger
@@ -179,7 +179,7 @@ generated:
     origin: vortex
     source: Vortex.Social/Grains/MessengerGrain.Friends.cs
     symbol: MessengerGrain
-    line: 199
+    line: 200
   - id: ev_f13d6bcce744
     kind: emulator_flow
     authority: vortex_emulator

@@ -10,12 +10,12 @@
 
 spec: unknown
 spec_version: 1
-generated_digest: "sha256:ec4dd8bc9380f8659cd194192699d0242b4438ba5f201eb421da2534babbebcb"
+generated_digest: "sha256:a2f8a5521b73acf1d0a874906943121c414bf59820a4fadf812db592a71bb193"
 generated:
   id: uk_17bcd0eddf
   subject: "inventory.set_activated_badges: what the server sends when it refuses"
   severity: medium
-  question: inventory.set_activated_badges changes state and has 3 guards whose refusal behaviour nothing here attests. Does the official server answer a refused request, and with what?
+  question: inventory.set_activated_badges changes state and has 2 guards whose refusal behaviour nothing here attests. Does the official server answer a refused request, and with what?
   resolved_by: an official capture of each guard being tripped
   feature: inventory.set_activated_badges
   known_evidence:
@@ -32,14 +32,21 @@ generated:
     origin: vortex
     source: Vortex.PacketHandlers/Inventory/Badges/SetActivatedBadgesMessageHandler.cs
     symbol: SetActivatedBadgesMessageHandler
-    line: 21
+    line: 24
+  - id: ev_b46938ec853d
+    kind: emulator_flow
+    authority: vortex_emulator
+    origin: vortex
+    source: Vortex.Rooms/Grains/RoomGrain.cs
+    symbol: RoomGrain
+    line: 296
   - id: ev_d1d94ce5b2a4
     kind: emulator_handler
     authority: vortex_emulator
     origin: vortex
     source: Vortex.PacketHandlers/Inventory/Badges/SetActivatedBadgesMessageHandler.cs
     symbol: SetActivatedBadgesMessageHandler
-    line: 10
+    line: 13
   - id: ev_f13d6bcce744
     kind: emulator_flow
     authority: vortex_emulator
@@ -53,6 +60,6 @@ generated:
     origin: vortex
     source: Vortex.Progression/Grains/PlayerBadgeGrain.cs
     symbol: PlayerBadgeGrain
-    line: 63
+    line: 81
 verified: {}
 manual: {}

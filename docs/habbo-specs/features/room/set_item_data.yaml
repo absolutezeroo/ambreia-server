@@ -10,7 +10,7 @@
 
 spec: feature
 spec_version: 1
-generated_digest: "sha256:3b3d09529c7a0adb9f65ee0c06bdd39c123a07815c6f3f7e97482f5c2277ece5"
+generated_digest: "sha256:c5fb74d18f4bd13d84d660480a7a443fbb8d430c348a31ccf4dd131e16aaf3a2"
 generated:
   id: room.set_item_data
   domain: room
@@ -75,7 +75,7 @@ generated:
     origin: vortex
     source: Vortex.Rooms/Grains/RoomGrain.Furni.Interactive.cs
     symbol: RoomGrain
-    line: 684
+    line: 751
   scenarios:
   - room.set_item_data.guard_0
   - room.set_item_data.guard_1

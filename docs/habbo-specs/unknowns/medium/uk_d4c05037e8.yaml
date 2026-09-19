@@ -10,7 +10,7 @@
 
 spec: unknown
 spec_version: 1
-generated_digest: "sha256:2c299c9b6c309fd33b46d67a50ac4506cfd9b894a63f7f37d17bfc19f3fb4da9"
+generated_digest: "sha256:f02bba8733d322075a6425c284a838c46201ff6c30b7c4bf540ff7398161f705"
 generated:
   id: uk_d4c05037e8
   subject: "quest.get_concurrent_users_reward: who receives BadgeReceived"
@@ -25,6 +25,6 @@ generated:
     origin: vortex
     source: Vortex.Players/Grains/Modules/PlayerInventoryModule.cs
     symbol: PlayerInventoryModule
-    line: 86
+    line: 128
 verified: {}
 manual: {}

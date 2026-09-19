@@ -10,12 +10,12 @@
 
 spec: unknown
 spec_version: 1
-generated_digest: "sha256:745eadde9103db50e522309d419bf8e596880f43d9ae012ffda6e2b601286396"
+generated_digest: "sha256:4dd9a6ec2bf3531551768df2c868cebf91813a71d9d0cd3e5917ee88ac8fb47d"
 generated:
   id: uk_ac603570f8
   subject: "handshake.client_hello: what the server sends when it refuses"
   severity: medium
-  question: handshake.client_hello changes state and has 2 guards whose refusal behaviour nothing here attests. Does the official server answer a refused request, and with what?
+  question: handshake.client_hello changes state and has 1 guards whose refusal behaviour nothing here attests. Does the official server answer a refused request, and with what?
   resolved_by: an official capture of each guard being tripped
   feature: handshake.client_hello
   known_evidence:

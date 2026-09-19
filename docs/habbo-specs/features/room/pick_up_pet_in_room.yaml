@@ -10,7 +10,7 @@
 
 spec: feature
 spec_version: 1
-generated_digest: "sha256:41c7f6511e1ebe7dae40a2bffa3d62f902229cffd3a1b61d8ea5014bfeb57e5b"
+generated_digest: "sha256:94deb05116d923d28e75a3ae5799451a4e8ecb0336a385e95c934b189795bdfd"
 generated:
   id: room.pick_up_pet_in_room
   domain: room
@@ -136,7 +136,7 @@ generated:
     origin: vortex
     source: Vortex.Rooms/Grains/RoomGrain.cs
     symbol: RoomGrain
-    line: 294
+    line: 296
   scenarios:
   - room.pick_up_pet_in_room.guard_0
   - room.pick_up_pet_in_room.guard_1

@@ -10,7 +10,7 @@
 
 spec: scenarios
 spec_version: 1
-generated_digest: "sha256:b2ef0c48df48e3087913e7cf878b33ff25458f47f796049676f87465555f12b6"
+generated_digest: "sha256:4b11000f218aaf4ff2d1483f1169655b9322210a10e282b6e222265b5eff7bf6"
 generated:
   feature: users.get_ignored_users
   scenarios:
@@ -45,10 +45,9 @@ generated:
     when:
       packet: GetIgnoredUsers
     expected:
-      status: unknown
-      confidence: unknown
-    needs_evidence: an official capture of GetIgnoredUsers succeeding, with every packet the server sends back and in what order
-    executable: false
+      status: success
+      confidence: capture_confirmed
+    executable: true
     claims:
     - origin: vortex
       authority: vortex_emulator
@@ -62,7 +61,18 @@ generated:
       emits:
       - IgnoredUsers
       evidence: ev_3386de46d70a
+    - origin: capture (1 observations)
+      authority: official_capture
+      outcome: success
+      emits: []
+      evidence: ev_4d50647ef206
   evidence:
+  - id: ev_4d50647ef206
+    kind: capture
+    authority: official_capture
+    origin: capture
+    source: docs/habbo-specs/evidence/captures
+    symbol: GetIgnoredUsers
   - id: ev_3386de46d70a
     kind: reference_handler
     authority: reference_emulator

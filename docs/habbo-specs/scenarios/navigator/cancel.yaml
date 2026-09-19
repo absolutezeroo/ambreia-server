@@ -10,7 +10,7 @@
 
 spec: scenarios
 spec_version: 1
-generated_digest: "sha256:2af82719023e44abc47e194f982f3b80145c121ace472c30d6319364312aa4a7"
+generated_digest: "sha256:17ecc2f75a413d1deceaaba0de5cea0aa9d29a4041fcb3938c6f972d18e3edf9"
 generated:
   feature: navigator.cancel
   scenarios:
@@ -118,7 +118,7 @@ generated:
     origin: vortex
     source: Vortex.Rooms/RoomAdvertisementService.cs
     symbol: RoomAdvertisementService
-    line: 95
+    line: 132
   - id: ev_cc2f079ff2d9
     kind: emulator_flow
     authority: vortex_emulator

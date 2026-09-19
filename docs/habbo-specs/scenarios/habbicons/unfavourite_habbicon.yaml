@@ -10,7 +10,7 @@
 
 spec: scenarios
 spec_version: 1
-generated_digest: "sha256:424fb8b448b7dfe6281b342a842e4a068b6e6e0743a511c09ebc423b3cd6362a"
+generated_digest: "sha256:5ce1a6e0a55fa76a09b3b19a67c72fe623d81a10aa3113d2424dd809fa3201c1"
 generated:
   feature: habbicons.unfavourite_habbicon
   scenarios:
@@ -208,7 +208,7 @@ generated:
     origin: vortex
     source: Vortex.Players/Grains/PlayerGrain.cs
     symbol: PlayerGrain
-    line: 301
+    line: 424
   - id: ev_34bf3ac088e2
     kind: emulator_flow
     authority: vortex_emulator

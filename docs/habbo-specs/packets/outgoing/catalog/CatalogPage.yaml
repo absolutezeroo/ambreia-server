@@ -10,7 +10,7 @@
 
 spec: packet
 spec_version: 1
-generated_digest: "sha256:52b934a9b8148cd0b5be565c6ad3ade5818af3ee228014fff9cff8e4f0426a8f"
+generated_digest: "sha256:a34e3a7d12c6f0dc1451a91eb91f0f22a39754f4eb397b837fcb101cc334bf33"
 generated:
   name: CatalogPage
   direction: outgoing
@@ -284,7 +284,7 @@ generated:
         name_is_placeholder: true
         name_confidence: unknown
         type_confidence: implementation_observed
-        note: "written as the constant false; source comment: unknownBoolean"
+        note: written as the constant false
         evidence:
         - ev_c5a6870907bc
       - index: 13
@@ -292,7 +292,6 @@ generated:
         type: string
         name_confidence: implementation_observed
         type_confidence: implementation_observed
-        note: "source comment: previewImage"
         evidence:
         - ev_c5a6870907bc
   - index: 6

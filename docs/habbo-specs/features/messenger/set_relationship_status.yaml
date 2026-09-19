@@ -10,7 +10,7 @@
 
 spec: feature
 spec_version: 1
-generated_digest: "sha256:030ee43eea95f5c1abf35d1171381c87e9624f4da7c8315f16e14aae37955854"
+generated_digest: "sha256:632a0c1de9d1d2f67ff5480d05c302b4a4de2e8a262046d86e2fcd41b7c6f21d"
 generated:
   id: messenger.set_relationship_status
   domain: messenger
@@ -75,7 +75,7 @@ generated:
     origin: vortex
     source: Vortex.Social/Grains/MessengerGrain.Friends.cs
     symbol: MessengerGrain
-    line: 464
+    line: 465
   scenarios:
   - messenger.set_relationship_status.guard_0
   - messenger.set_relationship_status.guard_1

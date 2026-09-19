@@ -10,7 +10,7 @@
 
 spec: feature
 spec_version: 1
-generated_digest: "sha256:b0a717d244f0488a761a35d4b3f0a44856515312dcbba013783ed0567abe268b"
+generated_digest: "sha256:f08d539d4abd953353dd2571dbe397547cd0b019ce57ec0d0a5e126fa3b783ef"
 generated:
   id: preferences.get_discord_preferences
   domain: preferences
@@ -21,12 +21,12 @@ generated:
     vortex: true
     references: []
   official_behavior:
-    status: unknown
+    status: capture_confirmed
   flow:
   - order: 0
     layer: handler
     symbol: GetDiscordPreferencesMessageHandler.HandleAsync
-    evidence: ev_e279b3487948
+    evidence: ev_bad20de20cf8
   - order: 1
     layer: grain
     symbol: PlayerGrain.GetAccountPreferencesAsync
@@ -35,7 +35,7 @@ generated:
   - expression: ctx.PlayerId <= 0
     on_fail: return
     observed_in: vortex
-    evidence: ev_36fbf55f14c1
+    evidence: ev_33ee9011b2cb
   state_changes: []
   outgoing:
     ordering: unknown
@@ -44,21 +44,21 @@ generated:
       recipient: actor
       recipient_confidence: inferred
       note: one of several composers the call can return, depending on the item type
-      evidence: ev_36fbf55f14c1
+      evidence: ev_33ee9011b2cb
     - packet: VortexFurniDefinition
       recipient: actor
       recipient_confidence: inferred
       note: one of several composers the call can return, depending on the item type
-      evidence: ev_36fbf55f14c1
+      evidence: ev_33ee9011b2cb
   reaches_persistence: false
   evidence:
-  - id: ev_36fbf55f14c1
+  - id: ev_33ee9011b2cb
     kind: emulator_flow
     authority: vortex_emulator
     origin: vortex
-    source: Vortex.PacketHandlers/Preferences/DiscordPreferencesHandlers.cs
+    source: Vortex.PacketHandlers/Preferences/GetDiscordPreferencesMessageHandler.cs
     symbol: GetDiscordPreferencesMessageHandler
-    line: 36
+    line: 35
   - id: ev_630a59578b9c
     kind: emulator_flow
     authority: vortex_emulator
@@ -66,15 +66,17 @@ generated:
     source: Vortex.Players/Grains/PlayerGrain.AccountPreferences.cs
     symbol: PlayerGrain
     line: 27
-  - id: ev_e279b3487948
+  - id: ev_bad20de20cf8
     kind: emulator_handler
     authority: vortex_emulator
     origin: vortex
-    source: Vortex.PacketHandlers/Preferences/DiscordPreferencesHandlers.cs
+    source: Vortex.PacketHandlers/Preferences/GetDiscordPreferencesMessageHandler.cs
     symbol: GetDiscordPreferencesMessageHandler
-    line: 27
+    line: 26
   scenarios:
   - preferences.get_discord_preferences.guard_0
   - preferences.get_discord_preferences.success
+  conflicts:
+  - cf_1b83994848
 verified: {}
 manual: {}

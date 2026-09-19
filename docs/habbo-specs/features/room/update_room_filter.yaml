@@ -10,7 +10,7 @@
 
 spec: feature
 spec_version: 1
-generated_digest: "sha256:0a4628ad79de541571a972c9ad9c18742ca5614d07975cd662f411ec8a656c67"
+generated_digest: "sha256:692447e15e2af64f86ad0c6644d54dc12eda35b90961c5614cdea10e38c6f5b6"
 generated:
   id: room.update_room_filter
   domain: room
@@ -18,7 +18,7 @@ generated:
   trigger_packets:
   - UpdateRoomFilter
   observed_in:
-    vortex: false
+    vortex: true
     references:
     - habbo-arcturus-daybreak
   official_behavior:
@@ -28,23 +28,95 @@ generated:
     layer: handler
     symbol: UpdateRoomFilterMessageHandler.HandleAsync
     evidence: ev_b0bc6af39047
-  checks: []
-  state_changes: []
+  - order: 1
+    layer: grain
+    symbol: RoomGrain.UpdateFilterWordAsync
+    evidence: ev_329537530b13
+  - order: 2
+    layer: grain
+    symbol: ServerConfigGrain.GetManyAsync
+    evidence: ev_86f81f4f919c
+  - order: 3
+    layer: domain
+    symbol: ServerConfigValues.GetInt
+    evidence: ev_77b64770ea16
+  checks:
+  - expression: ctx.PlayerId <= 0 || message.RoomId <= 0
+    on_fail: return
+    observed_in: vortex
+    evidence: ev_1a3a0750a11c
+  - expression: "!await IsRoomOwnerAsync(actor).ConfigureAwait(true)"
+    on_fail: return
+    observed_in: vortex
+    evidence: ev_329537530b13
+  - expression: trimmed.Length == 0 || trimmed.Length > wordMaxLength || (adding && _state.FilterWords.Count >= maxWords)
+    on_fail: return
+    observed_in: vortex
+    evidence: ev_329537530b13
+  - expression: "!changed"
+    on_fail: return
+    observed_in: vortex
+    evidence: ev_329537530b13
+  state_changes:
+  - target: _state.FilterReplacement
+    value: ServerConfigValues.GetString( filterConfig, RoomFilterConfig.ReplacementKey, RoomFilterConfig.ReplacementDefault )
+    observed_in: vortex
+    evidence: ev_329537530b13
+  - target: grainFactory .GetRoomSettings(message.RoomId)
+    value: grainFactory .GetRoomSettings(message.RoomId) .UpdateFilterWordAsync(ctx.PlayerId, message.IsAddingWord, message.Word, ct)
+    observed_in: vortex
+    evidence: ev_1a3a0750a11c
   outgoing:
     ordering: unknown
-    packets: []
-  reaches_persistence: false
+    packets:
+    - packet: RoomFilterSettings
+      recipient: actor
+      recipient_confidence: implementation_observed
+      evidence: ev_1a3a0750a11c
+  reaches_persistence: true
   evidence:
+  - id: ev_1a3a0750a11c
+    kind: emulator_flow
+    authority: vortex_emulator
+    origin: vortex
+    source: Vortex.PacketHandlers/RoomSettings/UpdateRoomFilterMessageHandler.cs
+    symbol: UpdateRoomFilterMessageHandler
+    line: 26
+  - id: ev_329537530b13
+    kind: emulator_flow
+    authority: vortex_emulator
+    origin: vortex
+    source: Vortex.Rooms/Grains/RoomGrain.Settings.cs
+    symbol: RoomGrain
+    line: 345
+  - id: ev_77b64770ea16
+    kind: emulator_flow
+    authority: vortex_emulator
+    origin: vortex
+    source: Vortex.Primitives/Server/ServerConfigValues.cs
+    symbol: ServerConfigValues
+    line: 14
+  - id: ev_86f81f4f919c
+    kind: emulator_flow
+    authority: vortex_emulator
+    origin: vortex
+    source: Vortex.Players/Grains/ServerConfigGrain.cs
+    symbol: ServerConfigGrain
+    line: 109
   - id: ev_b0bc6af39047
     kind: emulator_handler
     authority: vortex_emulator
     origin: vortex
     source: Vortex.PacketHandlers/RoomSettings/UpdateRoomFilterMessageHandler.cs
     symbol: UpdateRoomFilterMessageHandler
-    line: 8
+    line: 17
   scenarios:
+  - room.update_room_filter.guard_0
+  - room.update_room_filter.guard_1
+  - room.update_room_filter.guard_2
+  - room.update_room_filter.guard_3
   - room.update_room_filter.success
   unknowns:
-  - uk_2aac456c3e
+  - uk_a1674f26bb
 verified: {}
 manual: {}

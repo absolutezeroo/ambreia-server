@@ -10,7 +10,7 @@
 
 spec: packet
 spec_version: 1
-generated_digest: "sha256:16e272c403ee8b61a983e554046564ce01bf5d7c1d5bf0e065a300c9bee6b216"
+generated_digest: "sha256:9e79246fa528647401d211127faa22ca1bb94c68c4ae27a8609711c760aa0683"
 generated:
   name: InitCamera
   direction: outgoing
@@ -19,30 +19,30 @@ generated:
   mapped_in_vortex: true
   fields:
   - index: 0
-    name: unknown_0
+    name: credit_price
     type: int32
-    name_is_placeholder: true
-    name_confidence: unknown
+    name_confidence: implementation_observed
     type_confidence: client_confirmed
     evidence:
     - ev_a504b6c74dd3
+    - ev_01eca4d82a77
   - index: 1
-    name: unknown_1
+    name: ducket_price
     type: int32
-    name_is_placeholder: true
-    name_confidence: unknown
+    name_confidence: implementation_observed
     type_confidence: client_confirmed
     evidence:
     - ev_a504b6c74dd3
+    - ev_01eca4d82a77
   - index: 2
-    name: unknown_2
+    name: publish_ducket_price
     type: int32
-    name_is_placeholder: true
-    name_confidence: unknown
+    name_confidence: implementation_observed
     type_confidence: client_confirmed
     note: inside a repeated block
     evidence:
     - ev_a504b6c74dd3
+    - ev_01eca4d82a77
   layouts_by_source:
   - origin: "as3:WIN63-202607011411-782849652"
     authority: client_code
@@ -70,9 +70,12 @@ generated:
     evidence: ev_0668ba90d3c1
   - origin: vortex
     authority: vortex_emulator
-    field_count: 0
+    field_count: 3
     partial: false
-    types: []
+    types:
+    - int32
+    - int32
+    - int32
     evidence: ev_01eca4d82a77
   evidence:
   - id: ev_a504b6c74dd3
@@ -105,8 +108,6 @@ generated:
     origin: vortex
     source: Vortex.Revisions/Revision20260701/Serializers/Camera/InitCameraMessageComposerSerializer.cs
     symbol: InitCameraMessageComposerSerializer
-    line: 6
-  unknowns:
-  - uk_34d366a579
+    line: 12
 verified: {}
 manual: {}

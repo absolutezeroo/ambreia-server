@@ -10,7 +10,7 @@
 
 spec: packet
 spec_version: 1
-generated_digest: "sha256:dacf9435331f27daa75e6c0c44a3bea2976a94311a2c837cbc894a8c370f62a2"
+generated_digest: "sha256:1d70bd888da9de4329db28faf1467077d838193cfb9f94df25c4bb6e89cbaa43"
 generated:
   name: GetFriendRequests
   direction: incoming
@@ -62,5 +62,7 @@ generated:
     source: Vortex.Revisions/Revision20260701/Parsers/FriendList/GetFriendRequestsMessageParser.cs
     symbol: GetFriendRequestsMessageParser
     line: 7
+  conflicts:
+  - cf_f6dac9cfb2
 verified: {}
 manual: {}

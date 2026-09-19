@@ -10,7 +10,7 @@
 
 spec: unknown
 spec_version: 1
-generated_digest: "sha256:f11abed14f8b57e2dfe754fa3a98932d0cb34ca18bd0cda4453f064dee6192ca"
+generated_digest: "sha256:4750bf468328d23796a12088a397e72f89f71b4d81580140ebe7870c2e00f8a0"
 generated:
   id: uk_2232157683
   subject: "users.deselect_favourite_habbo_group: what the server sends when it refuses"
@@ -25,7 +25,7 @@ generated:
     origin: vortex
     source: Vortex.Players/Grains/PlayerGrain.cs
     symbol: PlayerGrain
-    line: 299
+    line: 422
   - id: ev_34bf3ac088e2
     kind: emulator_flow
     authority: vortex_emulator

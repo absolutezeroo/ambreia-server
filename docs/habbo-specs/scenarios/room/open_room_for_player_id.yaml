@@ -10,7 +10,7 @@
 
 spec: scenarios
 spec_version: 1
-generated_digest: "sha256:653b97d6e64475123e42d96c34d0e6e33d707f19cacfd12b4c8da67b79caa2e6"
+generated_digest: "sha256:47e9d20f2b4cc64b6406906b8760e100f4728292d84f7c3ae6a50a1060f48036"
 generated:
   feature: room.open_room_for_player_id
   scenarios:
@@ -45,16 +45,16 @@ generated:
       emits: []
       evidence: ev_ef83570fa232
   - scenario: room.open_room_for_player_id.guard_1
-    title: "open room for player id: the guard 'pendingRoom.RoomId == roomId' holds"
+    title: "open room for player id: the guard 'pendingRoom.RoomId == roomId && !pendingRoom.Approved' holds"
     given:
-      guard: pendingRoom.RoomId == roomId
+      guard: pendingRoom.RoomId == roomId && !pendingRoom.Approved
       guard_holds: "true"
     when:
       packet: OpenFlatConnection
     expected:
       status: unknown
       confidence: unknown
-    needs_evidence: "an official capture of OpenFlatConnection sent while 'pendingRoom.RoomId == roomId' holds: does the server reply, stay silent, or disconnect?"
+    needs_evidence: "an official capture of OpenFlatConnection sent while 'pendingRoom.RoomId == roomId && !pendingRoom.Approved' holds: does the server reply, stay silent, or disconnect?"
     executable: false
     claims:
     - origin: vortex
@@ -383,7 +383,7 @@ generated:
     origin: vortex
     source: Vortex.Rooms/RoomService.cs
     symbol: RoomService
-    line: 75
+    line: 77
   - id: ev_b44ef304d36a
     kind: emulator_flow
     authority: vortex_emulator
@@ -397,6 +397,6 @@ generated:
     origin: vortex
     source: Vortex.Rooms/Grains/Modules/RoomAvatarModule.cs
     symbol: RoomAvatarModule
-    line: 164
+    line: 163
 verified: {}
 manual: {}

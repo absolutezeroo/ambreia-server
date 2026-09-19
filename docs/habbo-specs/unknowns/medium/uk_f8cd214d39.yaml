@@ -10,7 +10,7 @@
 
 spec: unknown
 spec_version: 1
-generated_digest: "sha256:fee5bee8567448113d9d7bc86054ff029508b146e49d8114b4ee8baf6bf53a05"
+generated_digest: "sha256:0be4753ede55eb0460260d78a1343738748aecb9cc0322b22603051d0390e165"
 generated:
   id: uk_f8cd214d39
   subject: "room.open_mystery_trophy: what the server sends when it refuses"
@@ -39,7 +39,7 @@ generated:
     origin: vortex
     source: Vortex.Rooms/Grains/RoomGrain.Furni.Interactive.cs
     symbol: RoomGrain
-    line: 185
+    line: 252
   - id: ev_761b76967e2f
     kind: emulator_flow
     authority: vortex_emulator
@@ -102,7 +102,7 @@ generated:
     origin: vortex
     source: Vortex.Rooms/Grains/RoomGrain.cs
     symbol: RoomGrain
-    line: 294
+    line: 296
   - id: ev_b533730b6457
     kind: emulator_flow
     authority: vortex_emulator
@@ -123,7 +123,7 @@ generated:
     origin: vortex
     source: Vortex.Inventory/Grains/InventoryGrain.Furni.cs
     symbol: InventoryGrain
-    line: 724
+    line: 725
   - id: ev_db615f36b20b
     kind: emulator_flow
     authority: vortex_emulator
@@ -144,7 +144,7 @@ generated:
     origin: vortex
     source: Vortex.Rooms/Grains/Modules/RoomAvatarModule.cs
     symbol: RoomAvatarModule
-    line: 435
+    line: 434
   - id: ev_f13d6bcce744
     kind: emulator_flow
     authority: vortex_emulator

@@ -10,7 +10,7 @@
 
 spec: scenarios
 spec_version: 1
-generated_digest: "sha256:987ab968e9813682e143fa90b97d596deb94a77112c6d0796a036441ed12f4e7"
+generated_digest: "sha256:327b5d3243a68c5ca283d0f01d81d58a7a237c826cb0f9e31c8811626588a91e"
 generated:
   feature: moderation.post_quiz_answers
   scenarios:
@@ -162,7 +162,7 @@ generated:
     origin: vortex
     source: Vortex.Inventory/Grains/InventoryGrain.Furni.cs
     symbol: InventoryGrain
-    line: 493
+    line: 494
   - id: ev_fd80c081bc3a
     kind: emulator_flow
     authority: vortex_emulator

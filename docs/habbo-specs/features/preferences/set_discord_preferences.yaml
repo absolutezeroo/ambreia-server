@@ -10,7 +10,7 @@
 
 spec: feature
 spec_version: 1
-generated_digest: "sha256:40d2cd7f81209eac63b6fe541bd710f72a79a74e20706b7cf989f777354cb11a"
+generated_digest: "sha256:15cc63c252e6725af372c88684b681974f219b04fe627662c5c948abe3b42c8d"
 generated:
   id: preferences.set_discord_preferences
   domain: preferences
@@ -26,7 +26,7 @@ generated:
   - order: 0
     layer: handler
     symbol: SetDiscordPreferencesMessageHandler.HandleAsync
-    evidence: ev_5d7cdeac355a
+    evidence: ev_6c7b586c61fd
   - order: 1
     layer: grain
     symbol: PlayerGrain.SetDiscordPreferencesAsync
@@ -35,7 +35,7 @@ generated:
   - expression: ctx.PlayerId <= 0
     on_fail: return
     observed_in: vortex
-    evidence: ev_dc5e70e97795
+    evidence: ev_7e730f5c90c1
   state_changes:
   - target: e.DiscordAllowJoining
     value: allowJoining
@@ -60,23 +60,16 @@ generated:
   - target: grainFactory .GetPlayerGrain(ctx.PlayerId)
     value: grainFactory .GetPlayerGrain(ctx.PlayerId) .SetDiscordPreferencesAsync( message.Version, message.ShowHabbo, message.ShareActivity, message.HideInHiddenRooms, message.AllowJoining, ct )
     observed_in: vortex
-    evidence: ev_dc5e70e97795
+    evidence: ev_7e730f5c90c1
   outgoing:
     ordering: unknown
     packets:
     - packet: DiscordPreferences
       recipient: actor
       recipient_confidence: implementation_observed
-      evidence: ev_dc5e70e97795
+      evidence: ev_7e730f5c90c1
   reaches_persistence: false
   evidence:
-  - id: ev_5d7cdeac355a
-    kind: emulator_handler
-    authority: vortex_emulator
-    origin: vortex
-    source: Vortex.PacketHandlers/Preferences/DiscordPreferencesHandlers.cs
-    symbol: SetDiscordPreferencesMessageHandler
-    line: 54
   - id: ev_630a59578b9c
     kind: emulator_flow
     authority: vortex_emulator
@@ -84,13 +77,20 @@ generated:
     source: Vortex.Players/Grains/PlayerGrain.AccountPreferences.cs
     symbol: PlayerGrain
     line: 121
-  - id: ev_dc5e70e97795
+  - id: ev_6c7b586c61fd
+    kind: emulator_handler
+    authority: vortex_emulator
+    origin: vortex
+    source: Vortex.PacketHandlers/Preferences/SetDiscordPreferencesMessageHandler.cs
+    symbol: SetDiscordPreferencesMessageHandler
+    line: 19
+  - id: ev_7e730f5c90c1
     kind: emulator_flow
     authority: vortex_emulator
     origin: vortex
-    source: Vortex.PacketHandlers/Preferences/DiscordPreferencesHandlers.cs
+    source: Vortex.PacketHandlers/Preferences/SetDiscordPreferencesMessageHandler.cs
     symbol: SetDiscordPreferencesMessageHandler
-    line: 63
+    line: 28
   scenarios:
   - preferences.set_discord_preferences.guard_0
   - preferences.set_discord_preferences.success

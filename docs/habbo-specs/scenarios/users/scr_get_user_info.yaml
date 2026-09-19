@@ -10,7 +10,7 @@
 
 spec: scenarios
 spec_version: 1
-generated_digest: "sha256:dc3861407925d88e4bcdfcf831b08c9517e08e7b2b93032e986423ea705267d7"
+generated_digest: "sha256:657e6ee8f1b7d0f27fe92b9e24f3a432bcff4b3f83de4c0e02dca2cb92dadbd3"
 generated:
   feature: users.scr_get_user_info
   scenarios:
@@ -45,10 +45,9 @@ generated:
     when:
       packet: ScrGetUserInfo
     expected:
-      status: unknown
-      confidence: unknown
-    needs_evidence: an official capture of ScrGetUserInfo succeeding, with every packet the server sends back and in what order
-    executable: false
+      status: success
+      confidence: capture_confirmed
+    executable: true
     claims:
     - origin: vortex
       authority: vortex_emulator
@@ -63,7 +62,18 @@ generated:
       emits:
       - ScrSendUserInfo
       evidence: ev_ff6679876b95
+    - origin: capture (1 observations)
+      authority: official_capture
+      outcome: success
+      emits: []
+      evidence: ev_dc76788284df
   evidence:
+  - id: ev_dc76788284df
+    kind: capture
+    authority: official_capture
+    origin: capture
+    source: docs/habbo-specs/evidence/captures
+    symbol: ScrGetUserInfo
   - id: ev_ff6679876b95
     kind: reference_handler
     authority: reference_emulator
@@ -78,7 +88,7 @@ generated:
     origin: vortex
     source: Vortex.Players/Grains/PlayerGrain.cs
     symbol: PlayerGrain
-    line: 469
+    line: 592
   - id: ev_b102e26f59d4
     kind: emulator_flow
     authority: vortex_emulator

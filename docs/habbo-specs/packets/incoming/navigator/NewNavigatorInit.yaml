@@ -10,7 +10,7 @@
 
 spec: packet
 spec_version: 1
-generated_digest: "sha256:40a506b40c66400527c29d3be042e3d2d62acbc95a52bd045c8ecb4332be9b71"
+generated_digest: "sha256:e5c538c0544223e509908ff7ab554cbbe14fc33504133f15a6c485d20d390038"
 generated:
   name: NewNavigatorInit
   direction: incoming
@@ -76,7 +76,5 @@ generated:
     source: Vortex.Revisions/Revision20260701/Parsers/NewNavigator/NewNavigatorInitMessageParser.cs
     symbol: NewNavigatorInitMessageParser
     line: 7
-  conflicts:
-  - cf_74f7b78578
 verified: {}
 manual: {}

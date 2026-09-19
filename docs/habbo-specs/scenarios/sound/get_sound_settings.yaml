@@ -10,7 +10,7 @@
 
 spec: scenarios
 spec_version: 1
-generated_digest: "sha256:66808f67d92238d451a5ffb9a66b01b79f904b42740941b9e69ec0e5c9a3d42a"
+generated_digest: "sha256:e22e9b8b8ecab53963cb47c96a476f5262c075ed0e1143646015b4259cc992dc"
 generated:
   feature: sound.get_sound_settings
   scenarios:
@@ -45,10 +45,9 @@ generated:
     when:
       packet: GetSoundSettings
     expected:
-      status: unknown
-      confidence: unknown
-    needs_evidence: an official capture of GetSoundSettings succeeding, with every packet the server sends back and in what order
-    executable: false
+      status: success
+      confidence: capture_confirmed
+    executable: true
     claims:
     - origin: vortex
       authority: vortex_emulator
@@ -63,7 +62,18 @@ generated:
       emits:
       - AccountPreferences
       evidence: ev_0c90e4e3c098
+    - origin: capture (1 observations)
+      authority: official_capture
+      outcome: success
+      emits: []
+      evidence: ev_56cd7927238d
   evidence:
+  - id: ev_56cd7927238d
+    kind: capture
+    authority: official_capture
+    origin: capture
+    source: docs/habbo-specs/evidence/captures
+    symbol: GetSoundSettings
   - id: ev_0c90e4e3c098
     kind: reference_handler
     authority: reference_emulator
@@ -78,7 +88,7 @@ generated:
     origin: vortex
     source: Vortex.Players/Grains/PlayerGrain.cs
     symbol: PlayerGrain
-    line: 256
+    line: 379
   - id: ev_e547d106cfb0
     kind: emulator_flow
     authority: vortex_emulator

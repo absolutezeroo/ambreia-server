@@ -10,7 +10,7 @@
 
 spec: unknown
 spec_version: 1
-generated_digest: "sha256:9ff96cdbadb2e02dcea28ff79fdce0b9cbf309d355be847d4ed0220fc1ce231f"
+generated_digest: "sha256:02a475246b785dcc9100070f4d12a0a3a5e24f1f13ce4cf665be6659e1f208bc"
 generated:
   id: uk_de5f37f209
   subject: "navigator.cancel: what the server sends when it refuses"
@@ -32,7 +32,7 @@ generated:
     origin: vortex
     source: Vortex.Rooms/RoomAdvertisementService.cs
     symbol: RoomAdvertisementService
-    line: 75
+    line: 112
   - id: ev_9c556fe9a1d3
     kind: emulator_handler
     authority: vortex_emulator

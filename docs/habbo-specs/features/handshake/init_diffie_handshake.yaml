@@ -10,7 +10,7 @@
 
 spec: feature
 spec_version: 1
-generated_digest: "sha256:9b85bce9d4b6e3bda542f7be85c78f3cd4668aaf017e9a100b30080b070f29f0"
+generated_digest: "sha256:33691bd759d102fd4c4b271b78f714b2689f72a73829273e1dae7c02143f4153"
 generated:
   id: handshake.init_diffie_handshake
   domain: handshake
@@ -22,7 +22,7 @@ generated:
     references:
     - habbo-arcturus-daybreak
   official_behavior:
-    status: unknown
+    status: capture_confirmed
   flow:
   - order: 0
     layer: handler

@@ -10,7 +10,7 @@
 
 spec: unknown
 spec_version: 1
-generated_digest: "sha256:4a3831763f652fd49c168206e721ec3dfe43a30f820389802b50a58b770da227"
+generated_digest: "sha256:be7b52d5fafe447a3bf807651a21bf1d0d0d73af732c4b629424b7ff222557b7"
 generated:
   id: uk_d6ccb7aed7
   subject: "room.close_room_for_player: what the server sends when it refuses"
@@ -67,7 +67,7 @@ generated:
     origin: vortex
     source: Vortex.Rooms/RoomService.cs
     symbol: RoomService
-    line: 421
+    line: 515
   - id: ev_82aaf63b45c1
     kind: emulator_flow
     authority: vortex_emulator
@@ -123,7 +123,7 @@ generated:
     origin: vortex
     source: Vortex.Rooms/Grains/RoomGrain.cs
     symbol: RoomGrain
-    line: 294
+    line: 296
   - id: ev_c26714967e6b
     kind: emulator_flow
     authority: vortex_emulator
@@ -151,6 +151,6 @@ generated:
     origin: vortex
     source: Vortex.Rooms/Grains/Modules/RoomAvatarModule.cs
     symbol: RoomAvatarModule
-    line: 156
+    line: 155
 verified: {}
 manual: {}

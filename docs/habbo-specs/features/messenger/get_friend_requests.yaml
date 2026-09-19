@@ -10,7 +10,7 @@
 
 spec: feature
 spec_version: 1
-generated_digest: "sha256:61a1891367e16bec9ce709fec8f694b58571049e60459eb0eb6c0f69b4d65cb8"
+generated_digest: "sha256:eedd0790ea7cd17ae8ca660963911d3f7d95149844474a34964997f4007c9313"
 generated:
   id: messenger.get_friend_requests
   domain: messenger
@@ -21,7 +21,7 @@ generated:
     vortex: true
     references: []
   official_behavior:
-    status: unknown
+    status: capture_confirmed
   flow:
   - order: 0
     layer: handler
@@ -70,5 +70,7 @@ generated:
   scenarios:
   - messenger.get_friend_requests.guard_0
   - messenger.get_friend_requests.success
+  conflicts:
+  - cf_f6dac9cfb2
 verified: {}
 manual: {}

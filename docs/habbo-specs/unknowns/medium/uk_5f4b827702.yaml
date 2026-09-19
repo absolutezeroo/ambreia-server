@@ -10,7 +10,7 @@
 
 spec: unknown
 spec_version: 1
-generated_digest: "sha256:0a1b8ec2841e0f6f75b4a4ab3f5b1ddf3b9307ae0f4ca38d98e7508b2726c6de"
+generated_digest: "sha256:852d649ad2cf234d41990a997e10bbcda1bc4eb862feafbd16edff6b733fb969"
 generated:
   id: uk_5f4b827702
   subject: "room.cancel_typing: what the server sends when it refuses"
@@ -39,20 +39,20 @@ generated:
     origin: vortex
     source: Vortex.Rooms/Grains/RoomGrain.Avatar.cs
     symbol: RoomGrain
-    line: 482
+    line: 476
   - id: ev_b46938ec853d
     kind: emulator_flow
     authority: vortex_emulator
     origin: vortex
     source: Vortex.Rooms/Grains/RoomGrain.cs
     symbol: RoomGrain
-    line: 294
+    line: 296
   - id: ev_e6fef545a42a
     kind: emulator_flow
     authority: vortex_emulator
     origin: vortex
     source: Vortex.Rooms/Grains/Modules/RoomAvatarModule.cs
     symbol: RoomAvatarModule
-    line: 810
+    line: 809
 verified: {}
 manual: {}

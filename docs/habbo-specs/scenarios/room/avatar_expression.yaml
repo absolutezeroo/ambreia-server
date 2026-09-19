@@ -10,7 +10,7 @@
 
 spec: scenarios
 spec_version: 1
-generated_digest: "sha256:86fda3b3ef168c5202fc942464cd0cdc865b3b0eafe6379b70891cd9157eb075"
+generated_digest: "sha256:438c817df6f275a1c0520731eaca7ce42201ed09e66314f86bcbb3c86e366423"
 generated:
   feature: room.avatar_expression
   scenarios:
@@ -170,6 +170,6 @@ generated:
     origin: vortex
     source: Vortex.Rooms/Grains/Modules/RoomAvatarModule.cs
     symbol: RoomAvatarModule
-    line: 658
+    line: 657
 verified: {}
 manual: {}

@@ -10,7 +10,7 @@
 
 spec: scenarios
 spec_version: 1
-generated_digest: "sha256:0c503664a2503697630ebe60289cbc2ffda4d05b46cfcfa486691b2aac9a75bf"
+generated_digest: "sha256:c70ebf4502341ca5b102b8cb2cf23326e771562316e769d07bf6981620a73e53"
 generated:
   feature: handshake.version_check
   scenarios:
@@ -21,17 +21,27 @@ generated:
     when:
       packet: VersionCheck
     expected:
-      status: unknown
-      confidence: unknown
-    needs_evidence: an official capture of VersionCheck succeeding, with every packet the server sends back and in what order
-    executable: false
+      status: success
+      confidence: capture_confirmed
+    executable: true
     claims:
     - origin: vortex
       authority: vortex_emulator
       outcome: ignored
       emits: []
       evidence: ev_e07c4b8a9e7b
+    - origin: capture (1 observations)
+      authority: official_capture
+      outcome: success
+      emits: []
+      evidence: ev_37c756aa74b1
   evidence:
+  - id: ev_37c756aa74b1
+    kind: capture
+    authority: official_capture
+    origin: capture
+    source: docs/habbo-specs/evidence/captures
+    symbol: VersionCheck
   - id: ev_e07c4b8a9e7b
     kind: emulator_handler
     authority: vortex_emulator

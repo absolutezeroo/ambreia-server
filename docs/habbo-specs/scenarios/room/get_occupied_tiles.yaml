@@ -10,7 +10,7 @@
 
 spec: scenarios
 spec_version: 1
-generated_digest: "sha256:86c439631efc04af9849d802fadf06a6574037991e36a4a1c247680a92e3c106"
+generated_digest: "sha256:e48b0ce29370f23c64f3da58db4a9e81cd18e63a43aa0590a277a82a34deef29"
 generated:
   feature: room.get_occupied_tiles
   scenarios:
@@ -69,10 +69,9 @@ generated:
     when:
       packet: GetOccupiedTiles
     expected:
-      status: unknown
-      confidence: unknown
-    needs_evidence: an official capture of GetOccupiedTiles succeeding, with every packet the server sends back and in what order
-    executable: false
+      status: success
+      confidence: capture_confirmed
+    executable: true
     claims:
     - origin: vortex
       authority: vortex_emulator
@@ -86,7 +85,19 @@ generated:
       emits:
       - RoomOccupiedTiles
       evidence: ev_8ecc3475bd12
+    - origin: capture (1 observations)
+      authority: official_capture
+      outcome: success
+      emits:
+      - RoomOccupiedTiles
+      evidence: ev_caf573a092e7
   evidence:
+  - id: ev_caf573a092e7
+    kind: capture
+    authority: official_capture
+    origin: capture
+    source: docs/habbo-specs/evidence/captures
+    symbol: GetOccupiedTiles
   - id: ev_8ecc3475bd12
     kind: reference_handler
     authority: reference_emulator

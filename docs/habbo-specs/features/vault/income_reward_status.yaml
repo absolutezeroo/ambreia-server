@@ -10,7 +10,7 @@
 
 spec: feature
 spec_version: 1
-generated_digest: "sha256:dd6fd6791a00187edd9d9b7f9d44e2d3feb10f07f55957adabf5b7c11b4d565a"
+generated_digest: "sha256:1a1158d0ba4dffc352f9920d4aea2d48553516f814d4318b0b8d7ebfa0399729"
 generated:
   id: vault.income_reward_status
   domain: vault
@@ -21,7 +21,7 @@ generated:
     vortex: true
     references: []
   official_behavior:
-    status: unknown
+    status: capture_confirmed
   flow:
   - order: 0
     layer: handler

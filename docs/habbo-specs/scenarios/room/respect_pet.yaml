@@ -10,7 +10,7 @@
 
 spec: scenarios
 spec_version: 1
-generated_digest: "sha256:f6cff6084b4c70979862dbca93326d396b842b4b199b3e0549c34ab83650d2d8"
+generated_digest: "sha256:7472e91cca73c5ca7836ce4f3700ec6acbe15ed152692dbc0c5b66d5fc96bbbe"
 generated:
   feature: room.respect_pet
   scenarios:
@@ -108,16 +108,16 @@ generated:
       emits: []
       evidence: ev_cb9974479c1a
   - scenario: room.respect_pet.guard_4
-    title: "respect pet: the guard 'pet.RespectTodayCount >= dailyCap' holds"
+    title: "respect pet: the guard '!await _roomGrain._grainFactory.GetPlayerGrain(ctx.Player...' holds"
     given:
-      guard: pet.RespectTodayCount >= dailyCap
+      guard: "!await _roomGrain._grainFactory.GetPlayerGrain(ctx.PlayerId).TryGivePetRespectAsync(ct)"
       guard_holds: "true"
     when:
       packet: RespectPet
     expected:
       status: unknown
       confidence: unknown
-    needs_evidence: "an official capture of RespectPet sent while 'pet.RespectTodayCount >= dailyCap' holds: does the server reply, stay silent, or disconnect?"
+    needs_evidence: "an official capture of RespectPet sent while '!await _roomGrain._grainFactory.GetPlayerGrain(ctx.PlayerId).TryGivePetRespectAsync(ct)' holds: does the server reply, stay silent, or disconnect?"
     executable: false
     claims:
     - origin: vortex
@@ -131,6 +131,29 @@ generated:
       emits: []
       evidence: ev_cb9974479c1a
   - scenario: room.respect_pet.guard_5
+    title: "respect pet: the guard '!allowed' holds"
+    given:
+      guard: "!allowed"
+      guard_holds: "true"
+    when:
+      packet: RespectPet
+    expected:
+      status: unknown
+      confidence: unknown
+    needs_evidence: "an official capture of RespectPet sent while '!allowed' holds: does the server reply, stay silent, or disconnect?"
+    executable: false
+    claims:
+    - origin: vortex
+      authority: vortex_emulator
+      outcome: ignored
+      emits: []
+      evidence: ev_1f83e61934ca
+    - origin: habbo-arcturus-daybreak
+      authority: reference_emulator
+      outcome: ignored
+      emits: []
+      evidence: ev_cb9974479c1a
+  - scenario: room.respect_pet.guard_6
     title: "respect pet: the guard '_registry is null' holds"
     given:
       guard: _registry is null
@@ -170,7 +193,7 @@ generated:
       outcome: success
       emits:
       - PetRespectFailed
-      evidence: ev_1557b71ceec2
+      evidence: ev_09932710687b
     - origin: habbo-arcturus-daybreak
       authority: reference_emulator
       outcome: ignored
@@ -185,6 +208,13 @@ generated:
     symbol: RespectPetMessageEvent
     line: 19
     note: third-party server implementation; evidence, not authority
+  - id: ev_09932710687b
+    kind: emulator_flow
+    authority: vortex_emulator
+    origin: vortex
+    source: Vortex.Primitives/Orleans/GrainFactoryExtensions.cs
+    symbol: GrainFactoryExtensions
+    line: 228
   - id: ev_1557b71ceec2
     kind: emulator_flow
     authority: vortex_emulator
@@ -192,6 +222,13 @@ generated:
     source: Vortex.PacketHandlers/Room/Pets/RespectPetMessageHandler.cs
     symbol: RespectPetMessageHandler
     line: 22
+  - id: ev_1f83e61934ca
+    kind: emulator_flow
+    authority: vortex_emulator
+    origin: vortex
+    source: Vortex.Players/Grains/PlayerGrain.cs
+    symbol: PlayerGrain
+    line: 135
   - id: ev_34bf3ac088e2
     kind: emulator_flow
     authority: vortex_emulator

@@ -10,7 +10,7 @@
 
 spec: unknown
 spec_version: 1
-generated_digest: "sha256:b2537dcf2d0747612e0b37eba7d0b091fbb4cae5604c8a02d1034de398dd3ebb"
+generated_digest: "sha256:34ed7eb0f68b8eb0458429900cecc0aae4c8df84ff255be961782b43a21945e8"
 generated:
   id: uk_f369fbd598
   subject: "room.save_room_settings: what the server sends when it refuses"
@@ -32,7 +32,7 @@ generated:
     origin: vortex
     source: Vortex.Rooms/Grains/RoomGrain.Settings.cs
     symbol: RoomGrain
-    line: 53
+    line: 55
   - id: ev_34bf3ac088e2
     kind: emulator_flow
     authority: vortex_emulator

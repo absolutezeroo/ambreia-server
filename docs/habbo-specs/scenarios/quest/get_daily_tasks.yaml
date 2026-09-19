@@ -10,7 +10,7 @@
 
 spec: scenarios
 spec_version: 1
-generated_digest: "sha256:8df67b8ad191285282763ebb458671b9dfccceaf097a95c333093e64d8352792"
+generated_digest: "sha256:047613f328f921360bb991a5f7b71fd464d7e0bb40e0a2db88242a0dc4438cb3"
 generated:
   feature: quest.get_daily_tasks
   scenarios:
@@ -39,10 +39,9 @@ generated:
     when:
       packet: GetDailyTasks
     expected:
-      status: unknown
-      confidence: unknown
-    needs_evidence: an official capture of GetDailyTasks succeeding, with every packet the server sends back and in what order
-    executable: false
+      status: success
+      confidence: capture_confirmed
+    executable: true
     claims:
     - origin: vortex
       authority: vortex_emulator
@@ -50,7 +49,18 @@ generated:
       emits:
       - DailyTasksActiveList
       evidence: ev_2abb3cf8a990
+    - origin: capture (1 observations)
+      authority: official_capture
+      outcome: success
+      emits: []
+      evidence: ev_d838b759c90a
   evidence:
+  - id: ev_d838b759c90a
+    kind: capture
+    authority: official_capture
+    origin: capture
+    source: docs/habbo-specs/evidence/captures
+    symbol: GetDailyTasks
   - id: ev_2abb3cf8a990
     kind: emulator_flow
     authority: vortex_emulator

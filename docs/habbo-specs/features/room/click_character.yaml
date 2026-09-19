@@ -10,7 +10,7 @@
 
 spec: feature
 spec_version: 1
-generated_digest: "sha256:6154110442297abd5deafd9994c73d877e6bcdf23e3807b3730f5eb4bf6abe91"
+generated_digest: "sha256:9b5ccf1312f2d181a6de352f4e9929c0a41f91ce7a16d0cc82f71d89ae0b8db6"
 generated:
   id: room.click_character
   domain: room
@@ -21,7 +21,7 @@ generated:
     vortex: true
     references: []
   official_behavior:
-    status: unknown
+    status: capture_confirmed
   flow:
   - order: 0
     layer: handler

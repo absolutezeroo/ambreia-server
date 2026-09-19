@@ -10,7 +10,7 @@
 
 spec: packet
 spec_version: 1
-generated_digest: "sha256:3893513ef59de30d463fd3655a6a3c0aad350f1699ff57e7cfd65afbb140be94"
+generated_digest: "sha256:3070e7e89e0f28d0c2a19509e188be6954a73484069460aac050715e7cf787bc"
 generated:
   name: GetSoundSettings
   direction: incoming
@@ -76,7 +76,5 @@ generated:
     source: Vortex.Revisions/Revision20260701/Parsers/Sound/GetSoundSettingsMessageParser.cs
     symbol: GetSoundSettingsMessageParser
     line: 7
-  conflicts:
-  - cf_c1edb85792
 verified: {}
 manual: {}

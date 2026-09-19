@@ -10,7 +10,7 @@
 
 spec: scenarios
 spec_version: 1
-generated_digest: "sha256:a6f2caa5465e53d40223dcedc973ad4cf7641a821867f851b0824732cae1ea40"
+generated_digest: "sha256:431ec9abd4aa3fc9da9738185275850a36928a3b91e8486bfcfbf1d960bcb6d6"
 generated:
   feature: navigator.get_flat_categories
   scenarios:
@@ -21,10 +21,9 @@ generated:
     when:
       packet: GetUserFlatCats
     expected:
-      status: unknown
-      confidence: unknown
-    needs_evidence: an official capture of GetUserFlatCats succeeding, with every packet the server sends back and in what order
-    executable: false
+      status: success
+      confidence: capture_confirmed
+    executable: true
     claims:
     - origin: vortex
       authority: vortex_emulator
@@ -38,7 +37,18 @@ generated:
       emits:
       - UserFlatCats
       evidence: ev_f4c6305ed8e5
+    - origin: capture (1 observations)
+      authority: official_capture
+      outcome: success
+      emits: []
+      evidence: ev_059842510d4e
   evidence:
+  - id: ev_059842510d4e
+    kind: capture
+    authority: official_capture
+    origin: capture
+    source: docs/habbo-specs/evidence/captures
+    symbol: GetUserFlatCats
   - id: ev_f4c6305ed8e5
     kind: reference_handler
     authority: reference_emulator

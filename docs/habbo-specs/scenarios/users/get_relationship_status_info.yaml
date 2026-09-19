@@ -10,7 +10,7 @@
 
 spec: scenarios
 spec_version: 1
-generated_digest: "sha256:aa64392160338fe1a525d10cca860e0d990638367bf7de43d863d8e12f0b2efe"
+generated_digest: "sha256:d3df25db7227a87fa0b9bfaa319d897d329b9eb35c149b8bf03fceaf6d32b103"
 generated:
   feature: users.get_relationship_status_info
   scenarios:
@@ -46,10 +46,9 @@ generated:
     when:
       packet: GetRelationshipStatusInfo
     expected:
-      status: unknown
-      confidence: unknown
-    needs_evidence: an official capture of GetRelationshipStatusInfo succeeding, with every packet the server sends back and in what order
-    executable: false
+      status: success
+      confidence: capture_confirmed
+    executable: true
     claims:
     - origin: vortex
       authority: vortex_emulator
@@ -64,7 +63,20 @@ generated:
       - RelationshipStatusInfo
       - RelationshipStatusInfo
       evidence: ev_463c147f250f
+    - origin: capture (1 observations)
+      authority: official_capture
+      outcome: success
+      emits:
+      - HabboUserBadges
+      - RelationshipStatusInfo
+      evidence: ev_12cfbcb7ba0d
   evidence:
+  - id: ev_12cfbcb7ba0d
+    kind: capture
+    authority: official_capture
+    origin: capture
+    source: docs/habbo-specs/evidence/captures
+    symbol: GetRelationshipStatusInfo
   - id: ev_463c147f250f
     kind: reference_handler
     authority: reference_emulator

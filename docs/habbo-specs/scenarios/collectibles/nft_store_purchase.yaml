@@ -10,7 +10,7 @@
 
 spec: scenarios
 spec_version: 1
-generated_digest: "sha256:6468d2d4f5a6f4330d30d32abba84d13eb9e9a5feeac010caa3a7ec41889931e"
+generated_digest: "sha256:9dc9d1fafe081febf01aecbc2ab31bf96948fbf7acb95751b9501821e1e051c7"
 generated:
   feature: collectibles.nft_store_purchase
   scenarios:
@@ -129,7 +129,7 @@ generated:
     origin: vortex
     source: Vortex.Collectibles/Grains/NftStoreGrain.cs
     symbol: NftStoreGrain
-    line: 76
+    line: 79
   - id: ev_20a2d2e5ed36
     kind: emulator_flow
     authority: vortex_emulator

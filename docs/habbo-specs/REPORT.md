@@ -16,17 +16,17 @@ actually produced against the trees listed under Sources.
 
 | Direction | Count |
 |---|---:|
-| Incoming (client to server) | 626 |
+| Incoming (client to server) | 627 |
 | Outgoing (server to client) | 868 |
 
 ## Behaviour
 
 | | Count |
 |---|---:|
-| Features | 518 |
-| Scenarios | 1997 |
-| Captures imported | 1 |
-| Capture observations | 13 |
+| Features | 520 |
+| Scenarios | 2017 |
+| Captures imported | 8 |
+| Capture observations | 79 |
 
 ## Confidence in packet structure
 
@@ -36,29 +36,29 @@ actually produced against the trees listed under Sources.
 | client_confirmed | 617 | 41.3% |
 | multi_reference_confirmed | 88 | 5.9% |
 | reference_observed | 238 | 15.9% |
-| implementation_observed | 274 | 18.3% |
-| unknown | 213 | 14.3% |
+| implementation_observed | 276 | 18.5% |
+| unknown | 212 | 14.2% |
 
 ## Open questions
 
 | | Count |
 |---|---:|
-| Conflicts | 372 |
-| Critical unknowns | 129 |
-| Unknowns in total | 685 |
-| Fields with no attested name | 1601 of 5832 |
+| Conflicts | 368 |
+| Critical unknowns | 125 |
+| Unknowns in total | 683 |
+| Fields with no attested name | 1584 of 5844 |
 
 ## Files
 
-- written: 1
-- unchanged: 3598
+- written: 0
+- unchanged: 3605
 - blocked by hand edits: 0
 
 ## Coverage the scan bounded
 
 - as3:AIR-1.0.31: 1134 classes carry no usable name and no header id that joins to this build, so they are absent from the specs
 - as3:PRODUCTION-201601012205-226667486: 810 classes carry no usable name and no header id that joins to this build, so they are absent from the specs
-- as3:WIN63-202607011411-782849652: 93 classes carry no usable name and no header id that joins to this build, so they are absent from the specs
+- as3:WIN63-202607011411-782849652: 92 classes carry no usable name and no header id that joins to this build, so they are absent from the specs
 - catalog.builders_club_place_room_item: 33 guards observed, 12 turned into scenarios; the rest are listed in the feature spec's checks
 - catalog.builders_club_place_wall_item: 23 guards observed, 12 turned into scenarios; the rest are listed in the feature spec's checks
 - catalog.get_flat_categories: 20 guards observed, 12 turned into scenarios; the rest are listed in the feature spec's checks

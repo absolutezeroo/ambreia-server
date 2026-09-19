@@ -10,7 +10,7 @@
 
 spec: feature
 spec_version: 1
-generated_digest: "sha256:b76fdee2c5514d04cc167f42e411649299139c5863a251ced3c0ba9ffd28fdb5"
+generated_digest: "sha256:1f08f5983e0582b963fb0ab7e5ec8c3c29a55c703248f4765424bf094dcdb29f"
 generated:
   id: catalog.get_next_targeted_offer
   domain: catalog
@@ -21,7 +21,7 @@ generated:
     vortex: true
     references: []
   official_behavior:
-    status: unknown
+    status: capture_confirmed
   flow:
   - order: 0
     layer: handler

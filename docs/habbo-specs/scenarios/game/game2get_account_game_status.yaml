@@ -10,7 +10,7 @@
 
 spec: scenarios
 spec_version: 1
-generated_digest: "sha256:1dcf8990f40fe6fb2c384ae59079725d53b44e176e69bd5e4c1a320c0b26a273"
+generated_digest: "sha256:ef2ce50a238168697fa7e2fa11161adb06d558199ccde62afb7361be9cd366b8"
 generated:
   feature: game.game2get_account_game_status
   scenarios:
@@ -21,10 +21,9 @@ generated:
     when:
       packet: Game2GetAccountGameStatus
     expected:
-      status: unknown
-      confidence: unknown
-    needs_evidence: an official capture of Game2GetAccountGameStatus succeeding, with every packet the server sends back and in what order
-    executable: false
+      status: success
+      confidence: capture_confirmed
+    executable: true
     claims:
     - origin: vortex
       authority: vortex_emulator
@@ -37,7 +36,18 @@ generated:
       emits:
       - GameStatus
       evidence: ev_a38a27cdd49b
+    - origin: capture (2 observations)
+      authority: official_capture
+      outcome: success
+      emits: []
+      evidence: ev_6b68f382de2d
   evidence:
+  - id: ev_6b68f382de2d
+    kind: capture
+    authority: official_capture
+    origin: capture
+    source: docs/habbo-specs/evidence/captures
+    symbol: Game2GetAccountGameStatus
   - id: ev_a38a27cdd49b
     kind: reference_handler
     authority: reference_emulator

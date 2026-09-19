@@ -10,7 +10,7 @@
 
 spec: scenarios
 spec_version: 1
-generated_digest: "sha256:2b134c72fe7d622343b2c8fbd9ba9a065bb969bee65b4e0598b26d9106fa5f62"
+generated_digest: "sha256:bcf3f113d31b0d93cb92538d41dd676e57235e2c54355d4977a19b51a5117272"
 generated:
   feature: handshake.client_hello
   scenarios:
@@ -44,10 +44,9 @@ generated:
     when:
       packet: ClientHello
     expected:
-      status: unknown
-      confidence: unknown
-    needs_evidence: an official capture of ClientHello succeeding, with every packet the server sends back and in what order
-    executable: false
+      status: success
+      confidence: capture_confirmed
+    executable: true
     claims:
     - origin: vortex
       authority: vortex_emulator
@@ -59,7 +58,18 @@ generated:
       outcome: ignored
       emits: []
       evidence: ev_89d37d1d3fc3
+    - origin: capture (1 observations)
+      authority: official_capture
+      outcome: success
+      emits: []
+      evidence: ev_d24af5abc3a4
   evidence:
+  - id: ev_d24af5abc3a4
+    kind: capture
+    authority: official_capture
+    origin: capture
+    source: docs/habbo-specs/evidence/captures
+    symbol: ClientHello
   - id: ev_89d37d1d3fc3
     kind: reference_handler
     authority: reference_emulator

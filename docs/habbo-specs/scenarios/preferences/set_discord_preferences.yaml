@@ -10,7 +10,7 @@
 
 spec: scenarios
 spec_version: 1
-generated_digest: "sha256:84b267fd1fd8faa7e8cdfad2e99430658946a306044acd2be35c516b1351867f"
+generated_digest: "sha256:356f2c4bf8c0d7bf93d8412514ec15240fca9d08875820aecd678e6321f13670"
 generated:
   feature: preferences.set_discord_preferences
   scenarios:
@@ -31,7 +31,7 @@ generated:
       authority: vortex_emulator
       outcome: ignored
       emits: []
-      evidence: ev_dc5e70e97795
+      evidence: ev_7e730f5c90c1
   - scenario: preferences.set_discord_preferences.success
     title: "set discord preferences: the request is accepted"
     given:
@@ -49,21 +49,21 @@ generated:
       outcome: success
       emits:
       - DiscordPreferences
-      evidence: ev_5d7cdeac355a
+      evidence: ev_630a59578b9c
   evidence:
-  - id: ev_5d7cdeac355a
-    kind: emulator_handler
-    authority: vortex_emulator
-    origin: vortex
-    source: Vortex.PacketHandlers/Preferences/DiscordPreferencesHandlers.cs
-    symbol: SetDiscordPreferencesMessageHandler
-    line: 54
-  - id: ev_dc5e70e97795
+  - id: ev_630a59578b9c
     kind: emulator_flow
     authority: vortex_emulator
     origin: vortex
-    source: Vortex.PacketHandlers/Preferences/DiscordPreferencesHandlers.cs
+    source: Vortex.Players/Grains/PlayerGrain.AccountPreferences.cs
+    symbol: PlayerGrain
+    line: 121
+  - id: ev_7e730f5c90c1
+    kind: emulator_flow
+    authority: vortex_emulator
+    origin: vortex
+    source: Vortex.PacketHandlers/Preferences/SetDiscordPreferencesMessageHandler.cs
     symbol: SetDiscordPreferencesMessageHandler
-    line: 63
+    line: 28
 verified: {}
 manual: {}

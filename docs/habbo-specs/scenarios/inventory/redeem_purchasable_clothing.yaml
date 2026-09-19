@@ -10,7 +10,7 @@
 
 spec: scenarios
 spec_version: 1
-generated_digest: "sha256:5e25227f411dccc0c76b5e9a404884722bc67b7dcc785a0246a9f2e14965db02"
+generated_digest: "sha256:dad23d81e38f5b25617fb0c1cab518c5aaf502508add86709a0bb3077bd264ad"
 generated:
   feature: inventory.redeem_purchasable_clothing
   scenarios:
@@ -219,6 +219,6 @@ generated:
     origin: vortex
     source: Vortex.Inventory/Grains/InventoryGrain.Furni.cs
     symbol: InventoryGrain
-    line: 118
+    line: 119
 verified: {}
 manual: {}

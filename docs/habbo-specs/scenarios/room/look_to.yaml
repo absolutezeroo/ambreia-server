@@ -10,7 +10,7 @@
 
 spec: scenarios
 spec_version: 1
-generated_digest: "sha256:a24666264a7f7c497fb92ecf7734a14c4dc40f62abe538da79b4ff971161d458"
+generated_digest: "sha256:937e0206ac21ad1ff05abda86476e61eb114d1cdd0c07d1333ae9ef80b3f9b0e"
 generated:
   feature: room.look_to
   scenarios:
@@ -297,10 +297,9 @@ generated:
     when:
       packet: LookTo
     expected:
-      status: unknown
-      confidence: unknown
-    needs_evidence: an official capture of LookTo succeeding, with every packet the server sends back and in what order
-    executable: false
+      status: success
+      confidence: capture_confirmed
+    executable: true
     claims:
     - origin: vortex
       authority: vortex_emulator
@@ -313,7 +312,18 @@ generated:
       outcome: ignored
       emits: []
       evidence: ev_cbbbf87ab4e3
+    - origin: capture (1 observations)
+      authority: official_capture
+      outcome: success
+      emits: []
+      evidence: ev_1e6a6dd6f968
   evidence:
+  - id: ev_1e6a6dd6f968
+    kind: capture
+    authority: official_capture
+    origin: capture
+    source: docs/habbo-specs/evidence/captures
+    symbol: LookTo
   - id: ev_cbbbf87ab4e3
     kind: reference_handler
     authority: reference_emulator
@@ -342,14 +352,14 @@ generated:
     origin: vortex
     source: Vortex.Rooms/Grains/RoomGrain.Avatar.cs
     symbol: RoomGrain
-    line: 461
+    line: 455
   - id: ev_e6fef545a42a
     kind: emulator_flow
     authority: vortex_emulator
     origin: vortex
     source: Vortex.Rooms/Grains/Modules/RoomAvatarModule.cs
     symbol: RoomAvatarModule
-    line: 770
+    line: 769
   - id: ev_ec05fa1b0194
     kind: emulator_flow
     authority: vortex_emulator

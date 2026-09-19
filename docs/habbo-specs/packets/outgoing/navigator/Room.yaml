@@ -10,7 +10,7 @@
 
 spec: packet
 spec_version: 1
-generated_digest: "sha256:61d5537317545bd5af19878611c46eecfad31e9b021b305b54ce7359fbfacf66"
+generated_digest: "sha256:229c7428769d7262d0cd1f39bf515bb153f5264992ff4bc5ecaf7f016d7345b2"
 generated:
   name: Room
   direction: outgoing
@@ -19,36 +19,71 @@ generated:
   mapped_in_vortex: true
   fields:
   - index: 0
-    name: room_id
+    name: advertisement_id
     type: int32
     name_confidence: implementation_observed
     type_confidence: implementation_observed
     evidence:
     - ev_fa71000c09a2
   - index: 1
-    name: name
-    type: string
+    name: owner_player_id
+    type: int32
     name_confidence: implementation_observed
     type_confidence: implementation_observed
     evidence:
     - ev_fa71000c09a2
   - index: 2
-    name: unknown_2
+    name: owner_name
     type: string
-    name_is_placeholder: true
-    name_confidence: unknown
+    name_confidence: implementation_observed
     type_confidence: implementation_observed
     evidence:
     - ev_fa71000c09a2
   - index: 3
-    name: category_id
+    name: room_id
     type: int32
     name_confidence: implementation_observed
     type_confidence: implementation_observed
     evidence:
     - ev_fa71000c09a2
   - index: 4
+    name: event_type
+    type: int32
+    name_confidence: implementation_observed
+    type_confidence: implementation_observed
+    evidence:
+    - ev_fa71000c09a2
+  - index: 5
+    name: name
+    type: string
+    name_confidence: implementation_observed
+    type_confidence: implementation_observed
+    evidence:
+    - ev_fa71000c09a2
+  - index: 6
+    name: unknown_6
+    type: string
+    name_is_placeholder: true
+    name_confidence: unknown
+    type_confidence: implementation_observed
+    evidence:
+    - ev_fa71000c09a2
+  - index: 7
+    name: minutes_since_creation
+    type: int32
+    name_confidence: implementation_observed
+    type_confidence: implementation_observed
+    evidence:
+    - ev_fa71000c09a2
+  - index: 8
     name: minutes_remaining
+    type: int32
+    name_confidence: implementation_observed
+    type_confidence: implementation_observed
+    evidence:
+    - ev_fa71000c09a2
+  - index: 9
+    name: category_id
     type: int32
     name_confidence: implementation_observed
     type_confidence: implementation_observed
@@ -73,12 +108,17 @@ generated:
     evidence: ev_f88af2e6efba
   - origin: vortex
     authority: vortex_emulator
-    field_count: 5
+    field_count: 10
     partial: false
     types:
     - int32
+    - int32
+    - string
+    - int32
+    - int32
     - string
     - string
+    - int32
     - int32
     - int32
     evidence: ev_fa71000c09a2
@@ -97,7 +137,7 @@ generated:
     origin: vortex
     source: Vortex.Revisions/Revision20260701/Serializers/Navigator/RoomEventMessageComposerSerializer.cs
     symbol: RoomEventMessageComposerSerializer
-    line: 6
+    line: 10
   unknowns:
   - uk_d8fc1f1fda
 verified: {}

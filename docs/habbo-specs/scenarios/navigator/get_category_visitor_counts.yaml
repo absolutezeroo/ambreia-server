@@ -10,7 +10,7 @@
 
 spec: scenarios
 spec_version: 1
-generated_digest: "sha256:a468aa0bb52d8e8ad1c564e1c926478f4404bb9f200c645ca267c8ee353766a0"
+generated_digest: "sha256:0a54b6abccacaa9ef0c9dc864aa4ff69381ab97d5b5bcd8fe2fa05819cd25691"
 generated:
   feature: navigator.get_category_visitor_counts
   scenarios:
@@ -21,10 +21,9 @@ generated:
     when:
       packet: NewNavigatorInit
     expected:
-      status: unknown
-      confidence: unknown
-    needs_evidence: an official capture of NewNavigatorInit succeeding, with every packet the server sends back and in what order
-    executable: false
+      status: success
+      confidence: capture_confirmed
+    executable: true
     claims:
     - origin: vortex
       authority: vortex_emulator
@@ -44,7 +43,18 @@ generated:
       - NavigatorSavedSearches
       - UserEventCats
       evidence: ev_b4979eab29b5
+    - origin: capture (1 observations)
+      authority: official_capture
+      outcome: success
+      emits: []
+      evidence: ev_ae6dcb1615c1
   evidence:
+  - id: ev_ae6dcb1615c1
+    kind: capture
+    authority: official_capture
+    origin: capture
+    source: docs/habbo-specs/evidence/captures
+    symbol: NewNavigatorInit
   - id: ev_b4979eab29b5
     kind: reference_handler
     authority: reference_emulator

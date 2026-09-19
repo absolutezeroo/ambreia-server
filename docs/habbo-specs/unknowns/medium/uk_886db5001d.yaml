@@ -10,7 +10,7 @@
 
 spec: unknown
 spec_version: 1
-generated_digest: "sha256:3ab244ed7a625e244cbeba38900bdef718f2e34ec0b01ed92731751c16dc65b5"
+generated_digest: "sha256:4c0de6fc513f4bcd6219b0910cb955677c1b7d358fc34ba52ea27cb20f8b2252"
 generated:
   id: uk_886db5001d
   subject: "inventory.redeem_purchasable_clothing: who receives FurniListRemove"
@@ -25,6 +25,6 @@ generated:
     origin: vortex
     source: Vortex.Players/Grains/Modules/PlayerInventoryModule.cs
     symbol: PlayerInventoryModule
-    line: 78
+    line: 120
 verified: {}
 manual: {}

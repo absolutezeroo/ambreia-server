@@ -10,7 +10,7 @@
 
 spec: scenarios
 spec_version: 1
-generated_digest: "sha256:da65b2d6d756d72da3f002312750da0c8c53174684d0ea0eaefb3b665941c37f"
+generated_digest: "sha256:80f7b97372aa529e92faf81ae53d368661f4c04eed61bec7dbe2e4e57130e312"
 generated:
   feature: inventory.avatar_effect_selected
   scenarios:
@@ -204,6 +204,6 @@ generated:
     origin: vortex
     source: Vortex.Rooms/Grains/Modules/RoomAvatarModule.cs
     symbol: RoomAvatarModule
-    line: 622
+    line: 621
 verified: {}
 manual: {}

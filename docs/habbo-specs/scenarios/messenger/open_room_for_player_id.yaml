@@ -10,7 +10,7 @@
 
 spec: scenarios
 spec_version: 1
-generated_digest: "sha256:10b054ee73cce0f43960f25c4fbe7aeac262560f4fccd03f38e41b29917cfe93"
+generated_digest: "sha256:878a5005d44081f7490d5f83b73ca73ea850646f7a07b63ed8e2eccd56f48e7a"
 generated:
   feature: messenger.open_room_for_player_id
   scenarios:
@@ -329,16 +329,16 @@ generated:
       - Whisper
       evidence: ev_b3f57a983a5e
   - scenario: messenger.open_room_for_player_id.guard_8
-    title: "open room for player id: the guard 'pendingRoom.RoomId == roomId' holds"
+    title: "open room for player id: the guard 'pendingRoom.RoomId == roomId && !pendingRoom.Approved' holds"
     given:
-      guard: pendingRoom.RoomId == roomId
+      guard: pendingRoom.RoomId == roomId && !pendingRoom.Approved
       guard_holds: "true"
     when:
       packet: VisitUser
     expected:
       status: unknown
       confidence: unknown
-    needs_evidence: "an official capture of VisitUser sent while 'pendingRoom.RoomId == roomId' holds: does the server reply, stay silent, or disconnect?"
+    needs_evidence: "an official capture of VisitUser sent while 'pendingRoom.RoomId == roomId && !pendingRoom.Approved' holds: does the server reply, stay silent, or disconnect?"
     executable: false
     claims:
     - origin: vortex
@@ -459,7 +459,7 @@ generated:
     origin: vortex
     source: Vortex.Rooms/RoomService.cs
     symbol: RoomService
-    line: 146
+    line: 153
   - id: ev_7f41f2bdde62
     kind: emulator_flow
     authority: vortex_emulator

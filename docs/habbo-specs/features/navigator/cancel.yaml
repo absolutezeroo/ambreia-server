@@ -10,7 +10,7 @@
 
 spec: feature
 spec_version: 1
-generated_digest: "sha256:e8b8b86dfc04a3958428e4949a4a4ec279108fb9d4d592b36c4108da6ea0fc28"
+generated_digest: "sha256:b6fe64f6ff52ecbbeb335662a44cdd44f43bcec59b7b26be2c739c1ba3bc34c3"
 generated:
   id: navigator.cancel
   domain: navigator
@@ -79,7 +79,7 @@ generated:
     origin: vortex
     source: Vortex.Rooms/RoomAdvertisementService.cs
     symbol: RoomAdvertisementService
-    line: 75
+    line: 112
   - id: ev_9c556fe9a1d3
     kind: emulator_handler
     authority: vortex_emulator

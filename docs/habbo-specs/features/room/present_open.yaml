@@ -10,7 +10,7 @@
 
 spec: feature
 spec_version: 1
-generated_digest: "sha256:4f96070a3ecaef13da488cd54ee00e946063697be82275c906c4507bdbaf9288"
+generated_digest: "sha256:c42707a31f44bf992c819447c64c5af7080b8593c7005927002d488be14a7632"
 generated:
   id: room.present_open
   domain: room
@@ -238,7 +238,7 @@ generated:
     origin: vortex
     source: Vortex.Rooms/Grains/RoomGrain.Furni.Interactive.cs
     symbol: RoomGrain
-    line: 485
+    line: 552
   - id: ev_7a660921f135
     kind: emulator_flow
     authority: vortex_emulator
@@ -280,7 +280,7 @@ generated:
     origin: vortex
     source: Vortex.Inventory/Grains/InventoryGrain.Furni.cs
     symbol: InventoryGrain
-    line: 162
+    line: 163
   - id: ev_d0f936c872c4
     kind: emulator_handler
     authority: vortex_emulator
@@ -301,7 +301,7 @@ generated:
     origin: vortex
     source: Vortex.Players/Grains/Modules/PlayerInventoryModule.cs
     symbol: PlayerInventoryModule
-    line: 84
+    line: 126
   - id: ev_dfd698b29c69
     kind: emulator_flow
     authority: vortex_emulator

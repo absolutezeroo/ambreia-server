@@ -10,7 +10,7 @@
 
 spec: unknown
 spec_version: 1
-generated_digest: "sha256:c3e93b031692de45bfd2a2158444875b870de9fc1048845e16c8f5ee2ab4604f"
+generated_digest: "sha256:0b952bed55407b0c9879af93fde1ae5ba5c5e3a1d3b0bf941d7396d0c6a29ab0"
 generated:
   id: uk_49fe014f56
   subject: "room.delete_room: what the server sends when it refuses"
@@ -25,7 +25,7 @@ generated:
     origin: vortex
     source: Vortex.Rooms/Grains/RoomGrain.Settings.cs
     symbol: RoomGrain
-    line: 211
+    line: 213
   - id: ev_34bf3ac088e2
     kind: emulator_flow
     authority: vortex_emulator
@@ -109,7 +109,7 @@ generated:
     origin: vortex
     source: Vortex.Rooms/Grains/RoomGrain.cs
     symbol: RoomGrain
-    line: 294
+    line: 296
   - id: ev_c26714967e6b
     kind: emulator_flow
     authority: vortex_emulator
@@ -130,7 +130,7 @@ generated:
     origin: vortex
     source: Vortex.Inventory/Grains/InventoryGrain.Furni.cs
     symbol: InventoryGrain
-    line: 62
+    line: 63
   - id: ev_db615f36b20b
     kind: emulator_flow
     authority: vortex_emulator
@@ -151,7 +151,7 @@ generated:
     origin: vortex
     source: Vortex.Rooms/Grains/Modules/RoomAvatarModule.cs
     symbol: RoomAvatarModule
-    line: 156
+    line: 155
   - id: ev_f13d6bcce744
     kind: emulator_flow
     authority: vortex_emulator

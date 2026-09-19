@@ -10,7 +10,7 @@
 
 spec: feature
 spec_version: 1
-generated_digest: "sha256:e88de046b12a06bbfa2e665a0cca36fcde0546e57413cb71fa70e4929ae83ccb"
+generated_digest: "sha256:83e6fcf3138050a13c7e5a2a8ce672d96f8d4971f890e420fb7e1df8536ee8b1"
 generated:
   id: inventory.confirm_pet_breeding
   domain: inventory
@@ -106,7 +106,7 @@ generated:
     origin: vortex
     source: Vortex.Rooms/Grains/RoomGrain.cs
     symbol: RoomGrain
-    line: 672
+    line: 700
   - id: ev_e3aeea05728f
     kind: emulator_flow
     authority: vortex_emulator

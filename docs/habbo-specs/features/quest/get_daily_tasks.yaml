@@ -10,7 +10,7 @@
 
 spec: feature
 spec_version: 1
-generated_digest: "sha256:4d3c115a172c408d6d2167ab3f8032bf08c7191deeebdba9cde05cfc65e99046"
+generated_digest: "sha256:ac685e0a161a01f26bbce3daf3e1d17df455dc6128870c6dc400d2f6d3bb4f49"
 generated:
   id: quest.get_daily_tasks
   domain: quest
@@ -21,7 +21,7 @@ generated:
     vortex: true
     references: []
   official_behavior:
-    status: unknown
+    status: capture_confirmed
   flow:
   - order: 0
     layer: handler

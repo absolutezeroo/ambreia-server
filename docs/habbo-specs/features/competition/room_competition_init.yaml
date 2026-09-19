@@ -10,7 +10,7 @@
 
 spec: feature
 spec_version: 1
-generated_digest: "sha256:6cd0bdda175bb17d054e0f56693ed6eba8d54afd892fc9590b0002045f034b47"
+generated_digest: "sha256:b5832e5a16054f7e7c24487fc82bf3677fb757d2015cb245e0fc3bd9a91ed165"
 generated:
   id: competition.room_competition_init
   domain: competition
@@ -21,7 +21,7 @@ generated:
     vortex: false
     references: []
   official_behavior:
-    status: unknown
+    status: capture_confirmed
   flow:
   - order: 0
     layer: handler

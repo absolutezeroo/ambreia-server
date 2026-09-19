@@ -10,7 +10,7 @@
 
 spec: unknown
 spec_version: 1
-generated_digest: "sha256:f02cb48e48046dd64a1e242e6a8d5fff2a1f3f3bca499f97d52331dea9f73d9e"
+generated_digest: "sha256:5dc2b509070d289c933334e68f526f63fc8c803bcf81c7281cab320f8c4652c6"
 generated:
   id: uk_fb9a0f28c7
   subject: "room.chat: what the server sends when it refuses"
@@ -60,14 +60,14 @@ generated:
     origin: vortex
     source: Vortex.Rooms/Grains/RoomGrain.Avatar.cs
     symbol: RoomGrain
-    line: 502
+    line: 496
   - id: ev_b46938ec853d
     kind: emulator_flow
     authority: vortex_emulator
     origin: vortex
     source: Vortex.Rooms/Grains/RoomGrain.cs
     symbol: RoomGrain
-    line: 289
+    line: 291
   - id: ev_f0fbc7d68cc3
     kind: emulator_flow
     authority: vortex_emulator

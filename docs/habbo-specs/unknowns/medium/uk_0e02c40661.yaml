@@ -10,7 +10,7 @@
 
 spec: unknown
 spec_version: 1
-generated_digest: "sha256:14adb27b66a9cde73c45de7a9339a71b79378896cc7f069b887961136358cf62"
+generated_digest: "sha256:83a377a96ca695d60bee2759eda67f25c418a64578a085b3c8b2b3d3c3969e6f"
 generated:
   id: uk_0e02c40661
   subject: "messenger.decline_friend: what the server sends when it refuses"
@@ -46,6 +46,6 @@ generated:
     origin: vortex
     source: Vortex.Social/Grains/MessengerGrain.Friends.cs
     symbol: MessengerGrain
-    line: 347
+    line: 348
 verified: {}
 manual: {}

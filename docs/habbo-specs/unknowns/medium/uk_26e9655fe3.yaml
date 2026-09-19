@@ -10,7 +10,7 @@
 
 spec: unknown
 spec_version: 1
-generated_digest: "sha256:50c66e9dd298641c72b8bfba008579bf37800d08ee7d9d3a17cd0073058080cd"
+generated_digest: "sha256:14cd199193c4e370b8f760e18a9d74e9e036476b5ff7ae91641a6c3a0aca939d"
 generated:
   id: uk_26e9655fe3
   subject: "room.add_spam_wall_post_it: what the server sends when it refuses"
@@ -32,7 +32,7 @@ generated:
     origin: vortex
     source: Vortex.Rooms/Grains/RoomGrain.Furni.Interactive.cs
     symbol: RoomGrain
-    line: 684
+    line: 751
   - id: ev_662d9577a1fb
     kind: emulator_handler
     authority: vortex_emulator

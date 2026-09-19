@@ -10,7 +10,7 @@
 
 spec: unknown
 spec_version: 1
-generated_digest: "sha256:a417e73d598fdfa7deaeca0666be67e0a70a2d86bf3559973bfe80f767d2f78c"
+generated_digest: "sha256:a9e72d0a5d1a8b4d94233985a293713cc66dde727fe126b175b5290191627404"
 generated:
   id: uk_cab1e4c8ef
   subject: "moderation.resolve_for_player: what the server sends when it refuses"
@@ -144,14 +144,14 @@ generated:
     origin: vortex
     source: Vortex.Rooms/Grains/RoomGrain.Avatar.cs
     symbol: RoomGrain
-    line: 523
+    line: 517
   - id: ev_b46938ec853d
     kind: emulator_flow
     authority: vortex_emulator
     origin: vortex
     source: Vortex.Rooms/Grains/RoomGrain.cs
     symbol: RoomGrain
-    line: 268
+    line: 270
   - id: ev_bb859d4f21b2
     kind: emulator_flow
     authority: vortex_emulator
@@ -214,7 +214,7 @@ generated:
     origin: vortex
     source: Vortex.Rooms/Grains/Modules/RoomAvatarModule.cs
     symbol: RoomAvatarModule
-    line: 402
+    line: 401
   - id: ev_f13d6bcce744
     kind: emulator_flow
     authority: vortex_emulator

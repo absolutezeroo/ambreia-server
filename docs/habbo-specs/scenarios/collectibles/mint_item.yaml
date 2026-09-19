@@ -10,7 +10,7 @@
 
 spec: scenarios
 spec_version: 1
-generated_digest: "sha256:47fea17b0cb2f976b43233df72dbe351cb2c2e14d9d5fcdfb36de132dbce5649"
+generated_digest: "sha256:add3c9e63fffd715a4bfb317d1ee067f287b95de3061686f0eab221002000576"
 generated:
   feature: collectibles.mint_item
   scenarios:
@@ -249,6 +249,6 @@ generated:
     origin: vortex
     source: Vortex.Inventory/Grains/InventoryGrain.Furni.cs
     symbol: InventoryGrain
-    line: 118
+    line: 119
 verified: {}
 manual: {}

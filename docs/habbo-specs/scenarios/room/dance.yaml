@@ -10,7 +10,7 @@
 
 spec: scenarios
 spec_version: 1
-generated_digest: "sha256:8f24d9ba47b159f0ac635a988101d07489f42ae4ebb61cf06aa1fdcb2ef594c6"
+generated_digest: "sha256:f3312b946cb81a742311b0cdfb91b14c528abef52d9291ee3131f88d07692b45"
 generated:
   feature: room.dance
   scenarios:
@@ -248,6 +248,6 @@ generated:
     origin: vortex
     source: Vortex.Rooms/Grains/Modules/RoomAvatarModule.cs
     symbol: RoomAvatarModule
-    line: 554
+    line: 553
 verified: {}
 manual: {}

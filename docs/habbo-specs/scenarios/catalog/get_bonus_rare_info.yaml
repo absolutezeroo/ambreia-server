@@ -10,7 +10,7 @@
 
 spec: scenarios
 spec_version: 1
-generated_digest: "sha256:3893746ebeee55f3d80ceba7bbaab9485ff11b76e3dff1a574f740e2b7dbaf6c"
+generated_digest: "sha256:964d61181f4fac5c8b49707145be7f1bfa3d385aeed545e8d7a58c1093ad2105"
 generated:
   feature: catalog.get_bonus_rare_info
   scenarios:
@@ -21,10 +21,9 @@ generated:
     when:
       packet: GetBonusRareInfo
     expected:
-      status: unknown
-      confidence: unknown
-    needs_evidence: an official capture of GetBonusRareInfo succeeding, with every packet the server sends back and in what order
-    executable: false
+      status: success
+      confidence: capture_confirmed
+    executable: true
     claims:
     - origin: vortex
       authority: vortex_emulator
@@ -38,7 +37,18 @@ generated:
       emits:
       - BonusRareInfo
       evidence: ev_f05a8473dc69
+    - origin: capture (2 observations)
+      authority: official_capture
+      outcome: success
+      emits: []
+      evidence: ev_28f8afb922ca
   evidence:
+  - id: ev_28f8afb922ca
+    kind: capture
+    authority: official_capture
+    origin: capture
+    source: docs/habbo-specs/evidence/captures
+    symbol: GetBonusRareInfo
   - id: ev_f05a8473dc69
     kind: reference_handler
     authority: reference_emulator

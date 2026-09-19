@@ -10,7 +10,7 @@
 
 spec: scenarios
 spec_version: 1
-generated_digest: "sha256:264ae5c4466e000fdd5b466726acf203086bd89f9e93a8d9cd19c3fc98ab60ad"
+generated_digest: "sha256:961965f8fb1c5334505f2d6e52a43471c8e2671ca7e360d7b98e363760f5566b"
 generated:
   feature: messenger.messenger_init
   scenarios:
@@ -113,10 +113,9 @@ generated:
     when:
       packet: MessengerInit
     expected:
-      status: unknown
-      confidence: unknown
-    needs_evidence: an official capture of MessengerInit succeeding, with every packet the server sends back and in what order
-    executable: false
+      status: success
+      confidence: capture_confirmed
+    executable: true
     claims:
     - origin: vortex
       authority: vortex_emulator
@@ -131,7 +130,18 @@ generated:
       outcome: ignored
       emits: []
       evidence: ev_60115188cffb
+    - origin: capture (1 observations)
+      authority: official_capture
+      outcome: success
+      emits: []
+      evidence: ev_a4a02251a7da
   evidence:
+  - id: ev_a4a02251a7da
+    kind: capture
+    authority: official_capture
+    origin: capture
+    source: docs/habbo-specs/evidence/captures
+    symbol: MessengerInit
   - id: ev_60115188cffb
     kind: reference_handler
     authority: reference_emulator

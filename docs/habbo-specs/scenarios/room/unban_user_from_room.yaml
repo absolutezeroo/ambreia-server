@@ -10,7 +10,7 @@
 
 spec: scenarios
 spec_version: 1
-generated_digest: "sha256:390f1513d7deacbbdc5d4a92b8a9d860a84fc6774c15fcd0a1ac44f5b939c7f2"
+generated_digest: "sha256:0fce281a901c24fe9c21128457eff8c38116765908bf52e7cb48180e20bdfdc6"
 generated:
   feature: room.unban_user_from_room
   scenarios:
@@ -60,6 +60,29 @@ generated:
       outcome: ignored
       emits: []
       evidence: ev_726f4116c803
+  - scenario: room.unban_user_from_room.guard_10
+    title: "unban user from room: the guard '_registry is null' holds"
+    given:
+      guard: _registry is null
+      guard_holds: "true"
+    when:
+      packet: UnbanUserFromRoom
+    expected:
+      status: unknown
+      confidence: unknown
+    needs_evidence: "an official capture of UnbanUserFromRoom sent while '_registry is null' holds: does the server reply, stay silent, or disconnect?"
+    executable: false
+    claims:
+    - origin: vortex
+      authority: vortex_emulator
+      outcome: ignored
+      emits: []
+      evidence: ev_34bf3ac088e2
+    - origin: habbo-arcturus-daybreak
+      authority: reference_emulator
+      outcome: ignored
+      emits: []
+      evidence: ev_726f4116c803
   - scenario: room.unban_user_from_room.guard_2
     title: "unban user from room: the guard '!await RoomModerationGuard .CanActOnTargetAsync( permissi...' holds"
     given:
@@ -84,6 +107,30 @@ generated:
       emits: []
       evidence: ev_726f4116c803
   - scenario: room.unban_user_from_room.guard_3
+    title: "unban user from room: the guard 'applied' holds"
+    given:
+      guard: applied
+      guard_holds: "true"
+    when:
+      packet: UnbanUserFromRoom
+    expected:
+      status: unknown
+      confidence: unknown
+    needs_evidence: "an official capture of UnbanUserFromRoom sent while 'applied' holds: does the server reply, stay silent, or disconnect?"
+    executable: false
+    claims:
+    - origin: vortex
+      authority: vortex_emulator
+      outcome: rejected
+      emits:
+      - UserUnbannedFromRoom
+      evidence: ev_420bde327a4b
+    - origin: habbo-arcturus-daybreak
+      authority: reference_emulator
+      outcome: ignored
+      emits: []
+      evidence: ev_726f4116c803
+  - scenario: room.unban_user_from_room.guard_4
     title: "unban user from room: the guard 'ModerationPolicy.CanActOnTarget(actorPermissions, targetP...' holds"
     given:
       guard: ModerationPolicy.CanActOnTarget(actorPermissions, targetPermissions)
@@ -106,7 +153,7 @@ generated:
       outcome: ignored
       emits: []
       evidence: ev_726f4116c803
-  - scenario: room.unban_user_from_room.guard_4
+  - scenario: room.unban_user_from_room.guard_5
     title: "unban user from room: the guard 'playerId <= 0' holds"
     given:
       guard: playerId <= 0
@@ -129,7 +176,7 @@ generated:
       outcome: ignored
       emits: []
       evidence: ev_726f4116c803
-  - scenario: room.unban_user_from_room.guard_5
+  - scenario: room.unban_user_from_room.guard_6
     title: "unban user from room: the guard 'actorCtx.PlayerId <= 0 || targetPlayerId <= 0 || actorCtx...' holds"
     given:
       guard: actorCtx.PlayerId <= 0 || targetPlayerId <= 0 || actorCtx.RoomId != _roomGrain._state.RoomId
@@ -152,7 +199,7 @@ generated:
       outcome: ignored
       emits: []
       evidence: ev_726f4116c803
-  - scenario: room.unban_user_from_room.guard_6
+  - scenario: room.unban_user_from_room.guard_7
     title: "unban user from room: the guard '!await CanModerateAsync( actorCtx, _roomGrain._state.Room...' holds"
     given:
       guard: "!await CanModerateAsync( actorCtx, _roomGrain._state.RoomSnapshot.ModSettings.WhoCanBan, ModerationAction.Ban )"
@@ -175,7 +222,7 @@ generated:
       outcome: ignored
       emits: []
       evidence: ev_726f4116c803
-  - scenario: room.unban_user_from_room.guard_7
+  - scenario: room.unban_user_from_room.guard_8
     title: "unban user from room: the guard 'roomId <= 0 || playerId <= 0' holds"
     given:
       guard: roomId <= 0 || playerId <= 0
@@ -198,7 +245,7 @@ generated:
       outcome: ignored
       emits: []
       evidence: ev_726f4116c803
-  - scenario: room.unban_user_from_room.guard_8
+  - scenario: room.unban_user_from_room.guard_9
     title: "unban user from room: the guard 'existing is null' holds"
     given:
       guard: existing is null
@@ -221,29 +268,6 @@ generated:
       outcome: ignored
       emits: []
       evidence: ev_726f4116c803
-  - scenario: room.unban_user_from_room.guard_9
-    title: "unban user from room: the guard '_registry is null' holds"
-    given:
-      guard: _registry is null
-      guard_holds: "true"
-    when:
-      packet: UnbanUserFromRoom
-    expected:
-      status: unknown
-      confidence: unknown
-    needs_evidence: "an official capture of UnbanUserFromRoom sent while '_registry is null' holds: does the server reply, stay silent, or disconnect?"
-    executable: false
-    claims:
-    - origin: vortex
-      authority: vortex_emulator
-      outcome: ignored
-      emits: []
-      evidence: ev_34bf3ac088e2
-    - origin: habbo-arcturus-daybreak
-      authority: reference_emulator
-      outcome: ignored
-      emits: []
-      evidence: ev_726f4116c803
   - scenario: room.unban_user_from_room.success
     title: "unban user from room: the request is accepted"
     given:
@@ -258,8 +282,9 @@ generated:
     claims:
     - origin: vortex
       authority: vortex_emulator
-      outcome: ignored
-      emits: []
+      outcome: success
+      emits:
+      - UserUnbannedFromRoom
       evidence: ev_2747c101d5f4
     - origin: habbo-arcturus-daybreak
       authority: reference_emulator
@@ -295,7 +320,7 @@ generated:
     origin: vortex
     source: Vortex.PacketHandlers/Room/Action/UnbanUserFromRoomMessageHandler.cs
     symbol: UnbanUserFromRoomMessageHandler
-    line: 27
+    line: 28
   - id: ev_743940bb69f7
     kind: emulator_flow
     authority: vortex_emulator

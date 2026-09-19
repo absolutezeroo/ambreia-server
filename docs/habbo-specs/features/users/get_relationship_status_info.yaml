@@ -10,7 +10,7 @@
 
 spec: feature
 spec_version: 1
-generated_digest: "sha256:f5eef72913d4a66bf90240ec14642c5c6b0fddbc84bcbdc8bd755b85b90f321a"
+generated_digest: "sha256:4fa7206f46383305208880544df5640d6dde05e3b268983742c0573eda65baca"
 generated:
   id: users.get_relationship_status_info
   domain: users
@@ -22,7 +22,7 @@ generated:
     references:
     - habbo-arcturus-daybreak
   official_behavior:
-    status: unknown
+    status: capture_confirmed
   flow:
   - order: 0
     layer: handler

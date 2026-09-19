@@ -10,7 +10,7 @@
 
 spec: feature
 spec_version: 1
-generated_digest: "sha256:c9075b0cda28422115868952086e20200810e4bee129a97756c740c5903aa5de"
+generated_digest: "sha256:df6b738a9d85babf34fc3ab1a2061952f7d093ce5b5d2f047902a96aa90bc702"
 generated:
   id: navigator.edit
   domain: navigator
@@ -97,7 +97,7 @@ generated:
     origin: vortex
     source: Vortex.Rooms/RoomAdvertisementService.cs
     symbol: RoomAdvertisementService
-    line: 20
+    line: 21
   scenarios:
   - navigator.edit.guard_0
   - navigator.edit.guard_1

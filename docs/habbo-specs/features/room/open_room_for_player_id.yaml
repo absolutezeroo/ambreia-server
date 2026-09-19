@@ -10,7 +10,7 @@
 
 spec: feature
 spec_version: 1
-generated_digest: "sha256:b8c3ce61a812c0754928a88c1400c8205fff7285a31cd717a6abbd0fd97bad47"
+generated_digest: "sha256:5624e2003fba303a07efd77ad8352a7343ec68489e0ebd0b148c2a2551bbb8a5"
 generated:
   id: room.open_room_for_player_id
   domain: room
@@ -245,7 +245,7 @@ generated:
     on_fail: send_and_return
     observed_in: vortex
     evidence: ev_7c6cea3bc17b
-  - expression: pendingRoom.RoomId == roomId
+  - expression: pendingRoom.RoomId == roomId && !pendingRoom.Approved
     on_fail: return
     observed_in: vortex
     evidence: ev_7c6cea3bc17b
@@ -689,7 +689,7 @@ generated:
     origin: vortex
     source: Vortex.Rooms/RoomService.cs
     symbol: RoomService
-    line: 62
+    line: 64
   - id: ev_7f41f2bdde62
     kind: emulator_flow
     authority: vortex_emulator
@@ -766,7 +766,7 @@ generated:
     origin: vortex
     source: Vortex.Rooms/Grains/RoomGrain.cs
     symbol: RoomGrain
-    line: 294
+    line: 296
   - id: ev_b4a557a65d81
     kind: emulator_flow
     authority: vortex_emulator
@@ -815,7 +815,7 @@ generated:
     origin: vortex
     source: Vortex.Rooms/Grains/Modules/RoomAvatarModule.cs
     symbol: RoomAvatarModule
-    line: 156
+    line: 155
   - id: ev_ec0b4c2b0a97
     kind: emulator_flow
     authority: vortex_emulator

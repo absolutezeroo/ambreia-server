@@ -10,7 +10,7 @@
 
 spec: scenarios
 spec_version: 1
-generated_digest: "sha256:ce841cc9f0b65f3590508a0a3e38ebe496f782891649c0fac22e8cd48b8ab4ea"
+generated_digest: "sha256:69582905ceb97e98363383d0d104d4b0a92f9d81d290eb6b00de5d059281c366"
 generated:
   feature: advertisement.get_interstitial
   scenarios:
@@ -28,8 +28,9 @@ generated:
     claims:
     - origin: vortex
       authority: vortex_emulator
-      outcome: ignored
-      emits: []
+      outcome: success
+      emits:
+      - Interstitial
       evidence: ev_be806705584a
   evidence:
   - id: ev_be806705584a
@@ -38,6 +39,6 @@ generated:
     origin: vortex
     source: Vortex.PacketHandlers/Advertisement/GetInterstitialMessageHandler.cs
     symbol: GetInterstitialMessageHandler
-    line: 8
+    line: 18
 verified: {}
 manual: {}

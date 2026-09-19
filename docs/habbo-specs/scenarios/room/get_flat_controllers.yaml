@@ -10,7 +10,7 @@
 
 spec: scenarios
 spec_version: 1
-generated_digest: "sha256:c96f3bd3f539e8576433b52a2407717a7af616e7ba3aed04420d1a9ea87b920b"
+generated_digest: "sha256:56a59d09e1a611ba31af84c0541d744d11ef1e6571191b008214649e51f4178e"
 generated:
   feature: room.get_flat_controllers
   scenarios:
@@ -69,10 +69,9 @@ generated:
     when:
       packet: GetFlatControllers
     expected:
-      status: unknown
-      confidence: unknown
-    needs_evidence: an official capture of GetFlatControllers succeeding, with every packet the server sends back and in what order
-    executable: false
+      status: success
+      confidence: capture_confirmed
+    executable: true
     claims:
     - origin: vortex
       authority: vortex_emulator
@@ -86,7 +85,18 @@ generated:
       emits:
       - FlatControllers
       evidence: ev_45d7f642be3c
+    - origin: capture (1 observations)
+      authority: official_capture
+      outcome: success
+      emits: []
+      evidence: ev_4e42e40bea8c
   evidence:
+  - id: ev_4e42e40bea8c
+    kind: capture
+    authority: official_capture
+    origin: capture
+    source: docs/habbo-specs/evidence/captures
+    symbol: GetFlatControllers
   - id: ev_45d7f642be3c
     kind: reference_handler
     authority: reference_emulator
@@ -101,7 +111,7 @@ generated:
     origin: vortex
     source: Vortex.Rooms/Grains/RoomGrain.Settings.cs
     symbol: RoomGrain
-    line: 307
+    line: 309
   - id: ev_392abf549ae0
     kind: emulator_flow
     authority: vortex_emulator

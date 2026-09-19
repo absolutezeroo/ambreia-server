@@ -10,7 +10,7 @@
 
 spec: feature
 spec_version: 1
-generated_digest: "sha256:bace489e9701c2a713babbf1afae6281dcfc6ebe857d84d03303061bdac3b2cf"
+generated_digest: "sha256:f20ee880dcf42a14258ae14618014a7664ea1d89f58387256e0ae9db5d278aa1"
 generated:
   id: inventory.avatar_effect_selected
   domain: inventory
@@ -159,14 +159,14 @@ generated:
     origin: vortex
     source: Vortex.Rooms/Grains/RoomGrain.cs
     symbol: RoomGrain
-    line: 294
+    line: 296
   - id: ev_e6fef545a42a
     kind: emulator_flow
     authority: vortex_emulator
     origin: vortex
     source: Vortex.Rooms/Grains/Modules/RoomAvatarModule.cs
     symbol: RoomAvatarModule
-    line: 616
+    line: 615
   scenarios:
   - inventory.avatar_effect_selected.guard_0
   - inventory.avatar_effect_selected.guard_1

@@ -10,7 +10,7 @@
 
 spec: scenarios
 spec_version: 1
-generated_digest: "sha256:8cd25d15c9183627eccf58fde1b215d6b410b01df1037457d243597fbe95c8e6"
+generated_digest: "sha256:ecfad932c487c02b44cecf02c92363aac94920e149aeb2862d7ec6d27afad182"
 generated:
   feature: handshake.unique_id
   scenarios:
@@ -21,10 +21,9 @@ generated:
     when:
       packet: UniqueID
     expected:
-      status: unknown
-      confidence: unknown
-    needs_evidence: an official capture of UniqueID succeeding, with every packet the server sends back and in what order
-    executable: false
+      status: success
+      confidence: capture_confirmed
+    executable: true
     claims:
     - origin: vortex
       authority: vortex_emulator
@@ -37,7 +36,18 @@ generated:
       emits:
       - UniqueMachineID
       evidence: ev_6afee80ccca8
+    - origin: capture (1 observations)
+      authority: official_capture
+      outcome: success
+      emits: []
+      evidence: ev_81f30603af65
   evidence:
+  - id: ev_81f30603af65
+    kind: capture
+    authority: official_capture
+    origin: capture
+    source: docs/habbo-specs/evidence/captures
+    symbol: UniqueID
   - id: ev_6afee80ccca8
     kind: reference_handler
     authority: reference_emulator

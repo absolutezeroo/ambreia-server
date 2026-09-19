@@ -10,7 +10,7 @@
 
 spec: feature
 spec_version: 1
-generated_digest: "sha256:f60e7e9f8c0957c4552208c37b64a49f2d56fceb0797da370d39d9bfae3c6789"
+generated_digest: "sha256:76745b96b89666b520a32eb8f84ccf054b70d10ab0b531c96748cef40aa3c771"
 generated:
   id: users.get_ignored_users
   domain: users
@@ -22,7 +22,7 @@ generated:
     references:
     - habbo-arcturus-daybreak
   official_behavior:
-    status: unknown
+    status: capture_confirmed
   flow:
   - order: 0
     layer: handler

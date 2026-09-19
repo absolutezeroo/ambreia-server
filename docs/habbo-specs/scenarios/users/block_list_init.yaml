@@ -10,7 +10,7 @@
 
 spec: scenarios
 spec_version: 1
-generated_digest: "sha256:5661d63e3fd70f5a2acab3d888be4694bd3924a39b803f625b2e3b05f4e65fb4"
+generated_digest: "sha256:afc4767cbe802600c4e039ba79f210d6ffe273a8c6a62efd3c559407117939aa"
 generated:
   feature: users.block_list_init
   scenarios:
@@ -39,10 +39,9 @@ generated:
     when:
       packet: BlockListInit
     expected:
-      status: unknown
-      confidence: unknown
-    needs_evidence: an official capture of BlockListInit succeeding, with every packet the server sends back and in what order
-    executable: false
+      status: success
+      confidence: capture_confirmed
+    executable: true
     claims:
     - origin: vortex
       authority: vortex_emulator
@@ -50,7 +49,18 @@ generated:
       emits:
       - BlockList
       evidence: ev_48ce07eab040
+    - origin: capture (1 observations)
+      authority: official_capture
+      outcome: success
+      emits: []
+      evidence: ev_43cfb1e9dd50
   evidence:
+  - id: ev_43cfb1e9dd50
+    kind: capture
+    authority: official_capture
+    origin: capture
+    source: docs/habbo-specs/evidence/captures
+    symbol: BlockListInit
   - id: ev_48ce07eab040
     kind: emulator_flow
     authority: vortex_emulator

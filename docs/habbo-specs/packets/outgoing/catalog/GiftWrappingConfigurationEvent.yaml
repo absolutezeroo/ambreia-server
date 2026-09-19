@@ -62,7 +62,7 @@ verified:
     evidence: "_SafeCls_3083.as:60 - length-prefixed int array. PurchaseConfirmationDialog.as:812 picks one at random, and line 819 appends it to box_types whether or not the array had anything in it, so an empty array leaves an uninitialised zero in the box row."
 manual:
   official_values:
-    source: "capture of habbo.fr, 2026-09-18, on opening the shop"
+    source: capture of habbo.fr, 2026-09-18, on opening the shop
     note: "true, 1, [3083..3092], [0,1,2,3,4,5,6,8], [0..10], [187..193]. The stuff types are that hotel's own furniture class ids and do not transfer; the box and ribbon indices do, because the client resolves them against its own art. Box 7 is the one index the official server leaves out."
   round_trip:
     note: "Whatever is advertised as a stuff type comes back on the purchase packet (PurchaseConfirmationDialog.as:947 calls purchaseProductAsGift with it), so the server has to accept the same ids it sent. Reading it as an index on the way back in resolves every parcel to the same furniture - which is what Vortex did until 2026-09-18."
