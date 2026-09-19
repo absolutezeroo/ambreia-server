@@ -100,7 +100,7 @@ internal sealed class CameraSpriteResolver(
 
             byte[]? surface =
                 ReadLocal(asset)
-                ?? await library.GetSpriteAsync(asset, limits, ct).ConfigureAwait(false);
+                ?? await library.GetRoomAssetAsync(asset, limits, ct).ConfigureAwait(false);
 
             bundles++;
 

@@ -329,17 +329,22 @@ public sealed class CameraSceneRendererTests
         /// </summary>
         public List<ImmutableArray<ImmutableArray<string>>> Textured { get; } = [];
 
+        /// <summary>The masks each textured plane was asked to punch out of itself.</summary>
+        public List<ImmutableArray<CameraSceneMask>> Masks { get; } = [];
+
         public bool FillTexturedQuad(
             ImmutableArray<CameraScenePoint> sortedCorners,
             int argb,
             ImmutableArray<ImmutableArray<string>> columns,
             bool bottomAligned,
-            bool mirrored
+            bool mirrored,
+            ImmutableArray<CameraSceneMask> masks
         )
         {
             if (!columns.IsDefaultOrEmpty)
             {
                 Textured.Add(columns);
+                Masks.Add(masks);
                 Calls.Add($"texture:{argb}:{(mirrored ? "wall" : "floor")}");
             }
 

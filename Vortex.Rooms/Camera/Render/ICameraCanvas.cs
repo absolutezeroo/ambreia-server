@@ -60,6 +60,12 @@ public interface ICameraCanvas : IDisposable
     /// bottom of the source image and the client paints walls in a mirrored frame, so without this a
     /// wall comes out upside-down and any asymmetric pattern comes out reversed.
     /// </param>
+    /// <param name="masks">
+    /// The holes cut out of the plane — a doorway, a window. A mask does not draw: wherever its
+    /// artwork has any alpha, the plane's texture is erased, so what shows through is whatever the
+    /// room already painted behind it. Applied before <paramref name="mirrored"/> takes effect, in
+    /// the texture's own frame, so the flip carries the cut-outs to where the room view puts them.
+    /// </param>
     /// <returns>
     /// False when the plane could not be textured — no column resolved, or the plane has no area.
     /// The caller then fills it flat, which is what a photo did before textures were drawn at all.
@@ -69,7 +75,8 @@ public interface ICameraCanvas : IDisposable
         int argb,
         ImmutableArray<ImmutableArray<string>> columns,
         bool bottomAligned,
-        bool mirrored
+        bool mirrored,
+        ImmutableArray<CameraSceneMask> masks
     );
 
     /// <summary>

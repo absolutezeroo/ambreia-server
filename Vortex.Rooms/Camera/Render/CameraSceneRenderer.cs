@@ -52,7 +52,8 @@ public sealed class CameraSceneRenderer(int maxDimension)
                     plane.Color,
                     plane.TextureColumns,
                     plane.BottomAligned,
-                    IsWall(plane)
+                    IsWall(plane),
+                    plane.Masks
                 )
             )
             {

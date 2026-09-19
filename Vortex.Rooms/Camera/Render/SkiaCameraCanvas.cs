@@ -101,7 +101,8 @@ internal sealed class SkiaCameraCanvas : ICameraCanvas
         int argb,
         ImmutableArray<ImmutableArray<string>> columns,
         bool bottomAligned,
-        bool mirrored
+        bool mirrored,
+        ImmutableArray<CameraSceneMask> masks
     )
     {
         if (sortedCorners.Length < 4 || columns.IsDefaultOrEmpty)
@@ -123,7 +124,7 @@ internal sealed class SkiaCameraCanvas : ICameraCanvas
             return false;
         }
 
-        using SKImage? texture = BuildTexture(columns, width, height, bottomAligned, argb);
+        using SKImage? texture = BuildTexture(columns, width, height, bottomAligned, argb, masks);
 
         if (texture is null)
         {
@@ -180,7 +181,8 @@ internal sealed class SkiaCameraCanvas : ICameraCanvas
         int width,
         int height,
         bool bottomAligned,
-        int argb
+        int argb,
+        ImmutableArray<CameraSceneMask> masks
     )
     {
         List<SKImage> strips = [];
@@ -244,6 +246,8 @@ internal sealed class SkiaCameraCanvas : ICameraCanvas
                 }
             }
 
+            PunchMasks(surface.Canvas, masks);
+
             return surface.Snapshot();
         }
         finally
@@ -252,6 +256,45 @@ internal sealed class SkiaCameraCanvas : ICameraCanvas
             {
                 strip.Dispose();
             }
+        }
+    }
+
+    /// <summary>
+    /// Erases the plane's texture wherever a mask's artwork has any alpha.
+    /// </summary>
+    /// <remarks>
+    /// <see cref="SKBlendMode.DstOut"/> is the whole operation: it keeps the destination only where
+    /// the source is transparent. A mask is not drawn and its own colours never appear — a doorway is
+    /// a hole through the wall, and what shows through it is whatever the room painted behind.
+    /// </remarks>
+    private void PunchMasks(SKCanvas canvas, ImmutableArray<CameraSceneMask> masks)
+    {
+        if (masks.IsDefaultOrEmpty)
+        {
+            return;
+        }
+
+        using SKPaint paint = new() { BlendMode = SKBlendMode.DstOut, IsAntialias = false };
+
+        foreach (CameraSceneMask mask in masks)
+        {
+            if (Resolve(mask.AssetName) is not { } artwork)
+            {
+                continue;
+            }
+
+            int saved = canvas.Save();
+
+            canvas.Translate((float)mask.Location.X, (float)mask.Location.Y);
+
+            if (mask.FlipH || mask.FlipV)
+            {
+                canvas.Scale(mask.FlipH ? -1 : 1, mask.FlipV ? -1 : 1);
+                canvas.Translate(mask.FlipH ? -artwork.Width : 0, mask.FlipV ? -artwork.Height : 0);
+            }
+
+            canvas.DrawImage(artwork, new SKPoint(0, 0), NearestNeighbour, paint);
+            canvas.RestoreToCount(saved);
         }
     }
 

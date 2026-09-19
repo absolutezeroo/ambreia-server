@@ -147,15 +147,6 @@ internal sealed class NitroSpriteLibrary(
             return null;
         }
 
-        // The room's own artwork -- floor and wall textures, the landscape behind a window, the
-        // doorway mask -- all live in one bundle whose name is fixed. Checked before the figuremap
-        // because these names are not parts and would otherwise fall through to the pet branch and
-        // ask for floor_texture.nitro.
-        if (IsRoomContent(assetName))
-        {
-            return Address(limits.AvatarAssetUrl, RoomContentBundle);
-        }
-
         FiguremapIndex figuremap = await FiguremapAsync(limits, ct).ConfigureAwait(false);
 
         if (figuremap.TryLibrary(assetName, out string? library) && library is not null)
@@ -175,10 +166,52 @@ internal sealed class NitroSpriteLibrary(
     /// </summary>
     private const string RoomContentBundle = "HabboRoomContent";
 
-    private static bool IsRoomContent(string assetName) =>
-        assetName.StartsWith("floor_texture", StringComparison.Ordinal)
-        || assetName.StartsWith("wall_texture", StringComparison.Ordinal)
-        || assetName.StartsWith("landscape_", StringComparison.Ordinal);
+    /// <summary>
+    /// An asset a <b>plane</b> named: a floor or wall texture, the landscape behind a window, or the
+    /// mask that punches a doorway out of a wall.
+    /// </summary>
+    /// <remarks>
+    /// Its own method rather than a branch inside <see cref="GetSpriteAsync"/>, because the bundle
+    /// cannot be told from the name. The textures are prefixed and look tractable; the masks are not
+    /// — <c>door_64</c> sits beside <c>bolly_wdw_wd_32</c>, <c>jp_window_32</c> and
+    /// <c>ads_twi_windw_32</c>, eighty-seven of them with nothing in common. What is certain is the
+    /// caller: a plane only ever names room content, so it says so instead of leaving a sniffer to
+    /// guess and, when it guesses wrong, to ask the asset host for <c>bolly_wdw_wd_32.nitro</c>.
+    /// </remarks>
+    public async Task<byte[]?> GetRoomAssetAsync(
+        string assetName,
+        CameraRenderLimits limits,
+        CancellationToken ct
+    )
+    {
+        if (limits.AvatarAssetUrl.Length == 0)
+        {
+            return null;
+        }
+
+        string key = $"{RoomContentBundle}/{assetName}";
+
+        if (_sprites.TryGetValue(key, out byte[]? cached))
+        {
+            return cached;
+        }
+
+        byte[]? asset = null;
+
+        if (Address(limits.AvatarAssetUrl, RoomContentBundle) is { } address)
+        {
+            Bundle? bundle = await BundleAsync(address, limits, ct).ConfigureAwait(false);
+
+            if (bundle is not null && bundle.Manifest.TryResolve(assetName, out NitroSpriteFrame f))
+            {
+                asset = Crop(bundle.Sheet, f);
+            }
+        }
+
+        _sprites[key] = asset;
+
+        return asset;
+    }
 
     private static NitroBundleAddress? Address(string baseUrl, string bundle)
     {

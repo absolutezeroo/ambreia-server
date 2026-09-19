@@ -78,7 +78,12 @@ public sealed class RenderARoomByHandTests
                     Raise(bottomNear, 110),
                     Raise(bottomFar, 110),
                     0x8E8E8E,
-                    WallTexture
+                    WallTexture,
+                    // One doorway, on one panel, so the hole is unmistakably a hole rather than a
+                    // texture that failed to load.
+                    y == 3
+                        ? DoorMask
+                        : ""
                 )
             );
         }
@@ -139,6 +144,7 @@ public sealed class RenderARoomByHandTests
 
     private const string FloorTexture = "floor_texture_64_1_floor_fuzzy1";
     private const string WallTexture = "wall_texture_64_0_wall_lively";
+    private const string DoorMask = "door_64";
 
     /// <summary>
     /// Every asset out of a real <c>HabboRoomContent.nitro</c>, cropped through the same manifest the
@@ -167,7 +173,7 @@ public sealed class RenderARoomByHandTests
 
         Dictionary<string, byte[]> surfaces = new(StringComparer.Ordinal);
 
-        foreach (string name in new[] { FloorTexture, WallTexture })
+        foreach (string name in new[] { FloorTexture, WallTexture, DoorMask })
         {
             if (!manifest!.TryResolve(name, out NitroSpriteFrame frame))
             {
@@ -232,14 +238,31 @@ public sealed class RenderARoomByHandTests
         CameraScenePoint right,
         CameraScenePoint far,
         int color,
-        string texture = ""
+        string texture = "",
+        string mask = ""
     ) =>
         new()
         {
             Z = 0,
             CornerPoints = SortQuadPoints(origin, left, right, far),
             Color = color,
-            Masks = [],
+            Masks =
+                mask.Length == 0
+                    ? []
+                    :
+                    [
+                        new CameraSceneMask
+                        {
+                            AssetName = mask,
+                            // Texture space, not screen space: a mask is punched out of the plane's
+                            // own image before that image is mapped onto the room. A wall panel one
+                            // tile wide is about 36 pixels across, so this has to be small — the
+                            // first attempt put it at x=60 and punched nothing at all.
+                            Location = new CameraScenePoint(0, 0),
+                            FlipH = false,
+                            FlipV = false,
+                        },
+                    ],
             TextureColumns =
                 texture.Length == 0
                     ? []

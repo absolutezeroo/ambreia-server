@@ -52,6 +52,9 @@ internal sealed class RoomPhotoRenderer(
             .. scene
                 .Planes.SelectMany(plane => plane.TextureColumns)
                 .SelectMany(column => column)
+                .Concat(
+                    scene.Planes.SelectMany(plane => plane.Masks).Select(mask => mask.AssetName)
+                )
                 .Where(asset => asset.Length != 0)
                 .Distinct(StringComparer.Ordinal),
         ];
