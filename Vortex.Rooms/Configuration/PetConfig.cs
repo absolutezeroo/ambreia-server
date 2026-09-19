@@ -81,6 +81,23 @@ public class PetConfig
     /// </summary>
     public int CommandHappinessReward { get; init; }
 
+    /// <summary>
+    /// How often a pet does as it is told, before the bonus below. A capture of the live hotel
+    /// (room-pet-commands-official-001) caught a level 8 pet ignoring four orders out of nine, each
+    /// with a line of its own, so the refusal is real -- but nine samples name no rate and no rule.
+    /// 70 is the figure Arcturus settled on, kept here as the assumption it is. Set it to 100 and a
+    /// pet always obeys, which is what this emulator did before.
+    /// </summary>
+    public int CommandObeyBaseChancePercent { get; init; } = 70;
+
+    /// <summary>What each level above a command's own requirement adds to the chance above. A pet
+    /// that has long outgrown a trick rarely refuses it.</summary>
+    public int CommandObeyChancePerLevelPercent { get; init; } = 5;
+
+    /// <summary>The ceiling on the two above. Never 100: a pet that cannot refuse is furniture.
+    /// </summary>
+    public int CommandObeyMaxChancePercent { get; init; } = 95;
+
     /// <summary>What a toy is worth. Habbo's guides say toys are what cheer a pet up; 25 is the
     /// figure Arcturus pays for a ball or a trampoline.</summary>
     public int ToyHappinessReward { get; init; } = 25;

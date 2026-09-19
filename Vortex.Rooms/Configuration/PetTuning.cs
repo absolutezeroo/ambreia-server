@@ -33,6 +33,10 @@ public sealed record PetTuning
     public const string ThirstThresholdKey = "pets.thirst_threshold";
     public const string RespectHappinessRewardKey = "pets.respect_happiness_reward";
     public const string CommandHappinessRewardKey = "pets.command_happiness_reward";
+    public const string CommandObeyBaseChancePercentKey = "pets.command_obey_base_chance_percent";
+    public const string CommandObeyChancePerLevelPercentKey =
+        "pets.command_obey_chance_per_level_percent";
+    public const string CommandObeyMaxChancePercentKey = "pets.command_obey_max_chance_percent";
     public const string ToyHappinessRewardKey = "pets.toy_happiness_reward";
     public const string BoredHappinessThresholdKey = "pets.bored_happiness_threshold";
     public const string ToyPlayDurationMsKey = "pets.toy_play_duration_ms";
@@ -57,6 +61,9 @@ public sealed record PetTuning
     public required int ThirstThreshold { get; init; }
     public required int RespectHappinessReward { get; init; }
     public required int CommandHappinessReward { get; init; }
+    public required int CommandObeyBaseChancePercent { get; init; }
+    public required int CommandObeyChancePerLevelPercent { get; init; }
+    public required int CommandObeyMaxChancePercent { get; init; }
     public required int ToyHappinessReward { get; init; }
     public required int BoredHappinessThreshold { get; init; }
     public required int ToyPlayDurationMs { get; init; }
@@ -85,6 +92,9 @@ public sealed record PetTuning
             ThirstThreshold = config.ThirstThreshold,
             RespectHappinessReward = config.RespectHappinessReward,
             CommandHappinessReward = config.CommandHappinessReward,
+            CommandObeyBaseChancePercent = config.CommandObeyBaseChancePercent,
+            CommandObeyChancePerLevelPercent = config.CommandObeyChancePerLevelPercent,
+            CommandObeyMaxChancePercent = config.CommandObeyMaxChancePercent,
             ToyHappinessReward = config.ToyHappinessReward,
             BoredHappinessThreshold = config.BoredHappinessThreshold,
             ToyPlayDurationMs = config.ToyPlayDurationMs,
@@ -134,6 +144,18 @@ public sealed record PetTuning
                 .ConfigureAwait(false),
             CommandHappinessReward = await config
                 .GetIntAsync(CommandHappinessRewardKey, defaults.CommandHappinessReward)
+                .ConfigureAwait(false),
+            CommandObeyBaseChancePercent = await config
+                .GetIntAsync(CommandObeyBaseChancePercentKey, defaults.CommandObeyBaseChancePercent)
+                .ConfigureAwait(false),
+            CommandObeyChancePerLevelPercent = await config
+                .GetIntAsync(
+                    CommandObeyChancePerLevelPercentKey,
+                    defaults.CommandObeyChancePerLevelPercent
+                )
+                .ConfigureAwait(false),
+            CommandObeyMaxChancePercent = await config
+                .GetIntAsync(CommandObeyMaxChancePercentKey, defaults.CommandObeyMaxChancePercent)
                 .ConfigureAwait(false),
             ToyHappinessReward = await config
                 .GetIntAsync(ToyHappinessRewardKey, defaults.ToyHappinessReward)

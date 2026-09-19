@@ -338,9 +338,26 @@ public sealed partial class RoomPetSystem
             return null;
         }
 
+        // A pet is allowed to say no. Refusing is free -- it costs no energy and pays no
+        // experience, which is what the capture shows: the order that was ignored moved neither.
+        int obeyChance = RoomPetRuntime.ObeyChancePercent(
+            pet.Level,
+            cmd.LevelRequired,
+            Tuning.CommandObeyBaseChancePercent,
+            Tuning.CommandObeyChancePerLevelPercent,
+            Tuning.CommandObeyMaxChancePercent
+        );
+
+        if (Random.Shared.Next(100) >= obeyChance)
+        {
+            await BroadcastPetVocalAsync(pet, "DISOBEY");
+            return null;
+        }
+
         int newEnergy = pet.Energy - cmd.EnergyCost;
 
-        // Obeying pleases it. This is the only thing that lifts mood other than resting.
+        // Obeying pays nothing by default -- the capture caught a pet obeying three orders with
+        // its happiness pinned. The knob stays for a hotel that wants it to.
         int newHappiness = Math.Clamp(
             pet.Happiness + Tuning.CommandHappinessReward,
             0,

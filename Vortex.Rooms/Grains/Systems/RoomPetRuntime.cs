@@ -190,6 +190,29 @@ internal static class RoomPetRuntime
         && pet.Energy > 0
         && pet.CanBreed;
 
+    /// <summary>
+    /// How likely a pet is to obey one order, in percent. A capture of the live hotel caught a pet
+    /// ignoring four orders out of nine and saying so, so a pet that always obeys is wrong; what the
+    /// hotel's real rule is, nine samples do not say. This is Arcturus' shape -- a base chance plus
+    /// a bonus for every level the pet has over the command's own requirement, under a ceiling --
+    /// and all three numbers are server configuration precisely because they are assumed.
+    ///
+    /// A base of 100 restores the old always-obeys behaviour, and the ceiling is what stops a
+    /// long-outgrown trick from becoming automatic.
+    /// </summary>
+    public static int ObeyChancePercent(
+        int petLevel,
+        int levelRequired,
+        int basePercent,
+        int perLevelPercent,
+        int maxPercent
+    )
+    {
+        int bonus = Math.Max(0, petLevel - levelRequired) * perLevelPercent;
+
+        return Math.Clamp(Math.Min(basePercent + bonus, maxPercent), 0, 100);
+    }
+
     public static bool CanRevive(PetSnapshot pet) =>
         pet.Type == MonsterplantPetType && pet.Energy == 0;
 

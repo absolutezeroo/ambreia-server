@@ -10,7 +10,7 @@
 
 spec: feature
 spec_version: 1
-generated_digest: "sha256:1c68efd0ca0b831ac5d68eebc0060c32265ba1cc58614714851c179e54e33e90"
+generated_digest: "sha256:9f11cb7832fe99bd379c36e0fb786576db7a8ff5ba639ad7c31a024e8d3b77cb"
 generated:
   id: room.respect_pet
   domain: room
@@ -145,7 +145,7 @@ generated:
     origin: vortex
     source: Vortex.Rooms/Grains/Systems/RoomPetRuntime.cs
     symbol: RoomPetRuntime
-    line: 203
+    line: 226
   - id: ev_34bf3ac088e2
     kind: emulator_flow
     authority: vortex_emulator
