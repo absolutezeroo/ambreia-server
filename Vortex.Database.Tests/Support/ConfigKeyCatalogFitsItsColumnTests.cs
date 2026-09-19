@@ -42,7 +42,7 @@ public sealed class ConfigKeyCatalogFitsItsColumnTests
     [Fact]
     public void EveryDescriptionFitsTheColumnItIsStoredIn()
     {
-        var tooLong = ConfigKeyCatalog
+        string[] tooLong = ConfigKeyCatalog
             .All.Where(descriptor => descriptor.Description.Length > DescriptionLimit)
             .Select(descriptor => $"{descriptor.Key} ({descriptor.Description.Length})")
             .ToArray();
