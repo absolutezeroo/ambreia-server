@@ -10,7 +10,11 @@ internal class BadgesEventMessageComposerSerializer(int header)
     protected override void Serialize(IServerPacket packet, BadgesEventMessageComposer message)
     {
         packet.WriteInteger(1); // totalFragments
-        packet.WriteInteger(1); // fragmentNo
+        // fragmentNo is zero-based: a live capture of the official server sending a single
+        // fragment carries 1/0, and every other fragmented message here writes 0 too. The client
+        // short-circuits on totalFragments == 1 before it ever reads this, so the 1 was harmless
+        // -- it only stops being harmless the day this message is actually split.
+        packet.WriteInteger(0); // fragmentNo
         packet.WriteInteger(message.Badges.Length);
 
         // Four fields per badge, not two: WIN63's parser

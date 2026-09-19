@@ -60,7 +60,7 @@ public sealed class BadgesWireLayoutTests
         ClientPacket packet = SerializeAndReadBody(typeof(BadgesEventMessageComposer), composer);
 
         packet.PopInt().Should().Be(1); // totalFragments
-        packet.PopInt().Should().Be(1); // fragmentNo
+        packet.PopInt().Should().Be(0); // fragmentNo, zero-based as in a live official capture
         packet.PopInt().Should().Be(2); // badge count
 
         packet.PopInt().Should().Be(1);
@@ -84,8 +84,8 @@ public sealed class BadgesWireLayoutTests
             new BadgesEventMessageComposer { Badges = ImmutableArray<PlayerBadgeSnapshot>.Empty }
         );
 
-        packet.PopInt().Should().Be(1);
-        packet.PopInt().Should().Be(1);
-        packet.PopInt().Should().Be(0);
+        packet.PopInt().Should().Be(1); // totalFragments
+        packet.PopInt().Should().Be(0); // fragmentNo
+        packet.PopInt().Should().Be(0); // badge count
     }
 }
