@@ -45,6 +45,61 @@ public class CaptureImporterTests
         observations[1].EmittedPackets.Should().Equal("NotificationDialog", "ObjectUpdate");
     }
 
+    /// <summary>
+    ///     Two requests in the same millisecond, answered in the reverse order. Positionally both
+    ///     answers belong to the second request and the first is unanswered, which is how an
+    ///     official capture ends up claiming a packet the hotel never sent.
+    /// </summary>
+    [Fact]
+    public void An_answer_that_says_which_request_it_belongs_to_is_not_paired_positionally()
+    {
+        using TemporaryCapture capture = new(
+            "burst.json",
+            """
+            { "id": "burst", "source": "official", "messages": [
+              { "index": 0, "direction": "client_to_server", "name": "GetRoomEntryTile" },
+              { "index": 1, "direction": "client_to_server", "name": "GetOccupiedTiles" },
+              { "index": 2, "direction": "server_to_client", "name": "RoomOccupiedTiles", "respondsTo": 1 },
+              { "index": 3, "direction": "server_to_client", "name": "RoomEntryTile", "respondsTo": 0 } ] }
+            """
+        );
+
+        CaptureImporter importer = new();
+        IReadOnlyList<CaptureObservation> observations = importer.Observe(
+            importer.Read(capture.Path_),
+            Registry
+        );
+
+        observations
+            .Single(o => o.TriggerPacket == "GetRoomEntryTile")
+            .EmittedPackets.Should()
+            .Equal("RoomEntryTile");
+
+        observations
+            .Single(o => o.TriggerPacket == "GetOccupiedTiles")
+            .EmittedPackets.Should()
+            .Equal("RoomOccupiedTiles");
+    }
+
+    [Fact]
+    public void An_answer_pointing_at_a_request_that_is_not_there_is_an_error()
+    {
+        using TemporaryCapture capture = new(
+            "dangling.json",
+            """
+            { "id": "dangling", "source": "official", "messages": [
+              { "index": 0, "direction": "client_to_server", "name": "MoveObject" },
+              { "index": 1, "direction": "server_to_client", "name": "ObjectUpdate", "respondsTo": 7 } ] }
+            """
+        );
+
+        CaptureImportException error = Assert.Throws<CaptureImportException>(() =>
+            new CaptureImporter().Read(capture.Path_)
+        );
+
+        error.Message.Should().Contain("answers 7");
+    }
+
     [Fact]
     public void An_official_capture_carries_official_authority_and_a_vortex_one_does_not()
     {

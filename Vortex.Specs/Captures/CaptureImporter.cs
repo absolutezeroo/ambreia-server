@@ -57,6 +57,8 @@ public sealed class CaptureImporter
             index++;
         }
 
+        ValidateResponseLinks(path, parsed);
+
         return new CaptureDocument
         {
             Id = id,
@@ -134,7 +136,48 @@ public sealed class CaptureImporter
             Fields = fields,
             PayloadHex = String(message, "payloadHex"),
             Recipient = ParseRecipient(String(message, "recipient")),
+            RespondsTo =
+                message.TryGetProperty("respondsTo", out JsonElement respondsTo)
+                && respondsTo.TryGetInt32(out int respondsToValue)
+                    ? respondsToValue
+                    : null,
         };
+    }
+
+    /// <summary>
+    /// A <c>respondsTo</c> that points at nothing, or at another server message, would silently
+    /// drop the answer out of every observation — so it is an error, like every other thing this
+    /// reader cannot make sense of.
+    /// </summary>
+    private static void ValidateResponseLinks(string path, IReadOnlyList<CaptureMessage> messages)
+    {
+        foreach (CaptureMessage message in messages)
+        {
+            if (message.RespondsTo is not int answered)
+            {
+                continue;
+            }
+
+            if (message.Direction != CaptureDirection.ServerToClient)
+            {
+                throw new CaptureImportException(
+                    $"{path}: message {message.Index} is a request and cannot answer one; "
+                        + "'respondsTo' belongs on a server_to_client message."
+                );
+            }
+
+            if (
+                !messages.Any(m =>
+                    m.Index == answered && m.Direction == CaptureDirection.ClientToServer
+                )
+            )
+            {
+                throw new CaptureImportException(
+                    $"{path}: message {message.Index} answers {answered}, which is not a "
+                        + "client_to_server message in this capture."
+                );
+            }
+        }
     }
 
     private static string? String(JsonElement element, string name) =>
@@ -173,6 +216,12 @@ public sealed class CaptureImporter
     /// The boundary is the next client-to-server message. That is an approximation — a server can
     /// push something unprompted mid-run — so a sequence is treated as one observation of what
     /// followed a trigger, and a claim only firms up once several captures show the same run.
+    ///
+    /// A message that declares <c>respondsTo</c> is attributed to that trigger and to no other,
+    /// wherever it landed in the file. Without it, two requests sent before either answer arrives
+    /// hand both answers to the second request and leave the first reading as unanswered — and
+    /// that reading goes on to generate a behaviour conflict against an official capture that
+    /// observed no such thing.
     /// </remarks>
     public IReadOnlyList<CaptureObservation> Observe(
         CaptureDocument capture,
@@ -197,15 +246,28 @@ public sealed class CaptureImporter
             }
 
             List<string> emitted = [];
+            bool inRun = true;
 
             for (int j = i + 1; j < ordered.Count; j++)
             {
-                if (ordered[j].Direction == CaptureDirection.ClientToServer)
+                CaptureMessage message = ordered[j];
+
+                if (message.Direction == CaptureDirection.ClientToServer)
                 {
-                    break;
+                    inRun = false;
+                    continue;
                 }
 
-                string? name = Resolve(ordered[j], registry, incoming: false);
+                bool answersThis = message.RespondsTo is int answered
+                    ? answered == ordered[i].Index
+                    : inRun;
+
+                if (!answersThis)
+                {
+                    continue;
+                }
+
+                string? name = Resolve(message, registry, incoming: false);
 
                 if (name is not null)
                 {

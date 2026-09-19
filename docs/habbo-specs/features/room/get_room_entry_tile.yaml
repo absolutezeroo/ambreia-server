@@ -10,7 +10,7 @@
 
 spec: feature
 spec_version: 1
-generated_digest: "sha256:f530c9908c77003e849733b91c759afac89137500ed84363d35eb9e39522c15b"
+generated_digest: "sha256:9dec845885a3572e877b57694b1ba5167b4bcb38d21ac26b9c651155e3a7e930"
 generated:
   id: room.get_room_entry_tile
   domain: room
@@ -22,7 +22,7 @@ generated:
     references:
     - habbo-arcturus-daybreak
   official_behavior:
-    status: unknown
+    status: capture_confirmed
   flow:
   - order: 0
     layer: handler

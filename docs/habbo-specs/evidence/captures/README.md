@@ -45,3 +45,9 @@ or `habbo-spec bootstrap`.
   is part of the behaviour.
 - `fields` are optional. Without them a capture still establishes which packets are sent and in
   what order, which is most of what is missing.
+- `respondsTo` is the index of the request a server message answers. Pairing is otherwise
+  positional — everything up to the next client message — so two requests sent before either
+  answer arrives give both answers to the second one and leave the first reading as
+  unanswered. Set it only where the capture really settles it (distinct payloads, a matching
+  id); a wrong one invents official behaviour, and an index that is not a `client_to_server`
+  message in the same capture is an error.

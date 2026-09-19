@@ -10,13 +10,17 @@
 
 spec: conflict
 spec_version: 1
-generated_digest: "sha256:392527f04333a26a3cddb752257a0d36259095397b191efca77d3c1eb967d604"
+generated_digest: "sha256:fb03781998a716899538c03af4ef9bfed8c00179f5451858d614a8463340db8a"
 generated:
   id: cf_7d89c0f059
   kind: behaviour
   subject: "GetRoomEntryTile: packets emitted in response"
   packet: GetRoomEntryTile
   positions:
+  - origin: capture (1 observations)
+    authority: official_capture
+    claim: RoomEntryTile
+    evidence: ev_de569090fa7b
   - origin: habbo-arcturus-daybreak
     authority: reference_emulator
     claim: RoomEntryTile then RoomFloorThicknessUpdated
@@ -26,6 +30,12 @@ generated:
     claim: RoomEntryTile
     evidence: ev_5c4457759c24
   evidence:
+  - id: ev_de569090fa7b
+    kind: capture
+    authority: official_capture
+    origin: capture
+    source: docs/habbo-specs/evidence/captures
+    symbol: GetRoomEntryTile
   - id: ev_5def21d0052f
     kind: reference_handler
     authority: reference_emulator

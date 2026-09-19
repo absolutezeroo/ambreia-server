@@ -46,6 +46,18 @@ public sealed record CaptureMessage
     public string? PayloadHex { get; init; }
 
     /// <summary>
+    /// The index of the client-to-server message this one answers, when the capture knows it.
+    /// </summary>
+    /// <remarks>
+    /// Pairing is positional by default, which mis-attributes every answer that arrives after the
+    /// client has already spoken again — two requests sent in the same millisecond hand both their
+    /// answers to the second one, and the first reads as unanswered. Neither claim is true, and a
+    /// prose caveat in the capture's note does not stop the conflict it invents from being
+    /// generated. This says what answers what, and only where the capture actually knows.
+    /// </remarks>
+    public int? RespondsTo { get; init; }
+
+    /// <summary>
     /// Who received it, when the capture was taken from more than one vantage point. Usually absent:
     /// a single-client capture cannot see what the other occupants of a room received.
     /// </summary>
