@@ -28,7 +28,7 @@ public sealed class Revision20260701(IOptions<ProtocolLimitsConfig> protocolLimi
             new HotlooksMap(),
             new InventoryMap(protocolLimits.Value),
             new LandingViewMap(),
-            new MarketplaceMap(),
+            new MarketplaceMap(protocolLimits.Value),
             new ModeratorMap(),
             new MysteryBoxMap(),
             new NavigatorMap(),

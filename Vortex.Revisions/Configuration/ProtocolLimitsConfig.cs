@@ -20,4 +20,9 @@ public sealed class ProtocolLimitsConfig
     /// <summary>Wire-safety ceiling on a submitted quiz. The real quizzes are ten and thirteen
     /// questions; this only stops a hostile client declaring a length it will not send.</summary>
     public int MaxQuizAnswers { get; init; } = 100;
+
+    /// <summary>Wire-safety ceiling on a single <c>MakeOffer</c> batch. The client lists a whole
+    /// inventory selection at one price, so the array is as large as the strip; how many offers a
+    /// seller may actually hold is business policy enforced in the marketplace grain.</summary>
+    public int MaxMarketplaceOfferItems { get; init; } = 1500;
 }

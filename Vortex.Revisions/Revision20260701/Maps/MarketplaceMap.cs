@@ -1,11 +1,12 @@
 using Vortex.Primitives.Networking.Revisions;
 using Vortex.Protocol.Messages.Outgoing.Marketplace;
+using Vortex.Revisions.Configuration;
 using Vortex.Revisions.Revision20260701.Parsers.Marketplace;
 using Vortex.Revisions.Revision20260701.Serializers.Marketplace;
 
 namespace Vortex.Revisions.Revision20260701.Maps;
 
-internal sealed class MarketplaceMap : IRevisionMap
+internal sealed class MarketplaceMap(ProtocolLimitsConfig protocolLimits) : IRevisionMap
 {
     public void RegisterInto(IRevisionMapBuilder builder)
     {
@@ -41,7 +42,10 @@ internal sealed class MarketplaceMap : IRevisionMap
             MessageEvent.GetMarketplaceOwnOffersMessageEvent,
             new GetMarketplaceOwnOffersMessageParser()
         );
-        builder.MapParser(MessageEvent.MakeOfferMessageEvent, new MakeOfferMessageParser());
+        builder.MapParser(
+            MessageEvent.MakeOfferMessageEvent,
+            new MakeOfferMessageParser(protocolLimits.MaxMarketplaceOfferItems)
+        );
         builder.MapParser(
             MessageEvent.RedeemMarketplaceOfferCreditsMessageEvent,
             new RedeemMarketplaceOfferCreditsMessageParser()
