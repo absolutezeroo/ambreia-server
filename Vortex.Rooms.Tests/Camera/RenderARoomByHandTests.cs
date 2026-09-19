@@ -34,6 +34,11 @@ public sealed class RenderARoomByHandTests
     private const int OffsetX = 340;
     private const int OffsetY = 60;
 
+    // Deliberately smaller than the room's own extent, which is the realistic case: the walls rise
+    // above y=0 and the floor runs past the right edge.
+    private const int ClientViewportWidth = 520;
+    private const int ClientViewportHeight = 300;
+
     [Fact(Skip = "A darkroom, not a check: un-skip it, run it, open the path it prints.")]
     public void WriteARoom()
     {
@@ -78,6 +83,12 @@ public sealed class RenderARoomByHandTests
             );
         }
 
+        // The client unshifts a background plane whose quad is exactly its viewport, so the first
+        // plane IS the frame. Everything else may hang outside it: getRoomPlanes only culls a plane
+        // whose four corners are off the SAME side, so a wall rising above the top edge or a floor
+        // running past the right one is the normal case, not an edge case.
+        planes.Insert(0, Background(ClientViewportWidth, ClientViewportHeight, 0x1A1A2E));
+
         CameraScene scene = new()
         {
             RoomId = 1,
@@ -100,6 +111,27 @@ public sealed class RenderARoomByHandTests
 
         Assert.True(png.Length > 0, path);
     }
+
+    /// <summary>
+    /// The background plane, in the arrangement <c>makeBackgroundPlane</c> writes it: bottom-right,
+    /// bottom-left, top-right, top-left of the client's viewport, already sorted.
+    /// </summary>
+    private static CameraScenePlane Background(double width, double height, int color) =>
+        new()
+        {
+            Z = 0,
+            CornerPoints =
+            [
+                new CameraScenePoint(width, height),
+                new CameraScenePoint(0, height),
+                new CameraScenePoint(width, 0),
+                new CameraScenePoint(0, 0),
+            ],
+            Color = color,
+            Masks = [],
+            TextureColumns = [],
+            BottomAligned = false,
+        };
 
     private static CameraScenePoint Floor(int x, int y) =>
         new(OffsetX + ((x - y) * (TileWidth / 2.0)), OffsetY + ((x + y) * (TileHeight / 2.0)));

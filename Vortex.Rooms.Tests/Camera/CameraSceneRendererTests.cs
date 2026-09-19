@@ -45,16 +45,52 @@ public sealed class CameraSceneRendererTests
             );
     }
 
+    /// <summary>
+    /// The payload never says how big the photo is, and the client never has to: it unshifts a
+    /// background plane spanning its whole viewport, so the <b>first</b> plane is the frame.
+    /// </summary>
+    /// <remarks>
+    /// This test had that fact in its own comment and drew the other conclusion from it — that the
+    /// planes' extent is the viewport. It is not, and not by a little: <c>getRoomPlanes</c> culls
+    /// only a plane whose four corners are off the same side, so a wall rising above the top edge and
+    /// a floor running past the right one are ordinary. The canvas grew to the furthest corner of the
+    /// room, the background painted its own rectangle in the corner of it, and a real photo came back
+    /// with a hard straight edge where the room stopped being painted.
+    /// </remarks>
     [Fact]
-    public void TheViewportIsTheExtentOfThePlanes()
+    public void TheViewportIsTheBackgroundPlane_NotTheExtentOfTheRoom()
     {
-        // The payload never says how big the photo is. The client spans its whole viewport with a
-        // background plane before anything else, so the planes' extent is the viewport.
         CameraViewport viewport = new CameraSceneRenderer(MaxDimension).ViewportFor(
             SceneWith(planes: [Plane(640, 480, 0), Plane(100, 900, 0)], sprites: [])
         );
 
-        viewport.Should().Be(new CameraViewport(640, 900));
+        viewport.Should().Be(new CameraViewport(640, 480));
+    }
+
+    /// <summary>
+    /// "Plane zero is the frame" is true of the client that exists, and the payload is written by
+    /// whoever is on the other end of the socket. A first plane that is not anchored at the origin is
+    /// not a frame, so the scene falls back to its own extent rather than to a one-pixel canvas.
+    /// </summary>
+    [Fact]
+    public void AFirstPlaneThatIsNotAFrame_FallsBackToTheExtentOfThePlanes()
+    {
+        CameraScenePlane offset = Plane(300, 200, 0) with
+        {
+            CornerPoints =
+            [
+                new CameraScenePoint(300, 200),
+                new CameraScenePoint(-40, 200),
+                new CameraScenePoint(300, 20),
+                new CameraScenePoint(-40, 20),
+            ],
+        };
+
+        CameraViewport viewport = new CameraSceneRenderer(MaxDimension).ViewportFor(
+            SceneWith(planes: [offset, Plane(100, 900, 0)], sprites: [])
+        );
+
+        viewport.Should().Be(new CameraViewport(300, 900));
     }
 
     /// <summary>

@@ -84,8 +84,23 @@ public sealed class CameraSceneRenderer(int maxDimension)
     /// </remarks>
     public CameraViewport ViewportFor(CameraScene scene)
     {
-        double right = 0;
-        double bottom = 0;
+        // The frame is the client's, and it sends it without ever naming it: getRoomPlanes unshifts a
+        // background plane whose quad is exactly (0,0)-(viewport.width, viewport.height), so the
+        // first plane IS the photo's dimensions.
+        //
+        // Measuring every plane instead does not merely guess — it guesses too large, every time.
+        // getRoomPlanes only culls a plane whose four corners are off the SAME side, so a wall rising
+        // above the top edge and a floor running past the right one are the ordinary case. The canvas
+        // then grew to the furthest corner of the room, the background covered its own rectangle in
+        // the top-left of it, and the rest was transparent: a photo with a hard straight edge where
+        // the room simply stopped being painted.
+        if (TryFrame(scene, out double right, out double bottom))
+        {
+            return new CameraViewport(Clamp(right), Clamp(bottom));
+        }
+
+        right = 0;
+        bottom = 0;
 
         foreach (CameraScenePlane plane in scene.Planes)
         {
@@ -106,6 +121,40 @@ public sealed class CameraSceneRenderer(int maxDimension)
 
     private int Clamp(double value) =>
         double.IsFinite(value) ? Math.Clamp((int)Math.Ceiling(value), 1, maxDimension) : 1;
+
+    /// <summary>
+    /// The background plane's rectangle, if the first plane looks like one.
+    /// </summary>
+    /// <remarks>
+    /// Checked rather than assumed. "Plane zero is the frame" is true of the client that exists, and
+    /// the payload is written by whoever is on the other end of the socket — so a first plane that is
+    /// not anchored at the origin is treated as a room plane like any other and the scene falls back
+    /// to its own extent. That costs one comparison and means a malformed payload renders badly
+    /// instead of rendering into a one-pixel canvas.
+    /// </remarks>
+    private static bool TryFrame(CameraScene scene, out double right, out double bottom)
+    {
+        right = 0;
+        bottom = 0;
+
+        if (scene.Planes.IsDefaultOrEmpty)
+        {
+            return false;
+        }
+
+        foreach (CameraScenePoint corner in scene.Planes[0].CornerPoints)
+        {
+            if (corner.X < 0 || corner.Y < 0)
+            {
+                return false;
+            }
+
+            right = Math.Max(right, corner.X);
+            bottom = Math.Max(bottom, corner.Y);
+        }
+
+        return right > 0 && bottom > 0;
+    }
 
     /// <summary>
     /// The client's four corners, in the order a polygon has to walk them.
