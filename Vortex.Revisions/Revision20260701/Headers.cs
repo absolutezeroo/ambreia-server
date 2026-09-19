@@ -721,11 +721,17 @@ internal static class MessageEvent
     //
     // The three composers could not follow suit: AIR binds them at 734 and 3620, which WIN63
     // already spends on ChatReviewSessionOfferedToGuide and SecondsUntil, and 3553. Taking those
-    // would have silenced two working messages, so the outgoing half sits in the Vortex band at
-    // 8202-8206. When this revision moves to an AIR-era client, those three constants change and
-    // nothing else does.
+    // would have silenced two working messages, so the two that collide were reassigned to 3554
+    // and 3555 -- see RaidProtection*MessageComposer below, which is where the real numbers are.
+    // When this revision moves to an AIR-era client, those constants change and nothing else does.
     public const int GetRaidProtectionSettingsMessageEvent = 206;
     public const int SaveRaidProtectionSettingsMessageEvent = 2687;
+
+    // Wired web API (AIR 1.0.31 only). AIR's own _composers[2819], kept: 2819 is unused in BOTH
+    // tables of the WIN63-202607011411 registry and in both tables here. Asks for one wired
+    // furni's read or write API key; answered by WiredApiKeyResultMessageComposer below.
+    // NO HANDLER YET -- the client half ships ahead of the server's key storage.
+    public const int GenerateWiredApiKeyMessageEvent = 2819;
     #endregion
 }
 
@@ -737,10 +743,22 @@ internal static class MessageComposer
     // _SafeStr_4678[267] = the config update, [3889] = the status update, [3388] = the status
     // remove). WIN63-202607011411 carries none of the three -- the feature is newer than it -- so
     // these are the one place in this file whose authority is a later build than the revision's own
-    // target. All three ids are unused in both tables here, so nothing collides.
-    public const int VariableFxConfigUpdateMessageComposer = 267;
+    // target.
+    //
+    // 3889 and 3388 are free in WIN63 and keep AIR's number. **267 could not**: WIN63 spends it on
+    // FriendFurniCancelLock, which the client registers (`_events.set(267, FriendFurniCancelLockEvent)`),
+    // so every config push this server sent on 267 was parsed by the client as a friend-furni
+    // cancel -- wrong parser, wrong handler, and the bar never appeared. The client assigns 3390,
+    // unused in both tables on both sides; matched here 2026-09-19.
+    public const int VariableFxConfigUpdateMessageComposer = 3390;
     public const int VariableFxStatusUpdateMessageComposer = 3889;
     public const int VariableFxStatusRemoveMessageComposer = 3388;
+
+    // Wired web API (AIR 1.0.31 only). The key the server minted, echoing the read/write flag the
+    // request carried. AIR's own _SafeStr_4678[59], kept: 59 is unused in both tables on both
+    // sides (WIN63 stops at 58, RewardTrackPremiumPurchaseResult).
+    // NOT SENT YET -- no handler mints a key; see GenerateWiredApiKeyMessageEvent.
+    public const int WiredApiKeyResultMessageComposer = 59;
     public const int IncomeRewardNotificationMessageComposer = 1914;
     public const int GetCustomFilterResultMessageComposer = 2231; // AS3-verified (direct read): WIN63 registry _SafeCls_2046.as _SafeStr_4546[2231] = _SafeCls_3579; WordFilterSettingsView is the only consumer. The previous value was a placeholder with no handler behind it
     public const int ModifyCustomFilterResultMessageComposer = 3622; // AS3-verified (direct read): WIN63 registry _SafeCls_2046.as _SafeStr_4546[3622] = _SafeCls_3793; WordFilterSettingsView is the only consumer. The previous value was a placeholder with no handler behind it
