@@ -1,4 +1,5 @@
 using System;
+using System.Globalization;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 using Vortex.Primitives.Furniture.Snapshots.StuffData;
@@ -32,7 +33,27 @@ internal abstract class StuffDataBase : IStuffData
 
     public bool IsUnique() => UniqueNumber > 0 && UniqueSeries > 0;
 
-    public virtual int GetState() => int.Parse(GetLegacyString());
+    /// <summary>
+    /// The state this data holds, or zero when it does not hold one.
+    /// </summary>
+    /// <remarks>
+    /// Eight classes share this one implementation over eight different payloads — a photo's json, a
+    /// sticky's text and colour, a crackable's counter, nothing at all — and only some of those are a
+    /// number. It was <c>int.Parse</c>, which turned "this furni has no state" into an exception
+    /// thrown out of a room grain's turn: clicking a photo took the whole use-item handler down with
+    /// a <see cref="FormatException"/>, and an empty <see cref="GetLegacyString"/> — the default on
+    /// this very class — did the same. Zero is what <see cref="DEFAULT_STATE"/> already calls an
+    /// absent state.
+    /// </remarks>
+    public virtual int GetState() =>
+        int.TryParse(
+            GetLegacyString(),
+            NumberStyles.Integer,
+            CultureInfo.InvariantCulture,
+            out int state
+        )
+            ? state
+            : 0;
 
     public virtual void SetState(string state) { }
 

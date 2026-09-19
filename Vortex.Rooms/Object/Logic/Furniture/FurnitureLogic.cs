@@ -1,3 +1,4 @@
+using System.Globalization;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
@@ -65,6 +66,30 @@ public abstract class FurnitureLogic<TObject, TSelf, TContext>
     public virtual int GetState() => StuffData.GetState();
 
     public virtual string GetLegacyString() => StuffData.GetLegacyString();
+
+    /// <summary>
+    /// Whether this furni's stuff data is a state, rather than a payload that happens to live in the
+    /// same field.
+    /// </summary>
+    /// <remarks>
+    /// <see cref="SetStateAsync"/> writes the new state <i>over</i> the legacy string, so cycling a
+    /// furni whose data is not a state does not merely misread it — it destroys it. A photo's json, a
+    /// sticky's text and colour: one click and the wall item is the string "1", persisted and
+    /// broadcast, with the original gone. Empty counts as a state on purpose, because a multistate
+    /// furni nobody has used yet is exactly that and still has to toggle to 1.
+    /// </remarks>
+    protected bool CarriesAState()
+    {
+        if (StuffData is null)
+        {
+            return false;
+        }
+
+        string legacy = StuffData.GetLegacyString();
+
+        return legacy.Length == 0
+            || int.TryParse(legacy, NumberStyles.Integer, CultureInfo.InvariantCulture, out _);
+    }
 
     public virtual int GetNextToggleableState()
     {
@@ -209,9 +234,15 @@ public abstract class FurnitureLogic<TObject, TSelf, TContext>
 
     public virtual async Task OnUseAsync(ActionContext ctx, int param, CancellationToken ct)
     {
-        param = GetNextToggleableState();
+        // A definition that declares states is not a promise that this particular item holds one:
+        // furniture_external_image_wallitem and furniture_stickie are bound to no logic of their own,
+        // so a photo and a note arrive here on the generic toggle path carrying a payload instead.
+        if (!CarriesAState())
+        {
+            return;
+        }
 
-        await SetStateAsync(param);
+        await SetStateAsync(GetNextToggleableState());
     }
 
     public virtual Task OnClickAsync(ActionContext ctx, int param, CancellationToken ct) =>
