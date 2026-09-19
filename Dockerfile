@@ -126,8 +126,16 @@ COPY --from=build --chown=app:app /app/publish-plugins /app/plugins/
 #   logs/    — Vortex:Observability:AuditDeadLetterPath defaults to logs/audit-dead-letter.jsonl
 #   plugins/ — the plugin loader probes AppContext.BaseDirectory/plugins
 #   assets/  — Vortex:Observability:AssetsLocalRoot defaults to ./assets
-RUN mkdir -p /app/logs /app/plugins /app/assets \
-    && chown -R app:app /app/logs /app/plugins /app/assets
+#   data/    — Vortex:Rooms:CameraPhotoRoot defaults to data/camera-photos
+#
+# WARNING FOR THE OPERATOR: data/ is the one directory here that MUST be a mounted volume, and it
+# is the opposite of the plugins/ warning above. A camera photo is referenced forever — the
+# furniture a player bought carries its url in its stuff data — while this directory lives and dies
+# with the container. Deploy without a volume on /app/data and every photo ever taken disappears at
+# the next release, with the frames still hanging on the walls pointing at nothing. Coolify builds
+# a fresh container per deployment, so "it worked last week" is exactly how this presents.
+RUN mkdir -p /app/logs /app/plugins /app/assets /app/data \
+    && chown -R app:app /app/logs /app/plugins /app/assets /app/data
 
 # curl, for one reason: a container healthcheck runs INSIDE the container, and this image ships no
 # HTTP client at all. An orchestrator that probes it gets `curl: not found`, reads that as the

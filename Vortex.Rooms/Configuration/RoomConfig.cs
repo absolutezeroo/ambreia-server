@@ -165,6 +165,15 @@ public class RoomConfig : IWiredLimits
     /// than in the admin-editable server config the camera's prices and limits live in. It must sit
     /// outside anything served statically: these files are reached through a route that maps a key to
     /// a path, never by a web server walking a directory.
+    ///
+    /// <para>
+    /// <b>This path has to be a mounted volume in any container deployment.</b> A photo is referenced
+    /// forever — the furniture a player bought carries its url in its stuff data — and a container is
+    /// replaced on every release. Unmounted, the frames stay on the walls and the images behind them
+    /// vanish at the next deploy, which reads as "the camera broke" weeks after the change that did
+    /// it. The default resolves under the content root, which is <c>/app</c> in the image, so the
+    /// mount belongs on <c>/app/data</c>; see the warning beside it in the Dockerfile.
+    /// </para>
     /// </remarks>
     public string CameraPhotoRoot { get; init; } = "data/camera-photos";
 }
