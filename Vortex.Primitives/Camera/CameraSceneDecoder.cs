@@ -1,5 +1,6 @@
 using System;
 using System.Buffers;
+using System.Globalization;
 using System.Collections.Immutable;
 using System.IO;
 using System.IO.Compression;
@@ -179,7 +180,7 @@ public static class CameraSceneDecoder
 
             if (
                 !root.TryGetProperty(RoomIdProperty, out JsonElement roomIdElement)
-                || !roomIdElement.TryGetInt32(out int roomId)
+                || !TryReadInt32(roomIdElement, out int roomId)
             )
             {
                 return CameraSceneDecodeResult.Refused(CameraRenderRefusal.IncompleteScene);
@@ -194,7 +195,7 @@ public static class CameraSceneDecoder
 
             if (
                 !root.TryGetProperty(TimestampProperty, out JsonElement timestampElement)
-                || !timestampElement.TryGetInt64(out long timestamp)
+                || !TryReadInt64(timestampElement, out long timestamp)
             )
             {
                 return CameraSceneDecodeResult.Refused(CameraRenderRefusal.IncompleteScene);
@@ -305,7 +306,7 @@ public static class CameraSceneDecoder
     {
         if (
             root.TryGetProperty(ZoomProperty, out JsonElement zoomElement)
-            && zoomElement.TryGetInt32(out int zoom)
+            && TryReadInt32(zoomElement, out int zoom)
             && AllowedZoomLevels.Contains(zoom)
         )
         {
@@ -663,7 +664,7 @@ public static class CameraSceneDecoder
                     Frame = ReadInt(sprite, "frame", 0),
                     Color =
                         sprite.TryGetProperty("color", out JsonElement color)
-                        && color.TryGetInt32(out int colorValue)
+                        && TryReadInt32(color, out int colorValue)
                             ? colorValue
                             : null,
                     BlendMode =
@@ -728,18 +729,88 @@ public static class CameraSceneDecoder
         return true;
     }
 
+    /// <summary>
+    /// A whole number from a JSON Number, or from a String holding one.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// The string branch is not generosity, it is the wire. The served client writes a sprite's
+    /// colour as one — <c>SpriteDataCollector.fromSprite</c> does <c>sprite.color.toString()</c> and
+    /// the payload builder passes it straight through — where the AS3 it was ported from writes
+    /// <c>int(param1.color)</c>, a number. The two disagree, so this reads both.
+    /// </para>
+    /// <para>
+    /// <c>JsonElement.TryGetInt32</c> is not the safe reader its name suggests: it <em>throws</em>
+    /// when the element is not a Number and returns false only for a Number that will not fit. Every
+    /// numeric read in this file goes through here for that reason. One unguarded call took the
+    /// whole render down in production — an exception out of a decoder whose own summary promises it
+    /// never throws, which left the player with no reply at all rather than a refusal.
+    /// </para>
+    /// </remarks>
+    private static bool TryReadInt64(JsonElement element, out long value)
+    {
+        switch (element.ValueKind)
+        {
+            case JsonValueKind.Number:
+                return element.TryGetInt64(out value);
+
+            case JsonValueKind.String:
+                return long.TryParse(
+                    element.GetString(),
+                    NumberStyles.Integer,
+                    CultureInfo.InvariantCulture,
+                    out value
+                );
+
+            default:
+                value = 0;
+                return false;
+        }
+    }
+
+    private static bool TryReadInt32(JsonElement element, out int value)
+    {
+        value = 0;
+
+        if (!TryReadInt64(element, out long wide) || wide is < int.MinValue or > int.MaxValue)
+        {
+            return false;
+        }
+
+        value = (int)wide;
+        return true;
+    }
+
+    private static bool TryReadDouble(JsonElement element, out double value)
+    {
+        switch (element.ValueKind)
+        {
+            case JsonValueKind.Number:
+                return element.TryGetDouble(out value) && double.IsFinite(value);
+
+            case JsonValueKind.String:
+                return double.TryParse(
+                        element.GetString(),
+                        NumberStyles.Float,
+                        CultureInfo.InvariantCulture,
+                        out value
+                    ) && double.IsFinite(value);
+
+            default:
+                value = 0;
+                return false;
+        }
+    }
+
     private static double ReadDouble(JsonElement parent, string property, double fallback) =>
         parent.TryGetProperty(property, out JsonElement element)
-        && element.ValueKind == JsonValueKind.Number
-        && element.TryGetDouble(out double value)
-        && double.IsFinite(value)
+        && TryReadDouble(element, out double value)
             ? value
             : fallback;
 
     private static int ReadInt(JsonElement parent, string property, int fallback) =>
         parent.TryGetProperty(property, out JsonElement element)
-        && element.ValueKind == JsonValueKind.Number
-        && element.TryGetInt32(out int value)
+        && TryReadInt32(element, out int value)
             ? value
             : fallback;
 
@@ -749,7 +820,7 @@ public static class CameraSceneDecoder
             {
                 JsonValueKind.True => true,
                 JsonValueKind.False => false,
-                JsonValueKind.Number => element.TryGetInt32(out int number) && number != 0,
+                JsonValueKind.Number => TryReadInt32(element, out int number) && number != 0,
                 _ => fallback,
             }
             : fallback;

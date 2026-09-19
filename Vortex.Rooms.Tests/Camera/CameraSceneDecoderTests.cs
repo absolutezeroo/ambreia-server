@@ -233,6 +233,70 @@ public sealed class CameraSceneDecoderTests
         Decode(Scene(zoom: 2)).Scene!.Zoom.Should().Be(2);
     }
 
+    /// <summary>
+    /// The crash that reached production. JsonElement.TryGetInt32 THROWS when the element is not a
+    /// Number -- it returns false only for a Number that will not fit -- and a sprite's colour
+    /// arrives as a string: the served client does sprite.color.toString(), where the AS3 it was
+    /// ported from writes int(param1.color). The exception left the grain through the handler, so
+    /// the player got no reply at all rather than a refusal.
+    /// </summary>
+    [Fact]
+    public void ASpriteColourWrittenAsAString_IsReadRatherThanThrownOn()
+    {
+        CameraSceneDecodeResult result = Decode(Scene(spriteColorJson: "\"16777215\""));
+
+        result.Accepted.Should().BeTrue();
+        result.Scene!.Sprites.Should().ContainSingle().Which.Color.Should().Be(16777215);
+    }
+
+    [Fact]
+    public void ASpriteColourWrittenAsANumber_StillReads()
+    {
+        // The AS3's own shape. Both have to work: the two clients disagree and either may connect.
+        CameraSceneDecodeResult result = Decode(Scene(spriteColorJson: "16777215"));
+
+        result.Scene!.Sprites.Should().ContainSingle().Which.Color.Should().Be(16777215);
+    }
+
+    [Fact]
+    public void ASpriteColourThatIsNeither_LeavesTheSpriteUntinted()
+    {
+        // Dropped, not thrown on, and not fatal to the photo: a sprite without a tint is a sprite.
+        CameraSceneDecodeResult result = Decode(Scene(spriteColorJson: "\"rouge\""));
+
+        result.Accepted.Should().BeTrue();
+        result.Scene!.Sprites.Should().ContainSingle().Which.Color.Should().BeNull();
+    }
+
+    /// <summary>
+    /// Every other number the scene carries, in the shape that used to throw. None of these is a
+    /// thing a client sends; all of them are a thing a payload can say.
+    /// </summary>
+    [Fact]
+    public void EveryNumberInTheSceneMayArriveQuoted()
+    {
+        // roomid, timestamp and zoom all written as strings at once. Each was its own unguarded
+        // read, and each would have thrown the same way the colour did.
+        CameraSceneDecodeResult result = Decode(Scene(zoom: 2, quoteNumbers: true));
+
+        result.Accepted.Should().BeTrue();
+        result.Scene!.RoomId.Should().Be(ROOM);
+        result.Scene.Zoom.Should().Be(2);
+    }
+
+    /// <summary>A value that is neither a number nor a number in quotes is refused, not thrown on.</summary>
+    [Theory]
+    [InlineData("{}")]
+    [InlineData("[]")]
+    [InlineData("\"not a number\"")]
+    [InlineData("null")]
+    public void ARoomIdThatIsNotANumber_IsRefused(string json)
+    {
+        CameraRenderRefusal refusal = Decode(Scene(roomIdJson: json)).Refusal;
+
+        refusal.Should().Be(CameraRenderRefusal.IncompleteScene);
+    }
+
     private static CameraSceneLimits WithAllowedHost() =>
         CameraSceneLimits.Defaults with
         {
@@ -262,7 +326,10 @@ public sealed class CameraSceneDecoderTests
         int planeCount = 1,
         int spriteCount = 1,
         string spriteName = "chair_a_0",
-        int? zoom = null
+        int? zoom = null,
+        string? spriteColorJson = null,
+        string? roomIdJson = null,
+        bool quoteNumbers = false
     )
     {
         string plane =
@@ -270,16 +337,24 @@ public sealed class CameraSceneDecoderTests
 
         // Serialized, not interpolated: a name with a backslash in it has to reach the decoder as
         // a valid JSON string, or the test proves the parser rejects its own fixture.
+        string colorPart = spriteColorJson is null ? "" : $$""","color":{{spriteColorJson}}""";
         string sprite =
-            $$"""{"name":{{JsonSerializer.Serialize(spriteName)}},"x":5,"y":6,"z":1.5}""";
+            $$"""{"name":{{JsonSerializer.Serialize(spriteName)}},"x":5,"y":6,"z":1.5{{colorPart}}}""";
 
         string planes = string.Join(",", Enumerable.Repeat(plane, planeCount));
         string sprites = string.Join(",", Enumerable.Repeat(sprite, spriteCount));
-        string zoomPart = zoom is null ? "" : $""" ,"zoom" : {zoom}""";
         long stamp = timestamp ?? new DateTimeOffset(Now).ToUnixTimeMilliseconds();
 
+        // A bare number, or the same number in quotes — the served client writes both shapes.
+        string Number(object value) => quoteNumbers ? $"\"{value}\"" : value.ToString()!;
+
+        string room = roomIdJson ?? Number(roomId);
+        string zoomPart = zoom is null ? "" : $""" ,"zoom" : {Number(zoom)}""";
+
         return $$"""
-            { "planes" : [{{planes}}] ,"sprites" : [{{sprites}}] ,"modifiers" : {} ,"filters" : [] ,"roomid" : {{roomId}}{{zoomPart}} ,"status" : 7 ,"timestamp" : {{stamp}} ,"checksum" : 12345 }
+            { "planes" : [{{planes}}] ,"sprites" : [{{sprites}}] ,"modifiers" : {} ,"filters" : [] ,"roomid" : {{room}}{{zoomPart}} ,"status" : 7 ,"timestamp" : {{Number(
+                stamp
+            )}} ,"checksum" : 12345 }
             """;
     }
 }
