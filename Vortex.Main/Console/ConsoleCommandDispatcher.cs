@@ -6,16 +6,15 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Orleans;
+using Vortex.Main.Hosting;
 using Vortex.Plugins;
 using Vortex.Primitives.Console;
 using Vortex.Primitives.Hosting;
 using Vortex.Primitives.MysteryBox;
 using Vortex.Primitives.MysteryBox.Admin;
-using Vortex.Primitives.Networking;
 using Vortex.Primitives.Orleans;
 using Vortex.Primitives.Permissions;
 using Vortex.Primitives.Players;
-using Vortex.Protocol.Messages.Outgoing.Availability;
 
 namespace Vortex.Main.Console;
 
@@ -134,22 +133,14 @@ public sealed class ConsoleCommandDispatcher(IServiceProvider services) : IConso
 
                 return true;
 
-            // The warning `quit` does not give. A redeployment stops the container with a SIGTERM
-            // and Docker follows it with a SIGKILL seconds later, so nothing inside this process can
-            // announce its own death in time — the announcement has to be sent by hand before the
-            // deploy button is pressed, and this is that hand.
+            // The warning `quit` does not give, by hand. The hotel also warns on its own when
+            // something stops the container (see ShutdownConfig), but that notice starts when the
+            // deploy does; this one can go out before it, and it is the only way to warn about
+            // anything the orchestrator is not driving.
             //
-            // MaintenanceStatus (header 1737) and not InfoHotelClosing (184), because the client
-            // renders each through a different served text and only one of them describes a
-            // restart:
-            //   opening.hours.shutdown  "...welcome back tomorrow!"          -> a nightly closure
-            //   maintenance.shutdown    "...right back in approximately %d%" -> this
-            // Both are already in external_flash_texts; %m% is the minutes, %d% the downtime.
-            //
-            // ONE send per invocation, on purpose. HabboAlertDialogManager.handleHotelMaintenance-
-            // Message pops a fresh simpleAlert every time and never counts down on its own, so a
-            // per-minute tick would be five popups in five minutes. A second warning is this
-            // command typed again with a smaller number.
+            // One send per invocation, because the client's alert does not tick — see
+            // MaintenanceAnnouncer. A second warning is this command typed again with a smaller
+            // number.
             case "announce":
             {
                 const int DEFAULT_DOWNTIME_MINUTES = 2;
@@ -170,58 +161,17 @@ public sealed class ConsoleCommandDispatcher(IServiceProvider services) : IConso
                     return true;
                 }
 
-                ISessionGateway sessions = services.GetRequiredService<ISessionGateway>();
-                IReadOnlyCollection<PlayerId> online = sessions.GetOnlinePlayerIds();
-
-                if (online.Count == 0)
-                {
-                    write("Nobody is connected; nothing to announce.");
-
-                    return true;
-                }
-
-                IGrainFactory grainFactory = services.GetRequiredService<IGrainFactory>();
-
-                // isInMaintenance stays false: the hotel is still open, and the client's
-                // notification handler reads only the two numbers anyway.
-                MaintenanceStatusMessageComposer composer = new()
-                {
-                    IsInMaintenance = false,
-                    MinutesUntilMaintenance = minutes,
-                    DurationMinutes = downtime,
-                };
-
-                int reached = 0;
-                int failed = 0;
-
-                foreach (PlayerId playerId in online)
-                {
-                    try
-                    {
-                        await grainFactory
-                            .GetPlayerPresenceGrain(playerId)
-                            .SendComposerAsync(composer)
-                            .ConfigureAwait(false);
-
-                        reached++;
-                    }
-                    catch (Exception ex)
-                    {
-                        // One player disconnecting mid-sweep must not cost the rest their warning.
-                        failed++;
-                        write($"  {playerId.Value}: {ex.Message}");
-                    }
-                }
+                int reached = await services
+                    .GetRequiredService<IMaintenanceAnnouncer>()
+                    .AnnounceAsync(minutes, downtime, ct)
+                    .ConfigureAwait(false);
 
                 write(
-                    $"Warned {reached} player(s) of a restart in {minutes} minute(s), "
-                        + $"back in about {downtime}."
+                    reached == 0
+                        ? "Nobody is connected; nothing was announced."
+                        : $"Warned {reached} player(s) of a restart in {minutes} minute(s), "
+                            + $"back in about {downtime}."
                 );
-
-                if (failed > 0)
-                {
-                    write($"{failed} player(s) could not be reached.");
-                }
 
                 return true;
             }

@@ -98,6 +98,12 @@ services:
       context: .
       dockerfile: Dockerfile
     restart: unless-stopped
+    # Long enough for the shutdown notice below plus the flushes that follow it. Docker's default is
+    # TEN SECONDS, and it is not a wait — it is a countdown to SIGKILL. A hotel told to give players
+    # three minutes of warning, running under the default, is killed 170 seconds into that promise:
+    # no room persistence flush, no Orleans drain, on every single deploy, and nothing in the log
+    # says it was killed rather than stopped. Raise this BEFORE raising the notice, never after.
+    stop_grace_period: 210s
     depends_on:
       mysql:
         # NOT optional, and not merely a convenience for the retry policy.
@@ -233,6 +239,19 @@ services:
       # it outside Development), but a value that is at least distinct from the repo defaults keeps
       # the dev hashes from colliding with anyone else's.
       VORTEX__Vortex__Authentication__IpHashSecret: "vortex-compose-dev-ip-hash-secret"
+
+      # --- Shutdown notice ---------------------------------------------------------------------
+      # What a player gets when this stack is redeployed: one alert now, another at the last minute,
+      # and three minutes to finish what they were doing. The hotel delays its OWN stop by that
+      # long, which is why stop_grace_period above has to outlast it.
+      #
+      # An empty hotel is never held — the notice asks who is online first, and a deploy at four in
+      # the morning costs nothing.
+      #
+      # The build is not downtime: an image is built before anything is stopped, so DowntimeMinutes
+      # describes the container swap alone. The image's healthcheck allows 90s for the start.
+      VORTEX__Vortex__Shutdown__NoticeMinutes: "3"
+      VORTEX__Vortex__Shutdown__DowntimeMinutes: "2"
 
 volumes:
   vortex-mysql-data:

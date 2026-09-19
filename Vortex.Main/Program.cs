@@ -24,8 +24,10 @@ using Vortex.Furniture;
 using Vortex.Habbicons;
 using Vortex.Inventory;
 using Vortex.Logging.Extensions;
+using Vortex.Main.Configuration;
 using Vortex.Main.Console;
 using Vortex.Main.Extensions;
+using Vortex.Main.Hosting;
 using Vortex.Marketplace;
 using Vortex.Messages.Extensions;
 using Vortex.Navigator;
@@ -162,6 +164,27 @@ internal class Program
 
         builder.Services.AddSingleton<AssemblyProcessor>();
         builder.Services.AddSingleton<IConsoleCommandDispatcher, ConsoleCommandDispatcher>();
+        builder.Services.AddSingleton<IMaintenanceAnnouncer, MaintenanceAnnouncer>();
+        builder
+            .Services.AddOptions<ShutdownConfig>()
+            .Bind(builder.Configuration.GetSection(ShutdownConfig.SECTION_NAME));
+
+        ShutdownConfig shutdown =
+            builder.Configuration.GetSection(ShutdownConfig.SECTION_NAME).Get<ShutdownConfig>()
+            ?? new ShutdownConfig();
+
+        if (shutdown.NoticeMinutes > 0)
+        {
+            // The host cancels the token it hands StoppingAsync once this elapses, and it defaults
+            // to 30 seconds — which would cut every notice longer than that off at the knees, from
+            // inside, with the orchestrator still patiently waiting. The extra 30s is the shutdown
+            // the notice is holding open: flushes, drains, and the socket teardown that follow it.
+            builder.Services.Configure<HostOptions>(options =>
+                options.ShutdownTimeout =
+                    TimeSpan.FromMinutes(shutdown.NoticeMinutes) + TimeSpan.FromSeconds(30)
+            );
+        }
+
         // The runtime half of reference-data loading. VortexEmulator is the startup half and shares
         // nothing with it: their error policies are opposites.
         //
