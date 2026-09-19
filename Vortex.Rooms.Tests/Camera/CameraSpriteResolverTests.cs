@@ -186,7 +186,7 @@ public sealed class CameraSpriteResolverTests : IDisposable
             MaxExternalBytes = maxBytes,
         };
 
-        return await resolver.ResolveAsync([.. sprites], limits, CancellationToken.None);
+        return await resolver.ResolveAsync([.. sprites], [], limits, CancellationToken.None);
     }
 
     private static CameraSceneSprite Local(string name) =>

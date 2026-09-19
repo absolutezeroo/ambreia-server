@@ -31,6 +31,12 @@ internal sealed class SkiaCameraCanvas : ICameraCanvas
 
     private static readonly SKSamplingOptions NearestNeighbour = new(SKFilterMode.Nearest);
 
+    /// <summary>
+    /// Ceiling on one plane's texture. The plane's corners are payload numbers, so its own scale is
+    /// not a bound — this is.
+    /// </summary>
+    private const long MaxTexturePixels = 8_000_000;
+
     public SkiaCameraCanvas(CameraViewport viewport, Func<string, byte[]?> readSprite)
     {
         _readSprite = readSprite;
@@ -72,6 +78,254 @@ internal sealed class SkiaCameraCanvas : ICameraCanvas
         };
 
         _surface.Canvas.DrawPath(path, paint);
+    }
+
+    /// <summary>
+    /// A textured plane, built the way a second server implementation builds one.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// Three steps. Stack each column's cells into a strip as tall as the plane; lay the strips side
+    /// by side across its width, repeating the list until it is covered; map the finished image onto
+    /// the plane with an affine basis taken from the corners. That is why a column carries no
+    /// coordinates — its position is its rank.
+    /// </para>
+    /// <para>
+    /// The basis is <c>origin = corner 0</c>, <c>u = corner 1 - corner 0</c>, <c>v = corner 2 -
+    /// corner 0</c>. It is affine and not a general quad map because a room plane is a
+    /// parallelogram by construction: the client builds it as an origin and two edges.
+    /// </para>
+    /// </remarks>
+    public bool FillTexturedQuad(
+        ImmutableArray<CameraScenePoint> sortedCorners,
+        int argb,
+        ImmutableArray<ImmutableArray<string>> columns,
+        bool bottomAligned,
+        bool mirrored
+    )
+    {
+        if (sortedCorners.Length < 4 || columns.IsDefaultOrEmpty)
+        {
+            return false;
+        }
+
+        CameraScenePoint origin = sortedCorners[0];
+        (double ux, double uy) = (sortedCorners[1].X - origin.X, sortedCorners[1].Y - origin.Y);
+        (double vx, double vy) = (sortedCorners[2].X - origin.X, sortedCorners[2].Y - origin.Y);
+
+        // The texture is built at the plane's own scale, so a wall twice as long carries twice as
+        // many tiles rather than the same ones stretched.
+        int width = (int)Math.Round(Math.Sqrt((ux * ux) + (uy * uy)));
+        int height = (int)Math.Round(Math.Sqrt((vx * vx) + (vy * vy)));
+
+        if (width <= 0 || height <= 0 || (long)width * height > MaxTexturePixels)
+        {
+            return false;
+        }
+
+        using SKImage? texture = BuildTexture(columns, width, height, bottomAligned, argb);
+
+        if (texture is null)
+        {
+            return false;
+        }
+
+        int saved = _surface.Canvas.Save();
+
+        // Clipped to the plane, because the affine map covers the parallelogram exactly but a
+        // rounded-up texture size can spill a pixel past its edge.
+        using SKPathBuilder builder = new();
+
+        builder.MoveTo((float)sortedCorners[0].X, (float)sortedCorners[0].Y);
+        builder.LineTo((float)sortedCorners[1].X, (float)sortedCorners[1].Y);
+        builder.LineTo((float)sortedCorners[3].X, (float)sortedCorners[3].Y);
+        builder.LineTo((float)sortedCorners[2].X, (float)sortedCorners[2].Y);
+        builder.Close();
+
+        using SKPath clip = builder.Detach();
+
+        _surface.Canvas.ClipPath(clip, antialias: true);
+
+        _surface.Canvas.SetMatrix(
+            new SKMatrix(
+                (float)(ux / width),
+                (float)(vx / height),
+                (float)origin.X,
+                (float)(uy / width),
+                (float)(vy / height),
+                (float)origin.Y,
+                0,
+                0,
+                1
+            )
+        );
+
+        using SKPaint paint = new() { IsAntialias = false };
+
+        if (mirrored)
+        {
+            _surface.Canvas.Scale(-1, -1);
+            _surface.Canvas.Translate(-width, -height);
+        }
+
+        _surface.Canvas.DrawImage(texture, new SKPoint(0, 0), NearestNeighbour, paint);
+        _surface.Canvas.RestoreToCount(saved);
+
+        return true;
+    }
+
+    /// <summary>Columns stacked to height, then laid side by side across width, repeating.</summary>
+    private SKImage? BuildTexture(
+        ImmutableArray<ImmutableArray<string>> columns,
+        int width,
+        int height,
+        bool bottomAligned,
+        int argb
+    )
+    {
+        List<SKImage> strips = [];
+
+        foreach (ImmutableArray<string> column in columns)
+        {
+            SKImage? strip = BuildColumn(column, height, bottomAligned);
+
+            if (strip is not null)
+            {
+                strips.Add(strip);
+            }
+        }
+
+        if (strips.Count == 0)
+        {
+            return null;
+        }
+
+        try
+        {
+            using SKSurface surface = SKSurface.Create(
+                new SKImageInfo(width, height, SKColorType.Rgba8888, SKAlphaType.Premul)
+            );
+
+            surface.Canvas.Clear(SKColors.Transparent);
+
+            // The plane's colour multiplies the texture rather than replacing it -- the client
+            // composites these with 'multiply', which is what makes the same wallpaper darker on a
+            // shaded wall than on a lit one.
+            using SKPaint paint = new()
+            {
+                ColorFilter = SKColorFilter.CreateBlendMode(
+                    new SKColor((uint)argb).WithAlpha(byte.MaxValue),
+                    SKBlendMode.Modulate
+                ),
+                IsAntialias = false,
+            };
+
+            for (int x = 0; x < width; )
+            {
+                int startX = x;
+
+                foreach (SKImage strip in strips)
+                {
+                    surface.Canvas.DrawImage(strip, new SKPoint(x, 0), NearestNeighbour, paint);
+
+                    x += strip.Width;
+
+                    if (x >= width)
+                    {
+                        break;
+                    }
+                }
+
+                // A zero-width strip would spin here forever, and a crafted pack is a plausible way
+                // to get one.
+                if (x == startX)
+                {
+                    break;
+                }
+            }
+
+            return surface.Snapshot();
+        }
+        finally
+        {
+            foreach (SKImage strip in strips)
+            {
+                strip.Dispose();
+            }
+        }
+    }
+
+    private SKImage? BuildColumn(ImmutableArray<string> assets, int height, bool bottomAligned)
+    {
+        List<SKImage> cells = [];
+        int width = 0;
+        int natural = 0;
+
+        // An empty name in the stack means "do not repeat this column": the client uses it to mark a
+        // panel that is drawn once rather than tiled up the wall.
+        bool repeat = true;
+
+        foreach (string asset in assets)
+        {
+            if (asset.Length == 0)
+            {
+                repeat = false;
+                continue;
+            }
+
+            if (Resolve(asset) is not { } cell)
+            {
+                continue;
+            }
+
+            cells.Add(cell);
+            width = Math.Max(width, cell.Width);
+            natural += cell.Height;
+        }
+
+        if (cells.Count == 0 || width <= 0)
+        {
+            return null;
+        }
+
+        int columnHeight = repeat ? height : Math.Min(height, Math.Max(1, natural));
+
+        using SKSurface surface = SKSurface.Create(
+            new SKImageInfo(width, height, SKColorType.Rgba8888, SKAlphaType.Premul)
+        );
+
+        surface.Canvas.Clear(SKColors.Transparent);
+
+        int y = bottomAligned ? height - columnHeight : 0;
+        int end = y + columnHeight;
+
+        while (y < end)
+        {
+            int startY = y;
+
+            foreach (SKImage cell in cells)
+            {
+                surface.Canvas.DrawImage(
+                    cell,
+                    new SKPoint((width - cell.Width) / 2f, y),
+                    NearestNeighbour
+                );
+
+                y += cell.Height;
+
+                if (y >= end || !repeat)
+                {
+                    break;
+                }
+            }
+
+            if (y == startY || !repeat)
+            {
+                break;
+            }
+        }
+
+        return surface.Snapshot();
     }
 
     public bool DrawSprite(string name, CameraSpriteDraw draw)

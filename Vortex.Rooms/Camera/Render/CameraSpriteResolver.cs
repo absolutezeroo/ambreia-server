@@ -79,6 +79,7 @@ internal sealed class CameraSpriteResolver(
 
     public async Task<IReadOnlyDictionary<string, byte[]>> ResolveAsync(
         ImmutableArray<CameraSceneSprite> sprites,
+        ImmutableArray<string> planeAssets,
         CameraRenderLimits limits,
         CancellationToken ct
     )
@@ -86,6 +87,28 @@ internal sealed class CameraSpriteResolver(
         Dictionary<string, byte[]> resolved = new(StringComparer.Ordinal);
         int fetches = 0;
         int bundles = 0;
+
+        // The room's own surfaces first. They all come out of one bundle, so resolving them ahead of
+        // the sprites means that bundle is in hand before anything else asks for it -- and they are
+        // never urls, so they spend none of the external budget.
+        foreach (string asset in planeAssets)
+        {
+            if (resolved.ContainsKey(asset) || bundles >= limits.MaxBundleFetches)
+            {
+                continue;
+            }
+
+            byte[]? surface =
+                ReadLocal(asset)
+                ?? await library.GetSpriteAsync(asset, limits, ct).ConfigureAwait(false);
+
+            bundles++;
+
+            if (surface is { Length: > 0 })
+            {
+                resolved[asset] = surface;
+            }
+        }
 
         // Distinct: a tiled floor names one asset a hundred times, and reading it a hundred times
         // would be the whole cost of a render.

@@ -147,6 +147,15 @@ internal sealed class NitroSpriteLibrary(
             return null;
         }
 
+        // The room's own artwork -- floor and wall textures, the landscape behind a window, the
+        // doorway mask -- all live in one bundle whose name is fixed. Checked before the figuremap
+        // because these names are not parts and would otherwise fall through to the pet branch and
+        // ask for floor_texture.nitro.
+        if (IsRoomContent(assetName))
+        {
+            return Address(limits.AvatarAssetUrl, RoomContentBundle);
+        }
+
         FiguremapIndex figuremap = await FiguremapAsync(limits, ct).ConfigureAwait(false);
 
         if (figuremap.TryLibrary(assetName, out string? library) && library is not null)
@@ -158,6 +167,18 @@ internal sealed class NitroSpriteLibrary(
 
         return cut > 0 ? Address(limits.AvatarAssetUrl, assetName[..cut]) : null;
     }
+
+    /// <summary>
+    /// The bundle holding every room surface. Its file is <c>HabboRoomContent.nitro</c> while its
+    /// manifest calls itself <c>room</c> — the frame keys carry the second, which the manifest
+    /// reader already strips for itself.
+    /// </summary>
+    private const string RoomContentBundle = "HabboRoomContent";
+
+    private static bool IsRoomContent(string assetName) =>
+        assetName.StartsWith("floor_texture", StringComparison.Ordinal)
+        || assetName.StartsWith("wall_texture", StringComparison.Ordinal)
+        || assetName.StartsWith("landscape_", StringComparison.Ordinal);
 
     private static NitroBundleAddress? Address(string baseUrl, string bundle)
     {

@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -44,8 +45,19 @@ internal sealed class RoomPhotoRenderer(
         CancellationToken ct
     )
     {
+        // The room's surfaces are named inside the planes, not among the sprites, so they have to be
+        // gathered before anything is resolved -- distinct, because one wallpaper covers every wall.
+        ImmutableArray<string> planeAssets =
+        [
+            .. scene
+                .Planes.SelectMany(plane => plane.TextureColumns)
+                .SelectMany(column => column)
+                .Where(asset => asset.Length != 0)
+                .Distinct(StringComparer.Ordinal),
+        ];
+
         IReadOnlyDictionary<string, byte[]> resolved = await sprites
-            .ResolveAsync(scene.Sprites, limits, ct)
+            .ResolveAsync(scene.Sprites, planeAssets, limits, ct)
             .ConfigureAwait(false);
 
         CameraSceneRenderer renderer = new(limits.MaxDimension);

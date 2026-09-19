@@ -43,7 +43,21 @@ public sealed class CameraSceneRenderer(int maxDimension)
             // it are read and validated by the decoder and not yet drawn, so a photo today has the
             // room's shape and its flat colours: recognisably the room, without its wallpaper or its
             // doorway cut out.
-            canvas.FillQuad(Perimeter(plane.CornerPoints), plane.Color);
+            // The texture first; the flat colour is what a plane gets when its columns resolve to
+            // nothing — an asset pack without room content, or a client that sends no columns at
+            // all. A photo without wallpaper is still a photo.
+            if (
+                !canvas.FillTexturedQuad(
+                    plane.CornerPoints,
+                    plane.Color,
+                    plane.TextureColumns,
+                    plane.BottomAligned,
+                    IsWall(plane)
+                )
+            )
+            {
+                canvas.FillQuad(Perimeter(plane.CornerPoints), plane.Color);
+            }
         }
 
         foreach (CameraSceneSprite sprite in scene.Sprites)
@@ -154,6 +168,34 @@ public sealed class CameraSceneRenderer(int maxDimension)
         }
 
         return right > 0 && bottom > 0;
+    }
+
+    /// <summary>
+    /// Whether a plane is a wall, which decides only whether its texture is flipped.
+    /// </summary>
+    /// <remarks>
+    /// Read off the texture's own name rather than any flag, because the payload carries no plane
+    /// type — the client knows a wall from a floor by what it painted on it, and so does the other
+    /// server that renders these. <c>landscape_</c> is a wall too: it is the window view, drawn in
+    /// the same mirrored frame.
+    /// </remarks>
+    private static bool IsWall(CameraScenePlane plane)
+    {
+        foreach (ImmutableArray<string> column in plane.TextureColumns)
+        {
+            foreach (string asset in column)
+            {
+                if (
+                    asset.StartsWith("wall_texture", StringComparison.Ordinal)
+                    || asset.StartsWith("landscape_", StringComparison.Ordinal)
+                )
+                {
+                    return true;
+                }
+            }
+        }
+
+        return false;
     }
 
     /// <summary>

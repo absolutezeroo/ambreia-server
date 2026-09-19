@@ -36,8 +36,15 @@ public interface ICameraSpriteSource
     /// A name that resolves to nothing is simply absent from the result: a pack one frame short
     /// leaves a hole in the photo, which beats refusing to take it.
     /// </remarks>
+    /// <param name="planeAssets">
+    /// The room's own surfaces — the floor and wall textures a plane's columns name. They are not
+    /// sprites and are not in <paramref name="sprites"/>, but they resolve through the same pack and
+    /// are drawn by the same canvas, so they are fetched in the same pass rather than discovered
+    /// mid-draw.
+    /// </param>
     Task<IReadOnlyDictionary<string, byte[]>> ResolveAsync(
         ImmutableArray<CameraSceneSprite> sprites,
+        ImmutableArray<string> planeAssets,
         CameraRenderLimits limits,
         CancellationToken ct
     );

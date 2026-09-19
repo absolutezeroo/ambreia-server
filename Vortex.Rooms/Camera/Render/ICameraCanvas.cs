@@ -38,6 +38,41 @@ public interface ICameraCanvas : IDisposable
     void FillQuad(ImmutableArray<CameraScenePoint> corners, int argb);
 
     /// <summary>
+    /// Fills a room plane with its own texture instead of a flat colour.
+    /// </summary>
+    /// <param name="sortedCorners">
+    /// The scene's four corners <b>as they arrived</b>, not the perimeter order
+    /// <see cref="FillQuad"/> takes. The texture is mapped onto the plane by an affine basis read
+    /// straight off them — corner 0 is the origin, corner 1 gives the width axis, corner 2 the
+    /// height axis — so re-ordering them here would be re-ordering the basis.
+    /// </param>
+    /// <param name="columns">
+    /// One entry per texture column, each a stack of asset names from bottom to top. The client
+    /// sends no coordinates with them because none are needed: a column's position is its rank, and
+    /// the list repeats until the plane is covered.
+    /// </param>
+    /// <param name="bottomAligned">
+    /// Whether a column that does not fill the plane sits at the bottom of it rather than the top —
+    /// a half-height wall panel against a floor tile.
+    /// </param>
+    /// <param name="mirrored">
+    /// Flips the finished texture on both axes. Wall art is authored with its baseboard at the
+    /// bottom of the source image and the client paints walls in a mirrored frame, so without this a
+    /// wall comes out upside-down and any asymmetric pattern comes out reversed.
+    /// </param>
+    /// <returns>
+    /// False when the plane could not be textured — no column resolved, or the plane has no area.
+    /// The caller then fills it flat, which is what a photo did before textures were drawn at all.
+    /// </returns>
+    bool FillTexturedQuad(
+        ImmutableArray<CameraScenePoint> sortedCorners,
+        int argb,
+        ImmutableArray<ImmutableArray<string>> columns,
+        bool bottomAligned,
+        bool mirrored
+    );
+
+    /// <summary>
     /// Draws the sprite called <paramref name="name"/>.
     /// </summary>
     /// <returns>

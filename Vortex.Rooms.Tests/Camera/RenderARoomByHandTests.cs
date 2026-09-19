@@ -2,6 +2,8 @@ using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.IO;
+using SkiaSharp;
+using Vortex.Furniture.Assets;
 using Vortex.Primitives.Camera;
 using Vortex.Rooms.Camera.Render;
 using Xunit;
@@ -56,7 +58,8 @@ public sealed class RenderARoomByHandTests
                         Floor(x, y + 1),
                         Floor(x + 1, y),
                         Floor(x + 1, y + 1),
-                        0x989865
+                        0x989865,
+                        FloorTexture
                     )
                 );
             }
@@ -69,7 +72,14 @@ public sealed class RenderARoomByHandTests
             CameraScenePoint bottomFar = Floor(0, y + 1);
 
             planes.Add(
-                Tile(bottomNear, bottomFar, Raise(bottomNear, 110), Raise(bottomFar, 110), 0x8E8E8E)
+                Tile(
+                    bottomNear,
+                    bottomFar,
+                    Raise(bottomNear, 110),
+                    Raise(bottomFar, 110),
+                    0x8E8E8E,
+                    WallTexture
+                )
             );
         }
 
@@ -79,7 +89,14 @@ public sealed class RenderARoomByHandTests
             CameraScenePoint bottomFar = Floor(x + 1, 0);
 
             planes.Add(
-                Tile(bottomNear, bottomFar, Raise(bottomNear, 110), Raise(bottomFar, 110), 0xB6B6B6)
+                Tile(
+                    bottomNear,
+                    bottomFar,
+                    Raise(bottomNear, 110),
+                    Raise(bottomFar, 110),
+                    0xB6B6B6,
+                    WallTexture
+                )
             );
         }
 
@@ -100,9 +117,17 @@ public sealed class RenderARoomByHandTests
             RejectedExternalSprites = 0,
         };
 
+        // Real room artwork when VORTEX_ROOM_CONTENT points at a HabboRoomContent.nitro, nothing
+        // otherwise. Without it the planes fall back to their flat colour, which is the other half of
+        // what this is for: the two runs side by side are exactly what a texture buys.
+        IReadOnlyDictionary<string, byte[]> surfaces = LoadRoomContent();
+
         byte[] png = new CameraSceneRenderer(1600).Render(
             scene,
-            viewport => new SkiaCameraCanvas(viewport, _ => null)
+            viewport => new SkiaCameraCanvas(
+                viewport,
+                name => surfaces.TryGetValue(name, out byte[]? bytes) ? bytes : null
+            )
         );
 
         string path = Path.Combine(Path.GetTempPath(), "vortex-room-render.png");
@@ -110,6 +135,64 @@ public sealed class RenderARoomByHandTests
         File.WriteAllBytes(path, png);
 
         Assert.True(png.Length > 0, path);
+    }
+
+    private const string FloorTexture = "floor_texture_64_1_floor_fuzzy1";
+    private const string WallTexture = "wall_texture_64_0_wall_lively";
+
+    /// <summary>
+    /// Every asset out of a real <c>HabboRoomContent.nitro</c>, cropped through the same manifest the
+    /// server uses. Not a stand-in: the whole question a texture raises is whether the frames land
+    /// where the manifest says, and a hand-drawn tile would answer it with my own arithmetic.
+    /// </summary>
+    private static IReadOnlyDictionary<string, byte[]> LoadRoomContent()
+    {
+        string? path = Environment.GetEnvironmentVariable("VORTEX_ROOM_CONTENT");
+
+        if (path is null || !File.Exists(path))
+        {
+            return new Dictionary<string, byte[]>();
+        }
+
+        if (
+            !NitroBundle.TryRead(File.ReadAllBytes(path), out NitroBundle? bundle)
+            || bundle!.Sheet is not { } sheet
+            || !NitroAssetManifest.TryRead(bundle.Manifest, out NitroAssetManifest? manifest)
+        )
+        {
+            return new Dictionary<string, byte[]>();
+        }
+
+        using SKBitmap decoded = SKBitmap.Decode(sheet);
+
+        Dictionary<string, byte[]> surfaces = new(StringComparer.Ordinal);
+
+        foreach (string name in new[] { FloorTexture, WallTexture })
+        {
+            if (!manifest!.TryResolve(name, out NitroSpriteFrame frame))
+            {
+                continue;
+            }
+
+            using SKBitmap cropped = new(frame.Width, frame.Height);
+
+            if (
+                !decoded.ExtractSubset(
+                    cropped,
+                    SKRectI.Create(frame.X, frame.Y, frame.Width, frame.Height)
+                )
+            )
+            {
+                continue;
+            }
+
+            using SKImage image = SKImage.FromBitmap(cropped);
+            using SKData encoded = image.Encode(SKEncodedImageFormat.Png, 100);
+
+            surfaces[name] = encoded.ToArray();
+        }
+
+        return surfaces;
     }
 
     /// <summary>
@@ -148,7 +231,8 @@ public sealed class RenderARoomByHandTests
         CameraScenePoint left,
         CameraScenePoint right,
         CameraScenePoint far,
-        int color
+        int color,
+        string texture = ""
     ) =>
         new()
         {
@@ -156,7 +240,13 @@ public sealed class RenderARoomByHandTests
             CornerPoints = SortQuadPoints(origin, left, right, far),
             Color = color,
             Masks = [],
-            TextureColumns = [],
+            TextureColumns =
+                texture.Length == 0
+                    ? []
+                    :
+                    [
+                        [texture],
+                    ],
             BottomAligned = false,
         };
 

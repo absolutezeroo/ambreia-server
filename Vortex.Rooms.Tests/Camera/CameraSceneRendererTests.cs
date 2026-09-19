@@ -322,6 +322,30 @@ public sealed class CameraSceneRendererTests
 
         public List<ImmutableArray<CameraScenePoint>> Quads { get; } = [];
 
+        /// <summary>
+        /// Textured planes recorded as their columns, and refused so the flat fill still runs. These
+        /// tests are about draw order and geometry, and a canvas that claimed to have textured a
+        /// plane would take every existing quad assertion with it.
+        /// </summary>
+        public List<ImmutableArray<ImmutableArray<string>>> Textured { get; } = [];
+
+        public bool FillTexturedQuad(
+            ImmutableArray<CameraScenePoint> sortedCorners,
+            int argb,
+            ImmutableArray<ImmutableArray<string>> columns,
+            bool bottomAligned,
+            bool mirrored
+        )
+        {
+            if (!columns.IsDefaultOrEmpty)
+            {
+                Textured.Add(columns);
+                Calls.Add($"texture:{argb}:{(mirrored ? "wall" : "floor")}");
+            }
+
+            return false;
+        }
+
         public void FillQuad(ImmutableArray<CameraScenePoint> corners, int argb)
         {
             corners
