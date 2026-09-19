@@ -40,6 +40,17 @@
     <!-- Matches the version Pomelo.EntityFrameworkCore.MySql 9.0.0 already resolves transitively;
          pinned explicitly because Vortex.Main references its DbProviderFactory directly. -->
     <PackageVersion Include="MySqlConnector" Version="2.4.0" />
+    <!-- The room camera rasterises a photo server-side, and the BCL has no portable way to draw one:
+         System.Drawing.Common is Windows-only since .NET 7 and this ships on Linux. SkiaSharp over
+         ImageSharp for the licence — ImageSharp's Six Labors Split License turns commercial above a
+         revenue threshold, which is not a condition to bury in a hotel's dependency graph.
+
+         NoDependencies is the right native package here: the full Linux one wants fontconfig and
+         friends installed in the image, and the camera draws no text at all. If text is ever drawn
+         (a watermark, a caption), that swaps to SkiaSharp.NativeAssets.Linux and the Dockerfile
+         grows an apt line. -->
+    <PackageVersion Include="SkiaSharp" Version="4.152.1" />
+    <PackageVersion Include="SkiaSharp.NativeAssets.Linux.NoDependencies" Version="4.152.1" />
     <!-- Transitive pin: Microsoft.Orleans.Sdk 10.2.1's code generator requires Roslyn >= 5.0.0,
          while Microsoft.EntityFrameworkCore.Design 9.0.8 pulls Roslyn 4.8.0. Central Package
          Management's transitive pinning needs an explicit version to reconcile the two. -->

@@ -6,6 +6,10 @@
     <PackageReference Include="Microsoft.Extensions.Hosting" />
     <PackageReference Include="Microsoft.Orleans.Streaming" />
     <PackageReference Include="Microsoft.Orleans.Persistence.Memory" />
+    <!-- The room camera's rasteriser. Confined to Camera/Render/SkiaCameraCanvas.cs: everything that
+         decides what a photo contains works against ICameraCanvas and never sees these types. -->
+    <PackageReference Include="SkiaSharp" />
+    <PackageReference Include="SkiaSharp.NativeAssets.Linux.NoDependencies" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Vortex.Database\Vortex.Database.csproj" />

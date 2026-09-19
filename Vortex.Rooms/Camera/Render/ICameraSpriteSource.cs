@@ -1,4 +1,5 @@
-using System;
+using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Threading;
 using System.Threading.Tasks;
 using Vortex.Primitives.Camera;
@@ -6,45 +7,37 @@ using Vortex.Primitives.Camera;
 namespace Vortex.Rooms.Camera.Render;
 
 /// <summary>
-/// Where a sprite's encoded bytes come from: the hotel's extracted asset directory, or an allowed
-/// url.
+/// Where a photo's sprites come from: the hotel's extracted asset directory, or an allowed url.
 /// </summary>
 /// <remarks>
 /// <para>
-/// Bytes, not pixels. Decoding belongs to whoever is drawing, and keeping this boundary at "an
-/// encoded image or nothing" is what lets the policy — which names may be read, which hosts may be
-/// reached, how many times — be tested without a raster library anywhere near it.
+/// Every sprite at once, before anything is drawn, rather than one at a time while drawing. The
+/// scene names all of them up front, so there is nothing to discover mid-render — and resolving
+/// ahead is what keeps the canvas synchronous instead of blocking a thread on a socket in the middle
+/// of a draw call.
 /// </para>
 /// <para>
-/// The two branches are not interchangeable and the caller does not choose between them: the scene
-/// decoder already classified every sprite as a local key or an allowed url, and this follows that
-/// classification rather than re-deciding it.
+/// Bytes, not pixels: decoding belongs to whoever draws, and keeping this boundary at "encoded image
+/// or nothing" is what lets the policy — which names may be read, which hosts reached, how many
+/// times — be tested with no raster library anywhere near it.
+/// </para>
+/// <para>
+/// It does not re-decide what may be fetched. The scene decoder already classified every sprite as a
+/// local key or a url that passed the operator's allowlist, and second-guessing that here would be
+/// two rules to keep in agreement instead of one.
 /// </para>
 /// </remarks>
 public interface ICameraSpriteSource
 {
     /// <summary>
-    /// The encoded image for one sprite, or empty when there is none.
-    /// </summary>
-    /// <param name="source">
-    /// Which branch to take. An <see cref="CameraSpriteSource.ExternalImage"/> name has already
-    /// passed the operator's allowlist; a <see cref="CameraSpriteSource.LocalAsset"/> name is a key,
-    /// never a path.
-    /// </param>
-    ValueTask<ReadOnlyMemory<byte>> ReadAsync(
-        string name,
-        CameraSpriteSource source,
-        CancellationToken ct
-    );
-
-    /// <summary>
-    /// Starts a fresh network budget for one photo.
+    /// Resolves every sprite the scene names, keyed by name.
     /// </summary>
     /// <remarks>
-    /// A scene may name dozens of external images and each one is a request this hotel makes. The
-    /// allowlist says <em>where</em> those may go; this bounds <em>how many</em> and for how long,
-    /// so one photo cannot become a burst against the asset host — or a render that never finishes
-    /// because a host stopped answering.
+    /// A name that resolves to nothing is simply absent from the result: a pack one frame short
+    /// leaves a hole in the photo, which beats refusing to take it.
     /// </remarks>
-    void BeginPhoto();
+    Task<IReadOnlyDictionary<string, byte[]>> ResolveAsync(
+        ImmutableArray<CameraSceneSprite> sprites,
+        CancellationToken ct
+    );
 }

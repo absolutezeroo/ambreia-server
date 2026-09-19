@@ -1,0 +1,187 @@
+using System;
+using System.Collections.Generic;
+using System.Collections.Immutable;
+using System.IO;
+using System.Net.Http;
+using System.Threading;
+using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
+using Vortex.Primitives.Camera;
+
+namespace Vortex.Rooms.Camera.Render;
+
+/// <summary>
+/// Sprites from the hotel's extracted asset directory, and from the urls an operator allowed.
+/// </summary>
+/// <remarks>
+/// <para>
+/// The local branch is a dictionary lookup made of a directory: a name is a key, joined to the root
+/// and checked to still be under it. Nothing walks, nothing globs, and a name that escapes is
+/// refused rather than repaired — the same shape the photo store uses for its own files.
+/// </para>
+/// <para>
+/// The network branch is the one that needs a leash. A scene may name dozens of external images and
+/// each is a request this hotel makes on the payload's say-so; the allowlist decided <em>where</em>,
+/// and the budget here decides <em>how many</em> and for how long, so one photo cannot become a
+/// burst against the asset host or a render that never ends because a host stopped answering.
+/// </para>
+/// </remarks>
+internal sealed class CameraSpriteResolver(
+    string spriteRoot,
+    int maxExternalFetches,
+    TimeSpan externalTimeout,
+    int maxExternalBytes,
+    HttpClient http,
+    ILogger logger
+) : ICameraSpriteSource
+{
+    private readonly string _root =
+        Path.GetFullPath(spriteRoot)
+            .TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar)
+        + Path.DirectorySeparatorChar;
+
+    public async Task<IReadOnlyDictionary<string, byte[]>> ResolveAsync(
+        ImmutableArray<CameraSceneSprite> sprites,
+        CancellationToken ct
+    )
+    {
+        Dictionary<string, byte[]> resolved = new(StringComparer.Ordinal);
+        int fetches = 0;
+
+        // Distinct: a tiled floor names one asset a hundred times, and reading it a hundred times
+        // would be the whole cost of a render.
+        foreach (CameraSceneSprite sprite in sprites)
+        {
+            if (resolved.ContainsKey(sprite.Name))
+            {
+                continue;
+            }
+
+            byte[]? bytes;
+
+            if (sprite.Source == CameraSpriteSource.LocalAsset)
+            {
+                bytes = ReadLocal(sprite.Name);
+            }
+            else if (fetches < maxExternalFetches)
+            {
+                fetches++;
+                bytes = await FetchAsync(sprite.Name, ct).ConfigureAwait(false);
+            }
+            else
+            {
+                // Past the budget the photo simply loses its remaining badges. The client does the
+                // same to its own past thirty external images, so this is a shape it already makes.
+                logger.LogDebug(
+                    "Camera photo passed its external image budget of {Budget}; {Name} was not fetched.",
+                    maxExternalFetches,
+                    sprite.Name
+                );
+                continue;
+            }
+
+            if (bytes is { Length: > 0 })
+            {
+                resolved[sprite.Name] = bytes;
+            }
+        }
+
+        return resolved;
+    }
+
+    private byte[]? ReadLocal(string key)
+    {
+        string candidate = Path.GetFullPath(Path.Combine(_root, key + ".png"));
+
+        // The decoder already refuses a key with a separator in it. This is the second lock, and it
+        // is the one that still holds the day somebody joins a name here without asking.
+        if (!candidate.StartsWith(_root, StringComparison.Ordinal))
+        {
+            logger.LogWarning("Camera sprite {Key} resolved outside the asset directory.", key);
+            return null;
+        }
+
+        try
+        {
+            return File.Exists(candidate) ? File.ReadAllBytes(candidate) : null;
+        }
+        catch (IOException ex)
+        {
+            logger.LogWarning(ex, "Camera sprite {Key} could not be read.", key);
+            return null;
+        }
+        catch (UnauthorizedAccessException ex)
+        {
+            logger.LogWarning(ex, "Camera sprite {Key} could not be read.", key);
+            return null;
+        }
+    }
+
+    private async Task<byte[]?> FetchAsync(string url, CancellationToken ct)
+    {
+        using CancellationTokenSource timeout = CancellationTokenSource.CreateLinkedTokenSource(ct);
+        timeout.CancelAfter(externalTimeout);
+
+        try
+        {
+            using HttpRequestMessage request = new(HttpMethod.Get, url);
+            using HttpResponseMessage response = await http.SendAsync(
+                    request,
+                    HttpCompletionOption.ResponseHeadersRead,
+                    timeout.Token
+                )
+                .ConfigureAwait(false);
+
+            if (!response.IsSuccessStatusCode)
+            {
+                return null;
+            }
+
+            // Bounded before it is read, not measured after: a host that answers with a stream of
+            // zeroes forever is a host this hotel asked, and Content-Length is the sender's claim.
+            if (response.Content.Headers.ContentLength > maxExternalBytes)
+            {
+                return null;
+            }
+
+            await using Stream body = await response
+                .Content.ReadAsStreamAsync(timeout.Token)
+                .ConfigureAwait(false);
+
+            return await ReadBoundedAsync(body, timeout.Token).ConfigureAwait(false);
+        }
+        catch (HttpRequestException ex)
+        {
+            logger.LogDebug(ex, "Camera external image {Url} could not be fetched.", url);
+            return null;
+        }
+        catch (OperationCanceledException) when (!ct.IsCancellationRequested)
+        {
+            logger.LogDebug("Camera external image {Url} timed out.", url);
+            return null;
+        }
+    }
+
+    private async Task<byte[]?> ReadBoundedAsync(Stream body, CancellationToken ct)
+    {
+        using MemoryStream buffer = new();
+        byte[] chunk = new byte[8192];
+
+        while (true)
+        {
+            int read = await body.ReadAsync(chunk, ct).ConfigureAwait(false);
+
+            if (read == 0)
+            {
+                return buffer.Length == 0 ? null : buffer.ToArray();
+            }
+
+            if (buffer.Length + read > maxExternalBytes)
+            {
+                return null;
+            }
+
+            buffer.Write(chunk, 0, read);
+        }
+    }
+}
