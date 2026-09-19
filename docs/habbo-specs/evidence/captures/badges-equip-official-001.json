@@ -1,0 +1,63 @@
+{
+  "id": "badges-equip-official-001",
+  "source": "official",
+  "revision": "WIN63-202609091217-117204808",
+  "recordedUtc": "2026-09-19T01:35:57Z",
+  "note": "Equipping badges from the inventory badge editor on habbo.fr. The player is standing in a room and ends up wearing two badges in slots 1 and 2. The build is WIN63-202609091217-117204808, NOT the workspace target WIN63-202607011411-782849652, so the header ids observed on the wire (SetActivatedBadges 2838, HabboUserBadges 335) belong to that newer build and must not be read as ours -- each message carries its name, which is what resolves it. Two things this settles. First, SetActivatedBadges carries five (slot, code) pairs with no length prefix and no trailing field, empty slots sent as an empty string. Second, and this is what the emulator was missing: the server answers with HabboUserBadges, unprompted -- the client asks for nothing between the request and the two replies. It arrives twice, 7ms apart, same userId and same two badges in a different order, which is what a reply to the acting session plus a broadcast to the room looks like from inside the room. One copy is enough to drive both of the client's listeners for the message (RoomUsersHandler.onUserBadges and the inventory BadgesModel.onUserBadges are dispatched from the same packet), so the count is recorded here as observed, not as a requirement. Each badge on the wire is four values -- slot, code, ownerCount, badgeRarityId -- confirming the four-field layout the workspace already serializes; both achievement badges report ownerCount 1000 and rarity 0.",
+  "messages": [
+    {
+      "index": 0,
+      "direction": "client_to_server",
+      "name": "SetActivatedBadges",
+      "header": 2838,
+      "fields": {
+        "slot_1": "1",
+        "badge_1": "ACH_HabbiconCollected2",
+        "slot_2": "2",
+        "badge_2": "ACH_AllTimeHotelPresence5",
+        "slot_3": "3",
+        "badge_3": "",
+        "slot_4": "4",
+        "badge_4": "",
+        "slot_5": "5",
+        "badge_5": ""
+      }
+    },
+    {
+      "index": 1,
+      "direction": "server_to_client",
+      "name": "HabboUserBadges",
+      "header": 335,
+      "fields": {
+        "user_id": "26020248",
+        "count": "2",
+        "badge_0_slot": "2",
+        "badge_0_code": "ACH_AllTimeHotelPresence5",
+        "badge_0_owner_count": "1000",
+        "badge_0_rarity_id": "0",
+        "badge_1_slot": "1",
+        "badge_1_code": "ACH_HabbiconCollected2",
+        "badge_1_owner_count": "1000",
+        "badge_1_rarity_id": "0"
+      }
+    },
+    {
+      "index": 2,
+      "direction": "server_to_client",
+      "name": "HabboUserBadges",
+      "header": 335,
+      "fields": {
+        "user_id": "26020248",
+        "count": "2",
+        "badge_0_slot": "1",
+        "badge_0_code": "ACH_HabbiconCollected2",
+        "badge_0_owner_count": "1000",
+        "badge_0_rarity_id": "0",
+        "badge_1_slot": "2",
+        "badge_1_code": "ACH_AllTimeHotelPresence5",
+        "badge_1_owner_count": "1000",
+        "badge_1_rarity_id": "0"
+      }
+    }
+  ]
+}

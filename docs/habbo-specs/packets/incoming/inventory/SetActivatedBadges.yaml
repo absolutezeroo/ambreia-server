@@ -10,7 +10,7 @@
 
 spec: packet
 spec_version: 1
-generated_digest: "sha256:8ae124263e9c9d52d1ae44293125625bf0e284580084c9037303981c37cae694"
+generated_digest: "sha256:5ee3252d3b15ef8c9fd87b20efee28eeb3a4edd76fcebd8bd5c41a716a825860"
 generated:
   name: SetActivatedBadges
   direction: incoming
@@ -106,6 +106,7 @@ generated:
     line: 8
   conflicts:
   - cf_b732eef0cd
+  - cf_6c3e997f75
   unknowns:
   - uk_3941a11fdd
 verified: {}

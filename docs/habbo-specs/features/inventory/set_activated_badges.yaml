@@ -10,7 +10,7 @@
 
 spec: feature
 spec_version: 1
-generated_digest: "sha256:6c984813dabd0c82f3e0fe3520c3b2cf50cdf6a010403d1d610e03cb3d176c50"
+generated_digest: "sha256:907be9c0958335d7e0efc219e80b89c1bf650d5601be21c9b04acacf610cddd6"
 generated:
   id: inventory.set_activated_badges
   domain: inventory
@@ -22,7 +22,7 @@ generated:
     references:
     - habbo-arcturus-daybreak
   official_behavior:
-    status: unknown
+    status: capture_confirmed
   flow:
   - order: 0
     layer: handler
@@ -33,13 +33,17 @@ generated:
     symbol: PlayerBadgeGrain.SetActivatedBadgesAsync
     evidence: ev_f8656423bf64
   - order: 2
-    layer: module
-    symbol: EventSystem.PublishAsync
-    evidence: ev_34bf3ac088e2
-  - order: 3
     layer: domain
     symbol: WiredActionBranch.Select
     evidence: ev_f13d6bcce744
+  - order: 3
+    layer: module
+    symbol: EventSystem.PublishAsync
+    evidence: ev_34bf3ac088e2
+  - order: 4
+    layer: grain
+    symbol: RoomGrain.SendComposerToRoomAsync
+    evidence: ev_b46938ec853d
   checks:
   - expression: ctx.PlayerId <= 0
     on_fail: return
@@ -64,7 +68,15 @@ generated:
     evidence: ev_f8656423bf64
   outgoing:
     ordering: unknown
-    packets: []
+    packets:
+    - packet: HabboUserBadges
+      recipient: room_users
+      recipient_confidence: implementation_observed
+      evidence: ev_9b29c2b55162
+    - packet: HabboUserBadges
+      recipient: actor
+      recipient_confidence: implementation_observed
+      evidence: ev_9b29c2b55162
   reaches_persistence: true
   evidence:
   - id: ev_34bf3ac088e2
@@ -80,14 +92,21 @@ generated:
     origin: vortex
     source: Vortex.PacketHandlers/Inventory/Badges/SetActivatedBadgesMessageHandler.cs
     symbol: SetActivatedBadgesMessageHandler
-    line: 21
+    line: 24
+  - id: ev_b46938ec853d
+    kind: emulator_flow
+    authority: vortex_emulator
+    origin: vortex
+    source: Vortex.Rooms/Grains/RoomGrain.cs
+    symbol: RoomGrain
+    line: 296
   - id: ev_d1d94ce5b2a4
     kind: emulator_handler
     authority: vortex_emulator
     origin: vortex
     source: Vortex.PacketHandlers/Inventory/Badges/SetActivatedBadgesMessageHandler.cs
     symbol: SetActivatedBadgesMessageHandler
-    line: 10
+    line: 13
   - id: ev_f13d6bcce744
     kind: emulator_flow
     authority: vortex_emulator
@@ -101,12 +120,13 @@ generated:
     origin: vortex
     source: Vortex.Progression/Grains/PlayerBadgeGrain.cs
     symbol: PlayerBadgeGrain
-    line: 63
+    line: 81
   scenarios:
   - inventory.set_activated_badges.guard_0
   - inventory.set_activated_badges.guard_1
   - inventory.set_activated_badges.success
   conflicts:
+  - cf_6c3e997f75
   - cf_b732eef0cd
   unknowns:
   - uk_17bcd0eddf

@@ -21,6 +21,9 @@ internal sealed class PlayerBadgeGrain(
     ILogger<PlayerBadgeGrain> logger
 ) : Grain, IPlayerBadgeGrain
 {
+    /// <summary>The badge editor has five display slots and the client sends exactly five pairs.</summary>
+    private const int MaxSlot = 5;
+
     private readonly IDbContextFactory<VortexDbContext> _dbCtxFactory = dbCtxFactory;
     private readonly IEventPublisher _events = events;
     private readonly ILogger<PlayerBadgeGrain> _logger = logger;
@@ -60,11 +63,28 @@ internal sealed class PlayerBadgeGrain(
         }
     }
 
-    public async Task SetActivatedBadgesAsync(
+    /// <summary>
+    ///     The five slots the client sends, reduced to the ones worth writing. A slot outside 1..5
+    ///     has nowhere to render, an empty code is an empty slot, and a code or a slot claimed
+    ///     twice would make <c>ToDictionary</c> throw — after the update that clears every slot had
+    ///     already committed, so a crafted packet wiped the selection instead of changing it.
+    /// </summary>
+    internal static Dictionary<string, int> NormalizeSlots(
+        List<(int SlotId, string BadgeCode)> slots
+    ) =>
+        slots
+            .Where(s => s.SlotId is > 0 and <= MaxSlot && !string.IsNullOrWhiteSpace(s.BadgeCode))
+            .DistinctBy(s => s.BadgeCode)
+            .DistinctBy(s => s.SlotId)
+            .ToDictionary(s => s.BadgeCode, s => s.SlotId);
+
+    public async Task<ImmutableArray<PlayerBadgeSnapshot>> SetActivatedBadgesAsync(
         List<(int SlotId, string BadgeCode)> slots,
         CancellationToken ct
     )
     {
+        ImmutableArray<PlayerBadgeSnapshot> equipped = [];
+
         try
         {
             await using VortexDbContext dbCtx = await _dbCtxFactory
@@ -76,9 +96,7 @@ internal sealed class PlayerBadgeGrain(
                 .ExecuteUpdateAsync(up => up.SetProperty(b => b.SlotId, 0), ct)
                 .ConfigureAwait(true);
 
-            Dictionary<string, int> desiredSlotByCode = slots
-                .Where(s => s.SlotId > 0 && !string.IsNullOrWhiteSpace(s.BadgeCode))
-                .ToDictionary(s => s.BadgeCode, s => s.SlotId);
+            Dictionary<string, int> desiredSlotByCode = NormalizeSlots(slots);
 
             if (desiredSlotByCode.Count > 0)
             {
@@ -97,21 +115,27 @@ internal sealed class PlayerBadgeGrain(
                 }
 
                 await dbCtx.SaveChangesAsync(ct).ConfigureAwait(true);
+
+                // The rows that were found, not the codes that were asked for: a request naming a
+                // badge the player does not own equips nothing, and reporting it worn would put a
+                // badge on the avatar that no row backs.
+                equipped =
+                [
+                    .. toActivate
+                        .OrderBy(b => b.SlotId)
+                        .Select(b => new PlayerBadgeSnapshot
+                        {
+                            SlotId = b.SlotId ?? 0,
+                            BadgeCode = b.BadgeCode,
+                        }),
+                ];
             }
 
             // Published for an empty selection too: taking every badge off is a change worth a line,
             // and a timeline that only ever records putting them on cannot show the difference.
             await _events
                 .PublishAsync(
-                    new BadgesEquippedEvent(
-                        PlayerId,
-                        [
-                            .. slots
-                                .Where(s => s.SlotId > 0 && !string.IsNullOrWhiteSpace(s.BadgeCode))
-                                .OrderBy(s => s.SlotId)
-                                .Select(s => s.BadgeCode),
-                        ]
-                    ),
+                    new BadgesEquippedEvent(PlayerId, [.. equipped.Select(b => b.BadgeCode)]),
                     ct
                 )
                 .ConfigureAwait(true);
@@ -120,5 +144,7 @@ internal sealed class PlayerBadgeGrain(
         {
             _logger.LogError(ex, "Failed to update badge slots for player {PlayerId}", PlayerId);
         }
+
+        return equipped;
     }
 }
