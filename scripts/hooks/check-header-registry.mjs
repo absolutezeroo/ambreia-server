@@ -68,6 +68,14 @@ const EXTENSIONS = new Set([
   // therefore the expected state, not a dead mapping.
   'RaidProtectionCapabilityMessageComposer',
   'RaidProtectionSettingsResultMessageComposer',
+  // Variable FX's reassigned config push, for exactly the same reason. AIR-1.0.31 binds it at 267
+  // (_SafeCls_2127: _SafeStr_4678[267]), which WIN63 spends on FriendFurniCancelLock -- so every
+  // push on 267 reached the wrong parser and the bar never appeared. 3390 is the first id after
+  // 3388 free as an event AND as a composer on both sides, and the served client agrees:
+  // vortex-engine's HabboMessages.ts does `this._events.set(3390, VariableFxConfigUpdateMessageEvent)`.
+  // Its two siblings keep AIR's own ids (3388, 3889) because those were free, which is why they
+  // pass as "bound by a later build" and this one cannot.
+  'VariableFxConfigUpdateMessageComposer',
 ]);
 // 8000-8999 is the Vortex-specific band (Headers.cs, "Vortex-specific (no AS3 backing)"), reserved
 // because it is empty in both registries. Naming each id here as well would mean editing this file

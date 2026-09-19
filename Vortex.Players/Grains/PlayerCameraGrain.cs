@@ -204,7 +204,7 @@ internal sealed class PlayerCameraGrain(
                     await grainFactory
                         .GetInventoryGrain(SelfId)
                         .GrantFurnitureWithLegacyStuffDataAsync(definitionId, stuffData, inner)
-                        .ConfigureAwait(false);
+                        .ConfigureAwait(true);
 
                     return true;
                 },
@@ -528,6 +528,6 @@ internal sealed class PlayerCameraGrain(
             .OrderBy(d => d.Id)
             .Select(d => d.Id)
             .FirstOrDefaultAsync(ct)
-            .ConfigureAwait(false);
+            .ConfigureAwait(true);
     }
 }

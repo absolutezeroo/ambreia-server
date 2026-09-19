@@ -533,74 +533,7 @@ public sealed partial class RoomGrain
             return;
         }
 
-        try
-        {
-            await using VortexDbContext dbCtx = await _dbCtxFactory
-                .CreateDbContextAsync(ct)
-                .ConfigureAwait(true);
-
-            bool alreadyHasRights = await dbCtx
-                .RoomRights.AnyAsync(
-                    r =>
-                        r.RoomEntityId == _state.RoomId.Value
-                        && r.PlayerEntityId == target.Value
-                        && r.DeletedAt == null,
-                    ct
-                )
-                .ConfigureAwait(true);
-
-            if (alreadyHasRights)
-            {
-                return;
-            }
-
-            dbCtx.RoomRights.Add(
-                new RoomRightEntity
-                {
-                    RoomEntityId = _state.RoomId.Value,
-                    PlayerEntityId = target.Value,
-                }
-            );
-
-            await dbCtx.SaveChangesAsync(ct).ConfigureAwait(true);
-
-            _state.PlayerIdsWithRights.Add(target);
-
-            ImmutableArray<RoomControllerSnapshot> controllers = await SecurityModule
-                .LoadControllersAsync(ct)
-                .ConfigureAwait(true);
-
-            await _grainFactory
-                .GetPlayerPresenceGrain(actor)
-                .SendComposerAsync(
-                    new FlatControllersEventMessageComposer
-                    {
-                        RoomId = _state.RoomId,
-                        Controllers = controllers,
-                    }
-                )
-                .ConfigureAwait(true);
-
-            await SecurityModule
-                .RefreshControllerLevelForPlayerAsync(target, ct)
-                .ConfigureAwait(true);
-
-            await _events
-                .PublishAsync(
-                    new RoomRightsChangedEvent(actor, _state.RoomId.Value, target, "granted"),
-                    ct
-                )
-                .ConfigureAwait(true);
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(
-                ex,
-                "Failed to assign rights to player {Target} in room {RoomId}.",
-                target,
-                _state.RoomId
-            );
-        }
+        await SecurityModule.GrantRightsAsync(actor, target, ct).ConfigureAwait(true);
     }
 
     public async Task RemoveRightsAsync(
@@ -614,73 +547,7 @@ public sealed partial class RoomGrain
             return;
         }
 
-        try
-        {
-            await using VortexDbContext dbCtx = await _dbCtxFactory
-                .CreateDbContextAsync(ct)
-                .ConfigureAwait(true);
-
-            int[] targetValues = [.. targets.Select(t => t.Value)];
-
-            List<RoomRightEntity> rows = await dbCtx
-                .RoomRights.Where(r =>
-                    r.RoomEntityId == _state.RoomId.Value
-                    && targetValues.AsEnumerable().Contains(r.PlayerEntityId)
-                    && r.DeletedAt == null
-                )
-                .ToListAsync(ct)
-                .ConfigureAwait(true);
-
-            foreach (RoomRightEntity row in rows)
-            {
-                dbCtx.RoomRights.Remove(row);
-            }
-
-            await dbCtx.SaveChangesAsync(ct).ConfigureAwait(true);
-
-            foreach (PlayerId target in targets)
-            {
-                _state.PlayerIdsWithRights.Remove(target);
-            }
-
-            ImmutableArray<RoomControllerSnapshot> controllers = await SecurityModule
-                .LoadControllersAsync(ct)
-                .ConfigureAwait(true);
-
-            await _grainFactory
-                .GetPlayerPresenceGrain(actor)
-                .SendComposerAsync(
-                    new FlatControllersEventMessageComposer
-                    {
-                        RoomId = _state.RoomId,
-                        Controllers = controllers,
-                    }
-                )
-                .ConfigureAwait(true);
-
-            await Task.WhenAll(
-                    targets.Select(target =>
-                        SecurityModule.RefreshControllerLevelForPlayerAsync(target, ct)
-                    )
-                )
-                .ConfigureAwait(true);
-
-            // One record per target rather than one for the batch: an investigation searches by the
-            // account that lost the rights at least as often as by the owner who took them away.
-            foreach (PlayerId target in targets)
-            {
-                await _events
-                    .PublishAsync(
-                        new RoomRightsChangedEvent(actor, _state.RoomId.Value, target, "removed"),
-                        ct
-                    )
-                    .ConfigureAwait(true);
-            }
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Failed to remove rights in room {RoomId}.", _state.RoomId);
-        }
+        await SecurityModule.RevokeRightsAsync(actor, targets, ct).ConfigureAwait(true);
     }
 
     public async Task RemoveAllRightsAsync(PlayerId actor, CancellationToken ct)
@@ -690,62 +557,7 @@ public sealed partial class RoomGrain
             return;
         }
 
-        try
-        {
-            await using VortexDbContext dbCtx = await _dbCtxFactory
-                .CreateDbContextAsync(ct)
-                .ConfigureAwait(true);
-
-            List<RoomRightEntity> rows = await dbCtx
-                .RoomRights.Where(r => r.RoomEntityId == _state.RoomId.Value && r.DeletedAt == null)
-                .ToListAsync(ct)
-                .ConfigureAwait(true);
-
-            List<PlayerId> targets = [.. rows.Select(r => (PlayerId)r.PlayerEntityId)];
-
-            foreach (RoomRightEntity row in rows)
-            {
-                dbCtx.RoomRights.Remove(row);
-            }
-
-            await dbCtx.SaveChangesAsync(ct).ConfigureAwait(true);
-
-            foreach (PlayerId target in targets)
-            {
-                _state.PlayerIdsWithRights.Remove(target);
-            }
-
-            await _grainFactory
-                .GetPlayerPresenceGrain(actor)
-                .SendComposerAsync(
-                    new FlatControllersEventMessageComposer
-                    {
-                        RoomId = _state.RoomId,
-                        Controllers = [],
-                    }
-                )
-                .ConfigureAwait(true);
-
-            await Task.WhenAll(
-                    targets.Select(target =>
-                        SecurityModule.RefreshControllerLevelForPlayerAsync(target, ct)
-                    )
-                )
-                .ConfigureAwait(true);
-
-            // No target: "cleared the room's rights" is one act, and the individual losses are not
-            // separate decisions the way a targeted removal is.
-            await _events
-                .PublishAsync(
-                    new RoomRightsChangedEvent(actor, _state.RoomId.Value, null, "removed_all"),
-                    ct
-                )
-                .ConfigureAwait(true);
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Failed to remove all rights in room {RoomId}.", _state.RoomId);
-        }
+        await SecurityModule.RevokeAllRightsAsync(actor, ct).ConfigureAwait(true);
     }
 
     public async Task<bool> SetRoomTagsAsync(
@@ -876,6 +688,8 @@ public sealed partial class RoomGrain
         }
     }
 
+    /// <summary>No owner check: giving up your own rights is nobody else's decision. The owner
+    /// is excluded because ownership is not a rights row and cannot be given up this way.</summary>
     public async Task RemoveOwnRightsAsync(PlayerId actor, CancellationToken ct)
     {
         if (actor <= 0 || _state.RoomSnapshot.OwnerId == actor)
@@ -883,66 +697,6 @@ public sealed partial class RoomGrain
             return;
         }
 
-        try
-        {
-            await using VortexDbContext dbCtx = await _dbCtxFactory
-                .CreateDbContextAsync(ct)
-                .ConfigureAwait(true);
-
-            RoomRightEntity? row = await dbCtx
-                .RoomRights.FirstOrDefaultAsync(
-                    r =>
-                        r.RoomEntityId == _state.RoomId.Value
-                        && r.PlayerEntityId == actor.Value
-                        && r.DeletedAt == null,
-                    ct
-                )
-                .ConfigureAwait(true);
-
-            if (row is null)
-            {
-                return;
-            }
-
-            dbCtx.RoomRights.Remove(row);
-            await dbCtx.SaveChangesAsync(ct).ConfigureAwait(true);
-
-            _state.PlayerIdsWithRights.Remove(actor);
-
-            ImmutableArray<RoomControllerSnapshot> controllers = await SecurityModule
-                .LoadControllersAsync(ct)
-                .ConfigureAwait(true);
-
-            await _grainFactory
-                .GetPlayerPresenceGrain(actor)
-                .SendComposerAsync(
-                    new FlatControllersEventMessageComposer
-                    {
-                        RoomId = _state.RoomId,
-                        Controllers = controllers,
-                    }
-                )
-                .ConfigureAwait(true);
-
-            await SecurityModule
-                .RefreshControllerLevelForPlayerAsync(actor, ct)
-                .ConfigureAwait(true);
-
-            await _events
-                .PublishAsync(
-                    new RoomRightsChangedEvent(actor, _state.RoomId.Value, actor, "gave_up"),
-                    ct
-                )
-                .ConfigureAwait(true);
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(
-                ex,
-                "Failed to remove own rights for player {Actor} in room {RoomId}.",
-                actor,
-                _state.RoomId
-            );
-        }
+        await SecurityModule.RevokeOwnRightsAsync(actor, ct).ConfigureAwait(true);
     }
 }

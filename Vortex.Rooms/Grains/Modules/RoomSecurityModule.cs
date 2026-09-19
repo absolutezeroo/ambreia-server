@@ -22,7 +22,7 @@ using Vortex.Primitives.Rooms.Object.Furniture.Floor;
 
 namespace Vortex.Rooms.Grains.Modules;
 
-public sealed class RoomSecurityModule(RoomGrain roomGrain)
+public sealed partial class RoomSecurityModule(RoomGrain roomGrain)
 {
     private readonly RoomGrain _roomGrain = roomGrain;
 
