@@ -84,37 +84,41 @@ internal sealed class RoomPhotoRenderer(
         // is the wrong end. The payload is the only ground truth, the server is the only thing that
         // sees it, and one line of it here settles in seconds what an afternoon of looking at
         // pictures could not.
-        logger.LogInformation(
-            "Camera photo {PhotoKey}: viewport {Width}x{Height}, {Planes} plane(s), "
-                + "{Sprites} sprite(s) of which {Resolved} resolved, {Unresolved} not, {Bytes} bytes.",
-            photoKey,
-            viewport.Width,
-            viewport.Height,
-            scene.Planes.Length,
-            scene.Sprites.Length,
-            resolved.Count,
-            scene.Sprites.Select(sprite => sprite.Name).Distinct(StringComparer.Ordinal).Count()
-                - resolved.Count,
-            png.Length
-        );
-
         // The names nothing could draw, which is the difference between "the client never sent it"
         // and "it was sent and I could not find it".
         string[] missing =
         [
             .. scene
                 .Sprites.Select(sprite => sprite.Name)
+                .Concat(planeAssets)
                 .Distinct(StringComparer.Ordinal)
                 .Where(name => !resolved.ContainsKey(name))
-                .Take(12),
+                .ToArray(),
         ];
+
+        // Sprites and plane assets counted apart. They were counted together and the subtraction ran
+        // the resolved total -- which holds both -- against the sprite names alone, so the first real
+        // photo reported "4 sprites of which 7 resolved, -3 not". A diagnostic that prints a negative
+        // is worse than none: it is the number somebody reaches for to decide whose bug this is.
+        logger.LogInformation(
+            "Camera photo {PhotoKey}: viewport {Width}x{Height}, {Planes} plane(s) naming "
+                + "{PlaneAssets} asset(s), {Sprites} sprite(s), {Missing} of both unresolved, {Bytes} bytes.",
+            photoKey,
+            viewport.Width,
+            viewport.Height,
+            scene.Planes.Length,
+            planeAssets.Length,
+            scene.Sprites.Length,
+            missing.Length,
+            png.Length
+        );
 
         if (missing.Length != 0)
         {
             logger.LogInformation(
-                "Camera photo {PhotoKey}: unresolved sprites {Missing}.",
+                "Camera photo {PhotoKey}: unresolved {Missing}.",
                 photoKey,
-                string.Join(", ", missing)
+                string.Join(", ", missing.Take(12))
             );
         }
 

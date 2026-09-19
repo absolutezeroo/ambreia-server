@@ -98,11 +98,13 @@ internal sealed class CameraSpriteResolver(
                 continue;
             }
 
+            int before = library.Fetches;
+
             byte[]? surface =
                 ReadLocal(asset)
                 ?? await library.GetRoomAssetAsync(asset, limits, ct).ConfigureAwait(false);
 
-            bundles++;
+            bundles += library.Fetches - before;
 
             if (surface is { Length: > 0 })
             {
@@ -131,17 +133,19 @@ internal sealed class CameraSpriteResolver(
 
                 if (bytes is null && bundles < limits.MaxBundleFetches)
                 {
+                    int before = library.Fetches;
+
                     bytes = await library
                         .GetSpriteAsync(sprite.Name, limits, ct)
                         .ConfigureAwait(false);
 
-                    // Counted per distinct name rather than per request, because the library caches
-                    // and most names in a room resolve to a bundle it already holds. A furniture
-                    // name is refused against the catalogue without any request at all, so what this
-                    // really bounds is the one family that cannot be checked first: a pet's bundle
-                    // name is simply the head of its sprite name, which makes any invented name an
-                    // address.
-                    bundles++;
+                    // Requests, not names. This counted names, and the two are nothing alike: a room
+                    // is dozens of sprite names over a handful of bundles, so a budget meant to stop
+                    // a crafted scene bursting at the asset host was instead spent by an ordinary
+                    // one. Everything past the sixty-fourth name was dropped, and since the scene
+                    // arrives sorted by depth, what that drops is whatever stands in front -- an
+                    // avatar, a pet, the furniture nearest the camera.
+                    bundles += library.Fetches - before;
                 }
             }
             else if (fetches < limits.MaxExternalFetches)

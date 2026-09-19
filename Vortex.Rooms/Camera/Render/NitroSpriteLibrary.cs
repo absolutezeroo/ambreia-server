@@ -60,6 +60,20 @@ internal sealed class NitroSpriteLibrary(
 
     private Task<FiguremapIndex>? _figuremap;
 
+    private int _fetches;
+
+    /// <summary>
+    /// How many bundles this library has actually gone to the network for.
+    /// </summary>
+    /// <remarks>
+    /// Read by the caller before and after a name, so a per-photo budget can bound <b>requests</b>
+    /// rather than names. The two are nothing alike: a room is dozens of sprite names over a handful
+    /// of bundles, and counting names spent a budget of sixty-four on a room that had made three
+    /// requests — then dropped everything after it, which in a scene sorted by depth means whatever
+    /// stands in front.
+    /// </remarks>
+    public int Fetches => Volatile.Read(ref _fetches);
+
     /// <summary>The sprite's own PNG, or null when this hotel's pack cannot produce it.</summary>
     public async Task<byte[]?> GetSpriteAsync(
         string assetName,
@@ -135,6 +149,23 @@ internal sealed class NitroSpriteLibrary(
         CancellationToken ct
     )
     {
+        // The figuremap first, and that order is not arbitrary. This hotel's catalogue indexes
+        // 51,352 classnames, and the furniture branch matches any classname that is a prefix of the
+        // name -- so with an index that size it is a question of when, not whether, an avatar part
+        // like h_std_bd_1_2_0 is claimed by some furniture called h_std, and fetched from the
+        // furniture host where it does not exist. The figuremap has no such ambiguity in the other
+        // direction: it is keyed on part type and id, and a furniture name produces a key like
+        // "64:a" that no lib declares.
+        if (limits.AvatarAssetUrl.Length != 0)
+        {
+            FiguremapIndex figuremap = await FiguremapAsync(limits, ct).ConfigureAwait(false);
+
+            if (figuremap.TryLibrary(assetName, out string? library) && library is not null)
+            {
+                return Address(limits.AvatarAssetUrl, library);
+            }
+        }
+
         ClassNameIndex index = await IndexAsync(ct).ConfigureAwait(false);
 
         if (index.TryClassName(assetName, out string? className) && className is not null)
@@ -145,13 +176,6 @@ internal sealed class NitroSpriteLibrary(
         if (limits.AvatarAssetUrl.Length == 0)
         {
             return null;
-        }
-
-        FiguremapIndex figuremap = await FiguremapAsync(limits, ct).ConfigureAwait(false);
-
-        if (figuremap.TryLibrary(assetName, out string? library) && library is not null)
-        {
-            return Address(limits.AvatarAssetUrl, library);
         }
 
         int cut = assetName.IndexOf('_', StringComparison.Ordinal);
@@ -270,6 +294,8 @@ internal sealed class NitroSpriteLibrary(
     )
     {
         (string url, string className) = address;
+
+        Interlocked.Increment(ref _fetches);
 
         using CancellationTokenSource timeout = CancellationTokenSource.CreateLinkedTokenSource(ct);
         timeout.CancelAfter(limits.ExternalTimeout);
