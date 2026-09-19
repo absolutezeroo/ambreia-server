@@ -604,8 +604,8 @@ small.muted {
 }
 
 .nav-icon {
-  width: 34px;
-  height: 34px;
+  width: 38px;
+  height: 38px;
   flex: 0 0 auto;
   display: grid;
   place-items: center;
@@ -620,10 +620,10 @@ small.muted {
    so the tile keeps its own background rather than flooding gold behind a picture that would then
    sit on it unchanged. The image is what says which page this is; the tile only has to frame it. */
 .nav-icon img {
-  width: 24px;
-  height: 24px;
+  width: 32px;
+  height: 32px;
   object-fit: contain;
-  /* Smooth, deliberately. The artwork is drawn at 48px for a 24px slot, so this is a *reduction* --
+  /* Smooth, deliberately. The artwork is drawn at 64px for a 32px slot, so this is a *reduction* --
      and nearest-neighbour reduction throws away every second pixel, which frays thin lines. On a
      HiDPI screen the pair lands at 1:1 device pixels and no resampling happens at all, which is the
      reason for drawing at 2x in the first place. (`pixelated` is the right answer when enlarging a

@@ -242,6 +242,47 @@
     return routeIcons[item.path] || Activity;
   }
 
+  // The sidebar's own artwork, named `ui_navigator_icon_<route>.png` after the route it belongs to
+  // (`/quests` -> ui_navigator_icon_quests.png, `/pets-stats` -> ui_navigator_icon_pets-stats.png).
+  // Drawn by tools/build-nav-icons.mjs, which is where the pixels are edited.
+  //
+  // Globbed rather than imported one by one, and that is the whole point: a static import of a file
+  // that has not been drawn yet fails the build, so fifty-odd imports would mean drawing fifty-odd
+  // icons before any of them could ship. This picks up whatever exists at build time and leaves the
+  // rest on their lucide glyph, so the set can be filled in one icon at a time.
+  // Keyed by slug rather than by path so the extension does not matter: a route's art can be a PNG
+  // or an SVG, and swapping one for the other is dropping in a file, not editing this.
+  const navImages: Record<string, string> = Object.fromEntries(
+    Object.entries(
+      import.meta.glob('../assets/images/ui_navigator_icon_*.{png,svg}', {
+        eager: true,
+        query: '?url',
+        import: 'default',
+      }) as Record<string, string>,
+    ).map(([key, url]) => [key.replace(/^.*ui_navigator_icon_|\.(png|svg)$/g, ''), url]),
+  );
+
+  function imageFor(item: NavEntry) {
+    return navImages[item.path.replace(/^\//, '')] ?? null;
+  }
+
+  // An icon whose filename does not match a route is the one failure this mechanism has, and it is
+  // a silent one: the file is bundled, no route ever asks for it, and the nav entry quietly keeps
+  // its lucide glyph. A misplaced underscore or a missing plural looks exactly like "not drawn
+  // yet". So the mismatches are named out loud, once, while developing.
+  if (import.meta.env.DEV) {
+    const known = new Set(NAV.map((item) => item.path.replace(/^\//, '')));
+    const orphans = Object.keys(navImages).filter((slug) => !known.has(slug));
+
+    if (orphans.length > 0) {
+      console.warn(
+        `[nav] ${orphans.length} sidebar icon(s) match no route and will never be shown: ` +
+          `${orphans.join(', ')}. The filename must be the route path, e.g. /pets-stats -> ` +
+          'ui_navigator_icon_pets-stats.png',
+      );
+    }
+  }
+
   function go(item: NavEntry) {
     if (item.allowed) {
       push(item.path);
@@ -340,6 +381,7 @@
         {#if !collapsed}
           {#each group.items as item}
             {@const Icon = iconFor(item)}
+            {@const art = imageFor(item)}
             <a
               href={`#${item.path}`}
               class:active={$location === item.path}
@@ -348,8 +390,12 @@
               tabindex={item.allowed ? 0 : -1}
               onclick={(event) => { event.preventDefault(); go(item); }}
             >
-              <span class="nav-icon" aria-hidden="true">
-                <Icon size={18} strokeWidth={1.9} />
+              <span class="nav-icon" class:nav-icon--art={art} aria-hidden="true">
+                {#if art}
+                  <img src={art} alt="" width="24" height="24" />
+                {:else}
+                  <Icon size={18} strokeWidth={1.9} />
+                {/if}
               </span>
               <span class="nav-copy">
                 {#if !item.allowed}
