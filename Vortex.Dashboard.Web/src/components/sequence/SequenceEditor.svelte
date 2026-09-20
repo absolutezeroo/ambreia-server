@@ -16,6 +16,10 @@
   import ActionBlock from './ActionBlock.svelte';
   import ConditionBlock from './ConditionBlock.svelte';
   import {
+    COUNT_OF,
+    FACT,
+    LITERAL,
+    STEP_FACT,
     TEST,
     appendTo,
     moveStep,
@@ -28,9 +32,23 @@
     wrapAt,
     type FactOption,
     type NodePath,
+    type SideValue,
     type TreeNode,
   } from '../../lib/sequence/tree';
   import { t } from '../../lib/i18n';
+
+  /**
+   * What a number answers, mirroring the server's own table for FactKind.Number.
+   *
+   * Spelled here because a count has no fact behind it to carry the server's list — every other
+   * side gets its operators from the fact the server described.
+   */
+  const NUMBER_OPERATORS = [
+    { value: 0, key: 'rewardTracks.filterOpEquals' },
+    { value: 1, key: 'rewardTracks.filterOpNotEquals' },
+    { value: 4, key: 'rewardTracks.filterOpAtLeast' },
+    { value: 5, key: 'rewardTracks.filterOpAtMost' },
+  ];
 
   type StepForm = { actionCode: string; tree: TreeNode[] };
 
@@ -40,11 +58,6 @@
     canManage: boolean;
     factsFor: (actionCode: string) => FactOption[];
     operatorsFor: (actionCode: string, factKey: string) => { value: number; key: string }[];
-    referencesFor: (
-      steps: StepForm[],
-      index: number,
-      factKey: string
-    ) => { value: string; index: number }[];
     defaultFilterValue: (actionCode: string, factKey: string) => string;
     pickerFor: (meta: FactOption | null) => string | null;
     pickedLabels: Record<string, { name?: string; iconUrl?: string }>;
@@ -58,7 +71,6 @@
     canManage,
     factsFor,
     operatorsFor,
-    referencesFor,
     defaultFilterValue,
     pickerFor,
     pickedLabels,
@@ -75,16 +87,78 @@
     onchange(steps.map((step, i) => (i === stepIndex ? { ...step, tree: next } : step)));
   }
 
-  /** A fresh condition, on the first fact its action records. */
+  /** A fresh condition: the first fact its action records, against something to type. */
   function newTest(actionCode: string): TreeNode {
     const first = factsFor(actionCode)[0];
+    const key = first?.key ?? '';
 
     return {
       kind: TEST,
-      factKey: first?.key ?? '',
-      op: operatorsFor(actionCode, first?.key ?? '')[0]?.value ?? 0,
-      value: defaultFilterValue(actionCode, first?.key ?? ''),
+      op: operatorsFor(actionCode, key)[0]?.value ?? 0,
+      left: { kind: FACT, arg: key, step: -1 },
+      right: { kind: LITERAL, arg: defaultFilterValue(actionCode, key), step: -1 },
     };
+  }
+
+  const label = (fact: FactOption) => {
+    const key = fact.labelKey ?? fact.key;
+    const translated = $t(key);
+
+    return translated === key ? fact.fallbackLabel : translated;
+  };
+
+  /**
+   * Everything one side of a condition may be, in this step.
+   *
+   * Three groups, in the order an operator reaches for them: what this action reports, how many of
+   * a list it reported, and what an earlier step reported. A step that records nothing useful
+   * simply contributes no options — an impossible choice is better not offered than refused on
+   * save, which is the same rule the reference dropdown followed before this.
+   */
+  function sideChoicesFor(step: StepForm, stepIndex: number) {
+    const own = factsFor(step.actionCode);
+
+    return [
+      ...own.map((fact) => ({
+        group: $t('rewardTracks.sideThisAction'),
+        label: label(fact),
+        value: { kind: FACT, arg: fact.key, step: -1 },
+      })),
+      // Offered for every fact rather than only the list-shaped ones: the server knows which facts
+      // carry a list and refuses a count of one that does not, with a message that says so.
+      ...own.map((fact) => ({
+        group: $t('rewardTracks.sideCount'),
+        // Marked, because the group heading is only visible while the menu is open. Labelled with
+        // the fact alone, a count and the fact itself read identically once chosen -- two
+        // different conditions, the same row on screen.
+        label: $t('rewardTracks.sideCountLabel', { fact: label(fact) }),
+        value: { kind: COUNT_OF, arg: fact.key, step: -1 },
+      })),
+      ...steps.slice(0, stepIndex).flatMap((earlier, i) =>
+        factsFor(earlier.actionCode).map((fact) => ({
+          group: $t('rewardTracks.sideFromStep', { n: i + 1 }),
+          label: label(fact),
+          value: { kind: STEP_FACT, arg: fact.key, step: i },
+        }))
+      ),
+    ];
+  }
+
+  /**
+   * The operators that mean anything about what is on the left.
+   *
+   * A count is a number however long the list behind it is, so ordering applies to it even though
+   * the server refuses ordering over the set itself. A typed value on the left has no kind, so
+   * nothing is narrowed and the server has the last word.
+   */
+  function operatorsForSide(step: StepForm, left: SideValue) {
+    if (left.kind === COUNT_OF) return NUMBER_OPERATORS;
+
+    if (left.kind === STEP_FACT) {
+      return operatorsFor(steps[left.step]?.actionCode ?? step.actionCode, left.arg);
+    }
+
+    return operatorsFor(step.actionCode, left.arg);
   }
 
   function over(event: DragEvent, index: number) {
@@ -157,32 +231,51 @@
               siblings={(step.tree ?? []).length}
               {canManage}
               facts={factsFor(step.actionCode)}
-              operatorsFor={(factKey: string) => operatorsFor(step.actionCode, factKey)}
-              referencesFor={(factKey: string) => referencesFor(steps, stepIndex, factKey)}
+              sideChoices={sideChoicesFor(step, stepIndex)}
+              operatorsFor={(left: SideValue) => operatorsForSide(step, left)}
               picked={pickedLabels[pathKey(stepIndex, [index])]}
-              picker={node.kind === TEST
+              picker={node.kind === TEST && (node as any).left.kind === FACT
                 ? pickerFor(
-                    factsFor(step.actionCode).find((f) => f.key === (node as any).factKey) ?? null
+                    factsFor(step.actionCode).find((f) => f.key === (node as any).left.arg) ?? null
                   )
                 : null}
               onchange={(path: NodePath, next: TreeNode) =>
                 edit(stepIndex, replaceAt(step.tree ?? [], path, next))}
-              onfactchange={(path: NodePath, factKey: string) => {
+              onsidechange={(path: NodePath, which: 'left' | 'right', value: SideValue) => {
                 const node = nodeAt(step.tree ?? [], path);
 
                 if (!node || node.kind !== TEST) return;
 
-                // The operator and the value belonged to the old fact. Kept, they would be a
-                // comparison the server refuses, or a value nothing can match.
-                edit(
-                  stepIndex,
-                  replaceAt(step.tree ?? [], path, {
-                    kind: TEST,
-                    factKey,
-                    op: operatorsFor(step.actionCode, factKey)[0]?.value ?? 0,
-                    value: defaultFilterValue(step.actionCode, factKey),
-                  })
-                );
+                // Choosing "a value you type" when it already was one must not wipe what is in it:
+                // the option identifies the kind, and the text belongs to the operator.
+                const kept =
+                  which === 'right' &&
+                  value.kind === LITERAL &&
+                  node.right.kind === LITERAL &&
+                  value.arg === ''
+                    ? node.right
+                    : value;
+
+                const next = { ...node, [which]: kept };
+
+                // Changing the left side changes what the comparison is about, so the operator and
+                // the typed value belonged to the old one. Kept, they would be a comparison the
+                // server refuses or a value nothing can match.
+                if (which === 'left') {
+                  next.op = operatorsForSide(step, value)[0]?.value ?? 0;
+
+                  if (next.right.kind === LITERAL) {
+                    next.right = {
+                      ...next.right,
+                      arg:
+                        value.kind === FACT
+                          ? defaultFilterValue(step.actionCode, value.arg)
+                          : '',
+                    };
+                  }
+                }
+
+                edit(stepIndex, replaceAt(step.tree ?? [], path, next));
               }}
               onremove={(path: NodePath) => edit(stepIndex, removeAt(step.tree ?? [], path))}
               onwrap={(path: NodePath, kind: 1 | 2 | 3) =>

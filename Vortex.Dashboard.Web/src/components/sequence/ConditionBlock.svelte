@@ -16,13 +16,20 @@
   import {
     ALL,
     ANY,
+    LITERAL,
     NOT,
     TEST,
+    decodeSide,
+    encodeSide,
     type FactOption,
     type NodePath,
+    type SideValue,
     type TreeNode,
   } from '../../lib/sequence/tree';
   import { t } from '../../lib/i18n';
+
+  /** One choice in a side's dropdown, and the group it is listed under. */
+  type SideChoice = { group: string; label: string; value: SideValue };
 
   type Props = {
     node: TreeNode;
@@ -31,13 +38,15 @@
     siblings: number;
     canManage: boolean;
     facts: FactOption[];
-    operatorsFor: (factKey: string) => { value: number; key: string }[];
-    /** The earlier steps this fact may point back at. Per fact, because `$N` resolves per fact. */
-    referencesFor: (factKey: string) => { value: string; index: number }[];
+    /** What a side may be: this signal's facts, their counts, and earlier steps' facts. */
+    sideChoices: SideChoice[];
+    /** The operators that mean anything about what is on the left. */
+    operatorsFor: (left: SideValue) => { value: number; key: string }[];
     picked: { name?: string; iconUrl?: string } | undefined;
     picker: string | null;
     onchange: (path: NodePath, node: TreeNode) => void;
-    onfactchange: (path: NodePath, factKey: string) => void;
+    /** Changing a side resets the operator and the other side, which belonged to the old one. */
+    onsidechange: (path: NodePath, side: 'left' | 'right', value: SideValue) => void;
     onremove: (path: NodePath) => void;
     onwrap: (path: NodePath, kind: 1 | 2 | 3) => void;
     onunwrap: (path: NodePath) => void;
@@ -57,12 +66,12 @@
     siblings,
     canManage,
     facts,
+    sideChoices,
     operatorsFor,
-    referencesFor,
     picked,
     picker,
     onchange,
-    onfactchange,
+    onsidechange,
     onremove,
     onwrap,
     onunwrap,
@@ -82,7 +91,33 @@
   ];
 
   let test = $derived(node.kind === TEST ? (node as any) : null);
-  let meta = $derived(test ? (facts.find((f) => f.key === test.factKey) ?? null) : null);
+
+  /**
+   * The fact the left side names, when it names one.
+   *
+   * What it is for: a closed fact offers its values instead of a text box, and the relation grid
+   * replaces the box entirely. Both are about what the LEFT side is, because that is what the
+   * comparison is about.
+   */
+  let meta = $derived(
+    test && test.left.kind === 0 ? (facts.find((f) => f.key === test.left.arg) ?? null) : null,
+  );
+
+  /** Grouped the way the dropdown lists them, keeping the order the caller chose. */
+  let grouped = $derived(
+    sideChoices.reduce((groups: { name: string; items: SideChoice[] }[], choice) => {
+      const last = groups[groups.length - 1];
+
+      if (last?.name === choice.group) {
+        last.items.push(choice);
+      } else {
+        groups.push({ name: choice.group, items: [choice] });
+      }
+
+      return groups;
+    }, []),
+  );
+
   let children = $derived(node.kind === TEST ? [] : ((node as any).children ?? []));
 
   /** A `not` says what one condition is not, so a second one under it means nothing. */
@@ -106,14 +141,22 @@
   <div class="condition-row block block--filter cond" role="listitem">
     <span class="cond-hex" aria-hidden="true"></span>
 
+    <!-- Both sides are the same control, because both sides are the same thing. One dropdown per
+         side rather than a kind, a step and a fact: choosing "the room of step 1" is one phrase,
+         not a three-step errand. -->
     <select
       class="cond-subject"
-      bind:value={test.factKey}
-      onchange={() => onfactchange(path, test.factKey)}
+      value={encodeSide(test.left)}
+      onchange={(e) =>
+        onsidechange(path, 'left', decodeSide((e.currentTarget as HTMLSelectElement).value))}
       disabled={!canManage}
     >
-      {#each facts as fact (fact.key)}
-        <option value={fact.key}>{label(fact)}</option>
+      {#each grouped as group (group.name)}
+        <optgroup label={group.name}>
+          {#each group.items as choice (encodeSide(choice.value))}
+            <option value={encodeSide(choice.value)}>{choice.label}</option>
+          {/each}
+        </optgroup>
       {/each}
     </select>
 
@@ -124,75 +167,91 @@
         onchange(path, { ...test, op: Number((e.currentTarget as HTMLSelectElement).value) })}
       disabled={!canManage}
     >
-      {#each operatorsFor(test.factKey) as op (op.value)}
+      {#each operatorsFor(test.left) as op (op.value)}
         <option value={op.value}>{$t(op.key)}</option>
       {/each}
     </select>
 
-    <!-- A reference is only offered where it can resolve, so an impossible one cannot be picked;
-         the server refuses the same thing on save. -->
-    {#if referencesFor(test.factKey).length > 0}
-      <select
-        class="cond-source"
-        value={String(test.value).startsWith('$') ? test.value : ''}
-        onchange={(e) =>
-          onchange(path, { ...test, value: (e.currentTarget as HTMLSelectElement).value })}
-        disabled={!canManage}
-      >
-        <option value="">{$t('rewardTracks.filterLiteral')}</option>
-        {#each referencesFor(test.factKey) as ref (ref.value)}
-          <option value={ref.value}>
-            {$t('rewardTracks.filterSameAsStep', { n: ref.index + 1 })}
-          </option>
-        {/each}
-      </select>
-    {/if}
+    <!-- A typed value is ONE option however it is filled in, so the option identifies the kind and
+         not the text. Encoding the text here matched no option and left the box blank, which is
+         what an operator saw where their own value was. -->
+    <select
+      class="cond-subject"
+      value={test.right.kind === LITERAL
+        ? encodeSide({ kind: LITERAL, arg: '', step: -1 })
+        : encodeSide(test.right)}
+      onchange={(e) =>
+        onsidechange(path, 'right', decodeSide((e.currentTarget as HTMLSelectElement).value))}
+      disabled={!canManage}
+    >
+      <!-- Listed first because it is what a condition usually compares against. -->
+      <option value={encodeSide({ kind: LITERAL, arg: '', step: -1 })}>
+        {$t('rewardTracks.sideTyped')}
+      </option>
+      {#each grouped as group (group.name)}
+        <optgroup label={group.name}>
+          {#each group.items as choice (encodeSide(choice.value))}
+            <option value={encodeSide(choice.value)}>{choice.label}</option>
+          {/each}
+        </optgroup>
+      {/each}
+    </select>
 
-    {#if meta?.key === 'relation'}
-      <!-- The one closed fact a list cannot express: its sides are named from the furniture, so
-           "right side" reads backwards against a picture of the thing facing you. -->
-      <RelationGrid
-        value={test.value}
-        {canManage}
-        onchange={(value: string, op: number) => onchange(path, { ...test, value, op })}
-      />
-    {:else if meta?.values?.length}
-      <!-- A closed fact: the server declares what it accepts, so a typo cannot be entered. -->
-      <select
-        class="cond-value"
-        value={test.value}
-        onchange={(e) =>
-          onchange(path, { ...test, value: (e.currentTarget as HTMLSelectElement).value })}
-        disabled={!canManage}
-      >
-        {#each meta.values as allowed (allowed.value)}
-          <option value={allowed.value}>{label(allowed)}</option>
-        {/each}
-      </select>
-    {:else if !String(test.value).startsWith('$')}
-      <input
-        class="cond-value"
-        type="text"
-        value={test.value}
-        oninput={(e) =>
-          onchange(path, { ...test, value: (e.currentTarget as HTMLInputElement).value })}
-        disabled={!canManage}
-        placeholder={$t(
-          Number(test.op) === 2
-            ? 'rewardTracks.conditionListPlaceholder'
-            : 'rewardTracks.conditionValuePlaceholder'
-        )}
-      />
-      {#if picker}
-        <button
-          type="button"
-          class="ghost-button cond-icon"
-          title={$t('rewardTracks.pickValue')}
+    <!-- Only a typed value needs a box to type in. Every other side is already chosen above. -->
+    {#if test.right.kind === LITERAL}
+      {#if meta?.key === 'relation'}
+        <!-- The one closed fact a list cannot express: its sides are named from the furniture, so
+             "right side" reads backwards against a picture of the thing facing you. -->
+        <RelationGrid
+          value={test.right.arg}
+          {canManage}
+          onchange={(value: string, op: number) =>
+            onchange(path, { ...test, op, right: { ...test.right, arg: value } })}
+        />
+      {:else if meta?.values?.length}
+        <!-- A closed fact: the server declares what it accepts, so a typo cannot be entered. -->
+        <select
+          class="cond-value"
+          value={test.right.arg}
+          onchange={(e) =>
+            onchange(path, {
+              ...test,
+              right: { ...test.right, arg: (e.currentTarget as HTMLSelectElement).value },
+            })}
           disabled={!canManage}
-          onclick={() => onpick(path, picker)}
         >
-          <Search size={14} />
-        </button>
+          {#each meta.values as allowed (allowed.value)}
+            <option value={allowed.value}>{label(allowed)}</option>
+          {/each}
+        </select>
+      {:else}
+        <input
+          class="cond-value"
+          type="text"
+          value={test.right.arg}
+          oninput={(e) =>
+            onchange(path, {
+              ...test,
+              right: { ...test.right, arg: (e.currentTarget as HTMLInputElement).value },
+            })}
+          disabled={!canManage}
+          placeholder={$t(
+            Number(test.op) === 2
+              ? 'rewardTracks.conditionListPlaceholder'
+              : 'rewardTracks.conditionValuePlaceholder'
+          )}
+        />
+        {#if picker}
+          <button
+            type="button"
+            class="ghost-button cond-icon"
+            title={$t('rewardTracks.pickValue')}
+            disabled={!canManage}
+            onclick={() => onpick(path, picker)}
+          >
+            <Search size={14} />
+          </button>
+        {/if}
       {/if}
     {/if}
 
@@ -309,12 +368,12 @@
           siblings={children.length}
           {canManage}
           {facts}
+          {sideChoices}
           {operatorsFor}
-          {referencesFor}
           picked={pickedFor([...path, index])}
-          picker={child.kind === TEST ? pickerFor(child.factKey) : null}
+          picker={child.kind === TEST && child.left.kind === 0 ? pickerFor(child.left.arg) : null}
           {onchange}
-          {onfactchange}
+          {onsidechange}
           {onremove}
           {onwrap}
           {onunwrap}

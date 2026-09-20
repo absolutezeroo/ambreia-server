@@ -246,18 +246,6 @@
     return meta?.values?.length ? meta.values[0].value : '';
   }
 
-  /**
-   * The earlier steps a filter on this fact may point back at — only those whose own action
-   * records that fact, because $N resolves to the same fact key. "The same furniture" only works
-   * between two steps that both talk about furniture.
-   */
-  function referencesFor(steps: StepForm[], index: number, factKey: string) {
-    return steps
-      .slice(0, index)
-      .map((step, i) => ({ value: `$${i}`, index: i, action: step.actionCode }))
-      .filter((r) => factsFor(r.action).some((f) => f.key === factKey));
-  }
-
   const COMPLETION_POLICIES: Choice[] = [
     { value: 0, key: 'rewardTracks.policyFreeClaimed' },
     { value: 1, key: 'rewardTracks.policyAllClaimed' },
@@ -1364,7 +1352,6 @@
     {canManage}
     {factsFor}
     {operatorsFor}
-    {referencesFor}
     {defaultFilterValue}
     {pickerFor}
     {pickedLabels}
@@ -1399,10 +1386,17 @@
 
       taskDraft!.form.steps[stepIndex] = {
         ...step,
+        // The picker fills the right side, which is the one that holds something typed.
         tree: replaceAt(step.tree ?? [], path, {
           ...node,
-          // "One of" is a list, so a pick adds to it; the other operators hold a single value.
-          value: Number(node.op) === 2 && node.value ? `${node.value},${picked}` : picked,
+          right: {
+            ...node.right,
+            // "One of" is a list, so a pick adds to it; the other operators hold a single value.
+            arg:
+              Number(node.op) === 2 && node.right.arg
+                ? `${node.right.arg},${picked}`
+                : picked,
+          },
         }),
       };
 
