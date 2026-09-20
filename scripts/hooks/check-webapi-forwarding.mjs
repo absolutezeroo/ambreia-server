@@ -32,6 +32,7 @@ const factoryPath = join(root, 'Vortex.WebApi.Tests/WebApiTestFactory.cs');
 // a list of two with a reason each beats a pattern that quietly matches more than it should.
 const SUPPLIED_UNTYPED = new Map([
   ['IOptions<WebApiConfig>', 'WebApiWebHost passes the IOptions instance itself: services.AddSingleton(options)'],
+  ['WebApiSessionStore', 'WebApiTestFactory registers the instance it also exposes as Sessions: services.AddSingleton(Sessions)'],
 ]);
 
 function walk(dir, out = []) {

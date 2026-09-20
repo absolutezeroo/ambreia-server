@@ -15,18 +15,21 @@ namespace Vortex.Database.Migrations
                 table: "reward_track_step_filters",
                 type: "int",
                 nullable: false,
-                defaultValue: 0);
+                defaultValue: 0
+            );
 
             migrationBuilder.AddColumn<int>(
                 name: "parent_id",
                 table: "reward_track_step_filters",
                 type: "int",
-                nullable: true);
+                nullable: true
+            );
 
             migrationBuilder.CreateIndex(
                 name: "IX_reward_track_step_filters_parent_id",
                 table: "reward_track_step_filters",
-                column: "parent_id");
+                column: "parent_id"
+            );
         }
 
         /// <inheritdoc />
@@ -34,15 +37,12 @@ namespace Vortex.Database.Migrations
         {
             migrationBuilder.DropIndex(
                 name: "IX_reward_track_step_filters_parent_id",
-                table: "reward_track_step_filters");
+                table: "reward_track_step_filters"
+            );
 
-            migrationBuilder.DropColumn(
-                name: "kind",
-                table: "reward_track_step_filters");
+            migrationBuilder.DropColumn(name: "kind", table: "reward_track_step_filters");
 
-            migrationBuilder.DropColumn(
-                name: "parent_id",
-                table: "reward_track_step_filters");
+            migrationBuilder.DropColumn(name: "parent_id", table: "reward_track_step_filters");
         }
     }
 }
