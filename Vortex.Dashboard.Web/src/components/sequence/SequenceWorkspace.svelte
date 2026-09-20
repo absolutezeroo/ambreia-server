@@ -6,7 +6,7 @@
   // Blocks you arrange need room to be arranged in -- so this takes the whole viewport, and the
   // drawer keeps only a summary and the button that opens it.
   import { X } from '@lucide/svelte';
-  import SequenceGraph from '../graph/SequenceGraph.svelte';
+  import SequenceEditor from './SequenceEditor.svelte';
   import { t } from '../../lib/i18n';
 
   // Rendered on the body, not where it was written: a drawer sets its own stacking context, so a
@@ -21,7 +21,7 @@
     open?: boolean;
     title: string;
     onclose: () => void;
-    /** Everything else is forwarded to the graph, which owns those props. */
+    /** Everything else is forwarded to the editor, which owns those props. */
     [key: string]: unknown;
   };
 
@@ -47,8 +47,10 @@
       </button>
     </header>
 
-    <!-- The graph's own props are forwarded whole; this shell adds only the chrome. -->
-    <SequenceGraph {...(editor as any)} />
+    <!-- The editor's own props are forwarded whole; this shell adds only the chrome. -->
+    <div class="workspace-body">
+      <SequenceEditor {...(editor as any)} />
+    </div>
   </div>
 {/if}
 
@@ -95,7 +97,14 @@
     max-width: 70ch;
   }
 
-  /* The graph fills what is left. It pans and zooms itself, so nothing here scrolls: a canvas
-     inside a scroller is two ways to move the same thing and they fight. */
+  /* The blocks fill what is left and scroll, because a sequence is as tall as the operator made
+     it. Blocks you arrange need room to be arranged in -- which is the whole reason this is a
+     full-screen layer rather than a panel inside the task drawer's narrow column. */
+  .workspace-body {
+    flex: 1;
+    min-height: 0;
+    overflow: auto;
+    padding: 20px 24px 40px;
+  }
 </style>
 

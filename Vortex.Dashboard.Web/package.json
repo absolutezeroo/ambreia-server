@@ -7,7 +7,7 @@
     "dev": "vite --host 127.0.0.1",
     "lint": "eslint src",
     "check": "svelte-check --tsconfig ./tsconfig.json --threshold error",
-    "test": "npm run check && node tools/articleBlocks.check.mjs && node tools/pickerWiring.check.mjs && node tools/sequenceSteps.check.mjs && node tools/graphModel.check.mjs",
+    "test": "npm run check && node tools/articleBlocks.check.mjs && node tools/pickerWiring.check.mjs && node tools/sequenceSteps.check.mjs && node tools/sequenceTree.check.mjs",
     "reports": "node tools/reports.mjs"
   },
   "dependencies": {

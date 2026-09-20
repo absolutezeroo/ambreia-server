@@ -60,9 +60,7 @@
     premium: boolean;
   };
 
-  type FilterForm = { factKey: string; op: number | string; value: string };
-
-  type StepForm = { actionCode: string; filters: FilterForm[] };
+  type StepForm = { actionCode: string; tree: TreeNode[] };
 
   type TaskForm = {
     trackRowId: number;
@@ -96,8 +94,11 @@
   /** An editor open on a row (id set) or on a new one (id null). */
   type Draft<T> = { id: number | null; form: T };
 
-  /** Which filter's value the picker is filling, addressed by where it sits. */
-  type FilterTarget = { stepIndex: number; filterIndex: number; kind: string };
+  /**
+   * Which condition's value the picker is filling, addressed by where it sits: the step, and the
+   * path down that step's condition tree.
+   */
+  type FilterTarget = { stepIndex: number; path: NodePath; kind: string };
 
   /** What the last pick was called, so the drawer can show a name beside the stored id. */
   type PickedLabel = { name: string; iconUrl?: string | null };
@@ -113,6 +114,17 @@
   import PageHeader from '../components/PageHeader.svelte';
   import PickerModal from '../components/PickerModal.svelte';
   import SequenceWorkspace from '../components/sequence/SequenceWorkspace.svelte';
+  import {
+    TEST,
+    fromRows,
+    nodeAt,
+    pathKey,
+    replaceAt,
+    toRows,
+    tests,
+    type NodePath,
+    type TreeNode,
+  } from '../lib/sequence/tree';
   import StatCard from '../components/StatCard.svelte';
   import Tabs from '../components/Tabs.svelte';
 
@@ -350,7 +362,7 @@
       levels: [{ requiredCount: 1, pointsReward: 10, premium: false }],
       // One step, mirroring the action above: a plain task is a sequence of one, and this is what
       // the engine builds for a task with no stored steps.
-      steps: [{ actionCode: actionOptions[0]?.name ?? '', filters: [] }],
+      steps: [{ actionCode: actionOptions[0]?.name ?? '', tree: [] }],
     };
   }
 
@@ -464,11 +476,10 @@
         })),
         steps: form.steps.map((step) => ({
           actionCode: step.actionCode,
-          filters: (step.filters ?? []).map((f) => ({
-            factKey: f.factKey,
-            op: Number(f.op) || 0,
-            value: String(f.value ?? '').trim(),
-          })),
+          // The tree is what the editor holds and what the engine reads; the flat list stays in
+          // the contract for the callers that still send one, and this is not one of them.
+          filters: [],
+          tree: toRows(step.tree ?? []),
         })),
       },
       $t('rewardTracks.saveTask'),
@@ -830,11 +841,9 @@
                                           steps: (task.steps ?? []).length
                                             ? task.steps.map((st) => ({
                                                 actionCode: st.actionCode,
-                                                filters: (st.filters ?? []).map((f) => ({
-                                                  ...f,
-                                                })),
+                                                tree: fromRows(st.tree),
                                               }))
-                                            : [{ actionCode: task.actionCode, filters: [] }],
+                                            : [{ actionCode: task.actionCode, tree: [] }],
                                         },
                                       })}
                                   >
@@ -1221,7 +1230,7 @@
       <span>
         {$t('rewardTracks.sequenceSummary', {
           actions: draft.form.steps.length,
-          conditions: draft.form.steps.reduce((n, s) => n + (s.filters?.length ?? 0), 0),
+          conditions: draft.form.steps.reduce((n, s) => n + tests(s.tree ?? []).length, 0),
         })}
       </span>
       <button type="button" class="ghost-button" onclick={() => (sequenceOpen = true)}>
@@ -1359,12 +1368,11 @@
     {defaultFilterValue}
     {pickerFor}
     {pickedLabels}
-    layoutKey={draft.form.taskId ? `${draft.form.trackRowId}:${draft.form.taskId}` : undefined}
     onchange={(next: StepForm[]) => {
       if (taskDraft) draft.form.steps = next;
     }}
-    onpick={(stepIndex: number, filterIndex: number, kind: string) =>
-      (pickingFilter = { stepIndex, filterIndex, kind })}
+    onpick={(stepIndex: number, path: NodePath, kind: string) =>
+      (pickingFilter = { stepIndex, path, kind })}
   />
 {/if}
 
@@ -1373,18 +1381,32 @@
     kind={pickingFilter.kind}
     title={$t('rewardTracks.pickValue')}
     onSelect={(item: PickerRow) => {
-      const { stepIndex, filterIndex } = pickingFilter!;
-      const filter = taskDraft!.form.steps[stepIndex].filters[filterIndex];
+      const { stepIndex, path } = pickingFilter!;
+      const step = taskDraft!.form.steps[stepIndex];
+      const node = nodeAt(step.tree ?? [], path);
+
+      // The tree is rebuilt on every edit, so the path is the only thing that still names the
+      // condition the operator opened this picker from. It can name nothing if they deleted it
+      // while the picker was open.
+      if (!node || node.kind !== TEST) {
+        pickingFilter = null;
+        return;
+      }
+
       // What the signal carries, which is not always the row's id: a Habbicon collection is
       // filtered by its code, and a badge by the code itself.
       const picked = String(item.value ?? item.id);
-      // "One of" is a list, so a pick adds to it; the other operators hold a single value.
-      filter.value =
-        Number(filter.op) === 2 && filter.value ? `${filter.value},${picked}` : picked;
-      pickedLabels[`${stepIndex}:${filterIndex}`] = {
-        name: item.name,
-        iconUrl: item.iconUrl,
+
+      taskDraft!.form.steps[stepIndex] = {
+        ...step,
+        tree: replaceAt(step.tree ?? [], path, {
+          ...node,
+          // "One of" is a list, so a pick adds to it; the other operators hold a single value.
+          value: Number(node.op) === 2 && node.value ? `${node.value},${picked}` : picked,
+        }),
       };
+
+      pickedLabels[pathKey(stepIndex, path)] = { name: item.name, iconUrl: item.iconUrl };
       pickingFilter = null;
     }}
     onClose={() => (pickingFilter = null)}

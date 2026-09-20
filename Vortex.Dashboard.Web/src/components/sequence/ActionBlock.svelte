@@ -86,6 +86,25 @@
     cursor: grabbing;
   }
 
+  /*
+    The shared .block-remove pins the button to 24px square, and inside that the icon measured
+    0px wide -- drawn, sized, and squeezed to nothing. An empty bordered box is what an operator
+    saw where the delete was.
+
+    Sized to its content instead, which is what every other icon button in this editor does.
+    The colour is set because the ghost button's ink is chosen against the page, and this one sits
+    on the action block's own tint.
+  */
+  .step-head .block-remove {
+    width: auto;
+    padding: 3px 5px;
+    color: var(--muted);
+  }
+
+  .step-head .block-remove:hover:not(:disabled) {
+    color: var(--danger);
+  }
+
   .dragging {
     opacity: 0.4;
   }

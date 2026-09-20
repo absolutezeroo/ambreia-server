@@ -1,34 +1,57 @@
 <script lang="ts">
-  import type { Fact } from '../../lib/graph/model';
   // The sequence as blocks you pick up, line up and clip together.
   //
-  // Reordering is not cosmetic here: a filter value of `$N` names an earlier step, and the server
-  // refuses one that points at itself or forwards. So every drop runs through lib/sequence/steps.js,
-  // which rewrites the references for the new positions and clears the ones the move invalidates --
-  // and says how many it cleared, so the operator is told rather than finding out on save.
+  // Reordering is not cosmetic here: a condition's value may be `$N`, naming an earlier step, and
+  // the server refuses one that points at itself or forwards. So every drop runs through
+  // lib/sequence/steps.ts, which rewrites the references for the new positions and clears the ones
+  // the move invalidates -- and says how many it cleared, so the operator is told rather than
+  // finding out on save.
   //
-  // Native HTML5 drag rather than a library: it is four handlers, it gives keyboard-free
-  // drag out of the box, and the repository ships no drag dependency to reuse.
+  // Native HTML5 drag rather than a library: it is four handlers, it gives keyboard-free drag out
+  // of the box, and the repository ships no drag dependency to reuse.
+  //
+  // Every change to a step's conditions goes through lib/sequence/tree.ts and comes back as a new
+  // tree. Nothing here splices an array: the shape rules are checked in one place, and a component
+  // that kept its own copy of them would be a second set nothing checks.
   import ActionBlock from './ActionBlock.svelte';
-  import FilterBlock from './FilterBlock.svelte';
-  import { moveFilter, moveStep, stepAccepts } from '../../lib/sequence/steps';
+  import ConditionBlock from './ConditionBlock.svelte';
+  import {
+    TEST,
+    appendTo,
+    moveStep,
+    nodeAt,
+    pathKey,
+    removeAt,
+    replaceAt,
+    shiftAt,
+    unwrapAt,
+    wrapAt,
+    type FactOption,
+    type NodePath,
+    type TreeNode,
+  } from '../../lib/sequence/tree';
   import { t } from '../../lib/i18n';
 
-  /**
-   * @type {{
-   *   steps: any[],
-   *   actions: any[],
-   *   canManage: boolean,
-   *   factsFor: (action: string) => any[],
-   *   operatorsFor: (action: string, factKey: string) => any[],
-   *   referencesFor: (steps: any[], index: number, factKey: string) => any[],
-   *   defaultFilterValue: (action: string, factKey: string) => string,
-   *   pickerFor: (meta: any) => string | null,
-   *   pickedLabels: Record<string, any>,
-   *   onchange: (steps: any[]) => void,
-   *   onpick: (stepIndex: number, filterIndex: number, kind: string) => void,
-   * }}
-   */
+  type StepForm = { actionCode: string; tree: TreeNode[] };
+
+  type Props = {
+    steps: StepForm[];
+    actions: { name: string; wired: boolean }[];
+    canManage: boolean;
+    factsFor: (actionCode: string) => FactOption[];
+    operatorsFor: (actionCode: string, factKey: string) => { value: number; key: string }[];
+    referencesFor: (
+      steps: StepForm[],
+      index: number,
+      factKey: string
+    ) => { value: string; index: number }[];
+    defaultFilterValue: (actionCode: string, factKey: string) => string;
+    pickerFor: (meta: FactOption | null) => string | null;
+    pickedLabels: Record<string, { name?: string; iconUrl?: string }>;
+    onchange: (steps: StepForm[]) => void;
+    onpick: (stepIndex: number, path: NodePath, kind: string) => void;
+  };
+
   let {
     steps,
     actions,
@@ -41,88 +64,52 @@
     pickedLabels,
     onchange,
     onpick,
-  } = $props();
+  }: Props = $props();
 
-  // What is in the hand, and where the gap is currently open.
-  /** What the pointer is carrying: a whole step, or one filter out of a step. */
-  type Carried =
-    | { type: 'step'; index: number }
-    | { type: 'filter'; stepIndex: number; filterIndex: number };
-
-  /** Where the gap is currently open. */
-  type DropTarget = { type: string; index?: number; stepIndex?: number; at?: number };
-
-  let carrying = $state<Carried | null>(null);
-  let dropTarget = $state<DropTarget | null>(null);
+  let carrying = $state<number | null>(null);
+  let dropIndex = $state<number | null>(null);
   let notice = $state('');
 
-  function beginStep(index: number) {
-    carrying = { type: 'step', index };
-    notice = '';
+  /** Replaces one step's tree, leaving every other step the object it was. */
+  function edit(stepIndex: number, next: TreeNode[]) {
+    onchange(steps.map((step, i) => (i === stepIndex ? { ...step, tree: next } : step)));
   }
 
-  function beginFilter(stepIndex: number, filterIndex: number) {
-    carrying = { type: 'filter', stepIndex, filterIndex };
-    notice = '';
+  /** A fresh condition, on the first fact its action records. */
+  function newTest(actionCode: string): TreeNode {
+    const first = factsFor(actionCode)[0];
+
+    return {
+      kind: TEST,
+      factKey: first?.key ?? '',
+      op: operatorsFor(actionCode, first?.key ?? '')[0]?.value ?? 0,
+      value: defaultFilterValue(actionCode, first?.key ?? ''),
+    };
   }
 
-  function end() {
-    carrying = null;
-    dropTarget = null;
-  }
-
-  /** A filter can only land under an action that emits the fact it tests. */
-  function accepts(target: DropTarget): boolean {
-    const held = carrying;
-
-    if (!held) return false;
-
-    if (held.type === 'step') return target.type === 'step';
-
-    if (target.type !== 'filter-slot') return false;
-
-    const filter = steps[held.stepIndex]?.filters?.[held.filterIndex];
-
-    return Boolean(filter) && stepAccepts(steps[target.stepIndex!], filter!.factKey, factsFor);
-  }
-
-  function over(event: DragEvent, target: DropTarget) {
-    if (!accepts(target)) return;
+  function over(event: DragEvent, index: number) {
+    if (carrying === null) return;
 
     event.preventDefault();
-    dropTarget = target;
+    dropIndex = index;
   }
 
-  function drop(event: DragEvent, target: DropTarget) {
-    if (!accepts(target)) return;
+  function drop(event: DragEvent, index: number) {
+    if (carrying === null) return;
 
     event.preventDefault();
 
-    // accepts() already refused a null hand; binding it names that for the compiler too.
-    const held = carrying!;
+    const result = moveStep(steps, carrying, index);
 
-    const result =
-      held.type === 'step'
-        ? moveStep(steps, held.index, target.index!)
-        : moveFilter(steps, held.stepIndex, held.filterIndex, target.stepIndex!);
-
-    if (result.steps !== steps) onchange(result.steps);
+    if (result.steps !== steps) onchange(result.steps as StepForm[]);
 
     notice =
       result.clearedReferences > 0
         ? $t('rewardTracks.referencesCleared', { count: result.clearedReferences })
         : '';
 
-    end();
-  }
-
-  function isOpen(target: DropTarget) {
-    return (
-      dropTarget !== null &&
-      dropTarget.type === target.type &&
-      dropTarget.index === target.index &&
-      dropTarget.stepIndex === target.stepIndex
-    );
+    carrying = null;
+    dropIndex = null;
   }
 </script>
 
@@ -132,9 +119,9 @@
          the cursor travels. -->
     <div
       class="slot"
-      class:open={isOpen({ type: 'step', index: stepIndex, stepIndex: undefined })}
-      ondragover={(e) => over(e, { type: 'step', index: stepIndex })}
-      ondrop={(e) => drop(e, { type: 'step', index: stepIndex })}
+      class:open={dropIndex === stepIndex}
+      ondragover={(e) => over(e, stepIndex)}
+      ondrop={(e) => drop(e, stepIndex)}
       role="presentation"
     ></div>
 
@@ -144,81 +131,122 @@
       {actions}
       {canManage}
       removable={steps.length > 1}
-      dragging={carrying?.type === 'step' && carrying.index === stepIndex}
-      ondragstart={() => beginStep(stepIndex)}
-      ondragend={end}
+      dragging={carrying === stepIndex}
+      ondragstart={() => {
+        carrying = stepIndex;
+        notice = '';
+      }}
+      ondragend={() => {
+        carrying = null;
+        dropIndex = null;
+      }}
       onactionchange={() => {
-        step.filters = [];
-        onchange(steps);
+        // The facts belong to the action, so none of the old conditions can still be tested.
+        edit(stepIndex, []);
       }}
-      onremove={() => {
-        onchange(steps.filter((_: unknown, i: number) => i !== stepIndex));
-      }}
+      onremove={() => onchange(steps.filter((_, i) => i !== stepIndex))}
     >
-      <div
-        class="filter-slot"
-        class:open={isOpen({ type: 'filter-slot', stepIndex, index: undefined })}
-        ondragover={(e) => over(e, { type: 'filter-slot', stepIndex })}
-        ondrop={(e) => drop(e, { type: 'filter-slot', stepIndex })}
-        role="list"
-      >
-        {#each step.filters ?? [] as filter, filterIndex (filterIndex)}
-          <FilterBlock
-            {filter}
-            {canManage}
-            facts={factsFor(step.actionCode)}
-            operators={operatorsFor(step.actionCode, filter.factKey)}
-            references={referencesFor(steps, stepIndex, filter.factKey)}
-            picked={pickedLabels[`${stepIndex}:${filterIndex}`]}
-            picker={pickerFor(
-              factsFor(step.actionCode).find((f: Fact) => f.key === filter.factKey) ?? null
-            )}
-            dragging={carrying?.type === 'filter' &&
-              carrying.stepIndex === stepIndex &&
-              carrying.filterIndex === filterIndex}
-            onfactchange={(key: string) => {
-              filter.value = defaultFilterValue(step.actionCode, key);
-              filter.op = operatorsFor(step.actionCode, key)[0]?.value ?? 0;
-              onchange(steps);
-            }}
-            onpick={() =>
-              onpick(
-                stepIndex,
-                filterIndex,
-                pickerFor(factsFor(step.actionCode).find((f: Fact) => f.key === filter.factKey))
-              )}
-            onremove={() => {
-              step.filters.splice(filterIndex, 1);
-              onchange(steps);
-            }}
-            ondragstart={() => beginFilter(stepIndex, filterIndex)}
-            ondragend={end}
-          />
-        {/each}
-
-        {#if factsFor(step.actionCode).length > 0}
-          <button
-            type="button"
-            class="ghost-button block-add block-add--filter"
-            disabled={!canManage}
-            onclick={() => {
-              const first = factsFor(step.actionCode)[0];
-
-              step.filters = [
-                ...(step.filters ?? []),
-                {
-                  factKey: first.key,
-                  op: operatorsFor(step.actionCode, first.key)[0]?.value ?? 0,
-                  value: defaultFilterValue(step.actionCode, first.key),
-                },
-              ];
-              onchange(steps);
-            }}
-          >
-            {$t('rewardTracks.addFilter')}
-          </button>
-        {:else}
+      <div class="step-body">
+        {#if factsFor(step.actionCode).length === 0}
           <p class="muted small no-facts">{$t('rewardTracks.actionHasNoFacts')}</p>
+        {:else}
+          {#each step.tree ?? [] as node, index (index)}
+            <ConditionBlock
+              {node}
+              path={[index]}
+              siblings={(step.tree ?? []).length}
+              {canManage}
+              facts={factsFor(step.actionCode)}
+              operatorsFor={(factKey: string) => operatorsFor(step.actionCode, factKey)}
+              referencesFor={(factKey: string) => referencesFor(steps, stepIndex, factKey)}
+              picked={pickedLabels[pathKey(stepIndex, [index])]}
+              picker={node.kind === TEST
+                ? pickerFor(
+                    factsFor(step.actionCode).find((f) => f.key === (node as any).factKey) ?? null
+                  )
+                : null}
+              onchange={(path: NodePath, next: TreeNode) =>
+                edit(stepIndex, replaceAt(step.tree ?? [], path, next))}
+              onfactchange={(path: NodePath, factKey: string) => {
+                const node = nodeAt(step.tree ?? [], path);
+
+                if (!node || node.kind !== TEST) return;
+
+                // The operator and the value belonged to the old fact. Kept, they would be a
+                // comparison the server refuses, or a value nothing can match.
+                edit(
+                  stepIndex,
+                  replaceAt(step.tree ?? [], path, {
+                    kind: TEST,
+                    factKey,
+                    op: operatorsFor(step.actionCode, factKey)[0]?.value ?? 0,
+                    value: defaultFilterValue(step.actionCode, factKey),
+                  })
+                );
+              }}
+              onremove={(path: NodePath) => edit(stepIndex, removeAt(step.tree ?? [], path))}
+              onwrap={(path: NodePath, kind: 1 | 2 | 3) =>
+                edit(stepIndex, wrapAt(step.tree ?? [], path, kind))}
+              onunwrap={(path: NodePath) => edit(stepIndex, unwrapAt(step.tree ?? [], path))}
+              onshift={(path: NodePath, by: -1 | 1) =>
+                edit(stepIndex, shiftAt(step.tree ?? [], path, by))}
+              onadd={(path: NodePath) =>
+                edit(stepIndex, appendTo(step.tree ?? [], path, newTest(step.actionCode)))}
+              onaddgroup={(path: NodePath, kind: 1 | 2 | 3) =>
+                edit(
+                  stepIndex,
+                  appendTo(step.tree ?? [], path, {
+                    kind,
+                    // Never empty: the server refuses a group with nothing in it, and an editor
+                    // that offered one would be offering a save that fails.
+                    children: [newTest(step.actionCode)],
+                  })
+                )}
+              onpick={(path: NodePath, kind: string) => onpick(stepIndex, path, kind)}
+              keyFor={(path: NodePath) => pathKey(stepIndex, path)}
+              pickedFor={(path: NodePath) => pickedLabels[pathKey(stepIndex, path)]}
+              pickerFor={(factKey: string) =>
+                pickerFor(factsFor(step.actionCode).find((f) => f.key === factKey) ?? null)}
+            />
+          {/each}
+
+          <div class="step-add">
+            <button
+              type="button"
+              class="ghost-button"
+              disabled={!canManage}
+              onclick={() =>
+                edit(stepIndex, appendTo(step.tree ?? [], [], newTest(step.actionCode)))}
+            >
+              {$t('rewardTracks.addFilter')}
+            </button>
+
+            <!-- No "+ and" here: the step itself is the "and". Everything at this level already
+                 has to hold, which is what a step has always meant. -->
+            {#each [{ kind: 2, labelKey: 'rewardTracks.groupAny' }, { kind: 3, labelKey: 'rewardTracks.groupNot' }] as g (g.kind)}
+              <button
+                type="button"
+                class="ghost-button add-group"
+                disabled={!canManage}
+                onclick={() =>
+                  edit(
+                    stepIndex,
+                    appendTo(step.tree ?? [], [], {
+                      kind: g.kind as 2 | 3,
+                      children: [newTest(step.actionCode)],
+                    })
+                  )}
+              >
+                + {$t(g.labelKey)}
+              </button>
+            {/each}
+          </div>
+
+          {#if (step.tree ?? []).length === 0}
+            <!-- What an empty step means, said out loud: it is not a mistake, it is "any time this
+                 action happens", and that is a real thing to want. -->
+            <p class="muted small no-facts">{$t('rewardTracks.stepHasNoConditions')}</p>
+          {/if}
         {/if}
       </div>
     </ActionBlock>
@@ -227,9 +255,9 @@
   <!-- The slot after the last block, so a step can be dropped at the end. -->
   <div
     class="slot"
-    class:open={isOpen({ type: 'step', index: steps.length - 1, stepIndex: undefined })}
-    ondragover={(e) => over(e, { type: 'step', index: steps.length - 1 })}
-    ondrop={(e) => drop(e, { type: 'step', index: steps.length - 1 })}
+    class:open={dropIndex === steps.length - 1}
+    ondragover={(e) => over(e, steps.length - 1)}
+    ondrop={(e) => drop(e, steps.length - 1)}
     role="presentation"
   ></div>
 
@@ -237,12 +265,7 @@
     type="button"
     class="ghost-button block-add block-add--action"
     disabled={!canManage}
-    onclick={() => {
-      onchange([
-        ...steps,
-        { actionCode: actions[0]?.name ?? '', filters: [] },
-      ]);
-    }}
+    onclick={() => onchange([...steps, { actionCode: actions[0]?.name ?? '', tree: [] }])}
   >
     {$t('rewardTracks.addStep')}
   </button>
@@ -256,6 +279,7 @@
   .sequence {
     display: flex;
     flex-direction: column;
+    max-width: 1100px;
   }
 
   /* Closed, a slot is invisible. Open, it is the gap the block will fall into -- which is what
@@ -263,7 +287,9 @@
   .slot {
     height: 0;
     border-radius: 6px;
-    transition: height 90ms ease, background 90ms ease;
+    transition:
+      height 90ms ease,
+      background 90ms ease;
   }
 
   .slot.open {
@@ -273,12 +299,22 @@
     border: 1px dashed rgba(var(--accent-rgb), 0.6);
   }
 
-  /* The area under an action that accepts its conditions. It only shows an edge while something is
-     hovering it, so a resting sequence stays quiet. */
-  .filter-slot.open {
-    border-radius: 6px;
-    outline: 1px dashed rgba(var(--gold-rgb), 0.6);
-    outline-offset: 3px;
+  /* Indented under its action, which is the only thing that says the conditions belong to it. */
+  .step-body {
+    padding: 6px 10px 10px 16px;
+  }
+
+  .step-add {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-top: 6px;
+  }
+
+  .add-group {
+    font-size: 0.72rem;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
   }
 
   .notice {
@@ -286,6 +322,6 @@
   }
 
   .no-facts {
-    margin: 7px 0 0 14px;
+    margin: 6px 0 0;
   }
 </style>
