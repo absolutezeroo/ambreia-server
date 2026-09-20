@@ -211,6 +211,11 @@ export default {
     filterReferenceNotCaptured: 'L’action précédente n’enregistre jamais ça, il n’y a donc rien à quoi renvoyer.',
     stepActionRequired: 'Chaque étape a besoin d’une action.',
     sequenceNeedsStep: 'Une séquence a besoin d’au moins une étape.',
+    predicateGroupNeedsChild:
+      'Un groupe vide ne vérifie rien. Mettez-y une condition ou supprimez-le.',
+    predicateNotNeedsOneChild: '« Non » inverse exactement une condition.',
+    predicateShapeMismatch:
+      'Cette condition est à la fois un test et un groupe. Elle ne peut être que l’un des deux.',
     taskIdAndActionRequired: 'Une tâche a besoin d’un identifiant et d’une action.',
   },
   account: {

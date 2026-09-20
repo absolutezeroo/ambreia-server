@@ -385,12 +385,9 @@ internal sealed class RewardOperations(
                                             .. (
                                                 s.Filters
                                                 ?? Array.Empty<RewardTrackStepFilterBody>()
-                                            ).Select(f => new RewardTrackStepFilterSpec(
-                                                f.FactKey,
-                                                (StepFilterOperator)f.Op,
-                                                f.Value
-                                            )),
-                                        ]
+                                            ).Select(Filter),
+                                        ],
+                                        Nodes(s.Tree)
                                     )),
                                 ]
                             ),
@@ -629,6 +626,32 @@ internal sealed class RewardOperations(
             r.Hidden,
             r.CampaignCode
         );
+
+    private static RewardTrackStepFilterSpec Filter(RewardTrackStepFilterBody f) =>
+        new(f.FactKey, (StepFilterOperator)f.Op, f.Value);
+
+    /// <summary>
+    /// A step's condition tree as the spec spells it, or <c>null</c> when the caller sent none.
+    /// </summary>
+    /// <remarks>
+    /// Nothing is checked here beyond the shape of the JSON: a kind outside the enum, a group with
+    /// no children, a test with children — all of it is carried through to
+    /// <c>RewardTrackSequenceRules</c>, which is where every other refusal already lives and the
+    /// only place that can answer with a code the editor knows how to show.
+    /// </remarks>
+    private static IReadOnlyList<RewardTrackStepNodeSpec>? Nodes(
+        IReadOnlyList<RewardTrackStepNodeBody>? nodes
+    ) =>
+        nodes is null
+            ? null
+            :
+            [
+                .. nodes.Select(n => new RewardTrackStepNodeSpec(
+                    (PredicateKind)n.Kind,
+                    n.Test is null ? null : Filter(n.Test),
+                    Nodes(n.Children)
+                )),
+            ];
 
     private RewardTrackSpec ToSpec(UpdateRewardTrackRequest r) =>
         new(

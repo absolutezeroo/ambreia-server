@@ -346,14 +346,16 @@ internal sealed class RewardTrackReads(
                                         .Select(s => new RewardTrackStepRow(
                                             s.StepIndex,
                                             s.ActionCode,
-                                            stepFilters
-                                                .Where(f => f.RewardTrackTaskStepEntityId == s.Id)
-                                                .Select(f => new RewardTrackFilterRow(
-                                                    f.FactKey,
-                                                    (int)f.Operator,
-                                                    f.Value
-                                                ))
-                                                .ToList()
+                                            Flat(
+                                                stepFilters.Where(f =>
+                                                    f.RewardTrackTaskStepEntityId == s.Id
+                                                )
+                                            ),
+                                            Tree(
+                                                stepFilters.Where(f =>
+                                                    f.RewardTrackTaskStepEntityId == s.Id
+                                                )
+                                            )
                                         ))
                                         .ToList(),
                                     levels
@@ -459,6 +461,99 @@ internal sealed class RewardTrackReads(
             },
             ct
         );
+
+    /// <summary>
+    /// A step's conditions the way they have always been read: one flat list that ANDs.
+    /// </summary>
+    /// <remarks>
+    /// Empty once a step nests, which is what the engine reads too — a tree flattened into a list
+    /// is not the same question, and an editor that showed one would offer to save the wrong thing.
+    /// </remarks>
+    private static IReadOnlyList<RewardTrackFilterRow> Flat(
+        IEnumerable<RewardTrackStepFilterEntity> rows
+    )
+    {
+        List<RewardTrackFilterRow> flat = [];
+
+        foreach (RewardTrackStepFilterEntity row in rows)
+        {
+            if (row.Kind != PredicateKind.Test || row.ParentId is not null)
+            {
+                return [];
+            }
+
+            flat.Add(new RewardTrackFilterRow(row.FactKey, (int)row.Operator, row.Value));
+        }
+
+        return flat;
+    }
+
+    /// <summary>
+    /// A step's rows as the tree they describe, under the implicit <c>All</c> that a step is.
+    /// </summary>
+    /// <remarks>
+    /// The same assembly the catalog does for the engine, and it has to stay the same: a tree the
+    /// editor draws differently from the one that decides who is paid is worse than no editor.
+    /// A row whose parent chain loops is dropped rather than followed — it can only come from the
+    /// operations API or a hand-edited row, and the engine's assembler guards it the same way.
+    /// </remarks>
+    private static IReadOnlyList<RewardTrackNodeRow> Tree(
+        IEnumerable<RewardTrackStepFilterEntity> rows
+    )
+    {
+        Dictionary<int, List<RewardTrackStepFilterEntity>> byParent = [];
+
+        foreach (RewardTrackStepFilterEntity row in rows)
+        {
+            // Everything with no parent hangs off the root, which is implicit and has no row.
+            int parent = row.ParentId ?? 0;
+
+            if (!byParent.TryGetValue(parent, out List<RewardTrackStepFilterEntity>? siblings))
+            {
+                byParent[parent] = siblings = [];
+            }
+
+            siblings.Add(row);
+        }
+
+        return Children(byParent, 0, []);
+    }
+
+    private static List<RewardTrackNodeRow> Children(
+        Dictionary<int, List<RewardTrackStepFilterEntity>> byParent,
+        int parentId,
+        HashSet<int> seen
+    )
+    {
+        if (!byParent.TryGetValue(parentId, out List<RewardTrackStepFilterEntity>? rows))
+        {
+            return [];
+        }
+
+        List<RewardTrackNodeRow> built = [];
+
+        foreach (RewardTrackStepFilterEntity row in rows)
+        {
+            if (!seen.Add(row.Id))
+            {
+                continue;
+            }
+
+            built.Add(
+                new RewardTrackNodeRow(
+                    (int)row.Kind,
+                    row.Kind == PredicateKind.Test
+                        ? new RewardTrackFilterRow(row.FactKey, (int)row.Operator, row.Value)
+                        : null,
+                    row.Kind == PredicateKind.Test ? [] : Children(byParent, row.Id, seen)
+                )
+            );
+
+            seen.Remove(row.Id);
+        }
+
+        return built;
+    }
 
     /// <summary>
     /// The action codes something actually raises today, from the handlers in

@@ -3102,6 +3102,12 @@ export interface RewardTrackList {
   items: RewardTrackRow[];
 }
 
+export interface RewardTrackNodeRow {
+  kind: number;
+  test: RewardTrackFilterRow | null;
+  children: RewardTrackNodeRow[];
+}
+
 export interface RewardTrackPrizeRow {
   id: number;
   prizeId: string;
@@ -3157,6 +3163,7 @@ export interface RewardTrackStepRow {
   stepIndex: number;
   actionCode: string;
   filters: RewardTrackFilterRow[];
+  tree: RewardTrackNodeRow[];
 }
 
 export interface RewardTrackTaskRow {

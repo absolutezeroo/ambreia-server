@@ -55,10 +55,32 @@ public sealed record RewardTrackTaskSpec(
 /// <summary>One stage of a task.</summary>
 public sealed record RewardTrackTaskLevelSpec(int RequiredCount, int PointsReward, bool Premium);
 
-/// <summary>One action in a task's sequence, with the tests a signal must pass to satisfy it.</summary>
+/// <summary>
+/// One action in a task's sequence, with the tests a signal must pass to satisfy it.
+/// </summary>
+/// <remarks>
+/// <paramref name="Tree"/> is the same conditions arranged rather than listed, and it wins when it
+/// is there: both spellings say "all of this must hold", so a caller that sends only
+/// <paramref name="Filters"/> means exactly what it always meant.
+/// </remarks>
 public sealed record RewardTrackTaskStepSpec(
     string ActionCode,
-    IReadOnlyList<RewardTrackStepFilterSpec> Filters
+    IReadOnlyList<RewardTrackStepFilterSpec> Filters,
+    IReadOnlyList<RewardTrackStepNodeSpec>? Tree = null
+);
+
+/// <summary>
+/// One node of a step's condition tree: a test, or a group holding other nodes.
+/// </summary>
+/// <remarks>
+/// A <see cref="PredicateKind.Test"/> carries <paramref name="Test"/> and no children, and every
+/// other kind carries children and no test. The nodes of a step's <c>Tree</c> are the children of
+/// an implicit <see cref="PredicateKind.All"/>, which is what a step has always meant.
+/// </remarks>
+public sealed record RewardTrackStepNodeSpec(
+    PredicateKind Kind,
+    RewardTrackStepFilterSpec? Test = null,
+    IReadOnlyList<RewardTrackStepNodeSpec>? Children = null
 );
 
 /// <summary>

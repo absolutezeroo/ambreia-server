@@ -213,6 +213,9 @@ export default {
     filterReferenceNotCaptured: 'The earlier action never records that, so there is nothing to point back at.',
     stepActionRequired: 'Every step needs an action.',
     sequenceNeedsStep: 'A sequence needs at least one step.',
+    predicateGroupNeedsChild: 'An empty group holds nothing. Put a condition in it or remove it.',
+    predicateNotNeedsOneChild: '“Not” inverts exactly one condition.',
+    predicateShapeMismatch: 'That condition is both a test and a group. It can only be one.',
     taskIdAndActionRequired: 'A task needs an identifier and an action.',
   },
   account: {

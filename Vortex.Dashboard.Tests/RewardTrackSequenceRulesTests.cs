@@ -1,3 +1,4 @@
+using System.Linq;
 using FluentAssertions;
 using Vortex.Dashboard.API.Admin.Rules;
 using Vortex.Primitives.RewardTracks;
@@ -164,4 +165,154 @@ public sealed class RewardTrackSequenceRulesTests
             .Should()
             .BeNull();
     }
+
+    private static RewardTrackStepNodeSpec Leaf(
+        string factKey,
+        StepFilterOperator op,
+        string value
+    ) => new(PredicateKind.Test, new RewardTrackStepFilterSpec(factKey, op, value));
+
+    /// <summary>A condition that saves today, used wherever a branch only has to be valid.</summary>
+    private static RewardTrackStepNodeSpec Sound() =>
+        Leaf(RewardTrackFacts.Definition, StepFilterOperator.Equals, "500");
+
+    private static RewardTrackStepNodeSpec Group(
+        PredicateKind kind,
+        params RewardTrackStepNodeSpec[] children
+    ) => new(kind, null, children);
+
+    private static string? Refuses(params RewardTrackStepNodeSpec[] tree) =>
+        RewardTrackSequenceRules.FirstProblem(
+            [new RewardTrackTaskStepSpec(RewardTrackActions.WalkOnFurni, [], tree)],
+            SignalVocabularyFixture.Real
+        );
+
+    [Fact]
+    public void A_tree_of_sound_conditions_saves()
+    {
+        // "that sofa, and either not on the floor or in room 12" -- the shape a flat list cannot
+        // express, and the reason any of this exists.
+        Refuses(
+                Sound(),
+                Group(
+                    PredicateKind.Any,
+                    Group(
+                        PredicateKind.Not,
+                        Leaf(RewardTrackFacts.Definition, StepFilterOperator.Equals, "900")
+                    ),
+                    Leaf(RewardTrackFacts.Room, StepFilterOperator.Equals, "12")
+                )
+            )
+            .Should()
+            .BeNull();
+    }
+
+    [Fact]
+    public void A_condition_buried_in_a_tree_is_judged_like_any_other()
+    {
+        // The rule that actually pays for this recursion: every per-condition refusal has to reach
+        // a condition three levels down, or nesting would be a way to smuggle a dead task past the
+        // editor.
+        Refuses(
+                Group(
+                    PredicateKind.Any,
+                    Sound(),
+                    Group(
+                        PredicateKind.All,
+                        Group(
+                            PredicateKind.Not,
+                            Leaf(RewardTrackFacts.Item, StepFilterOperator.Equals, "$0")
+                        )
+                    )
+                )
+            )
+            .Should()
+            .Be("filter_reference_must_be_earlier");
+    }
+
+    [Theory]
+    // A negation of nothing, and a negation of two things. Neither is a negation.
+    [InlineData(PredicateKind.Not, 0, "predicate_not_needs_one_child")]
+    [InlineData(PredicateKind.Not, 2, "predicate_not_needs_one_child")]
+    // An empty Any is satisfied by nothing, and an empty All under one makes its whole branch true
+    // without saying anything. Both save cleanly and both are content nobody meant to write.
+    [InlineData(PredicateKind.Any, 0, "predicate_group_needs_a_child")]
+    [InlineData(PredicateKind.All, 0, "predicate_group_needs_a_child")]
+    [InlineData(PredicateKind.Any, 1, null)]
+    [InlineData(PredicateKind.All, 2, null)]
+    public void A_group_is_refused_unless_it_holds_what_it_can_use(
+        PredicateKind kind,
+        int children,
+        string? expected
+    ) =>
+        Refuses(Group(kind, [.. Enumerable.Range(0, children).Select(_ => Sound())]))
+            .Should()
+            .Be(expected);
+
+    [Fact]
+    public void A_node_that_is_both_a_test_and_a_group_is_refused()
+    {
+        // Unreachable from the editor and reachable from the operations API, where the half the
+        // engine ignores would look every bit as saved as the half it reads.
+        Refuses(new RewardTrackStepNodeSpec(PredicateKind.Test, Sound().Test, [Sound()]))
+            .Should()
+            .Be("predicate_shape_mismatch");
+
+        Refuses(new RewardTrackStepNodeSpec(PredicateKind.All, Sound().Test, [Sound()]))
+            .Should()
+            .Be("predicate_shape_mismatch");
+
+        // A kind outside the enum. The engine reads it as false, so the task would never advance.
+        Refuses(Group((PredicateKind)9, Sound())).Should().Be("predicate_shape_mismatch");
+    }
+
+    [Fact]
+    public void A_test_with_nothing_in_it_is_the_same_mistake_nested_as_flat() =>
+        Refuses(new RewardTrackStepNodeSpec(PredicateKind.Test, null, null))
+            .Should()
+            .Be("filter_incomplete");
+
+    [Fact]
+    public void The_arranged_conditions_are_the_ones_judged()
+    {
+        RewardTrackStepFilterSpec broken = new(
+            RewardTrackFacts.Definition,
+            StepFilterOperator.Equals,
+            string.Empty
+        );
+
+        // The engine reads the tree and ignores the list, so the validator has to agree with it in
+        // both directions: a list nobody reads cannot block a save, and it cannot wave one through.
+        RewardTrackSequenceRules
+            .FirstProblem(
+                [new RewardTrackTaskStepSpec(RewardTrackActions.WalkOnFurni, [broken], [Sound()])],
+                SignalVocabularyFixture.Real
+            )
+            .Should()
+            .BeNull();
+
+        RewardTrackSequenceRules
+            .FirstProblem(
+                [
+                    new RewardTrackTaskStepSpec(
+                        RewardTrackActions.WalkOnFurni,
+                        [Sound().Test!],
+                        [new RewardTrackStepNodeSpec(PredicateKind.Test, broken, null)]
+                    ),
+                ],
+                SignalVocabularyFixture.Real
+            )
+            .Should()
+            .Be("filter_incomplete");
+    }
+
+    [Fact]
+    public void An_empty_tree_is_a_step_with_no_conditions_not_a_refusal() =>
+        RewardTrackSequenceRules
+            .FirstProblem(
+                [new RewardTrackTaskStepSpec(RewardTrackActions.WalkOnFurni, [], [])],
+                SignalVocabularyFixture.Real
+            )
+            .Should()
+            .BeNull();
 }

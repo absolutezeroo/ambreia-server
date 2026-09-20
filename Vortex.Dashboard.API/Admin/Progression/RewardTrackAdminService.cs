@@ -796,6 +796,15 @@ internal sealed class RewardTrackAdminService(
             db.RewardTrackTaskSteps.Add(step);
             await db.SaveChangesAsync(ct).ConfigureAwait(false);
 
+            // The arranged conditions win over the listed ones, the same way the engine reads them.
+            // A caller that sends only a list means what it has always meant, and takes the path it
+            // has always taken: rows with no parent and no kind.
+            if (steps[index].Tree is { Count: > 0 } tree)
+            {
+                await WriteNodesAsync(db, step.Id, null, tree, ct).ConfigureAwait(false);
+                continue;
+            }
+
             int order = 0;
 
             foreach (RewardTrackStepFilterSpec filter in steps[index].Filters ?? [])
@@ -811,6 +820,50 @@ internal sealed class RewardTrackAdminService(
                     }
                 );
             }
+        }
+    }
+
+    /// <summary>
+    /// Writes one level of a step's condition tree, and everything under it.
+    /// </summary>
+    /// <remarks>
+    /// One save per group rather than one per row: a child needs its parent's id and nothing has
+    /// one until it is written, but a test is nobody's parent. A step's conditions are a handful of
+    /// rows and this runs when an operator presses save, so the extra round trips cost nothing.
+    /// </remarks>
+    private static async Task WriteNodesAsync(
+        VortexDbContext db,
+        int stepRowId,
+        int? parentId,
+        IReadOnlyList<RewardTrackStepNodeSpec> nodes,
+        CancellationToken ct
+    )
+    {
+        int order = 0;
+
+        foreach (RewardTrackStepNodeSpec node in nodes)
+        {
+            RewardTrackStepFilterEntity row = new()
+            {
+                RewardTrackTaskStepEntityId = stepRowId,
+                Kind = node.Kind,
+                ParentId = parentId,
+                SortOrder = order++,
+                FactKey = node.Test?.FactKey.Trim() ?? string.Empty,
+                Operator = node.Test?.Operator ?? StepFilterOperator.Equals,
+                Value = node.Test?.Value.Trim() ?? string.Empty,
+            };
+
+            db.RewardTrackStepFilters.Add(row);
+
+            if (node.Kind == PredicateKind.Test)
+            {
+                continue;
+            }
+
+            await db.SaveChangesAsync(ct).ConfigureAwait(false);
+            await WriteNodesAsync(db, stepRowId, row.Id, node.Children ?? [], ct)
+                .ConfigureAwait(false);
         }
     }
 
@@ -878,24 +931,47 @@ internal sealed class RewardTrackAdminService(
             db.RewardTrackTaskSteps.Add(clone);
             await db.SaveChangesAsync(ct).ConfigureAwait(false);
 
+            // A copied row cannot keep its parent's id: the copy of that parent is a different row.
+            // Ordered by id so a parent is always copied before its children, which is the order
+            // they were written in, and mapped as we go.
+            Dictionary<int, int> copied = [];
+
             foreach (
                 RewardTrackStepFilterEntity filter in await db
                     .RewardTrackStepFilters.AsNoTracking()
                     .Where(f => f.RewardTrackTaskStepEntityId == source.Id && f.DeletedAt == null)
+                    .OrderBy(f => f.Id)
                     .ToListAsync(ct)
                     .ConfigureAwait(false)
             )
             {
-                db.RewardTrackStepFilters.Add(
-                    new RewardTrackStepFilterEntity
-                    {
-                        RewardTrackTaskStepEntityId = clone.Id,
-                        SortOrder = filter.SortOrder,
-                        FactKey = filter.FactKey,
-                        Operator = filter.Operator,
-                        Value = filter.Value,
-                    }
-                );
+                RewardTrackStepFilterEntity copy = new()
+                {
+                    RewardTrackTaskStepEntityId = clone.Id,
+                    Kind = filter.Kind,
+                    // A parent that is not in the map is one this step never had. Copying the row
+                    // under the root keeps it where an operator can see and delete it, which is
+                    // better than a row that lands nowhere and is silently never read.
+                    ParentId =
+                        filter.ParentId is int parent && copied.TryGetValue(parent, out int mapped)
+                            ? mapped
+                            : null,
+                    SortOrder = filter.SortOrder,
+                    FactKey = filter.FactKey,
+                    Operator = filter.Operator,
+                    Value = filter.Value,
+                };
+
+                db.RewardTrackStepFilters.Add(copy);
+
+                if (filter.Kind == PredicateKind.Test)
+                {
+                    // Nobody's parent, so nobody needs its id.
+                    continue;
+                }
+
+                await db.SaveChangesAsync(ct).ConfigureAwait(false);
+                copied[filter.Id] = copy.Id;
             }
         }
     }

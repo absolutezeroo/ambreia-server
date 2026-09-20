@@ -50,6 +50,18 @@ internal static class RewardTrackSequenceRules
                 return "step_action_required";
             }
 
+            // The two spellings of the same conditions. A step that sends both means the arranged
+            // one: that is what the engine reads, so it is what has to be refused or allowed.
+            if (step.Tree is { Count: > 0 })
+            {
+                if (NodesProblem(steps, index, step, step.Tree, vocabulary) is string nested)
+                {
+                    return nested;
+                }
+
+                continue;
+            }
+
             foreach (RewardTrackStepFilterSpec filter in step.Filters ?? [])
             {
                 if (Problem(steps, index, step, filter, vocabulary) is string problem)
@@ -60,6 +72,79 @@ internal static class RewardTrackSequenceRules
         }
 
         return null;
+    }
+
+    private static string? NodesProblem(
+        IReadOnlyList<RewardTrackTaskStepSpec> steps,
+        int index,
+        RewardTrackTaskStepSpec step,
+        IReadOnlyList<RewardTrackStepNodeSpec> nodes,
+        ISignalVocabulary vocabulary
+    )
+    {
+        foreach (RewardTrackStepNodeSpec node in nodes)
+        {
+            if (NodeProblem(steps, index, step, node, vocabulary) is string problem)
+            {
+                return problem;
+            }
+        }
+
+        return null;
+    }
+
+    /// <summary>
+    /// What is wrong with one node of a condition tree, its own shape first and then its children.
+    /// </summary>
+    /// <remarks>
+    /// The shape rules exist because the engine reads a malformed node as false rather than
+    /// throwing — the right call on the room's event path, and the reason a bad shape would
+    /// otherwise be a task that saves, shows nothing, and never advances.
+    /// </remarks>
+    private static string? NodeProblem(
+        IReadOnlyList<RewardTrackTaskStepSpec> steps,
+        int index,
+        RewardTrackTaskStepSpec step,
+        RewardTrackStepNodeSpec node,
+        ISignalVocabulary vocabulary
+    )
+    {
+        if (!Enum.IsDefined(node.Kind))
+        {
+            return "predicate_shape_mismatch";
+        }
+
+        if (node.Kind == PredicateKind.Test)
+        {
+            // A test carries a test and nothing else. Children hanging off one are read by nobody,
+            // which is worse than being refused: they look saved.
+            return node.Children is { Count: > 0 } ? "predicate_shape_mismatch"
+                : node.Test is null ? "filter_incomplete"
+                : Problem(steps, index, step, node.Test, vocabulary);
+        }
+
+        if (node.Test is not null)
+        {
+            return "predicate_shape_mismatch";
+        }
+
+        int children = node.Children?.Count ?? 0;
+
+        // Asked before the empty check so an empty negation is told what a negation needs, rather
+        // than the less useful half of the truth.
+        if (node.Kind == PredicateKind.Not && children != 1)
+        {
+            return "predicate_not_needs_one_child";
+        }
+
+        if (children == 0)
+        {
+            // An empty group is not "no conditions": an empty Any is satisfied by nothing, and an
+            // empty All under one makes its whole branch true without saying anything.
+            return "predicate_group_needs_a_child";
+        }
+
+        return NodesProblem(steps, index, step, node.Children!, vocabulary);
     }
 
     private static string? Problem(

@@ -106,6 +106,9 @@ const ERROR_CODE_KEYS: Record<string, string> = {
   filter_reference_fact_not_captured: 'errors.filterReferenceNotCaptured',
   step_action_required: 'errors.stepActionRequired',
   sequence_needs_a_step: 'errors.sequenceNeedsStep',
+  predicate_group_needs_a_child: 'errors.predicateGroupNeedsChild',
+  predicate_not_needs_one_child: 'errors.predicateNotNeedsOneChild',
+  predicate_shape_mismatch: 'errors.predicateShapeMismatch',
   task_id_and_action_required: 'errors.taskIdAndActionRequired',
 };
 
