@@ -2779,6 +2779,10 @@ export default {
     fact_relation: 'Où il se tenait',
     fact_dance: 'Quelle danse',
     fact_sign: 'Quelle pancarte (0-17)',
+    fact_posture: 'Dans quelle position',
+    posture_standing: 'Debout',
+    posture_sitting: 'Assis',
+    posture_laying: 'Allongé',
     // Les quatre danses portent leur nom du client dans toutes les langues.
     dance_dance: 'Dance',
     dance_pogo_mogo: 'Pogo-Mogo',

@@ -423,6 +423,23 @@ public static class Facts
     );
 
     /// <summary>
+    /// How the avatar was holding itself when it reached the tile.
+    /// </summary>
+    /// <remarks>
+    /// The fact that makes "seated in front of a certain piece with bare feet" one condition
+    /// instead of three steps. Read at the instant the signal is raised, beside the relation and
+    /// the look, because all three are claims about the same moment — split across steps, a player
+    /// sits down, stands up, walks over, and satisfies every one of them.
+    /// </remarks>
+    public static readonly FactKey Posture = new(
+        RewardTrackFacts.Posture,
+        FactKind.Enum,
+        "rewardTracks.fact_posture",
+        "How they were",
+        [.. AvatarPostures.All.Select(p => new EnumValue(p, $"rewardTracks.posture_{p}", p))]
+    );
+
+    /// <summary>
     /// Which sign an avatar held up.
     /// </summary>
     /// <remarks>
@@ -506,5 +523,8 @@ public static class Facts
         FigureSet,
         Relation,
         Section,
+        Dance,
+        Sign,
+        Posture,
     ];
 }

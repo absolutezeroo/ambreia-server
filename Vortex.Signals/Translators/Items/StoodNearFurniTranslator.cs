@@ -30,6 +30,7 @@ public sealed class StoodNearFurniTranslator : ISignalTranslator<PlayerStoodNear
                 Facts.Room,
                 Facts.Figure,
                 Facts.FigureSet,
+                Facts.Posture,
             ],
             TargetKind: FactKind.OpaqueId
         ),
@@ -50,6 +51,9 @@ public sealed class StoodNearFurniTranslator : ISignalTranslator<PlayerStoodNear
                     .Id(Facts.Room, e.RoomId)
                     .Text(Facts.Figure, e.Figure)
                     .Ids(Facts.FigureSet, FigureString.SetIdsOf(e.Figure))
+                    // Text, not Enum: Enum adds unconditionally, and a room that did not say how
+                    // the avatar was holding itself has not said it was standing.
+                    .Text(Facts.Posture, e.Posture)
             ),
         ];
 }

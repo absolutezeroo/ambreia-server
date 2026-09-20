@@ -355,7 +355,14 @@ public sealed class RoomAvatarTickSystem(RoomGrain roomGrain)
                     floorItem.Definition.Id,
                     _roomGrain.RoomId.Value,
                     side.ToValue(),
-                    walker.Figure
+                    walker.Figure,
+                    // Read here, where the avatar is: "seated in front of it" is one moment, and
+                    // asking for the posture in a later step would let a player sit, stand and
+                    // then walk over.
+                    AvatarPostures.Of(
+                        walker.HasStatus(AvatarStatusType.Sit),
+                        walker.HasStatus(AvatarStatusType.Lay)
+                    )
                 )
             );
         }

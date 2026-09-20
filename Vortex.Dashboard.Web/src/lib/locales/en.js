@@ -2770,6 +2770,10 @@ export default {
     // Numbered, not named: the client draws 0-10 as digits and 11-17 as specials this repository
     // has never named, and inventing them is how a picker offers a heart that is really a skull.
     fact_sign: 'Which sign (0-17)',
+    fact_posture: 'How they were',
+    posture_standing: 'Standing',
+    posture_sitting: 'Sitting',
+    posture_laying: 'Lying down',
     dance_dance: 'Dance',
     dance_pogo_mogo: 'Pogo-Mogo',
     dance_duck_funk: 'Duck Funk',

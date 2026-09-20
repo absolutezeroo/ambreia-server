@@ -79,6 +79,9 @@ public sealed class VocabularyGovernanceTests
         "figure",
         "figure_set",
         "section",
+        "dance",
+        "sign",
+        "posture",
     ];
 
     /// <summary>Every action code content may already name.</summary>

@@ -5,6 +5,7 @@ using System.Linq;
 using FluentAssertions;
 using Vortex.Primitives.Events;
 using Vortex.Primitives.RewardTracks;
+using Vortex.Primitives.Rooms.Enums;
 using Vortex.Primitives.Signals;
 using Vortex.Signals.Translators;
 using Xunit;
@@ -136,6 +137,36 @@ public sealed class TranslatorCaseTests
                 s.Action == RewardTrackActions.ShowSign
                 && s.Facts.Any(f => f.Key == RewardTrackFacts.Sign && f.Value == signId)
             );
+    }
+
+    [Theory]
+    [InlineData(AvatarPostures.Standing)]
+    [InlineData(AvatarPostures.Sitting)]
+    [InlineData(AvatarPostures.Laying)]
+    public void Standing_near_a_piece_says_how_the_player_was_holding_themselves(string posture)
+    {
+        // What makes "seated in front of it, barefoot" one condition rather than three steps: the
+        // relation, the look and the posture are all claims about the same instant.
+        new StoodNearFurniTranslator()
+            .Translate(new PlayerStoodNearFurniEvent(4312, 99, 7, 11, "front", "hd-180-1", posture))
+            .Should()
+            .ContainSingle()
+            .Which.Facts.Should()
+            .ContainSingle(f => f.Key == RewardTrackFacts.Posture && f.Value == posture);
+    }
+
+    [Fact]
+    public void A_room_that_did_not_say_the_posture_has_not_said_standing()
+    {
+        // Absent rather than defaulted. Read as "standing", every signal from a build that does
+        // not carry it would satisfy "standing in front of it" -- a filter that quietly matches
+        // everything is worse than one that matches nothing.
+        new StoodNearFurniTranslator()
+            .Translate(new PlayerStoodNearFurniEvent(4312, 99, 7, 11, "front", "hd-180-1"))
+            .Should()
+            .ContainSingle()
+            .Which.Facts.Should()
+            .NotContain(f => f.Key == RewardTrackFacts.Posture);
     }
 
     [Fact]
@@ -464,7 +495,11 @@ public sealed class TranslatorCaseTests
                 7,
                 11,
                 "front",
-                "hd-180-1.ch-210-66.lg-270-82.sh-290-91"
+                "hd-180-1.ch-210-66.lg-270-82.sh-290-91",
+                // With a posture, because the shape declares one and the generic fixture leaves it
+                // empty -- a declared fact nothing emits is a filter that can be written and never
+                // matched.
+                AvatarPostures.Sitting
             );
         }
 

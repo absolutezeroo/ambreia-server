@@ -89,6 +89,11 @@ public sealed record PlayerWalkedOnFurniEvent(
 /// in front of the television" written as two steps is two moments, and the shoes can go back on in
 /// between.
 /// </para>
+/// <para>
+/// <paramref name="Posture"/> rides along for exactly that reason. "Seated in front of it" is the
+/// shape Habbo's own events ask for, and split across two steps it stops being one: a player can
+/// sit down, stand up and walk over, and satisfy both.
+/// </para>
 /// </remarks>
 public sealed record PlayerStoodNearFurniEvent(
     int PlayerId,
@@ -96,7 +101,8 @@ public sealed record PlayerStoodNearFurniEvent(
     int DefinitionId,
     int RoomId,
     string Relation,
-    string Figure
+    string Figure,
+    string Posture = ""
 ) : IEvent;
 
 /// <summary>A furniture item was moved within a room.</summary>
