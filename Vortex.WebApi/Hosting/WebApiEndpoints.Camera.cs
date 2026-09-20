@@ -41,18 +41,29 @@ internal static partial class WebApiEndpointsCamera
     private const string RoomThumbnailRoute = "/api/public/camera/thumbnails/{roomId:int}.png";
 
     /// <summary>
-    /// The small copy, at the url a photo on a wall asks for and nowhere else.
+    /// A selfie, at the url the client builds for one — in both sizes.
     /// </summary>
     /// <remarks>
-    /// Every segment of this is the client's, not a choice:
-    /// <c>FurnitureExternalImageVisualization</c> prefixes a photo's stuff-data url with
-    /// <c>postcards/selfie/</c> for anything that is not a poster, and rewrites its <c>.png</c> to
-    /// <c>_small.png</c>. So the shape is <c>stories.image_url_base</c> + <c>postcards/selfie/</c> +
-    /// <c>camera.url_path_prefix</c> + the key + <c>_small.png</c>, and this route is the last three
-    /// with the prefix at its default.
+    /// <para>
+    /// Every segment of this is the client's, not a choice. Anything whose type is not a photo
+    /// poster has <c>postcards/selfie/</c> put in front of its stuff-data url, so the shape is
+    /// <c>stories.image_url_base</c> + <c>postcards/selfie/</c> + <c>camera.url_path_prefix</c> +
+    /// the key + <c>.png</c>, and this route is the last three with the prefix at its default.
+    /// </para>
+    /// <para>
+    /// The two sizes share one route rather than splitting on a literal <c>_small.png</c> suffix,
+    /// because both patterns match <c>&lt;key&gt;_small.png</c> — once as the suffix and once as a
+    /// key that happens to end in <c>_small</c> — and which of them wins is routing precedence
+    /// rather than a decision anybody made. Here it is a decision: the frame on the wall asks for
+    /// the small copy (<c>buildThumbnailUrl</c> rewrites <c>.png</c>), the viewer that opens when
+    /// it is clicked asks for the photo whole (<c>getImageUrl</c> does not).
+    /// </para>
     /// </remarks>
-    private const string SmallPhotoRoute =
-        "/api/public/camera/postcards/selfie/photos/{photoKey}_small.png";
+    private const string SelfiePhotoRoute =
+        "/api/public/camera/postcards/selfie/photos/{photoKey}.png";
+
+    /// <summary>What the client appends to ask for the wall-sized copy.</summary>
+    private const string SmallSuffix = "_small";
 
     public static void MapCamera(WebApplication app)
     {
@@ -80,21 +91,30 @@ internal static partial class WebApiEndpointsCamera
             .RequireCors(WebApiAppConfigurator.PublicAssetCorsPolicyName);
 
         app.MapGet(
-                SmallPhotoRoute,
+                SelfiePhotoRoute,
                 async Task<IResult> (
                     string photoKey,
                     [FromServices] ICameraPhotoStore photos,
                     CancellationToken ct
                 ) =>
                 {
-                    ReadOnlyMemory<byte> png = await photos
-                        .ReadSmallPhotoAsync(photoKey, ct)
-                        .ConfigureAwait(false);
+                    bool small = photoKey.EndsWith(SmallSuffix, StringComparison.Ordinal);
+
+                    if (small)
+                    {
+                        photoKey = photoKey[..^SmallSuffix.Length];
+                    }
+
+                    ReadOnlyMemory<byte> png = await (
+                        small
+                            ? photos.ReadSmallPhotoAsync(photoKey, ct)
+                            : photos.ReadPhotoAsync(photoKey, ct)
+                    ).ConfigureAwait(false);
 
                     return png.IsEmpty ? Results.NotFound() : Results.Bytes(png, "image/png");
                 }
             )
-            .WithName("GetSmallCameraPhoto")
+            .WithName("GetSelfiePhoto")
             .WithTags("Camera")
             .AllowAnonymous()
             .RequireCors(WebApiAppConfigurator.PublicAssetCorsPolicyName);

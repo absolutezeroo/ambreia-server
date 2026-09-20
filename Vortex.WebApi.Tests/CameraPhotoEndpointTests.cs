@@ -149,6 +149,31 @@ public sealed class CameraPhotoEndpointTests
         response.Content.Headers.ContentType!.MediaType.Should().Be("image/png");
     }
 
+    /// <summary>
+    /// Clicking the frame opens the viewer, and the viewer asks for the photo whole.
+    /// </summary>
+    /// <remarks>
+    /// Same directory, one segment apart: <c>buildThumbnailUrl()</c> rewrites <c>.png</c> to
+    /// <c>_small.png</c> for the picture in the frame, and <c>ExternalImageWidget.getImageUrl()</c>
+    /// does not for the one in the window. Serving only the first is a photo you can see on the
+    /// wall and cannot open.
+    /// </remarks>
+    [Fact]
+    public async Task ThePhotoViewer_AsksForTheSameUrlWithoutSmall_AndGetsTheWholePhoto()
+    {
+        await using WebApiTestFactory factory = new();
+
+        byte[] png = [0x89, (byte)'P', (byte)'N', (byte)'G', 9, 9];
+        string key = factory.Photos.Add(png);
+
+        using HttpResponseMessage response = await factory.Client.GetAsync(
+            $"/api/public/camera/postcards/selfie/photos/{key}.png"
+        );
+
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        (await response.Content.ReadAsByteArrayAsync()).Should().Equal(png);
+    }
+
     [Fact]
     public async Task ASmallCopyOfAPhotoNobodyTook_IsNotFound()
     {

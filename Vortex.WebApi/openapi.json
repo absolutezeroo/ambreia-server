@@ -204,12 +204,12 @@
         }
       }
     },
-    "/api/public/camera/postcards/selfie/photos/{photoKey}_small.png": {
+    "/api/public/camera/postcards/selfie/photos/{photoKey}.png": {
       "get": {
         "tags": [
           "Camera"
         ],
-        "operationId": "GetSmallCameraPhoto",
+        "operationId": "GetSelfiePhoto",
         "parameters": [
           {
             "name": "photoKey",
