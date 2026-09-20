@@ -39,7 +39,15 @@ public sealed class CameraSceneDecoderTests
         scene.Zoom.Should().Be(1);
         scene.Planes.Should().ContainSingle();
         scene.Planes[0].CornerPoints.Should().HaveCount(4);
-        scene.Planes[0].Masks.Should().ContainSingle().Which.AssetName.Should().Be("window_mask");
+        CameraSceneMask mask = scene.Planes[0].Masks.Should().ContainSingle().Subject;
+
+        mask.AssetName.Should().Be("window_mask");
+
+        // The position, which nothing asserted: the decoder read it under a name the client does not
+        // write, defaulted it to zero without a word, and punched every doorway at the corner of its
+        // own wall — off the edge of the photo, on the wall this was found on.
+        mask.Location.X.Should().Be(1);
+        mask.Location.Y.Should().Be(2);
         scene.Sprites.Should().ContainSingle();
         scene.Sprites[0].Name.Should().Be("chair_a_0");
         scene.Sprites[0].Source.Should().Be(CameraSpriteSource.LocalAsset);
@@ -355,8 +363,12 @@ public sealed class CameraSceneDecoderTests
         bool quoteNumbers = false
     )
     {
+        // `location`, not `point`: the client writes `{name, location, flipH, flipV}`, after its own
+        // AS3 accessors. This fixture said `point` and so did the decoder, so the two agreed with
+        // each other and with nothing else — every mask arrived at (0,0) and the suite stayed green.
+        // A fixture is worth what it was copied from.
         string plane =
-            """{"z":0,"cornerPoints":[{"x":0,"y":0},{"x":10,"y":0},{"x":10,"y":10},{"x":0,"y":10}],"color":16777215,"masks":[{"name":"window_mask","point":{"x":1,"y":2},"flipH":false,"flipV":false}],"texCols":[{"assetNames":["floor_a"]}],"bottomAligned":true}""";
+            """{"z":0,"cornerPoints":[{"x":0,"y":0},{"x":10,"y":0},{"x":10,"y":10},{"x":0,"y":10}],"color":16777215,"masks":[{"name":"window_mask","location":{"x":1,"y":2},"flipH":false,"flipV":false}],"texCols":[{"assetNames":["floor_a"]}],"bottomAligned":true}""";
 
         // Serialized, not interpolated: a name with a backslash in it has to reach the decoder as
         // a valid JSON string, or the test proves the parser rejects its own fixture.

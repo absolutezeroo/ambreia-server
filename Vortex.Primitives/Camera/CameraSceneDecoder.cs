@@ -488,8 +488,18 @@ public static class CameraSceneDecoder
             double x = 0;
             double y = 0;
 
+            // `location`, which is what the field is called on the wire: the client's
+            // `JsonMaskDrawingData` writes `{name, location, flipH, flipV}`, and those four names
+            // are its AS3 accessors. Reading `point` instead found nothing, took the zero default
+            // and punched every doorway at (0,0) of its wall's texture — the wall's own top-left
+            // corner, which for the wall this was found on sits at x=-159 of a 320-wide photo.
+            //
+            // That is the whole of it, and it is why no basis and no texture size could put the hole
+            // where it belonged: the position never arrived. A missing key does not throw and does
+            // not log; it renders a photo that is right everywhere except the one place nobody can
+            // see.
             if (
-                mask.TryGetProperty("point", out JsonElement point)
+                mask.TryGetProperty("location", out JsonElement point)
                 && point.ValueKind == JsonValueKind.Object
             )
             {
