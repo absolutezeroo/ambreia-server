@@ -199,6 +199,24 @@ assert.equal(nodeAt(tree(), [0, 0]), null, 'a test has no children to walk into'
     'the fact key has to be the real one',
   );
 
+  {
+    // The exact shape an operator sent a screenshot of, because "it searches the whole step" is
+    // the kind of claim that is true in a helper and false in the step it is called with:
+    //
+    //   the furniture is 397        <- root level
+    //   AND
+    //     where they stood is ...   <- the grid, one level down, in a different branch
+    //
+    // The grid's own condition names no furniture and never will. It is a sibling's, and it is
+    // still the piece this step is about.
+    const asShipped = [
+      cond('def', { iconUrl: '/sofa.png' }),
+      group(ALL, { kind: TEST, op: 2, left: { kind: FACT, arg: 'relation', step: -1 }, right: { kind: LITERAL, arg: 'front', step: -1 } }),
+    ];
+
+    assert.equal(furnitureIcon(asShipped), '/sofa.png');
+  }
+
   assert.equal(furnitureIcon([cond('def', {})]), null, 'never picked, nothing sent');
   assert.equal(furnitureIcon([cond('room', {})]), null, 'not about furniture');
   assert.equal(furnitureIcon(undefined), null, 'a step with no conditions');
