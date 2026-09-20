@@ -8,9 +8,14 @@ import assert from 'node:assert/strict';
 import {
   ALL,
   ANY,
+  FACT,
+  LITERAL,
   NOT,
+  STEP_FACT,
   TEST,
   appendTo,
+  decodeSide,
+  encodeSide,
   fromRows,
   mapTests,
   nodeAt,
@@ -25,7 +30,17 @@ import {
   wrapAt,
 } from '../src/lib/sequence/tree.ts';
 
-const test = (value) => ({ kind: TEST, factKey: 'item', op: 0, value });
+/** A condition comparing the `item` fact with a typed value -- the ordinary shape. */
+const test = (value) => ({
+  kind: TEST,
+  op: 0,
+  left: { kind: FACT, arg: 'item', step: -1 },
+  right: { kind: LITERAL, arg: value, step: -1 },
+});
+
+/** What that condition is comparing against, for the assertions below. */
+const typed = (node) => node.right.arg;
+
 const group = (kind, ...children) => ({ kind, children });
 
 // "that sofa, and either not that other one or room 12"
@@ -35,11 +50,11 @@ const tree = () => [
 ];
 
 // --- finding a node ---------------------------------------------------------------------------
-assert.equal(nodeAt(tree(), [0]).value, '500');
+assert.equal(typed(nodeAt(tree(), [0])), '500');
 assert.equal(nodeAt(tree(), [1]).kind, ANY);
 assert.equal(nodeAt(tree(), [1, 0]).kind, NOT);
-assert.equal(nodeAt(tree(), [1, 0, 0]).value, '900');
-assert.equal(nodeAt(tree(), [1, 1]).value, '12');
+assert.equal(typed(nodeAt(tree(), [1, 0, 0])), '900');
+assert.equal(typed(nodeAt(tree(), [1, 1])), '12');
 assert.equal(nodeAt(tree(), [9]), null, 'a path naming nothing is null, not a throw');
 assert.equal(nodeAt(tree(), [0, 0]), null, 'a test has no children to walk into');
 
@@ -47,9 +62,9 @@ assert.equal(nodeAt(tree(), [0, 0]), null, 'a test has no children to walk into'
 {
   const next = replaceAt(tree(), [1, 0, 0], test('901'));
 
-  assert.equal(nodeAt(next, [1, 0, 0]).value, '901');
-  assert.equal(nodeAt(next, [0]).value, '500', 'its cousins are untouched');
-  assert.equal(nodeAt(next, [1, 1]).value, '12');
+  assert.equal(typed(nodeAt(next, [1, 0, 0])), '901');
+  assert.equal(typed(nodeAt(next, [0])), '500', 'its cousins are untouched');
+  assert.equal(typed(nodeAt(next, [1, 1])), '12');
   assert.notEqual(next, tree(), 'a new array, so the editor can see the change');
 }
 
@@ -58,13 +73,13 @@ assert.equal(nodeAt(tree(), [0, 0]), null, 'a test has no children to walk into'
   const next = removeAt(tree(), [1, 0]);
 
   assert.equal(nodeAt(next, [1]).children.length, 1);
-  assert.equal(nodeAt(next, [1, 0]).value, '12', 'the sibling slid down into the gap');
+  assert.equal(typed(nodeAt(next, [1, 0])), '12', 'the sibling slid down into the gap');
 }
 
 // --- adding -------------------------------------------------------------------------------------
 {
   assert.equal(appendTo(tree(), [], test('7')).length, 3, 'an empty path is the step itself');
-  assert.equal(nodeAt(appendTo(tree(), [1], test('7')), [1, 2]).value, '7');
+  assert.equal(typed(nodeAt(appendTo(tree(), [1], test('7')), [1, 2])), '7');
   assert.deepEqual(
     appendTo(tree(), [0], test('7')),
     tree(),
@@ -77,11 +92,11 @@ assert.equal(nodeAt(tree(), [0, 0]), null, 'a test has no children to walk into'
   const wrapped = wrapAt(tree(), [0], NOT);
 
   assert.equal(nodeAt(wrapped, [0]).kind, NOT);
-  assert.equal(nodeAt(wrapped, [0, 0]).value, '500', 'the condition is now inside it');
+  assert.equal(typed(nodeAt(wrapped, [0, 0])), '500', 'the condition is now inside it');
 
   const back = unwrapAt(wrapped, [0]);
 
-  assert.equal(nodeAt(back, [0]).value, '500', 'and out again');
+  assert.equal(typed(nodeAt(back, [0])), '500', 'and out again');
   assert.equal(back.length, 2);
 }
 
@@ -92,7 +107,7 @@ assert.equal(nodeAt(tree(), [0, 0]), null, 'a test has no children to walk into'
 
   assert.equal(next.length, 3);
   assert.equal(nodeAt(next, [1]).kind, NOT);
-  assert.equal(nodeAt(next, [2]).value, '12');
+  assert.equal(typed(nodeAt(next, [2])), '12');
 }
 
 {
@@ -108,7 +123,7 @@ assert.equal(nodeAt(tree(), [0, 0]), null, 'a test has no children to walk into'
   const next = shiftAt(tree(), [1], -1);
 
   assert.equal(nodeAt(next, [0]).kind, ANY);
-  assert.equal(nodeAt(next, [1]).value, '500');
+  assert.equal(typed(nodeAt(next, [1])), '500');
   assert.deepEqual(shiftAt(tree(), [0], -1), tree(), 'the first one has nowhere earlier to go');
   assert.deepEqual(shiftAt(tree(), [1], 1), tree(), 'nor the last one later');
 }
@@ -116,7 +131,7 @@ assert.equal(nodeAt(tree(), [0, 0]), null, 'a test has no children to walk into'
 {
   const next = shiftAt(tree(), [1, 1], -1);
 
-  assert.equal(nodeAt(next, [1, 0]).value, '12', 'inside a group too');
+  assert.equal(typed(nodeAt(next, [1, 0])), '12', 'inside a group too');
   assert.equal(nodeAt(next, [1, 1]).kind, NOT);
 }
 
@@ -125,7 +140,7 @@ assert.equal(nodeAt(tree(), [0, 0]), null, 'a test has no children to walk into'
   const found = tests(tree());
 
   assert.deepEqual(
-    found.map((f) => f.node.value),
+    found.map((f) => typed(f.node)),
     ['500', '900', '12'],
   );
   assert.deepEqual(
@@ -137,13 +152,43 @@ assert.equal(nodeAt(tree(), [0, 0]), null, 'a test has no children to walk into'
 
 {
   // What the reference rewrite is built on: every test changed, the shape untouched.
-  const next = mapTests(tree(), (node) => ({ ...node, value: `${node.value}!` }));
+  const next = mapTests(tree(), (node) => ({
+    ...node,
+    right: { ...node.right, arg: `${node.right.arg}!` },
+  }));
 
-  assert.equal(nodeAt(next, [0]).value, '500!');
-  assert.equal(nodeAt(next, [1, 0, 0]).value, '900!');
-  assert.equal(nodeAt(next, [1, 1]).value, '12!');
+  assert.equal(typed(nodeAt(next, [0])), '500!');
+  assert.equal(typed(nodeAt(next, [1, 0, 0])), '900!');
+  assert.equal(typed(nodeAt(next, [1, 1])), '12!');
   assert.equal(nodeAt(next, [1]).kind, ANY);
   assert.equal(nodeAt(next, [1, 0]).kind, NOT);
+}
+
+// --- one side, as one dropdown option ----------------------------------------------------------
+{
+  const round = (value) => decodeSide(encodeSide(value));
+
+  assert.deepEqual(round({ kind: FACT, arg: 'room', step: -1 }), {
+    kind: FACT,
+    arg: 'room',
+    step: -1,
+  });
+  assert.deepEqual(round({ kind: STEP_FACT, arg: 'target', step: 2 }), {
+    kind: STEP_FACT,
+    arg: 'target',
+    step: 2,
+  });
+
+  // A literal is whatever was typed, colons and all -- everything after the second separator is
+  // the argument, or "18:30" would come back as "18".
+  assert.deepEqual(round({ kind: LITERAL, arg: '18:30', step: -1 }), {
+    kind: LITERAL,
+    arg: '18:30',
+    step: -1,
+  });
+
+  assert.equal(decodeSide('nonsense').arg, '', 'an option value from nowhere is an empty literal');
+  assert.equal(decodeSide('nonsense').kind, LITERAL);
 }
 
 // --- what the editor remembers per condition ---------------------------------------------------
@@ -172,16 +217,21 @@ assert.equal(referencedStep('$-1'), -1);
 
   const held = fromRows(rows);
 
-  assert.equal(held[0].factKey, 'definition');
-  assert.equal(held[0].value, '500');
-  assert.equal(nodeAt(held, [1, 0, 0]).value, '900', 'three levels down survives the crossing');
-  assert.equal(nodeAt(held, [1, 1]).factKey, 'room');
+  // A response from a build that predates sides still reads: the fact goes left, the typed value
+  // goes right, which is what the condition has always meant.
+  assert.equal(held[0].left.arg, 'definition');
+  assert.equal(held[0].left.kind, FACT);
+  assert.equal(typed(held[0]), '500');
+  assert.equal(held[0].right.kind, LITERAL);
+  assert.equal(typed(nodeAt(held, [1, 0, 0])), '900', 'three levels down survives the crossing');
+  assert.equal(nodeAt(held, [1, 1]).left.arg, 'room');
 
   // And back out unchanged, which is what stops an edit-and-save from quietly rewriting a task
   // nobody touched.
   const back = toRows(held);
 
   assert.equal(back[0].test.value, '500');
+  assert.equal(back[0].test.factKey, 'definition', 'the legacy columns stay filled');
   assert.equal(back[1].kind, ANY);
   assert.equal(back[1].children[0].children[0].test.value, '900');
   assert.equal(back[1].children[1].test.factKey, 'room');
@@ -189,14 +239,54 @@ assert.equal(referencedStep('$-1'), -1);
   assert.equal(back[1].test, null, 'nor a group a test');
 }
 
+{
+  // Both sides named, which is the shape the server sends now and the only one the editor edits.
+  const rows = [
+    {
+      kind: TEST,
+      test: {
+        factKey: '',
+        op: 0,
+        value: '',
+        left: { kind: FACT, arg: 'room_owner', step: -1 },
+        right: { kind: STEP_FACT, arg: 'target', step: 0 },
+      },
+      children: null,
+    },
+  ];
+
+  const held = fromRows(rows);
+
+  assert.equal(held[0].left.arg, 'room_owner');
+  assert.equal(held[0].right.kind, STEP_FACT);
+  assert.equal(held[0].right.step, 0, 'the step is a number, not packed into the argument');
+
+  const back = toRows(held);
+
+  assert.equal(back[0].test.left.kind, FACT);
+  assert.equal(back[0].test.right.step, 0);
+  // Derived, not edited: neither side is a plain fact-and-literal, so neither legacy column has
+  // anything honest to say.
+  assert.equal(back[0].test.factKey, 'room_owner');
+  assert.equal(back[0].test.value, '', 'a step reference is not a literal');
+}
+
 assert.deepEqual(fromRows(null), [], 'a task with no conditions is not a crash');
 assert.deepEqual(fromRows(undefined), []);
 
 {
   // Trimmed on the way out, so the value the server stores is the value every path would store.
-  const rows = toRows([{ kind: TEST, factKey: 'room', op: '4', value: '  12  ' }]);
+  const rows = toRows([
+    {
+      kind: TEST,
+      op: '4',
+      left: { kind: FACT, arg: 'room', step: -1 },
+      right: { kind: LITERAL, arg: '  12  ', step: -1 },
+    },
+  ]);
 
   assert.equal(rows[0].test.value, '12');
+  assert.equal(rows[0].test.right.arg, '12', 'and on the side the server actually reads');
   assert.equal(rows[0].test.op, 4, 'a select hands back a string; the server wants the number');
 }
 

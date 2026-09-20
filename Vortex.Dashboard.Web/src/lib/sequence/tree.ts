@@ -17,8 +17,28 @@ export const ALL = 1;
 export const ANY = 2;
 export const NOT = 3;
 
-/** One test: a fact, an operator, and a value that may be `$N`. */
-export type TestNode = { kind: 0; factKey: string; op: number | string; value: string };
+/** Where one side of a comparison gets its value. Mirrors StepValueKind. */
+export const FACT = 0;
+export const LITERAL = 1;
+export const STEP_FACT = 2;
+export const COUNT_OF = 3;
+
+/**
+ * One side of a comparison.
+ *
+ * `arg` is a fact key for everything but a literal, where it is the text itself. `step` names an
+ * earlier step and is -1 for every other kind.
+ */
+export type SideValue = { kind: number; arg: string; step: number };
+
+/**
+ * One test: two values and the operator between them.
+ *
+ * The wire still carries `factKey` and `value` beside the sides, because the row does. The editor
+ * does not: two spellings of one thing, both editable, is two spellings that drift. They are
+ * derived on the way out, in `toRows`, and dropped on the way in.
+ */
+export type TestNode = { kind: 0; op: number | string; left: SideValue; right: SideValue };
 
 /** One group: the nodes it joins. A `not` holds exactly one. */
 export type GroupNode = { kind: 1 | 2 | 3; children: TreeNode[] };
@@ -228,39 +248,60 @@ export function referencedStep(value: unknown): number {
 /** One node as the API spells it: the test is a nested object rather than fields on the node. */
 export type NodeRow = {
   kind: number;
-  test?: { factKey: string; op: number; value: string } | null;
+  test?: {
+    factKey: string;
+    op: number;
+    value: string;
+    left?: SideValue | null;
+    right?: SideValue | null;
+  } | null;
   children?: NodeRow[] | null;
 };
+
+/** A side, defaulted to what a condition meant before it could name one. */
+function side(value: SideValue | null | undefined, kind: number, arg: string): SideValue {
+  return value ? { kind: value.kind, arg: value.arg, step: value.step ?? -1 } : { kind, arg, step: -1 };
+}
 
 /**
  * The tree the API sent, as the editor holds it.
  *
- * Flattened on the way in because a test is edited as three fields on one row, and a shape the
- * template has to reach through is a shape every binding in it can miss.
+ * The server sends both sides for every condition, including the ones stored before sides existed.
+ * The defaults here are for a response from an older build, and they are the same two the server
+ * would have sent: the fact on the left, the typed value on the right.
  */
 export function fromRows(rows: NodeRow[] | null | undefined): TreeNode[] {
   return (rows ?? []).map((row) =>
     row.kind === TEST
       ? {
           kind: TEST,
-          factKey: row.test?.factKey ?? '',
           op: row.test?.op ?? 0,
-          value: row.test?.value ?? '',
+          left: side(row.test?.left, FACT, row.test?.factKey ?? ''),
+          right: side(row.test?.right, LITERAL, row.test?.value ?? ''),
         }
       : { kind: row.kind as 1 | 2 | 3, children: fromRows(row.children) },
   );
 }
 
-/** And back, for the save. Values are trimmed here so every path to the server trims alike. */
+/** One side on its way out. Trimmed here so every path to the server trims alike. */
+function trimmed(value: SideValue): SideValue {
+  return { kind: value.kind, arg: value.arg.trim(), step: value.step };
+}
+
+/** And back, for the save. */
 export function toRows(tree: TreeNode[]): NodeRow[] {
   return tree.map((node) =>
     isTest(node)
       ? {
           kind: TEST,
           test: {
-            factKey: node.factKey,
+            // Derived, never edited. The row has these columns and the server writes them; the
+            // sides beside them are what it reads.
+            factKey: node.left.kind === FACT ? node.left.arg : '',
             op: Number(node.op) || 0,
-            value: String(node.value ?? '').trim(),
+            value: node.right.kind === LITERAL ? node.right.arg.trim() : '',
+            left: trimmed(node.left),
+            right: trimmed(node.right),
           },
           children: null,
         }
@@ -283,8 +324,58 @@ export type FactOption = {
   values?: { value: string; labelKey?: string; fallbackLabel: string }[];
 };
 
+/**
+ * One side as a single string, so a dropdown can offer every choice in one list.
+ *
+ * Three fields in one option value rather than three controls per side: a condition is a sentence,
+ * and asking an operator to set a kind, then a step, then a fact would make choosing "the room of
+ * step 1" a three-step errand.
+ */
+export function encodeSide(value: SideValue): string {
+  return `${value.kind}:${value.step}:${value.arg}`;
+}
+
+/** And back. Anything unparseable reads as an empty literal, which the server refuses by name. */
+export function decodeSide(encoded: string): SideValue {
+  const first = encoded.indexOf(':');
+  const second = encoded.indexOf(':', first + 1);
+
+  if (first < 0 || second < 0) return { kind: LITERAL, arg: '', step: -1 };
+
+  const kind = Number(encoded.slice(0, first));
+  const step = Number(encoded.slice(first + 1, second));
+
+  return {
+    kind: Number.isInteger(kind) ? kind : LITERAL,
+    step: Number.isInteger(step) ? step : -1,
+    // The argument may hold a colon of its own -- everything after the second one is it.
+    arg: encoded.slice(second + 1),
+  };
+}
+
 /** One step of a task's sequence, as the editor holds it. */
 export type Step = { actionCode: string; tree?: TreeNode[] };
+
+/**
+ * One side after a reorder: pointing at the same step it did, or cleared.
+ *
+ * Cleared rather than silently repointed. The operator moved a block past the thing it depended
+ * on, and quietly naming a different step would be worse than a field they can see is empty --
+ * the condition would go on reading correctly and asking something else.
+ */
+function retarget(
+  value: SideValue,
+  newIndexOf: Map<number, number>,
+  readerIndex: number,
+): { value: SideValue; cleared: boolean } {
+  if (value.kind !== STEP_FACT || value.step < 0) return { value, cleared: false };
+
+  const moved = newIndexOf.get(value.step);
+
+  return moved !== undefined && moved < readerIndex
+    ? { value: { ...value, step: moved }, cleared: false }
+    : { value: { kind: FACT, arg: value.arg, step: -1 }, cleared: true };
+}
 
 /**
  * Moves one step, rewriting every reference so each still points at the same step it did.
@@ -320,20 +411,15 @@ export function moveStep(
     return {
       ...step,
       tree: mapTests(step.tree ?? [], (node) => {
-        const target = referencedStep(node.value);
+        // Both sides, because a step can be named from either. A rewrite that visited only one
+        // would leave the other pointing at whatever step now sits at that index -- a condition
+        // that still reads correctly and asks a different question.
+        const left = retarget(node.left, newIndexOf, newIndex);
+        const right = retarget(node.right, newIndexOf, newIndex);
 
-        if (target < 0) return node;
+        clearedReferences += (left.cleared ? 1 : 0) + (right.cleared ? 1 : 0);
 
-        const retargeted = newIndexOf.get(target);
-
-        // Still earlier than the step that reads it: the reference survives the move.
-        if (retargeted !== undefined && retargeted < newIndex) {
-          return { ...node, value: `$${retargeted}` };
-        }
-
-        clearedReferences += 1;
-
-        return { ...node, value: '' };
+        return { ...node, left: left.value, right: right.value };
       }),
     };
   });
