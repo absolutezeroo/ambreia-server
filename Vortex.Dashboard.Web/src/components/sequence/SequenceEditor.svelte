@@ -24,7 +24,6 @@
     appendTo,
     moveStep,
     nodeAt,
-    pathKey,
     removeAt,
     replaceAt,
     shiftAt,
@@ -60,7 +59,6 @@
     operatorsFor: (actionCode: string, factKey: string) => { value: number; key: string }[];
     defaultFilterValue: (actionCode: string, factKey: string) => string;
     pickerFor: (meta: FactOption | null) => string | null;
-    pickedLabels: Record<string, { name?: string; iconUrl?: string }>;
     onchange: (steps: StepForm[]) => void;
     onpick: (stepIndex: number, path: NodePath, kind: string) => void;
   };
@@ -73,7 +71,6 @@
     operatorsFor,
     defaultFilterValue,
     pickerFor,
-    pickedLabels,
     onchange,
     onpick,
   }: Props = $props();
@@ -238,7 +235,6 @@
               facts={factsFor(step.actionCode)}
               sideChoices={sideChoicesFor(step, stepIndex)}
               operatorsFor={(left: SideValue) => operatorsForSide(step, left)}
-              picked={pickedLabels[pathKey(stepIndex, [index])]}
               picker={node.kind === TEST && (node as any).left.kind === FACT
                 ? pickerFor(
                     factsFor(step.actionCode).find((f) => f.key === (node as any).left.arg) ?? null
@@ -268,6 +264,8 @@
                 // server refuses or a value nothing can match.
                 if (which === 'left') {
                   next.op = operatorsForSide(step, value)[0]?.value ?? 0;
+                  // The name beside the value described the old fact's id.
+                  next.picked = undefined;
 
                   if (next.right.kind === LITERAL) {
                     next.right = {
@@ -301,8 +299,6 @@
                   })
                 )}
               onpick={(path: NodePath, kind: string) => onpick(stepIndex, path, kind)}
-              keyFor={(path: NodePath) => pathKey(stepIndex, path)}
-              pickedFor={(path: NodePath) => pickedLabels[pathKey(stepIndex, path)]}
               pickerFor={(factKey: string) =>
                 pickerFor(factsFor(step.actionCode).find((f) => f.key === factKey) ?? null)}
             />

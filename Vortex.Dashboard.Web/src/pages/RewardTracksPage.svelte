@@ -100,9 +100,6 @@
    */
   type FilterTarget = { stepIndex: number; path: NodePath; kind: string };
 
-  /** What the last pick was called, so the drawer can show a name beside the stored id. */
-  type PickedLabel = { name: string; iconUrl?: string | null };
-
   import AccessDeniedNotice from '../components/AccessDeniedNotice.svelte';
   import LoadingOverlay from '../components/LoadingOverlay.svelte';
   import Pagination from '../components/Pagination.svelte';
@@ -118,7 +115,6 @@
     TEST,
     fromRows,
     nodeAt,
-    pathKey,
     replaceAt,
     toRows,
     tests,
@@ -265,7 +261,6 @@
   // on that id alone.
   let sequenceOpen = $state(false);
   let pickingFilter = $state<FilterTarget | null>(null);
-  let pickedLabels = $state<Record<string, PickedLabel>>({});
 
   let trackDraft = $state<Draft<TrackForm> | null>(null);
   let taskDraft = $state<Draft<TaskForm> | null>(null);
@@ -1354,7 +1349,6 @@
     {operatorsFor}
     {defaultFilterValue}
     {pickerFor}
-    {pickedLabels}
     onchange={(next: StepForm[]) => {
       if (taskDraft) draft.form.steps = next;
     }}
@@ -1389,6 +1383,8 @@
         // The picker fills the right side, which is the one that holds something typed.
         tree: replaceAt(step.tree ?? [], path, {
           ...node,
+          // On the condition, so it follows it wherever the operator moves or nests it.
+          picked: { name: item.name, iconUrl: item.iconUrl },
           right: {
             ...node.right,
             // "One of" is a list, so a pick adds to it; the other operators hold a single value.
@@ -1400,7 +1396,6 @@
         }),
       };
 
-      pickedLabels[pathKey(stepIndex, path)] = { name: item.name, iconUrl: item.iconUrl };
       pickingFilter = null;
     }}
     onClose={() => (pickingFilter = null)}

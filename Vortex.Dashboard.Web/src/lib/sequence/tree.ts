@@ -38,7 +38,24 @@ export type SideValue = { kind: number; arg: string; step: number };
  * does not: two spellings of one thing, both editable, is two spellings that drift. They are
  * derived on the way out, in `toRows`, and dropped on the way in.
  */
-export type TestNode = { kind: 0; op: number | string; left: SideValue; right: SideValue };
+export type TestNode = {
+  kind: 0;
+  op: number | string;
+  left: SideValue;
+  right: SideValue;
+  /**
+   * What the last picked value was called, for the name and sprite shown beside the id.
+   *
+   * On the node rather than in a map beside the tree. Keyed by path, it moved to whichever
+   * condition ended up at that path the moment anything was wrapped, reordered or deleted --
+   * a furniture's name sitting on a condition about where somebody stood. Here it travels with
+   * the condition, because every operation in this file rebuilds the node by spreading it.
+   *
+   * Never sent: the server stores the id, and the name is what a directory says that id is called
+   * today.
+   */
+  picked?: { name: string; iconUrl?: string | null };
+};
 
 /** One group: the nodes it joins. A `not` holds exactly one. */
 export type GroupNode = { kind: 1 | 2 | 3; children: TreeNode[] };
@@ -228,13 +245,6 @@ export function mapTests(tree: TreeNode[], map: (node: TestNode) => TestNode): T
   );
 }
 
-/**
- * A stable key for one condition of one step, for anything the editor remembers per condition --
- * the label of a picked garment, the name of a picked piece of furniture.
- */
-export function pathKey(stepIndex: number, path: NodePath): string {
-  return `${stepIndex}:${path.join('.')}`;
-}
 
 /** Reads `$N`, the only reference syntax the engine has. Returns the step index, or -1. */
 export function referencedStep(value: unknown): number {

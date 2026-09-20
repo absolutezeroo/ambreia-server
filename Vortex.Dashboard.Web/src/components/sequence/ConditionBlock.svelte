@@ -42,7 +42,6 @@
     sideChoices: SideChoice[];
     /** The operators that mean anything about what is on the left. */
     operatorsFor: (left: SideValue) => { value: number; key: string }[];
-    picked: { name?: string; iconUrl?: string } | undefined;
     picker: string | null;
     onchange: (path: NodePath, node: TreeNode) => void;
     /** Changing a side resets the operator and the other side, which belonged to the old one. */
@@ -55,8 +54,6 @@
     onaddgroup: (path: NodePath, kind: 1 | 2 | 3) => void;
     onpick: (path: NodePath, kind: string) => void;
     /** Everything above, forwarded to a child block unchanged. */
-    keyFor: (path: NodePath) => string;
-    pickedFor: (path: NodePath) => { name?: string; iconUrl?: string } | undefined;
     pickerFor: (factKey: string) => string | null;
   } & Record<string, unknown>;
 
@@ -68,7 +65,6 @@
     facts,
     sideChoices,
     operatorsFor,
-    picked,
     picker,
     onchange,
     onsidechange,
@@ -79,8 +75,6 @@
     onadd,
     onaddgroup,
     onpick,
-    keyFor,
-    pickedFor,
     pickerFor,
   }: Props = $props();
 
@@ -237,6 +231,8 @@
           oninput={(e) =>
             onchange(path, {
               ...test,
+              // Typed over, so the name from the picker describes an id that is no longer here.
+              picked: undefined,
               right: { ...test.right, arg: (e.currentTarget as HTMLInputElement).value },
             })}
           disabled={!canManage}
@@ -260,12 +256,12 @@
       {/if}
     {/if}
 
-    {#if picked?.name}
+    {#if test.picked?.name}
       <span class="muted small cond-picked">
-        {#if picked.iconUrl}
-          <AssetImage src={picked.iconUrl} alt="" size={20} />
+        {#if test.picked.iconUrl}
+          <AssetImage src={test.picked.iconUrl} alt="" size={20} />
         {/if}
-        {picked.name}
+        {test.picked.name}
       </span>
     {/if}
 
@@ -375,7 +371,6 @@
           {facts}
           {sideChoices}
           {operatorsFor}
-          picked={pickedFor([...path, index])}
           picker={child.kind === TEST && child.left.kind === 0 ? pickerFor(child.left.arg) : null}
           {onchange}
           {onsidechange}
@@ -386,8 +381,6 @@
           {onadd}
           {onaddgroup}
           {onpick}
-          {keyFor}
-          {pickedFor}
           {pickerFor}
         />
       {/each}

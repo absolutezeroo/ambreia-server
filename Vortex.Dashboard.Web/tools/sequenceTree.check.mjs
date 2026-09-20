@@ -19,7 +19,6 @@ import {
   fromRows,
   mapTests,
   nodeAt,
-  pathKey,
   referencedStep,
   removeAt,
   replaceAt,
@@ -192,8 +191,27 @@ assert.equal(nodeAt(tree(), [0, 0]), null, 'a test has no children to walk into'
 }
 
 // --- what the editor remembers per condition ---------------------------------------------------
-assert.equal(pathKey(0, [1, 0, 0]), '0:1.0.0');
-assert.notEqual(pathKey(0, [1, 0]), pathKey(1, [1, 0]), 'two steps never share a key');
+{
+  // The name of a picked piece of furniture rides on the condition, so every operation that moves
+  // a condition has to carry it. Kept in a map keyed by path, it landed on whichever condition
+  // ended up at that path -- a furniture's name on a condition about where somebody stood, which
+  // is what an operator reported.
+  const named = { ...test('397'), picked: { name: 'chair_polyfon' } };
+  const start = [test('1'), named];
+
+  assert.equal(nodeAt(wrapAt(start, [1], NOT), [1, 0]).picked.name, 'chair_polyfon', 'wrapped');
+  assert.equal(nodeAt(shiftAt(start, [1], -1), [0]).picked.name, 'chair_polyfon', 'moved');
+  assert.equal(nodeAt(removeAt(start, [0]), [0]).picked.name, 'chair_polyfon', 'sibling deleted');
+
+  const nested = appendTo([group(ANY)], [0], named);
+
+  assert.equal(nodeAt(nested, [0, 0]).picked.name, 'chair_polyfon', 'nested');
+  assert.equal(nodeAt(unwrapAt(nested, [0]), [0]).picked.name, 'chair_polyfon', 'and back out');
+
+  // And it never reaches the server: the row stores an id, and the name is what a directory says
+  // that id is called today.
+  assert.equal(toRows([named])[0].test.picked, undefined);
+}
 
 // --- reading a reference -----------------------------------------------------------------------
 assert.equal(referencedStep('$0'), 0);
