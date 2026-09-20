@@ -31,8 +31,9 @@ public sealed class CameraSceneRendererTests
             )
         );
 
-        // The client composited in this order before writing the payload. Honouring it is more
-        // faithful than any depth rule this side could invent.
+        // Everything at one depth, which is the ordinary shot: the planes are the room and the
+        // sprites are what stands in it. A plane takes the tie, so this is also what the merge does
+        // when a scene carries no depth at all.
         canvas
             .Calls.Should()
             .Equal(
@@ -43,6 +44,31 @@ public sealed class CameraSceneRendererTests
                 "sprite:chair",
                 "sprite:avatar_head"
             );
+    }
+
+    /// <summary>
+    /// An avatar standing in a doorway goes behind the wall, not through it.
+    /// </summary>
+    /// <remarks>
+    /// The room geometry displaces anything on the door tile by two thousand units along x, which
+    /// the depth axis turns into roughly <c>+1225</c> — so the avatar's z leaves the room's range
+    /// entirely and it sorts to the very back, where the wall covers it and only the doorway's hole
+    /// shows it through. Drawing every plane and then every sprite put it in front of the wall it
+    /// was meant to be hidden by, and the photo showed a girl standing through a wall.
+    /// </remarks>
+    [Fact]
+    public void AnAvatarDisplacedIntoTheDoorway_IsDrawnBehindTheWall()
+    {
+        Recording canvas = Render(
+            SceneWith(
+                planes: [Plane(100, 100, 0xFF0000, z: 12), Plane(100, 100, 0x00FF00, z: 4)],
+                sprites: [Sprite("avatar_head", z: 1229), Sprite("chair", z: 3)]
+            )
+        );
+
+        canvas
+            .Calls.Should()
+            .Equal("clear", "sprite:avatar_head", "quad:16711680", "quad:65280", "sprite:chair");
     }
 
     /// <summary>
@@ -254,10 +280,10 @@ public sealed class CameraSceneRendererTests
     /// That is a sort order, not a path — feeding these tests a tidy perimeter instead was how the
     /// renderer passed every one of them while drawing bowties.
     /// </summary>
-    private static CameraScenePlane Plane(double right, double bottom, int color) =>
+    private static CameraScenePlane Plane(double right, double bottom, int color, double z = 0) =>
         new()
         {
-            Z = 0,
+            Z = z,
             CornerPoints =
             [
                 new CameraScenePoint(right, bottom),
@@ -271,14 +297,14 @@ public sealed class CameraSceneRendererTests
             BottomAligned = false,
         };
 
-    private static CameraSceneSprite Sprite(string name) =>
+    private static CameraSceneSprite Sprite(string name, double z = 0) =>
         new()
         {
             Name = name,
             Source = CameraSpriteSource.LocalAsset,
             X = 0,
             Y = 0,
-            Z = 0,
+            Z = z,
             Alpha = 255,
             FlipH = false,
             Skew = 0,

@@ -16,9 +16,15 @@ namespace Vortex.Rooms.Camera.Render;
 /// there without comparing images.
 /// </para>
 /// <para>
-/// Planes first, then sprites, each in the order the scene lists them. The client composited them in
-/// exactly that order before writing the payload, so honouring it is both simpler than re-sorting
-/// and more faithful than any depth rule this side could invent.
+/// <b>One order, merged from the two lists by depth.</b> Each list arrives already sorted — the
+/// client sorts its sprites descending by <c>z</c> and its planes the same way — but the payload
+/// says nothing about how one list interleaves with the other, and drawing all the planes and then
+/// all the sprites quietly assumes every sprite is in front of every plane. In a normal shot it is,
+/// which is why that held for so long. At a doorway it is not: an avatar standing on the door tile
+/// is displaced two thousand units back so the wall hides it and only the hole shows it through,
+/// and drawn last it walked straight through the wall instead. Both lists measure depth in the same
+/// space — the client takes a plane's <c>z</c> from the very sprite that drew it — so merging them
+/// is reading what was sent rather than inventing a rule.
 /// </para>
 /// </remarks>
 public sealed class CameraSceneRenderer(int maxDimension)
@@ -37,52 +43,73 @@ public sealed class CameraSceneRenderer(int maxDimension)
 
         canvas.Clear(Transparent);
 
-        foreach (CameraScenePlane plane in scene.Planes)
-        {
-            // Colour only, for now. The masks a plane carries and the texture columns painted onto
-            // it are read and validated by the decoder and not yet drawn, so a photo today has the
-            // room's shape and its flat colours: recognisably the room, without its wallpaper or its
-            // doorway cut out.
-            // The texture first; the flat colour is what a plane gets when its columns resolve to
-            // nothing — an asset pack without room content, or a client that sends no columns at
-            // all. A photo without wallpaper is still a photo.
-            // Which way up a plane's texture goes is the canvas's business and not decided here any
-            // more: it is a property of the corner order, identical for every plane, and reading it
-            // off the first column's name got it right for a wall called `wall_texture_*` and wrong
-            // for the same wall under any other name.
-            if (
-                !canvas.FillTexturedQuad(
-                    plane.CornerPoints,
-                    plane.Color,
-                    plane.TextureColumns,
-                    plane.BottomAligned,
-                    plane.Masks
-                )
-            )
-            {
-                canvas.FillQuad(Perimeter(plane.CornerPoints), plane.Color);
-            }
-        }
+        int planeIndex = 0;
+        int spriteIndex = 0;
 
-        foreach (CameraSceneSprite sprite in scene.Sprites)
+        // A two-pointer merge rather than a re-sort: both lists are already in order, and a sort
+        // here would need a tiebreak the payload does not carry and would reshuffle equal depths
+        // that the client had settled.
+        while (planeIndex < scene.Planes.Length || spriteIndex < scene.Sprites.Length)
         {
-            canvas.DrawSprite(
-                sprite.Name,
-                new CameraSpriteDraw
-                {
-                    X = sprite.X,
-                    Y = sprite.Y,
-                    Alpha = sprite.Alpha,
-                    FlipH = sprite.FlipH,
-                    Skew = sprite.Skew,
-                    Color = sprite.Color,
-                    BlendMode = sprite.BlendMode,
-                }
-            );
+            // Descending z: the largest is the farthest away and goes down first. A plane wins a
+            // tie, which is the way round that puts a picture on its wall rather than behind it.
+            bool planeIsNext =
+                spriteIndex >= scene.Sprites.Length
+                || (
+                    planeIndex < scene.Planes.Length
+                    && scene.Planes[planeIndex].Z >= scene.Sprites[spriteIndex].Z
+                );
+
+            if (planeIsNext)
+            {
+                Draw(canvas, scene.Planes[planeIndex++]);
+            }
+            else
+            {
+                Draw(canvas, scene.Sprites[spriteIndex++]);
+            }
         }
 
         return canvas.EncodePng();
     }
+
+    private static void Draw(ICameraCanvas canvas, CameraScenePlane plane)
+    {
+        // The texture first; the flat colour is what a plane gets when its columns resolve to
+        // nothing — an asset pack without room content, or a client that sends no columns at
+        // all. A photo without wallpaper is still a photo.
+        // Which way up a plane's texture goes is the canvas's business and not decided here any
+        // more: it is a property of the corner order, identical for every plane, and reading it
+        // off the first column's name got it right for a wall called `wall_texture_*` and wrong
+        // for the same wall under any other name.
+        if (
+            !canvas.FillTexturedQuad(
+                plane.CornerPoints,
+                plane.Color,
+                plane.TextureColumns,
+                plane.BottomAligned,
+                plane.Masks
+            )
+        )
+        {
+            canvas.FillQuad(Perimeter(plane.CornerPoints), plane.Color);
+        }
+    }
+
+    private static void Draw(ICameraCanvas canvas, CameraSceneSprite sprite) =>
+        canvas.DrawSprite(
+            sprite.Name,
+            new CameraSpriteDraw
+            {
+                X = sprite.X,
+                Y = sprite.Y,
+                Alpha = sprite.Alpha,
+                FlipH = sprite.FlipH,
+                Skew = sprite.Skew,
+                Color = sprite.Color,
+                BlendMode = sprite.BlendMode,
+            }
+        );
 
     /// <summary>
     /// How big the photo is.

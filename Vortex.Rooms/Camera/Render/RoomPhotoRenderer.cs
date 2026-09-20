@@ -168,8 +168,11 @@ internal sealed class RoomPhotoRenderer(
                 .Take(14)
         )
         {
+            // z as well as x and y, because z is the only one of the three that decides what is in
+            // front of what — and its absence here cost a round of looking at pictures to work out
+            // that an avatar in a doorway was being drawn over the wall meant to hide it.
             logger.LogInformation(
-                "Camera photo {PhotoKey}: sprite {Name} colour={Colour} alpha={Alpha} at ({X},{Y}).",
+                "Camera photo {PhotoKey}: sprite {Name} colour={Colour} alpha={Alpha} at ({X},{Y}) z={Z}.",
                 photoKey,
                 sprite.Name,
                 sprite.Color is { } tint
@@ -177,7 +180,8 @@ internal sealed class RoomPhotoRenderer(
                     : "none",
                 sprite.Alpha,
                 sprite.X,
-                sprite.Y
+                sprite.Y,
+                sprite.Z
             );
         }
 
