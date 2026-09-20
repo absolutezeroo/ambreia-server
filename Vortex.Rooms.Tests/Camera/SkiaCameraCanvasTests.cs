@@ -168,23 +168,21 @@ public sealed class SkiaCameraCanvasTests
     [Fact]
     public void AMaskIsReadInTheTextureSpaceTheClientMeasuredItIn()
     {
-        // A wall thirteen tiles long, exactly as one arrives: `u = (416, 208)`, `v = (0, 115)`. The
-        // client rasterises that 416 x 115 — `WallPlane.render()` re-projects the sides and keeps
-        // one component of each — and its doorway sits at x=256 of it, 61% along the wall. Sizing
-        // the texture by the edge's own length (465) or by the plane's flat size (832) reads the
-        // same 256 as 55% or 31% instead, which is a door in the wrong third of the wall.
+        // The wall that carries the doorway in a real photo, shifted 140px right so it fits a test
+        // surface: thirteen tiles, `u = (416,-208)` from its top-left corner, `v = (0,115)`, which
+        // the client rasterises 416 x 115. Its mask sits at x=256 of that, and the room's own door
+        // tile — a plane of its own in the same payload — is centred 256px along the wall from that
+        // corner. Both of those are measurements, not derivations; this test is the arithmetic that
+        // has to agree with them.
         byte[] white = Block(64, 115, SKColors.White);
 
-        using SkiaCameraCanvas canvas = new(
-            new CameraViewport(420, 340),
-            name => name == "door" ? white : white
-        );
+        using SkiaCameraCanvas canvas = new(new CameraViewport(430, 470), _ => white);
 
         canvas.Clear(0x00000000);
 
         canvas
             .FillTexturedQuad(
-                [new(0, 0), new(416, 208), new(0, 115), new(416, 323)],
+                [new(421, 251), new(4, 459), new(421, 136), new(4, 344)],
                 0x00FF0000,
                 [
                     ["wall_texture_64_1"],
@@ -203,14 +201,12 @@ public sealed class SkiaCameraCanvasTests
             .Should()
             .BeTrue();
 
-        // The middle of the punched band, mapped the way the client maps it: from `cornerC`, which
-        // is `corners[2]` here, with the texture's y axis running back down. At tx=288 the band
-        // spans y 144..230, so its middle is (288,187).
-        PixelAt(canvas, 288, 187).Alpha.Should().Be(0);
+        // The middle of the punched band. The hole's own left edge is at 4 + 256 = 260, which is the
+        // door tile; taking `corners[0]` as the origin instead puts it at 165, three tiles away.
+        PixelAt(canvas, 292, 286).Alpha.Should().Be(0);
 
-        // And the wall is still there everywhere else — this one is a third of the way along it,
-        // which is where a 832-wide texture would have put the door instead.
-        PixelAt(canvas, 140, 90).Alpha.Should().Be(255);
+        // And the wall is still there where the wrong basis would have cut it.
+        PixelAt(canvas, 165, 340).Alpha.Should().Be(255);
     }
 
     [Fact]

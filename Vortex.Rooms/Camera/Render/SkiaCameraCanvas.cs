@@ -109,9 +109,19 @@ internal sealed class SkiaCameraCanvas : ICameraCanvas
             return false;
         }
 
-        CameraScenePoint origin = sortedCorners[0];
-        (double ux, double uy) = (sortedCorners[1].X - origin.X, sortedCorners[1].Y - origin.Y);
-        (double vx, double vy) = (sortedCorners[2].X - origin.X, sortedCorners[2].Y - origin.Y);
+        // Top-left origin, x toward the top-right corner, y toward the bottom-left one: the texture
+        // simply sits upright in the quad. `sortQuadPoints` leaves the corners bottom-right,
+        // bottom-left, top-right, top-left, so that is `[3]`, `[2] - [3]`, `[1] - [3]`.
+        //
+        // Proven against a payload rather than derived: the wall carrying the doorway arrives at
+        // (280.5,111) (-135.5,319) (280.5,-4.2) (-135.5,203.8) with its mask at x=256 of a 416-wide
+        // texture, and the room's own door tile is the plane at (120.5,175). This basis puts the
+        // hole at -135.5 + 256 = 120.5. Taking `[0]` as the origin — with or without a flip to
+        // compensate — puts it at 24, a hundred pixels and three tiles away, which is a doorway in
+        // the middle of a wall.
+        CameraScenePoint origin = sortedCorners[3];
+        (double ux, double uy) = (sortedCorners[2].X - origin.X, sortedCorners[2].Y - origin.Y);
+        (double vx, double vy) = (sortedCorners[1].X - origin.X, sortedCorners[1].Y - origin.Y);
 
         // The texture is built at the plane's own scale, so a wall twice as long carries twice as
         // many tiles rather than the same ones stretched — and at the scale the CLIENT rasterises
@@ -163,20 +173,7 @@ internal sealed class SkiaCameraCanvas : ICameraCanvas
 
         using SKPaint paint = new() { IsAntialias = false };
 
-        // Vertically, and always. The client maps its texture from `cornerC` —
-        // `location + leftSide + rightSide` — with `u = cornerB - cornerC` and
-        // `v = cornerD - cornerC` (`RoomPlane.renderTexture()`). Against the basis above, taken from
-        // `sortedCorners[0]`, the horizontal axis already agrees: `corners[1] - corners[0]` is that
-        // same `u`, because `B - C` and `A - D` are the same vector in a parallelogram. Only `v`
-        // comes out negated, and flipping it moves the origin from `corners[0]` to `corners[2]`,
-        // which is `cornerC`.
-        //
-        // Measured on a real payload, for a wall at (258,140) (-159,348) (258,25) (-159,233)
-        // carrying `door_64` at (256,29) of an 832x115 texture: the client puts that hole at
-        // (130,118), a half-turn puts it at (-30,198) — off the left edge of a 320-wide photo,
-        // which is a doorway nobody can see — and this puts it at (130,118).
-        _surface.Canvas.Scale(1, -1);
-        _surface.Canvas.Translate(0, -height);
+        // No flip: the basis above already reads the texture the way the client wrote it.
 
         _surface.Canvas.DrawImage(texture, new SKPoint(0, 0), NearestNeighbour, paint);
         _surface.Canvas.RestoreToCount(saved);
