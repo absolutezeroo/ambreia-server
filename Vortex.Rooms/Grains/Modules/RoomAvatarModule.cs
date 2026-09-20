@@ -32,6 +32,16 @@ public sealed partial class RoomAvatarModule(RoomGrain roomGrain)
     private int _nextObjectId = 0;
 
     /// <summary>
+    /// What to run when an avatar's current walk ends, by room object id. One entry per avatar: a
+    /// new walk replaces the old promise, which is what "walk somewhere else" means.
+    /// <para>
+    /// An avatar that leaves the room mid-walk leaves its entry behind; object ids are never reused
+    /// within a room, so it can never fire on somebody else, and the grain takes it with it.
+    /// </para>
+    /// </summary>
+    private readonly Dictionary<int, Func<CancellationToken, Task>> _onWalkEnded = [];
+
+    /// <summary>
     /// One player gives a respect point to another present in this room. Enforces the giver's daily
     /// budget, increments the target's total, broadcasts the respect animation, and publishes the
     /// respect events that feed achievements/quests.
@@ -261,6 +271,33 @@ public sealed partial class RoomAvatarModule(RoomGrain roomGrain)
         return true;
     }
 
+    /// <summary>
+    /// Walks an avatar to a tile and runs <paramref name="onEnded" /> once that walk ends — on
+    /// arrival, or wherever the avatar was left if the path was cut short.
+    /// <para>
+    /// Both cases on purpose, as the reference emulator does it: the caller asked for something to
+    /// happen <em>after</em> the approach, and an action dropped in silence because a chair
+    /// appeared mid-path is worse than one taken a tile too far away.
+    /// </para>
+    /// </summary>
+    public async Task<bool> WalkAvatarToThenAsync(
+        IRoomAvatar avatar,
+        int targetX,
+        int targetY,
+        Func<CancellationToken, Task> onEnded,
+        CancellationToken ct
+    )
+    {
+        if (!await WalkAvatarToAsync(avatar, targetX, targetY, ct))
+        {
+            return false;
+        }
+
+        _onWalkEnded[avatar.ObjectId.Value] = onEnded;
+
+        return true;
+    }
+
     public async Task<bool> WalkAvatarToAsync(
         IRoomAvatar avatar,
         int targetX,
@@ -419,6 +456,10 @@ public sealed partial class RoomAvatarModule(RoomGrain roomGrain)
     /// </summary>
     public void CancelWalk(IRoomAvatar avatar)
     {
+        // A teleport is not an arrival: whatever was promised for the end of this walk is dropped
+        // with the walk itself.
+        _onWalkEnded.Remove(avatar.ObjectId.Value);
+
         avatar.IsWalking = false;
         avatar.NextMoveStepAtMs = 0;
         avatar.NextMoveUpdateAtMs = 0;
@@ -458,6 +499,27 @@ public sealed partial class RoomAvatarModule(RoomGrain roomGrain)
             _roomGrain._logger.LogWarning(
                 ex,
                 "Failed to stop walking for avatar {ObjectId} in room {RoomId}.",
+                avatar.ObjectId,
+                _roomGrain.RoomId
+            );
+        }
+
+        // Outside the block above, and with its own log: the walk is over either way, and an action
+        // that throws is not a walk that failed to stop.
+        if (!_onWalkEnded.Remove(avatar.ObjectId.Value, out Func<CancellationToken, Task>? onEnded))
+        {
+            return;
+        }
+
+        try
+        {
+            await onEnded(ct);
+        }
+        catch (Exception ex)
+        {
+            _roomGrain._logger.LogWarning(
+                ex,
+                "Failed to run the end-of-walk action for avatar {ObjectId} in room {RoomId}.",
                 avatar.ObjectId,
                 _roomGrain.RoomId
             );

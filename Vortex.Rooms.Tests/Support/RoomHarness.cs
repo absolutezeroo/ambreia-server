@@ -23,6 +23,7 @@ using Vortex.Primitives.Furniture.Providers;
 using Vortex.Primitives.Navigator.Enums;
 using Vortex.Primitives.Networking;
 using Vortex.Primitives.Observability;
+using Vortex.Primitives.Orleans.Snapshots.Players;
 using Vortex.Primitives.Orleans.Snapshots.Room;
 using Vortex.Primitives.Orleans.Snapshots.Room.Settings;
 using Vortex.Primitives.Permissions;
@@ -638,6 +639,34 @@ internal sealed class RoomHarness
                     inner.Method.Name == nameof(IPlayerMintGrain.GetAssetsAsync)
                         ? Task.FromResult(AssetsHeldBy(holder))
                         : null
+                );
+            }
+
+            // The two answers pet care asks of the scratcher: how old the account is (the scratch
+            // has a minimum age) and whether the day's allowance is spent. An old-enough account
+            // with allowance left, so a test about the scratch is not a test about its gates.
+            if (call.Method.GetGenericArguments()[0] == typeof(IPlayerGrain))
+            {
+                PlayerId scratcher = new((int)(long)call.Args![0]!);
+
+                return FakeProxy.Create<IPlayerGrain>(inner =>
+                    inner.Method.Name switch
+                    {
+                        nameof(IPlayerGrain.GetSummaryAsync) => Task.FromResult(
+                            new PlayerSummarySnapshot
+                            {
+                                PlayerId = scratcher,
+                                Name = OwnerName,
+                                Motto = string.Empty,
+                                Figure = OriginalFigure,
+                                Gender = AvatarGenderType.Male,
+                                AchievementScore = 0,
+                                CreatedAt = DateTime.UtcNow.AddYears(-1),
+                            }
+                        ),
+                        nameof(IPlayerGrain.TryGivePetRespectAsync) => Task.FromResult(true),
+                        _ => null,
+                    }
                 );
             }
 

@@ -19,6 +19,7 @@ using Vortex.Primitives.Pets.Snapshots;
 using Vortex.Primitives.Players;
 using Vortex.Primitives.Rooms.Enums;
 using Vortex.Primitives.Rooms.Object;
+using Vortex.Primitives.Rooms.Object.Avatars;
 using Vortex.Primitives.Rooms.Object.Furniture;
 using Vortex.Primitives.Rooms.Snapshots.Avatars;
 using Vortex.Protocol.Messages.Outgoing.Inventory.Pets;
@@ -41,6 +42,115 @@ public sealed partial class RoomPetSystem
     {
         await EnsurePetsLoadedAsync(ct);
 
+        if (!_roomGrain._state.PetsById.TryGetValue(petId, out PetSnapshot? pet))
+        {
+            return null;
+        }
+
+        // You cannot scratch a pet from across the room: the hotel walks you up to it first and the
+        // scratch lands when you get there. The client sends nothing but the pet id, so the approach
+        // is the server's -- the official capture of a scratch carries no walk at all, because the
+        // account that recorded it was already standing next to the pet.
+        //
+        // The reference emulator does the same (RespectPetMessageEvent: getClosestAdjacentTile then
+        // walk, with the scratch queued as the arrival task), and it is the behaviour Krews track as
+        // #1886, "when scratching a pet you should walk to an adjacent tile before you actually
+        // scratch the pet".
+        if (await TryApproachPetAsync(ctx, pet, c => ApplyRespectAsync(ctx, petId, c), ct))
+        {
+            return pet;
+        }
+
+        return await ApplyRespectAsync(ctx, petId, ct);
+    }
+
+    /// <summary>
+    /// Sends the scratcher to a tile next to the pet, and hands <paramref name="onArrival" /> to the
+    /// end of that walk. False when there is nothing to walk: no avatar in the room, already within
+    /// reach, or no neighbouring tile this avatar can get to — all three mean "do it now".
+    /// </summary>
+    /// <remarks>
+    /// The pet is free to wander off while the walk is in flight, and then the scratch lands from
+    /// wherever the walk ended. The reference emulator has the same race; catching it would mean
+    /// pinning the pet for the duration, which is a rule of its own and needs its own evidence.
+    /// </remarks>
+    private async Task<bool> TryApproachPetAsync(
+        ActionContext ctx,
+        PetSnapshot pet,
+        Func<CancellationToken, Task> onArrival,
+        CancellationToken ct
+    )
+    {
+        if (
+            !_roomGrain._state.AvatarsByPlayerId.TryGetValue(
+                ctx.PlayerId,
+                out RoomObjectId objectId
+            )
+            || !_roomGrain._state.AvatarsByObjectId.TryGetValue(
+                objectId.Value,
+                out IRoomAvatar? avatar
+            )
+        )
+        {
+            return false;
+        }
+
+        // Any neighbouring tile will do, diagonals included -- standing next to the pet is the whole
+        // requirement, and the hotel does not shuffle you onto a tidier one.
+        if (Chebyshev(avatar.X, avatar.Y, pet.X, pet.Y) <= 1)
+        {
+            return false;
+        }
+
+        foreach ((int x, int y) in NeighboursNearest(avatar, pet))
+        {
+            if (!_roomGrain.MapModule.CanAvatarWalk(avatar, _roomGrain.MapModule.ToIdx(x, y)))
+            {
+                continue;
+            }
+
+            if (await _roomGrain.AvatarModule.WalkAvatarToThenAsync(avatar, x, y, onArrival, ct))
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /// <summary>The pet's eight neighbours, the ones nearest the walker first.</summary>
+    private static IEnumerable<(int X, int Y)> NeighboursNearest(
+        IRoomAvatar avatar,
+        PetSnapshot pet
+    )
+    {
+        (int X, int Y)[] offsets =
+        [
+            (0, -1),
+            (1, 0),
+            (0, 1),
+            (-1, 0),
+            (1, -1),
+            (1, 1),
+            (-1, 1),
+            (-1, -1),
+        ];
+
+        return offsets
+            .Select(offset => (X: pet.X + offset.X, Y: pet.Y + offset.Y))
+            .OrderBy(tile => Chebyshev(avatar.X, avatar.Y, tile.X, tile.Y));
+    }
+
+    private static int Chebyshev(int fromX, int fromY, int toX, int toY) =>
+        Math.Max(Math.Abs(toX - fromX), Math.Abs(toY - fromY));
+
+    private async Task<PetSnapshot?> ApplyRespectAsync(
+        ActionContext ctx,
+        int petId,
+        CancellationToken ct
+    )
+    {
+        // Re-read: a walk stands between the click and here, and the pet has been ticking all along.
         if (!_roomGrain._state.PetsById.TryGetValue(petId, out PetSnapshot? pet))
         {
             return null;
