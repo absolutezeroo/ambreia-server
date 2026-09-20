@@ -493,11 +493,16 @@ public sealed class PluginManager(
     /// <para>
     /// Previously this only unloaded the <c>AssemblyLoadContext</c> — while the plugin's
     /// <see cref="ServiceProvider"/>, its already-started <see cref="IHostedService"/>s and its
-    /// published exports were all left in place. Because the service provider was still rooted, the
-    /// ALC could not actually be collected either, so the one thing this method did try to do
-    /// reliably failed and logged a "possible memory leak" warning. Now the rollback stack undoes
-    /// every completed step in reverse first, and the ALC is unloaded last, when nothing references
-    /// it any more.
+    /// published exports were all left in place. The rollback stack now undoes every completed step
+    /// in reverse first, and the ALC is unloaded last, when nothing references it any more.
+    /// </para>
+    /// <para>
+    /// That change was made to silence a "possible memory leak" warning, and did not, because the
+    /// warning never had anything to do with the rollback: the check behind it waited for the
+    /// context to be collected from a frame that was itself holding the context, so it reported a
+    /// leak on every input and cost five seconds doing it. The wait is gone; whether the contexts
+    /// really come back out is measured by <c>FailedActivationRetentionTests</c>, from a frame that
+    /// never held one, and they do.
     /// </para>
     /// </summary>
     private async Task<PluginEnvelope> BuildEnvelopeOrUnloadAsync(
@@ -523,18 +528,7 @@ public sealed class PluginManager(
         {
             await rollback.UnwindAsync().ConfigureAwait(false);
 
-            bool unloaded = await AssemblyMemoryLoader
-                .UnloadAndWaitAsync(asm.Alc, 5000, ct)
-                .ConfigureAwait(false);
-
-            if (!unloaded)
-            {
-                _logger.LogWarning(
-                    "ALC for plugin {Key} did not unload within timeout after a failed activation "
-                        + "and its rollback. Possible memory leak from retained type references.",
-                    m.Key
-                );
-            }
+            AssemblyMemoryLoader.Unload(asm.Alc);
 
             throw;
         }
@@ -847,17 +841,7 @@ public sealed class PluginManager(
 
         if (env.Alc is not null)
         {
-            bool unloaded = await AssemblyMemoryLoader
-                .UnloadAndWaitAsync(env.Alc, 5000, ct)
-                .ConfigureAwait(false);
-
-            if (!unloaded)
-            {
-                _logger.LogWarning(
-                    "ALC for plugin {Key} did not unload within timeout. Possible memory leak from retained type references.",
-                    env.Manifest.Key
-                );
-            }
+            AssemblyMemoryLoader.Unload(env.Alc);
         }
     }
 

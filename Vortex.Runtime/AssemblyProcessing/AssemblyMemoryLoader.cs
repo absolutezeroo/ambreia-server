@@ -1,10 +1,8 @@
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Reflection;
-using System.Threading;
-using System.Threading.Tasks;
+using System.Runtime.CompilerServices;
 
 namespace Vortex.Runtime.AssemblyProcessing;
 
@@ -64,39 +62,39 @@ public static class AssemblyMemoryLoader
         return new LoadedAssembly(asm, alc, baseDir, shadowed);
     }
 
-    public static async Task<bool> UnloadAndWaitAsync(
-        ByteLoadingAlc alc,
-        int maxMs = 5000,
-        CancellationToken ct = default
-    )
+    /// <summary>
+    ///     Requests the unload of a collectible context and answers a <see cref="WeakReference"/> to
+    ///     it, so a caller that wants to know whether it really went away can ask later.
+    /// </summary>
+    /// <remarks>
+    ///     <para>
+    ///     This replaces an <c>UnloadAndWaitAsync</c> that polled the weak reference itself, for up
+    ///     to five seconds, from inside the method whose own parameter held the context. An
+    ///     <c>async</c> method hoists its parameters into a state machine that outlives every await
+    ///     in it, so that method held the context alive for exactly as long as it waited for the
+    ///     context to die: it returned <c>false</c> on every input, including an assembly nothing
+    ///     else had ever touched, and the callers' "possible memory leak" warning fired every time
+    ///     and meant nothing. It cost five seconds per plugin teardown to learn nothing.
+    ///     </para>
+    ///     <para>
+    ///     Nothing is waited for here because nothing useful can be: a context is collected once the
+    ///     frames that used it unwind, which by definition has not happened yet in the caller.
+    ///     Whether the contexts actually come back out is a question for a test whose frame never
+    ///     held them — <c>FailedActivationRetentionTests</c> and <c>DashboardUnloadabilityTests</c>
+    ///     ask it, and answer yes.
+    ///     </para>
+    ///     <para>
+    ///     Never inlined: inlined into its caller, these locals would share that frame and keep the
+    ///     context reachable for as long as the caller runs.
+    ///     </para>
+    /// </remarks>
+    [MethodImpl(MethodImplOptions.NoInlining)]
+    public static WeakReference Unload(ByteLoadingAlc alc)
     {
-        WeakReference wr = new WeakReference(alc);
+        WeakReference weak = new WeakReference(alc);
 
         alc.Unload();
 
-        Stopwatch sw = System.Diagnostics.Stopwatch.StartNew();
-
-        while (sw.ElapsedMilliseconds < maxMs && !ct.IsCancellationRequested)
-        {
-            GC.Collect();
-            GC.WaitForPendingFinalizers();
-            GC.Collect();
-
-            if (!wr.IsAlive)
-            {
-                return true;
-            }
-
-            try
-            {
-                await Task.Delay(50, ct).ConfigureAwait(false);
-            }
-            catch (OperationCanceledException)
-            {
-                break;
-            }
-        }
-
-        return !wr.IsAlive;
+        return weak;
     }
 }
