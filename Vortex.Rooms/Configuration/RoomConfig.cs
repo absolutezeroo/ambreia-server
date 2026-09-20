@@ -178,6 +178,19 @@ public class RoomConfig : IWiredLimits
     public string CameraPhotoRoot { get; init; } = "data/camera-photos";
 
     /// <summary>
+    /// The longest side, in pixels, of the <c>_small</c> copy of a photo.
+    /// </summary>
+    /// <remarks>
+    /// A photo hung on a wall is not fetched at the size it was taken: the client asks for the
+    /// <c>_small</c> variant and hands that one image to the furniture at both room scales, so
+    /// whatever comes back is drawn at its own size — and a full-resolution photo on a wall is a
+    /// photo the size of the room. 110 is what Habbo's own thumbnails measure and the size of the
+    /// slot the navigator shows one in. A knob, because the right number is a question about
+    /// artwork rather than about code.
+    /// </remarks>
+    public int CameraSmallPhotoSize { get; init; } = 110;
+
+    /// <summary>
     /// Where the hotel's sprites are extracted to. A camera photo resolves every name in its scene
     /// against this directory.
     /// </summary>

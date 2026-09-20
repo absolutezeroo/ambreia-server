@@ -204,6 +204,29 @@
         }
       }
     },
+    "/api/public/camera/postcards/selfie/photos/{photoKey}_small.png": {
+      "get": {
+        "tags": [
+          "Camera"
+        ],
+        "operationId": "GetSmallCameraPhoto",
+        "parameters": [
+          {
+            "name": "photoKey",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
     "/api/public/camera/photos/{photoKey}.png": {
       "get": {
         "tags": [

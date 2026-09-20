@@ -125,6 +125,42 @@ public sealed class CameraPhotoEndpointTests
         (await response.Content.ReadAsByteArrayAsync()).Should().Equal(png);
     }
 
+    /// <summary>
+    /// A photo hanging on a wall is fetched from a url the client builds, not one the server chose.
+    /// </summary>
+    /// <remarks>
+    /// <c>FurnitureExternalImageVisualization</c> prefixes the photo's stuff-data url with
+    /// <c>postcards/selfie/</c> and rewrites <c>.png</c> to <c>_small.png</c>. Every segment below
+    /// is therefore fixed by the client; get one wrong and the frame on the wall stays empty with
+    /// nothing failing anywhere.
+    /// </remarks>
+    [Fact]
+    public async Task APhotoOnAWall_IsServedFromTheUrlTheFurnitureBuilds()
+    {
+        await using WebApiTestFactory factory = new();
+
+        string key = factory.Photos.Add([0x89, (byte)'P', (byte)'N', (byte)'G', 4, 5]);
+
+        using HttpResponseMessage response = await factory.Client.GetAsync(
+            $"/api/public/camera/postcards/selfie/photos/{key}_small.png"
+        );
+
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        response.Content.Headers.ContentType!.MediaType.Should().Be("image/png");
+    }
+
+    [Fact]
+    public async Task ASmallCopyOfAPhotoNobodyTook_IsNotFound()
+    {
+        await using WebApiTestFactory factory = new();
+
+        using HttpResponseMessage response = await factory.Client.GetAsync(
+            "/api/public/camera/postcards/selfie/photos/0123456789ABCDEF0123456789ABCDEF_small.png"
+        );
+
+        response.StatusCode.Should().Be(HttpStatusCode.NotFound);
+    }
+
     /// <summary>The ordinary case, asked once per room in every search result.</summary>
     [Fact]
     public async Task ARoomNobodyPhotographed_IsNotFound()

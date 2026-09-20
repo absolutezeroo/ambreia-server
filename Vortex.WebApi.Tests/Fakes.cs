@@ -651,6 +651,7 @@ internal sealed class FakeCameraPhotoStore : ICameraPhotoStore
 {
     private readonly ConcurrentDictionary<string, byte[]> _photos = new(StringComparer.Ordinal);
     private readonly ConcurrentDictionary<int, byte[]> _thumbnails = new();
+    private readonly ConcurrentDictionary<string, byte[]> _small = new(StringComparer.Ordinal);
 
     public string NewPhotoKey() => Guid.NewGuid().ToString("N").ToUpperInvariant();
 
@@ -695,6 +696,18 @@ internal sealed class FakeCameraPhotoStore : ICameraPhotoStore
 
     public string PublicPath(string photoKey, string urlPathPrefix) =>
         IsMintedKey(photoKey) ? $"{urlPathPrefix}{photoKey}.png" : string.Empty;
+
+    /// <summary>
+    /// The small copy, derived from the photo and kept — the shape the real store has, because a
+    /// fake that stored the two independently would let a test pass over a route that serves a
+    /// small copy of a photo nobody took.
+    /// </summary>
+    public Task<ReadOnlyMemory<byte>> ReadSmallPhotoAsync(string photoKey, CancellationToken ct) =>
+        Task.FromResult(
+            IsMintedKey(photoKey) && _photos.TryGetValue(photoKey, out byte[]? png)
+                ? new ReadOnlyMemory<byte>(_small.GetOrAdd(photoKey, _ => [.. png, 0xEE]))
+                : ReadOnlyMemory<byte>.Empty
+        );
 
     /// <summary>Puts a room's thumbnail in the store without going through a render.</summary>
     public void AddRoomThumbnail(int roomId, byte[] png) => _thumbnails[roomId] = png;

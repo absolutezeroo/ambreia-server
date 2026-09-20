@@ -44,6 +44,24 @@ public interface ICameraPhotoStore
     /// </remarks>
     Task<ReadOnlyMemory<byte>> ReadPhotoAsync(string photoKey, CancellationToken ct);
 
+    /// <summary>
+    /// The small copy of a photo — the one a photo hung on a wall is drawn from.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// <c>FurnitureExternalImageVisualization.buildThumbnailUrl()</c> rewrites the <c>.png</c> of
+    /// the url in a photo's stuff data to <c>_small.png</c>, unconditionally, and then hands that
+    /// one image to the furniture at both room scales. So the small copy is not an optimisation:
+    /// without it the frame on the wall fetches a url nothing answers, and with the full-size photo
+    /// behind it the frame would be drawn the size of the room.
+    /// </para>
+    /// <para>
+    /// Derived on the first request and kept, rather than written when the photo is taken. Every
+    /// photo already on disk predates this and would otherwise have no small copy for good.
+    /// </para>
+    /// </remarks>
+    Task<ReadOnlyMemory<byte>> ReadSmallPhotoAsync(string photoKey, CancellationToken ct);
+
     /// <summary>The path the client is told, relative to its own <c>stories.image_url_base</c>.</summary>
     string PublicPath(string photoKey, string urlPathPrefix);
 

@@ -40,6 +40,20 @@ internal static partial class WebApiEndpointsCamera
     /// </summary>
     private const string RoomThumbnailRoute = "/api/public/camera/thumbnails/{roomId:int}.png";
 
+    /// <summary>
+    /// The small copy, at the url a photo on a wall asks for and nowhere else.
+    /// </summary>
+    /// <remarks>
+    /// Every segment of this is the client's, not a choice:
+    /// <c>FurnitureExternalImageVisualization</c> prefixes a photo's stuff-data url with
+    /// <c>postcards/selfie/</c> for anything that is not a poster, and rewrites its <c>.png</c> to
+    /// <c>_small.png</c>. So the shape is <c>stories.image_url_base</c> + <c>postcards/selfie/</c> +
+    /// <c>camera.url_path_prefix</c> + the key + <c>_small.png</c>, and this route is the last three
+    /// with the prefix at its default.
+    /// </remarks>
+    private const string SmallPhotoRoute =
+        "/api/public/camera/postcards/selfie/photos/{photoKey}_small.png";
+
     public static void MapCamera(WebApplication app)
     {
         app.MapGet(
@@ -61,6 +75,26 @@ internal static partial class WebApiEndpointsCamera
                 }
             )
             .WithName("GetRoomThumbnail")
+            .WithTags("Camera")
+            .AllowAnonymous()
+            .RequireCors(WebApiAppConfigurator.PublicAssetCorsPolicyName);
+
+        app.MapGet(
+                SmallPhotoRoute,
+                async Task<IResult> (
+                    string photoKey,
+                    [FromServices] ICameraPhotoStore photos,
+                    CancellationToken ct
+                ) =>
+                {
+                    ReadOnlyMemory<byte> png = await photos
+                        .ReadSmallPhotoAsync(photoKey, ct)
+                        .ConfigureAwait(false);
+
+                    return png.IsEmpty ? Results.NotFound() : Results.Bytes(png, "image/png");
+                }
+            )
+            .WithName("GetSmallCameraPhoto")
             .WithTags("Camera")
             .AllowAnonymous()
             .RequireCors(WebApiAppConfigurator.PublicAssetCorsPolicyName);

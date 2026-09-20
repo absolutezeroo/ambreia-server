@@ -37,16 +37,21 @@ internal sealed class CameraPhotoStore : ICameraPhotoStore
     private const string SceneExtension = ".scene.z";
     private const string PhotoExtension = ".png";
 
+    /// <summary>The wall-sized copy. The suffix is the client's: it rewrites <c>.png</c> to this.</summary>
+    private const string SmallPhotoExtension = "_small.png";
+
     /// <summary>What a room's thumbnail is called. Not a key, so it cannot collide with one: a
     /// minted key is thirty-two hex characters and this never is.</summary>
     private const string ThumbnailPrefix = "room-";
 
     private readonly string _root;
+    private readonly int _smallPhotoSize;
     private readonly ILogger<CameraPhotoStore> _logger;
 
     public CameraPhotoStore(IOptions<RoomConfig> roomConfig, ILogger<CameraPhotoStore> logger)
     {
         _logger = logger;
+        _smallPhotoSize = roomConfig.Value.CameraSmallPhotoSize;
         // Trailing separator on purpose: without it "…/photos" is a prefix of "…/photos-public",
         // and the containment check below would wave through a sibling directory.
         _root =
@@ -85,6 +90,56 @@ internal sealed class CameraPhotoStore : ICameraPhotoStore
             _logger.LogError(ex, "Camera photo {PhotoKey} could not be read.", photoKey);
             return ReadOnlyMemory<byte>.Empty;
         }
+    }
+
+    public async Task<ReadOnlyMemory<byte>> ReadSmallPhotoAsync(
+        string photoKey,
+        CancellationToken ct
+    )
+    {
+        if (!TryResolve(photoKey, SmallPhotoExtension, out string? path))
+        {
+            return ReadOnlyMemory<byte>.Empty;
+        }
+
+        if (File.Exists(path))
+        {
+            try
+            {
+                return await File.ReadAllBytesAsync(path, ct).ConfigureAwait(false);
+            }
+            catch (IOException ex)
+            {
+                _logger.LogError(ex, "Small camera photo {PhotoKey} could not be read.", photoKey);
+                return ReadOnlyMemory<byte>.Empty;
+            }
+        }
+
+        ReadOnlyMemory<byte> full = await ReadPhotoAsync(photoKey, ct).ConfigureAwait(false);
+
+        if (full.IsEmpty)
+        {
+            return ReadOnlyMemory<byte>.Empty;
+        }
+
+        byte[]? small = CameraImage.Downscale(full.Span, _smallPhotoSize);
+
+        if (small is null)
+        {
+            // Unreadable as an image, which for a file this class wrote means something else is
+            // wrong. The full photo is a better answer than none, and the caller is an <img>.
+            _logger.LogWarning(
+                "Camera photo {PhotoKey} could not be scaled down; serving it whole.",
+                photoKey
+            );
+            return full;
+        }
+
+        // Written back, so the scaling happens once per photo rather than once per visitor. A
+        // failed write is not a failed request: the bytes are already in hand.
+        await WriteToAsync(path, photoKey + SmallPhotoExtension, small, ct).ConfigureAwait(false);
+
+        return small;
     }
 
     public Task<bool> SaveRoomThumbnailAsync(
