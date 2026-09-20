@@ -2558,6 +2558,12 @@ export interface PlayerRewardTotals {
   wardrobeUsers: number;
 }
 
+export interface PlayerRewardTrackCaptureRow {
+  step: number;
+  factKey: string;
+  value: string;
+}
+
 export interface PlayerRewardTrackClaimRow {
   prizeId: string;
   claimedAt: string;
@@ -2582,7 +2588,7 @@ export interface PlayerRewardTrackTaskRow {
   highestPaidLevelIndex: number;
   currentStep: number;
   stepCount: number;
-  capturedFacts: string;
+  captures: PlayerRewardTrackCaptureRow[];
 }
 
 export interface PlayerRewardTracks {

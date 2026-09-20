@@ -86,6 +86,9 @@ public class RewardTrackActionArtworkTests
         // square. Each is a signal this hotel raises because its event already existed and carried
         // what a task would need -- the icon is the one thing that does not come free.
         RewardTrackActions.RateRoom,
+        // Habbo's own tracks asked for a dance and a wave and never for a sign, so there is an
+        // embed for those two and none for this one.
+        RewardTrackActions.ShowSign,
         RewardTrackActions.LeaveRoom,
         RewardTrackActions.UpdateRoomSettings,
         RewardTrackActions.AnswerDoorbell,

@@ -1,3 +1,5 @@
+using System.Collections.Generic;
+
 namespace Vortex.Dashboard.API.Api.Progression.Contracts;
 
 /// <summary>
@@ -14,8 +16,8 @@ namespace Vortex.Dashboard.API.Api.Progression.Contracts;
 /// than a number. Today's, not the one the player started under: content can be rewritten beneath
 /// somebody mid-sequence, and the honest answer is where they stand in what exists now.
 /// </param>
-/// <param name="CapturedFacts">
-/// What the steps they have satisfied recorded, in the engine's own serialised form.
+/// <param name="Captures">
+/// What the steps they have satisfied recorded, decoded from the row's stored form.
 /// </param>
 /// <remarks>
 /// The step and the captures are stored and, until now, shown nowhere. That made a player stuck
@@ -30,5 +32,5 @@ public sealed record PlayerRewardTrackTaskRow(
     int HighestPaidLevelIndex,
     int CurrentStep,
     int StepCount,
-    string CapturedFacts
+    IReadOnlyList<PlayerRewardTrackCaptureRow> Captures
 );

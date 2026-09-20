@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Text;
+using Vortex.Primitives.RewardTracks;
 using Vortex.Primitives.RewardTracks.Snapshots;
 
 namespace Vortex.RewardTracks.Progression;
@@ -23,9 +24,9 @@ namespace Vortex.RewardTracks.Progression;
 /// </remarks>
 internal readonly struct StepCaptures
 {
-    // ASCII record/unit separators: control characters, so nothing an operator can type collides.
-    private const char PairSeparator = '\u001E';
-    private const char FieldSeparator = '\u001F';
+    // Shared with the dashboard, which reads this row to show what a player has matched so far.
+    private const char PairSeparator = RewardTrackCaptureFormat.PairSeparator;
+    private const char FieldSeparator = RewardTrackCaptureFormat.FieldSeparator;
 
     private readonly Dictionary<string, string>? _byStepAndKey;
 

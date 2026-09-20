@@ -453,7 +453,7 @@ internal sealed class RewardTrackReads(
                                     t.HighestPaidLevelIndex,
                                     t.CurrentStep,
                                     stepCounts.GetValueOrDefault((r.TrackId, t.TaskId)),
-                                    t.CapturedFacts
+                                    Captures(t.CapturedFacts)
                                 ))
                                 .ToList(),
                             claims
@@ -475,6 +475,49 @@ internal sealed class RewardTrackReads(
             },
             ct
         );
+
+    /// <summary>
+    /// What a player's satisfied steps recorded, decoded from the row's stored form.
+    /// </summary>
+    /// <remarks>
+    /// An entry that does not have its three fields is skipped rather than thrown on, which is
+    /// what the engine's own reader does: this is a diagnostic column, and one malformed entry
+    /// must not take the player lookup with it.
+    /// </remarks>
+    private static List<PlayerRewardTrackCaptureRow> Captures(string stored)
+    {
+        List<PlayerRewardTrackCaptureRow> captures = [];
+
+        if (string.IsNullOrEmpty(stored))
+        {
+            return captures;
+        }
+
+        foreach (
+            string entry in stored.Split(
+                RewardTrackCaptureFormat.PairSeparator,
+                StringSplitOptions.RemoveEmptyEntries
+            )
+        )
+        {
+            string[] parts = entry.Split(RewardTrackCaptureFormat.FieldSeparator);
+
+            if (
+                parts.Length == 3
+                && int.TryParse(
+                    parts[0],
+                    NumberStyles.Integer,
+                    CultureInfo.InvariantCulture,
+                    out int step
+                )
+            )
+            {
+                captures.Add(new PlayerRewardTrackCaptureRow(step, parts[1], parts[2]));
+            }
+        }
+
+        return captures;
+    }
 
     /// <summary>
     /// One condition, with both its sides spelled out.

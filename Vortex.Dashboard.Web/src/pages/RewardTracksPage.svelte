@@ -15,6 +15,7 @@
   import { Blocks, Route, Users } from '@lucide/svelte';
   import type {
     FactOption,
+    PlayerRewardTrackCaptureRow,
     PlayerRewardTracks,
     RewardKindOption,
     RewardKindOptions,
@@ -240,6 +241,28 @@
     const meta = factMeta(actionCode, factKey);
 
     return meta?.values?.length ? meta.values[0].value : '';
+  }
+
+  /**
+   * What each satisfied step recorded, one readable line per step.
+   *
+   * Grouped by step rather than listed flat because that is how a sequence is read: "action 1
+   * matched room 30" answers the question, and four separate rows saying which step each fact
+   * came from does not.
+   */
+  function groupCaptures(captures: PlayerRewardTrackCaptureRow[]) {
+    const byStep = new Map<number, string[]>();
+
+    for (const capture of captures ?? []) {
+      const line = byStep.get(capture.step) ?? [];
+
+      line.push(`${capture.factKey} ${capture.value}`);
+      byStep.set(capture.step, line);
+    }
+
+    return [...byStep.entries()]
+      .sort(([a], [b]) => a - b)
+      .map(([step, parts]) => ({ step, text: parts.join(' · ') }));
   }
 
   const COMPLETION_POLICIES: Choice[] = [
@@ -1049,14 +1072,15 @@
                           n: task.currentStep + 1,
                           total: task.stepCount,
                         })}
-                        {#if task.capturedFacts}
-                          <!-- What the satisfied steps recorded. It is what a later step's "from
-                               action 1" resolves against, so it is the difference between a task
+                        {#each groupCaptures(task.captures) as line (line.step)}
+                          <!-- What each satisfied step recorded. It is what a later step's "from
+                               action N" resolves against, so it is the difference between a task
                                that is waiting and one whose reference can never match. -->
-                          <span class="muted small captured" title={task.capturedFacts}>
-                            {task.capturedFacts}
+                          <span class="muted small captured" title={line.text}>
+                            {$t('rewardTracks.capturedAt', { n: line.step + 1 })}
+                            {line.text}
                           </span>
-                        {/if}
+                        {/each}
                       {:else}
                         <span class="muted">—</span>
                       {/if}

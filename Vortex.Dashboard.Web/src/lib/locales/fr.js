@@ -2860,6 +2860,7 @@ export default {
     highestPaid: 'Plus haute étape payée',
     step: 'Où dans la séquence',
     stepOf: 'action {n} sur {total}',
+    capturedAt: 'action {n} a retenu :',
     claimedAt: 'Réclamé le',
     pointsAtClaim: 'Points à la réclamation',
     granted: 'Attribué',

@@ -2849,6 +2849,7 @@ export default {
     highestPaid: 'Highest paid stage',
     step: 'Where in the sequence',
     stepOf: 'action {n} of {total}',
+    capturedAt: 'action {n} matched:',
     claimedAt: 'Claimed at',
     pointsAtClaim: 'Points at claim',
     granted: 'Granted',
