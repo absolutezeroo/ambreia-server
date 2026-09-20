@@ -23,8 +23,26 @@ public sealed record RewardTrackTaskStepSnapshot
     public required string ActionCode { get; init; }
 
     /// <summary>All of these must hold. Empty means any occurrence of the action satisfies the step.</summary>
+    /// <remarks>
+    /// The flat reading, kept because it is what every task written so far says and what the client
+    /// contract and the admin API are shaped around. A step that nests its conditions carries
+    /// <see cref="Root"/> instead, and the two are never both meaningful: the catalogue builds one
+    /// or the other.
+    /// </remarks>
     [Id(2)]
     public ImmutableArray<RewardTrackStepFilterSnapshot> Filters { get; init; } = [];
+
+    /// <summary>
+    /// The condition tree, when the step has one, or null for a flat list.
+    /// </summary>
+    /// <remarks>
+    /// Null rather than an <see cref="PredicateKind.All"/> wrapping <see cref="Filters"/>, so that
+    /// nothing has to be rebuilt for the tasks that do not nest — which is every task that exists
+    /// today. <c>StepMatches</c> reads this when it is here and the flat list when it is not, and
+    /// the two paths agree by construction: a flat list IS an <c>All</c> of tests.
+    /// </remarks>
+    [Id(3)]
+    public StepPredicateSnapshot? Root { get; init; }
 }
 
 /// <summary>

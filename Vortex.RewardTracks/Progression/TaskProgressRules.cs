@@ -403,12 +403,98 @@ internal static class TaskProgressRules
         StepCaptures captures
     )
     {
+        // A nested step carries a tree; every task written before trees existed carries the flat
+        // list, and the two agree by construction -- "the filters are ANDed" is an All of tests.
+        // Read as two paths rather than by wrapping the list, so nothing is rebuilt per signal for
+        // the tasks that do not nest, which is all of them so far.
+        if (step.Root is StepPredicateSnapshot root)
+        {
+            return Holds(root, facts, captures);
+        }
+
         if (step.Filters.IsDefaultOrEmpty)
         {
             return true;
         }
 
         foreach (RewardTrackStepFilterSnapshot filter in step.Filters)
+        {
+            if (!TestHolds(filter, facts, captures))
+            {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    /// <summary>
+    /// Whether a node of a condition tree holds.
+    /// </summary>
+    /// <remarks>
+    /// Recursive, and total for the same reason the rest of this file is: a malformed node — a
+    /// <c>Not</c> with no child, a <c>Test</c> with no test — is content that should have been
+    /// refused when it was written, and reading it as false stops one task rather than the
+    /// pipeline.
+    /// <para>
+    /// An empty <c>All</c> holds and an empty <c>Any</c> does not. Those are not arbitrary: "no
+    /// conditions" has always meant any occurrence counts, and "one of nothing" has satisfied
+    /// nothing.
+    /// </para>
+    /// </remarks>
+    private static bool Holds(
+        StepPredicateSnapshot node,
+        ImmutableArray<RewardTrackFactSnapshot> facts,
+        StepCaptures captures
+    )
+    {
+        switch (node.Kind)
+        {
+            case PredicateKind.Test:
+                return node.Test is RewardTrackStepFilterSnapshot test
+                    && TestHolds(test, facts, captures);
+
+            case PredicateKind.All:
+                foreach (StepPredicateSnapshot child in Operands(node))
+                {
+                    if (!Holds(child, facts, captures))
+                    {
+                        return false;
+                    }
+                }
+
+                return true;
+
+            case PredicateKind.Any:
+                foreach (StepPredicateSnapshot child in Operands(node))
+                {
+                    if (Holds(child, facts, captures))
+                    {
+                        return true;
+                    }
+                }
+
+                return false;
+
+            case PredicateKind.Not:
+                return Operands(node) is [StepPredicateSnapshot only]
+                    && !Holds(only, facts, captures);
+
+            default:
+                return false;
+        }
+    }
+
+    private static ImmutableArray<StepPredicateSnapshot> Operands(StepPredicateSnapshot node) =>
+        node.Children.IsDefault ? [] : node.Children;
+
+    /// <summary>Whether one comparison holds against what the signal carried.</summary>
+    private static bool TestHolds(
+        RewardTrackStepFilterSnapshot filter,
+        ImmutableArray<RewardTrackFactSnapshot> facts,
+        StepCaptures captures
+    )
+    {
         {
             if (Fact(facts, filter.FactKey) is not string actual)
             {
@@ -464,13 +550,8 @@ internal static class TaskProgressRules
                 _ => false,
             };
 
-            if (!ok)
-            {
-                return false;
-            }
+            return ok;
         }
-
-        return true;
     }
 
     private static string? Fact(ImmutableArray<RewardTrackFactSnapshot> facts, string key)
