@@ -122,6 +122,25 @@ internal sealed class RoomPhotoRenderer(
             );
         }
 
+        // A sprite's tint, which is the half of a sprite that no amount of looking at the photo
+        // reveals. Hair, clothing and a pet's coat are all greyscale artwork -- the colour is what
+        // makes hair hair and a dog ginger -- so a tint that never arrived and a tint that arrived
+        // and was dropped produce the same washed-out picture, and only the number separates them.
+        foreach (CameraSceneSprite sprite in scene.Sprites.Take(10))
+        {
+            logger.LogInformation(
+                "Camera photo {PhotoKey}: sprite {Name} colour={Colour} alpha={Alpha} at ({X},{Y}).",
+                photoKey,
+                sprite.Name,
+                sprite.Color is { } tint
+                    ? FormattableString.Invariant($"#{tint & 0xFFFFFF:X6}")
+                    : "none",
+                sprite.Alpha,
+                sprite.X,
+                sprite.Y
+            );
+        }
+
         // The first planes, in the order they are painted, with the corners the client actually
         // sent. This is what a local reproduction needs and cannot otherwise get.
         foreach (CameraScenePlane plane in scene.Planes.Take(6))
