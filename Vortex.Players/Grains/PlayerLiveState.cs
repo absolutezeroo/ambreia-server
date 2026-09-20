@@ -49,6 +49,15 @@ public sealed class PlayerLiveState
     /// </summary>
     public bool SafetyLocked { get; set; }
 
+    /// <summary>
+    /// Whether the player counts as staff to a room: holds <c>room.moderate.any</c>, which the
+    /// seeded moderator, admin and owner roles carry and the player and economy roles do not. Held
+    /// in state, and resolved once at load for the same reason as <see cref="SafetyLocked"/> — it
+    /// rides every player summary, and a role lookup per summary would mean a service call on
+    /// every room entry and every look change.
+    /// </summary>
+    public bool IsModerator { get; set; }
+
     public int ClubLevel { get; set; } = 0;
     public DateTime ClubExpiresAt { get; set; } = DateTime.MinValue;
     public int ClubTotalMonths { get; set; } = 0;

@@ -12,6 +12,7 @@ using Vortex.Players.Configuration;
 using Vortex.Players.Grains;
 using Vortex.Primitives.Commerce;
 using Vortex.Primitives.Events;
+using Vortex.Primitives.Permissions;
 using Vortex.Primitives.Players.Enums;
 using Vortex.Primitives.Players.Providers;
 using Vortex.Primitives.Rooms.Enums;
@@ -160,7 +161,10 @@ public sealed class FirstLoginOfDayTests
                     Options.Create(new ClubConfig()),
                     FakeProxy.Create<IAccountLevelProvider>(_ => AccountLevelLadder.FloorLevel),
                     // Nothing here buys anything; the grain simply needs one to be built.
-                    FakeProxy.Create<ICommerceJournal>(_ => Task.CompletedTask)
+                    FakeProxy.Create<ICommerceJournal>(_ => Task.CompletedTask),
+                    // No roles: the grain resolves staff-ness once at load and nothing here cares
+                    // what the answer is.
+                    FakeProxy.Create<IPermissionService>(_ => Task.FromResult(PermissionSet.Empty))
                 )
             );
         }

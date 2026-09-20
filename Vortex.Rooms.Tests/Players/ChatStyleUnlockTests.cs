@@ -15,6 +15,7 @@ using Vortex.Players.Grains;
 using Vortex.Primitives.Commerce;
 using Vortex.Primitives.Events;
 using Vortex.Primitives.Networking;
+using Vortex.Primitives.Permissions;
 using Vortex.Primitives.Players.Enums;
 using Vortex.Primitives.Players.Grains;
 using Vortex.Primitives.Players.Providers;
@@ -377,7 +378,10 @@ public sealed class ChatStyleUnlockTests
                 NullLogger<PlayerGrain>.Instance,
                 Options.Create(new ClubConfig()),
                 FakeProxy.Create<IAccountLevelProvider>(_ => AccountLevelLadder.FloorLevel),
-                FakeProxy.Create<ICommerceJournal>(_ => Task.CompletedTask)
+                FakeProxy.Create<ICommerceJournal>(_ => Task.CompletedTask),
+                // No roles: the grain resolves staff-ness once at load and nothing here cares what
+                // the answer is.
+                FakeProxy.Create<IPermissionService>(_ => Task.FromResult(PermissionSet.Empty))
             );
 
             return harness;

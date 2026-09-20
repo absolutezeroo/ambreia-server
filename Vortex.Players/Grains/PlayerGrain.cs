@@ -21,6 +21,7 @@ using Vortex.Primitives.Inventory.Grains;
 using Vortex.Primitives.Orleans;
 using Vortex.Primitives.Orleans.Snapshots.Players;
 using Vortex.Primitives.Orleans.Snapshots.Room;
+using Vortex.Primitives.Permissions;
 using Vortex.Primitives.Players;
 using Vortex.Primitives.Players.Enums;
 using Vortex.Primitives.Players.Enums.Wallet;
@@ -42,6 +43,7 @@ internal sealed partial class PlayerGrain : Grain, IPlayerGrain
     private readonly ILogger<PlayerGrain> _logger;
     private readonly IAccountLevelProvider _accountLevels;
     private readonly ICommerceJournal _journal;
+    private readonly IPermissionService _permissions;
 
     private readonly PlayerLiveState _state;
 
@@ -52,7 +54,8 @@ internal sealed partial class PlayerGrain : Grain, IPlayerGrain
         ILogger<PlayerGrain> logger,
         IOptions<ClubConfig> clubConfig,
         IAccountLevelProvider accountLevels,
-        ICommerceJournal journal
+        ICommerceJournal journal,
+        IPermissionService permissions
     )
     {
         _dbCtxFactory = dbCtxFactory;
@@ -62,6 +65,7 @@ internal sealed partial class PlayerGrain : Grain, IPlayerGrain
         _clubConfig = clubConfig.Value;
         _accountLevels = accountLevels;
         _journal = journal;
+        _permissions = permissions;
 
         _state = new PlayerLiveState { PlayerId = PlayerId.Parse((int)this.GetPrimaryKeyLong()) };
     }
@@ -395,6 +399,7 @@ internal sealed partial class PlayerGrain : Grain, IPlayerGrain
                 FavouriteGroupId = _state.FavouriteGroupId,
                 FavouriteGroupName = _state.FavouriteGroupName,
                 SafetyLocked = _state.SafetyLocked,
+                IsModerator = _state.IsModerator,
             }
         );
     }
@@ -1279,6 +1284,15 @@ internal sealed partial class PlayerGrain : Grain, IPlayerGrain
                 .Select(a => a.SafetyLocked)
                 .FirstOrDefaultAsync(ct)
                 .ConfigureAwait(true);
+
+        // Staff-ness as a room sees it. Resolved here rather than per summary because the service
+        // caches per account and the summary is fetched on every room entry and every look change.
+        // A role change mid-session therefore does not reach an already-loaded grain — acceptable
+        // for the two things this drives (chat-flood exemption, the Builders Club guest check) and
+        // the same trade SafetyLocked above already makes.
+        _state.IsModerator = (
+            await _permissions.ResolveForPlayerAsync((int)_state.PlayerId, ct).ConfigureAwait(true)
+        ).HasAny(Capabilities.Room.ModerateAny);
 
         _state.FavouriteGroupId = entity.FavouriteGroupId ?? 0;
         _state.FavouriteGroupName =

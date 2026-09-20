@@ -50,4 +50,12 @@ public sealed record PlayerSummarySnapshot
     /// </summary>
     [Id(10)]
     public bool SafetyLocked { get; init; }
+
+    /// <summary>
+    /// Whether the player holds <c>room.moderate.any</c>. It rides the summary because the room
+    /// avatar block carries it on the wire, and both readers of it are room-side: the chat-flood
+    /// exemption and the client's Builders Club "a guest is watching" check.
+    /// </summary>
+    [Id(11)]
+    public bool IsModerator { get; init; }
 }

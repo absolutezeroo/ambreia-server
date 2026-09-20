@@ -15,6 +15,7 @@ using Vortex.Players.Grains;
 using Vortex.Primitives.Commerce;
 using Vortex.Primitives.Events;
 using Vortex.Primitives.Observability;
+using Vortex.Primitives.Permissions;
 using Vortex.Primitives.Players.Enums;
 using Vortex.Primitives.Players.Enums.Wallet;
 using Vortex.Primitives.Players.Grains;
@@ -130,7 +131,10 @@ public sealed class ClubPurchaseRefundTests
                     new TestDbContextFactory(options),
                     FakeProxy.Create<IVortexMetrics>(_ => null),
                     NullLogger<CommerceJournal>.Instance
-                )
+                ),
+                // No roles: the grain resolves staff-ness once at load and nothing here cares what
+                // the answer is.
+                FakeProxy.Create<IPermissionService>(_ => Task.FromResult(PermissionSet.Empty))
             );
 
             DbOptions = options;
