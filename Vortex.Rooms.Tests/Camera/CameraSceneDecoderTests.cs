@@ -258,6 +258,29 @@ public sealed class CameraSceneDecoderTests
         result.Scene!.Sprites.Should().ContainSingle().Which.Color.Should().Be(16777215);
     }
 
+    /// <summary>
+    /// The third spelling, and the one that was silently dropped.
+    /// </summary>
+    /// <remarks>
+    /// An avatar's body parts do not go through <c>fromSprite</c>. <c>AvatarImageCache</c>'s camera
+    /// branch writes their colour itself, as <c>'0x' + hex + hex + hex</c>, so the decimal parse
+    /// refused it and every avatar in every photo came out in pale grey — hair and clothing artwork
+    /// is greyscale and the tint is what makes it hair. Nothing failed: the parts all resolved, and
+    /// only measuring the rendered pixels against the client's own showed browns on one side and
+    /// flat greys on the other.
+    /// </remarks>
+    [Theory]
+    [InlineData("\"0x423024\"", 0x423024)]
+    [InlineData("\"0XFFFFFF\"", 0xFFFFFF)]
+    [InlineData("\"0x000000\"", 0x000000)]
+    public void ASpriteColourWrittenAsPrefixedHex_IsRead(string json, int expected)
+    {
+        CameraSceneDecodeResult result = Decode(Scene(spriteColorJson: json));
+
+        result.Accepted.Should().BeTrue();
+        result.Scene!.Sprites.Should().ContainSingle().Which.Color.Should().Be(expected);
+    }
+
     [Fact]
     public void ASpriteColourThatIsNeither_LeavesTheSpriteUntinted()
     {

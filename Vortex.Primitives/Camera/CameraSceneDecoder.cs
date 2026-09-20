@@ -755,17 +755,48 @@ public static class CameraSceneDecoder
                 return element.TryGetInt64(out value);
 
             case JsonValueKind.String:
-                return long.TryParse(
-                    element.GetString(),
-                    NumberStyles.Integer,
-                    CultureInfo.InvariantCulture,
-                    out value
-                );
+                return TryReadNumericString(element.GetString(), out value);
 
             default:
                 value = 0;
                 return false;
         }
+    }
+
+    /// <summary>
+    /// A number written as a string, in either of the two spellings this field arrives in.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// A sprite's colour reaches the wire two ways. Furniture goes through
+    /// <c>SpriteDataCollector.fromSprite</c>, which writes <c>sprite.color.toString()</c> — decimal.
+    /// An avatar's body parts are written by <c>AvatarImageCache</c>'s camera branch instead, which
+    /// builds <c>'0x' + hex(red) + hex(green) + hex(blue)</c> — hexadecimal, prefixed.
+    /// </para>
+    /// <para>
+    /// Reading only the first spelling dropped the second, and a dropped colour is not a visible
+    /// failure: the artwork for hair and clothing is greyscale and the colour is what makes it hair.
+    /// Every avatar in every photo came out in pale grey, which looks like a missing asset and is
+    /// not one — the parts were all there, and measuring the pixels was what separated the two.
+    /// </para>
+    /// </remarks>
+    private static bool TryReadNumericString(string? text, out long value)
+    {
+        value = 0;
+
+        if (string.IsNullOrEmpty(text))
+        {
+            return false;
+        }
+
+        return text.StartsWith("0x", StringComparison.OrdinalIgnoreCase)
+            ? long.TryParse(
+                text.AsSpan(2),
+                NumberStyles.HexNumber,
+                CultureInfo.InvariantCulture,
+                out value
+            )
+            : long.TryParse(text, NumberStyles.Integer, CultureInfo.InvariantCulture, out value);
     }
 
     private static bool TryReadInt32(JsonElement element, out int value)
