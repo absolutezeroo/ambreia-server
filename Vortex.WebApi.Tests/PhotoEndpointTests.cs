@@ -220,6 +220,43 @@ public sealed class PhotoEndpointTests
     }
 
     /// <summary>
+    /// The popover names who liked, and the count does not have to agree with it: a liker who hides
+    /// their profile is counted and not named — the same rule the photo's owner is held to.
+    /// </summary>
+    [Fact]
+    public async Task Likers_CountAHiddenLikerWithoutNamingThem()
+    {
+        await using WebApiTestFactory factory = new();
+        await SeedAsync(factory, 1, "Photographe", visible: true, keys: [("shot", Published)]);
+        await SeedLikerAsync(factory);
+        await SeedAsync(factory, 101, "Discret", visible: false, keys: []);
+
+        using (HttpClient client = factory.CreateAuthenticatedClient())
+        {
+            await PutLikeAsync(client, "shot", true);
+        }
+
+        await using (VortexDbContext db = await factory.DbContexts.CreateDbContextAsync())
+        {
+            int photoId = db.CameraPhotos.Single(p => p.PhotoKey == "shot").Id;
+            db.CameraPhotoLikes.Add(
+                new CameraPhotoLikeEntity { CameraPhotoEntityId = photoId, PlayerEntityId = 101 }
+            );
+            await db.SaveChangesAsync();
+        }
+
+        JsonElement photo = await GetJsonAsync(factory, "/api/public/photos/shot");
+
+        photo.GetProperty("likes").GetInt32().Should().Be(2);
+        photo
+            .GetProperty("likers")
+            .EnumerateArray()
+            .Select(name => name.GetString())
+            .Should()
+            .Equal("Visiteur");
+    }
+
+    /// <summary>
     /// The player the signed-in account's selected avatar resolves to — `FakePlayerService` answers
     /// id 100, so the liker is somebody other than the photo's owner, which is the normal case.
     /// </summary>

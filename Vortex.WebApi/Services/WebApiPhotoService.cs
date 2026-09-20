@@ -35,6 +35,13 @@ public sealed class WebApiPhotoService(IDbContextFactory<VortexDbContext> dbCtxF
     /// <summary>What a profile page shows before its "see them all" link takes over.</summary>
     private const int MaximumProfilePhotos = 32;
 
+    /// <summary>
+    /// How many likers a photo names. habbo.com's popover lists five and then "…and N more", so six
+    /// is one more than it can draw — enough for the site to know the list is short without asking
+    /// the database for four hundred names to render five.
+    /// </summary>
+    private const int MaximumNamedLikers = 6;
+
     private readonly IDbContextFactory<VortexDbContext> _db = dbCtxFactory;
 
     public async Task<PhotoPage> GetPhotosAsync(
@@ -199,6 +206,15 @@ public sealed class WebApiPhotoService(IDbContextFactory<VortexDbContext> dbCtxF
             // a different event from the one the ordering used.
             p.PublishedAt!.Value,
             p.CameraPhotoLikes!.Count,
-            viewerId != null && p.CameraPhotoLikes.Any(l => l.PlayerEntityId == viewerId)
+            viewerId != null && p.CameraPhotoLikes.Any(l => l.PlayerEntityId == viewerId),
+            // Capped, most recent first, and only likers who are not hiding their profile — the same
+            // rule the photo's own owner is held to. The COUNT above is uncapped and unfiltered, so
+            // the two are allowed to disagree: habbo.com's popover lists five rows and then says
+            // "…and N more", which is exactly the shape that difference wants.
+            p.CameraPhotoLikes.Where(l => l.PlayerEntity != null && l.PlayerEntity.ProfileVisible)
+                .OrderByDescending(l => l.Id)
+                .Take(MaximumNamedLikers)
+                .Select(l => l.PlayerEntity!.Name)
+                .ToList()
         ));
 }

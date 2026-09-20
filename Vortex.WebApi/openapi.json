@@ -3199,6 +3199,7 @@
         "required": [
           "key",
           "likedByMe",
+          "likers",
           "likes",
           "ownerFigureString",
           "ownerName",
@@ -3238,6 +3239,12 @@
           },
           "likedByMe": {
             "type": "boolean"
+          },
+          "likers": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
           }
         },
         "additionalProperties": false

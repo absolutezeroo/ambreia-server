@@ -24,6 +24,13 @@ namespace Vortex.WebApi.Services;
 /// one of them — the two halves the like control renders, and the reason likes are rows rather than
 /// a counter. `LikedByMe` is false for a signed-out visitor, which is also what the control shows.
 /// </para>
+/// <para>
+/// <paramref name="Likers"/> is the handful of names the control lists when the thumb is hovered,
+/// most recent first. It is CAPPED and the count is not: habbo.com's own popover shows five rows and
+/// then "…and N more", so a photo with four hundred likes is still one small answer. The two are
+/// allowed to disagree for a second reason as well — a liker who has hidden their profile is counted
+/// and not named, which is the same rule this service applies to a photo's owner.
+/// </para>
 /// </remarks>
 public sealed record PhotoSummary(
     string Key,
@@ -34,7 +41,8 @@ public sealed record PhotoSummary(
     string? RoomName,
     DateTime TakenAt,
     int Likes,
-    bool LikedByMe
+    bool LikedByMe,
+    IReadOnlyList<string> Likers
 );
 
 /// <summary>One page of the photo gallery.</summary>
