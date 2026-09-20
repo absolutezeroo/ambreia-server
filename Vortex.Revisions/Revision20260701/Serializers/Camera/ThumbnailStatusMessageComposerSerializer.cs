@@ -8,6 +8,6 @@ internal class ThumbnailStatusMessageComposerSerializer(int header)
 {
     protected override void Serialize(IServerPacket packet, ThumbnailStatusMessageComposer message)
     {
-        //
+        packet.WriteBoolean(message.Ok).WriteBoolean(message.RenderLimitHit);
     }
 }

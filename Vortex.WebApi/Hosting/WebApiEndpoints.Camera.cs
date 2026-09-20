@@ -33,8 +33,38 @@ internal static partial class WebApiEndpointsCamera
     /// </summary>
     private const string CameraPhotoRoute = "/api/public/camera/photos/{photoKey}.png";
 
+    /// <summary>
+    /// Must agree with the client's <c>navigator.thumbnail.url_base</c>, which it concatenates with
+    /// the room id and <c>.png</c> and nothing else — so that setting has to end exactly here, at
+    /// the slash.
+    /// </summary>
+    private const string RoomThumbnailRoute = "/api/public/camera/thumbnails/{roomId:int}.png";
+
     public static void MapCamera(WebApplication app)
     {
+        app.MapGet(
+                RoomThumbnailRoute,
+                async Task<IResult> (
+                    int roomId,
+                    [FromServices] ICameraPhotoStore photos,
+                    CancellationToken ct
+                ) =>
+                {
+                    ReadOnlyMemory<byte> png = await photos
+                        .ReadRoomThumbnailAsync(roomId, ct)
+                        .ConfigureAwait(false);
+
+                    // A 404 is the ordinary answer here rather than a fault: the client asks this
+                    // for every room in a search result, and most rooms have never had a picture
+                    // taken of them.
+                    return png.IsEmpty ? Results.NotFound() : Results.Bytes(png, "image/png");
+                }
+            )
+            .WithName("GetRoomThumbnail")
+            .WithTags("Camera")
+            .AllowAnonymous()
+            .RequireCors(WebApiAppConfigurator.PublicAssetCorsPolicyName);
+
         app.MapGet(
                 CameraPhotoRoute,
                 async Task<IResult> (

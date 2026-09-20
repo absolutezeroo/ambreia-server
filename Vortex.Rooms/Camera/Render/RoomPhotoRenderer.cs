@@ -38,10 +38,41 @@ internal sealed class RoomPhotoRenderer(
     ILogger<RoomPhotoRenderer> logger
 ) : IRoomPhotoRenderer
 {
-    public async Task<bool> RenderAsync(
+    public Task<bool> RenderAsync(
         CameraScene scene,
         string photoKey,
         CameraRenderLimits limits,
+        CancellationToken ct
+    ) =>
+        DrawAsync(
+            scene,
+            photoKey,
+            limits,
+            (png, inner) => store.SavePhotoAsync(photoKey, png, inner),
+            ct
+        );
+
+    public Task<bool> RenderRoomThumbnailAsync(
+        CameraScene scene,
+        int roomId,
+        CameraRenderLimits limits,
+        CancellationToken ct
+    ) =>
+        DrawAsync(
+            scene,
+            // What the log calls this picture, which for a thumbnail is the file it becomes. The
+            // drawing below is identical either way; only where the bytes land differs.
+            FormattableString.Invariant($"room-{roomId}"),
+            limits,
+            (png, inner) => store.SaveRoomThumbnailAsync(roomId, png, inner),
+            ct
+        );
+
+    private async Task<bool> DrawAsync(
+        CameraScene scene,
+        string photoKey,
+        CameraRenderLimits limits,
+        Func<byte[], CancellationToken, Task<bool>> save,
         CancellationToken ct
     )
     {
@@ -71,7 +102,7 @@ internal sealed class RoomPhotoRenderer(
             _ => new SkiaCameraCanvas(viewport, name => Lookup(resolved, name))
         );
 
-        if (!await store.SavePhotoAsync(photoKey, png, ct).ConfigureAwait(false))
+        if (!await save(png, ct).ConfigureAwait(false))
         {
             logger.LogError("Camera photo {PhotoKey} was drawn and could not be stored.", photoKey);
             return false;

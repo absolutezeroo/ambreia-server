@@ -100,6 +100,45 @@ public sealed class CameraPhotoEndpointTests
     }
 
     /// <summary>
+    /// A room's thumbnail is addressed by the room, not by a key.
+    /// </summary>
+    /// <remarks>
+    /// That is the whole design, and it is the client's: with no official picture, the navigator
+    /// asks for <c>navigator.thumbnail.url_base</c> + the room id + <c>.png</c>. Get this url shape
+    /// wrong and nothing anywhere fails — the thumbnail simply never appears, which looks exactly
+    /// like a room nobody ever photographed.
+    /// </remarks>
+    [Fact]
+    public async Task ARoomsThumbnail_IsServedByItsRoomId()
+    {
+        await using WebApiTestFactory factory = new();
+
+        byte[] png = [0x89, (byte)'P', (byte)'N', (byte)'G', 7, 7];
+        factory.Photos.AddRoomThumbnail(42, png);
+
+        using HttpResponseMessage response = await factory.Client.GetAsync(
+            "/api/public/camera/thumbnails/42.png"
+        );
+
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        response.Content.Headers.ContentType!.MediaType.Should().Be("image/png");
+        (await response.Content.ReadAsByteArrayAsync()).Should().Equal(png);
+    }
+
+    /// <summary>The ordinary case, asked once per room in every search result.</summary>
+    [Fact]
+    public async Task ARoomNobodyPhotographed_IsNotFound()
+    {
+        await using WebApiTestFactory factory = new();
+
+        using HttpResponseMessage response = await factory.Client.GetAsync(
+            "/api/public/camera/thumbnails/999.png"
+        );
+
+        response.StatusCode.Should().Be(HttpStatusCode.NotFound);
+    }
+
+    /// <summary>
     /// A key the store did not mint is refused by the store, not by the route — which is the point of
     /// the arrangement. Nothing outside <c>ICameraPhotoStore</c> turns a url segment into a path.
     /// </summary>

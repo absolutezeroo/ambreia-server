@@ -650,6 +650,7 @@ internal sealed class FakeChainLeaderboard : IChainLeaderboard
 internal sealed class FakeCameraPhotoStore : ICameraPhotoStore
 {
     private readonly ConcurrentDictionary<string, byte[]> _photos = new(StringComparer.Ordinal);
+    private readonly ConcurrentDictionary<int, byte[]> _thumbnails = new();
 
     public string NewPhotoKey() => Guid.NewGuid().ToString("N").ToUpperInvariant();
 
@@ -694,6 +695,32 @@ internal sealed class FakeCameraPhotoStore : ICameraPhotoStore
 
     public string PublicPath(string photoKey, string urlPathPrefix) =>
         IsMintedKey(photoKey) ? $"{urlPathPrefix}{photoKey}.png" : string.Empty;
+
+    /// <summary>Puts a room's thumbnail in the store without going through a render.</summary>
+    public void AddRoomThumbnail(int roomId, byte[] png) => _thumbnails[roomId] = png;
+
+    public Task<bool> SaveRoomThumbnailAsync(
+        int roomId,
+        ReadOnlyMemory<byte> png,
+        CancellationToken ct
+    )
+    {
+        if (roomId <= 0)
+        {
+            return Task.FromResult(false);
+        }
+
+        _thumbnails[roomId] = png.ToArray();
+
+        return Task.FromResult(true);
+    }
+
+    public Task<ReadOnlyMemory<byte>> ReadRoomThumbnailAsync(int roomId, CancellationToken ct) =>
+        Task.FromResult(
+            _thumbnails.TryGetValue(roomId, out byte[]? png)
+                ? new ReadOnlyMemory<byte>(png)
+                : ReadOnlyMemory<byte>.Empty
+        );
 
     private static bool IsMintedKey(string photoKey) =>
         photoKey.Length == 32 && photoKey.All(char.IsAsciiHexDigitUpper);

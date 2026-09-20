@@ -37,6 +37,10 @@ internal sealed class CameraPhotoStore : ICameraPhotoStore
     private const string SceneExtension = ".scene.z";
     private const string PhotoExtension = ".png";
 
+    /// <summary>What a room's thumbnail is called. Not a key, so it cannot collide with one: a
+    /// minted key is thirty-two hex characters and this never is.</summary>
+    private const string ThumbnailPrefix = "room-";
+
     private readonly string _root;
     private readonly ILogger<CameraPhotoStore> _logger;
 
@@ -83,18 +87,50 @@ internal sealed class CameraPhotoStore : ICameraPhotoStore
         }
     }
 
-    private async Task<bool> WriteAsync(
+    public Task<bool> SaveRoomThumbnailAsync(
+        int roomId,
+        ReadOnlyMemory<byte> png,
+        CancellationToken ct
+    ) =>
+        TryResolveThumbnail(roomId, out string? path)
+            ? WriteToAsync(path, ThumbnailName(roomId), png, ct)
+            : Task.FromResult(false);
+
+    public async Task<ReadOnlyMemory<byte>> ReadRoomThumbnailAsync(int roomId, CancellationToken ct)
+    {
+        if (!TryResolveThumbnail(roomId, out string? path) || !File.Exists(path))
+        {
+            return ReadOnlyMemory<byte>.Empty;
+        }
+
+        try
+        {
+            return await File.ReadAllBytesAsync(path, ct).ConfigureAwait(false);
+        }
+        catch (IOException ex)
+        {
+            _logger.LogError(ex, "Room {RoomId} thumbnail could not be read.", roomId);
+            return ReadOnlyMemory<byte>.Empty;
+        }
+    }
+
+    private Task<bool> WriteAsync(
         string photoKey,
         string extension,
         ReadOnlyMemory<byte> bytes,
         CancellationToken ct
+    ) =>
+        TryResolve(photoKey, extension, out string? path)
+            ? WriteToAsync(path, photoKey, bytes, ct)
+            : Task.FromResult(false);
+
+    private async Task<bool> WriteToAsync(
+        string path,
+        string name,
+        ReadOnlyMemory<byte> bytes,
+        CancellationToken ct
     )
     {
-        if (!TryResolve(photoKey, extension, out string? path))
-        {
-            return false;
-        }
-
         try
         {
             Directory.CreateDirectory(_root);
@@ -111,12 +147,12 @@ internal sealed class CameraPhotoStore : ICameraPhotoStore
         }
         catch (IOException ex)
         {
-            _logger.LogError(ex, "Camera photo {PhotoKey} could not be written.", photoKey);
+            _logger.LogError(ex, "Camera file {Name} could not be written.", name);
             return false;
         }
         catch (UnauthorizedAccessException ex)
         {
-            _logger.LogError(ex, "Camera photo {PhotoKey} could not be written.", photoKey);
+            _logger.LogError(ex, "Camera file {Name} could not be written.", name);
             return false;
         }
     }
@@ -157,6 +193,40 @@ internal sealed class CameraPhotoStore : ICameraPhotoStore
         path = candidate;
         return true;
     }
+
+    /// <summary>
+    /// Turns a room id into the path of its thumbnail, or refuses.
+    /// </summary>
+    /// <remarks>
+    /// The id is an <c>int</c> the session vouched for and is written back out through
+    /// <see cref="ThumbnailName"/>, so nothing a caller supplies survives as text — a name built
+    /// this way holds digits and nothing else. The containment check is kept all the same, for the
+    /// same reason the minted path keeps it.
+    /// </remarks>
+    private bool TryResolveThumbnail(int roomId, [NotNullWhen(true)] out string? path)
+    {
+        path = null;
+
+        if (roomId <= 0)
+        {
+            return false;
+        }
+
+        string candidate = Path.GetFullPath(
+            Path.Combine(_root, ThumbnailName(roomId) + PhotoExtension)
+        );
+
+        if (!candidate.StartsWith(_root, StringComparison.Ordinal))
+        {
+            return false;
+        }
+
+        path = candidate;
+        return true;
+    }
+
+    private static string ThumbnailName(int roomId) =>
+        string.Create(CultureInfo.InvariantCulture, $"{ThumbnailPrefix}{roomId}");
 
     private static bool IsMintedKey(string photoKey)
     {

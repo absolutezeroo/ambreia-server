@@ -654,6 +654,7 @@ internal static class MessageEvent
     public const int PublishPhotoMessageEvent = 375; // shape+AS3-verified: CameraWidgetHandler::confirmPhotoPublish() (_SafeCls_3566)
     public const int PurchasePhotoMessageEvent = 753; // shape+AS3-verified: CameraWidgetHandler::confirmPhotoPurchase() (_SafeCls_3166)
     public const int RenderRoomMessageEvent = 3332; // AS3-verified (direct read, both revisions): RoomEngine::getRenderRoomMessage() param3=false branch -> _SafeCls_2050
+    public const int RenderRoomThumbnailMessageEvent = 1985; // AS3-verified (direct read): _composers[1985] = _SafeCls_2272 @ habbo/communication/_SafeCls_2046.as:743 -- extends _SafeCls_2050 and packs in its own constructor, which is the getRenderRoomMessage() param3=true branch
     public const int RequestCameraConfigurationMessageEvent = 3010; // AS3-verified (old-revision trace): _SafeCls_3606 -> sendInitCameraMessage() still exists in current revision at 3010
     public const int GetPromoArticlesMessageEvent = 3152;
     public const int ApplySnapshotMessageEvent = 2790; // AS3-verified (ghost fix): UserDefinedRoomEventsCtrl::applySnapshot()

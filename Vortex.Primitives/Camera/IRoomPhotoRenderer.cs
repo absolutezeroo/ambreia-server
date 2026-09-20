@@ -27,4 +27,19 @@ public interface IRoomPhotoRenderer
         CameraRenderLimits limits,
         CancellationToken ct
     );
+
+    /// <summary>
+    /// Draws <paramref name="scene"/> and stores it as room <paramref name="roomId"/>'s thumbnail.
+    /// </summary>
+    /// <remarks>
+    /// The same picture as a photo, kept somewhere else: the client frames it with its own widget,
+    /// and what shows it is the room's listing rather than the player's camera. It is a separate
+    /// call because the destination differs and nothing else about the drawing does.
+    /// </remarks>
+    Task<bool> RenderRoomThumbnailAsync(
+        CameraScene scene,
+        int roomId,
+        CameraRenderLimits limits,
+        CancellationToken ct
+    );
 }

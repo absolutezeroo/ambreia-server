@@ -40,6 +40,23 @@ public interface IPlayerCameraGrain : IGrainWithIntegerKey
     );
 
     /// <summary>
+    /// Accepts a shot as the room's thumbnail, or says why not.
+    /// </summary>
+    /// <remarks>
+    /// The same intake as <see cref="RenderAsync"/> and the same hourly allowance — it is the same
+    /// drawing, and a player who could spend it on thumbnails instead would simply have two quotas.
+    /// What it does not do is keep anything: a thumbnail is not the player's photo, so it is neither
+    /// held for the three confirmations nor written to <c>camera_photos</c>. It overwrites whatever
+    /// picture the room had, and whether the sender may do that is decided before this is called.
+    /// </remarks>
+    /// <returns><see cref="CameraRenderRefusal.None"/> when the room's picture was replaced.</returns>
+    Task<CameraRenderRefusal> RenderThumbnailAsync(
+        int roomId,
+        ReadOnlyMemory<byte> payload,
+        CancellationToken ct
+    );
+
+    /// <summary>
     /// Buys the held photo: debits the configured price and puts the item in their inventory.
     /// </summary>
     /// <returns>

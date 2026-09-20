@@ -47,6 +47,15 @@ internal sealed class PlayerCameraGrain(
     /// <summary>The photo the three argument-less confirmations refer to. Null until one is taken.</summary>
     private string? _heldPhotoKey;
 
+    /// <summary>When this player's thumbnail renders happened, for the hourly allowance.</summary>
+    /// <remarks>
+    /// In memory, unlike the photo count, because a thumbnail deliberately leaves no row behind to
+    /// count. A silo restart therefore forgives them — the cheap end of a real trade, the other end
+    /// being a table whose only reader would be this queue.
+    /// </remarks>
+    // ponytail: in-memory window; move it beside camera_photos the day thumbnails need auditing.
+    private readonly Queue<DateTime> _thumbnailRenders = new();
+
     public async Task<CameraRenderOutcome> RenderAsync(
         int roomId,
         ReadOnlyMemory<byte> payload,
@@ -156,6 +165,79 @@ internal sealed class PlayerCameraGrain(
                 )
             )
         );
+    }
+
+    public async Task<CameraRenderRefusal> RenderThumbnailAsync(
+        int roomId,
+        ReadOnlyMemory<byte> payload,
+        CancellationToken ct
+    )
+    {
+        ImmutableDictionary<string, string> config = await grainFactory
+            .GetServerConfigGrain()
+            .GetManyAsync(CameraConfig.AllKeys)
+            .ConfigureAwait(true);
+
+        int rendersPerHour = ServerConfigValues.GetInt(
+            config,
+            CameraConfig.RendersPerHourKey,
+            CameraConfig.DefaultRendersPerHour
+        );
+
+        DateTime now = DateTime.UtcNow;
+        DateTime hourAgo = now.AddHours(-1);
+
+        while (_thumbnailRenders.TryPeek(out DateTime oldest) && oldest < hourAgo)
+        {
+            _thumbnailRenders.Dequeue();
+        }
+
+        await using VortexDbContext dbCtx = await dbCtxFactory.CreateDbContextAsync(ct);
+
+        int recent = await dbCtx
+            .CameraPhotos.AsNoTracking()
+            .CountAsync(
+                p =>
+                    p.PlayerEntityId == (int)SelfId
+                    && p.CreatedAt >= hourAgo
+                    && p.DeletedAt == null,
+                ct
+            )
+            .ConfigureAwait(true);
+
+        // Photos and thumbnails against one allowance. Two counters would be two quotas, and the
+        // expensive part — resolving every bundle and rasterising the room — is the same either way.
+        if (recent + _thumbnailRenders.Count >= rendersPerHour)
+        {
+            return RefuseThumbnail(CameraRenderRefusal.RateLimited);
+        }
+
+        CameraSceneDecodeResult decoded = CameraSceneDecoder.Decode(
+            payload.Span,
+            roomId,
+            now,
+            ReadLimits(config)
+        );
+
+        if (!decoded.Accepted)
+        {
+            return RefuseThumbnail(decoded.Refusal);
+        }
+
+        // The scene is not kept. A photo's is, so its picture can be redrawn years later without the
+        // player; a thumbnail's next version is one click away from whoever owns the room.
+        if (
+            !await photoRenderer
+                .RenderRoomThumbnailAsync(decoded.Scene!, roomId, ReadRenderLimits(config), ct)
+                .ConfigureAwait(true)
+        )
+        {
+            return RefuseThumbnail(CameraRenderRefusal.StorageFailed);
+        }
+
+        _thumbnailRenders.Enqueue(now);
+
+        return CameraRenderRefusal.None;
     }
 
     public async Task<bool> PurchaseHeldPhotoAsync(CancellationToken ct)
@@ -402,6 +484,19 @@ internal sealed class PlayerCameraGrain(
         );
 
         return CameraRenderOutcome.Refused(refusal);
+    }
+
+    private CameraRenderRefusal RefuseThumbnail(CameraRenderRefusal refusal)
+    {
+        // The client hears two of these apart — "too many" and everything else. The log is still
+        // where the difference between a stale scene and a full disk lives.
+        logger.LogDebug(
+            "Room thumbnail refused for player {PlayerId}: {Refusal}.",
+            (int)SelfId,
+            refusal
+        );
+
+        return refusal;
     }
 
     private static CameraRenderLimits ReadRenderLimits(

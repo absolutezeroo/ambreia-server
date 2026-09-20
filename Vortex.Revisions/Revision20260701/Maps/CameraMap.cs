@@ -17,6 +17,10 @@ internal sealed class CameraMap : IRevisionMap
         builder.MapParser(MessageEvent.PurchasePhotoMessageEvent, new PurchasePhotoMessageParser());
         builder.MapParser(MessageEvent.RenderRoomMessageEvent, new RenderRoomMessageParser());
         builder.MapParser(
+            MessageEvent.RenderRoomThumbnailMessageEvent,
+            new RenderRoomThumbnailMessageParser()
+        );
+        builder.MapParser(
             MessageEvent.RequestCameraConfigurationMessageEvent,
             new RequestCameraConfigurationMessageParser()
         );

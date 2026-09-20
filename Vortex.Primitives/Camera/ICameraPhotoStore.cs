@@ -46,4 +46,19 @@ public interface ICameraPhotoStore
 
     /// <summary>The path the client is told, relative to its own <c>stories.image_url_base</c>.</summary>
     string PublicPath(string photoKey, string urlPathPrefix);
+
+    /// <summary>
+    /// Writes a room's thumbnail, replacing the one it had.
+    /// </summary>
+    /// <remarks>
+    /// Named by the room rather than by a minted key, and deliberately so: whenever a room carries
+    /// no official picture the client asks for <c>navigator.thumbnail.url_base</c> + the room id +
+    /// <c>.png</c>, so the room id <em>is</em> the address and nothing has to remember a key for it.
+    /// Guessability costs nothing here — a thumbnail is shown to everyone the room is listed to.
+    /// </remarks>
+    /// <returns>False when the id is not a room's, or the write failed.</returns>
+    Task<bool> SaveRoomThumbnailAsync(int roomId, ReadOnlyMemory<byte> png, CancellationToken ct);
+
+    /// <summary>A room's thumbnail, or empty when it has never had one.</summary>
+    Task<ReadOnlyMemory<byte>> ReadRoomThumbnailAsync(int roomId, CancellationToken ct);
 }
