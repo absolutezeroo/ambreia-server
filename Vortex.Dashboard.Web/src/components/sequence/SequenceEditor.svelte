@@ -137,7 +137,12 @@
       ...steps.slice(0, stepIndex).flatMap((earlier, i) =>
         factsFor(earlier.actionCode).map((fact) => ({
           group: $t('rewardTracks.sideFromStep', { n: i + 1 }),
-          label: label(fact),
+          // Which action it comes from, in the label and not only in the group heading. The
+          // heading is gone the moment the menu closes, and "the room" from this action and "the
+          // room" from action 1 are then the same words for two conditions that are not remotely
+          // the same: one compares a thing with itself, the other is what this whole feature is
+          // for. An operator cannot be expected to remember which one they picked.
+          label: $t('rewardTracks.sideFromStepLabel', { fact: label(fact), n: i + 1 }),
           value: { kind: STEP_FACT, arg: fact.key, step: i },
         }))
       ),

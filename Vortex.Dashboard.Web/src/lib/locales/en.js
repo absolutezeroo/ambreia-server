@@ -2742,6 +2742,7 @@ export default {
     sideCount: 'How many',
     sideCountLabel: 'count: {fact}',
     sideFromStep: 'From action {n}',
+    sideFromStepLabel: '{fact} — from action {n}',
     filterOpEquals: 'is',
     filterOpNotEquals: 'is not',
     filterOpOneOf: 'is one of',

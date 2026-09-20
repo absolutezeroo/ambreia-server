@@ -2753,6 +2753,7 @@ export default {
     sideCount: 'Combien',
     sideCountLabel: 'nombre : {fact}',
     sideFromStep: 'De l’action {n}',
+    sideFromStepLabel: '{fact} — de l’action {n}',
     filterOpEquals: 'est',
     filterOpNotEquals: 'n’est pas',
     filterOpOneOf: 'est parmi',
