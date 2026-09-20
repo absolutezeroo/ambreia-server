@@ -2776,6 +2776,12 @@ export default {
     fact_model: 'Plan de l’appart',
     fact_pet_command: 'Ordre au familier',
     fact_relation: 'Où il se tenait',
+    fact_dance: 'Quelle danse',
+    // Les quatre danses portent leur nom du client dans toutes les langues.
+    dance_dance: 'Dance',
+    dance_pogo_mogo: 'Pogo-Mogo',
+    dance_duck_funk: 'Duck Funk',
+    dance_the_rollie: 'The Rollie',
     relation_on: 'Dessus',
     relation_front: 'Devant',
     relation_front_right: 'Devant-droite',

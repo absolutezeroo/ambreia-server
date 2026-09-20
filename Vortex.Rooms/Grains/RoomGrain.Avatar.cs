@@ -253,7 +253,12 @@ public sealed partial class RoomGrain
             {
                 await _events
                     .PublishAsync(
-                        new PlayerGesturedEvent(ctx.PlayerId, _state.RoomId.Value, "dance"),
+                        new PlayerGesturedEvent(
+                            ctx.PlayerId,
+                            _state.RoomId.Value,
+                            "dance",
+                            danceType.ToValue()
+                        ),
                         ct
                     )
                     .ConfigureAwait(true);

@@ -178,6 +178,11 @@ public static class RewardTrackFacts
     /// </summary>
     public const string Relation = "relation";
 
+    /// <summary>
+    /// Which dance it was: <c>dance</c>, <c>pogo_mogo</c>, <c>duck_funk</c> or <c>the_rollie</c>.
+    /// </summary>
+    public const string Dance = "dance";
+
     /// <summary>Which setting or section an edit touched.</summary>
     public const string Section = "section";
 

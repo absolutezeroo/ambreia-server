@@ -77,7 +77,21 @@ public sealed record PlayerChattedEvent(
 /// <c>dance</c> or <c>wave</c>. One event with a discriminator rather than one per gesture: they
 /// are the same act, and the next one added should not need a new type.
 /// </param>
-public sealed record PlayerGesturedEvent(PlayerId PlayerId, int RoomId, string Gesture) : IEvent;
+/// <param name="Style">
+/// Which one of it, for a gesture that has more than one: <c>dance</c>, <c>pogo_mogo</c>,
+/// <c>duck_funk</c> or <c>the_rollie</c>. Empty for a wave, which has no variants.
+/// </param>
+/// <remarks>
+/// The style is carried rather than resolved later because the room is the only place that knows
+/// it: by the time anything downstream sees the event, the avatar is simply dancing. Content that
+/// wants "do the Rollie" needs it here or not at all.
+/// </remarks>
+public sealed record PlayerGesturedEvent(
+    PlayerId PlayerId,
+    int RoomId,
+    string Gesture,
+    string Style = ""
+) : IEvent;
 
 /// <summary>
 /// A private message was accepted and delivered. After the friend and block rules, so a message

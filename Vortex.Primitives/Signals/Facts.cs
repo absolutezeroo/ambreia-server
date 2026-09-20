@@ -398,6 +398,31 @@ public static class Facts
     );
 
     /// <summary>
+    /// Which of the four dances an avatar performed.
+    /// </summary>
+    /// <remarks>
+    /// The room is the only place that knows it: once the event is raised, the avatar is simply
+    /// dancing. Closed, so "do the Rollie" is a value an operator picks rather than a number they
+    /// look up — and <c>none</c> is not among them, because stopping is not dancing and the room
+    /// raises no gesture for it.
+    /// </remarks>
+    public static readonly FactKey Dance = new(
+        RewardTrackFacts.Dance,
+        FactKind.Enum,
+        "rewardTracks.fact_dance",
+        "Which dance",
+        [
+            .. Enum.GetValues<AvatarDanceType>()
+                .Where(d => d != AvatarDanceType.None)
+                .Select(d => new EnumValue(
+                    d.ToValue(),
+                    $"rewardTracks.dance_{d.ToValue()}",
+                    d.ToString()
+                )),
+        ]
+    );
+
+    /// <summary>
     /// Which dialog saved a room's settings.
     /// </summary>
     /// <remarks>

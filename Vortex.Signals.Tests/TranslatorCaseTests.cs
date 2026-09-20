@@ -4,6 +4,7 @@ using System.Collections.Immutable;
 using System.Linq;
 using FluentAssertions;
 using Vortex.Primitives.Events;
+using Vortex.Primitives.RewardTracks;
 using Vortex.Primitives.Signals;
 using Vortex.Signals.Translators;
 using Xunit;
@@ -100,6 +101,36 @@ public sealed class TranslatorCaseTests
             .ContainSingle()
             .Which.Action.Should()
             .Be(expected);
+    }
+
+    [Theory]
+    [InlineData("dance")]
+    [InlineData("pogo_mogo")]
+    [InlineData("duck_funk")]
+    [InlineData("the_rollie")]
+    public void A_dance_carries_which_dance_it_was(string style)
+    {
+        // The room is the only place that knows: once the event is raised, the avatar is simply
+        // dancing. Dropped here, "do the Rollie" is not a task anyone can write.
+        new GestureTranslator()
+            .Translate(new PlayerGesturedEvent(4312, 7, "dance", style))
+            .Should()
+            .ContainSingle()
+            .Which.Facts.Should()
+            .ContainSingle(f => f.Key == RewardTrackFacts.Dance && f.Value == style);
+    }
+
+    [Fact]
+    public void A_wave_carries_no_dance()
+    {
+        // A wave has one form, so the fact would be a question about nothing. Absent rather than
+        // empty: a filter only fails closed when the fact is genuinely not there.
+        new GestureTranslator()
+            .Translate(new PlayerGesturedEvent(4312, 7, "wave"))
+            .Should()
+            .ContainSingle()
+            .Which.Facts.Should()
+            .NotContain(f => f.Key == RewardTrackFacts.Dance);
     }
 
     [Fact]
@@ -373,7 +404,10 @@ public sealed class TranslatorCaseTests
 
         if (eventType == typeof(PlayerGesturedEvent))
         {
-            yield return new PlayerGesturedEvent(4312, 7, "dance");
+            // With a style, because the dance shape declares which dance it was and the generic
+            // fixture leaves it empty -- a declared fact nothing emits is a filter that can be
+            // written and never matched.
+            yield return new PlayerGesturedEvent(4312, 7, "dance", "the_rollie");
             yield return new PlayerGesturedEvent(4312, 7, "wave");
         }
 
