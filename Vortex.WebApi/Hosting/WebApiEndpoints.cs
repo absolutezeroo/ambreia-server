@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.HttpResults;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.EntityFrameworkCore;
@@ -175,6 +176,66 @@ internal static partial class WebApiEndpoints
             )
             .WithName("Room")
             .WithSummary("One appart.")
+            .WithTags(TagPublic);
+
+        // The photo gallery, and one player's photos. habbo.com serves both out of its own user
+        // content service; this hotel already HAD the photos — `camera_photos` has been filled by
+        // the in-game camera since it shipped, and `WebApiEndpointsCamera` has been serving the
+        // blobs — and nothing had ever listed them, so the site's Photos page rendered an empty
+        // state and a profile had no photo section at all.
+        //
+        // Published photos only. See IWebApiPhotoService for why that condition lives in one place.
+        app.MapGet(
+                "/api/public/photos",
+                async Task<Ok<PhotoPage>> (
+                    int? page,
+                    int? pageSize,
+                    // [FromServices] rather than left to inference, the same defence
+                    // WebApiEndpointsCamera spells out: a service the container does not know is
+                    // inferred as a request BODY, a GET may not have one, and the whole route table
+                    // then fails to build — so one missing registration takes down every endpoint in
+                    // the host rather than this one. Which is exactly what it did here first.
+                    [FromServices] IWebApiPhotoService photos,
+                    CancellationToken ct
+                ) =>
+                    TypedResults.Ok(
+                        await photos
+                            .GetPhotosAsync(page ?? 1, pageSize ?? 0, ct)
+                            .ConfigureAwait(false)
+                    )
+            )
+            .WithName("Photos")
+            .WithSummary("The photo gallery: every published photo, newest first.")
+            .WithTags(TagPublic);
+
+        app.MapGet(
+                "/api/public/users/{uniqueId}/photos",
+                async Task<Ok<IReadOnlyList<PhotoSummary>>> (
+                    string uniqueId,
+                    int? limit,
+                    [FromServices] IWebApiPhotoService photos,
+                    CancellationToken ct
+                ) =>
+                {
+                    // An unparseable id answers an EMPTY LIST, not a 404 — the same answer as a
+                    // player with no photos. The profile route beside it can afford to 404 because
+                    // the page has nothing to draw without a profile; a photo section is decoration
+                    // on a page that already rendered, and a 404 here would turn it into a way to
+                    // test whether an id exists.
+                    if (!int.TryParse(uniqueId, out int playerId))
+                    {
+                        return TypedResults.Ok<IReadOnlyList<PhotoSummary>>([]);
+                    }
+
+                    return TypedResults.Ok(
+                        await photos
+                            .GetPlayerPhotosAsync(playerId, limit ?? 0, ct)
+                            .ConfigureAwait(false)
+                    );
+                }
+            )
+            .WithName("PlayerPhotos")
+            .WithSummary("One player's published photos, newest first.")
             .WithTags(TagPublic);
     }
 

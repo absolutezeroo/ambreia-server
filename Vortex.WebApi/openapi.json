@@ -717,6 +717,87 @@
         }
       }
     },
+    "/api/public/photos": {
+      "get": {
+        "tags": [
+          "Public"
+        ],
+        "summary": "The photo gallery: every published photo, newest first.",
+        "operationId": "Photos",
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "pageSize",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PhotoPage"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/public/users/{uniqueId}/photos": {
+      "get": {
+        "tags": [
+          "Public"
+        ],
+        "summary": "One player\u0027s published photos, newest first.",
+        "operationId": "PlayerPhotos",
+        "parameters": [
+          {
+            "name": "uniqueId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/PhotoSummary"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/public/collectibles/{assetId}": {
       "get": {
         "tags": [
@@ -2942,6 +3023,74 @@
           "sessionsRevoked": {
             "type": "integer",
             "format": "int32"
+          }
+        },
+        "additionalProperties": false
+      },
+      "PhotoPage": {
+        "required": [
+          "items",
+          "page",
+          "pageSize",
+          "total"
+        ],
+        "type": "object",
+        "properties": {
+          "page": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "pageSize": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "total": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PhotoSummary"
+            }
+          }
+        },
+        "additionalProperties": false
+      },
+      "PhotoSummary": {
+        "required": [
+          "key",
+          "ownerFigureString",
+          "ownerName",
+          "ownerUniqueId",
+          "takenAt"
+        ],
+        "type": "object",
+        "properties": {
+          "key": {
+            "type": "string"
+          },
+          "ownerUniqueId": {
+            "type": "string"
+          },
+          "ownerName": {
+            "type": "string"
+          },
+          "ownerFigureString": {
+            "type": "string"
+          },
+          "roomId": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          },
+          "roomName": {
+            "type": "string",
+            "nullable": true
+          },
+          "takenAt": {
+            "type": "string",
+            "format": "date-time"
           }
         },
         "additionalProperties": false

@@ -156,6 +156,10 @@ internal sealed class WebApiTestFactory : IAsyncDisposable
             new WebApiRoomService(DbContexts, NullLogger<WebApiRoomService>.Instance)
         );
 
+        // Real, like the two above: a photo read IS its query, and what is worth exercising against
+        // a database is the condition it enforces — published, not deleted, owner not hidden.
+        builder.Services.AddSingleton<IWebApiPhotoService>(new WebApiPhotoService(DbContexts));
+
         WebApiAppConfigurator.ConfigureServices(builder.Services, config);
 
         _app = builder.Build();
