@@ -126,7 +126,16 @@ internal sealed class RoomPhotoRenderer(
         // reveals. Hair, clothing and a pet's coat are all greyscale artwork -- the colour is what
         // makes hair hair and a dog ginger -- so a tint that never arrived and a tint that arrived
         // and was dropped produce the same washed-out picture, and only the number separates them.
-        foreach (CameraSceneSprite sprite in scene.Sprites.Take(10))
+        // One sprite per family rather than the first ten of them. The first ten were all one
+        // avatar, and the sprite actually being asked about -- a pet -- sorts far enough back that
+        // the log never reached it. Grouping on the head of the name gives a line for the avatar,
+        // a line for the pet, a line for each furniture, and stays short in a crowded room.
+        foreach (
+            CameraSceneSprite sprite in scene
+                .Sprites.GroupBy(s => s.Name.Split('_')[0], StringComparer.Ordinal)
+                .Select(family => family.First())
+                .Take(14)
+        )
         {
             logger.LogInformation(
                 "Camera photo {PhotoKey}: sprite {Name} colour={Colour} alpha={Alpha} at ({X},{Y}).",
