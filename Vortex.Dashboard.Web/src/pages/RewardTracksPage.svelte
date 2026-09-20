@@ -1359,6 +1359,7 @@
     {defaultFilterValue}
     {pickerFor}
     {pickedLabels}
+    layoutKey={draft.form.taskId ? `${draft.form.trackRowId}:${draft.form.taskId}` : undefined}
     onchange={(next: StepForm[]) => {
       if (taskDraft) draft.form.steps = next;
     }}

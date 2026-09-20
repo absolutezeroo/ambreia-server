@@ -81,17 +81,22 @@
   ></span>
 
   <div class="node-body">
-    <label class="node-field">
-      <span>{$t('rewardTracks.conditionFact')}</span>
-      <select bind:value={node.filter.factKey} disabled={!canManage} onchange={onchange}>
+    <!-- One line, read left to right: "The furniture — is — that sofa". It was a labelled field
+         stacked above a row, which is a form about a filter rather than the sentence the filter
+         actually is, and three of them stacked read as a wall on a canvas. -->
+    <div class="node-row sentence">
+      <select
+        class="subject"
+        bind:value={node.filter.factKey}
+        disabled={!canManage}
+        onchange={onchange}
+      >
         {#each facts as fact (fact.key)}
           <option value={fact.key}>{label(fact)}</option>
         {/each}
       </select>
-    </label>
 
-    <div class="node-row">
-      <select bind:value={node.filter.op} disabled={!canManage} onchange={onchange}>
+      <select class="verb" bind:value={node.filter.op} disabled={!canManage} onchange={onchange}>
         {#each operators as op (op.value)}
           <option value={op.value}>{$t(op.key)}</option>
         {/each}
@@ -153,7 +158,10 @@
 <style>
   .node {
     position: absolute;
-    width: 300px;
+    /* Wide enough for the sentence to stay on one line. It was 300px, which is a column width --
+       the node lived in a drawer once -- and on a canvas there is nothing a narrow block buys:
+       it only makes the three parts of one condition stack into three rows. */
+    width: 420px;
     border: 2px solid var(--line-strong);
     border-radius: 5px;
     background: var(--surface);
@@ -214,22 +222,28 @@
     padding: 9px 10px;
   }
 
-  .node-field {
-    display: flex;
-    flex-direction: column;
-    gap: 3px;
-    font-size: 0.7rem;
-    color: var(--muted);
-  }
-
-  .node-field select {
-    width: 100%;
-  }
-
   .node-row {
     display: flex;
     align-items: center;
     gap: 5px;
+  }
+
+  /* One line, read left to right. It wraps only when a value field genuinely cannot fit, which at
+     this width means a long free-text value and not the ordinary picked one. */
+  .sentence {
+    flex-wrap: wrap;
+  }
+
+  /* Sized by what each part says. The subject is the longest -- "Room description", "Where they
+     stood" -- and the verb is two words and should never take a share of the line for it. */
+  .sentence .subject {
+    flex: 1 1 9rem;
+  }
+
+  .sentence .verb {
+    flex: 0 0 auto;
+    width: auto;
+    min-width: 5rem;
   }
 
   .node-row select,

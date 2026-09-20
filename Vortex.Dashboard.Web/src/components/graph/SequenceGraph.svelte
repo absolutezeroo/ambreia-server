@@ -12,6 +12,7 @@
   import { moveFilter, moveStep } from '../../lib/sequence/steps';
   import type { ActionNode as ActionNodeShape, Fact, Layout, Step, Wire } from '../../lib/graph/model';
   import { t } from '../../lib/i18n';
+  import { readLayout, writeLayout } from '../../lib/graph/graphLayout';
 
   type Props = {
     steps: Step[];
@@ -23,6 +24,8 @@
     /** Which picker a fact opens, or null when it is typed by hand. */
     pickerFor: (meta: Fact | null) => string | null;
     pickedLabels: Record<string, unknown>;
+    /** Identifies whose arrangement this is. Absent for a task with no id yet: nothing is kept. */
+    layoutKey?: string;
     onchange: (steps: Step[]) => void;
     onpick: (stepIndex: number, filterIndex: number, kind: string) => void;
   };
@@ -60,13 +63,16 @@
     defaultFilterValue,
     pickerFor,
     pickedLabels,
+    layoutKey,
     onchange,
     onpick,
   }: Props = $props();
 
-  // Where each node sits. Kept here rather than on the task: a position is how one operator likes
-  // to look at a sequence, not something the hotel should store or another operator inherit.
-  let layout = $state<Layout>({});
+  // Where each node sits. Still not on the task -- nobody inherits anybody's arrangement, and none
+  // of it reaches the database -- but no longer thrown away on close either: see lib/graph/
+  // graphLayout, which keeps it per browser, per operator, per task. Dropping it meant the
+  // automatic layout came back every visit, so nothing was ever worth tidying.
+  let layout = $state<Layout>(readLayout(layoutKey));
   let pan = $state<Point>({ x: 0, y: 0 });
   let zoom = $state(1);
   let selected = $state<string | null>(null);
@@ -75,6 +81,14 @@
   let ports = $state(0); // bumped to re-measure after anything that moves a port
 
   let canvasEl: HTMLElement | undefined;
+
+  // Written on every arrangement rather than on close: the editor is a full-screen layer that can
+  // be dismissed with Escape or a reload, and an arrangement kept only until a tidy exit is the
+  // one that gets lost precisely when somebody was in the middle of tidying.
+  $effect(() => {
+    writeLayout(layoutKey, layout);
+  });
+
   let graph = $derived(toGraph(steps, factsFor, layout));
   let actionNodes = $derived(
     graph.nodes.filter((n): n is ActionNodeShape => n.type === 'action'),
