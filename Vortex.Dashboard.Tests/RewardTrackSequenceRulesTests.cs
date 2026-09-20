@@ -465,6 +465,51 @@ public sealed class RewardTrackSequenceRulesTests
             .BeNull();
     }
 
+    [Theory]
+    // `x is x` can never be false and `x is not x` can never be true. Either way the condition
+    // does nothing, and a task behaves as though nobody wrote it -- which is how three steps of a
+    // real sequence came to carry a condition that could not fail.
+    [InlineData(StepFilterOperator.Equals)]
+    [InlineData(StepFilterOperator.NotEquals)]
+    public void The_same_value_on_both_sides_is_refused(StepFilterOperator op) =>
+        Sides(
+                RewardTrackActions.EnterOtherUsersRoom,
+                OfFact(RewardTrackFacts.Room),
+                op,
+                OfFact(RewardTrackFacts.Room)
+            )
+            .Should()
+            .Be("filter_sides_are_the_same");
+
+    [Fact]
+    public void The_same_fact_from_an_earlier_step_is_not_the_same_value()
+    {
+        // The rule has to stop at the step, or it would refuse the thing this was built for:
+        // "the room you are in now is the room you were in at action 1" is a real question, and
+        // its two sides name the same fact.
+        RewardTrackSequenceRules
+            .FirstProblem(
+                [
+                    new RewardTrackTaskStepSpec(RewardTrackActions.EnterOtherUsersRoom, []),
+                    new RewardTrackTaskStepSpec(
+                        RewardTrackActions.EnterOtherUsersRoom,
+                        [
+                            new RewardTrackStepFilterSpec(
+                                "unused",
+                                StepFilterOperator.Equals,
+                                "unused",
+                                OfFact(RewardTrackFacts.Room),
+                                OfStep(0, RewardTrackFacts.Room)
+                            ),
+                        ]
+                    ),
+                ],
+                SignalVocabularyFixture.Real
+            )
+            .Should()
+            .BeNull();
+    }
+
     [Fact]
     public void A_kind_outside_the_enum_is_refused_rather_than_stored() =>
         Sides(

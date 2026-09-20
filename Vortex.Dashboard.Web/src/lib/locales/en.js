@@ -218,6 +218,8 @@ export default {
     predicateShapeMismatch: 'That condition is both a test and a group. It can only be one.',
     filterSidesDoNotCompare:
       'These two are not the same kind of thing, so they can never be equal.',
+    filterSidesAreTheSame:
+      'Both sides are the same thing, so this condition is always true and changes nothing.',
     filterValueNotSupported: 'This build does not know that kind of value.',
     taskIdAndActionRequired: 'A task needs an identifier and an action.',
   },

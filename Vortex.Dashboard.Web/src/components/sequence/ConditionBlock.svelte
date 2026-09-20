@@ -201,13 +201,18 @@
     {#if test.right.kind === LITERAL}
       {#if meta?.key === 'relation'}
         <!-- The one closed fact a list cannot express: its sides are named from the furniture, so
-             "right side" reads backwards against a picture of the thing facing you. -->
-        <RelationGrid
-          value={test.right.arg}
-          {canManage}
-          onchange={(value: string, op: number) =>
-            onchange(path, { ...test, op, right: { ...test.right, arg: value } })}
-        />
+             "right side" reads backwards against a picture of the thing facing you.
+
+             On its own line, because it is three rows tall: inline it sat beside a one-line
+             sentence and left the rest of the block empty, which reads as something missing. -->
+        <div class="cond-grid">
+          <RelationGrid
+            value={test.right.arg}
+            {canManage}
+            onchange={(value: string, op: number) =>
+              onchange(path, { ...test, op, right: { ...test.right, arg: value } })}
+          />
+        </div>
       {:else if meta?.values?.length}
         <!-- A closed fact: the server declares what it accepts, so a typo cannot be entered. -->
         <select
@@ -473,6 +478,13 @@
      condition read as a form rather than a sentence. */
   .cond input {
     max-width: 20rem;
+  }
+
+  /* The relation grid is three rows tall. Given the whole width it sits under its sentence; left
+     inline it stretched the block to its own height and left the rest of the row empty. */
+  .cond-grid {
+    flex: 1 0 100%;
+    margin-top: 6px;
   }
 
   .cond-icon {

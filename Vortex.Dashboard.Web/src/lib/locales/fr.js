@@ -218,6 +218,8 @@ export default {
       'Cette condition est à la fois un test et un groupe. Elle ne peut être que l’un des deux.',
     filterSidesDoNotCompare:
       'Ces deux-là ne sont pas de même nature, ils ne pourront jamais être égaux.',
+    filterSidesAreTheSame:
+      'Les deux côtés sont la même chose : cette condition est toujours vraie et ne change rien.',
     filterValueNotSupported: 'Cette version ne connaît pas ce type de valeur.',
     taskIdAndActionRequired: 'Une tâche a besoin d’un identifiant et d’une action.',
   },

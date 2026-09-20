@@ -256,6 +256,20 @@ internal static class RewardTrackSequenceRules
             return alsoBad;
         }
 
+        // The same value on both sides. `x is x` can never be false and `x is not x` can never be
+        // true, so either way the condition does nothing and the task behaves as though nobody
+        // wrote it -- with nothing on any screen to say so. The step is what makes this a real
+        // mistake rather than a tautology: reading an EARLIER step's room is the whole point, and
+        // only the same step is meaningless.
+        if (
+            left.Kind == right.Kind
+            && left.Step == right.Step
+            && string.Equals(left.Arg.Trim(), right.Arg.Trim(), StringComparison.Ordinal)
+        )
+        {
+            return "filter_sides_are_the_same";
+        }
+
         FactKind? leftKind = KindOf(steps, step, left, vocabulary);
 
         if (leftKind is FactKind kind && !FactOperators.Allows(kind, (int)filter.Operator))
