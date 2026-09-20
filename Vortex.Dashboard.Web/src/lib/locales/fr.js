@@ -2749,6 +2749,7 @@ export default {
     unwrapHint: 'Retirer le groupe et garder ce qu’il y a dedans',
     groupEmpty: 'Vide. Un groupe sans rien dedans ne peut pas être enregistré.',
     sideTyped: 'une valeur à écrire',
+    sideChosen: 'une de ses valeurs',
     sideThisAction: 'Cette action rapporte',
     sideCount: 'Combien',
     sideCountLabel: 'nombre : {fact}',

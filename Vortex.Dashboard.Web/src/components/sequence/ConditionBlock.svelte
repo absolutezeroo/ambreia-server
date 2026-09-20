@@ -178,9 +178,18 @@
         onsidechange(path, 'right', decodeSide((e.currentTarget as HTMLSelectElement).value))}
       disabled={!canManage}
     >
-      <!-- Listed first because it is what a condition usually compares against. -->
+      <!--
+        Listed first because it is what a condition usually compares against.
+
+        Named for what the operator will actually do: a closed fact and the relation grid both
+        offer their values, so "a value you type" was a promise of a text box that never appears.
+      -->
       <option value={encodeSide({ kind: LITERAL, arg: '', step: -1 })}>
-        {$t('rewardTracks.sideTyped')}
+        {$t(
+          meta?.values?.length || meta?.key === 'relation'
+            ? 'rewardTracks.sideChosen'
+            : 'rewardTracks.sideTyped'
+        )}
       </option>
       {#each grouped as group (group.name)}
         <optgroup label={group.name}>

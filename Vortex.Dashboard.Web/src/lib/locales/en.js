@@ -2738,6 +2738,7 @@ export default {
     unwrapHint: 'Remove the group and keep what is inside it',
     groupEmpty: 'Empty. A group with nothing in it cannot be saved.',
     sideTyped: 'a value you type',
+    sideChosen: 'one of its values',
     sideThisAction: 'This action reports',
     sideCount: 'How many',
     sideCountLabel: 'count: {fact}',
