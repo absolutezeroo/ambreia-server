@@ -34,6 +34,54 @@ public sealed class FiguredataIndexTests
         </figuredata>
         """;
 
+    /// <summary>Palette 3's real opening, which is exactly the case the band rule exists for.</summary>
+    private const string WithPalette = """
+        <figuredata>
+          <colors>
+            <palette id="3">
+              <color id="1408" index="0" club="0" selectable="1">dddddd</color>
+              <color id="90" index="1" club="0" selectable="1">96743D</color>
+              <color id="91" index="2" club="0" selectable="1">6B573B</color>
+            </palette>
+            <palette id="9">
+              <color id="500" index="0" club="2" selectable="1">7a5c3e</color>
+              <color id="501" index="1" club="0" selectable="0">7a5c3e</color>
+              <color id="502" index="2" club="0" selectable="1">000000</color>
+            </palette>
+          </colors>
+          <sets>
+            <settype type="sh" paletteid="3">
+              <set id="290" gender="M" club="0" colorable="1" />
+              <set id="291" gender="M" club="0" colorable="0" />
+            </settype>
+            <settype type="ha" paletteid="9">
+              <set id="1012" gender="U" club="2" colorable="1" />
+            </settype>
+            <settype type="bd">
+              <set id="1" gender="U" club="0" colorable="1" />
+            </settype>
+          </sets>
+        </figuredata>
+        """;
+
+    [Fact]
+    public void The_colour_is_the_first_of_the_palette_that_is_not_at_either_end()
+    {
+        // dddddd is skipped: a shirt drawn in it is the pale shape the untinted sprite already was,
+        // which is the whole reason for tinting these at all.
+        Read(WithPalette).Single(s => s.Id == 290).Colour.Should().Be(90);
+    }
+
+    [Theory]
+    // Not colourable: the imaging server has nothing to tint, so naming one would be noise.
+    [InlineData(291, "sh")]
+    // Its type has no palette at all -- the render-only parts nobody dresses in.
+    [InlineData(1, "bd")]
+    // Club-only, unselectable and black: palette 9 offers nothing worth drawing in.
+    [InlineData(1012, "ha")]
+    public void A_set_with_no_colour_to_draw_it_in_names_none(int id, string type) =>
+        Read(WithPalette).Single(s => s.Id == id && s.Type == type).Colour.Should().BeNull();
+
     [Fact]
     public void A_set_takes_its_type_from_the_settype_it_sits_in()
     {

@@ -60,15 +60,19 @@ internal sealed class DashboardAssetUrls(IOptions<ObservabilityConfig> options)
     /// item only exists in somebody's hand, but a garment is a picture in its own right, and a
     /// mannequin behind it would be the same body repeated down every row of the picker.
     /// <para>
-    /// No colour is named. A set is coloured against a palette this does not read, and the filter
-    /// this picture fills in is about the set, never the coloring.
+    /// <paramref name="colour"/> is a palette entry the caller chose to draw it in, not the
+    /// garment's own — a set has none. Without one the imaging server draws the untinted sprite,
+    /// which is the pale grey the detail is carved into, so two shirts of the same cut become the
+    /// same picture. The filter this fills in is still about the set, never the colouring.
     /// </para>
     /// </remarks>
-    public string? FigureSetImage(string type, int setId) =>
+    public string? FigureSetImage(string type, int setId, int? colour = null) =>
         Build(
             _config.FigureImageUrlTemplate,
             "{figure}",
-            $"{type}-{setId.ToString(CultureInfo.InvariantCulture)}"
+            colour is int tint
+                ? $"{type}-{setId.ToString(CultureInfo.InvariantCulture)}-{tint.ToString(CultureInfo.InvariantCulture)}"
+                : $"{type}-{setId.ToString(CultureInfo.InvariantCulture)}"
         );
 
     /// <summary>Guild/group badge rendered from its badge code (<c>{badge}</c>).</summary>

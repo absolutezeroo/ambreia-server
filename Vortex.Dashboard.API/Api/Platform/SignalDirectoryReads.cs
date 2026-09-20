@@ -93,7 +93,7 @@ internal sealed class SignalDirectoryReads(
                     s.Type,
                     s.Club,
                     s.Gender,
-                    assets.FigureSetImage(s.Type, s.Id)
+                    assets.FigureSetImage(s.Type, s.Id, s.Colour)
                 )),
         ];
 

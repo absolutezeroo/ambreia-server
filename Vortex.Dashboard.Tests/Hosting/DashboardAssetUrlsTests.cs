@@ -124,6 +124,12 @@ public sealed class DashboardAssetUrlsTests
         urls.FigureSetImage("sh", 290)
             .Should()
             .Be("https://client.vortex-hotel.online/habbo-imaging/clothing/sh-290.png");
+
+        // With a palette colour, so the garment is drawn in a mid tone rather than the pale grey
+        // the detail is carved into.
+        urls.FigureSetImage("sh", 290, 90)
+            .Should()
+            .Be("https://client.vortex-hotel.online/habbo-imaging/clothing/sh-290-90.png");
     }
 
     [Fact]
