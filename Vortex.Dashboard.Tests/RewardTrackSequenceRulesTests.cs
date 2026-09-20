@@ -511,6 +511,67 @@ public sealed class RewardTrackSequenceRulesTests
     }
 
     [Fact]
+    public void The_sequence_an_operator_actually_built_saves()
+    {
+        // Reproduced from a real four-step task, because the operator was refused when they wrote
+        // it and a screenshot cannot say which rule fired. Every step after the first ties itself
+        // to the room of the first: enter someone's room, rate it, dance in it, and stand in front
+        // of one piece of furniture -- without leaving.
+        RewardTrackStepFilterSpec sameRoomAsStepOne = new(
+            "unused",
+            StepFilterOperator.Equals,
+            "unused",
+            OfFact(RewardTrackFacts.Room),
+            OfStep(0, RewardTrackFacts.Room)
+        );
+
+        RewardTrackSequenceRules
+            .FirstProblem(
+                [
+                    new RewardTrackTaskStepSpec(RewardTrackActions.EnterOtherUsersRoom, []),
+                    new RewardTrackTaskStepSpec(RewardTrackActions.RateRoom, [sameRoomAsStepOne]),
+                    new RewardTrackTaskStepSpec(RewardTrackActions.Dance, [sameRoomAsStepOne]),
+                    new RewardTrackTaskStepSpec(
+                        RewardTrackActions.StandNearFurni,
+                        [],
+                        [
+                            new RewardTrackStepNodeSpec(PredicateKind.Test, sameRoomAsStepOne),
+                            new RewardTrackStepNodeSpec(
+                                PredicateKind.All,
+                                null,
+                                [
+                                    new RewardTrackStepNodeSpec(
+                                        PredicateKind.Test,
+                                        new RewardTrackStepFilterSpec(
+                                            "unused",
+                                            StepFilterOperator.OneOf,
+                                            "unused",
+                                            OfFact(RewardTrackFacts.Relation),
+                                            OfLiteral("front,front_left")
+                                        )
+                                    ),
+                                    new RewardTrackStepNodeSpec(
+                                        PredicateKind.Test,
+                                        new RewardTrackStepFilterSpec(
+                                            "unused",
+                                            StepFilterOperator.Equals,
+                                            "unused",
+                                            OfFact(RewardTrackFacts.Definition),
+                                            OfLiteral("86")
+                                        )
+                                    ),
+                                ]
+                            ),
+                        ]
+                    ),
+                ],
+                SignalVocabularyFixture.Real
+            )
+            .Should()
+            .BeNull();
+    }
+
+    [Fact]
     public void A_kind_outside_the_enum_is_refused_rather_than_stored() =>
         Sides(
                 RewardTrackActions.EnterOtherUsersRoom,
