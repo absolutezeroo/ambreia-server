@@ -197,7 +197,18 @@ internal sealed class SkiaCameraCanvas : ICameraCanvas
             }
         }
 
-        if (strips.Count == 0)
+        // A plane whose columns resolve to nothing used to return null here, and the caller's
+        // fallback is <see cref="FillQuad"/>, which knows nothing about masks. So a wall whose
+        // wallpaper is missing came out solid straight across its own doorway — an opening is cut by
+        // a mask, and the only code that punches one is at the end of this method.
+        //
+        // Painting the plane's flat colour as the texture instead keeps every plane on the one path
+        // that can cut it. Measured from a real payload: a room arrives as nine planes and the one
+        // carrying the doorway reads `colour=#9698a4 cols=1 masks=1`, so whether its single column
+        // resolves decided which branch it took, and only one of the two could ever show the door.
+        bool flat = strips.Count == 0;
+
+        if (flat && masks.IsDefaultOrEmpty)
         {
             return null;
         }
@@ -209,6 +220,21 @@ internal sealed class SkiaCameraCanvas : ICameraCanvas
             );
 
             surface.Canvas.Clear(SKColors.Transparent);
+
+            if (flat)
+            {
+                using SKPaint fill = new()
+                {
+                    Color = new SKColor((uint)argb).WithAlpha(byte.MaxValue),
+                    IsAntialias = false,
+                    Style = SKPaintStyle.Fill,
+                };
+
+                surface.Canvas.DrawRect(SKRect.Create(width, height), fill);
+                PunchMasks(surface.Canvas, masks);
+
+                return surface.Snapshot();
+            }
 
             // The plane's colour multiplies the texture rather than replacing it -- the client
             // composites these with 'multiply', which is what makes the same wallpaper darker on a

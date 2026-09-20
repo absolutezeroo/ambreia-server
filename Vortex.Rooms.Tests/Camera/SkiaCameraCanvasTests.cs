@@ -110,6 +110,48 @@ public sealed class SkiaCameraCanvasTests
     }
 
     [Fact]
+    public void AWallWhoseWallpaperIsMissing_StillShowsItsDoorway()
+    {
+        byte[] white = OnePixel(SKColors.White);
+
+        // Only the mask resolves. That is the case a real photo hit: the plane carrying the doorway
+        // arrives as `cols=1 masks=1`, and when its one column answered nothing the plane fell
+        // through to the flat-colour fallback, which punches no mask — a solid wall straight across
+        // the opening.
+        using SkiaCameraCanvas canvas = new(
+            new CameraViewport(4, 4),
+            name => name == "door_64" ? white : null
+        );
+
+        canvas.Clear(0x00000000);
+
+        canvas
+            .FillTexturedQuad(
+                [new(0, 0), new(4, 0), new(0, 4), new(4, 4)],
+                0x00FF0000,
+                [
+                    ["wall_texture_missing"],
+                ],
+                false,
+                false,
+                [
+                    new CameraSceneMask
+                    {
+                        AssetName = "door_64",
+                        Location = new CameraScenePoint(0, 0),
+                        FlipH = false,
+                        FlipV = false,
+                    },
+                ]
+            )
+            .Should()
+            .BeTrue();
+
+        PixelAt(canvas, 0, 0).Alpha.Should().Be(0);
+        PixelAt(canvas, 2, 2).Red.Should().Be(255);
+    }
+
+    [Fact]
     public void WhatWasDrawnEncodesAsAPng()
     {
         using SkiaCameraCanvas canvas = new(new CameraViewport(4, 4), _ => null);
