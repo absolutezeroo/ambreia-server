@@ -201,7 +201,7 @@ internal sealed class SkiaCameraCanvas : ICameraCanvas
         double projected = Math.Sqrt((dx * dx) + (dy * dy));
 
         // The vertical axis is the one that projects with no horizontal component at all.
-        return (int)Math.Round(projected); // TEMP
+        return (int)Math.Round(Math.Abs(dx) < 0.001 ? projected : projected * 4 / Math.Sqrt(5));
     }
 
     /// <summary>Columns stacked to height, then laid side by side across width, repeating.</summary>
