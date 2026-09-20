@@ -51,6 +51,26 @@ internal sealed class DashboardAssetUrls(IOptions<ObservabilityConfig> options)
     public string? AvatarImage(string? figure) =>
         Build(_config.AvatarImageUrlTemplate, "{figure}", figure);
 
+    /// <summary>
+    /// One garment on its own, with nothing wearing it.
+    /// </summary>
+    /// <remarks>
+    /// A figure of a single segment, which the imaging server draws as that part alone on a
+    /// transparent avatar-sized canvas. No model is lent, unlike <see cref="HandItemImage"/>: a hand
+    /// item only exists in somebody's hand, but a garment is a picture in its own right, and a
+    /// mannequin behind it would be the same body repeated down every row of the picker.
+    /// <para>
+    /// No colour is named. A set is coloured against a palette this does not read, and the filter
+    /// this picture fills in is about the set, never the coloring.
+    /// </para>
+    /// </remarks>
+    public string? FigureSetImage(string type, int setId) =>
+        Build(
+            _config.FigureImageUrlTemplate,
+            "{figure}",
+            $"{type}-{setId.ToString(CultureInfo.InvariantCulture)}"
+        );
+
     /// <summary>Guild/group badge rendered from its badge code (<c>{badge}</c>).</summary>
     public string? GroupBadge(string? badge) =>
         Build(_config.GroupBadgeUrlTemplate, "{badge}", badge);
@@ -204,6 +224,7 @@ internal sealed class DashboardAssetUrls(IOptions<ObservabilityConfig> options)
             _config.HandItemImageUrlTemplate,
             _config.QuestImageUrlTemplate,
             _config.AvatarEffectImageUrlTemplate,
+            _config.FigureImageUrlTemplate,
         }
             .Select(Template)
             .Select(OriginOf)

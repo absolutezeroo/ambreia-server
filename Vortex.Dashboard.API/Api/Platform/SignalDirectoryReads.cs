@@ -1,11 +1,14 @@
 using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Collections.Specialized;
+using System.Globalization;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using Vortex.Dashboard.API.Api.Platform.Contracts;
+using Vortex.Dashboard.API.Infrastructure;
 using Vortex.Database.Context;
 using Vortex.Database.Entities.Catalog;
 using Vortex.Database.Entities.Furniture;
@@ -33,9 +36,86 @@ namespace Vortex.Dashboard.API.Api.Platform;
 /// <c>limit</c>, <c>offset</c> and <c>hasMore</c>, so no new component is needed — only a new kind.
 /// </para>
 /// </remarks>
-internal sealed class SignalDirectoryReads(IDbContextFactory<VortexDbContext> dbContextFactory)
-    : DashboardReads(dbContextFactory)
+internal sealed class SignalDirectoryReads(
+    IDbContextFactory<VortexDbContext> dbContextFactory,
+    FiguredataIndex figuredata,
+    DashboardAssetUrls assets
+) : DashboardReads(dbContextFactory)
 {
+    /// <summary>
+    /// Wearables, from the client's own figuredata.
+    /// </summary>
+    /// <remarks>
+    /// The one directory here with no table behind it, and the only one that can legitimately answer
+    /// nothing: figuredata lives in the asset pack, and a hotel with none configured has no garments
+    /// to offer. That reads as an empty picker rather than an error, because the filter it fills in
+    /// is still perfectly writable by hand.
+    /// <para>
+    /// Searched by set id rather than by name, because there are no names. The type filter is what
+    /// actually narrows three thousand entries down to something an operator can look through.
+    /// </para>
+    /// </remarks>
+    public Task<FigureSetDirectoryPage> FigureSetsDirectoryAsync(NameValueCollection query)
+    {
+        ImmutableArray<FigureSet> all = figuredata.Sets();
+        string term = (query["q"] ?? string.Empty).Trim();
+        string type = (query["type"] ?? string.Empty).Trim();
+        int limit = QueryValues.Limit(query["limit"], 50, 200);
+        int offset = int.TryParse(query["offset"], out int parsed) ? Math.Max(0, parsed) : 0;
+
+        IEnumerable<FigureSet> matching = all;
+
+        if (type.Length > 0)
+        {
+            matching = matching.Where(s => string.Equals(s.Type, type, StringComparison.Ordinal));
+        }
+
+        if (term.Length > 0)
+        {
+            matching = matching.Where(s =>
+                s.Id.ToString(CultureInfo.InvariantCulture).Contains(term, StringComparison.Ordinal)
+                || string.Equals(s.Type, term, StringComparison.OrdinalIgnoreCase)
+            );
+        }
+
+        List<FigureSet> ordered =
+        [
+            .. matching.OrderBy(s => s.Type, StringComparer.Ordinal).ThenBy(s => s.Id),
+        ];
+
+        List<FigureSetDirectoryRow> items =
+        [
+            .. ordered
+                .Skip(offset)
+                .Take(limit)
+                .Select(s => new FigureSetDirectoryRow(
+                    s.Id,
+                    s.Type,
+                    s.Club,
+                    s.Gender,
+                    assets.FigureSetImage(s.Type, s.Id)
+                )),
+        ];
+
+        List<string> types =
+        [
+            .. all.Select(s => s.Type)
+                .Distinct(StringComparer.Ordinal)
+                .Order(StringComparer.Ordinal),
+        ];
+
+        return Task.FromResult(
+            new FigureSetDirectoryPage(
+                items.Count,
+                ordered.Count,
+                offset,
+                offset + items.Count < ordered.Count,
+                types,
+                items
+            )
+        );
+    }
+
     /// <summary>Guilds, by name or id.</summary>
     public Task<DirectoryPage> GroupsDirectoryAsync(
         NameValueCollection query,

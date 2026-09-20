@@ -75,6 +75,7 @@ public sealed class VocabularyGovernanceTests
         "months",
         "serial",
         "figure",
+        "figure_set",
         "section",
     ];
 

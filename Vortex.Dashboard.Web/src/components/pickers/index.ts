@@ -1,5 +1,6 @@
 // Row layouts, by the name a directory asks for. Four, not seventeen: most directories differ only
 // in where their rows come from, and a shared layout is why adding one is a single line.
+import FigurePickerRow from './FigurePickerRow.svelte';
 import FurniturePickerRow from './FurniturePickerRow.svelte';
 import PlainPickerRow from './PlainPickerRow.svelte';
 import PlayerPickerRow from './PlayerPickerRow.svelte';
@@ -15,4 +16,5 @@ export const PICKER_ROWS: Record<string, Component<PickerRowProps>> = {
   room: RoomPickerRow,
   player: PlayerPickerRow,
   plain: PlainPickerRow,
+  figureSet: FigurePickerRow,
 };

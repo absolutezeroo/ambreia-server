@@ -77,13 +77,12 @@ internal static class RewardTrackSequenceRules
             return "filter_incomplete";
         }
 
+        FactKey? fact = vocabulary.FactFor(step.ActionCode, filter.FactKey);
+
         // An operator that says nothing about this kind of fact: Contains on a room id, or an exact
         // match on a line a player typed. The engine evaluates both happily and matches neither, so
         // the only place to catch it is here, while the operator is still looking at the form.
-        if (
-            vocabulary.FactFor(step.ActionCode, filter.FactKey) is FactKey fact
-            && !FactOperators.Allows(fact.Kind, (int)filter.Operator)
-        )
+        if (fact is not null && !FactOperators.Allows(fact.Kind, (int)filter.Operator))
         {
             return "filter_operator_not_valid_for_fact";
         }
@@ -98,8 +97,23 @@ internal static class RewardTrackSequenceRules
 
         if (referenced < 0)
         {
-            return filter.Operator == StepFilterOperator.OneOf && !HasTwoOrMoreEntries(value)
-                ? "filter_one_of_needs_a_list"
+            if (IsList(filter.Operator) && !HasTwoOrMoreEntries(value))
+            {
+                return "filter_one_of_needs_a_list";
+            }
+
+            // A numeric operator over something that is not a number can never be true. The kind
+            // check above already refuses the wrong fact; this refuses the wrong literal, which is
+            // the same mistake made in the other box of the same row.
+            if (IsNumeric(filter.Operator) && !IsWholeNumber(value))
+            {
+                return "filter_needs_a_number";
+            }
+
+            // Garments are picked, never typed, so a value here that is not a list of set ids came
+            // from somewhere other than the picker -- the operations API, or an edit by hand.
+            return fact?.Kind == FactKind.FigureSetId && !IsWholeNumberList(value)
+                ? "filter_needs_a_number"
                 : null;
         }
 
@@ -128,6 +142,28 @@ internal static class RewardTrackSequenceRules
         )
             ? step
             : -1;
+
+    private static bool IsList(StepFilterOperator op) =>
+        op is StepFilterOperator.OneOf or StepFilterOperator.NotOneOf;
+
+    private static bool IsNumeric(StepFilterOperator op) =>
+        op is StepFilterOperator.AtLeast or StepFilterOperator.AtMost;
+
+    private static bool IsWholeNumber(string value) =>
+        long.TryParse(value, NumberStyles.Integer, CultureInfo.InvariantCulture, out _);
+
+    private static bool IsWholeNumberList(string value)
+    {
+        foreach (string part in value.Split(','))
+        {
+            if (!IsWholeNumber(part.Trim()))
+            {
+                return false;
+            }
+        }
+
+        return true;
+    }
 
     private static bool HasTwoOrMoreEntries(string value)
     {

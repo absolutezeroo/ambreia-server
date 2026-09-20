@@ -392,6 +392,26 @@ public sealed class TranslatorCaseTests
             yield return new RoomDoorbellAnsweredEvent(11, 22, 7, Admitted: true);
         }
 
+        // The generic fixture builds a non-empty string, which is not a look: a figure is
+        // dot-separated parts and anything else carries no set ids at all. Both of these translate
+        // the same string two ways, and only the parsed half needs a real one.
+        if (eventType == typeof(PlayerFigureChangedEvent))
+        {
+            yield return new PlayerFigureChangedEvent(
+                4312,
+                "hd-180-1.ch-210-66.lg-270-82.sh-290-91"
+            );
+        }
+
+        if (eventType == typeof(WardrobeOutfitSavedEvent))
+        {
+            yield return new WardrobeOutfitSavedEvent(
+                4312,
+                3,
+                "hd-180-1.ch-210-66.lg-270-82.sh-290-91"
+            );
+        }
+
         if (eventType == typeof(GamePointsScoredEvent))
         {
             // One per branch: the game decides which points action, the scoring act decides

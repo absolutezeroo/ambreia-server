@@ -123,6 +123,16 @@ internal static partial class DashboardEndpoints
             Capabilities.Dashboard.PlayersRead,
             TagDirectory
         );
+        // Garments, from figuredata rather than a table -- it is the file the client is served, and
+        // a copy in the database would go stale the day the asset pack is swapped.
+        MapReadGet<FigureSetDirectoryPage>(
+            app,
+            ApiDirectory + "/figure-sets",
+            (HttpContext ctx, SignalDirectoryReads signalDirectory, CancellationToken ct) =>
+                OkAsync(signalDirectory.FigureSetsDirectoryAsync(ctx.QueryAsNameValues())),
+            Capabilities.Dashboard.PlayersRead,
+            TagDirectory
+        );
         MapReadGet<DirectoryPage>(
             app,
             ApiDirectory + "/pet-species",

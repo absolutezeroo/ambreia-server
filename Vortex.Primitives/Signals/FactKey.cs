@@ -55,18 +55,31 @@ public static class FactOperators
     /// <summary>Substring, the only operator worth anything on free text.</summary>
     public const int Contains = 3;
 
+    /// <summary>Its negation, which is the only way to say a part is absent.</summary>
+    public const int NotContains = 6;
+
     private static readonly ImmutableArray<int> Equality = [0, 1];
-    private static readonly ImmutableArray<int> EqualityAndList = [0, 1, 2];
-    private static readonly ImmutableArray<int> TextOperators = [Contains, 0, 1];
+    private static readonly ImmutableArray<int> EqualityAndList = [0, 1, 2, 7];
+
+    // A fact that is itself a set answers neither "is it this" nor "is it one of these" -- both
+    // ask about a single value. It answers membership, in both directions, and nothing else.
+    private static readonly ImmutableArray<int> MembershipOperators = [8, 9];
+
+    // Ordering, and only for numbers. An id compared with "at least" is nonsense that would
+    // evaluate cleanly and mean nothing, which is exactly the class of filter this table exists
+    // to keep out of the editor.
+    private static readonly ImmutableArray<int> NumberOperators = [0, 1, 4, 5];
+    private static readonly ImmutableArray<int> TextOperators = [Contains, NotContains, 0, 1];
 
     /// <summary>The operators an editor may offer, and a validator must accept, for this kind.</summary>
     public static ImmutableArray<int> For(FactKind kind) =>
         kind switch
         {
             FactKind.Text => TextOperators,
-            FactKind.Number => Equality,
+            FactKind.Number => NumberOperators,
             FactKind.Enum => Equality,
             FactKind.OpaqueId => Equality,
+            FactKind.FigureSetId => MembershipOperators,
             _ => EqualityAndList,
         };
 
@@ -114,4 +127,11 @@ public enum FactKind
     /// useful as the target of a <c>$N</c> back-reference rather than as a literal.
     /// </summary>
     OpaqueId = 9,
+
+    /// <summary>
+    /// A set of figure set ids: what a look is wearing, not one value. Offers the garment picker,
+    /// and the only two operators that mean anything about a set — is one of these in it, is none
+    /// of them.
+    /// </summary>
+    FigureSetId = 10,
 }

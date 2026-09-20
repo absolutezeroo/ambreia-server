@@ -138,7 +138,6 @@
     { value: 5, key: 'rewardTracks.unlockFeatureFlag' },
   ];
 
-  // Mirrors StepFilterOperator.
   // Mirrors StepFilterOperator. Which of these a given fact may use is decided by the server and
   // sent with the fact: `contains` is meaningless on a room id and an exact match is useless on a
   // line a player typed, and the validator refuses both -- so the editor must not offer them.
@@ -147,6 +146,12 @@
     { value: 1, key: 'rewardTracks.filterOpNotEquals' },
     { value: 2, key: 'rewardTracks.filterOpOneOf' },
     { value: 3, key: 'rewardTracks.filterOpContains' },
+    { value: 4, key: 'rewardTracks.filterOpAtLeast' },
+    { value: 5, key: 'rewardTracks.filterOpAtMost' },
+    { value: 6, key: 'rewardTracks.filterOpNotContains' },
+    { value: 7, key: 'rewardTracks.filterOpNotOneOf' },
+    { value: 8, key: 'rewardTracks.filterOpHasAnyOf' },
+    { value: 9, key: 'rewardTracks.filterOpHasNoneOf' },
   ];
 
   /** The operators this fact accepts, in the order the server ranked them. */
@@ -173,6 +178,7 @@
     CategoryId: 'category',
     OfferId: 'offer',
     BadgeCode: 'badge',
+    FigureSetId: 'figureSet',
   };
 
   /**

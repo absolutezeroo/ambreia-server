@@ -28,8 +28,12 @@
   const Row = PICKER_ROWS[directory?.row ?? 'plain'];
   const sorts = directory?.sorts ?? [];
 
-  /** What every directory endpoint answers with. hasMore is absent on the ones that do not page. */
-  type PickerPage = { items?: PickerRow[]; hasMore?: boolean };
+  /**
+   * What every directory endpoint answers with. hasMore is absent on the ones that do not page, and
+   * types only on the garment directory, which sends the part types with the first page rather than
+   * making the picker ask twice for a list of twenty-three strings.
+   */
+  type PickerPage = { items?: PickerRow[]; hasMore?: boolean; types?: string[] };
 
   const SORT_LABELS: Record<string, string> = {
     relevance: 'pickerModal.sortRelevance',
@@ -44,6 +48,9 @@
   let sort = $state('relevance');
   let logicFilter = $state('');
   let onlineOnly = $state(false);
+  let typeFilter = $state('');
+  // Kept across loads: narrowing to one part type must not empty the list of types to narrow by.
+  let types = $state<string[]>([]);
   let rows = $state<PickerRow[]>([]);
   let hasMore = $state(false);
   let loadingMore = $state(false);
@@ -90,6 +97,7 @@
     if (sort !== 'relevance') parts.push(`sort=${encodeURIComponent(sort)}`);
     if (directory?.filter === 'logic' && logicFilter) parts.push(`logic=${encodeURIComponent(logicFilter)}`);
     if (directory?.filter === 'online' && onlineOnly) parts.push('online=true');
+    if (directory?.filter === 'type' && typeFilter) parts.push(`type=${encodeURIComponent(typeFilter)}`);
 
     return parts.join('&');
   }
@@ -122,6 +130,8 @@
       rows = data.items || [];
       // The players endpoint does not page; absent hasMore simply means "that is everything".
       hasMore = Boolean(data.hasMore);
+
+      if (data.types?.length) types = data.types;
     } catch (err) {
       if (isPermissionDeniedError(err)) {
         forbidden = true;
@@ -224,6 +234,20 @@
       <label class="pick-check">
         <input type="checkbox" bind:checked={onlineOnly} onchange={load} disabled={!canSelect} />
         <span>{$t('pickerModal.onlineOnly')}</span>
+      </label>
+    {:else if directory?.filter === 'type'}
+      <label>
+        <span>{$t('pickerModal.partTypeLabel')}</span>
+        <select bind:value={typeFilter} onchange={load} disabled={!canSelect || !types.length}>
+          <option value="">{$t('pickerModal.partTypeAll')}</option>
+          {#each types as partType (partType)}
+            <option value={partType}>
+              {$t(`pickerModal.partType_${partType}`) === `pickerModal.partType_${partType}`
+                ? partType
+                : $t(`pickerModal.partType_${partType}`)}
+            </option>
+          {/each}
+        </select>
       </label>
     {/if}
 

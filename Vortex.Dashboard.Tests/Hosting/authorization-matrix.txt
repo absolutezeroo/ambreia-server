@@ -31,6 +31,7 @@ GET /api/v1/directory/badges -> dashboard.players.read
 GET /api/v1/directory/catalog-offers -> dashboard.catalog.read
 GET /api/v1/directory/club-gifts -> dashboard.catalog.read
 GET /api/v1/directory/entity/{id} -> dashboard.audit.read
+GET /api/v1/directory/figure-sets -> dashboard.players.read
 GET /api/v1/directory/forum-threads -> dashboard.social.read
 GET /api/v1/directory/furniture -> dashboard.furniture.read
 GET /api/v1/directory/groups -> dashboard.social.read

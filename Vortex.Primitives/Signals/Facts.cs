@@ -340,6 +340,22 @@ public static class Facts
     );
 
     /// <summary>
+    /// The garments a look is wearing, as figure set ids.
+    /// </summary>
+    /// <remarks>
+    /// Beside <see cref="Figure"/> rather than replacing it: the whole look still answers the
+    /// questions a set id cannot — "is barefoot" is the absence of a <c>sh-</c> part, and no set id
+    /// describes an absence. What this adds is the exact question: a substring of a figure is not a
+    /// garment, and <c>hr-1</c> is a substring of <c>hr-115</c>.
+    /// </remarks>
+    public static readonly FactKey FigureSet = new(
+        RewardTrackFacts.FigureSet,
+        FactKind.FigureSetId,
+        "rewardTracks.fact_figure_set",
+        "Garment worn"
+    );
+
+    /// <summary>
     /// Which dialog saved a room's settings.
     /// </summary>
     /// <remarks>
@@ -397,6 +413,7 @@ public static class Facts
         Months,
         Serial,
         Figure,
+        FigureSet,
         Section,
     ];
 }

@@ -442,12 +442,25 @@ internal static class TaskProgressRules
                     StringComparison.Ordinal
                 ),
                 StepFilterOperator.OneOf => ListContains(expected, actual),
+                StepFilterOperator.NotOneOf => !ListContains(expected, actual),
                 // Ordinal-ignore-case, not the current culture: the same content has to match the
                 // same room names on every silo, whatever locale the process happens to run in.
                 StepFilterOperator.Contains => actual.Contains(
                     expected,
                     StringComparison.OrdinalIgnoreCase
                 ),
+                StepFilterOperator.NotContains => !actual.Contains(
+                    expected,
+                    StringComparison.OrdinalIgnoreCase
+                ),
+                StepFilterOperator.AtLeast => Compare(actual, expected) is int atLeast
+                    && atLeast >= 0,
+                StepFilterOperator.AtMost => Compare(actual, expected) is int atMost && atMost <= 0,
+                // The mirror of OneOf: here the fact is the list and the filter is what to look for
+                // in it. A look wears several garments, so the question is membership in what the
+                // signal carried.
+                StepFilterOperator.HasAnyOf => ListsIntersect(actual, expected),
+                StepFilterOperator.HasNoneOf => !ListsIntersect(actual, expected),
                 _ => false,
             };
 
@@ -482,7 +495,7 @@ internal static class TaskProgressRules
     /// Whether a comma-separated list holds this value. Entries are trimmed, because an operator
     /// typing "4312, 4313" means two ids and not one of them followed by a space.
     /// </summary>
-    private static bool ListContains(string list, string value)
+    private static bool ListContains(string list, ReadOnlySpan<char> value)
     {
         foreach (Range range in list.AsSpan().Split(','))
         {
@@ -494,6 +507,49 @@ internal static class TaskProgressRules
 
         return false;
     }
+
+    /// <summary>Whether two comma-separated lists share at least one entry.</summary>
+    /// <remarks>
+    /// Quadratic, and deliberately: both sides are short — a look carries at most a dozen figure
+    /// sets and an operator picks a handful of garments — and this runs behind the interest gate on
+    /// the room's event path, where allocating a set would cost more than the scan it saves.
+    /// </remarks>
+    private static bool ListsIntersect(string list, string other)
+    {
+        foreach (Range range in other.AsSpan().Split(','))
+        {
+            ReadOnlySpan<char> entry = other.AsSpan()[range].Trim();
+
+            if (entry.Length > 0 && ListContains(list, entry))
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /// <summary>
+    /// The sign of <paramref name="actual"/> against <paramref name="expected"/>, or null when
+    /// either is not a whole number.
+    /// </summary>
+    /// <remarks>
+    /// Null rather than a guess, and the caller turns it into a failed filter. Facts are strings by
+    /// design, so a numeric operator can always be pointed at something that is not a number — an
+    /// operator moving a filter from <c>price</c> to <c>room_name</c> and leaving the operator
+    /// behind. Treating that as "0, and therefore at least 0" would make the step pass for every
+    /// room in the hotel.
+    /// </remarks>
+    private static int? Compare(string actual, string expected) =>
+        long.TryParse(actual, NumberStyles.Integer, CultureInfo.InvariantCulture, out long left)
+        && long.TryParse(
+            expected,
+            NumberStyles.Integer,
+            CultureInfo.InvariantCulture,
+            out long right
+        )
+            ? left.CompareTo(right)
+            : null;
 
     private static IEnumerable<string> Split(string keys) =>
         keys.Length == 0

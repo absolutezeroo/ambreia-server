@@ -137,6 +137,7 @@ public sealed class DashboardPlugin : IVortexPlugin
         // Singleton because it caches a 38 MB parsed furnidata; a per-request instance would parse it
         // again on every keystroke of a search.
         services.TryAddSingleton<GamedataDocumentStore>();
+        services.TryAddSingleton<FiguredataIndex>();
         // Reads the Habbicon spritesheet's metadata off the same asset pack, and caches it until the
         // operator swaps the pack.
         services.TryAddSingleton<HabbiconArtwork>();

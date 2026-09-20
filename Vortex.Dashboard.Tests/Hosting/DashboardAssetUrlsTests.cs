@@ -110,10 +110,34 @@ public sealed class DashboardAssetUrlsTests
             );
     }
 
+    [Fact]
+    public void AGarment_IsAskedForAsOneSegment_WithNobodyWearingIt()
+    {
+        // The whole point of the garment picker: a figure of one part, which the imaging server
+        // draws alone and crops. Lending a model here -- as the hand-item preview rightly does --
+        // would put the same mannequin down three thousand rows and hide the thing being picked.
+        DashboardAssetUrls urls = Build(
+            "https://client.vortex-hotel.online",
+            figure: "/habbo-imaging/clothing/{figure}.png"
+        );
+
+        urls.FigureSetImage("sh", 290)
+            .Should()
+            .Be("https://client.vortex-hotel.online/habbo-imaging/clothing/sh-290.png");
+    }
+
+    [Fact]
+    public void NoGarmentTemplate_IsNoPicture_RatherThanAFabricatedUrl()
+    {
+        // The picker stays usable without it: a set id is a number an operator can still type.
+        Build("https://client.vortex-hotel.online").FigureSetImage("sh", 290).Should().BeNull();
+    }
+
     private static DashboardAssetUrls Build(
         string baseUrl,
         string furni = "",
-        string avatar = ""
+        string avatar = "",
+        string figure = ""
     ) =>
         new(
             Options.Create(
@@ -122,6 +146,7 @@ public sealed class DashboardAssetUrlsTests
                     AssetBaseUrl = baseUrl,
                     FurniIconUrlTemplate = furni,
                     AvatarImageUrlTemplate = avatar,
+                    FigureImageUrlTemplate = figure,
                 }
             )
         );

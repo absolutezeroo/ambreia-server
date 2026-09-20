@@ -158,6 +158,17 @@ public static class RewardTrackFacts
     /// <summary>An avatar figure string.</summary>
     public const string Figure = "figure";
 
+    /// <summary>
+    /// The figure set ids a look is wearing, comma-separated.
+    /// </summary>
+    /// <remarks>
+    /// The same look as <see cref="Figure"/>, taken apart. It exists because a substring of a
+    /// figure is not a garment: real players in this hotel wear <c>hr-1-64</c> and
+    /// <c>hr-115-42</c>, so "contains hr-1" matches both. Comparing set ids compares the thing
+    /// figuredata actually names.
+    /// </remarks>
+    public const string FigureSet = "figure_set";
+
     /// <summary>Which setting or section an edit touched.</summary>
     public const string Section = "section";
 

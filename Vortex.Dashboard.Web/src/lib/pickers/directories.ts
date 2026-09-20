@@ -46,6 +46,14 @@ export const DIRECTORIES: Record<string, Directory> = {
   thread: { endpoint: '/api/v1/directory/forum-threads', row: 'plain' },
   effect: { endpoint: '/api/v1/directory/avatar-effects', row: 'plain' },
   placedItem: { endpoint: '/api/v1/directory/placed-furniture', row: 'plain' },
+
+  // Its own row, because a garment has no name: figuredata numbers wearables and never labels them,
+  // so the picture and the part type are the whole of what an operator has to recognise one by.
+  figureSet: {
+    endpoint: '/api/v1/directory/figure-sets',
+    row: 'figureSet',
+    filter: 'type',
+  },
 };
 
 /**

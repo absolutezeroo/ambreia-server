@@ -248,4 +248,38 @@ public enum StepFilterOperator
     /// fires, and "a flat with 'casino' in the name" is the task somebody actually writes.
     /// </summary>
     Contains = 3,
+
+    /// <summary>
+    /// The fact is a number and is at least this one. Without it a numeric fact could only be
+    /// matched exactly, so "spend more than 100 credits" had to be written as a list of every
+    /// price it might be — which is not a task anyone can write.
+    /// </summary>
+    AtLeast = 4,
+
+    /// <summary>The fact is a number and is at most this one.</summary>
+    AtMost = 5,
+
+    /// <summary>
+    /// The negation of <see cref="Contains"/>. What "barefoot" is: a figure is bare-footed by the
+    /// absence of a shoe part, and absence has no value to match on.
+    /// </summary>
+    NotContains = 6,
+
+    /// <summary>The negation of <see cref="OneOf"/>: anything but these.</summary>
+    NotOneOf = 7,
+
+    /// <summary>
+    /// The fact is itself a comma-separated set, and at least one of this filter's entries is in
+    /// it.
+    /// </summary>
+    /// <remarks>
+    /// <see cref="OneOf"/> asks the mirror question — whether the fact's single value appears in
+    /// the filter's list — and there is no way to write one with the other. A look wears several
+    /// garments at once, so "is wearing these shoes" is membership in what the signal carried, not
+    /// membership in what the operator typed.
+    /// </remarks>
+    HasAnyOf = 8,
+
+    /// <summary>The negation of <see cref="HasAnyOf"/>: the set contains none of these.</summary>
+    HasNoneOf = 9,
 }

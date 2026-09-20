@@ -1,5 +1,6 @@
 using System.Collections.Immutable;
 using System.Globalization;
+using System.Linq;
 
 namespace Vortex.Primitives.Signals;
 
@@ -51,6 +52,19 @@ public readonly struct SignalFacts
 
     /// <summary>One of a closed set. The value must be declared in the key's enum values.</summary>
     public SignalFacts Enum(FactKey key, string value) => Add(key.Key, value);
+
+    /// <summary>
+    /// Several identifiers at once, comma-separated, omitted when there are none.
+    /// </summary>
+    /// <remarks>
+    /// The separator is the one <c>OneOf</c> already uses, so the two read the same list. Omitted
+    /// when empty for the reason <see cref="IdIfAny"/> is: an empty set is an absence, and a filter
+    /// only fails closed when the fact is genuinely not there.
+    /// </remarks>
+    public SignalFacts Ids(FactKey key, ImmutableArray<int> values) =>
+        values.IsDefaultOrEmpty
+            ? this
+            : Add(key.Key, string.Join(',', values.Select(v => Format(v))));
 
     /// <summary>The finished list.</summary>
     public ImmutableArray<SignalFact> ToImmutable() =>

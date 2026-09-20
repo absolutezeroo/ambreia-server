@@ -270,6 +270,19 @@ public sealed class ObservabilityConfig
     public string AvatarEffectImageUrlTemplate { get; init; } = string.Empty;
 
     /// <summary>
+    /// URL template for <b>one garment on its own</b>, with <c>{figure}</c> replaced by a figure of
+    /// a single segment such as <c>sh-290</c> — e.g.
+    /// <c>http://vortex-assets.local/habbo-imaging/clothing/{figure}.png</c>.
+    /// </summary>
+    /// <remarks>
+    /// Nothing wears it, unlike every other avatar template here: the imaging server draws the part
+    /// alone and crops to its bounds, so the picker shows the garment rather than the same mannequin
+    /// down every row. Empty hides those previews and leaves the picker usable — a set id is still
+    /// perfectly writable by hand.
+    /// </remarks>
+    public string FigureImageUrlTemplate { get; init; } = string.Empty;
+
+    /// <summary>
     /// URL template for a <b>quest</b> image, with <c>{version}</c> replaced by the quest's
     /// <c>image_version</c> — e.g.
     /// <c>http://vortex-assets.local/c_images/Quests/{version}.png</c>. That column is exactly the
