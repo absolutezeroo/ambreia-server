@@ -136,6 +136,35 @@ public sealed class NitroSpriteLibraryTests
     }
 
     /// <summary>
+    /// A colour variant is one bundle and several catalogue rows: this hotel sells
+    /// <c>waterbowl*1</c>..<c>waterbowl*5</c>, they all draw <c>waterbowl_64_a_2_0</c>, and the
+    /// bundle is <c>waterbowl.nitro</c>.
+    /// </summary>
+    /// <remarks>
+    /// Indexed with the star on, no row was a prefix of the asset name, the lookup missed, and the
+    /// caller's last resort asked the <em>avatar</em> host for a furniture bundle. The log read
+    /// "no bundle for waterbowl (404)" and the bowl was absent from every photo, while its file sat
+    /// on the furniture host the whole time.
+    /// </remarks>
+    [Fact]
+    public async Task AColourVariantResolvesToItsOwnBundle()
+    {
+        using Serving serving = new(DuckBundle());
+        using HttpClient http = new(serving, disposeHandler: false);
+
+        NitroSpriteLibrary library = new(
+            _ => Task.FromResult<IReadOnlyCollection<string>>(["waterbowl*4", "waterbowl*5"]),
+            http,
+            NullLogger.Instance
+        );
+
+        await library.GetSpriteAsync("waterbowl_64_a_2_0", Limits(), CancellationToken.None);
+
+        serving.LastPath.Should().Contain("hof_furni");
+        serving.LastPath.Should().EndWith("waterbowl.nitro");
+    }
+
+    /// <summary>
     /// A pet's bundle name is simply the head of its sprite name — <c>dog_64_a_0_100</c> lives in
     /// <c>dog.nitro</c> — and it is served from the avatar url, not the furniture one.
     /// </summary>

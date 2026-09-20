@@ -532,9 +532,20 @@ internal sealed class NitroSpriteLibrary(
     /// Which classname an asset name belongs to.
     /// </summary>
     /// <remarks>
+    /// <para>
     /// Longest match wins, and it has to: <c>chair_basic</c> and <c>chair</c> can both be real, and
     /// <c>chair_basic_64_a_0_0</c> belongs to the first. Matching is on <c>classname_</c> rather than
     /// on the bare prefix so that <c>chair</c> does not claim <c>chairman_64_a_0_0</c>.
+    /// </para>
+    /// <para>
+    /// A colour variant is one furniture, one bundle and several catalogue rows: this hotel sells
+    /// <c>waterbowl*1</c> through <c>waterbowl*5</c>, and every one of them draws
+    /// <c>waterbowl_64_a_2_0</c> out of <c>waterbowl.nitro</c>, tinted. Indexed with the suffix on,
+    /// none of those rows is a prefix of the asset name, the lookup missed, and the caller's last
+    /// resort — cut at the first underscore and ask the <em>avatar</em> host — turned a furniture
+    /// that exists into a 404 against a directory that only holds figures. So the star and what
+    /// follows it are cut here, which is also what makes the set smaller rather than larger.
+    /// </para>
     /// </remarks>
     private sealed class ClassNameIndex
     {
@@ -543,8 +554,16 @@ internal sealed class NitroSpriteLibrary(
 
         public ClassNameIndex(IReadOnlyCollection<string> names)
         {
-            _names = new HashSet<string>(names, StringComparer.Ordinal);
-            _longest = names.Count == 0 ? 0 : names.Max(name => name.Length);
+            _names = new HashSet<string>(names.Select(BaseName), StringComparer.Ordinal);
+            _longest = _names.Count == 0 ? 0 : _names.Max(name => name.Length);
+        }
+
+        /// <summary>A classname without its colour variant: <c>waterbowl*4</c> is <c>waterbowl</c>.</summary>
+        private static string BaseName(string className)
+        {
+            int star = className.IndexOf('*', StringComparison.Ordinal);
+
+            return star < 0 ? className : className[..star];
         }
 
         public bool TryClassName(string assetName, out string? className)
