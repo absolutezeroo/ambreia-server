@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
 
 namespace Vortex.Furniture.Assets;
@@ -35,18 +36,43 @@ public sealed class NitroAssetManifest
 
     private readonly Dictionary<string, Link> _links;
     private readonly Dictionary<string, NitroSpriteFrame> _frames;
+    private readonly Dictionary<string, int[]> _palettes;
 
     private NitroAssetManifest(
         Dictionary<string, Link> links,
-        Dictionary<string, NitroSpriteFrame> frames
+        Dictionary<string, NitroSpriteFrame> frames,
+        Dictionary<string, int[]> palettes
     )
     {
         _links = links;
         _frames = frames;
+        _palettes = palettes;
     }
 
     /// <summary>How many crop rectangles the sheet declares.</summary>
     public int FrameCount => _frames.Count;
+
+    /// <summary>How many palettes the bundle carries. A dog has twenty-five, one per breed.</summary>
+    public int PaletteCount => _palettes.Count;
+
+    /// <summary>
+    /// A palette's lookup table: 256 packed RGB values, indexed by a pixel's <b>green</b> channel.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// A pet's artwork is drawn once and coloured by swapping, not by tinting. The sheet holds
+    /// indices rather than colours, and the client reads them out of the green channel —
+    /// <c>GraphicAssetPalette.colorizePixels</c> — replacing RGB and leaving alpha alone. 856 of the
+    /// dog bundle's 952 assets are marked <c>usesPalette</c>.
+    /// </para>
+    /// <para>
+    /// Which is why a pet's tint is white and always was: there is nothing for a multiply to do. Its
+    /// colour is a different mechanism entirely, and drawing the raw indices gives the flat,
+    /// washed-out animal that started this.
+    /// </para>
+    /// </remarks>
+    public bool TryPalette(string name, [NotNullWhen(true)] out int[]? rgb) =>
+        _palettes.TryGetValue(name, out rgb);
 
     public static bool TryRead(ReadOnlySpan<byte> manifest, out NitroAssetManifest? read)
     {
@@ -68,7 +94,11 @@ public sealed class NitroAssetManifest
             ReadLinks(root, "aliases", "link", links);
             ReadLinks(root, "assets", "source", links);
 
-            read = new NitroAssetManifest(links, ReadFrames(root, BundleName(root)));
+            read = new NitroAssetManifest(
+                links,
+                ReadFrames(root, BundleName(root)),
+                ReadPalettes(root)
+            );
 
             return true;
         }
@@ -221,6 +251,64 @@ public sealed class NitroAssetManifest
 
         return frames;
     }
+
+    /// <summary>
+    /// <c>palettes</c>, keyed as the client keys them: the breed index as a string.
+    /// </summary>
+    /// <remarks>
+    /// Each carries <c>rgb</c>, 256 triples. Anything shorter is kept and simply leaves the tail
+    /// black, which is what the client's own lookup does for an index its palette does not reach.
+    /// </remarks>
+    private static Dictionary<string, int[]> ReadPalettes(JsonElement root)
+    {
+        Dictionary<string, int[]> palettes = new(StringComparer.Ordinal);
+
+        if (
+            !root.TryGetProperty("palettes", out JsonElement element)
+            || element.ValueKind != JsonValueKind.Object
+        )
+        {
+            return palettes;
+        }
+
+        foreach (JsonProperty entry in element.EnumerateObject())
+        {
+            if (
+                entry.Value.ValueKind != JsonValueKind.Object
+                || !entry.Value.TryGetProperty("rgb", out JsonElement rgb)
+                || rgb.ValueKind != JsonValueKind.Array
+            )
+            {
+                continue;
+            }
+
+            int[] lookup = new int[256];
+            int index = 0;
+
+            foreach (JsonElement colour in rgb.EnumerateArray())
+            {
+                if (index >= lookup.Length)
+                {
+                    break;
+                }
+
+                if (colour.ValueKind == JsonValueKind.Array && colour.GetArrayLength() >= 3)
+                {
+                    lookup[index] =
+                        (Channel(colour[0]) << 16) | (Channel(colour[1]) << 8) | Channel(colour[2]);
+                }
+
+                index++;
+            }
+
+            palettes[entry.Name] = lookup;
+        }
+
+        return palettes;
+    }
+
+    private static int Channel(JsonElement element) =>
+        Math.Clamp(element.ValueKind == JsonValueKind.Number ? element.GetInt32() : 0, 0, 255);
 
     private static NitroSpriteFrame Frame(JsonElement rect, int width, int height) =>
         new(Number(rect, "x"), Number(rect, "y"), width, height, FlipH: false, FlipV: false);

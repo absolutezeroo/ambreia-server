@@ -116,12 +116,25 @@ internal sealed class NitroSpriteLibrary(
 
         Bundle? bundle = await BundleAsync(found, limits, ct).ConfigureAwait(false);
 
-        if (bundle is null || !bundle.Manifest.TryResolve(assetName, out NitroSpriteFrame frame))
+        if (bundle is null)
         {
             return null;
         }
 
-        return Crop(bundle.Sheet, frame);
+        // `base@palette` is how the client names a palette-swapped asset, and the palette is the
+        // whole colour of a pet -- its artwork is drawn once and swapped, never tinted, which is why
+        // a pet's tint is white and always was.
+        (string baseName, string? palette) = SplitPalette(assetName);
+
+        if (!bundle.Manifest.TryResolve(baseName, out NitroSpriteFrame frame))
+        {
+            return null;
+        }
+
+        int[]? lookup =
+            palette is not null && bundle.Manifest.TryPalette(palette, out int[]? rgb) ? rgb : null;
+
+        return Crop(bundle.Sheet, frame, lookup);
     }
 
     /// <summary>
@@ -389,7 +402,24 @@ internal sealed class NitroSpriteLibrary(
     /// process. If a hotel ever ships sheets where that stops being true, the cache to add is of the
     /// decoded bitmap, bounded — not of more sprites.
     /// </remarks>
-    private static byte[]? Crop(byte[] sheet, NitroSpriteFrame frame)
+    /// <summary>
+    /// Splits <c>asset@palette</c>, which is how the client names a palette-swapped sprite.
+    /// </summary>
+    /// <remarks>
+    /// It does not send it yet -- <c>SpriteDataCollector</c> cuts the suffix off on the way out,
+    /// deliberately, with a note saying the palette lookup "is left out". The information exists at
+    /// that point and is thrown away, so the smallest fix on that side is to stop cutting.
+    /// </remarks>
+    private static (string Name, string? Palette) SplitPalette(string assetName)
+    {
+        int at = assetName.IndexOf('@', StringComparison.Ordinal);
+
+        return at <= 0 || at == assetName.Length - 1
+            ? (assetName, null)
+            : (assetName[..at], assetName[(at + 1)..]);
+    }
+
+    private static byte[]? Crop(byte[] sheet, NitroSpriteFrame frame, int[]? palette = null)
     {
         using SKBitmap decoded = SKBitmap.Decode(sheet);
 
@@ -416,10 +446,53 @@ internal sealed class NitroSpriteLibrary(
             return null;
         }
 
+        if (palette is not null)
+        {
+            Swap(cropped, palette);
+        }
+
         using SKImage image = Turn(cropped, frame);
         using SKData encoded = image.Encode(SKEncodedImageFormat.Png, 100);
 
         return encoded.ToArray();
+    }
+
+    /// <summary>
+    /// Replaces every pixel's colour with the palette entry its green channel indexes.
+    /// </summary>
+    /// <remarks>
+    /// The client's own <c>GraphicAssetPalette.colorizePixels</c>, verbatim: green is the index,
+    /// RGB is replaced, alpha is left alone. The sheet holds indices rather than colours, so drawing
+    /// it unswapped gives a flat, washed-out animal — which is what a pet looked like in every photo
+    /// before this, and what no tint could have fixed, because a pet's tint is white by design.
+    /// </remarks>
+    private static void Swap(SKBitmap bitmap, int[] palette)
+    {
+        for (int y = 0; y < bitmap.Height; y++)
+        {
+            for (int x = 0; x < bitmap.Width; x++)
+            {
+                SKColor pixel = bitmap.GetPixel(x, y);
+
+                if (pixel.Alpha == 0)
+                {
+                    continue;
+                }
+
+                int colour = palette[pixel.Green];
+
+                bitmap.SetPixel(
+                    x,
+                    y,
+                    new SKColor(
+                        (byte)((colour >> 16) & 0xFF),
+                        (byte)((colour >> 8) & 0xFF),
+                        (byte)(colour & 0xFF),
+                        pixel.Alpha
+                    )
+                );
+            }
+        }
     }
 
     /// <summary>
