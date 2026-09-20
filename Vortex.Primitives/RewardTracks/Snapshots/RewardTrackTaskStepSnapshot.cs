@@ -74,4 +74,26 @@ public sealed record RewardTrackStepFilterSnapshot
     /// </summary>
     [Id(3)]
     public int ReferencedStep { get; init; } = -1;
+
+    /// <summary>
+    /// What is on the left of the comparison, when it is anything but this filter's own fact.
+    /// </summary>
+    /// <remarks>
+    /// Null means <c>Fact(<see cref="FactKey"/>)</c>, which is what the left side of every test
+    /// written so far is. The catalog fills both sides in for every filter it builds; the fallback
+    /// is for a snapshot assembled anywhere else, and it keeps the three fields above the single
+    /// source of truth for content nobody has touched.
+    /// </remarks>
+    [Id(4)]
+    public StepValueSnapshot? Left { get; init; }
+
+    /// <summary>
+    /// What is on the right, when it is anything but this filter's literal or <c>$N</c>.
+    /// </summary>
+    /// <remarks>
+    /// Null means <see cref="Value"/> read the way it always was: a literal, or the value
+    /// <see cref="ReferencedStep"/> captured for <see cref="FactKey"/>.
+    /// </remarks>
+    [Id(5)]
+    public StepValueSnapshot? Right { get; init; }
 }

@@ -496,22 +496,18 @@ internal static class TaskProgressRules
     )
     {
         {
-            if (Fact(facts, filter.FactKey) is not string actual)
+            if (LeftOf(filter, facts, captures) is not string actual)
             {
-                // A filter asks about something this signal does not carry. That includes
+                // A side asks about something this signal does not carry. That includes
                 // NotEquals: "any room but yours" is a claim about a room, and an action naming no
                 // room has not made it true.
                 return false;
             }
 
-            string? expected =
-                filter.ReferencedStep < 0
-                    ? filter.Value
-                    : captures.Get(filter.ReferencedStep, filter.FactKey);
-
-            if (expected is null)
+            // A step it points at has not run in this attempt, or a fact it names is absent.
+            // Nothing to compare to, either way.
+            if (RightOf(filter, facts, captures) is not string expected)
             {
-                // The step it points at has not run in this attempt. Nothing to compare to.
                 return false;
             }
 
@@ -552,6 +548,75 @@ internal static class TaskProgressRules
 
             return ok;
         }
+    }
+
+    /// <summary>
+    /// The left side of a comparison, or <c>null</c> when this signal cannot supply it.
+    /// </summary>
+    /// <remarks>
+    /// The fallback is the whole compatibility story and is deliberately the old code, not a
+    /// rewrite of it: a filter with no <see cref="RewardTrackStepFilterSnapshot.Left"/> asks about
+    /// its own fact, which is what the left side has meant since this table existed.
+    /// </remarks>
+    private static string? LeftOf(
+        RewardTrackStepFilterSnapshot filter,
+        ImmutableArray<RewardTrackFactSnapshot> facts,
+        StepCaptures captures
+    ) =>
+        filter.Left is StepValueSnapshot left
+            ? Resolve(left, facts, captures)
+            : Fact(facts, filter.FactKey);
+
+    /// <summary>The right side, or <c>null</c> when nothing can supply it.</summary>
+    private static string? RightOf(
+        RewardTrackStepFilterSnapshot filter,
+        ImmutableArray<RewardTrackFactSnapshot> facts,
+        StepCaptures captures
+    ) =>
+        filter.Right is StepValueSnapshot right ? Resolve(right, facts, captures)
+        : filter.ReferencedStep < 0 ? filter.Value
+        : captures.Get(filter.ReferencedStep, filter.FactKey);
+
+    /// <summary>
+    /// What one side is worth against this signal, or <c>null</c> when the signal does not carry it.
+    /// </summary>
+    /// <remarks>
+    /// Every branch is pure and allocation-free but for the count, which formats one small number.
+    /// A kind that had to look anything up would run here — once per signal, per player in the
+    /// room — which is why no kind does. See <see cref="StepValueKind"/>.
+    /// </remarks>
+    private static string? Resolve(
+        StepValueSnapshot value,
+        ImmutableArray<RewardTrackFactSnapshot> facts,
+        StepCaptures captures
+    ) =>
+        value.Kind switch
+        {
+            StepValueKind.Fact => Fact(facts, value.Arg),
+            StepValueKind.Literal => value.Arg,
+            StepValueKind.StepFact => captures.Get(value.Step, value.Arg),
+            StepValueKind.CountOf => Fact(facts, value.Arg) is string list
+                ? Entries(list).ToString(CultureInfo.InvariantCulture)
+                : null,
+            // A kind this build does not know, from content written by a newer one. False rather
+            // than a throw: the room's event path carries every other campaign too.
+            _ => null,
+        };
+
+    /// <summary>How many entries a comma-separated fact carried. An empty fact carries none.</summary>
+    private static int Entries(string list)
+    {
+        int entries = 0;
+
+        foreach (Range part in list.AsSpan().Split(','))
+        {
+            if (!list.AsSpan()[part].Trim().IsEmpty)
+            {
+                entries++;
+            }
+        }
+
+        return entries;
     }
 
     private static string? Fact(ImmutableArray<RewardTrackFactSnapshot> facts, string key)
