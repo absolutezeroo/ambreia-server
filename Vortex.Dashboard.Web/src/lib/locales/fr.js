@@ -2858,6 +2858,8 @@ export default {
     playerSummary: '{points} points · premium : {premium} · terminé : {completed}',
     progress: 'Progression',
     highestPaid: 'Plus haute étape payée',
+    step: 'Où dans la séquence',
+    stepOf: 'action {n} sur {total}',
     claimedAt: 'Réclamé le',
     pointsAtClaim: 'Points à la réclamation',
     granted: 'Attribué',

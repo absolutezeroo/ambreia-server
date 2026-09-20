@@ -1032,6 +1032,7 @@
                   <th>{$t('rewardTracks.taskId')}</th>
                   <th>{$t('rewardTracks.progress')}</th>
                   <th>{$t('rewardTracks.highestPaid')}</th>
+                  <th>{$t('rewardTracks.step')}</th>
                 </tr>
               </thead>
               <tbody>
@@ -1040,6 +1041,26 @@
                     <td>{task.taskId}</td>
                     <td>{formatNumber(task.progressCount)}</td>
                     <td>{task.highestPaidLevelIndex}</td>
+                    <td>
+                      <!-- A sequence of one is never mid-flight, so saying "1 of 1" would be
+                           noise on every plain task in the hotel. -->
+                      {#if task.stepCount > 1}
+                        {$t('rewardTracks.stepOf', {
+                          n: task.currentStep + 1,
+                          total: task.stepCount,
+                        })}
+                        {#if task.capturedFacts}
+                          <!-- What the satisfied steps recorded. It is what a later step's "from
+                               action 1" resolves against, so it is the difference between a task
+                               that is waiting and one whose reference can never match. -->
+                          <span class="muted small captured" title={task.capturedFacts}>
+                            {task.capturedFacts}
+                          </span>
+                        {/if}
+                      {:else}
+                        <span class="muted">—</span>
+                      {/if}
+                    </td>
                   </tr>
                 {/each}
               </tbody>
@@ -1436,6 +1457,17 @@
      opinion about is here. */
   .small {
     font-size: 0.8em;
+  }
+
+  /* The engine's own serialised captures. Its own line under the position, clipped rather than
+     wrapped: it is long, it is for reading when something is wrong, and a cell that grows to fit
+     it would push every other column off the screen. The full text is on the title. */
+  .captured {
+    display: block;
+    max-width: 22rem;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
   }
 
   .filters {

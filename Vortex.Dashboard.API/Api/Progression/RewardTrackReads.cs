@@ -425,6 +425,16 @@ internal sealed class RewardTrackReads(
                     .ToListAsync(ct)
                     .ConfigureAwait(false);
 
+                // How long each of this player's tasks is, so a step number reads as a position.
+                // Keyed by track and task because a task id is only unique inside its track.
+                Dictionary<(string Track, string Task), int> stepCounts = await db
+                    .RewardTrackTaskSteps.AsNoTracking()
+                    .Where(s => s.DeletedAt == null && s.Task != null && s.Task.DeletedAt == null)
+                    .Select(s => new { s.Task!.RewardTrack!.TrackId, s.Task.TaskId })
+                    .GroupBy(s => new { s.TrackId, s.TaskId })
+                    .ToDictionaryAsync(g => (g.Key.TrackId, g.Key.TaskId), g => g.Count(), ct)
+                    .ConfigureAwait(false);
+
                 return new PlayerRewardTracks(
                     playerId,
                     rows.Count,
@@ -440,7 +450,10 @@ internal sealed class RewardTrackReads(
                                 .Select(t => new PlayerRewardTrackTaskRow(
                                     t.TaskId,
                                     t.ProgressCount,
-                                    t.HighestPaidLevelIndex
+                                    t.HighestPaidLevelIndex,
+                                    t.CurrentStep,
+                                    stepCounts.GetValueOrDefault((r.TrackId, t.TaskId)),
+                                    t.CapturedFacts
                                 ))
                                 .ToList(),
                             claims

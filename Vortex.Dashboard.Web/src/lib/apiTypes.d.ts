@@ -2580,6 +2580,9 @@ export interface PlayerRewardTrackTaskRow {
   taskId: string;
   progressCount: number;
   highestPaidLevelIndex: number;
+  currentStep: number;
+  stepCount: number;
+  capturedFacts: string;
 }
 
 export interface PlayerRewardTracks {

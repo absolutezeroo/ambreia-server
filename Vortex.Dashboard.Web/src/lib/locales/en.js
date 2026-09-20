@@ -2847,6 +2847,8 @@ export default {
     playerSummary: '{points} points · premium: {premium} · completed: {completed}',
     progress: 'Progress',
     highestPaid: 'Highest paid stage',
+    step: 'Where in the sequence',
+    stepOf: 'action {n} of {total}',
     claimedAt: 'Claimed at',
     pointsAtClaim: 'Points at claim',
     granted: 'Granted',
