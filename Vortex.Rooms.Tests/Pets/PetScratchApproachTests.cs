@@ -1,8 +1,11 @@
 using System;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using FluentAssertions;
 using Vortex.Primitives.Pets.Snapshots;
+using Vortex.Protocol.Messages.Outgoing.Room.Engine;
+using Vortex.Rooms.Grains.Systems;
 using Vortex.Rooms.Object.Avatars.Player;
 using Vortex.Rooms.Tests.Support;
 using Xunit;
@@ -68,6 +71,14 @@ public sealed class PetScratchApproachTests
         scratcher.IsWalking.Should().BeFalse();
         (scratcher.X, scratcher.Y).Should().Be((PetX + 1, PetY + 1));
         Pet(harness).Respect.Should().Be(1);
+
+        // The pet answers, which is where the capture ends. Its mood line is content and this room
+        // has no pet_vocals rows, so only the gesture is on the wire here.
+        harness
+            .BroadcastToRoom.OfType<UserUpdateMessageComposer>()
+            .SelectMany(composer => composer.Avatars)
+            .Should()
+            .Contain(avatar => avatar.Status == PetAnimation.JoyStatus);
     }
 
     private static async Task<(RoomHarness Harness, RoomPlayerAvatar Scratcher)> RoomWithAPetAsync(

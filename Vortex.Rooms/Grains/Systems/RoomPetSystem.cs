@@ -234,8 +234,8 @@ public sealed partial class RoomPetSystem(RoomGrain roomGrain)
                     motion.SleepPostureSent = true;
                     RoomPetAvatarSnapshot sleepSnapshot = await ToAvatarSnapshotAsync(
                         current,
-                        RoomPetRuntime.LayStatus(current.Z),
-                        RoomPetRuntime.LayPosture,
+                        PetAnimation.LayStatus(current.Z),
+                        PetAnimation.LayPosture,
                         ct
                     );
                     dirtySnapshots.Add(sleepSnapshot);
@@ -464,9 +464,13 @@ public sealed partial class RoomPetSystem(RoomGrain roomGrain)
             }
         );
 
-    private async Task SendPetUpdatedAsync(PetSnapshot pet, CancellationToken ct)
+    private async Task SendPetUpdatedAsync(
+        PetSnapshot pet,
+        CancellationToken ct,
+        string status = ""
+    )
     {
-        RoomPetAvatarSnapshot snapshot = await ToAvatarSnapshotAsync(pet, ct);
+        RoomPetAvatarSnapshot snapshot = await ToAvatarSnapshotAsync(pet, status, ct);
 
         await _roomGrain.SendComposerToRoomAsync(
             new UserUpdateMessageComposer { Avatars = [snapshot] }
@@ -543,7 +547,7 @@ public sealed partial class RoomPetSystem(RoomGrain roomGrain)
         CancellationToken ct
     )
     {
-        return await ToAvatarSnapshotAsync(pet, string.Empty, RoomPetRuntime.StandPosture, ct);
+        return await ToAvatarSnapshotAsync(pet, string.Empty, PetAnimation.StandPosture, ct);
     }
 
     private async Task<RoomPetAvatarSnapshot> ToAvatarSnapshotAsync(
@@ -552,7 +556,7 @@ public sealed partial class RoomPetSystem(RoomGrain roomGrain)
         CancellationToken ct
     )
     {
-        return await ToAvatarSnapshotAsync(pet, status, RoomPetRuntime.StandPosture, ct);
+        return await ToAvatarSnapshotAsync(pet, status, PetAnimation.StandPosture, ct);
     }
 
     private async Task<RoomPetAvatarSnapshot> ToAvatarSnapshotAsync(

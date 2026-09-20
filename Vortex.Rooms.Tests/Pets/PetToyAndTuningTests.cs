@@ -59,7 +59,7 @@ public sealed class PetToyAndTuningTests
     [Fact]
     public void PlayStatus_CarriesAPostureTheAssetDeclares()
     {
-        RoomPetRuntime.PlayStatus(0).Should().Be("/pla 0/");
+        PetAnimation.PlayStatus(0).Should().Be("/pla 0/");
     }
 
     /// <summary>

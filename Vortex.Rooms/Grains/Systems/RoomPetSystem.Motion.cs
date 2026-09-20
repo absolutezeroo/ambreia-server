@@ -111,8 +111,8 @@ public sealed partial class RoomPetSystem
                 {
                     return await ToAvatarSnapshotAsync(
                         petAfterFeed,
-                        RoomPetRuntime.EatStatus(petAfterFeed.Z),
-                        RoomPetRuntime.EatPosture,
+                        PetAnimation.EatStatus(petAfterFeed.Z),
+                        PetAnimation.EatPosture,
                         ct
                     );
                 }
@@ -802,8 +802,8 @@ public sealed partial class RoomPetSystem
 
         return await ToAvatarSnapshotAsync(
             updated,
-            RoomPetRuntime.PlayStatus(updated.Z),
-            RoomPetRuntime.PlayPosture,
+            PetAnimation.PlayStatus(updated.Z),
+            PetAnimation.PlayPosture,
             ct
         );
     }

@@ -227,8 +227,14 @@ public sealed partial class RoomPetSystem
             motion.IsStatsDirty = true;
         }
 
-        await SendPetUpdatedAsync(updated, ct);
         await BroadcastPetRespectNotificationAsync(updated);
+
+        // The pet answers. The capture ends on these two and nothing else: its status gains
+        // `gst joy` and it speaks a mood line ("*est euphorique*" on a French session). The text
+        // itself is not in any source here -- it is content, and the operator's own pet_vocals rows
+        // are where it comes from, so a type with no lines written for it just looks pleased.
+        await SendPetUpdatedAsync(updated, ct, PetAnimation.JoyStatus);
+        await BroadcastPetVocalAsync(updated, "GENERIC_HAPPY");
 
         // Detached, like the furniture events: the scratcher's progression must not sit between
         // the click and the animation. Both sides ride one event -- the hotel counts scratching
@@ -353,7 +359,7 @@ public sealed partial class RoomPetSystem
             new CarryObjectMessageComposer
             {
                 UserId = objectId.Value,
-                ItemType = RoomPetRuntime.ScratchGestureItemType,
+                ItemType = PetAnimation.ScratchGestureItemType,
             }
         );
     }
@@ -510,7 +516,7 @@ public sealed partial class RoomPetSystem
             // With the height, or the client drops the segment and the trick is never seen.
             RoomPetAvatarSnapshot postureSnapshot = await ToAvatarSnapshotAsync(
                 updated,
-                RoomPetRuntime.StatusWithHeight(cmd.Posture, updated.Z),
+                PetAnimation.StatusWithHeight(cmd.Posture, updated.Z),
                 cmd.Posture,
                 ct
             );

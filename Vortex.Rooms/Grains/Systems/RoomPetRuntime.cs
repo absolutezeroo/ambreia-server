@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
@@ -29,14 +28,6 @@ internal static class RoomPetRuntime
 
     /// <summary>Thirst runs 0-100 like the other needs.</summary>
     public const int ThirstCap = 100;
-
-    /// <summary>
-    /// The hand item that draws nothing. Above the client's CARRY_ITEM_LAST_CONSUMABLE it stops
-    /// being an object at all: <c>AvatarLogic.CARRY_ITEM_EMPTY_HAND</c> plays the reach-out gesture
-    /// for 1.5s and then clears itself, which is how a scratched pet gets an arm reaching for it.
-    /// Never route it through the hand-item module -- there is no item to hold or expire.
-    /// </summary>
-    public const int ScratchGestureItemType = 999_999_999;
 
     public static PetSnapshot ToSnapshot(PetEntity entity) =>
         new()
@@ -74,7 +65,7 @@ internal static class RoomPetRuntime
         PetSnapshot pet,
         string ownerName,
         string status = "",
-        string posture = StandPosture
+        string posture = PetAnimation.StandPosture
     ) =>
         new()
         {
@@ -257,51 +248,11 @@ internal static class RoomPetRuntime
             : Math.Clamp(1 + (Math.Max(0, grownSeconds) / growthSeconds), 1, maxLevel);
 
     /// <summary>
-    /// What a pet is doing when it is doing nothing. The pet asset's own default animation id, and
-    /// what the client falls back to for any posture it does not recognise.
-    /// </summary>
-    public const string StandPosture = "std";
-
-    /// <summary>The posture a pet takes to sleep. One of the ids the pet's own asset declares.</summary>
-    public const string LayPosture = "lay";
-
-    /// <summary>Playing with a toy. Declared by the pet assets as `pla`.</summary>
-    public const string PlayPosture = "pla";
-
-    /// <summary>
     /// The two commands that are an errand rather than a pose: the pet has to walk somewhere for
     /// them to mean anything. Ids are the client's own, from <c>pet.command.&lt;id&gt;</c>.
     /// </summary>
     public const int NestCommandId = 13;
     public const int EatCommandId = 43;
-
-    /// <summary>
-    /// The posture a pet takes at a bowl. Drinking uses it too: no pet asset declares a `drk`
-    /// posture -- the dog ships std, beg, bnd, ded, eat, jmp, lay, pla, rdy, scr, sit, snf, spk, mv
-    /// -- and an unknown posture silently resolves to the default, which is standing. Arcturus sends
-    /// EAT at the water bowl for the same reason.
-    /// </summary>
-    public const string EatPosture = "eat";
-
-    /// <summary>
-    /// A status segment the client will actually keep.
-    /// </summary>
-    /// <remarks>
-    /// The client drops any segment that carries no value: it splits on a space and only records the
-    /// action when there are two pieces (<c>if (pieces.length >= 2)</c> in the nitro parser, which is
-    /// what this revision speaks). So a bare <c>/lay/</c> or <c>/eat/</c> never becomes a posture at
-    /// all, and the pet stays standing -- no lying down, no Zzz, no eating. Arcturus never sends one
-    /// either: it passes the tile's stack height. The height doubles as the value the client reads
-    /// back for <c>lay</c> and <c>sit</c>, so it has to be the real one, formatted invariantly.
-    /// </remarks>
-    public static string StatusWithHeight(string posture, double height) =>
-        $"/{posture} {height.ToString("0.##", CultureInfo.InvariantCulture)}/";
-
-    public static string LayStatus(double height) => StatusWithHeight(LayPosture, height);
-
-    public static string EatStatus(double height) => StatusWithHeight(EatPosture, height);
-
-    public static string PlayStatus(double height) => StatusWithHeight(PlayPosture, height);
 
     /// <summary>
     /// Whether a pet is bored enough to go and find a toy. Monsterplants are excluded: they are
