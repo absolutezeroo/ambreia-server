@@ -53,11 +53,23 @@
 {/if}
 
 <style>
-  /* Above the drawer it was opened from, and above the drawer's own backdrop. */
+  /*
+    Above the drawer it was opened from (60), and BELOW the modal layer (80) -- because everything
+    this opens is newer than it: the pickers, and with them the toasts, the loading overlay and the
+    command palette, which all sit above 80.
+
+    It was 1200, which is above the whole ladder, so a picker opened from here drew behind the
+    editor that asked for it. That is the same mistake the modal layer's own comment records making
+    against the drawer, one surface later: a number picked to clear one thing above it, that clears
+    everything above it.
+
+    The ladder: drawer 60 < workspace 70 < modal 80 < dropdown/tooltip 90 < loading 110 <
+    palette 120 < toasts 130.
+  */
   .workspace-layer {
     position: fixed;
     inset: 0;
-    z-index: 1200;
+    z-index: 70;
     display: flex;
     flex-direction: column;
     background: var(--page);
