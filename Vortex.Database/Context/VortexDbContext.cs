@@ -145,6 +145,8 @@ public class VortexDbContext(DbContextOptions<VortexDbContext> options)
 
     public DbSet<CameraPhotoEntity> CameraPhotos { get; init; } = null!;
 
+    public DbSet<CameraPhotoLikeEntity> CameraPhotoLikes { get; init; } = null!;
+
     public DbSet<NavigatorTopLevelContextEntity> NavigatorTopLevelContexts { get; init; } = null!;
 
     public DbSet<NavigatorFlatCategoryEntity> NavigatorFlatCategories { get; init; } = null!;

@@ -19,6 +19,11 @@ namespace Vortex.WebApi.Services;
 /// player and a moment. habbo.com's own card shows a title for a USER_CREATION and nothing for a
 /// PHOTO, which is the same answer arrived at from the other side.
 /// </para>
+/// <para>
+/// <paramref name="Likes"/> is the count and <paramref name="LikedByMe"/> is whether the CALLER is
+/// one of them — the two halves the like control renders, and the reason likes are rows rather than
+/// a counter. `LikedByMe` is false for a signed-out visitor, which is also what the control shows.
+/// </para>
 /// </remarks>
 public sealed record PhotoSummary(
     string Key,
@@ -27,7 +32,9 @@ public sealed record PhotoSummary(
     string OwnerFigureString,
     int? RoomId,
     string? RoomName,
-    DateTime TakenAt
+    DateTime TakenAt,
+    int Likes,
+    bool LikedByMe
 );
 
 /// <summary>One page of the photo gallery.</summary>
@@ -56,8 +63,25 @@ public sealed record PhotoPage(
 /// </remarks>
 public interface IWebApiPhotoService
 {
-    /// <summary>The hotel's gallery: every published photo, newest first.</summary>
-    Task<PhotoPage> GetPhotosAsync(int page, int pageSize, CancellationToken ct);
+    /// <summary>
+    /// The hotel's gallery: every published photo, newest first. <paramref name="viewerId"/> is the
+    /// signed-in player, or <c>null</c>, and decides <see cref="PhotoSummary.LikedByMe"/> only.
+    /// </summary>
+    Task<PhotoPage> GetPhotosAsync(int page, int pageSize, int? viewerId, CancellationToken ct);
+
+    /// <summary>One published photo by its key, or <c>null</c>.</summary>
+    Task<PhotoSummary?> GetPhotoAsync(string key, int? viewerId, CancellationToken ct);
+
+    /// <summary>
+    /// Adds or removes the caller's like on a published photo, and answers the photo as it now
+    /// stands. <c>null</c> when there is no such published photo.
+    /// </summary>
+    /// <remarks>
+    /// Idempotent in both directions: liking twice is one row and unliking twice is none, which is
+    /// what the unique index on (photo, player) buys. A double tap is therefore not a bug to guard
+    /// against in a handler.
+    /// </remarks>
+    Task<PhotoSummary?> SetLikeAsync(string key, int playerId, bool liked, CancellationToken ct);
 
     /// <summary>
     /// One player's published photos, newest first. An empty list when the player has none, when
@@ -67,6 +91,7 @@ public interface IWebApiPhotoService
     Task<IReadOnlyList<PhotoSummary>> GetPlayerPhotosAsync(
         int playerId,
         int limit,
+        int? viewerId,
         CancellationToken ct
     );
 }

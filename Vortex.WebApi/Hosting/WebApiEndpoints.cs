@@ -188,6 +188,7 @@ internal static partial class WebApiEndpoints
         app.MapGet(
                 "/api/public/photos",
                 async Task<Ok<PhotoPage>> (
+                    HttpContext ctx,
                     int? page,
                     int? pageSize,
                     // [FromServices] rather than left to inference, the same defence
@@ -196,11 +197,23 @@ internal static partial class WebApiEndpoints
                     // then fails to build — so one missing registration takes down every endpoint in
                     // the host rather than this one. Which is exactly what it did here first.
                     [FromServices] IWebApiPhotoService photos,
+                    [FromServices] WebApiSessionStore sessions,
+                    [FromServices] IWebApiPlayerService players,
                     CancellationToken ct
                 ) =>
+                    // The session is READ but not required: the gallery is anonymous, and the only
+                    // thing it decides is whether each card comes back with `likedByMe` set.
                     TypedResults.Ok(
                         await photos
-                            .GetPhotosAsync(page ?? 1, pageSize ?? 0, ct)
+                            .GetPhotosAsync(
+                                page ?? 1,
+                                pageSize ?? 0,
+                                (
+                                    await SelectedPlayerAsync(ctx, sessions, players, ct)
+                                        .ConfigureAwait(false)
+                                ).PlayerId,
+                                ct
+                            )
                             .ConfigureAwait(false)
                     )
             )
@@ -209,11 +222,88 @@ internal static partial class WebApiEndpoints
             .WithTags(TagPublic);
 
         app.MapGet(
+                "/api/public/photos/{key}",
+                async Task<Results<Ok<PhotoSummary>, NotFound<ApiErrorResponse>>> (
+                    HttpContext ctx,
+                    string key,
+                    [FromServices] IWebApiPhotoService photos,
+                    [FromServices] WebApiSessionStore sessions,
+                    [FromServices] IWebApiPlayerService players,
+                    CancellationToken ct
+                ) =>
+                {
+                    (int? viewerId, _) = await SelectedPlayerAsync(ctx, sessions, players, ct)
+                        .ConfigureAwait(false);
+
+                    PhotoSummary? photo = await photos
+                        .GetPhotoAsync(key, viewerId, ct)
+                        .ConfigureAwait(false);
+
+                    return photo is null
+                        ? TypedResults.NotFound(new ApiErrorResponse("photo_not_found"))
+                        : TypedResults.Ok(photo);
+                }
+            )
+            .WithName("Photo")
+            .WithSummary("One published photo.")
+            .WithTags(TagPublic);
+
+        // Liking. A WRITE, so it is the one photo route that needs a session — and it takes the
+        // wanted state rather than toggling, because a toggle sent twice by a flaky connection
+        // lands on the opposite of what the player pressed.
+        app.MapPut(
+                "/api/user/photos/{key}/like",
+                async Task<
+                    Results<Ok<PhotoSummary>, NotFound<ApiErrorResponse>, UnauthorizedError>
+                > (
+                    HttpContext ctx,
+                    string key,
+                    PhotoLikeRequest body,
+                    [FromServices] IWebApiPhotoService photos,
+                    [FromServices] WebApiSessionStore sessions,
+                    [FromServices] IWebApiPlayerService players,
+                    CancellationToken ct
+                ) =>
+                {
+                    (int? playerId, IResult? refusal) = await SelectedPlayerAsync(
+                            ctx,
+                            sessions,
+                            players,
+                            ct
+                        )
+                        .ConfigureAwait(false);
+
+                    if (playerId is null)
+                    {
+                        // No session, or a session with no avatar: a like belongs to a PLAYER, and
+                        // an account without one has nobody to attribute it to.
+                        return refusal is UnauthorizedError unauthorized
+                            ? unauthorized
+                            : TypedResults.NotFound(new ApiErrorResponse("pocket.auth.no_avatars"));
+                    }
+
+                    PhotoSummary? photo = await photos
+                        .SetLikeAsync(key, playerId.Value, body.Liked, ct)
+                        .ConfigureAwait(false);
+
+                    return photo is null
+                        ? TypedResults.NotFound(new ApiErrorResponse("photo_not_found"))
+                        : TypedResults.Ok(photo);
+                }
+            )
+            .WithName("PhotoLike")
+            .WithSummary("Like or unlike a published photo.")
+            .WithTags(TagUser);
+
+        app.MapGet(
                 "/api/public/users/{uniqueId}/photos",
                 async Task<Ok<IReadOnlyList<PhotoSummary>>> (
+                    HttpContext ctx,
                     string uniqueId,
                     int? limit,
                     [FromServices] IWebApiPhotoService photos,
+                    [FromServices] WebApiSessionStore sessions,
+                    [FromServices] IWebApiPlayerService players,
                     CancellationToken ct
                 ) =>
                 {
@@ -227,9 +317,12 @@ internal static partial class WebApiEndpoints
                         return TypedResults.Ok<IReadOnlyList<PhotoSummary>>([]);
                     }
 
+                    (int? viewerId, _) = await SelectedPlayerAsync(ctx, sessions, players, ct)
+                        .ConfigureAwait(false);
+
                     return TypedResults.Ok(
                         await photos
-                            .GetPlayerPhotosAsync(playerId, limit ?? 0, ct)
+                            .GetPlayerPhotosAsync(playerId, limit ?? 0, viewerId, ct)
                             .ConfigureAwait(false)
                     );
                 }

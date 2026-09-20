@@ -1,5 +1,8 @@
 using System;
 using System.Linq;
+using System.Net;
+using System.Net.Http;
+using System.Net.Http.Json;
 using System.Text.Json;
 using System.Threading.Tasks;
 using FluentAssertions;
@@ -125,6 +128,114 @@ public sealed class PhotoEndpointTests
         JsonElement answer = await GetJsonAsync(factory, "/api/public/users/pas-un-id/photos");
 
         answer.EnumerateArray().Should().BeEmpty();
+    }
+
+    /// <summary>
+    /// Liking twice is one like and unliking twice is none — the unique index on (photo, player) is
+    /// what makes that true, and what makes a double tap or a retried request harmless.
+    /// </summary>
+    [Fact]
+    public async Task Like_IsIdempotentInBothDirections()
+    {
+        await using WebApiTestFactory factory = new();
+        await SeedAsync(factory, 1, "Photographe", visible: true, keys: [("shot", Published)]);
+        await SeedLikerAsync(factory);
+
+        using HttpClient client = factory.CreateAuthenticatedClient();
+
+        JsonElement once = await PutLikeAsync(client, "shot", true);
+        JsonElement twice = await PutLikeAsync(client, "shot", true);
+
+        once.GetProperty("likes").GetInt32().Should().Be(1);
+        once.GetProperty("likedByMe").GetBoolean().Should().BeTrue();
+        twice.GetProperty("likes").GetInt32().Should().Be(1);
+
+        JsonElement off = await PutLikeAsync(client, "shot", false);
+        JsonElement offAgain = await PutLikeAsync(client, "shot", false);
+
+        off.GetProperty("likes").GetInt32().Should().Be(0);
+        off.GetProperty("likedByMe").GetBoolean().Should().BeFalse();
+        offAgain.GetProperty("likes").GetInt32().Should().Be(0);
+    }
+
+    /// <summary>A like belongs to a player, so a visitor with no session cannot leave one.</summary>
+    [Fact]
+    public async Task Like_IsRefusedWithoutASession()
+    {
+        await using WebApiTestFactory factory = new();
+        await SeedAsync(factory, 1, "Photographe", visible: true, keys: [("shot", Published)]);
+
+        HttpResponseMessage response = await factory.Client.PutAsJsonAsync(
+            "/api/user/photos/shot/like",
+            new { liked = true }
+        );
+
+        response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
+    }
+
+    /// <summary>
+    /// An unpublished photo cannot be liked, and must not confirm it exists by answering anything
+    /// other than the 404 an unknown key gets.
+    /// </summary>
+    [Fact]
+    public async Task Like_IsA404OnAPhotoThatIsNotPublished()
+    {
+        await using WebApiTestFactory factory = new();
+        await SeedAsync(factory, 1, "Photographe", visible: true, keys: [("private", null)]);
+        await SeedLikerAsync(factory);
+
+        using HttpClient client = factory.CreateAuthenticatedClient();
+
+        HttpResponseMessage hidden = await client.PutAsJsonAsync(
+            "/api/user/photos/private/like",
+            new { liked = true }
+        );
+        HttpResponseMessage unknown = await client.PutAsJsonAsync(
+            "/api/user/photos/jamais-vue/like",
+            new { liked = true }
+        );
+
+        hidden.StatusCode.Should().Be(HttpStatusCode.NotFound);
+        unknown.StatusCode.Should().Be(HttpStatusCode.NotFound);
+    }
+
+    /// <summary>`likedByMe` is about the CALLER, so a signed-out read never claims a like.</summary>
+    [Fact]
+    public async Task Gallery_CountsLikesAndSaysNothingIsMineWhenSignedOut()
+    {
+        await using WebApiTestFactory factory = new();
+        await SeedAsync(factory, 1, "Photographe", visible: true, keys: [("shot", Published)]);
+        await SeedLikerAsync(factory);
+
+        using (HttpClient client = factory.CreateAuthenticatedClient())
+        {
+            await PutLikeAsync(client, "shot", true);
+        }
+
+        JsonElement gallery = await GetJsonAsync(factory, "/api/public/photos");
+        JsonElement card = gallery.GetProperty("items").EnumerateArray().First();
+
+        card.GetProperty("likes").GetInt32().Should().Be(1);
+        card.GetProperty("likedByMe").GetBoolean().Should().BeFalse();
+    }
+
+    /// <summary>
+    /// The player the signed-in account's selected avatar resolves to — `FakePlayerService` answers
+    /// id 100, so the liker is somebody other than the photo's owner, which is the normal case.
+    /// </summary>
+    private static async Task SeedLikerAsync(WebApiTestFactory factory) =>
+        await SeedAsync(factory, 100, "Visiteur", visible: true, keys: []);
+
+    private static async Task<JsonElement> PutLikeAsync(HttpClient client, string key, bool liked)
+    {
+        HttpResponseMessage response = await client.PutAsJsonAsync(
+            $"/api/user/photos/{key}/like",
+            new { liked }
+        );
+
+        response.EnsureSuccessStatusCode();
+
+        return JsonDocument.Parse(await response.Content.ReadAsStringAsync()).RootElement.Clone();
     }
 
     private static readonly DateTime Published = new(2026, 3, 4, 12, 0, 0, DateTimeKind.Utc);

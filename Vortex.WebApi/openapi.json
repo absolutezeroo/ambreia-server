@@ -180,6 +180,30 @@
         }
       }
     },
+    "/api/public/camera/thumbnails/{roomId}.png": {
+      "get": {
+        "tags": [
+          "Camera"
+        ],
+        "operationId": "GetRoomThumbnail",
+        "parameters": [
+          {
+            "name": "roomId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
     "/api/public/camera/photos/{photoKey}.png": {
       "get": {
         "tags": [
@@ -756,6 +780,47 @@
         }
       }
     },
+    "/api/public/photos/{key}": {
+      "get": {
+        "tags": [
+          "Public"
+        ],
+        "summary": "One published photo.",
+        "operationId": "Photo",
+        "parameters": [
+          {
+            "name": "key",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PhotoSummary"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/public/users/{uniqueId}/photos": {
       "get": {
         "tags": [
@@ -1124,6 +1189,67 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/user/photos/{key}/like": {
+      "put": {
+        "tags": [
+          "User"
+        ],
+        "summary": "Like or unlike a published photo.",
+        "operationId": "PhotoLike",
+        "parameters": [
+          {
+            "name": "key",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PhotoLikeRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PhotoSummary"
                 }
               }
             }
@@ -3027,6 +3153,18 @@
         },
         "additionalProperties": false
       },
+      "PhotoLikeRequest": {
+        "required": [
+          "liked"
+        ],
+        "type": "object",
+        "properties": {
+          "liked": {
+            "type": "boolean"
+          }
+        },
+        "additionalProperties": false
+      },
       "PhotoPage": {
         "required": [
           "items",
@@ -3060,6 +3198,8 @@
       "PhotoSummary": {
         "required": [
           "key",
+          "likedByMe",
+          "likes",
           "ownerFigureString",
           "ownerName",
           "ownerUniqueId",
@@ -3091,6 +3231,13 @@
           "takenAt": {
             "type": "string",
             "format": "date-time"
+          },
+          "likes": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "likedByMe": {
+            "type": "boolean"
           }
         },
         "additionalProperties": false

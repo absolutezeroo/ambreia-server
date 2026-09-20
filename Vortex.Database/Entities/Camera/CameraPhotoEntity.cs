@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using Microsoft.EntityFrameworkCore;
@@ -65,4 +66,7 @@ public class CameraPhotoEntity : VortexEntity
 
     [ForeignKey(nameof(RoomEntityId))]
     public RoomEntity? RoomEntity { get; set; }
+
+    /// <summary>Who liked it. A row per player — see <see cref="CameraPhotoLikeEntity"/>.</summary>
+    public List<CameraPhotoLikeEntity>? CameraPhotoLikes { get; set; }
 }

@@ -90,6 +90,17 @@ public sealed record SafetyLockRequest(bool? Locked, string? CurrentPassword, st
 }
 
 /// <summary>
+/// Whether the caller wants their like on this photo, or not.
+/// </summary>
+/// <remarks>
+/// The WANTED STATE, not a toggle. A toggle sent twice — a flaky connection retrying, a double tap —
+/// lands on the opposite of what the player pressed, and the player has no way to tell which of the
+/// two happened. With the state in the body, a retry is a no-op: the row either exists or it does
+/// not, and the unique index makes saying so twice free.
+/// </remarks>
+public sealed record PhotoLikeRequest(bool Liked);
+
+/// <summary>
 /// Sets, or replaces, the account's two security questions. The password is required because these
 /// are a way INTO the account: a thief holding a session who could quietly install questions of
 /// their own would own the recovery path as well as the session.

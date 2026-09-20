@@ -651,6 +651,51 @@ namespace Vortex.Database.Migrations
                     b.ToTable("camera_photos");
                 });
 
+            modelBuilder.Entity("Vortex.Database.Entities.Camera.CameraPhotoLikeEntity", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasColumnName("id");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("CameraPhotoEntityId")
+                        .HasColumnType("int")
+                        .HasColumnName("photo_id");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime(6)")
+                        .HasColumnName("created_at");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<DateTime>("CreatedAt"));
+
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("datetime(6)")
+                        .HasColumnName("deleted_at");
+
+                    b.Property<int>("PlayerEntityId")
+                        .HasColumnType("int")
+                        .HasColumnName("player_id");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("datetime(6)")
+                        .HasColumnName("updated_at");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlComputedColumn(b.Property<DateTime>("UpdatedAt"));
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("PlayerEntityId");
+
+                    b.HasIndex("CameraPhotoEntityId", "PlayerEntityId")
+                        .IsUnique();
+
+                    b.ToTable("camera_photo_likes");
+                });
+
             modelBuilder.Entity("Vortex.Database.Entities.Catalog.CatalogClubGiftEntity", b =>
                 {
                     b.Property<int>("Id")
@@ -12380,6 +12425,25 @@ namespace Vortex.Database.Migrations
                     b.Navigation("PlayerEntity");
 
                     b.Navigation("RoomEntity");
+                });
+
+            modelBuilder.Entity("Vortex.Database.Entities.Camera.CameraPhotoLikeEntity", b =>
+                {
+                    b.HasOne("Vortex.Database.Entities.Camera.CameraPhotoEntity", "CameraPhotoEntity")
+                        .WithMany()
+                        .HasForeignKey("CameraPhotoEntityId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Vortex.Database.Entities.Players.PlayerEntity", "PlayerEntity")
+                        .WithMany()
+                        .HasForeignKey("PlayerEntityId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("CameraPhotoEntity");
+
+                    b.Navigation("PlayerEntity");
                 });
 
             modelBuilder.Entity("Vortex.Database.Entities.Catalog.CatalogOfferEntity", b =>
