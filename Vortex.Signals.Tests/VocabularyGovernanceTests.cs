@@ -98,6 +98,7 @@ public sealed class VocabularyGovernanceTests
         "send_messenger_message",
         "dance",
         "wave",
+        "show_sign",
         "change_figure",
         "change_motto",
         "wear_badge",

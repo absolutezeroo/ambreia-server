@@ -2777,6 +2777,7 @@ export default {
     fact_pet_command: 'Ordre au familier',
     fact_relation: 'Où il se tenait',
     fact_dance: 'Quelle danse',
+    fact_sign: 'Quelle pancarte (0-17)',
     // Les quatre danses portent leur nom du client dans toutes les langues.
     dance_dance: 'Dance',
     dance_pogo_mogo: 'Pogo-Mogo',

@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
+using System.Globalization;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -432,6 +433,18 @@ public sealed partial class RoomGrain
             {
                 return false;
             }
+
+            await _events
+                .PublishAsync(
+                    new PlayerGesturedEvent(
+                        ctx.PlayerId,
+                        _state.RoomId.Value,
+                        "sign",
+                        signId.ToString(CultureInfo.InvariantCulture)
+                    ),
+                    ct
+                )
+                .ConfigureAwait(true);
 
             await PublishPerformedActionAsync(ctx, SignActionCode, signId, ct).ConfigureAwait(true);
 

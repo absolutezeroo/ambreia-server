@@ -74,6 +74,9 @@ public static class SignalActions
     /// <inheritdoc cref="RewardTrackActions.Wave"/>
     public const string Wave = RewardTrackActions.Wave;
 
+    /// <inheritdoc cref="RewardTrackActions.ShowSign"/>
+    public const string ShowSign = RewardTrackActions.ShowSign;
+
     /// <inheritdoc cref="RewardTrackActions.ChangeFigure"/>
     public const string ChangeFigure = RewardTrackActions.ChangeFigure;
 
@@ -301,6 +304,7 @@ public static class SignalActions
         SendMessengerMessage,
         Dance,
         Wave,
+        ShowSign,
         ChangeFigure,
         ChangeMotto,
         WearBadge,

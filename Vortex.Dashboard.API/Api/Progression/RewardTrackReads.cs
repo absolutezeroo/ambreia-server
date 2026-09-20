@@ -617,6 +617,7 @@ internal sealed class RewardTrackReads(
         RewardTrackActions.ChatWithSomeone,
         RewardTrackActions.Dance,
         RewardTrackActions.Wave,
+        RewardTrackActions.ShowSign,
         RewardTrackActions.RequestFriend,
         RewardTrackActions.GiveRespect,
         RewardTrackActions.ChangeFigure,

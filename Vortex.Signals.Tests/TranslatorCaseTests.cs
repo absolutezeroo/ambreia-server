@@ -120,6 +120,24 @@ public sealed class TranslatorCaseTests
             .ContainSingle(f => f.Key == RewardTrackFacts.Dance && f.Value == style);
     }
 
+    [Theory]
+    // The digits, and the lowest and highest the client has artwork for.
+    [InlineData("0")]
+    [InlineData("7")]
+    [InlineData("17")]
+    public void A_sign_carries_which_sign_it_was(string signId)
+    {
+        new GestureTranslator()
+            .Translate(new PlayerGesturedEvent(4312, 7, "sign", signId))
+            .Should()
+            .ContainSingle()
+            .Which.Should()
+            .Match<ProgressSignal>(s =>
+                s.Action == RewardTrackActions.ShowSign
+                && s.Facts.Any(f => f.Key == RewardTrackFacts.Sign && f.Value == signId)
+            );
+    }
+
     [Fact]
     public void A_wave_carries_no_dance()
     {
@@ -409,6 +427,7 @@ public sealed class TranslatorCaseTests
             // written and never matched.
             yield return new PlayerGesturedEvent(4312, 7, "dance", "the_rollie");
             yield return new PlayerGesturedEvent(4312, 7, "wave");
+            yield return new PlayerGesturedEvent(4312, 7, "sign", "11");
         }
 
         if (eventType == typeof(ItemMovedEvent))

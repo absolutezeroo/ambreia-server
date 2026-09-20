@@ -183,6 +183,9 @@ public static class RewardTrackFacts
     /// </summary>
     public const string Dance = "dance";
 
+    /// <summary>Which sign was held up: <c>0</c>–<c>10</c> are the digits, <c>11</c>–<c>17</c> the specials.</summary>
+    public const string Sign = "sign";
+
     /// <summary>Which setting or section an edit touched.</summary>
     public const string Section = "section";
 

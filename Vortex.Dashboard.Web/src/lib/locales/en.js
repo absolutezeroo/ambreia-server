@@ -2766,6 +2766,9 @@ export default {
     fact_pet_command: 'Pet command',
     fact_relation: 'Where they stood',
     fact_dance: 'Which dance',
+    // Numbered, not named: the client draws 0-10 as digits and 11-17 as specials this repository
+    // has never named, and inventing them is how a picker offers a heart that is really a skull.
+    fact_sign: 'Which sign (0-17)',
     dance_dance: 'Dance',
     dance_pogo_mogo: 'Pogo-Mogo',
     dance_duck_funk: 'Duck Funk',

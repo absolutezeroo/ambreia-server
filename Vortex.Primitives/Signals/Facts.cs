@@ -423,6 +423,28 @@ public static class Facts
     );
 
     /// <summary>
+    /// Which sign an avatar held up.
+    /// </summary>
+    /// <remarks>
+    /// A number, not a closed set, and deliberately: the client draws 0–17, of which 0–10 are the
+    /// digits and 11–17 are specials this repository has never named. A list of eighteen values
+    /// where seven read "Special 14" is worse than a number, and naming them from memory is how a
+    /// picker comes to offer a heart that is really a skull.
+    ///
+    /// Ordering is useful here rather than nonsense: "at least 11" is "a special", which is the
+    /// one question the numbering does answer.
+    ///
+    /// When somebody confirms the artwork names, this becomes an Enum over the same values and no
+    /// stored task changes.
+    /// </remarks>
+    public static readonly FactKey Sign = new(
+        RewardTrackFacts.Sign,
+        FactKind.Number,
+        "rewardTracks.fact_sign",
+        "Which sign"
+    );
+
+    /// <summary>
     /// Which dialog saved a room's settings.
     /// </summary>
     /// <remarks>

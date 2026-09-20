@@ -86,6 +86,9 @@ public static class RewardTrackActions
     /// <summary>Waved in a room. (Introduction Track)</summary>
     public const string Wave = "wave";
 
+    /// <summary>Held up a sign.</summary>
+    public const string ShowSign = "show_sign";
+
     /// <summary>Changed the avatar's figure. (Introduction Track)</summary>
     public const string ChangeFigure = "change_figure";
 
