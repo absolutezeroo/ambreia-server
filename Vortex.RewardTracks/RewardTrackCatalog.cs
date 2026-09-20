@@ -272,10 +272,135 @@ internal sealed class RewardTrackCatalog(
                         // indexes would otherwise strand a player on a step that does not exist.
                         StepIndex = index,
                         ActionCode = step.ActionCode,
-                        Filters = BuildFilters(step, filtersByStep[step.Id]),
+                        Filters = IsNested(filtersByStep[step.Id])
+                            ? []
+                            : BuildFilters(step, filtersByStep[step.Id]),
+                        Root = IsNested(filtersByStep[step.Id])
+                            ? BuildRoot(step, filtersByStep[step.Id])
+                            : null,
                     }
             ),
         ];
+    }
+
+    /// <summary>
+    /// Whether this step's rows form a tree, or the flat list they have always been.
+    /// </summary>
+    /// <remarks>
+    /// Asked rather than assumed, so a step nobody nested is carried the way it always was and
+    /// takes the same path through the engine. A single joining row, or a single row with a parent,
+    /// is enough to make the whole step a tree — there is no halfway shape.
+    /// </remarks>
+    private static bool IsNested(IEnumerable<RewardTrackStepFilterEntity> filters)
+    {
+        foreach (RewardTrackStepFilterEntity filter in filters)
+        {
+            if (filter.Kind != PredicateKind.Test || filter.ParentId is not null)
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /// <summary>
+    /// Assembles a step's rows into the tree they describe, under an implicit <c>All</c> root.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// The root is implicit and not a row: a step has always meant "all of this", and giving it a
+    /// row would be one more thing an editor could delete to change what a step means without
+    /// touching a condition.
+    /// </para>
+    /// <para>
+    /// Unlike the flat path, a test whose back-reference cannot resolve is kept rather than
+    /// dropped. Dropping is safe when everything ANDs — one less thing to satisfy — and is not safe
+    /// here: removing a branch of an <c>Any</c> makes the step harder, removing one from under a
+    /// <c>Not</c> inverts it. Kept, it simply never holds, which the evaluator already does for a
+    /// reference it cannot resolve.
+    /// </para>
+    /// </remarks>
+    private static StepPredicateSnapshot BuildRoot(
+        RewardTrackTaskStepEntity step,
+        IEnumerable<RewardTrackStepFilterEntity> filters
+    )
+    {
+        List<RewardTrackStepFilterEntity> rows = [.. filters];
+        Dictionary<int, List<RewardTrackStepFilterEntity>> byParent = [];
+
+        foreach (RewardTrackStepFilterEntity row in rows.OrderBy(f => f.SortOrder))
+        {
+            // Everything with no parent hangs off the implicit root, which has no id of its own.
+            int parent = row.ParentId ?? 0;
+
+            if (!byParent.TryGetValue(parent, out List<RewardTrackStepFilterEntity>? siblings))
+            {
+                byParent[parent] = siblings = [];
+            }
+
+            siblings.Add(row);
+        }
+
+        return new StepPredicateSnapshot
+        {
+            Kind = PredicateKind.All,
+            Children = Assemble(step, byParent, 0, []),
+        };
+    }
+
+    /// <summary>
+    /// The children of one node, and their children.
+    /// </summary>
+    /// <param name="seen">
+    /// The ids already on this branch. A row whose parent chain loops back on itself would recurse
+    /// for ever, and a row can be given any parent by the operations API or by hand.
+    /// </param>
+    private static ImmutableArray<StepPredicateSnapshot> Assemble(
+        RewardTrackTaskStepEntity step,
+        Dictionary<int, List<RewardTrackStepFilterEntity>> byParent,
+        int parentId,
+        HashSet<int> seen
+    )
+    {
+        if (!byParent.TryGetValue(parentId, out List<RewardTrackStepFilterEntity>? children))
+        {
+            return [];
+        }
+
+        List<StepPredicateSnapshot> built = [];
+
+        foreach (RewardTrackStepFilterEntity row in children)
+        {
+            if (!seen.Add(row.Id))
+            {
+                continue;
+            }
+
+            built.Add(
+                row.Kind == PredicateKind.Test
+                    ? new StepPredicateSnapshot
+                    {
+                        Kind = PredicateKind.Test,
+                        Test = new RewardTrackStepFilterSnapshot
+                        {
+                            FactKey = row.FactKey,
+                            Operator = row.Operator,
+                            Value = row.Value,
+                            ReferencedStep = ParseBackReference(row.Value),
+                        },
+                    }
+                    : new StepPredicateSnapshot
+                    {
+                        Kind = row.Kind,
+                        Children = Assemble(step, byParent, row.Id, seen),
+                    }
+            );
+
+            seen.Remove(row.Id);
+        }
+
+        return [.. built];
     }
 
     private static ImmutableArray<RewardTrackStepFilterSnapshot> BuildFilters(

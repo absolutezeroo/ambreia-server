@@ -10069,11 +10069,21 @@ namespace Vortex.Database.Migrations
                         .HasColumnType("varchar(64)")
                         .HasColumnName("fact_key");
 
+                    b.Property<int>("Kind")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasDefaultValue(0)
+                        .HasColumnName("kind");
+
                     b.Property<int>("Operator")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int")
                         .HasDefaultValue(0)
                         .HasColumnName("operator");
+
+                    b.Property<int?>("ParentId")
+                        .HasColumnType("int")
+                        .HasColumnName("parent_id");
 
                     b.Property<int>("RewardTrackTaskStepEntityId")
                         .HasColumnType("int")
@@ -10101,6 +10111,8 @@ namespace Vortex.Database.Migrations
                         .HasColumnName("value");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("ParentId");
 
                     b.HasIndex("RewardTrackTaskStepEntityId");
 
@@ -12430,7 +12442,7 @@ namespace Vortex.Database.Migrations
             modelBuilder.Entity("Vortex.Database.Entities.Camera.CameraPhotoLikeEntity", b =>
                 {
                     b.HasOne("Vortex.Database.Entities.Camera.CameraPhotoEntity", "CameraPhotoEntity")
-                        .WithMany()
+                        .WithMany("CameraPhotoLikes")
                         .HasForeignKey("CameraPhotoEntityId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -14159,6 +14171,11 @@ namespace Vortex.Database.Migrations
             modelBuilder.Entity("Vortex.Database.Entities.Achievements.AchievementEntity", b =>
                 {
                     b.Navigation("Levels");
+                });
+
+            modelBuilder.Entity("Vortex.Database.Entities.Camera.CameraPhotoEntity", b =>
+                {
+                    b.Navigation("CameraPhotoLikes");
                 });
 
             modelBuilder.Entity("Vortex.Database.Entities.Catalog.CatalogOfferEntity", b =>
