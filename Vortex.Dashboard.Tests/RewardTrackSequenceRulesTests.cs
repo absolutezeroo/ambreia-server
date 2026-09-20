@@ -306,6 +306,187 @@ public sealed class RewardTrackSequenceRulesTests
             .Be("filter_incomplete");
     }
 
+    private static RewardTrackStepValueSpec OfFact(string key) => new(StepValueKind.Fact, key);
+
+    private static RewardTrackStepValueSpec OfLiteral(string text) =>
+        new(StepValueKind.Literal, text);
+
+    private static RewardTrackStepValueSpec OfCount(string key) => new(StepValueKind.CountOf, key);
+
+    private static RewardTrackStepValueSpec OfStep(int step, string key) =>
+        new(StepValueKind.StepFact, key, step);
+
+    /// <summary>A one-step task whose only condition names both its sides.</summary>
+    private static string? Sides(
+        string action,
+        RewardTrackStepValueSpec left,
+        StepFilterOperator op,
+        RewardTrackStepValueSpec right
+    ) =>
+        RewardTrackSequenceRules.FirstProblem(
+            [
+                new RewardTrackTaskStepSpec(
+                    action,
+                    [new RewardTrackStepFilterSpec("unused", op, "unused", left, right)]
+                ),
+            ],
+            SignalVocabularyFixture.Real
+        );
+
+    [Fact]
+    public void Two_facts_of_the_same_kind_may_be_compared()
+    {
+        // The question the old shape could not ask at all: two facts of one signal, against each
+        // other. Both are numbers, so "you got at least as many tokens as you paid" is one
+        // condition rather than a task per price.
+        Sides(
+                RewardTrackActions.BuyMintTokens,
+                OfFact(RewardTrackFacts.Quantity),
+                StepFilterOperator.AtLeast,
+                OfFact(RewardTrackFacts.Price)
+            )
+            .Should()
+            .BeNull();
+    }
+
+    [Fact]
+    public void Two_facts_about_different_kinds_of_thing_are_refused()
+    {
+        // A room id against a player id. It saves cleanly, evaluates cleanly, and matches nothing
+        // for ever -- which is exactly the class of content this validator exists to keep out.
+        Sides(
+                RewardTrackActions.AnswerDoorbell,
+                OfFact(RewardTrackFacts.Room),
+                StepFilterOperator.Equals,
+                OfFact(RewardTrackFacts.Player)
+            )
+            .Should()
+            .Be("filter_sides_do_not_compare");
+    }
+
+    [Theory]
+    // However long the list is, how many of them there are is a number -- so ordering is allowed
+    // over a count even though it is refused over the set itself.
+    [InlineData(StepFilterOperator.AtLeast, "3", null)]
+    [InlineData(StepFilterOperator.AtMost, "3", null)]
+    // And the literal beside it still has to be one.
+    [InlineData(StepFilterOperator.AtLeast, "trois", "filter_needs_a_number")]
+    public void A_count_is_a_number_and_is_judged_as_one(
+        StepFilterOperator op,
+        string typed,
+        string? expected
+    ) =>
+        Sides(
+                RewardTrackActions.ChangeFigure,
+                OfCount(RewardTrackFacts.FigureSet),
+                op,
+                OfLiteral(typed)
+            )
+            .Should()
+            .Be(expected);
+
+    [Fact]
+    public void A_side_naming_a_fact_the_action_never_reports_is_refused() =>
+        Sides(
+                RewardTrackActions.EnterOtherUsersRoom,
+                OfFact(RewardTrackFacts.Room),
+                StepFilterOperator.Equals,
+                OfFact(RewardTrackFacts.Definition)
+            )
+            .Should()
+            .Be("filter_fact_not_emitted_by_action");
+
+    [Fact]
+    public void A_step_reference_is_held_to_the_same_two_rules_wherever_it_sits()
+    {
+        // Pointing at itself: step 0 has not run when step 0 is tested.
+        Sides(
+                RewardTrackActions.EnterOtherUsersRoom,
+                OfFact(RewardTrackFacts.Room),
+                StepFilterOperator.Equals,
+                OfStep(0, RewardTrackFacts.Room)
+            )
+            .Should()
+            .Be("filter_reference_must_be_earlier");
+
+        // And pointing at a step that never records what is asked of it.
+        RewardTrackSequenceRules
+            .FirstProblem(
+                [
+                    // Buying club records a price and a number of months, and no room at all.
+                    new RewardTrackTaskStepSpec(RewardTrackActions.BuyClub, []),
+                    new RewardTrackTaskStepSpec(
+                        RewardTrackActions.EnterOtherUsersRoom,
+                        [
+                            new RewardTrackStepFilterSpec(
+                                "unused",
+                                StepFilterOperator.Equals,
+                                "unused",
+                                OfFact(RewardTrackFacts.Room),
+                                OfStep(0, RewardTrackFacts.Room)
+                            ),
+                        ]
+                    ),
+                ],
+                SignalVocabularyFixture.Real
+            )
+            .Should()
+            .Be("filter_reference_fact_not_captured");
+    }
+
+    [Fact]
+    public void An_earlier_step_may_be_read_under_a_different_fact()
+    {
+        // "buy club, then redeem at least what it cost you." The two sides name DIFFERENT fact
+        // keys across two steps, which is precisely what $N cannot express -- it resolves an
+        // earlier step's value for the same key it is compared against. It has to reach the
+        // validator as something allowed, or the engine's new reach would be unreachable from the
+        // editor.
+        RewardTrackSequenceRules
+            .FirstProblem(
+                [
+                    new RewardTrackTaskStepSpec(RewardTrackActions.BuyClub, []),
+                    new RewardTrackTaskStepSpec(
+                        RewardTrackActions.RedeemMarketplaceCredits,
+                        [
+                            new RewardTrackStepFilterSpec(
+                                "unused",
+                                StepFilterOperator.AtLeast,
+                                "unused",
+                                OfFact(RewardTrackFacts.Quantity),
+                                OfStep(0, RewardTrackFacts.Months)
+                            ),
+                        ]
+                    ),
+                ],
+                SignalVocabularyFixture.Real
+            )
+            .Should()
+            .BeNull();
+    }
+
+    [Fact]
+    public void A_kind_outside_the_enum_is_refused_rather_than_stored() =>
+        Sides(
+                RewardTrackActions.EnterOtherUsersRoom,
+                new RewardTrackStepValueSpec((StepValueKind)77, RewardTrackFacts.Room),
+                StepFilterOperator.Equals,
+                OfLiteral("12")
+            )
+            .Should()
+            .Be("filter_value_not_supported");
+
+    [Fact]
+    public void An_empty_side_is_the_same_mistake_as_an_empty_field() =>
+        Sides(
+                RewardTrackActions.EnterOtherUsersRoom,
+                OfFact(RewardTrackFacts.Room),
+                StepFilterOperator.Equals,
+                OfLiteral("   ")
+            )
+            .Should()
+            .Be("filter_incomplete");
+
     [Fact]
     public void An_empty_tree_is_a_step_with_no_conditions_not_a_refusal() =>
         RewardTrackSequenceRules

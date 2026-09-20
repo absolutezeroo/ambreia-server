@@ -628,7 +628,21 @@ internal sealed class RewardOperations(
         );
 
     private static RewardTrackStepFilterSpec Filter(RewardTrackStepFilterBody f) =>
-        new(f.FactKey, (StepFilterOperator)f.Op, f.Value);
+        new(f.FactKey, (StepFilterOperator)f.Op, f.Value, Side(f.Left), Side(f.Right));
+
+    /// <summary>
+    /// One side, or <c>null</c> when the caller named none.
+    /// </summary>
+    /// <remarks>
+    /// Nothing is checked here beyond the shape of the JSON — a kind outside the enum, a step that
+    /// points forward, a fact the action never reports. All of it reaches
+    /// <c>RewardTrackSequenceRules</c>, which is where every other refusal lives and the only place
+    /// that answers with a code the editor knows how to show.
+    /// </remarks>
+    private static RewardTrackStepValueSpec? Side(RewardTrackStepValueBody? value) =>
+        value is null
+            ? null
+            : new RewardTrackStepValueSpec((StepValueKind)value.Kind, value.Arg, value.Step);
 
     /// <summary>
     /// A step's condition tree as the spec spells it, or <c>null</c> when the caller sent none.

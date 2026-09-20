@@ -216,6 +216,9 @@ export default {
     predicateGroupNeedsChild: 'An empty group holds nothing. Put a condition in it or remove it.',
     predicateNotNeedsOneChild: '“Not” inverts exactly one condition.',
     predicateShapeMismatch: 'That condition is both a test and a group. It can only be one.',
+    filterSidesDoNotCompare:
+      'These two are not the same kind of thing, so they can never be equal.',
+    filterValueNotSupported: 'This build does not know that kind of value.',
     taskIdAndActionRequired: 'A task needs an identifier and an action.',
   },
   account: {

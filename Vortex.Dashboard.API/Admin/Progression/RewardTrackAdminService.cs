@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -852,6 +853,10 @@ internal sealed class RewardTrackAdminService(
                 FactKey = node.Test?.FactKey.Trim() ?? string.Empty,
                 Operator = node.Test?.Operator ?? StepFilterOperator.Equals,
                 Value = node.Test?.Value.Trim() ?? string.Empty,
+                LeftKind = node.Test?.Left?.Kind ?? StepValueKind.Fact,
+                LeftArg = Packed(node.Test?.Left),
+                RightKind = node.Test?.Right?.Kind ?? StepValueKind.Literal,
+                RightArg = Packed(node.Test?.Right),
             };
 
             db.RewardTrackStepFilters.Add(row);
@@ -866,6 +871,20 @@ internal sealed class RewardTrackAdminService(
                 .ConfigureAwait(false);
         }
     }
+
+    /// <summary>
+    /// One side as the column stores it, or <c>null</c> to leave the row saying what it always did.
+    /// </summary>
+    /// <remarks>
+    /// A <see cref="StepValueKind.StepFact"/> packs its step into the argument — <c>N:fact_key</c>,
+    /// the shape <c>$N</c> already had — so the pair of columns stays a pair. The caller names the
+    /// step as a number and never has to know that.
+    /// </remarks>
+    private static string? Packed(RewardTrackStepValueSpec? value) =>
+        value is null ? null
+        : value.Kind == StepValueKind.StepFact
+            ? $"{value.Step.ToString(CultureInfo.InvariantCulture)}:{value.Arg.Trim()}"
+        : value.Arg.Trim();
 
     /// <summary>Drops a task's steps and their filters. Neither holds player state.</summary>
     private static async Task RemoveStepsAsync(
@@ -960,6 +979,10 @@ internal sealed class RewardTrackAdminService(
                     FactKey = filter.FactKey,
                     Operator = filter.Operator,
                     Value = filter.Value,
+                    LeftKind = filter.LeftKind,
+                    LeftArg = filter.LeftArg,
+                    RightKind = filter.RightKind,
+                    RightArg = filter.RightArg,
                 };
 
                 db.RewardTrackStepFilters.Add(copy);

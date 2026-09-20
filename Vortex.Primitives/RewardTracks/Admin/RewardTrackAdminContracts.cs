@@ -90,8 +90,21 @@ public sealed record RewardTrackStepNodeSpec(
 public sealed record RewardTrackStepFilterSpec(
     string FactKey,
     StepFilterOperator Operator,
-    string Value
+    string Value,
+    RewardTrackStepValueSpec? Left = null,
+    RewardTrackStepValueSpec? Right = null
 );
+
+/// <summary>
+/// One side of a comparison.
+/// </summary>
+/// <param name="Arg">A fact key, or the literal text.</param>
+/// <param name="Step">
+/// Which earlier step to read, for <see cref="StepValueKind.StepFact"/>; <c>-1</c> otherwise.
+/// Spelled as its own field rather than packed into <paramref name="Arg"/>: the packing is how the
+/// row is stored, and a caller should not have to know the storage to name a step.
+/// </param>
+public sealed record RewardTrackStepValueSpec(StepValueKind Kind, string Arg, int Step = -1);
 
 /// <summary>Create/update spec for a milestone. <paramref name="Rewards"/> replaces the whole bundle.</summary>
 public sealed record RewardTrackPrizeSpec(

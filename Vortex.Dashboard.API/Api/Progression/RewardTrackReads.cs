@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
+using System.Globalization;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -463,6 +464,57 @@ internal sealed class RewardTrackReads(
         );
 
     /// <summary>
+    /// One condition, with both its sides spelled out.
+    /// </summary>
+    /// <remarks>
+    /// A row that never named a side is sent as the two it has always meant — its fact on the
+    /// left, its value on the right — so the editor reads one shape rather than branching on
+    /// whether a condition predates them. A step reference is unpacked from the stored
+    /// <c>N:fact_key</c> here, for the same reason: the caller names a step as a number and never
+    /// has to know how the column holds it.
+    /// </remarks>
+    private static RewardTrackFilterRow Condition(RewardTrackStepFilterEntity row) =>
+        new(
+            row.FactKey,
+            (int)row.Operator,
+            row.Value,
+            Side(row.LeftKind, row.LeftArg, StepValueKind.Fact, row.FactKey),
+            Side(row.RightKind, row.RightArg, StepValueKind.Literal, row.Value)
+        );
+
+    /// <summary>One side, or what the row meant before it could name one.</summary>
+    private static RewardTrackValueRow Side(
+        StepValueKind kind,
+        string? arg,
+        StepValueKind fallbackKind,
+        string fallbackArg
+    )
+    {
+        if (arg is null)
+        {
+            return new RewardTrackValueRow((int)fallbackKind, fallbackArg, -1);
+        }
+
+        if (kind != StepValueKind.StepFact)
+        {
+            return new RewardTrackValueRow((int)kind, arg, -1);
+        }
+
+        int colon = arg.IndexOf(':');
+
+        return
+            colon > 0
+            && int.TryParse(
+                arg.AsSpan(0, colon),
+                NumberStyles.Integer,
+                CultureInfo.InvariantCulture,
+                out int step
+            )
+            ? new RewardTrackValueRow((int)kind, arg[(colon + 1)..], step)
+            : new RewardTrackValueRow((int)kind, arg, -1);
+    }
+
+    /// <summary>
     /// A step's conditions the way they have always been read: one flat list that ANDs.
     /// </summary>
     /// <remarks>
@@ -482,7 +534,7 @@ internal sealed class RewardTrackReads(
                 return [];
             }
 
-            flat.Add(new RewardTrackFilterRow(row.FactKey, (int)row.Operator, row.Value));
+            flat.Add(Condition(row));
         }
 
         return flat;
@@ -542,9 +594,7 @@ internal sealed class RewardTrackReads(
             built.Add(
                 new RewardTrackNodeRow(
                     (int)row.Kind,
-                    row.Kind == PredicateKind.Test
-                        ? new RewardTrackFilterRow(row.FactKey, (int)row.Operator, row.Value)
-                        : null,
+                    row.Kind == PredicateKind.Test ? Condition(row) : null,
                     row.Kind == PredicateKind.Test ? [] : Children(byParent, row.Id, seen)
                 )
             );

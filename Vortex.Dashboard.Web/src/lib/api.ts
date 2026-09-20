@@ -109,6 +109,8 @@ const ERROR_CODE_KEYS: Record<string, string> = {
   predicate_group_needs_a_child: 'errors.predicateGroupNeedsChild',
   predicate_not_needs_one_child: 'errors.predicateNotNeedsOneChild',
   predicate_shape_mismatch: 'errors.predicateShapeMismatch',
+  filter_sides_do_not_compare: 'errors.filterSidesDoNotCompare',
+  filter_value_not_supported: 'errors.filterValueNotSupported',
   task_id_and_action_required: 'errors.taskIdAndActionRequired',
 };
 

@@ -155,6 +155,14 @@ internal static class RewardTrackSequenceRules
         ISignalVocabulary vocabulary
     )
     {
+        // A filter that names either side is judged as two values. The path below is the one every
+        // filter stored today takes, and it is left exactly as it was: nothing that saves this
+        // afternoon may stop saving because a newer shape exists.
+        if (filter.Left is not null || filter.Right is not null)
+        {
+            return SidesProblem(steps, index, step, filter, vocabulary);
+        }
+
         string value = filter.Value?.Trim() ?? string.Empty;
 
         if (value.Length == 0 || string.IsNullOrWhiteSpace(filter.FactKey))
@@ -214,6 +222,148 @@ internal static class RewardTrackSequenceRules
             // "The same furniture" only works between two steps that both talk about furniture.
             : "filter_reference_fact_not_captured";
     }
+
+    /// <summary>
+    /// What is wrong with a comparison that names its sides.
+    /// </summary>
+    /// <remarks>
+    /// Both sides get the same treatment, which is the point of them being the same thing. The
+    /// checks after that are about the pair: the operator has to suit what is on the left, a typed
+    /// value has to be the shape the operator reads, and two facts have to be about the same kind
+    /// of thing — a room id compared with a player id evaluates cleanly and matches nothing, for
+    /// ever, with nothing on any screen to say so.
+    /// </remarks>
+    private static string? SidesProblem(
+        IReadOnlyList<RewardTrackTaskStepSpec> steps,
+        int index,
+        RewardTrackTaskStepSpec step,
+        RewardTrackStepFilterSpec filter,
+        ISignalVocabulary vocabulary
+    )
+    {
+        RewardTrackStepValueSpec left =
+            filter.Left ?? new RewardTrackStepValueSpec(StepValueKind.Fact, filter.FactKey ?? "");
+        RewardTrackStepValueSpec right =
+            filter.Right ?? new RewardTrackStepValueSpec(StepValueKind.Literal, filter.Value ?? "");
+
+        if (SideProblem(steps, index, step, left, vocabulary) is string bad)
+        {
+            return bad;
+        }
+
+        if (SideProblem(steps, index, step, right, vocabulary) is string alsoBad)
+        {
+            return alsoBad;
+        }
+
+        FactKind? leftKind = KindOf(steps, step, left, vocabulary);
+
+        if (leftKind is FactKind kind && !FactOperators.Allows(kind, (int)filter.Operator))
+        {
+            return "filter_operator_not_valid_for_fact";
+        }
+
+        // Only a typed value can be the wrong shape. A fact's shape is the vocabulary's business,
+        // and the kind check above is where that is settled.
+        if (right.Kind == StepValueKind.Literal)
+        {
+            string typed = right.Arg.Trim();
+
+            if (IsList(filter.Operator) && !HasTwoOrMoreEntries(typed))
+            {
+                return "filter_one_of_needs_a_list";
+            }
+
+            if (IsNumeric(filter.Operator) && !IsWholeNumber(typed))
+            {
+                return "filter_needs_a_number";
+            }
+
+            if (leftKind == FactKind.FigureSetId && !IsWholeNumberList(typed))
+            {
+                return "filter_needs_a_number";
+            }
+        }
+
+        return
+            KindOf(steps, step, right, vocabulary) is FactKind rightKind
+            && leftKind is FactKind bothKnown
+            && rightKind != bothKnown
+            ? "filter_sides_do_not_compare"
+            : null;
+    }
+
+    /// <summary>What is wrong with one side on its own.</summary>
+    private static string? SideProblem(
+        IReadOnlyList<RewardTrackTaskStepSpec> steps,
+        int index,
+        RewardTrackTaskStepSpec step,
+        RewardTrackStepValueSpec value,
+        ISignalVocabulary vocabulary
+    )
+    {
+        if (value.Kind == StepValueKind.Literal)
+        {
+            return value.Arg.Trim().Length == 0 ? "filter_incomplete" : null;
+        }
+
+        if (string.IsNullOrWhiteSpace(value.Arg))
+        {
+            return "filter_incomplete";
+        }
+
+        switch (value.Kind)
+        {
+            case StepValueKind.Fact:
+            case StepValueKind.CountOf:
+                // The step's own action never reports this, so nothing would ever satisfy it.
+                return vocabulary.Emits(step.ActionCode, value.Arg)
+                    ? null
+                    : "filter_fact_not_emitted_by_action";
+
+            case StepValueKind.StepFact:
+                if (value.Step < 0 || value.Step >= index)
+                {
+                    // Pointing at itself or forwards: that step has not run when this one is
+                    // tested.
+                    return "filter_reference_must_be_earlier";
+                }
+
+                // The earlier step never recorded this, so there is nothing to resolve to.
+                return vocabulary.Emits(steps[value.Step].ActionCode, value.Arg)
+                    ? null
+                    : "filter_reference_fact_not_captured";
+
+            default:
+                // A kind from a newer build, or from a hand-written call. The engine reads it as
+                // nothing, which is a task that never advances.
+                return "filter_value_not_supported";
+        }
+    }
+
+    /// <summary>
+    /// What kind of thing a side is worth, or <c>null</c> when nothing can say.
+    /// </summary>
+    /// <remarks>
+    /// A typed value has no kind — it is whatever the other side needs it to be, and the shape
+    /// checks above are what hold it to that.
+    /// </remarks>
+    private static FactKind? KindOf(
+        IReadOnlyList<RewardTrackTaskStepSpec> steps,
+        RewardTrackTaskStepSpec step,
+        RewardTrackStepValueSpec value,
+        ISignalVocabulary vocabulary
+    ) =>
+        value.Kind switch
+        {
+            StepValueKind.Fact => vocabulary.FactFor(step.ActionCode, value.Arg)?.Kind,
+            StepValueKind.StepFact => value.Step >= 0 && value.Step < steps.Count
+                ? vocabulary.FactFor(steps[value.Step].ActionCode, value.Arg)?.Kind
+                : null,
+            // However long the list is, how many of them there are is a number.
+            StepValueKind.CountOf => FactKind.Number,
+            _ => null,
+        };
 
     /// <summary>The step a <c>$N</c> value points at, or <c>-1</c> when the value is a literal.</summary>
     public static int BackReference(string value) =>

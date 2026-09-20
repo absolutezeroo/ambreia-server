@@ -3088,6 +3088,8 @@ export interface RewardTrackFilterRow {
   factKey: string;
   op: number;
   value: string;
+  left: RewardTrackValueRow;
+  right: RewardTrackValueRow;
 }
 
 export interface RewardTrackLevelRow {
@@ -3180,6 +3182,12 @@ export interface RewardTrackTaskRow {
   lastMatchedAt: string | null;
   steps: RewardTrackStepRow[];
   levels: RewardTrackLevelRow[];
+}
+
+export interface RewardTrackValueRow {
+  kind: number;
+  arg: string;
+  step: number;
 }
 
 export interface RoomDirectoryPage {
