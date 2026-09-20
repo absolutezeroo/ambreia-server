@@ -42,8 +42,24 @@ public class SessionContext(
         await base.OnSessionConnectedAsync().ConfigureAwait(false);
     }
 
+    /// <summary>
+    ///     Records why a session ended. The client only ever sees close code 1006 for an abnormal
+    ///     drop, and 1006 is the same code whether the server let go, the reverse proxy reaped the
+    ///     connection or the route died — so the browser console cannot name the layer and this was
+    ///     the only place that can. <see cref="CloseReason" /> does: <c>RemoteClosing</c> means the
+    ///     peer side (the browser, or Caddy/Traefik acting for it) closed, <c>TimeOut</c> means
+    ///     SuperSocket's own idle reaper, <c>SocketError</c> means the transport failed underneath.
+    ///     The silence figure alongside it says whether the heartbeat was still getting answers.
+    /// </summary>
     protected override async ValueTask OnSessionClosedAsync(CloseEventArgs e)
     {
+        _logger.LogInformation(
+            "Session {SessionKey} closed: reason={Reason} silent for {SilenceSeconds:F1}s",
+            SessionKey,
+            e.Reason,
+            (DateTime.UtcNow - LastActivityUtc).TotalSeconds
+        );
+
         await base.OnSessionClosedAsync(e).ConfigureAwait(false);
     }
 
