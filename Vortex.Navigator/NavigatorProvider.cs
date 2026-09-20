@@ -15,6 +15,7 @@ using Vortex.Primitives.Navigator.Enums;
 using Vortex.Primitives.Orleans.Snapshots.Navigator;
 using Vortex.Primitives.Orleans.Snapshots.Room;
 using Vortex.Primitives.Players;
+using Vortex.Primitives.Players.Enums;
 
 namespace Vortex.Navigator;
 
@@ -108,7 +109,7 @@ public sealed class NavigatorProvider(
             .CreateDbContextAsync(ct)
             .ConfigureAwait(false);
 
-        return await BuildRoomQuery(dbCtx)
+        return await BuildRoomQuery(dbCtx, playerId)
             .Where(x => x.PlayerEntityId == playerId.Value)
             .OrderByPopularity()
             .Take(limit)
@@ -125,7 +126,9 @@ public sealed class NavigatorProvider(
             .CreateDbContextAsync(ct)
             .ConfigureAwait(false);
 
-        return await BuildRoomQuery(dbCtx)
+        // Counted with the owner exempted: this feeds the "can I create another room" limit, and a
+        // sealed room still occupies a slot.
+        return await BuildRoomQuery(dbCtx, playerId)
             .CountAsync(x => x.PlayerEntityId == playerId.Value, ct)
             .ConfigureAwait(false);
     }
@@ -751,8 +754,53 @@ public sealed class NavigatorProvider(
         return [.. rooms.OrderBy(x => rankByRoomId.GetValueOrDefault(x.RoomId, int.MaxValue))];
     }
 
-    private static IQueryable<RoomEntity> BuildRoomQuery(VortexDbContext dbCtx) =>
-        dbCtx.Rooms.AsNoTracking().Where(x => x.DeletedAt == null);
+    /// <summary>
+    /// The base every listing in this provider is built on, which is why the Builders Club seal
+    /// lives here: one predicate hides a sealed room from all twenty of them at once, instead of
+    /// twenty chances to forget one.
+    /// </summary>
+    /// <param name="owner">
+    /// The player whose own rooms must stay visible even when sealed — they are the only one who
+    /// can unseal them, so hiding them from their own list would leave them with a room they
+    /// cannot find. Left null by every listing that shows other people's rooms.
+    /// </param>
+    /// <remarks>
+    /// A room is sealed when it holds Builders Club furniture while its owner's subscription has
+    /// lapsed; <c>IBuildersClubService.IsRoomSealedAsync</c> answers the same question for room
+    /// entry, and the two must agree. Expressed here as SQL rather than by calling that service,
+    /// because a listing resolves many rooms at once and a per-row service call would be a query
+    /// each.
+    /// <para>
+    /// ponytail: two correlated EXISTS per listed room. Fine against the indexes that exist
+    /// (<c>furniture(room_id, deleted_at)</c>, subscriptions by player) and measured on nothing
+    /// larger; if the navigator ever shows up in a slow-query log, the shape to reach for is a
+    /// denormalised "sealed" flag on the room maintained at place/pickup and at subscription
+    /// expiry.
+    /// </para>
+    /// </remarks>
+    private static IQueryable<RoomEntity> BuildRoomQuery(
+        VortexDbContext dbCtx,
+        PlayerId? owner = null
+    )
+    {
+        DateTime now = DateTime.UtcNow;
+        int ownerId = owner?.Value ?? 0;
+
+        return dbCtx
+            .Rooms.AsNoTracking()
+            .Where(x => x.DeletedAt == null)
+            .Where(x =>
+                x.PlayerEntityId == ownerId
+                || !dbCtx.Furnitures.Any(f =>
+                    f.RoomEntityId == x.Id && f.DeletedAt == null && f.IsBuildersClub
+                )
+                || dbCtx.PlayerSubscriptions.Any(s =>
+                    s.PlayerEntityId == x.PlayerEntityId
+                    && s.SubscriptionType == SubscriptionType.BuildersClub
+                    && s.ExpiresAt > now
+                )
+            );
+    }
 
     /// <summary>Projection shape for the visit-log grouping. Plain settable properties: this type
     /// only ever exists inside an EF expression tree.</summary>

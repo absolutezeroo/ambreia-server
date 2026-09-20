@@ -67,4 +67,46 @@ internal sealed class BuildersClubService(IDbContextFactory<VortexDbContext> dbC
             .CountAsync(f => f.PlayerEntityId == playerId && f.DeletedAt == null, ct)
             .ConfigureAwait(false);
     }
+
+    public async Task<bool> IsRoomSealedAsync(int roomId, CancellationToken ct = default)
+    {
+        if (roomId <= 0)
+        {
+            return false;
+        }
+
+        await using VortexDbContext dbCtx = await _dbContextFactory
+            .CreateDbContextAsync(ct)
+            .ConfigureAwait(false);
+
+        // Asked in the cheap order: most rooms hold no Builders Club furniture at all, and that
+        // question is one indexed EXISTS, where the subscription answer needs the room's owner
+        // first.
+        bool hasBuildersClubFurniture = await dbCtx
+            .Furnitures.AsNoTracking()
+            .AnyAsync(f => f.RoomEntityId == roomId && f.DeletedAt == null && f.IsBuildersClub, ct)
+            .ConfigureAwait(false);
+
+        if (!hasBuildersClubFurniture)
+        {
+            return false;
+        }
+
+        int ownerId = await dbCtx
+            .Rooms.AsNoTracking()
+            .Where(r => r.Id == roomId && r.DeletedAt == null)
+            .Select(r => r.PlayerEntityId)
+            .FirstOrDefaultAsync(ct)
+            .ConfigureAwait(false);
+
+        if (ownerId <= 0)
+        {
+            return false;
+        }
+
+        BuildersClubSubscriptionSnapshot subscription = await GetSubscriptionAsync(ownerId, ct)
+            .ConfigureAwait(false);
+
+        return !subscription.IsActive;
+    }
 }

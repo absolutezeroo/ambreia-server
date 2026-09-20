@@ -761,6 +761,11 @@ public sealed partial class InventoryGrain
             PlayerEntityId = (int)this.GetPrimaryKeyLong(),
             FurnitureDefinitionEntityId = def.Id,
             ExtraData = extraData,
+            // This method exists for one caller, BuildersClubPlacementHelper, so the provenance is
+            // known here and nowhere later: the same definition can also be bought with credits in
+            // the Normal tree, and only the grant path can tell the two apart. It is what makes a
+            // room lockable once the subscription lapses.
+            IsBuildersClub = true,
         };
 
         VortexDbContext dbCtx = await _dbCtxFactory.CreateDbContextAsync(ct).ConfigureAwait(true);

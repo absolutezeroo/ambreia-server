@@ -8,14 +8,6 @@ using Vortex.Primitives.Rooms.Enums;
 namespace Vortex.Database.Entities.Furniture;
 
 [Table("furniture")]
-// The inventory query, covered. Opening the hand loads every item a player owns through four
-// predicates -- player, no room, no wired chest, not deleted -- and the schema offered it only the
-// simple foreign-key index on player_id, so a player with fifty thousand items had all fifty
-// thousand rows read and filtered in the server for every one of them. It is the most-run query in
-// the hotel: every login, and every reload after a trade, a placement or a purchase.
-// jukebox_id joined the key because it joined the predicate: a disk loaded into a jukebox is out of
-// its owner's hands exactly like one in a chest, and leaving the column out of the index would make
-// the hotel's most-run query stop covering and start reading rows to throw them away.
 [Index(
     nameof(PlayerEntityId),
     nameof(RoomEntityId),
@@ -59,6 +51,23 @@ public class FurnitureEntity : VortexEntity
 
     [Column("extra_data")]
     public string? ExtraData { get; set; }
+
+    /// <summary>
+    /// The item was handed out by Builders Club rather than bought, which makes it rented rather
+    /// than owned: while the owner's subscription is lapsed, any room holding one of these is
+    /// hidden from the navigator and refuses everyone but its owner and staff.
+    /// </summary>
+    /// <remarks>
+    /// Provenance has to be stored, not derived. The same definition can be sold in the Normal
+    /// tree as well as the Builders Club one — see <c>BuildersClubPlacementHelper.ResolveOffer</c>,
+    /// which looks the offer up in both — so recomputing "is this a Builders Club item" from the
+    /// catalog would lock the room of someone who paid credits for the same furni. Written only by
+    /// <c>InventoryGrain.GrantSingleFurnitureIfUnderLimitAsync</c>, whose single caller is the
+    /// Builders Club placement path.
+    /// </remarks>
+    [Column("is_builders_club")]
+    [DefaultValue(false)]
+    public bool IsBuildersClub { get; set; }
 
     [ForeignKey(nameof(PlayerEntityId))]
     public PlayerEntity? PlayerEntity { get; set; }

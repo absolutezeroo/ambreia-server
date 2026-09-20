@@ -47,10 +47,12 @@ internal sealed partial class RoomService(
     IDbContextFactory<VortexDbContext> dbContextFactory,
     IRoomModerationStore roomModerationStore,
     IRoomAdvertisementService roomAdvertisements,
+    IBuildersClubService buildersClubService,
     IEventPublisher events,
     ICancellableEventPublisher cancellableEvents
 ) : IRoomService
 {
+    private readonly IBuildersClubService _buildersClubService = buildersClubService;
     private readonly IRoomAdvertisementService _roomAdvertisements = roomAdvertisements;
     private readonly IDbContextFactory<VortexDbContext> _dbContextFactory = dbContextFactory;
     private readonly IGrainFactory _grainFactory = grainFactory;
@@ -122,6 +124,25 @@ internal sealed partial class RoomService(
         RoomSnapshot snapshot = await room.GetSnapshotAsync().ConfigureAwait(false);
         RoomControllerType controllerLevel = await room.GetControllerLevelAsync(ctx, ct)
             .ConfigureAwait(false);
+
+        // Builders Club furniture is rented, not owned: while the owner's subscription is lapsed
+        // the room it stands in admits nobody else. `Owner` is the right threshold rather than
+        // `Rights` because ResolveControllerLevel hands `Owner` to the room's owner and
+        // `Moderator` to room.moderate.any — so this reads exactly as "the owner and staff", and
+        // a rights-holder is turned away with everyone else.
+        if (
+            controllerLevel < RoomControllerType.Owner
+            && await _buildersClubService.IsRoomSealedAsync(roomId.Value, ct).ConfigureAwait(false)
+        )
+        {
+            await playerPresence
+                .SendComposerAsync(
+                    new CantConnectMessageComposer { ErrorType = RoomConnectionErrorType.NoEntry }
+                )
+                .ConfigureAwait(false);
+            await playerPresence.SetPendingRoomAsync(RoomId.Invalid, false).ConfigureAwait(false);
+            return;
+        }
 
         if (controllerLevel < RoomControllerType.Rights)
         {

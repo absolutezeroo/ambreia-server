@@ -3420,6 +3420,12 @@ namespace Vortex.Database.Migrations
                         .HasColumnType("int")
                         .HasColumnName("definition_id");
 
+                    b.Property<bool>("IsBuildersClub")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("tinyint(1)")
+                        .HasDefaultValue(false)
+                        .HasColumnName("is_builders_club");
+
                     b.Property<int?>("JukeboxEntityId")
                         .HasColumnType("int")
                         .HasColumnName("jukebox_id");
