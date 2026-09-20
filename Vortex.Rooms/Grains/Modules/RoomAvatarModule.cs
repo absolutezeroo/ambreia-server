@@ -643,18 +643,21 @@ public sealed partial class RoomAvatarModule(RoomGrain roomGrain)
     }
 
     /// <summary>
-    /// Sitting or laying cancels a dance on the avatar itself, but the room only ever learns about a
-    /// dance through <see cref="DanceMessageComposer"/> — without this the other clients keep
-    /// rendering the dance once the avatar stands back up. Call it after any posture change with the
-    /// dance the avatar had beforehand.
+    /// Sitting or laying cancels a dance on the avatar itself and standing up resumes it, but the
+    /// room only ever learns about a dance through <see cref="DanceMessageComposer"/> — without
+    /// this the other clients keep rendering the dance of someone who has sat down, and see
+    /// nothing when they stand back up. Call it after any posture change with the dance the avatar
+    /// had beforehand.
     /// </summary>
-    public void BroadcastDanceIfCleared(IRoomAvatar avatar, AvatarDanceType previousDanceType)
+    /// <remarks>
+    /// This was <c>BroadcastDanceIfCleared</c> and returned early when the previous dance was
+    /// <see cref="AvatarDanceType.None"/>, which made it deaf to exactly one direction: the
+    /// resume. Standing up goes None → dancing, so the guard that read as "nothing was cancelled,
+    /// nothing to announce" swallowed every restored dance.
+    /// </remarks>
+    public void BroadcastDanceIfChanged(IRoomAvatar avatar, AvatarDanceType previousDanceType)
     {
-        if (
-            previousDanceType == AvatarDanceType.None
-            || avatar is not IRoomPlayer player
-            || player.DanceType == previousDanceType
-        )
+        if (avatar is not IRoomPlayer player || player.DanceType == previousDanceType)
         {
             return;
         }
@@ -778,7 +781,7 @@ public sealed partial class RoomAvatarModule(RoomGrain roomGrain)
                 return Task.FromResult(false);
         }
 
-        BroadcastDanceIfCleared(avatar, previousDanceType);
+        BroadcastDanceIfChanged(avatar, previousDanceType);
 
         _roomGrain
             .SendComposerToRoomAsync(

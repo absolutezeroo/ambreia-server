@@ -33,6 +33,13 @@ public sealed partial class RoomMapModule
             bool canSit = false;
             bool canLay = false;
 
+            // Read before anything below moves the avatar, and announced once at the end. It used
+            // to be captured inside the sit branch alone, so stepping OFF a seat — the two blocks
+            // further down — resumed the dance and told nobody, which is the whole of "my dance
+            // never comes back".
+            AvatarDanceType previousDanceType =
+                (avatar as IRoomPlayer)?.DanceType ?? AvatarDanceType.None;
+
             if (
                 _roomGrain._state.ItemsById.TryGetValue(highestItemId, out IRoomItem? item)
                 && item is IRoomFloorItem floorItem
@@ -41,9 +48,6 @@ public sealed partial class RoomMapModule
                 canSit = floorItem.Logic.CanSit();
                 canLay = floorItem.Logic.CanLay();
 
-                AvatarDanceType previousDanceType =
-                    (avatar as IRoomPlayer)?.DanceType ?? AvatarDanceType.None;
-
                 if (canSit)
                 {
                     avatar.Sit(true, floorItem.Logic.GetPostureOffset(), floorItem.Rotation);
@@ -51,11 +55,6 @@ public sealed partial class RoomMapModule
                 else if (canLay)
                 {
                     avatar.Lay(true, floorItem.Logic.GetPostureOffset(), floorItem.Rotation);
-                }
-
-                if (canSit || canLay)
-                {
-                    _roomGrain.AvatarModule.BroadcastDanceIfCleared(avatar, previousDanceType);
                 }
 
                 await floorItem.Logic.OnInvokeAsync((IRoomAvatarContext)avatar.Logic.Context, ct);
@@ -70,6 +69,8 @@ public sealed partial class RoomMapModule
             {
                 avatar.Lay(false);
             }
+
+            _roomGrain.AvatarModule.BroadcastDanceIfChanged(avatar, previousDanceType);
 
             UpdateHeightForAvatar(avatar);
         }
