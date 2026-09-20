@@ -178,6 +178,16 @@ internal sealed class NitroSpriteLibrary(
             return null;
         }
 
+        // `avatar_<id>` is the one name in a payload that is not an asset. The canvas invents it so
+        // the sprite collector can read the drawn avatar's depth before merging the figure's real
+        // part records in; nothing resolves it, and Sulake's own payloads carry it the same way.
+        // Left to fall through it becomes a request for avatar.nitro and a 404 in the log, once per
+        // photo, next to the parts that did resolve -- which reads like the avatar failed.
+        if (IsAvatarKey(assetName))
+        {
+            return null;
+        }
+
         int cut = assetName.IndexOf('_', StringComparison.Ordinal);
 
         return cut > 0 ? Address(limits.AvatarAssetUrl, assetName[..cut]) : null;
@@ -236,6 +246,12 @@ internal sealed class NitroSpriteLibrary(
 
         return asset;
     }
+
+    /// <summary>The depth key the canvas gives a drawn avatar: <c>avatar_</c> then an object id.</summary>
+    private static bool IsAvatarKey(string assetName) =>
+        assetName.StartsWith("avatar_", StringComparison.Ordinal)
+        && assetName.Length > 7
+        && assetName.AsSpan(7).IndexOfAnyExceptInRange('0', '9') < 0;
 
     private static NitroBundleAddress? Address(string baseUrl, string bundle)
     {

@@ -180,6 +180,39 @@ public sealed class NitroSpriteLibraryTests
         serving.LastPath.Should().Be("/dcr/hof_furni/duck.nitro");
     }
 
+    /// <summary>
+    /// The one name in a payload that is not an asset. The canvas invents <c>avatar_&lt;id&gt;</c> so
+    /// the sprite collector can read the drawn avatar's depth; Sulake's own payloads carry it too.
+    /// Left to fall through it asked the asset host for <c>avatar.nitro</c> once per photo and put a
+    /// 404 in the log beside the parts that had resolved.
+    /// </summary>
+    [Theory]
+    [InlineData("avatar_1")]
+    [InlineData("avatar_2147483647")]
+    public async Task TheAvatarDepthKeyIsNeverFetched(string name)
+    {
+        using Serving serving = new(DuckBundle());
+        using HttpClient http = new(serving, disposeHandler: false);
+
+        byte[]? sprite = await Library(http).GetSpriteAsync(name, Limits(), CancellationToken.None);
+
+        sprite.Should().BeNull();
+        serving.Requests.Should().Be(0);
+    }
+
+    /// <summary>A real asset that merely starts the same way is still fetched.</summary>
+    [Fact]
+    public async Task SomethingOnlyShapedLikeTheDepthKeyIsStillFetched()
+    {
+        using Serving serving = new(DuckBundle());
+        using HttpClient http = new(serving, disposeHandler: false);
+
+        await Library(http)
+            .GetSpriteAsync("avatar_frame_64_a_0_0", Limits(), CancellationToken.None);
+
+        serving.LastPath.Should().Be("/gordon/avatar.nitro");
+    }
+
     /// <summary>A bundle is fetched once, however many sprites a photo takes out of it.</summary>
     [Fact]
     public async Task ABundleIsFetchedOncePerClassname()
