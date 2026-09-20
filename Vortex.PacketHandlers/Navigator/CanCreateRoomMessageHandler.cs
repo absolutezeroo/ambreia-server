@@ -4,6 +4,8 @@ using Orleans;
 using Vortex.Messages.Registry;
 using Vortex.Primitives.Navigator;
 using Vortex.Primitives.Orleans;
+using Vortex.Primitives.Orleans.Snapshots.Players;
+using Vortex.Primitives.Players.Grains;
 using Vortex.Primitives.Rooms;
 using Vortex.Primitives.Server.Grains;
 using Vortex.Protocol.Messages.Incoming.Navigator;
@@ -25,9 +27,21 @@ public class CanCreateRoomMessageHandler(
         CancellationToken ct
     )
     {
+        // The limit is per club level, because the client's own answer to hitting it already is: a
+        // VIP is told the plain limit, everyone else is shown ${navigator.createroom.vippromo},
+        // "subscribe for more rooms". Read off the same IsVip the SSO handshake maps to the
+        // client's ClubLevelType.Vip, so the two sides cannot disagree about who is a subscriber.
+        ClubSubscriptionSnapshot sub = await _grainFactory
+            .GetPlayerGrain(ctx.PlayerId)
+            .GetClubSubscriptionAsync(ct)
+            .ConfigureAwait(false);
+
         int maxRooms = await _grainFactory
             .GetServerConfigGrain()
-            .GetIntAsync(RoomsConfig.MaxRoomsPerPlayerKey, RoomsConfig.MaxRoomsPerPlayerDefault)
+            .GetIntAsync(
+                RoomsConfig.MaxRoomsKeyFor(sub.IsVip),
+                RoomsConfig.MaxRoomsDefaultFor(sub.IsVip)
+            )
             .ConfigureAwait(false);
 
         int ownedRooms = await _navigatorProvider

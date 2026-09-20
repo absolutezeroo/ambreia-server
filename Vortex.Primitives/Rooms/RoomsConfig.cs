@@ -17,6 +17,29 @@ public static class RoomsConfig
     public const string MaxRoomsPerPlayerKey = "rooms.max_rooms_per_player";
     public const int MaxRoomsPerPlayerDefault = 50;
 
+    /// <summary>
+    /// The same limit for a VIP subscriber. It exists because the client already promises the
+    /// difference: on hitting the limit, a player without VIP is shown
+    /// <c>${navigator.createroom.vippromo}</c> — "subscribe for more rooms" — while a VIP gets the
+    /// plain limit message. Until this key was added the server read one flat limit for everyone,
+    /// so that promise bought nothing.
+    /// </summary>
+    /// <remarks>
+    /// Defaulted to the same number as the non-VIP limit on purpose: adding the mechanism must not
+    /// silently change a live hotel's limits. Lower <see cref="MaxRoomsPerPlayerKey"/> (or raise
+    /// this one) to make the promo true.
+    /// </remarks>
+    public const string MaxRoomsPerPlayerVipKey = "rooms.max_rooms_per_player_vip";
+    public const int MaxRoomsPerPlayerVipDefault = MaxRoomsPerPlayerDefault;
+
+    /// <summary>The config key holding the room limit that applies to this player.</summary>
+    public static string MaxRoomsKeyFor(bool isVip) =>
+        isVip ? MaxRoomsPerPlayerVipKey : MaxRoomsPerPlayerKey;
+
+    /// <summary>The fallback for <see cref="MaxRoomsKeyFor"/> when no admin override is stored.</summary>
+    public static int MaxRoomsDefaultFor(bool isVip) =>
+        isVip ? MaxRoomsPerPlayerVipDefault : MaxRoomsPerPlayerDefault;
+
     /// <summary>Ceiling on the population limit a room may be created with. The client's own dialog
     /// offers a short list topping out well below this; the packet carries a raw int.</summary>
     public const int MaxPlayersCeiling = 250;
