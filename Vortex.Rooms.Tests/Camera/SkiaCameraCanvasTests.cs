@@ -133,7 +133,6 @@ public sealed class SkiaCameraCanvasTests
                     ["wall_texture_missing"],
                 ],
                 false,
-                false,
                 [
                     new CameraSceneMask
                     {
@@ -147,7 +146,22 @@ public sealed class SkiaCameraCanvasTests
             .Should()
             .BeTrue();
 
-        PixelAt(canvas, 0, 0).Alpha.Should().Be(0);
+        // Where the hole lands is the next test's business; this one is only that there is one, and
+        // that the rest of the plane is still painted.
+        int punched = 0;
+
+        for (int x = 0; x < 4; x++)
+        {
+            for (int y = 0; y < 4; y++)
+            {
+                if (PixelAt(canvas, x, y).Alpha == 0)
+                {
+                    punched++;
+                }
+            }
+        }
+
+        punched.Should().BeInRange(1, 15);
         PixelAt(canvas, 2, 2).Red.Should().Be(255);
     }
 
@@ -176,7 +190,6 @@ public sealed class SkiaCameraCanvasTests
                     ["wall_texture_64_1"],
                 ],
                 false,
-                false,
                 [
                     new CameraSceneMask
                     {
@@ -190,11 +203,14 @@ public sealed class SkiaCameraCanvasTests
             .Should()
             .BeTrue();
 
-        // The middle of the punched band, mapped through the same affine the canvas uses.
-        PixelAt(canvas, 366, 240).Alpha.Should().Be(0);
+        // The middle of the punched band, mapped the way the client maps it: from `cornerC`, which
+        // is `corners[2]` here, with the texture's y axis running back down. Half a turn instead —
+        // flipping the horizontal axis as well, which already agreed — puts this hole at (50,83),
+        // and on a real wall it put a doorway thirty pixels off the left edge of the photo.
+        PixelAt(canvas, 366, 241).Alpha.Should().Be(0);
 
         // And the wall is still there everywhere else.
-        PixelAt(canvas, 50, 82).Alpha.Should().Be(255);
+        PixelAt(canvas, 50, 60).Alpha.Should().Be(255);
     }
 
     [Fact]

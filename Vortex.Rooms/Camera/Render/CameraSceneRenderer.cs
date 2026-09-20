@@ -46,25 +46,16 @@ public sealed class CameraSceneRenderer(int maxDimension)
             // The texture first; the flat colour is what a plane gets when its columns resolve to
             // nothing — an asset pack without room content, or a client that sends no columns at
             // all. A photo without wallpaper is still a photo.
-            // Every plane is drawn in the mirrored frame, not just the ones whose texture is named
-            // like a wall. The client maps its texture from `cornerC`, which is
-            // `location + leftSide + rightSide` — the corner diagonally opposite the origin — with
-            // its axes running back along `-leftSide` and `-rightSide`
-            // (`RoomPlane.renderTexture()`), and that is why its own mask offsets are written
-            // `width - width * loc / side.length`. The basis below is taken from `sortedCorners[0]`,
-            // which is the corner facing it, so `u` and `v` come out negated and the half-turn is
-            // exactly what puts them back: `origin - u_client - v_client` reduces to `cornerC` for a
-            // parallelogram. It is a property of the corner order, not of the artwork, so reading it
-            // off a name decided it correctly for a wall called `wall_texture_*` and wrongly for the
-            // same wall under any other name — a doorway punched at the mirror of where it belongs,
-            // which is a photo with no door in it.
+            // Which way up a plane's texture goes is the canvas's business and not decided here any
+            // more: it is a property of the corner order, identical for every plane, and reading it
+            // off the first column's name got it right for a wall called `wall_texture_*` and wrong
+            // for the same wall under any other name.
             if (
                 !canvas.FillTexturedQuad(
                     plane.CornerPoints,
                     plane.Color,
                     plane.TextureColumns,
                     plane.BottomAligned,
-                    true,
                     plane.Masks
                 )
             )

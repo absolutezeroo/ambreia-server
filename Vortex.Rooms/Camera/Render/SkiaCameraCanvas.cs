@@ -101,7 +101,6 @@ internal sealed class SkiaCameraCanvas : ICameraCanvas
         int argb,
         ImmutableArray<ImmutableArray<string>> columns,
         bool bottomAligned,
-        bool mirrored,
         ImmutableArray<CameraSceneMask> masks
     )
     {
@@ -164,11 +163,20 @@ internal sealed class SkiaCameraCanvas : ICameraCanvas
 
         using SKPaint paint = new() { IsAntialias = false };
 
-        if (mirrored)
-        {
-            _surface.Canvas.Scale(-1, -1);
-            _surface.Canvas.Translate(-width, -height);
-        }
+        // Vertically, and always. The client maps its texture from `cornerC` —
+        // `location + leftSide + rightSide` — with `u = cornerB - cornerC` and
+        // `v = cornerD - cornerC` (`RoomPlane.renderTexture()`). Against the basis above, taken from
+        // `sortedCorners[0]`, the horizontal axis already agrees: `corners[1] - corners[0]` is that
+        // same `u`, because `B - C` and `A - D` are the same vector in a parallelogram. Only `v`
+        // comes out negated, and flipping it moves the origin from `corners[0]` to `corners[2]`,
+        // which is `cornerC`.
+        //
+        // Measured on a real payload, for a wall at (258,140) (-159,348) (258,25) (-159,233)
+        // carrying `door_64` at (256,29) of an 832x115 texture: the client puts that hole at
+        // (130,118), a half-turn puts it at (-30,198) — off the left edge of a 320-wide photo,
+        // which is a doorway nobody can see — and this puts it at (130,118).
+        _surface.Canvas.Scale(1, -1);
+        _surface.Canvas.Translate(0, -height);
 
         _surface.Canvas.DrawImage(texture, new SKPoint(0, 0), NearestNeighbour, paint);
         _surface.Canvas.RestoreToCount(saved);
