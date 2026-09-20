@@ -200,6 +200,18 @@ export default {
     invalidCode: "Ce code d authentification n est pas valide.",
     wrongPassword: 'Le mot de passe actuel est incorrect.',
     passwordTooShort: 'Un nouveau mot de passe doit faire au moins 8 caracteres.',
+    // Chacun dit quoi changer, pas comment la regle s’appelle : l’operateur a le formulaire sous
+    // les yeux, et un refus n’est utile que s’il designe la case a corriger.
+    filterIncomplete: 'Une condition n’a pas son fait ou sa valeur.',
+    filterOperatorNotValid: 'Cette comparaison ne dit rien sur ce type de fait. Choisis-en une autre.',
+    filterFactNotEmitted: 'Cette action ne rapporte jamais ça, donc la condition ne pourrait jamais être vraie. Choisis un fait que l’action propose.',
+    filterNeedsList: 'Une liste demande au moins deux valeurs, séparées par des virgules.',
+    filterNeedsNumber: 'Cette comparaison se lit comme un nombre, la valeur doit donc en être un.',
+    filterReferenceOrder: 'Une condition ne peut renvoyer qu’à une action qui tourne AVANT elle.',
+    filterReferenceNotCaptured: 'L’action précédente n’enregistre jamais ça, il n’y a donc rien à quoi renvoyer.',
+    stepActionRequired: 'Chaque étape a besoin d’une action.',
+    sequenceNeedsStep: 'Une séquence a besoin d’au moins une étape.',
+    taskIdAndActionRequired: 'Une tâche a besoin d’un identifiant et d’une action.',
   },
   account: {
     title: 'Securite du compte',
@@ -2696,6 +2708,9 @@ export default {
     taskIdRequired: 'Un id de tâche et au moins une étape sont requis.',
     action: 'Action',
     notWired: 'rien ne déclenche encore ceci',
+    matched: 'Déclenchée',
+    matchedPlayers: '{n} joueurs',
+    neverMatched: 'jamais déclenchée',
     notWiredHint:
       'Une tâche sur une action que rien ne déclenche n’avance jamais. Ajoutez d’abord le gestionnaire d’événement, ou choisissez une autre action.',
     mode: 'Compte',

@@ -764,6 +764,7 @@
                             <th>{$t('rewardTracks.action')}</th>
                             <th>{$t('rewardTracks.mode')}</th>
                             <th>{$t('rewardTracks.stages')}</th>
+                            <th>{$t('rewardTracks.matched')}</th>
                             <th></th>
                           </tr>
                         </thead>
@@ -789,6 +790,26 @@
                                     </span>
                                   {/each}
                                 </div>
+                              </td>
+                              <td>
+                                <!-- The number that says whether this works. `wired` says the
+                                     action is raised by something; this says the task itself,
+                                     with its filters, has been satisfied by a real player. -->
+                                {#if task.players > 0}
+                                  <span
+                                    title={task.lastMatchedAt
+                                      ? new Date(task.lastMatchedAt).toLocaleString()
+                                      : ''}
+                                  >
+                                    {$t('rewardTracks.matchedPlayers', { n: task.players })}
+                                  </span>
+                                {:else if task.wired}
+                                  <span class="status-badge status-badge--bad">
+                                    {$t('rewardTracks.neverMatched')}
+                                  </span>
+                                {:else}
+                                  <span class="muted">—</span>
+                                {/if}
                               </td>
                               <td class="row-actions">
                                 {#if canManage}

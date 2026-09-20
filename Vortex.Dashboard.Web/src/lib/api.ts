@@ -77,43 +77,51 @@ export function isAuthError(raw: unknown): boolean {
   );
 }
 
+/**
+ * What each server error code says to somebody who did not write the server.
+ *
+ * A table rather than a chain of ifs, because the fallback is the error's own `code` and that is
+ * what an operator was reading: a sequence refused for a reason the validator states precisely
+ * put `filter_reference_must_be_earlier` on the screen, which says nothing to the person who has
+ * to fix it. A missing entry here is now the only way that happens again.
+ */
+const ERROR_CODE_KEYS: Record<string, string> = {
+  request_timeout: 'errors.requestTimeout',
+  network_unavailable: 'errors.networkUnavailable',
+  invalid_api_response: 'errors.invalidApiResponse',
+  window_too_large: 'errors.windowTooLarge',
+  invalid_date: 'errors.invalidDate',
+  invalid_code: 'errors.invalidCode',
+  wrong_password: 'errors.wrongPassword',
+  password_too_short: 'errors.passwordTooShort',
+
+  // What the reward-track editor refuses, and why. Every one of these is a filter or a step that
+  // would have saved cleanly and then never matched anything.
+  filter_incomplete: 'errors.filterIncomplete',
+  filter_operator_not_valid_for_fact: 'errors.filterOperatorNotValid',
+  filter_fact_not_emitted_by_action: 'errors.filterFactNotEmitted',
+  filter_one_of_needs_a_list: 'errors.filterNeedsList',
+  filter_needs_a_number: 'errors.filterNeedsNumber',
+  filter_reference_must_be_earlier: 'errors.filterReferenceOrder',
+  filter_reference_fact_not_captured: 'errors.filterReferenceNotCaptured',
+  step_action_required: 'errors.stepActionRequired',
+  sequence_needs_a_step: 'errors.sequenceNeedsStep',
+  task_id_and_action_required: 'errors.taskIdAndActionRequired',
+};
+
 export function describeApiError(raw: unknown): string {
   const error = asError(raw);
 
-  if (error?.code === 'request_timeout') {
-    return translate('errors.requestTimeout');
-  }
-
-  if (error?.code === 'network_unavailable') {
-    return translate('errors.networkUnavailable');
-  }
-
-  if (error?.code === 'invalid_api_response') {
-    return translate('errors.invalidApiResponse');
-  }
-
+  // Before the codes: this one is carried by the status, not by a body the server had time to
+  // write.
   if (error?.status === 429) {
     return translate('errors.tooManyRequests');
   }
 
-  if (error?.code === 'window_too_large') {
-    return translate('errors.windowTooLarge');
-  }
+  const key = error?.code ? ERROR_CODE_KEYS[error.code] : undefined;
 
-  if (error?.code === 'invalid_date') {
-    return translate('errors.invalidDate');
-  }
-
-  if (error?.code === 'invalid_code') {
-    return translate('errors.invalidCode');
-  }
-
-  if (error?.code === 'wrong_password') {
-    return translate('errors.wrongPassword');
-  }
-
-  if (error?.code === 'password_too_short') {
-    return translate('errors.passwordTooShort');
+  if (key) {
+    return translate(key);
   }
 
   return error?.message || translate('errors.requestFailed');

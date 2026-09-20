@@ -227,6 +227,33 @@ internal sealed class RewardTrackReads(
                     .ToDictionaryAsync(x => x.TrackId, x => x.Claims, ct)
                     .ConfigureAwait(false);
 
+                // Whether a task has ever actually matched, and when it last did.
+                //
+                // Read rather than recorded: a row here is only written when a task advances, and
+                // its UpdatedAt is therefore already the answer. A last_matched_at column on the
+                // task would have meant a write to one content row on every advance by every
+                // player, which is contention on the hottest thing the subsystem does, for a
+                // number only an operator ever reads.
+                //
+                // This is the half the Wired flag cannot cover. That one says the action is raised
+                // by something; this one says the task, with its filters, its parameter and its
+                // mode, has been satisfied by a real player at least once. A task that is wired and
+                // has never matched is the silent failure the whole subsystem is built against, and
+                // until now nothing on any screen could tell it from one nobody had got to yet.
+                Dictionary<(string Track, string Task), (int Players, DateTime Last)> matched =
+                    await db
+                        .PlayerRewardTrackTasks.Where(t => t.DeletedAt == null)
+                        .GroupBy(t => new { t.TrackId, t.TaskId })
+                        .Select(g => new
+                        {
+                            g.Key.TrackId,
+                            g.Key.TaskId,
+                            Players = g.Count(),
+                            Last = g.Max(x => x.UpdatedAt),
+                        })
+                        .ToDictionaryAsync(x => (x.TrackId, x.TaskId), x => (x.Players, x.Last), ct)
+                        .ConfigureAwait(false);
+
                 List<RewardTrackRow> items = [];
 
                 foreach (RewardTrackEntity track in tracks)
@@ -305,6 +332,13 @@ internal sealed class RewardTrackReads(
                                     t.Mode.ToString(),
                                     t.Premium,
                                     t.SortOrder,
+                                    matched.TryGetValue(
+                                        (track.TrackId, t.TaskId),
+                                        out (int Players, DateTime Last) seen
+                                    )
+                                        ? seen.Players
+                                        : 0,
+                                    seen.Players > 0 ? seen.Last : null,
                                     // Empty for a plain task: the engine builds its single step
                                     // from the action above, and the editor pre-fills the same way.
                                     steps

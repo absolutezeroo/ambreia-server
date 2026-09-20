@@ -202,6 +202,18 @@ export default {
     invalidCode: 'That authenticator code is not valid.',
     wrongPassword: 'That current password is not right.',
     passwordTooShort: 'A new password needs at least 8 characters.',
+    // Each of these says what to change, not what the rule is called: the operator is looking at
+    // the form, and a refused save is only useful if it points at the box to fix.
+    filterIncomplete: 'A condition is missing its fact or its value.',
+    filterOperatorNotValid: 'That comparison says nothing about this kind of fact. Pick another one.',
+    filterFactNotEmitted: 'This action never reports that, so the condition could never be true. Pick a fact the action listed.',
+    filterNeedsList: 'A list needs at least two values, separated by commas.',
+    filterNeedsNumber: 'This comparison comes out as a number, so the value has to be one.',
+    filterReferenceOrder: 'A condition can only point back at an action that runs BEFORE it.',
+    filterReferenceNotCaptured: 'The earlier action never records that, so there is nothing to point back at.',
+    stepActionRequired: 'Every step needs an action.',
+    sequenceNeedsStep: 'A sequence needs at least one step.',
+    taskIdAndActionRequired: 'A task needs an identifier and an action.',
   },
   account: {
     title: 'Account security',
@@ -2687,6 +2699,9 @@ export default {
     taskIdRequired: 'A task id and at least one stage are required.',
     action: 'Action',
     notWired: 'nothing raises this yet',
+    matched: 'Matched',
+    matchedPlayers: '{n} players',
+    neverMatched: 'never matched',
     notWiredHint:
       'A task on an action nothing raises never advances. Add the event handler first, or pick another action.',
     mode: 'Counts',

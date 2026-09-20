@@ -3169,6 +3169,8 @@ export interface RewardTrackTaskRow {
   mode: string;
   premium: boolean;
   sortOrder: number;
+  players: number;
+  lastMatchedAt: string | null;
   steps: RewardTrackStepRow[];
   levels: RewardTrackLevelRow[];
 }
