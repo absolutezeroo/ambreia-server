@@ -13,9 +13,10 @@ public interface IRoomPlayer : IRoomAvatar<IRoomPlayer, IRoomPlayerLogic, IRoomP
     public AvatarDanceType DanceType { get; }
 
     /// <summary>
-    /// The achievement score the room was told at entry — the same number it broadcasts as
+    /// The achievement score the room was last told — the same number it broadcasts as
     /// <c>AchievementScore</c> on every user-change, kept here under the name the avatar block gives
-    /// it. A snapshot of entry, not a live account read.
+    /// it. Written from the player summary at entry and again on every player update, never read
+    /// live off the account.
     /// </summary>
     public int ActivityPoints { get; }
 
