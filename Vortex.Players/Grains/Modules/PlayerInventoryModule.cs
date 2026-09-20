@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Orleans;
@@ -30,6 +31,20 @@ internal sealed class PlayerInventoryModule(PlayerPresenceGrain presenceGrain)
         ImmutableArray<FurnitureItemSnapshot> items = await inventoryGrain.GetAllItemSnapshotsAsync(
             ct
         );
+
+        // Newest first, because the order sent here IS the order the inventory shows. The client
+        // has no sort of its own: `FurniModel.insertFurniture()` walks this list and hands every
+        // item to `addOrUpdateItem(item, true)`, whose `isInitializing` argument sends all of them
+        // down `addItemToBottom()`. So the grid is our enumeration order -- and that was
+        // `_state.FurnitureById.Values`, insertion order, with newly bought items appended. A
+        // player's latest purchase landed at the very end of their inventory.
+        //
+        // `OnFurnitureAddedAsync` below does float a fresh item to the top, but only for the
+        // session that bought it: it works through the client's unseen tracker, which is cleared
+        // the moment the inventory is opened and of which we keep no server-side copy. Sorting
+        // here is the half that survives a reconnect.
+        items = [.. items.OrderByDescending(item => item.ItemId)];
+
         int furniPerFragment = _presenceGrain._config.FurniInventoryFragmentSize;
 
         int totalFragments = (int)
