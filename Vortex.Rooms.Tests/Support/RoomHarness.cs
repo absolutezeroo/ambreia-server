@@ -274,6 +274,10 @@ internal sealed class RoomHarness
     /// <summary>Who the grain pushed an inventory composer at — the point of the ownership tests.</summary>
     public List<PlayerId> ComposersSentTo { get; } = [];
 
+    /// <summary>The same sends with the composer attached, for a test that asserts what was in it
+    /// rather than only that it went out.</summary>
+    public List<(PlayerId Target, IComposer Composer)> ComposersSent { get; } = [];
+
     /// <summary>What the whole room was told, in order.</summary>
     public List<IComposer> BroadcastToRoom { get; } = [];
 
@@ -682,6 +686,22 @@ internal sealed class RoomHarness
                 if (inner.Method.Name == nameof(IPlayerPresenceGrain.SendComposerAsync))
                 {
                     ComposersSentTo.Add(target);
+
+                    // Both overloads land here: one composer, or the params array.
+                    foreach (object? arg in inner.Args ?? [])
+                    {
+                        if (arg is IComposer one)
+                        {
+                            ComposersSent.Add((target, one));
+                        }
+                        else if (arg is IComposer[] many)
+                        {
+                            foreach (IComposer composer in many)
+                            {
+                                ComposersSent.Add((target, composer));
+                            }
+                        }
+                    }
                 }
 
                 return null;

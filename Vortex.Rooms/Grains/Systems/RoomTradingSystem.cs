@@ -97,13 +97,14 @@ public sealed class RoomTradingSystem(RoomGrain roomGrain)
         _roomGrain._state.TradeSessionsByPlayerId[requesterId] = session;
         _roomGrain._state.TradeSessionsByPlayerId[otherId] = session;
 
+        // Player ids, not room-object ids -- see the note on TradingOpenEventMessageComposer.
         await SendToTradeAsync(
                 session,
                 new TradingOpenEventMessageComposer
                 {
-                    UserId = requesterObjectId,
+                    UserId = requesterId.Value,
                     UserCanTrade = true,
-                    OtherUserId = otherObjectId,
+                    OtherUserId = otherId.Value,
                     OtherUserCanTrade = true,
                 }
             )
@@ -310,7 +311,7 @@ public sealed class RoomTradingSystem(RoomGrain roomGrain)
                 session,
                 new TradingAcceptEventMessageComposer
                 {
-                    UserId = session.ObjectIdOf(requesterId),
+                    UserId = requesterId.Value,
                     UserAccepts = accepted,
                 }
             )
@@ -341,7 +342,7 @@ public sealed class RoomTradingSystem(RoomGrain roomGrain)
         {
             await EndTradeAsync(
                     session,
-                    session.ObjectIdOf(requesterId),
+                    requesterId,
                     TradeCloseCancelled,
                     "declined",
                     [session.UserOneId, session.UserTwoId],
@@ -368,7 +369,7 @@ public sealed class RoomTradingSystem(RoomGrain roomGrain)
 
         await EndTradeAsync(
                 session,
-                session.ObjectIdOf(requesterId),
+                requesterId,
                 TradeCloseCancelled,
                 "cancelled",
                 [session.UserOneId, session.UserTwoId],
@@ -388,14 +389,7 @@ public sealed class RoomTradingSystem(RoomGrain roomGrain)
 
         PlayerId remaining = session.OtherOf(playerId);
 
-        await EndTradeAsync(
-                session,
-                session.ObjectIdOf(playerId),
-                TradeCloseCancelled,
-                "left",
-                [remaining],
-                ct
-            )
+        await EndTradeAsync(session, playerId, TradeCloseCancelled, "left", [remaining], ct)
             .ConfigureAwait(true);
     }
 
@@ -752,7 +746,7 @@ public sealed class RoomTradingSystem(RoomGrain roomGrain)
     {
         await EndTradeAsync(
                 session,
-                session.UserOneObjectId,
+                session.UserOneId,
                 TradeCloseCommitError,
                 "commit_error",
                 [session.UserOneId, session.UserTwoId],
@@ -763,7 +757,7 @@ public sealed class RoomTradingSystem(RoomGrain roomGrain)
 
     private async Task EndTradeAsync(
         RoomTradeSession session,
-        RoomObjectId cancellerObjectId,
+        PlayerId cancellerId,
         int reason,
         string auditReason,
         IReadOnlyList<PlayerId> notify,
@@ -777,7 +771,7 @@ public sealed class RoomTradingSystem(RoomGrain roomGrain)
 
         TradingCloseEventMessageComposer composer = new()
         {
-            UserId = cancellerObjectId,
+            UserId = cancellerId.Value,
             Reason = reason,
         };
 
@@ -917,10 +911,10 @@ public sealed class RoomTradingSystem(RoomGrain roomGrain)
                 session,
                 new TradingItemListEventMessageComposer
                 {
-                    FirstUserId = session.UserOneObjectId,
+                    FirstUserId = session.UserOneId.Value,
                     FirstUserItems = oneItems,
                     FirstUserCredits = 0,
-                    SecondUserId = session.UserTwoObjectId,
+                    SecondUserId = session.UserTwoId.Value,
                     SecondUserItems = twoItems,
                     SecondUserCredits = 0,
                 }

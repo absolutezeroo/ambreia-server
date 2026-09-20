@@ -15,12 +15,18 @@ internal enum TradePhase
 
 /// <summary>Live state of a single trade between two players present in the same room. Hosted on the
 /// <see cref="RoomGrain"/> (the single-threaded coordinator both participants share) rather than a
-/// dedicated grain, so item lists, accept/confirm flags, and the commit never race. All ids exposed
-/// to the client are room-object ids, matching the trade wire protocol.</summary>
+/// dedicated grain, so item lists, accept/confirm flags, and the commit never race.
+/// <para>
+/// The room-object ids are how the trade is <em>opened</em> (<c>OpenTrading</c> names the other
+/// avatar by the id the room gave it) and nothing else: every message back to the client names
+/// both sides by player id. See <c>TradingOpenEventMessageComposer.UserId</c>.
+/// </para></summary>
 internal sealed class RoomTradeSession
 {
     public required PlayerId UserOneId { get; init; }
     public required PlayerId UserTwoId { get; init; }
+
+    /// <summary>Only the open path reads these; nothing is sent to the client with them.</summary>
     public required RoomObjectId UserOneObjectId { get; init; }
     public required RoomObjectId UserTwoObjectId { get; init; }
 
