@@ -115,9 +115,10 @@ internal sealed class SkiaCameraCanvas : ICameraCanvas
         (double vx, double vy) = (sortedCorners[2].X - origin.X, sortedCorners[2].Y - origin.Y);
 
         // The texture is built at the plane's own scale, so a wall twice as long carries twice as
-        // many tiles rather than the same ones stretched.
-        int width = (int)Math.Round(Math.Sqrt((ux * ux) + (uy * uy)));
-        int height = (int)Math.Round(Math.Sqrt((vx * vx) + (vy * vy)));
+        // many tiles rather than the same ones stretched — and at the scale the CLIENT rasterises
+        // it, which is not the length of the edge on screen. See <see cref="TextureExtent"/>.
+        int width = TextureExtent(ux, uy);
+        int height = TextureExtent(vx, vy);
 
         if (width <= 0 || height <= 0 || (long)width * height > MaxTexturePixels)
         {
@@ -173,6 +174,34 @@ internal sealed class SkiaCameraCanvas : ICameraCanvas
         _surface.Canvas.RestoreToCount(saved);
 
         return true;
+    }
+
+    /// <summary>
+    /// One of a plane's two axes, in the pixels the client's own texture is measured in.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// A plane is rasterised flat and then squashed onto its parallelogram, so its texture is the
+    /// plane's own surface — <c>side.length * scale</c> — and not the length of the edge that
+    /// surface projects to. The two differ on any axis the isometric view foreshortens: a room tile
+    /// is <c>scale</c> wide flat and projects to <c>(scale/2, scale/4)</c>, which is <c>sqrt(5)/4</c>
+    /// of it, while the vertical axis projects straight down at one pixel per unit.
+    /// </para>
+    /// <para>
+    /// Measured on a real payload: the wall carrying the doorway arrives with edges of 466 and 115
+    /// pixels. 466 is thirteen tiles foreshortened, so the client's texture for it is 13 x 64 = 832
+    /// across, and the mask it sends sits somewhere in 0..832. Read into a 466-wide texture that
+    /// same number lands nearly twice as far along the wall as it should — past the end of it, for a
+    /// door in the far half — which is a doorway that never appears however faithfully it is
+    /// punched. The wallpaper was stretched by the same factor for the same reason.
+    /// </para>
+    /// </remarks>
+    private static int TextureExtent(double dx, double dy)
+    {
+        double projected = Math.Sqrt((dx * dx) + (dy * dy));
+
+        // The vertical axis is the one that projects with no horizontal component at all.
+        return (int)Math.Round(projected); // TEMP
     }
 
     /// <summary>Columns stacked to height, then laid side by side across width, repeating.</summary>

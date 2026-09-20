@@ -152,6 +152,52 @@ public sealed class SkiaCameraCanvasTests
     }
 
     [Fact]
+    public void AMaskIsReadInTheTextureSpaceTheClientMeasuredItIn()
+    {
+        // A wall thirteen tiles long, exactly as one arrives: its edges project to 466 and 115
+        // pixels, and the client rasterised its texture flat at 13 x 64 = 832 across before
+        // squashing it onto that parallelogram. A mask at x=700 is an ordinary position in that
+        // texture and is past the end of one sized to the projected edge — which is what kept a
+        // doorway out of a photo however faithfully it was punched.
+        byte[] white = Block(64, 115, SKColors.White);
+
+        using SkiaCameraCanvas canvas = new(
+            new CameraViewport(420, 340),
+            name => name == "door" ? white : white
+        );
+
+        canvas.Clear(0x00000000);
+
+        canvas
+            .FillTexturedQuad(
+                [new(0, 0), new(416, 208), new(0, 115), new(416, 323)],
+                0x00FF0000,
+                [
+                    ["wall_texture_64_1"],
+                ],
+                false,
+                false,
+                [
+                    new CameraSceneMask
+                    {
+                        AssetName = "door",
+                        Location = new CameraScenePoint(700, 0),
+                        FlipH = false,
+                        FlipV = false,
+                    },
+                ]
+            )
+            .Should()
+            .BeTrue();
+
+        // The middle of the punched band, mapped through the same affine the canvas uses.
+        PixelAt(canvas, 366, 240).Alpha.Should().Be(0);
+
+        // And the wall is still there everywhere else.
+        PixelAt(canvas, 50, 82).Alpha.Should().Be(255);
+    }
+
+    [Fact]
     public void WhatWasDrawnEncodesAsAPng()
     {
         using SkiaCameraCanvas canvas = new(new CameraViewport(4, 4), _ => null);
@@ -176,6 +222,21 @@ public sealed class SkiaCameraCanvasTests
             Color = null,
             BlendMode = null,
         };
+
+    private static byte[] Block(int width, int height, SKColor color)
+    {
+        using SKBitmap bitmap = new(width, height);
+
+        using (SKCanvas canvas = new(bitmap))
+        {
+            canvas.Clear(color);
+        }
+
+        using SKImage image = SKImage.FromBitmap(bitmap);
+        using SKData data = image.Encode(SKEncodedImageFormat.Png, 100);
+
+        return data.ToArray();
+    }
 
     private static byte[] OnePixel(SKColor color)
     {
