@@ -22,6 +22,30 @@ public sealed class CameraSceneRendererTests
     private const int MaxDimension = 1600;
 
     [Fact]
+    public void EveryTexturedPlaneIsDrawnMirrored_WhateverItsTextureIsCalled()
+    {
+        // The half-turn is a property of the corner order, not of the artwork: the client maps its
+        // texture from `cornerC` — `location + leftSide + rightSide` — with both axes running back,
+        // and the basis taken from `sortedCorners[0]` is its negation. Deciding it from a name
+        // prefix got it right for a wall called `wall_texture_*` and wrong for the same wall under
+        // any other name, which punches its doorway at the mirror of where it belongs — a photo
+        // with no door in it.
+        CameraScenePlane plane = Plane(10, 10, 0xFF0000) with
+        {
+            TextureColumns =
+            [
+                ["some_other_wallpaper_64_1"],
+            ],
+        };
+
+        Recording canvas = Render(SceneWith(planes: [plane], sprites: []));
+
+        // The recording canvas refuses every texture so the flat fill still runs behind it, which is
+        // why the quad is here too.
+        canvas.Calls.Should().Equal("clear", "texture:16711680:wall", "quad:16711680");
+    }
+
+    [Fact]
     public void ThePlanesComeFirst_ThenTheSprites_InTheOrderTheSceneListsThem()
     {
         Recording canvas = Render(

@@ -46,13 +46,25 @@ public sealed class CameraSceneRenderer(int maxDimension)
             // The texture first; the flat colour is what a plane gets when its columns resolve to
             // nothing — an asset pack without room content, or a client that sends no columns at
             // all. A photo without wallpaper is still a photo.
+            // Every plane is drawn in the mirrored frame, not just the ones whose texture is named
+            // like a wall. The client maps its texture from `cornerC`, which is
+            // `location + leftSide + rightSide` — the corner diagonally opposite the origin — with
+            // its axes running back along `-leftSide` and `-rightSide`
+            // (`RoomPlane.renderTexture()`), and that is why its own mask offsets are written
+            // `width - width * loc / side.length`. The basis below is taken from `sortedCorners[0]`,
+            // which is the corner facing it, so `u` and `v` come out negated and the half-turn is
+            // exactly what puts them back: `origin - u_client - v_client` reduces to `cornerC` for a
+            // parallelogram. It is a property of the corner order, not of the artwork, so reading it
+            // off a name decided it correctly for a wall called `wall_texture_*` and wrongly for the
+            // same wall under any other name — a doorway punched at the mirror of where it belongs,
+            // which is a photo with no door in it.
             if (
                 !canvas.FillTexturedQuad(
                     plane.CornerPoints,
                     plane.Color,
                     plane.TextureColumns,
                     plane.BottomAligned,
-                    IsWall(plane),
+                    true,
                     plane.Masks
                 )
             )
@@ -169,34 +181,6 @@ public sealed class CameraSceneRenderer(int maxDimension)
         }
 
         return right > 0 && bottom > 0;
-    }
-
-    /// <summary>
-    /// Whether a plane is a wall, which decides only whether its texture is flipped.
-    /// </summary>
-    /// <remarks>
-    /// Read off the texture's own name rather than any flag, because the payload carries no plane
-    /// type — the client knows a wall from a floor by what it painted on it, and so does the other
-    /// server that renders these. <c>landscape_</c> is a wall too: it is the window view, drawn in
-    /// the same mirrored frame.
-    /// </remarks>
-    private static bool IsWall(CameraScenePlane plane)
-    {
-        foreach (ImmutableArray<string> column in plane.TextureColumns)
-        {
-            foreach (string asset in column)
-            {
-                if (
-                    asset.StartsWith("wall_texture", StringComparison.Ordinal)
-                    || asset.StartsWith("landscape_", StringComparison.Ordinal)
-                )
-                {
-                    return true;
-                }
-            }
-        }
-
-        return false;
     }
 
     /// <summary>
