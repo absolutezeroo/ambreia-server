@@ -168,11 +168,11 @@ public sealed class SkiaCameraCanvasTests
     [Fact]
     public void AMaskIsReadInTheTextureSpaceTheClientMeasuredItIn()
     {
-        // A wall thirteen tiles long, exactly as one arrives: its edges project to 466 and 115
-        // pixels, and the client rasterised its texture flat at 13 x 64 = 832 across before
-        // squashing it onto that parallelogram. A mask at x=700 is an ordinary position in that
-        // texture and is past the end of one sized to the projected edge — which is what kept a
-        // doorway out of a photo however faithfully it was punched.
+        // A wall thirteen tiles long, exactly as one arrives: `u = (416, 208)`, `v = (0, 115)`. The
+        // client rasterises that 416 x 115 — `WallPlane.render()` re-projects the sides and keeps
+        // one component of each — and its doorway sits at x=256 of it, 61% along the wall. Sizing
+        // the texture by the edge's own length (465) or by the plane's flat size (832) reads the
+        // same 256 as 55% or 31% instead, which is a door in the wrong third of the wall.
         byte[] white = Block(64, 115, SKColors.White);
 
         using SkiaCameraCanvas canvas = new(
@@ -194,7 +194,7 @@ public sealed class SkiaCameraCanvasTests
                     new CameraSceneMask
                     {
                         AssetName = "door",
-                        Location = new CameraScenePoint(700, 0),
+                        Location = new CameraScenePoint(256, 29),
                         FlipH = false,
                         FlipV = false,
                     },
@@ -204,13 +204,13 @@ public sealed class SkiaCameraCanvasTests
             .BeTrue();
 
         // The middle of the punched band, mapped the way the client maps it: from `cornerC`, which
-        // is `corners[2]` here, with the texture's y axis running back down. Half a turn instead —
-        // flipping the horizontal axis as well, which already agreed — puts this hole at (50,83),
-        // and on a real wall it put a doorway thirty pixels off the left edge of the photo.
-        PixelAt(canvas, 366, 241).Alpha.Should().Be(0);
+        // is `corners[2]` here, with the texture's y axis running back down. At tx=288 the band
+        // spans y 144..230, so its middle is (288,187).
+        PixelAt(canvas, 288, 187).Alpha.Should().Be(0);
 
-        // And the wall is still there everywhere else.
-        PixelAt(canvas, 50, 60).Alpha.Should().Be(255);
+        // And the wall is still there everywhere else — this one is a third of the way along it,
+        // which is where a 832-wide texture would have put the door instead.
+        PixelAt(canvas, 140, 90).Alpha.Should().Be(255);
     }
 
     [Fact]

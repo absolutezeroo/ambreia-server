@@ -189,28 +189,24 @@ internal sealed class SkiaCameraCanvas : ICameraCanvas
     /// </summary>
     /// <remarks>
     /// <para>
-    /// A plane is rasterised flat and then squashed onto its parallelogram, so its texture is the
-    /// plane's own surface — <c>side.length * scale</c> — and not the length of the edge that
-    /// surface projects to. The two differ on any axis the isometric view foreshortens: a room tile
-    /// is <c>scale</c> wide flat and projects to <c>(scale/2, scale/4)</c>, which is <c>sqrt(5)/4</c>
-    /// of it, while the vertical axis projects straight down at one pixel per unit.
+    /// Neither the edge's length on screen nor the plane's own surface: the client's rasteriser
+    /// re-projects the sides it is handed and rasterises to <b>the axis' screen extent in one
+    /// component</b>. <c>WallPlane.render()</c> takes <c>|origin.x - width.x|</c> for the wall's
+    /// length and <c>|origin.y - height.y|</c> for its height; <c>FloorPlane.render()</c> takes
+    /// <c>.x</c> for both of its. So an axis is measured by its own <c>x</c>, except the vertical
+    /// one, which has no <c>x</c> at all and is measured by its <c>y</c>.
     /// </para>
     /// <para>
-    /// Measured on a real payload: the wall carrying the doorway arrives with edges of 466 and 115
-    /// pixels. 466 is thirteen tiles foreshortened, so the client's texture for it is 13 x 64 = 832
-    /// across, and the mask it sends sits somewhere in 0..832. Read into a 466-wide texture that
-    /// same number lands nearly twice as far along the wall as it should — past the end of it, for a
-    /// door in the far half — which is a doorway that never appears however faithfully it is
-    /// punched. The wallpaper was stretched by the same factor for the same reason.
+    /// Measured on a real payload: the wall carrying the doorway arrives with <c>u = (-417, 208)</c>
+    /// and <c>v = (0, -115)</c>, and the client rasterises it 416 x 115 — thirteen tiles at half a
+    /// tile of screen width each. Its mask sits at x=256 of that, which is 61% along the wall.
+    /// Rebuilding the texture at the edge's own length (466) or at the plane's flat size (832) reads
+    /// that same 256 as 55% or 31%, and a doorway drawn a third of a wall away from its own frame is
+    /// one nobody recognises. The wallpaper was stretched by the same factor for the same reason.
     /// </para>
     /// </remarks>
-    private static int TextureExtent(double dx, double dy)
-    {
-        double projected = Math.Sqrt((dx * dx) + (dy * dy));
-
-        // The vertical axis is the one that projects with no horizontal component at all.
-        return (int)Math.Round(Math.Abs(dx) < 0.001 ? projected : projected * 4 / Math.Sqrt(5));
-    }
+    private static int TextureExtent(double dx, double dy) =>
+        (int)Math.Round(Math.Abs(dx) < 0.001 ? Math.Abs(dy) : Math.Abs(dx));
 
     /// <summary>Columns stacked to height, then laid side by side across width, repeating.</summary>
     private SKImage? BuildTexture(
