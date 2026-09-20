@@ -94,4 +94,56 @@ public sealed class NitroPaletteTests
         frame.Width.Should().BeGreaterThan(0);
         frame.Height.Should().BeGreaterThan(0);
     }
+
+    /// <summary>
+    /// Half the pet's directions are drawn and half are the mirror of another: <c>dog.nitro</c>
+    /// declares 0, 1, 2, 3 and 7 as their own frames, and 4, 5, 6 as <c>source</c> +
+    /// <c>flipH</c> of 2, 1 and 0.
+    /// </summary>
+    /// <remarks>
+    /// Which matters because the mirror is described twice on the way here. The client resolves the
+    /// alias itself — <c>GraphicAssetCollection.defineAssets()</c> keeps the alias as the asset name
+    /// and the <b>source</b> as the library name — so the payload carries the source and its own
+    /// <c>flipH</c>, and the canvas turns it. If the manifest's flag were carried on the source too,
+    /// the two would compose and a mirrored direction would come out facing the wrong way: the exact
+    /// shape of "the pet is wrong in some directions". So: the sources are not flipped, the aliases
+    /// are, and the payload never names an alias.
+    /// </remarks>
+    [Theory]
+    [InlineData(4, 2)]
+    [InlineData(5, 1)]
+    [InlineData(6, 0)]
+    public void AMirroredDirectionIsTurnedOnce(int direction, int source)
+    {
+        NitroAssetManifest dog = Dog();
+
+        dog.TryResolve($"dog_64_a_{direction}_0", out NitroSpriteFrame alias).Should().BeTrue();
+        alias.FlipH.Should().BeTrue("the manifest mirrors this direction rather than drawing it");
+
+        dog.TryResolve($"dog_64_a_{source}_0", out NitroSpriteFrame drawn).Should().BeTrue();
+        drawn
+            .FlipH.Should()
+            .BeFalse("this one is drawn, and it is the name the payload carries for both");
+
+        alias.Width.Should().Be(drawn.Width);
+        alias.Height.Should().Be(drawn.Height);
+    }
+
+    /// <summary>
+    /// The directions that are drawn rather than mirrored, so a change to the pack that starts
+    /// aliasing one of them is caught here rather than in a photo.
+    /// </summary>
+    [Theory]
+    [InlineData(0)]
+    [InlineData(1)]
+    [InlineData(2)]
+    [InlineData(3)]
+    [InlineData(7)]
+    public void ADrawnDirectionCarriesNoMirror(int direction)
+    {
+        Dog().TryResolve($"dog_64_a_{direction}_0", out NitroSpriteFrame frame).Should().BeTrue();
+
+        frame.FlipH.Should().BeFalse();
+        frame.Width.Should().BeGreaterThan(0);
+    }
 }
