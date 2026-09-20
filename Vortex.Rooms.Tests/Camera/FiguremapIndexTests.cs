@@ -67,6 +67,61 @@ public sealed class FiguremapIndexTests
         library.Should().Be("hh_human_body");
     }
 
+    /// <summary>
+    /// The figuremap is incomplete and the client copes, so this has to too.
+    /// </summary>
+    /// <remarks>
+    /// These three names come from a real photo's unresolved list. The map declares
+    /// <c>cc:2065</c> and not <c>lc:2065</c> or <c>rc:2065</c>, and <c>hr:501</c> and not
+    /// <c>hrb:501</c> — the sleeves and the back of the hair live in those libraries anyway.
+    /// </remarks>
+    [Theory]
+    [InlineData("h_std_lc_2065_2_0", "jacket_M_general")]
+    [InlineData("h_std_rc_2065_2_0", "jacket_M_general")]
+    [InlineData("h_std_hrb_501_2_0", "hh_human_hair")]
+    public void ASubPartFallsBackToTheLibraryItIsPackedWith(string assetName, string expected)
+    {
+        FiguremapIndex index = FiguremapIndex.Read(
+            """
+            <?xml version="1.0"?>
+            <map>
+              <lib id="jacket_M_general"><part id="2065" type="cc"/></lib>
+              <lib id="hh_human_hair"><part id="501" type="hr"/></lib>
+              <lib id="hh_human_shirt"><part id="501" type="ch"/></lib>
+            </map>
+            """
+        );
+
+        index.TryLibrary(assetName, out string? library).Should().BeTrue();
+
+        library.Should().Be(expected);
+    }
+
+    /// <summary>
+    /// The fallback carries the type with it. Id 501 is the hair library under <c>hr</c> and the
+    /// shirt library under <c>ch</c>, so falling back on the id alone would dress an avatar in
+    /// whichever of the two was read last.
+    /// </summary>
+    [Fact]
+    public void TheFallbackIsPerTypeAndNotPerId()
+    {
+        FiguremapIndex index = FiguremapIndex.Read(
+            """
+            <?xml version="1.0"?>
+            <map>
+              <lib id="hh_human_hair"><part id="501" type="hr"/></lib>
+              <lib id="hh_human_shirt"><part id="501" type="ch"/></lib>
+            </map>
+            """
+        );
+
+        index.TryLibrary("h_std_ls_501_2_0", out string? sleeve).Should().BeTrue();
+        sleeve.Should().Be("hh_human_shirt", "a sleeve is packed with the shirt");
+
+        index.TryLibrary("h_std_hrb_501_2_0", out string? hair).Should().BeTrue();
+        hair.Should().Be("hh_human_hair", "the back of the hair is packed with the hair");
+    }
+
     [Theory]
     [InlineData("chair_basic_64_a_0_0")]
     [InlineData("short")]

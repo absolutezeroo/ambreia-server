@@ -114,8 +114,42 @@ internal sealed class FiguremapIndex
         string type = parts[^4];
         string id = parts[^3];
 
-        return _libraries.TryGetValue(Key(type, id), out library);
+        if (_libraries.TryGetValue(Key(type, id), out library))
+        {
+            return true;
+        }
+
+        // The figuremap is not complete, and the client copes, so this has to as well. A real photo
+        // asked for h_std_lc_2065_2_0, h_std_rc_2065_2_0 and h_std_hrb_501_2_0, and the map declares
+        // none of the three: jacket_M_general lists cc, lc and rc for id 2064 and then only cc for
+        // 2065, and hh_human_hair lists hrb for id 1 alone out of forty hair styles. The sleeves and
+        // the back of the hair are in those libraries all the same.
+        return Companions.TryGetValue(type, out string? primary)
+            && _libraries.TryGetValue(Key(primary, id), out library);
     }
+
+    /// <summary>
+    /// The part a sub-part is packed with, counted off the figuremap rather than remembered.
+    /// </summary>
+    /// <remarks>
+    /// Every (library, id) in the file declares a set of types; counting which types travel together
+    /// gives these pairs and their weight — <c>ls</c> and <c>rs</c> sit with <c>ch</c> 527 times,
+    /// <c>lc</c> and <c>rc</c> with <c>cc</c> 301 times, <c>hrb</c> with <c>hr</c> 231 times.
+    /// <para>
+    /// An id alone will not do, and that is the trap this avoids: id 501 is <c>hh_human_hair</c>
+    /// under <c>hr</c> and <c>hh_human_shirt</c> under <c>ch</c>. The type has to come along.
+    /// </para>
+    /// </remarks>
+    private static readonly Dictionary<string, string> Companions = new(StringComparer.Ordinal)
+    {
+        ["lc"] = "cc",
+        ["rc"] = "cc",
+        ["ls"] = "ch",
+        ["rs"] = "ch",
+        ["hrb"] = "hr",
+        ["lh"] = "bd",
+        ["rh"] = "bd",
+    };
 
     private static string Key(string type, string id) => $"{type}:{id}";
 }
