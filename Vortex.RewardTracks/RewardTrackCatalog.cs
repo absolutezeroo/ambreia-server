@@ -382,13 +382,7 @@ internal sealed class RewardTrackCatalog(
                     ? new StepPredicateSnapshot
                     {
                         Kind = PredicateKind.Test,
-                        Test = new RewardTrackStepFilterSnapshot
-                        {
-                            FactKey = row.FactKey,
-                            Operator = row.Operator,
-                            Value = row.Value,
-                            ReferencedStep = ParseBackReference(row.Value),
-                        },
+                        Test = BuildFilter(row),
                     }
                     : new StepPredicateSnapshot
                     {
@@ -412,31 +406,97 @@ internal sealed class RewardTrackCatalog(
 
         foreach (RewardTrackStepFilterEntity filter in filters.OrderBy(f => f.SortOrder))
         {
-            int referenced = ParseBackReference(filter.Value);
+            RewardTrackStepFilterSnapshot test = BuildFilter(filter);
 
             // A reference forward, or to itself, can never resolve: the step it names has not run.
             // Dropped here rather than left to fail every signal, so the log says so once at load
-            // instead of the task silently never advancing.
-            if (referenced >= step.StepIndex)
+            // instead of the task silently never advancing. Asked across both sides, because a
+            // side can name a step now and the answer has to be the same wherever it is named.
+            if (LatestReference(test) >= step.StepIndex)
             {
                 continue;
             }
 
-            built.Add(
-                new RewardTrackStepFilterSnapshot
-                {
-                    FactKey = filter.FactKey,
-                    Operator = filter.Operator,
-                    Value = filter.Value,
-                    ReferencedStep = referenced,
-                }
-            );
+            built.Add(test);
         }
 
         return [.. built];
     }
 
     /// <summary>The step a <c>$N</c> value points at, or <c>-1</c> when the value is a literal.</summary>
+    /// <summary>
+    /// One row as the engine reads it, both sides included.
+    /// </summary>
+    /// <remarks>
+    /// The sides are filled in only when the row says something the three legacy fields cannot,
+    /// so a filter nobody has touched carries nulls and takes the path it has always taken. That
+    /// is the fallback <see cref="RewardTrackStepFilterSnapshot.Left"/> documents, kept meaningful
+    /// rather than overwritten with a restatement of itself.
+    /// </remarks>
+    private static RewardTrackStepFilterSnapshot BuildFilter(RewardTrackStepFilterEntity row) =>
+        new()
+        {
+            FactKey = row.FactKey,
+            Operator = row.Operator,
+            Value = row.Value,
+            ReferencedStep = ParseBackReference(row.Value),
+            Left = row.LeftArg is string left ? BuildValue(row.LeftKind, left) : null,
+            Right = row.RightArg is string right ? BuildValue(row.RightKind, right) : null,
+        };
+
+    /// <summary>
+    /// One side, with its step reference parsed out.
+    /// </summary>
+    /// <remarks>
+    /// A <see cref="StepValueKind.StepFact"/> is stored as <c>N:fact_key</c>, the same shape
+    /// <c>$N</c> already had, and is parsed here once at load. An argument that does not parse
+    /// leaves the step at <c>-1</c>, which resolves to nothing and fails its test — the same
+    /// answer as a step that has not run, and the one the validator refuses to let anyone save.
+    /// </remarks>
+    private static StepValueSnapshot BuildValue(StepValueKind kind, string arg)
+    {
+        if (kind != StepValueKind.StepFact)
+        {
+            return new StepValueSnapshot { Kind = kind, Arg = arg };
+        }
+
+        int colon = arg.IndexOf(':');
+
+        return
+            colon > 0
+            && int.TryParse(
+                arg.AsSpan(0, colon),
+                System.Globalization.NumberStyles.Integer,
+                System.Globalization.CultureInfo.InvariantCulture,
+                out int step
+            )
+            ? new StepValueSnapshot
+            {
+                Kind = StepValueKind.StepFact,
+                Arg = arg[(colon + 1)..],
+                Step = step,
+            }
+            : new StepValueSnapshot { Kind = StepValueKind.StepFact, Arg = arg };
+    }
+
+    /// <summary>
+    /// The latest step this filter reads, across both sides and the legacy value. <c>-1</c> when
+    /// it reads none.
+    /// </summary>
+    private static int LatestReference(RewardTrackStepFilterSnapshot filter)
+    {
+        int latest = filter.ReferencedStep;
+
+        if (filter.Left is { Kind: StepValueKind.StepFact } left && left.Step > latest)
+        {
+            latest = left.Step;
+        }
+
+        return filter.Right is { Kind: StepValueKind.StepFact } right && right.Step > latest
+            ? right.Step
+            : latest;
+    }
+
     private static int ParseBackReference(string value) =>
         value.Length > 1
         && value[0] == '$'

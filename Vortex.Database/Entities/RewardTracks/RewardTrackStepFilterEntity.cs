@@ -61,7 +61,10 @@ public class RewardTrackStepFilterEntity : VortexEntity
     [DefaultValue(0)]
     public int SortOrder { get; set; }
 
-    /// <summary>One of <see cref="RewardTrackFacts"/>.</summary>
+    /// <summary>
+    /// One of <see cref="RewardTrackFacts"/>, and the left side of the comparison unless
+    /// <see cref="LeftArg"/> says otherwise.
+    /// </summary>
     [Column("fact_key")]
     [MaxLength(ContentIdLength)]
     public required string FactKey { get; set; }
@@ -70,10 +73,56 @@ public class RewardTrackStepFilterEntity : VortexEntity
     [DefaultValue(StepFilterOperator.Equals)]
     public required StepFilterOperator Operator { get; set; }
 
+    /// <summary>
+    /// A literal, a comma-separated list, or <c>$N</c> — the right side, unless
+    /// <see cref="RightArg"/> says otherwise.
+    /// </summary>
     [Column("value")]
     [MaxLength(512)]
     [DefaultValue("")]
     public string Value { get; set; } = string.Empty;
+
+    /// <summary>
+    /// Where the left side gets its value.
+    /// </summary>
+    /// <remarks>
+    /// <see cref="StepValueKind.Fact"/> is zero, so every row written before these columns existed
+    /// reads as a fact — which is what the left side of a comparison has always been.
+    /// </remarks>
+    [Column("left_kind")]
+    [DefaultValue(StepValueKind.Fact)]
+    public StepValueKind LeftKind { get; set; } = StepValueKind.Fact;
+
+    /// <summary>
+    /// The left side's argument, or null to use <see cref="FactKey"/>.
+    /// </summary>
+    /// <remarks>
+    /// Null on every row written before this column existed, which is the whole migration: the
+    /// left side goes on meaning <c>fact_key</c> until something says otherwise. A
+    /// <see cref="StepValueKind.StepFact"/> holds <c>N:fact_key</c> here — the same trick
+    /// <c>$N</c> already plays in <see cref="Value"/>, parsed once at load rather than per signal.
+    /// </remarks>
+    [Column("left_arg")]
+    [MaxLength(512)]
+    public string? LeftArg { get; set; }
+
+    /// <summary>
+    /// Where the right side gets its value.
+    /// </summary>
+    /// <remarks>
+    /// Defaulted to <see cref="StepValueKind.Literal"/>, which is what every stored right side is —
+    /// including a <c>$N</c>, which is a literal that the catalog reads as a step reference. That
+    /// reading survives: a row saying <c>Literal</c> whose value is <c>$N</c> is still a step
+    /// reference, so no row has to be rewritten for this column to be true of it.
+    /// </remarks>
+    [Column("right_kind")]
+    [DefaultValue(StepValueKind.Literal)]
+    public StepValueKind RightKind { get; set; } = StepValueKind.Literal;
+
+    /// <summary>The right side's argument, or null to use <see cref="Value"/>.</summary>
+    [Column("right_arg")]
+    [MaxLength(512)]
+    public string? RightArg { get; set; }
 
     [ForeignKey(nameof(RewardTrackTaskStepEntityId))]
     public RewardTrackTaskStepEntity? Step { get; set; }

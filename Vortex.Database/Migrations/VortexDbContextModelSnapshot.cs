@@ -10075,6 +10075,17 @@ namespace Vortex.Database.Migrations
                         .HasDefaultValue(0)
                         .HasColumnName("kind");
 
+                    b.Property<string>("LeftArg")
+                        .HasMaxLength(512)
+                        .HasColumnType("varchar(512)")
+                        .HasColumnName("left_arg");
+
+                    b.Property<int>("LeftKind")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasDefaultValue(0)
+                        .HasColumnName("left_kind");
+
                     b.Property<int>("Operator")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int")
@@ -10088,6 +10099,17 @@ namespace Vortex.Database.Migrations
                     b.Property<int>("RewardTrackTaskStepEntityId")
                         .HasColumnType("int")
                         .HasColumnName("step_id");
+
+                    b.Property<string>("RightArg")
+                        .HasMaxLength(512)
+                        .HasColumnType("varchar(512)")
+                        .HasColumnName("right_arg");
+
+                    b.Property<int>("RightKind")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasDefaultValue(1)
+                        .HasColumnName("right_kind");
 
                     b.Property<int>("SortOrder")
                         .ValueGeneratedOnAdd()
