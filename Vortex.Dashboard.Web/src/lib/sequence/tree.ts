@@ -363,6 +363,27 @@ export function decodeSide(encoded: string): SideValue {
   };
 }
 
+/**
+ * The sprite of the furniture this step is about, or null when nothing names one.
+ *
+ * The relation grid draws a piece of furniture with tiles around it, and the piece it should draw
+ * is named by a DIFFERENT condition in the same step -- "the furniture is 397" sits beside "where
+ * they stood", not inside it. So the step is the smallest thing that knows.
+ *
+ * It comes from the picker, which means it is here while the operator is choosing a position and
+ * gone after a reload. That is the moment the picture is worth having, and the grid falls back to
+ * a plain block the rest of the time.
+ */
+export function furnitureIcon(tree: TreeNode[] | undefined, factKeys: string[]): string | null {
+  for (const { node } of tests(tree ?? [])) {
+    if (node.left.kind === FACT && factKeys.includes(node.left.arg) && node.picked?.iconUrl) {
+      return node.picked.iconUrl;
+    }
+  }
+
+  return null;
+}
+
 /** One step of a task's sequence, as the editor holds it. */
 export type Step = { actionCode: string; tree?: TreeNode[] };
 

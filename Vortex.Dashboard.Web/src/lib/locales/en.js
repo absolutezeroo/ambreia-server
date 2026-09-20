@@ -2775,6 +2775,7 @@ export default {
     dance_duck_funk: 'Duck Funk',
     dance_the_rollie: 'The Rollie',
     relation_on: 'On it',
+    relationNone: 'Pick the tiles the player has to be standing on.',
     relation_front: 'In front',
     relation_front_right: 'Front right',
     relation_right: 'Right side',

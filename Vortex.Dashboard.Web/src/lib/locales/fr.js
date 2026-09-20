@@ -2785,6 +2785,7 @@ export default {
     dance_duck_funk: 'Duck Funk',
     dance_the_rollie: 'The Rollie',
     relation_on: 'Dessus',
+    relationNone: 'Choisissez les cases où le joueur doit se tenir.',
     relation_front: 'Devant',
     relation_front_right: 'Devant-droite',
     relation_right: 'À droite',

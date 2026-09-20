@@ -17,6 +17,7 @@ import {
   decodeSide,
   encodeSide,
   fromRows,
+  furnitureIcon,
   mapTests,
   nodeAt,
   referencedStep,
@@ -161,6 +162,31 @@ assert.equal(nodeAt(tree(), [0, 0]), null, 'a test has no children to walk into'
   assert.equal(typed(nodeAt(next, [1, 1])), '12!');
   assert.equal(nodeAt(next, [1]).kind, ANY);
   assert.equal(nodeAt(next, [1, 0]).kind, NOT);
+}
+
+// --- the furniture a step is about --------------------------------------------------------------
+{
+  // The relation grid draws a piece with tiles around it, and the piece is named by a DIFFERENT
+  // condition in the same step: "the furniture is 397" sits beside "where they stood", never
+  // inside it. So the search is over the whole step, at any depth.
+  const furni = (arg, icon) => ({
+    kind: TEST,
+    op: 0,
+    left: { kind: FACT, arg, step: -1 },
+    right: { kind: LITERAL, arg: '397', step: -1 },
+    picked: icon ? { name: 'chair_polyfon', iconUrl: icon } : undefined,
+  });
+
+  assert.equal(furnitureIcon([furni('definition', '/f.png')], ['definition']), '/f.png');
+  assert.equal(
+    furnitureIcon([group(ANY, group(NOT, furni('item', '/g.png')))], ['definition', 'item']),
+    '/g.png',
+    'found three levels down, because a step nests',
+  );
+
+  assert.equal(furnitureIcon([furni('definition', null)], ['definition']), null, 'never picked');
+  assert.equal(furnitureIcon([furni('room', '/r.png')], ['definition']), null, 'not a furniture');
+  assert.equal(furnitureIcon(undefined, ['definition']), null, 'a step with no conditions');
 }
 
 // --- one side, as one dropdown option ----------------------------------------------------------
