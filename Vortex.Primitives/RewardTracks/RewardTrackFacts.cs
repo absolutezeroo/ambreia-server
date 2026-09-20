@@ -1,4 +1,4 @@
-namespace Vortex.Primitives.RewardTracks;
+﻿namespace Vortex.Primitives.RewardTracks;
 
 /// <summary>
 /// The named facts a progress signal can carry about what just happened.
@@ -137,6 +137,9 @@ public static class RewardTrackFacts
     /// <summary>A pet's species number.</summary>
     public const string PetType = "pet_type";
 
+    /// <summary>The order a pet obeyed, as the client's training buttons number them.</summary>
+    public const string PetCommand = "pet_command";
+
     /// <summary>A name a player typed: a pet's, a guild's.</summary>
     public const string GivenName = "given_name";
 
@@ -168,6 +171,12 @@ public static class RewardTrackFacts
     /// figuredata actually names.
     /// </remarks>
     public const string FigureSet = "figure_set";
+
+    /// <summary>
+    /// Where somebody was standing in relation to a piece of furniture, from the furniture's own
+    /// point of view: <c>on</c>, <c>front</c>, <c>back_left</c> and the rest.
+    /// </summary>
+    public const string Relation = "relation";
 
     /// <summary>Which setting or section an edit touched.</summary>
     public const string Section = "section";

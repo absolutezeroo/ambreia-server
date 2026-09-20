@@ -75,6 +75,14 @@ internal sealed class DashboardAssetUrls(IOptions<ObservabilityConfig> options)
                 : $"{type}-{setId.ToString(CultureInfo.InvariantCulture)}"
         );
 
+    /// <summary>One pet species, by its number (<c>{type}</c>).</summary>
+    public string? PetImage(int petType) =>
+        Build(
+            _config.PetImageUrlTemplate,
+            "{type}",
+            petType.ToString(CultureInfo.InvariantCulture)
+        );
+
     /// <summary>Guild/group badge rendered from its badge code (<c>{badge}</c>).</summary>
     public string? GroupBadge(string? badge) =>
         Build(_config.GroupBadgeUrlTemplate, "{badge}", badge);
@@ -229,6 +237,7 @@ internal sealed class DashboardAssetUrls(IOptions<ObservabilityConfig> options)
             _config.QuestImageUrlTemplate,
             _config.AvatarEffectImageUrlTemplate,
             _config.FigureImageUrlTemplate,
+            _config.PetImageUrlTemplate,
         }
             .Select(Template)
             .Select(OriginOf)

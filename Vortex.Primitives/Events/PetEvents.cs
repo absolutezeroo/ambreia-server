@@ -20,18 +20,47 @@ public sealed record PetBredEvent(PlayerId OwnerId, int PetId, int Type, string 
 
 /// <summary>Somebody scratched a pet. <paramref name="ActorId"/> and <paramref name="OwnerId"/>
 /// are the two sides the hotel counts separately, and are often the same player.</summary>
-public sealed record PetRespectedEvent(PlayerId ActorId, PlayerId OwnerId, int PetId) : IEvent;
+/// <remarks>
+/// <paramref name="Type"/> is on every one of these events for the same reason: the pet id names one
+/// animal in the hotel, and content is written about a species. "Scratch a pet" and "scratch a
+/// husky" were the same task until this was carried, because the only thing a filter could say was
+/// which individual pet it meant.
+/// </remarks>
+public sealed record PetRespectedEvent(PlayerId ActorId, PlayerId OwnerId, int PetId, int Type)
+    : IEvent;
 
 /// <summary>A player fed a pet by hand. <paramref name="Nutrition"/> is what the item was worth,
 /// which is what "giving pets %limit% points of food" counts -- not the number of meals.</summary>
-public sealed record PetFedEvent(PlayerId ActorId, PlayerId OwnerId, int PetId, int Nutrition)
-    : IEvent;
+public sealed record PetFedEvent(
+    PlayerId ActorId,
+    PlayerId OwnerId,
+    int PetId,
+    int Type,
+    int Nutrition
+) : IEvent;
 
 /// <summary>A pet was set down in a room.</summary>
-public sealed record PetPlacedEvent(PlayerId ActorId, int PetId, int RoomId) : IEvent;
+public sealed record PetPlacedEvent(PlayerId ActorId, int PetId, int Type, int RoomId) : IEvent;
 
 /// <summary>A pet was picked up out of a room and back into an inventory.</summary>
-public sealed record PetPickedUpEvent(PlayerId ActorId, int PetId, int RoomId) : IEvent;
+public sealed record PetPickedUpEvent(PlayerId ActorId, int PetId, int Type, int RoomId) : IEvent;
+
+/// <summary>
+/// A pet obeyed an order.
+/// </summary>
+/// <remarks>
+/// Published where the order lands rather than where it is typed: a command reaches the server as
+/// ordinary chat — the client has no packet for it — and the words are only an order once the pet
+/// has been found, the owner checked, the level met and the energy paid. Anything raised earlier
+/// would count a player who said "sit" at a pet that ignored them.
+/// </remarks>
+public sealed record PetCommandObeyedEvent(
+    PlayerId ActorId,
+    PlayerId OwnerId,
+    int PetId,
+    int Type,
+    int CommandId
+) : IEvent;
 
 /// <summary>
 /// A pet reached a new level. Deliberately the level, not every experience grant: XP moves on every
@@ -43,4 +72,5 @@ public sealed record PetPickedUpEvent(PlayerId ActorId, int PetId, int RoomId) :
 /// needs that — without it the event names a pet nobody can be paid for, which is exactly why the
 /// reward track's <c>pet_level</c> action had nothing to listen to.
 /// </remarks>
-public sealed record PetLeveledUpEvent(PlayerId OwnerId, int PetId, int RoomId, int Level) : IEvent;
+public sealed record PetLeveledUpEvent(PlayerId OwnerId, int PetId, int Type, int RoomId, int Level)
+    : IEvent;

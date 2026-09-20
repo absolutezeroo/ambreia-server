@@ -72,6 +72,33 @@ public sealed record PlayerWalkedOnFurniEvent(
     int RoomId
 ) : IEvent;
 
+/// <summary>
+/// A player stood beside a piece of floor furniture, or on it.
+/// </summary>
+/// <remarks>
+/// <para>
+/// One per piece of furniture around the tile, so a step in a furnished room raises several. That
+/// is affordable for exactly one reason: like <see cref="PlayerWalkedOnFurniEvent"/>, the tile is
+/// only scanned at all once the interest gate has said some content names the action. With none,
+/// a step costs one hash lookup and no scan happens.
+/// </para>
+/// <para>
+/// <paramref name="Relation"/> is measured from the furniture, never from the room — see
+/// <c>RelativePositions</c>. <paramref name="Figure"/> rides along because the whole point of
+/// answering this in one signal is that everything it claims is true at the same instant: "barefoot,
+/// in front of the television" written as two steps is two moments, and the shoes can go back on in
+/// between.
+/// </para>
+/// </remarks>
+public sealed record PlayerStoodNearFurniEvent(
+    int PlayerId,
+    int ItemId,
+    int DefinitionId,
+    int RoomId,
+    string Relation,
+    string Figure
+) : IEvent;
+
 /// <summary>A furniture item was moved within a room.</summary>
 /// <param name="RotatedInPlace">
 /// The item finished on the tile it started on, facing a different way. The client has no separate

@@ -216,7 +216,7 @@ public sealed class TranslatorCaseTests
         // The amount is the level, for Highest-mode tasks -- not one. And the credit goes to the
         // owner, who need not be whoever fed it.
         ProgressSignal signal = new PetLevelTranslator()
-            .Translate(new PetLeveledUpEvent(11, 55, 7, Level: 9))
+            .Translate(new PetLeveledUpEvent(11, 55, Type: 3, RoomId: 7, Level: 9))
             .Should()
             .ContainSingle()
             .Subject;
@@ -399,6 +399,18 @@ public sealed class TranslatorCaseTests
         {
             yield return new PlayerFigureChangedEvent(
                 4312,
+                "hd-180-1.ch-210-66.lg-270-82.sh-290-91"
+            );
+        }
+
+        if (eventType == typeof(PlayerStoodNearFurniEvent))
+        {
+            yield return new PlayerStoodNearFurniEvent(
+                4312,
+                99,
+                7,
+                11,
+                "front",
                 "hd-180-1.ch-210-66.lg-270-82.sh-290-91"
             );
         }

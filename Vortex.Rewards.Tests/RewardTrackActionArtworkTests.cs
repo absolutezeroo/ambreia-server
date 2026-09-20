@@ -78,6 +78,9 @@ public class RewardTrackActionArtworkTests
         // it, then pick it up" shows the place_item icon and needs no picture for the rest.
         RewardTrackActions.PickUpItem,
         RewardTrackActions.WalkOnFurni,
+        // Same reasoning, and more so: standing beside something is what a later step in a sequence
+        // checks, and the icon of a task is drawn from step 0 alone.
+        RewardTrackActions.StandNearFurni,
         // The coverage sweep: everything a player does that Habbo's own reward tracks never had a
         // task for, so there is no embed to borrow and inventing one would only move the blank
         // square. Each is a signal this hotel raises because its event already existed and carried
@@ -139,6 +142,9 @@ public class RewardTrackActionArtworkTests
         RewardTrackActions.RespectPet,
         RewardTrackActions.PetRespected,
         RewardTrackActions.FeedPet,
+        // The client draws pet_eat, pet_level and pet_respect and nothing else about pets: Habbo
+        // never had a reward track task for obeying an order, so there is no embed to borrow.
+        RewardTrackActions.CommandPet,
         RewardTrackActions.ReceiveGift,
     };
 

@@ -194,6 +194,7 @@
     habbicon: 'habbicon',
     collection: 'collection',
     pet_type: 'petSpecies',
+    pet_command: 'petCommand',
     poll: 'poll',
     quiz: 'quiz',
     campaign: 'campaign',

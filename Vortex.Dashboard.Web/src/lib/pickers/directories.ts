@@ -35,7 +35,10 @@ export const DIRECTORIES: Record<string, Directory> = {
   offer: { endpoint: '/api/v1/directory/catalog-offers', row: 'plain' },
   category: { endpoint: '/api/v1/directory/navigator-categories', row: 'plain' },
   badge: { endpoint: '/api/v1/directory/badges', row: 'plain' },
-  petSpecies: { endpoint: '/api/v1/directory/pet-species', row: 'plain' },
+  // Its own row for the same reason the garments have one: the hotel has no name for a species,
+  // so "Species 17" is all the text there is and the picture carries the recognition.
+  petSpecies: { endpoint: '/api/v1/directory/pet-species', row: 'pet' },
+  petCommand: { endpoint: '/api/v1/directory/pet-commands', row: 'plain' },
   poll: { endpoint: '/api/v1/directory/polls', row: 'plain' },
   quiz: { endpoint: '/api/v1/directory/quizzes', row: 'plain' },
   campaign: { endpoint: '/api/v1/directory/quest-campaigns', row: 'plain' },

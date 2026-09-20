@@ -239,7 +239,9 @@ public sealed partial class RoomPetSystem
         // Detached, like the furniture events: the scratcher's progression must not sit between
         // the click and the animation. Both sides ride one event -- the hotel counts scratching
         // somebody's pet and having yours scratched as two different achievements.
-        _roomGrain.PublishDetached(new PetRespectedEvent(ctx.PlayerId, updated.OwnerId, petId));
+        _roomGrain.PublishDetached(
+            new PetRespectedEvent(ctx.PlayerId, updated.OwnerId, petId, updated.Type)
+        );
 
         return updated;
     }
@@ -530,6 +532,13 @@ public sealed partial class RoomPetSystem
             await SendPetUpdatedAsync(updated, ct);
         }
 
+        // Detached, like the scratch: the owner's progression must not sit between the order and
+        // the pet doing the trick. Here at the end rather than at the top of the method, so nothing
+        // is counted for an order a sleeping, under-levelled or somebody else's pet refused.
+        _roomGrain.PublishDetached(
+            new PetCommandObeyedEvent(ctx.PlayerId, updated.OwnerId, petId, updated.Type, commandId)
+        );
+
         return updated;
     }
 
@@ -564,6 +573,7 @@ public sealed partial class RoomPetSystem
                 new PetLeveledUpEvent(
                     updated.OwnerId,
                     updated.PetId,
+                    updated.Type,
                     _roomGrain.RoomId.Value,
                     updated.Level
                 ),

@@ -1,7 +1,9 @@
+using System;
 using System.Collections.Immutable;
 using System.Linq;
 using Vortex.Primitives.MysteryBox;
 using Vortex.Primitives.RewardTracks;
+using Vortex.Primitives.Rooms.Enums;
 
 namespace Vortex.Primitives.Signals;
 
@@ -239,7 +241,7 @@ public static class Facts
     public static readonly FactKey ClubGift = new(
         RewardTrackFacts.ClubGift,
         FactKind.Text,
-        "rewardTracks.fact_clubgift",
+        "rewardTracks.fact_club_gift",
         "Club gift"
     );
 
@@ -247,7 +249,7 @@ public static class Facts
     public static readonly FactKey NftProduct = new(
         RewardTrackFacts.NftProduct,
         FactKind.Text,
-        "rewardTracks.fact_nftproduct",
+        "rewardTracks.fact_nft_product",
         "Store product"
     );
 
@@ -263,7 +265,7 @@ public static class Facts
     public static readonly FactKey VaultCategory = new(
         RewardTrackFacts.VaultCategory,
         FactKind.Text,
-        "rewardTracks.fact_vaultcategory",
+        "rewardTracks.fact_vault_category",
         "Vault category"
     );
 
@@ -271,15 +273,31 @@ public static class Facts
     public static readonly FactKey PetType = new(
         RewardTrackFacts.PetType,
         FactKind.Number,
-        "rewardTracks.fact_pettype",
+        "rewardTracks.fact_pet_type",
         "Pet species"
+    );
+
+    /// <summary>
+    /// An order a pet was given.
+    /// </summary>
+    /// <remarks>
+    /// An id rather than a closed set, although there are only eleven of them and every pet type
+    /// answers all eleven: the names live in <c>pet_command_names</c> where an operator can edit
+    /// them, and a second copy enumerated here would be the drift this vocabulary exists to
+    /// prevent. The editor offers the directory instead.
+    /// </remarks>
+    public static readonly FactKey PetCommand = new(
+        RewardTrackFacts.PetCommand,
+        FactKind.OpaqueId,
+        "rewardTracks.fact_pet_command",
+        "Pet command"
     );
 
     /// <summary>A name the player typed.</summary>
     public static readonly FactKey GivenName = new(
         RewardTrackFacts.GivenName,
         FactKind.Text,
-        "rewardTracks.fact_givenname",
+        "rewardTracks.fact_given_name",
         "Given name"
     );
 
@@ -295,7 +313,7 @@ public static class Facts
     public static readonly FactKey DurationSeconds = new(
         RewardTrackFacts.DurationSeconds,
         FactKind.Number,
-        "rewardTracks.fact_durationseconds",
+        "rewardTracks.fact_seconds",
         "Duration (s)"
     );
 
@@ -356,6 +374,30 @@ public static class Facts
     );
 
     /// <summary>
+    /// Which side of a piece of furniture somebody was standing on.
+    /// </summary>
+    /// <remarks>
+    /// Closed, and measured from the furniture rather than from the room — see
+    /// <see cref="RelativePosition"/>. An operator picks a tile on a diagram of the thing rather
+    /// than typing a compass direction, which is the only way this reads as what it means: the
+    /// front of a chair is wherever the chair is pointing.
+    /// </remarks>
+    public static readonly FactKey Relation = new(
+        RewardTrackFacts.Relation,
+        FactKind.Enum,
+        "rewardTracks.fact_relation",
+        "Where they stood",
+        [
+            .. Enum.GetValues<RelativePosition>()
+                .Select(p => new EnumValue(
+                    p.ToValue(),
+                    $"rewardTracks.relation_{p.ToValue()}",
+                    p.ToString()
+                )),
+        ]
+    );
+
+    /// <summary>
     /// Which dialog saved a room's settings.
     /// </summary>
     /// <remarks>
@@ -406,6 +448,7 @@ public static class Facts
         VaultCategory,
         TargetedOffer,
         PetType,
+        PetCommand,
         GivenName,
         Effect,
         DurationSeconds,
@@ -414,6 +457,7 @@ public static class Facts
         Serial,
         Figure,
         FigureSet,
+        Relation,
         Section,
     ];
 }

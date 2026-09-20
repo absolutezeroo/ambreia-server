@@ -17,8 +17,8 @@ public sealed class PetRespectedTranslator : ISignalTranslator<PetRespectedEvent
 {
     public static ImmutableArray<SignalShape> Shapes { get; } =
     [
-        new(SignalActions.RespectPet, [Facts.Pet], TargetKind: FactKind.OpaqueId),
-        new(SignalActions.PetRespected, [Facts.Pet], TargetKind: FactKind.OpaqueId),
+        new(SignalActions.RespectPet, [Facts.Pet, Facts.PetType], TargetKind: FactKind.OpaqueId),
+        new(SignalActions.PetRespected, [Facts.Pet, Facts.PetType], TargetKind: FactKind.OpaqueId),
     ];
 
     public ImmutableArray<ProgressSignal> Translate(PetRespectedEvent e) =>
@@ -28,14 +28,14 @@ public sealed class PetRespectedTranslator : ISignalTranslator<PetRespectedEvent
                 SignalActions.RespectPet,
                 1,
                 SignalValue.Id(e.PetId),
-                SignalFacts.Build().Id(Facts.Pet, e.PetId)
+                SignalFacts.Build().Id(Facts.Pet, e.PetId).Number(Facts.PetType, e.Type)
             ),
             new(
                 e.OwnerId.Value,
                 SignalActions.PetRespected,
                 1,
                 SignalValue.Id(e.PetId),
-                SignalFacts.Build().Id(Facts.Pet, e.PetId)
+                SignalFacts.Build().Id(Facts.Pet, e.PetId).Number(Facts.PetType, e.Type)
             ),
         ];
 }

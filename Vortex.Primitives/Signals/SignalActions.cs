@@ -272,6 +272,12 @@ public static class SignalActions
     /// <inheritdoc cref="RewardTrackActions.FeedPet"/>
     public const string FeedPet = RewardTrackActions.FeedPet;
 
+    /// <inheritdoc cref="RewardTrackActions.CommandPet"/>
+    public const string CommandPet = RewardTrackActions.CommandPet;
+
+    /// <inheritdoc cref="RewardTrackActions.StandNearFurni"/>
+    public const string StandNearFurni = RewardTrackActions.StandNearFurni;
+
     /// <inheritdoc cref="RewardTrackActions.ReceiveGift"/>
     public const string ReceiveGift = RewardTrackActions.ReceiveGift;
 
@@ -361,6 +367,8 @@ public static class SignalActions
         RespectPet,
         PetRespected,
         FeedPet,
+        CommandPet,
+        StandNearFurni,
         ReceiveGift
     );
 }

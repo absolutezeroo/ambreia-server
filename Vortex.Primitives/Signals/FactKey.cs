@@ -61,6 +61,10 @@ public static class FactOperators
     private static readonly ImmutableArray<int> Equality = [0, 1];
     private static readonly ImmutableArray<int> EqualityAndList = [0, 1, 2, 7];
 
+    // A closed set gets the list operators too. "Anywhere in front of it" is three of the nine
+    // sides and one filter; without these it was three tasks, or a filter per side.
+    private static readonly ImmutableArray<int> EnumOperators = [0, 1, 2, 7];
+
     // A fact that is itself a set answers neither "is it this" nor "is it one of these" -- both
     // ask about a single value. It answers membership, in both directions, and nothing else.
     private static readonly ImmutableArray<int> MembershipOperators = [8, 9];
@@ -77,7 +81,7 @@ public static class FactOperators
         {
             FactKind.Text => TextOperators,
             FactKind.Number => NumberOperators,
-            FactKind.Enum => Equality,
+            FactKind.Enum => EnumOperators,
             FactKind.OpaqueId => Equality,
             FactKind.FigureSetId => MembershipOperators,
             _ => EqualityAndList,

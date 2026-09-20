@@ -7,6 +7,7 @@
   // value field without starting a drag.
   import { GripVertical, Search, X } from '@lucide/svelte';
   import AssetImage from '../AssetImage.svelte';
+  import RelationGrid from './RelationGrid.svelte';
   import { t } from '../../lib/i18n';
 
   /**
@@ -91,7 +92,18 @@
     </select>
   {/if}
 
-  {#if meta?.values?.length}
+  {#if meta?.key === 'relation'}
+    <!-- The one closed fact a list cannot express: its sides are named from the furniture, so
+         "right side" reads backwards against a picture of the thing facing you. -->
+    <RelationGrid
+      value={filter.value}
+      {canManage}
+      onchange={(value: string, op: number) => {
+        filter.value = value;
+        filter.op = op;
+      }}
+    />
+  {:else if meta?.values?.length}
     <!-- A closed fact: the server declares what it accepts, so a typo cannot be entered. -->
     <select bind:value={filter.value} disabled={!canManage}>
       {#each meta.values as allowed (allowed.value)}

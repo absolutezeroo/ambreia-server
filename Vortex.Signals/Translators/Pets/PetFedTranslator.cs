@@ -15,7 +15,7 @@ namespace Vortex.Signals.Translators;
 public sealed class PetFedTranslator : ISignalTranslator<PetFedEvent>
 {
     public static ImmutableArray<SignalShape> Shapes { get; } =
-    [new(SignalActions.FeedPet, [Facts.Pet], TargetKind: FactKind.OpaqueId)];
+    [new(SignalActions.FeedPet, [Facts.Pet, Facts.PetType], TargetKind: FactKind.OpaqueId)];
 
     public ImmutableArray<ProgressSignal> Translate(PetFedEvent e) =>
         [
@@ -24,7 +24,7 @@ public sealed class PetFedTranslator : ISignalTranslator<PetFedEvent>
                 SignalActions.FeedPet,
                 e.Nutrition,
                 SignalValue.Id(e.PetId),
-                SignalFacts.Build().Id(Facts.Pet, e.PetId)
+                SignalFacts.Build().Id(Facts.Pet, e.PetId).Number(Facts.PetType, e.Type)
             ),
         ];
 }

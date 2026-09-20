@@ -2,6 +2,7 @@
 // in where their rows come from, and a shared layout is why adding one is a single line.
 import FigurePickerRow from './FigurePickerRow.svelte';
 import FurniturePickerRow from './FurniturePickerRow.svelte';
+import PetPickerRow from './PetPickerRow.svelte';
 import PlainPickerRow from './PlainPickerRow.svelte';
 import PlayerPickerRow from './PlayerPickerRow.svelte';
 import RoomPickerRow from './RoomPickerRow.svelte';
@@ -17,4 +18,5 @@ export const PICKER_ROWS: Record<string, Component<PickerRowProps>> = {
   player: PlayerPickerRow,
   plain: PlainPickerRow,
   figureSet: FigurePickerRow,
+  pet: PetPickerRow,
 };

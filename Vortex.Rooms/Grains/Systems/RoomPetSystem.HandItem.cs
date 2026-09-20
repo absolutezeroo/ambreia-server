@@ -82,7 +82,7 @@ public sealed partial class RoomPetSystem
         if (handItem.Nutrition > 0)
         {
             _roomGrain.PublishDetached(
-                new PetFedEvent(ctx.PlayerId, fed.OwnerId, petId, handItem.Nutrition)
+                new PetFedEvent(ctx.PlayerId, fed.OwnerId, petId, fed.Type, handItem.Nutrition)
             );
         }
 

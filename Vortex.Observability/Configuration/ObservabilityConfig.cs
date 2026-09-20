@@ -283,6 +283,16 @@ public sealed class ObservabilityConfig
     public string FigureImageUrlTemplate { get; init; } = string.Empty;
 
     /// <summary>
+    /// URL template for <b>one pet species</b>, with <c>{type}</c> replaced by its number — e.g.
+    /// <c>http://vortex-assets.local/habbo-imaging/pet/{type}.png</c>.
+    /// </summary>
+    /// <remarks>
+    /// The hotel has no name for a species, so in the picker this picture is not decoration: it is
+    /// the only thing distinguishing "Species 17" from "Species 18". Empty leaves the numbers.
+    /// </remarks>
+    public string PetImageUrlTemplate { get; init; } = string.Empty;
+
+    /// <summary>
     /// URL template for a <b>quest</b> image, with <c>{version}</c> replaced by the quest's
     /// <c>image_version</c> — e.g.
     /// <c>http://vortex-assets.local/c_images/Quests/{version}.png</c>. That column is exactly the

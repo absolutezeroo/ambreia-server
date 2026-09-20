@@ -254,6 +254,10 @@ public sealed class RoomAvatarTickSystem(RoomGrain roomGrain)
                 }
             }
 
+            // Everything around the tile, not only what is on it: standing in front of a chair
+            // means standing on an empty square, so this cannot live inside the branch above.
+            PublishNeighbourhood(avatar, nextX, nextY);
+
             // The height the client is told to walk to is the section's, less whatever the item
             // under it sinks the pose by -- the same arithmetic GetTileHeightForAvatar() does, but
             // about the surface this step chose rather than the tile's top.
@@ -277,4 +281,97 @@ public sealed class RoomAvatarTickSystem(RoomGrain roomGrain)
             await _roomGrain.AvatarModule.StopWalkingAsync(avatar, ct);
         }
     }
+
+    /// <summary>
+    /// Says where this tile stands in relation to every piece of furniture around it.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// The most expensive thing on the walk path, and affordable for one reason only: the detached
+    /// publish reaches an index-gated consumer, so with no content naming <c>stand_near_furni</c>
+    /// each of these is a hash lookup into an empty handler list. The scan itself is nine array
+    /// reads and allocates nothing until a piece is actually found.
+    /// </para>
+    /// <para>
+    /// The relation is measured from the tile the piece was found on rather than from its origin
+    /// square, so the front of a two-by-two sofa is its front wherever you are standing along it.
+    /// The centre is read first, so a piece you are standing ON answers <c>on</c> rather than
+    /// whichever side the ring happened to reach first.
+    /// </para>
+    /// </remarks>
+    private void PublishNeighbourhood(IRoomAvatar avatar, int x, int y)
+    {
+        if (avatar is not IRoomPlayer walker || walker.PlayerId.Value <= 0)
+        {
+            return;
+        }
+
+        HashSet<int>? seen = null;
+
+        foreach ((int dx, int dy) in Neighbourhood)
+        {
+            int nx = x + dx;
+            int ny = y + dy;
+
+            if (
+                nx < 0
+                || ny < 0
+                || nx >= _roomGrain.MapModule.Width
+                || ny >= _roomGrain.MapModule.Height
+            )
+            {
+                continue;
+            }
+
+            RoomObjectId itemId = _roomGrain._state.TileHighestFloorItems[
+                _roomGrain.MapModule.ToIdx(nx, ny)
+            ];
+
+            if (
+                itemId <= 0
+                || !_roomGrain._state.ItemsById.TryGetValue(itemId, out IRoomItem? item)
+                || item is not IRoomFloorItem floorItem
+            )
+            {
+                continue;
+            }
+
+            seen ??= [];
+
+            if (!seen.Add(itemId.Value))
+            {
+                continue;
+            }
+
+            if (RelativePositions.Of(x, y, nx, ny, floorItem.Rotation) is not RelativePosition side)
+            {
+                continue;
+            }
+
+            _roomGrain.PublishDetached(
+                new PlayerStoodNearFurniEvent(
+                    walker.PlayerId.Value,
+                    itemId.Value,
+                    floorItem.Definition.Id,
+                    _roomGrain.RoomId.Value,
+                    side.ToValue(),
+                    walker.Figure
+                )
+            );
+        }
+    }
+
+    /// <summary>The tile itself, then the ring around it. Order decides which side a piece answers.</summary>
+    private static readonly (int Dx, int Dy)[] Neighbourhood =
+    [
+        (0, 0),
+        (0, -1),
+        (1, -1),
+        (1, 0),
+        (1, 1),
+        (0, 1),
+        (-1, 1),
+        (-1, 0),
+        (-1, -1),
+    ];
 }

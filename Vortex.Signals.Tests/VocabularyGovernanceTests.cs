@@ -68,6 +68,8 @@ public sealed class VocabularyGovernanceTests
         "vault_category",
         "targeted_offer",
         "pet_type",
+        "pet_command",
+        "relation",
         "given_name",
         "effect",
         "seconds",
@@ -162,6 +164,8 @@ public sealed class VocabularyGovernanceTests
         "respect_pet",
         "pet_respected",
         "feed_pet",
+        "command_pet",
+        "stand_near_furni",
         "receive_gift",
     ];
 
@@ -181,6 +185,17 @@ public sealed class VocabularyGovernanceTests
         "settings",
         "tags",
         "category_trade",
+        // The nine sides of a piece of furniture. Frozen like the rest: a task stores the string,
+        // so renaming one would quietly stop matching what it was written to match.
+        "on",
+        "front",
+        "front_right",
+        "right",
+        "back_right",
+        "back",
+        "back_left",
+        "left",
+        "front_left",
     ];
 
     [Fact]

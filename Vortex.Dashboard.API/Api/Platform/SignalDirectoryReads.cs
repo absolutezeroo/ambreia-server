@@ -259,11 +259,11 @@ internal sealed class SignalDirectoryReads(
     /// A species is not a row of its own: it is the distinct <c>PetType</c> across the palettes the
     /// hotel ships, which is what a task filtering on "a pet of species N" compares against.
     /// </remarks>
-    public Task<DirectoryPage> PetSpeciesDirectoryAsync(
+    public Task<PetDirectoryPage> PetSpeciesDirectoryAsync(
         NameValueCollection query,
         CancellationToken ct
     ) =>
-        QueryAsync<DirectoryPage>(
+        QueryAsync<PetDirectoryPage>(
             async db =>
             {
                 string term = (query["q"] ?? string.Empty).Trim();
@@ -276,15 +276,46 @@ internal sealed class SignalDirectoryReads(
                     .ToListAsync(ct)
                     .ConfigureAwait(false);
 
-                List<DirectoryRow> items = types
+                List<PetDirectoryRow> items = types
                     .Where(t =>
                         term.Length == 0 || t.ToString().Contains(term, StringComparison.Ordinal)
                     )
-                    .Select(t => new DirectoryRow(t, t.ToString(), $"Species {t}", null))
+                    .Select(t => new PetDirectoryRow(
+                        t,
+                        t.ToString(CultureInfo.InvariantCulture),
+                        $"Species {t}",
+                        assets.PetImage(t)
+                    ))
                     .ToList();
 
-                return new DirectoryPage(items.Count, items.Count, 0, false, items);
+                return new PetDirectoryPage(items.Count, items.Count, 0, false, items);
             },
+            ct
+        );
+
+    /// <summary>
+    /// The orders a pet can be given.
+    /// </summary>
+    /// <remarks>
+    /// Only the ones some pet type is actually configured for. <c>pet_command_names</c> holds
+    /// forty-six names and <c>pet_commands</c> configures eleven of them, so two thirds of that
+    /// table name an order no pet in the hotel has ever been able to obey — and a filter on one
+    /// would be exactly the silent never-matching task the pickers exist to prevent.
+    /// </remarks>
+    public Task<DirectoryPage> PetCommandsDirectoryAsync(
+        NameValueCollection query,
+        CancellationToken ct
+    ) =>
+        PickerPageAsync(
+            query,
+            db =>
+                db.PetCommandNames.AsNoTracking()
+                    .Where(n => db.PetCommands.Any(c => c.CommandId == n.CommandId)),
+            (commands, term, id) =>
+                commands.Where(n => n.Name.Contains(term) || (id != null && n.CommandId == id)),
+            commands => commands.OrderBy(n => n.CommandId),
+            // The signal carries the command id, not the row's own primary key.
+            n => new PickerRow(n.CommandId, n.Name, null),
             ct
         );
 

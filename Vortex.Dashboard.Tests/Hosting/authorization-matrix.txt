@@ -39,6 +39,7 @@ GET /api/v1/directory/habbicon-collections -> dashboard.habbicons.read
 GET /api/v1/directory/habbicons -> dashboard.habbicons.read
 GET /api/v1/directory/navigator-categories -> dashboard.navigator.read
 GET /api/v1/directory/nft-store -> dashboard.collectibles.read
+GET /api/v1/directory/pet-commands -> dashboard.pets.read
 GET /api/v1/directory/pet-species -> dashboard.pets.read
 GET /api/v1/directory/placed-furniture -> dashboard.furniture.read
 GET /api/v1/directory/players -> dashboard.players.read

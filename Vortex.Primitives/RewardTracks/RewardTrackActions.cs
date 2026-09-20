@@ -299,6 +299,15 @@ public static class RewardTrackActions
     /// <summary>Fed a pet by hand. Carries the food's nutrition as its amount.</summary>
     public const string FeedPet = "feed_pet";
 
+    /// <summary>A pet obeyed an order. Raised where it obeys, never where the words were typed.</summary>
+    public const string CommandPet = "command_pet";
+
+    /// <summary>
+    /// Stood on a tile beside a piece of furniture, or on it. Carries which side, measured from the
+    /// furniture, so "in front of the television" survives the television being turned round.
+    /// </summary>
+    public const string StandNearFurni = "stand_near_furni";
+
     /// <summary>Was given something bought from the catalogue. The other half of buy_gift.</summary>
     public const string ReceiveGift = "receive_gift";
 }

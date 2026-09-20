@@ -115,7 +115,7 @@ public sealed partial class RoomPetSystem
         await SendPetAddedAsync(snapshot, ct);
 
         await _roomGrain._events.PublishAsync(
-            new PetPlacedEvent(ctx.PlayerId, pet.Id, _roomGrain.RoomId.Value),
+            new PetPlacedEvent(ctx.PlayerId, pet.Id, pet.Type, _roomGrain.RoomId.Value),
             ct
         );
 
@@ -221,7 +221,7 @@ public sealed partial class RoomPetSystem
         await SendPetAddedToInventoryAsync(snapshot, ct);
 
         await _roomGrain._events.PublishAsync(
-            new PetPickedUpEvent(ctx.PlayerId, pet.Id, _roomGrain.RoomId.Value),
+            new PetPickedUpEvent(ctx.PlayerId, pet.Id, pet.Type, _roomGrain.RoomId.Value),
             ct
         );
 
