@@ -83,6 +83,18 @@ internal sealed class DashboardAssetUrls(IOptions<ObservabilityConfig> options)
             petType.ToString(CultureInfo.InvariantCulture)
         );
 
+    /// <summary>
+    /// One piece of furniture as it stands in a room, by its definition name (<c>{name}</c>),
+    /// falling back to the catalogue icon when the imager has no template configured.
+    /// </summary>
+    /// <remarks>
+    /// The two are not the same picture: the icon is a flat badge drawn for a shop listing, and
+    /// this is the rendered piece. On a diagram of the tiles around a piece of furniture only the
+    /// second one reads as furniture; the first reads as a sticker.
+    /// </remarks>
+    public string? FurniImage(string? name) =>
+        Build(_config.FurniImageUrlTemplate, "{name}", name) ?? FurniIcon(name);
+
     /// <summary>Guild/group badge rendered from its badge code (<c>{badge}</c>).</summary>
     public string? GroupBadge(string? badge) =>
         Build(_config.GroupBadgeUrlTemplate, "{badge}", badge);
@@ -238,6 +250,7 @@ internal sealed class DashboardAssetUrls(IOptions<ObservabilityConfig> options)
             _config.AvatarEffectImageUrlTemplate,
             _config.FigureImageUrlTemplate,
             _config.PetImageUrlTemplate,
+            _config.FurniImageUrlTemplate,
         }
             .Select(Template)
             .Select(OriginOf)

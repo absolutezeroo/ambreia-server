@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Globalization;
@@ -7,6 +7,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using Vortex.Dashboard.API.Api.Progression.Contracts;
+using Vortex.Dashboard.API.Infrastructure;
 using Vortex.Database.Context;
 using Vortex.Database.Entities.RewardTracks;
 using Vortex.Primitives.RewardTracks;
@@ -20,10 +21,12 @@ namespace Vortex.Dashboard.API.Api.Progression;
 /// </summary>
 internal sealed class RewardTrackReads(
     IDbContextFactory<VortexDbContext> dbContextFactory,
-    ISignalVocabulary signalVocabulary
+    ISignalVocabulary signalVocabulary,
+    DashboardAssetUrls assetUrls
 ) : DashboardReads(dbContextFactory)
 {
     private readonly ISignalVocabulary _signalVocabulary = signalVocabulary;
+    private readonly DashboardAssetUrls _assetUrls = assetUrls;
 
     /// <summary>
     /// The action codes a task can be defined on, and — the part that matters — whether anything
@@ -188,6 +191,23 @@ internal sealed class RewardTrackReads(
                     .ToListAsync(ct)
                     .ConfigureAwait(false);
 
+                // The sprite of every piece of furniture any condition names, resolved here so it
+                // survives a reload: an operator reading a condition they wrote last week needs to
+                // see which sofa it is about, and the editor cannot remember what it never fetched.
+                List<int> named = [.. stepFilters.Select(NamedDefinition).OfType<int>().Distinct()];
+
+                Dictionary<int, string?> furniIcons =
+                    named.Count == 0
+                        ? []
+                        : (
+                            await db
+                                .FurnitureDefinitions.AsNoTracking()
+                                .Where(d => named.Contains(d.Id))
+                                .Select(d => new { d.Id, d.Name })
+                                .ToListAsync(ct)
+                                .ConfigureAwait(false)
+                        ).ToDictionary(d => d.Id, d => _assetUrls.FurniImage(d.Name));
+
                 List<RewardTrackPrizeEntity> prizes = await db
                     .RewardTrackPrizes.AsNoTracking()
                     .Where(p => p.DeletedAt == null)
@@ -350,12 +370,14 @@ internal sealed class RewardTrackReads(
                                             Flat(
                                                 stepFilters.Where(f =>
                                                     f.RewardTrackTaskStepEntityId == s.Id
-                                                )
+                                                ),
+                                                furniIcons
                                             ),
                                             Tree(
                                                 stepFilters.Where(f =>
                                                     f.RewardTrackTaskStepEntityId == s.Id
-                                                )
+                                                ),
+                                                furniIcons
                                             )
                                         ))
                                         .ToList(),
@@ -529,14 +551,66 @@ internal sealed class RewardTrackReads(
     /// <c>N:fact_key</c> here, for the same reason: the caller names a step as a number and never
     /// has to know how the column holds it.
     /// </remarks>
-    private static RewardTrackFilterRow Condition(RewardTrackStepFilterEntity row) =>
+    private static RewardTrackFilterRow Condition(
+        RewardTrackStepFilterEntity row,
+        Dictionary<int, string?> furniIcons
+    ) =>
         new(
             row.FactKey,
             (int)row.Operator,
             row.Value,
             Side(row.LeftKind, row.LeftArg, StepValueKind.Fact, row.FactKey),
-            Side(row.RightKind, row.RightArg, StepValueKind.Literal, row.Value)
+            Side(row.RightKind, row.RightArg, StepValueKind.Literal, row.Value),
+            NamedDefinition(row) is int id ? furniIcons.GetValueOrDefault(id) : null
         );
+
+    /// <summary>
+    /// The furniture definition this condition is about, or <c>null</c> when it is about something
+    /// else.
+    /// </summary>
+    /// <remarks>
+    /// One side names the definition fact and the other is typed. The first entry of a list is
+    /// taken: "one of these three sofas" has no single sprite, and the first is a better answer
+    /// than none for a diagram whose job is to say roughly what this is about.
+    /// </remarks>
+    private static int? NamedDefinition(RewardTrackStepFilterEntity row)
+    {
+        StepValueKind leftKind = row.LeftArg is null ? StepValueKind.Fact : row.LeftKind;
+        string leftArg = row.LeftArg ?? row.FactKey;
+        StepValueKind rightKind = row.RightArg is null ? StepValueKind.Literal : row.RightKind;
+        string rightArg = row.RightArg ?? row.Value;
+
+        bool namesIt =
+            (leftKind is StepValueKind.Fact or StepValueKind.StepFact && Names(leftArg))
+            || (rightKind is StepValueKind.Fact or StepValueKind.StepFact && Names(rightArg));
+
+        if (!namesIt)
+        {
+            return null;
+        }
+
+        string typed =
+            rightKind == StepValueKind.Literal ? rightArg
+            : leftKind == StepValueKind.Literal ? leftArg
+            : string.Empty;
+
+        return int.TryParse(
+            typed.Split(',')[0].Trim(),
+            NumberStyles.Integer,
+            CultureInfo.InvariantCulture,
+            out int id
+        )
+            ? id
+            : null;
+
+        // A step reference packs its step in front of the key, so the key is what is after it.
+        static bool Names(string arg) =>
+            string.Equals(
+                arg[(arg.IndexOf(':') + 1)..],
+                RewardTrackFacts.Definition,
+                StringComparison.Ordinal
+            );
+    }
 
     /// <summary>One side, or what the row meant before it could name one.</summary>
     private static RewardTrackValueRow Side(
@@ -578,7 +652,8 @@ internal sealed class RewardTrackReads(
     /// is not the same question, and an editor that showed one would offer to save the wrong thing.
     /// </remarks>
     private static IReadOnlyList<RewardTrackFilterRow> Flat(
-        IEnumerable<RewardTrackStepFilterEntity> rows
+        IEnumerable<RewardTrackStepFilterEntity> rows,
+        Dictionary<int, string?> furniIcons
     )
     {
         List<RewardTrackFilterRow> flat = [];
@@ -590,7 +665,7 @@ internal sealed class RewardTrackReads(
                 return [];
             }
 
-            flat.Add(Condition(row));
+            flat.Add(Condition(row, furniIcons));
         }
 
         return flat;
@@ -606,7 +681,8 @@ internal sealed class RewardTrackReads(
     /// operations API or a hand-edited row, and the engine's assembler guards it the same way.
     /// </remarks>
     private static IReadOnlyList<RewardTrackNodeRow> Tree(
-        IEnumerable<RewardTrackStepFilterEntity> rows
+        IEnumerable<RewardTrackStepFilterEntity> rows,
+        Dictionary<int, string?> furniIcons
     )
     {
         Dictionary<int, List<RewardTrackStepFilterEntity>> byParent = [];
@@ -624,13 +700,14 @@ internal sealed class RewardTrackReads(
             siblings.Add(row);
         }
 
-        return Children(byParent, 0, []);
+        return Children(byParent, 0, [], furniIcons);
     }
 
     private static List<RewardTrackNodeRow> Children(
         Dictionary<int, List<RewardTrackStepFilterEntity>> byParent,
         int parentId,
-        HashSet<int> seen
+        HashSet<int> seen,
+        Dictionary<int, string?> furniIcons
     )
     {
         if (!byParent.TryGetValue(parentId, out List<RewardTrackStepFilterEntity>? rows))
@@ -650,8 +727,10 @@ internal sealed class RewardTrackReads(
             built.Add(
                 new RewardTrackNodeRow(
                     (int)row.Kind,
-                    row.Kind == PredicateKind.Test ? Condition(row) : null,
-                    row.Kind == PredicateKind.Test ? [] : Children(byParent, row.Id, seen)
+                    row.Kind == PredicateKind.Test ? Condition(row, furniIcons) : null,
+                    row.Kind == PredicateKind.Test
+                        ? []
+                        : Children(byParent, row.Id, seen, furniIcons)
                 )
             );
 

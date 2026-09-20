@@ -169,24 +169,39 @@ assert.equal(nodeAt(tree(), [0, 0]), null, 'a test has no children to walk into'
   // The relation grid draws a piece with tiles around it, and the piece is named by a DIFFERENT
   // condition in the same step: "the furniture is 397" sits beside "where they stood", never
   // inside it. So the search is over the whole step, at any depth.
-  const furni = (arg, icon) => ({
+  const cond = (arg, extra) => ({
     kind: TEST,
     op: 0,
     left: { kind: FACT, arg, step: -1 },
     right: { kind: LITERAL, arg: '397', step: -1 },
-    picked: icon ? { name: 'chair_polyfon', iconUrl: icon } : undefined,
+    ...extra,
   });
 
-  assert.equal(furnitureIcon([furni('definition', '/f.png')], ['definition']), '/f.png');
+  // What the server sent, which is the one that survives a reload.
+  assert.equal(furnitureIcon([cond('def', { iconUrl: '/rendered.png' })]), '/rendered.png');
   assert.equal(
-    furnitureIcon([group(ANY, group(NOT, furni('item', '/g.png')))], ['definition', 'item']),
-    '/g.png',
+    furnitureIcon([group(ANY, group(NOT, cond('def', { iconUrl: '/deep.png' })))]),
+    '/deep.png',
     'found three levels down, because a step nests',
   );
 
-  assert.equal(furnitureIcon([furni('definition', null)], ['definition']), null, 'never picked');
-  assert.equal(furnitureIcon([furni('room', '/r.png')], ['definition']), null, 'not a furniture');
-  assert.equal(furnitureIcon(undefined, ['definition']), null, 'a step with no conditions');
+  // And the picker's, for the instant between choosing a piece and saving the task.
+  assert.equal(
+    furnitureIcon([cond('def', { picked: { name: 'chair_polyfon', iconUrl: '/picked.png' } })]),
+    '/picked.png',
+  );
+
+  // `def`, not `definition`: the fact key is the engine's, and guessing it was why the sprite
+  // never appeared at all.
+  assert.equal(
+    furnitureIcon([cond('definition', { picked: { name: 'x', iconUrl: '/wrong.png' } })]),
+    null,
+    'the fact key has to be the real one',
+  );
+
+  assert.equal(furnitureIcon([cond('def', {})]), null, 'never picked, nothing sent');
+  assert.equal(furnitureIcon([cond('room', {})]), null, 'not about furniture');
+  assert.equal(furnitureIcon(undefined), null, 'a step with no conditions');
 }
 
 // --- one side, as one dropdown option ----------------------------------------------------------

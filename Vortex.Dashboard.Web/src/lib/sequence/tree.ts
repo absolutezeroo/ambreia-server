@@ -44,6 +44,14 @@ export type TestNode = {
   left: SideValue;
   right: SideValue;
   /**
+   * The furniture this condition is about, as the server rendered it.
+   *
+   * Sent with the condition rather than remembered by the editor: kept editor-side it was gone the
+   * moment a task was reopened, which is exactly when an operator is reading a condition they wrote
+   * last week and needs to see which sofa it is about.
+   */
+  iconUrl?: string | null;
+  /**
    * What the last picked value was called, for the name and sprite shown beside the id.
    *
    * On the node rather than in a map beside the tree. Keyed by path, it moved to whichever
@@ -264,6 +272,7 @@ export type NodeRow = {
     value: string;
     left?: SideValue | null;
     right?: SideValue | null;
+    iconUrl?: string | null;
   } | null;
   children?: NodeRow[] | null;
 };
@@ -286,6 +295,7 @@ export function fromRows(rows: NodeRow[] | null | undefined): TreeNode[] {
       ? {
           kind: TEST,
           op: row.test?.op ?? 0,
+          iconUrl: row.test?.iconUrl ?? null,
           left: side(row.test?.left, FACT, row.test?.factKey ?? ''),
           right: side(row.test?.right, LITERAL, row.test?.value ?? ''),
         }
@@ -374,9 +384,13 @@ export function decodeSide(encoded: string): SideValue {
  * gone after a reload. That is the moment the picture is worth having, and the grid falls back to
  * a plain block the rest of the time.
  */
-export function furnitureIcon(tree: TreeNode[] | undefined, factKeys: string[]): string | null {
+export function furnitureIcon(tree: TreeNode[] | undefined): string | null {
   for (const { node } of tests(tree ?? [])) {
-    if (node.left.kind === FACT && factKeys.includes(node.left.arg) && node.picked?.iconUrl) {
+    // The server's, then the picker's: the first survives a reload and the second is what an
+    // operator sees the instant they choose, before anything has been saved.
+    if (node.iconUrl) return node.iconUrl;
+
+    if (node.left.kind === FACT && node.left.arg === 'def' && node.picked?.iconUrl) {
       return node.picked.iconUrl;
     }
   }

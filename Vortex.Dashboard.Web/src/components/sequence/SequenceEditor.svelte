@@ -43,14 +43,6 @@
    * Spelled here because a count has no fact behind it to carry the server's list — every other
    * side gets its operators from the fact the server described.
    */
-  /**
-   * The facts that name a piece of furniture, for the diagram in the middle of the relation grid.
-   *
-   * Two, because a step can name the piece by its definition -- "any sofa of this kind" -- or by
-   * the one placed item it is, and either one is a picture worth drawing.
-   */
-  const FURNITURE_FACTS = ['definition', 'item'];
-
   const NUMBER_OPERATORS = [
     { value: 0, key: 'rewardTracks.filterOpEquals' },
     { value: 1, key: 'rewardTracks.filterOpNotEquals' },
@@ -244,7 +236,7 @@
               facts={factsFor(step.actionCode)}
               sideChoices={sideChoicesFor(step, stepIndex)}
               operatorsFor={(left: SideValue) => operatorsForSide(step, left)}
-              furniIcon={furnitureIcon(step.tree, FURNITURE_FACTS)}
+              furniIcon={furnitureIcon(step.tree)}
               picker={node.kind === TEST && (node as any).left.kind === FACT
                 ? pickerFor(
                     factsFor(step.actionCode).find((f) => f.key === (node as any).left.arg) ?? null

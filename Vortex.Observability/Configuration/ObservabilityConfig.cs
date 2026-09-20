@@ -293,6 +293,19 @@ public sealed class ObservabilityConfig
     public string PetImageUrlTemplate { get; init; } = string.Empty;
 
     /// <summary>
+    /// URL template for <b>one piece of furniture, rendered</b>, with <c>{name}</c> replaced by its
+    /// definition name — e.g. <c>http://vortex-assets.local/habbo-imaging/furni/{name}.png</c>.
+    /// </summary>
+    /// <remarks>
+    /// The catalogue icon and this are not the same picture. The icon is a small flat badge drawn
+    /// for a shop listing; this is the piece as it stands in a room, which is what a diagram of the
+    /// tiles around it needs — an icon pasted onto an isometric floor reads as a sticker.
+    ///
+    /// Empty falls back to the icon, which is better than nothing and worse than this.
+    /// </remarks>
+    public string FurniImageUrlTemplate { get; init; } = string.Empty;
+
+    /// <summary>
     /// URL template for a <b>quest</b> image, with <c>{version}</c> replaced by the quest's
     /// <c>image_version</c> — e.g.
     /// <c>http://vortex-assets.local/c_images/Quests/{version}.png</c>. That column is exactly the

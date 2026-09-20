@@ -3099,6 +3099,7 @@ export interface RewardTrackFilterRow {
   value: string;
   left: RewardTrackValueRow;
   right: RewardTrackValueRow;
+  iconUrl: string | null;
 }
 
 export interface RewardTrackLevelRow {
