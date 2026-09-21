@@ -46,6 +46,7 @@ public sealed class WebApiModule : IHostPluginModule
         services.TryAddSingleton<IWebApiProfileService, WebApiProfileService>();
         services.TryAddSingleton<IWebApiRoomService, WebApiRoomService>();
         services.TryAddSingleton<IWebApiPhotoService, WebApiPhotoService>();
+        services.TryAddSingleton<IWebApiFeedService, WebApiFeedService>();
 
         // The website's write half. Registered here rather than in the dashboard module because the
         // rules it enforces (the block vocabulary, the allowed link schemes) belong to the site, and

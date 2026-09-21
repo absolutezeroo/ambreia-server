@@ -160,6 +160,10 @@ internal sealed class WebApiTestFactory : IAsyncDisposable
         // a database is the condition it enforces — published, not deleted, owner not hidden.
         builder.Services.AddSingleton<IWebApiPhotoService>(new WebApiPhotoService(DbContexts));
 
+        // Real for the same reason again: the feed's access rule (not deleted, author not hidden)
+        // and its roots-only shape are exactly what is worth exercising against a database.
+        builder.Services.AddSingleton<IWebApiFeedService>(new WebApiFeedService(DbContexts));
+
         WebApiAppConfigurator.ConfigureServices(builder.Services, config);
 
         _app = builder.Build();
