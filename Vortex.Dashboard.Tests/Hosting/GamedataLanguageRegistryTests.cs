@@ -124,7 +124,28 @@ public sealed class GamedataLanguageRegistryTests
         GamedataLanguageRegistry
             .BuildTextsUrl(variables, "fr")
             .Should()
-            .Be("${url.prefix}/gamedata/fr/external_flash_texts/1");
+            .Be("${url.prefix}/gamedata/fr/hashes.json");
+    }
+
+    /// <remarks>
+    /// The client hands this URL to <c>loadLocalizationFromURL()</c>, which parses it as a manifest.
+    /// Pointing it at a texts file parses as a manifest with no entries: every key then resolves to
+    /// the empty string and nothing is logged. The index is also the only place the split
+    /// <c>external_text_*</c> files are named, so a language whose URL skips it has no split texts
+    /// either.
+    /// </remarks>
+    [Fact]
+    public void BuildTextsUrl_PointsAtTheLanguageManifestAndNotAtATextsFile()
+    {
+        JsonObject variables = new()
+        {
+            ["external.texts.txt"] = "${url.prefix}/gamedata/external_flash_texts/1",
+        };
+
+        string url = GamedataLanguageRegistry.BuildTextsUrl(variables, "de");
+
+        url.Should().EndWith("/hashes.json");
+        url.Should().NotContain("external_flash_texts");
     }
 
     [Fact]
@@ -133,6 +154,6 @@ public sealed class GamedataLanguageRegistryTests
         GamedataLanguageRegistry
             .BuildTextsUrl([], "de")
             .Should()
-            .Be("${url.prefix}/gamedata/de/external_flash_texts/1");
+            .Be("${url.prefix}/gamedata/de/hashes.json");
     }
 }

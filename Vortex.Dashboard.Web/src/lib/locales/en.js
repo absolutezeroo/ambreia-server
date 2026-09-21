@@ -1893,6 +1893,8 @@ export default {
     noAssetRoot: 'No asset root is configured, so the gamedata files cannot be found.',
     tab_variables: 'Variables',
     tab_texts: 'Texts',
+    tab_catalogTexts: 'Catalogue texts',
+    tab_badgesTexts: 'Badge texts',
     tab_furnidata: 'Furnidata',
     tab_productdata: 'Products',
     tab_languages: 'Languages',

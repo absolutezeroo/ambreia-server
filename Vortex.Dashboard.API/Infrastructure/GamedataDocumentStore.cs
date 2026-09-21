@@ -10,7 +10,7 @@ using Microsoft.Extensions.Logging;
 namespace Vortex.Dashboard.API.Infrastructure;
 
 /// <summary>
-/// The four gamedata files the client downloads, read and written from one place.
+/// The gamedata files the client downloads, read and written from one place.
 /// </summary>
 /// <remarks>
 /// These files are not configuration: they are what the game client fetches at boot. A malformed one
@@ -43,13 +43,28 @@ internal sealed class GamedataDocumentStore(
     {
         ["variables"] = "external_variables.json",
         ["texts"] = "external_flash_texts.json",
+        ["catalog-texts"] = "external_catalog_text.json",
+        ["badges-texts"] = "external_badges_text.json",
         ["furnidata"] = "furnidata_json.json",
         ["productdata"] = "productdata_json.json",
     }.ToFrozenDictionary(StringComparer.OrdinalIgnoreCase);
 
-    /// <summary>The files that exist once per language, under <c>gamedata/&lt;code&gt;/</c>.</summary>
-    public static bool IsLocalised(string file) =>
-        string.Equals(file, "texts", StringComparison.OrdinalIgnoreCase);
+    /// <summary>
+    /// The files that exist once per language, under <c>gamedata/&lt;code&gt;/</c>.
+    /// </summary>
+    /// <remarks>
+    /// The split ones are not a second layer the client falls back to: every one of them is loaded
+    /// into the same key store, so a key defined in two of them resolves to whichever loaded last
+    /// and nothing says so. They are a way to edit texts per domain, not a way to override.
+    /// </remarks>
+    public static bool IsLocalised(string file) => LocalisedFiles.Contains(file);
+
+    private static readonly FrozenSet<string> LocalisedFiles = new[]
+    {
+        "texts",
+        "catalog-texts",
+        "badges-texts",
+    }.ToFrozenSet(StringComparer.OrdinalIgnoreCase);
 
     private readonly Lock _gate = new();
     private readonly Dictionary<string, CachedDocument> _cache = new(

@@ -100,8 +100,16 @@ internal static class GamedataLanguageRegistry
     /// <remarks>
     /// The path mirrors what <c>external.texts.txt</c> points at, with the language code inserted as
     /// a folder — which is what the empty <c>gamedata/en/</c> and <c>gamedata/fr/</c> directories in
-    /// the asset pack were always for. The trailing segment is the cache-busting hash the asset
-    /// host's rewrite ignores; <c>hashes.php</c> replaces it with the file's real md5.
+    /// the asset pack were always for.
+    /// <para>
+    /// It ends at the language's <b>hashes index</b>, not at a texts file. The client hands this URL
+    /// to <c>loadLocalizationFromURL()</c>, which parses it as a manifest and follows its
+    /// <c>external_texts</c> entry — pointing it straight at a texts file yields a manifest parse
+    /// with no entries, every key resolving to the empty string, and no error anywhere. The index is
+    /// also what carries the <c>external_text_*</c> files, so the texts split by domain can only be
+    /// found through it. The <c>hashes.json</c> spelling is the client's own, from
+    /// <c>gamedata.hashes.url</c> in <c>common_configuration_txt.txt</c>.
+    /// </para>
     /// </remarks>
     public static string BuildTextsUrl(JsonObject variables, string code)
     {
@@ -121,7 +129,7 @@ internal static class GamedataLanguageRegistry
 
         string prefix = basis[..(marker + "/gamedata/".Length)];
 
-        return prefix + code + "/external_flash_texts/1";
+        return prefix + code + "/hashes.json";
     }
 
     // "localization.1" and "localization.1.code" are the block; a hypothetical "localization.mode"

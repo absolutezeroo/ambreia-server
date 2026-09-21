@@ -47,17 +47,23 @@
   import Pagination from '../components/Pagination.svelte';
   import Tabs from '../components/Tabs.svelte';
 
-  import { FileJson, Image, Languages, Package, Plus, Sofa, Type } from '@lucide/svelte';
+  import { Award, FileJson, Image, Languages, Package, Plus, ShoppingBag, Sofa, Type } from '@lucide/svelte';
 
   let canManage = $derived(hasDashboardCapability($identity, CAPABILITIES.opsGamedataManage));
 
   const TABS = [
     { id: 'variables', file: 'variables', icon: FileJson },
     { id: 'texts', file: 'texts', icon: Type },
+    { id: 'catalogTexts', file: 'catalog-texts', icon: ShoppingBag },
+    { id: 'badgesTexts', file: 'badges-texts', icon: Award },
     { id: 'furnidata', file: 'furnidata', icon: Sofa },
     { id: 'productdata', file: 'productdata', icon: Package },
     { id: 'languages', file: null, icon: Languages },
   ];
+
+  // The files whose entries are a flat key/value map, so the drawer can add one. furnidata and
+  // productdata are closed lists addressed by position -- see the button below.
+  const KEY_VALUE_FILES = ['variables', 'texts', 'catalog-texts', 'badges-texts'];
 
   let active = $state('variables');
   let page = $state(1);
@@ -135,7 +141,10 @@
     applied = '';
     kind = '';
     category = '';
-    if (id !== 'texts') lang = '';
+    // Every localised file keeps its own per-language copy; leaving a language selected while
+    // moving to a file that has none would filter against a directory that does not exist.
+    const file = TABS.find((tab) => tab.id === id)?.file ?? null;
+    if (!(files.data?.files ?? []).some((f) => f.file === file && f.localised)) lang = '';
   }
 
   // `draft` is the only editing state. Four shapes, one drawer: a page where some forms open a panel
@@ -296,7 +305,7 @@
         placeholder={$t('gamedata.searchPlaceholder')}
       />
 
-      {#if active === 'texts'}
+      {#if fileMeta?.localised}
         <select value={lang} onchange={(event) => ((lang = event.currentTarget.value), (page = 1))}>
           <option value="">{$t('gamedata.defaultLanguage')}</option>
           {#each declared as entry (entry.code)}
@@ -381,7 +390,7 @@
           {/if}
           <!-- furnidata has no "add": an entry is addressed by its position, and appending one would
                be the only row nobody could then find by id. productdata is a closed list too. -->
-          {#if active === 'variables' || active === 'texts'}
+          {#if activeFile && KEY_VALUE_FILES.includes(activeFile)}
             <button type="button" class="success" onclick={openNewEntry}>
               <Plus size={15} strokeWidth={2} aria-hidden="true" />
               {$t('gamedata.newEntry')}

@@ -1899,6 +1899,8 @@ export default {
     noAssetRoot: "Aucune racine d'assets configurée : les fichiers gamedata sont introuvables.",
     tab_variables: 'Variables',
     tab_texts: 'Textes',
+    tab_catalogTexts: 'Textes du catalogue',
+    tab_badgesTexts: 'Textes des badges',
     tab_furnidata: 'Furnidata',
     tab_productdata: 'Produits',
     tab_languages: 'Langues',
