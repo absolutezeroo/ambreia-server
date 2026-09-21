@@ -18,11 +18,13 @@ namespace Vortex.WebApi.Tests;
 /// What leaves the feed's read side.
 /// </summary>
 /// <remarks>
-/// Two rules carry every test here and neither is obvious from the route. A comment is a post with
-/// a parent, so the feed has to return roots ONLY or every thread appears twice; and a post by a
-/// player who has hidden their profile must not appear at all, which is the same disclosure rule
-/// the photo gallery enforces and the one most likely to be dropped in a later edit, because it
-/// lives on a different table from the post.
+/// A comment is a post with a parent, so the feed has to return roots ONLY or every thread appears
+/// twice — that is the one rule not obvious from the route. A post by a player who has hidden their
+/// profile is NOT excluded: publishing to the public feed is a different act from letting someone
+/// browse the profile, and <c>ProfileVisible</c> only governs the second (see
+/// <see cref="WebApiFeedService.Readable"/> for why). A photo attached to a post is still re-checked
+/// for published/not-deleted, because the owner can take it back after posting; only the
+/// <c>ProfileVisible</c> half of that re-check is gone, for the same publishing-is-consent reason.
 /// </remarks>
 public sealed class FeedReadTests
 {
@@ -66,12 +68,18 @@ public sealed class FeedReadTests
     }
 
     [Fact]
-    public async Task Feed_LeavesOutAPostByAHiddenPlayer()
+    public async Task Feed_KeepsAPostByAHiddenPlayerBecausePublishingIsTheConsent()
     {
         await using WebApiTestFactory factory = new();
-        await SeedPostAsync(factory, 1, "Cache", visible: false, body: "invisible");
+        await SeedPostAsync(factory, 1, "Cache", visible: false, body: "toujours visible");
 
-        (await Service(factory).GetFeedAsync(1, 0, null, null, default)).Items.Should().BeEmpty();
+        (await Service(factory).GetFeedAsync(1, 0, null, null, default))
+            .Items.Should()
+            .ContainSingle(
+                p => p.Body == "toujours visible",
+                "ProfileVisible governs browsing a profile, not publishing to the public feed — a "
+                    + "player who posts has already consented to that post being read"
+            );
     }
 
     [Fact]

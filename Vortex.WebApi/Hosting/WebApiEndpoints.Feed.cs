@@ -90,6 +90,7 @@ internal static partial class WebApiEndpointsFeed
                         Ok<FeedPost>,
                         BadRequest<ApiErrorResponse>,
                         NotFound<ApiErrorResponse>,
+                        InternalServerError<ApiErrorResponse>,
                         UnauthorizedError
                     >
                 > (
@@ -121,9 +122,18 @@ internal static partial class WebApiEndpointsFeed
                         )
                         .ConfigureAwait(false);
 
+                    if (refusal == FeedRefusal.None)
+                    {
+                        // PublishAsync's contract is that None comes with the post it just wrote.
+                        // A null here is a broken invariant, not a refusal the caller sent — answer
+                        // it as one rather than serving a 200 with a null body no client expects.
+                        return post is null
+                            ? TypedResults.InternalServerError(new ApiErrorResponse("internal"))
+                            : TypedResults.Ok(post);
+                    }
+
                     return refusal switch
                     {
-                        FeedRefusal.None => TypedResults.Ok(post!),
                         FeedRefusal.ParentNotFound => TypedResults.NotFound(
                             new ApiErrorResponse("feed_post_not_found")
                         ),

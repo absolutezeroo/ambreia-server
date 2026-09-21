@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -146,11 +147,11 @@ public sealed class FeedPublishTests
     }
 
     [Fact]
-    public async Task ACommentOnAHiddenPlayersPostIsRefused()
+    public async Task ACommentOnADeletedParentIsRefused()
     {
         await using WebApiTestFactory factory = new();
         await PlayerAsync(factory, 1, "Prodiigy");
-        int hiddenPostId = await HiddenPostAsync(factory, 2, "Cache");
+        int deletedPostId = await DeletedPostAsync(factory, 2, "Parti");
 
         (FeedRefusal refusal, _) = await Service(factory)
             .PublishAsync(
@@ -160,7 +161,7 @@ public sealed class FeedPublishTests
                     "coucou",
                     null,
                     null,
-                    hiddenPostId,
+                    deletedPostId,
                     null
                 ),
                 default
@@ -170,8 +171,38 @@ public sealed class FeedPublishTests
             .Should()
             .Be(
                 FeedRefusal.ParentNotFound,
-                "a hidden player's post must not answer differently from one that does not exist"
+                "a deleted post is not there to comment on, and the write path must agree with the read path on that"
             );
+    }
+
+    /// <summary>
+    /// An author whose profile is hidden still publishes successfully, and gets a non-null post
+    /// back. This is the regression the whole round of R20 tests exists for: <c>Readable(db)</c>
+    /// used to also require the author's own <c>ProfileVisible</c>, which is <c>false</c> by
+    /// default for every new player — so <see cref="WebApiFeedService.PublishAsync"/> returned
+    /// <see cref="FeedRefusal.None"/> with a null post the moment it read its own freshly-written
+    /// row back through that gate, and the endpoint answered HTTP 200 with a null body.
+    /// </summary>
+    [Fact]
+    public async Task AnAuthorWithAHiddenProfileStillPublishesSuccessfully()
+    {
+        await using WebApiTestFactory factory = new();
+        await HiddenPlayerAsync(factory, 1, "Cache");
+
+        (FeedRefusal refusal, FeedPost? post) = await Service(factory)
+            .PublishAsync(
+                1,
+                new FeedPublishRequest(FeedPostKind.Status, "coucou", null, null, null, null),
+                default
+            );
+
+        refusal.Should().Be(FeedRefusal.None);
+        post.Should()
+            .NotBeNull(
+                "publishing is the consent — ProfileVisible governs browsing a profile, not "
+                    + "posting to the public feed"
+            );
+        post!.Body.Should().Be("coucou");
     }
 
     private static IWebApiFeedService Service(WebApiTestFactory factory) =>
@@ -197,8 +228,8 @@ public sealed class FeedPublishTests
         await db.SaveChangesAsync();
     }
 
-    /// <summary>A root post by a player who has hidden their profile. Returns the post's id.</summary>
-    private static async Task<int> HiddenPostAsync(WebApiTestFactory factory, int id, string name)
+    /// <summary>A player whose profile is hidden — <c>ProfileVisible</c> is a new player's default.</summary>
+    private static async Task HiddenPlayerAsync(WebApiTestFactory factory, int id, string name)
     {
         await using VortexDbContext db = await factory.DbContexts.CreateDbContextAsync();
 
@@ -216,12 +247,25 @@ public sealed class FeedPublishTests
         );
 
         await db.SaveChangesAsync();
+    }
+
+    /// <summary>A root post, already soft-deleted. Returns the post's id.</summary>
+    private static async Task<int> DeletedPostAsync(
+        WebApiTestFactory factory,
+        int playerId,
+        string name
+    )
+    {
+        await PlayerAsync(factory, playerId, name);
+
+        await using VortexDbContext db = await factory.DbContexts.CreateDbContextAsync();
 
         WebFeedPostEntity post = new()
         {
-            PlayerEntityId = id,
+            PlayerEntityId = playerId,
             Kind = FeedPostKind.Status,
-            Body = "invisible",
+            Body = "parti",
+            DeletedAt = DateTime.UtcNow,
         };
         db.WebFeedPosts.Add(post);
 

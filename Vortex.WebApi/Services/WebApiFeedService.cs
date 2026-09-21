@@ -188,11 +188,11 @@ public sealed class WebApiFeedService(IDbContextFactory<VortexDbContext> dbCtxFa
 
         if (body.ParentId is int parentId)
         {
-            // Readable(db), not a bare WebFeedPosts query: it also requires the author's
-            // ProfileVisible, exactly like every read. Without it, a caller who guesses ids can
-            // tell ParentNotFound apart from ParentNotRoot/success for a post whose author has
-            // hidden their profile — a small oracle against people who specifically asked not to
-            // be browsed.
+            // Readable(db), not a bare WebFeedPosts query: a deleted parent must answer
+            // ParentNotFound exactly like a read would, so the write path and the read path agree
+            // on what "exists" means. Readable no longer also requires ProfileVisible — see its own
+            // remarks — but keeping the call is what stops the two from drifting apart again the
+            // next time that condition changes.
             WebFeedPostEntity? parent = await Readable(db)
                 .FirstOrDefaultAsync(p => p.Id == parentId, ct)
                 .ConfigureAwait(false);
@@ -291,11 +291,22 @@ public sealed class WebApiFeedService(IDbContextFactory<VortexDbContext> dbCtxFa
     }
 
     /// <summary>
-    /// The two conditions every read carries. Changing this changes who can be seen, so it exists
+    /// The one condition every read carries. Changing this changes who can be seen, so it exists
     /// once and every query starts from it.
     /// </summary>
+    /// <remarks>
+    /// Not deleted — that is the whole of it. This used to also require the author's
+    /// <c>ProfileVisible</c>, copied across from <see cref="IWebApiPhotoService"/>'s rule without
+    /// checking what that column defaults to: it defaults to <c>false</c>, so gating the feed on it
+    /// made a new player's own posts invisible to everyone including themselves, and made
+    /// <see cref="PublishAsync"/> read its own freshly-written row back through the same gate,
+    /// answering the write with <see cref="FeedRefusal.None"/> and a null post. Publishing to the
+    /// hotel's public feed is itself an act of publication and a different act from letting someone
+    /// browse a profile; <c>ProfileVisible</c> governs the second and says nothing about the first.
+    /// The gallery (<see cref="IWebApiPhotoService"/>) keeps its own rule — that decision stands.
+    /// </remarks>
     private static IQueryable<WebFeedPostEntity> Readable(VortexDbContext db) =>
-        db.WebFeedPosts.Where(p => p.DeletedAt == null && p.PlayerEntity!.ProfileVisible);
+        db.WebFeedPosts.Where(p => p.DeletedAt == null);
 
     /// <summary>The search key a tag is stored and matched under.</summary>
     internal static string Normalise(string tag) => tag.Trim().TrimStart('#').ToLowerInvariant();
@@ -461,12 +472,16 @@ public sealed class WebApiFeedService(IDbContextFactory<VortexDbContext> dbCtxFa
         CancellationToken ct
     )
     {
+        // Published and not deleted — the owner's ProfileVisible is deliberately not re-checked
+        // here: the author attached their own already-published photo to their own public post,
+        // the same publishing-is-the-consent rule Readable() states. WebApiPhotoService's gallery
+        // keeps ProfileVisible for its own reads; that is a different question (browsing someone's
+        // gallery by name) and its answer does not change.
         var rows = await db
             .WebFeedPostPhotos.Where(link =>
                 postIds.Contains(link.WebFeedPostEntityId)
                 && link.CameraPhotoEntity!.PublishedAt != null
                 && link.CameraPhotoEntity.DeletedAt == null
-                && link.CameraPhotoEntity.PlayerEntity!.ProfileVisible
             )
             .OrderBy(link => link.Ordinal)
             .Select(link => new
