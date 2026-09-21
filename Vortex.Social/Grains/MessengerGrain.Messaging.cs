@@ -42,6 +42,24 @@ internal sealed partial class MessengerGrain
             return InstantMessageErrorCodeType.ReceiverMuted;
         }
 
+        // My own ignore list, refused at the door. ReceiveMessageAsync already drops anything an
+        // ignored sender writes to me, and that half stays silent on purpose -- nobody may probe
+        // whether they are being ignored. This half is the opposite case and had the same silence:
+        // a message sent to someone *I* ignore was stored, pushed, and quietly binned on arrival,
+        // so the conversation looked one-sided for no stated reason. That is the whole of the
+        // "we never get each other's messages" report, and it took reading this file to explain.
+        //
+        // OfflineFailed, not a new code: the client's error table is a verbatim port of
+        // MainView.as's ERROR_MESSAGES (3..14) and inventing an entry means inventing a
+        // localisation key the hotel's external_flash_texts does not carry. 10 is the only one
+        // whose text states the outcome without asserting a cause -- "L'envoi du message a
+        // echoue." Returning it before the DB write is deliberate: a refused message leaves no row
+        // for the login replay to hand over later.
+        if (_ignoredIds.Contains(receiverId.Value))
+        {
+            return InstantMessageErrorCodeType.OfflineFailed;
+        }
+
         DateTime now = DateTime.UtcNow;
 
         await using VortexDbContext dbCtx = await dbCtxFactory.CreateDbContextAsync(ct);

@@ -117,6 +117,26 @@ public sealed class MessengerDeliveryTests : IAsyncLifetime
         row.Message.Should().Be(Body);
     }
 
+    [Fact]
+    public async Task AMessageToSomeoneISelfIgnore_IsRefusedRatherThanQuietlyBinned()
+    {
+        // The receiver drops an ignored sender's message on arrival, so a message sent to someone
+        // on my OWN ignore list was written to the database, pushed over the wire and thrown away
+        // at the far end -- with nothing said to either side. The refusal is what the client turns
+        // into its msg_notification bubble.
+        Harness harness = await Harness.CreateAsync(_options).ConfigureAwait(true);
+
+        await harness.IgnoreReceiverAsync().ConfigureAwait(true);
+
+        InstantMessageErrorCodeType? error = await harness.TrySendAsync(Body).ConfigureAwait(true);
+
+        error.Should().Be(InstantMessageErrorCodeType.OfflineFailed);
+        harness.Pushed.Should().BeEmpty();
+        (await harness.StoredMessageCountAsync().ConfigureAwait(true))
+            .Should()
+            .Be(0, "a refused message must leave nothing for the login replay to deliver");
+    }
+
     private sealed class Harness
     {
         private readonly DbContextOptions<VortexDbContext> _options;
@@ -142,18 +162,30 @@ public sealed class MessengerDeliveryTests : IAsyncLifetime
 
         public async Task SendAsync(string message)
         {
-            InstantMessageErrorCodeType? error = await _sender
-                .SendMessageAsync(
-                    PlayerId.Parse(ReceiverId),
-                    message,
-                    chatId: ReceiverId,
-                    confirmationId: 0,
-                    habbiconId: 0,
-                    CancellationToken.None
-                )
-                .ConfigureAwait(true);
+            InstantMessageErrorCodeType? error = await TrySendAsync(message).ConfigureAwait(true);
 
             error.Should().BeNull("the two are friends and neither has blocked the other");
+        }
+
+        /// <summary>The same send, with the refusal handed back instead of asserted away.</summary>
+        public Task<InstantMessageErrorCodeType?> TrySendAsync(string message) =>
+            _sender.SendMessageAsync(
+                PlayerId.Parse(ReceiverId),
+                message,
+                chatId: ReceiverId,
+                confirmationId: 0,
+                habbiconId: 0,
+                CancellationToken.None
+            );
+
+        public Task IgnoreReceiverAsync() =>
+            _sender.IgnoreUserAsync(PlayerId.Parse(ReceiverId), CancellationToken.None);
+
+        public async Task<int> StoredMessageCountAsync()
+        {
+            await using VortexDbContext dbCtx = new(_options);
+
+            return await dbCtx.MessengerMessages.AsNoTracking().CountAsync().ConfigureAwait(true);
         }
 
         public Task ReceiverGoesOnlineAsync() =>
