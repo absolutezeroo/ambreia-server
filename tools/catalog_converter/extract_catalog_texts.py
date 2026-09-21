@@ -1,0 +1,173 @@
+#!/usr/bin/env python3
+"""
+Extract the catalogue's display text into external_catalog_text.json
+====================================================================
+The client shows a caption verbatim unless it has the form `${key}` -- TextLabelController checks
+`charAt(0) === '$' && charAt(1) === '{'` and nothing else. So a catalogue that is to be translated
+has to hold keys in the database and the words in a texts file, which is what this produces.
+
+Keys are built from the page **id**, never from `localization` or `name`: in the current dump 158
+slugs are shared by more than one page and 21 of those cover genuinely different titles -- `nft`
+alone is used by 25 pages with 25 different names. Keying on the slug would collapse them onto one
+caption, silently. Same lesson as furniture classnames.
+
+Input:
+    a mysqldump holding `catalog_pages` (id, localization, name, text_data, deleted_at)
+
+Output:
+    external_catalog_text.json   the keys and today's English text
+    catalog_texts.sql            sets the columns to the matching ${...} tokens
+
+Run: python extract_catalog_texts.py <dump.sql> [--out <dir>]
+"""
+
+import argparse
+import collections
+import json
+import re
+import sys
+from pathlib import Path
+
+COLUMNS = ["id", "parent_id", "localization", "name", "icon", "layout", "image_data",
+           "text_data", "sort_order", "visible", "created_at", "updated_at", "deleted_at",
+           "catalog_type"]
+
+
+def rows_of(sql):
+    """Every catalog_pages row. Hand-tokenised: text_data holds HTML with commas and quotes in it,
+    which is precisely what a regex over the VALUES list gets wrong."""
+    rows = []
+
+    for block in re.findall(r"INSERT INTO `catalog_pages`.*?VALUES\s*(.*?);\s*(?:\n|$)", sql, re.S):
+        i, row, field, in_string = 0, [], [], False
+
+        while i < len(block):
+            c = block[i]
+
+            if in_string:
+                if c == "\\":
+                    field.append(block[i:i + 2])
+                    i += 2
+                    continue
+                if c == "'":
+                    in_string = False
+                else:
+                    field.append(c)
+            elif c == "'":
+                in_string = True
+            elif c == "(":
+                row, field = [], []
+            elif c in ",)":
+                raw = "".join(field).strip()
+                row.append(None if raw == "NULL" else raw)
+                field = []
+                if c == ")":
+                    rows.append(row)
+                    row = []
+            else:
+                field.append(c)
+
+            i += 1
+
+    return [dict(zip(COLUMNS, r)) for r in rows if len(r) == len(COLUMNS)]
+
+
+def unescape(value):
+    if value is None:
+        return ""
+    return (value.replace("\\'", "'").replace('\\"', '"')
+                 .replace("\\n", "\n").replace("\\r", "\r").replace("\\\\", "\\"))
+
+
+def sql_quote(value):
+    return "'" + value.replace("\\", "\\\\").replace("'", "\\'") + "'"
+
+
+def extract(rows):
+    texts, statements = {}, []
+    skipped_deleted = 0
+
+    for row in rows:
+        if row["deleted_at"]:
+            skipped_deleted += 1
+            continue
+
+        page_id = row["id"]
+        title = unescape(row["name"]).strip()
+        updates = []
+
+        if title:
+            key = f"catalog.page.{page_id}.title"
+            texts[key] = title
+            updates.append(f"localization = {sql_quote('${' + key + '}')}")
+
+        try:
+            blurbs = json.loads(unescape(row["text_data"]) or "[]")
+        except (ValueError, TypeError):
+            blurbs = []
+
+        if isinstance(blurbs, list) and any(str(b).strip() for b in blurbs):
+            tokens = []
+            for index, blurb in enumerate(blurbs):
+                blurb = str(blurb)
+                if not blurb.strip():
+                    tokens.append(blurb)
+                    continue
+                key = f"catalog.page.{page_id}.text.{index}"
+                texts[key] = blurb
+                tokens.append("${" + key + "}")
+            updates.append(f"text_data = {sql_quote(json.dumps(tokens, ensure_ascii=False))}")
+
+        if updates:
+            statements.append(
+                f"UPDATE catalog_pages SET {', '.join(updates)} WHERE id = {page_id};"
+            )
+
+    return texts, statements, skipped_deleted
+
+
+def main():
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("dump")
+    parser.add_argument("--out", default=".")
+    args = parser.parse_args()
+
+    sql = Path(args.dump).read_text(encoding="utf-8", errors="replace")
+    rows = rows_of(sql)
+
+    if not rows:
+        print("no catalog_pages rows found -- is this the right dump?", file=sys.stderr)
+        sys.exit(1)
+
+    texts, statements, skipped = extract(rows)
+
+    out = Path(args.out)
+    out.mkdir(parents=True, exist_ok=True)
+
+    (out / "external_catalog_text.json").write_text(
+        json.dumps(texts, ensure_ascii=False, indent=2), encoding="utf-8"
+    )
+
+    header = (
+        "-- Generated by tools/catalog_converter/extract_catalog_texts.py\n"
+        "-- Points every catalogue caption and blurb at a key in external_catalog_text.json.\n"
+        "-- Re-runnable: it sets absolute values, so running it twice leaves the same rows.\n"
+        "-- Until it runs, the keys resolve to nothing because the columns still hold bare words.\n\n"
+    )
+    (out / "catalog_texts.sql").write_text(header + "\n".join(statements) + "\n", encoding="utf-8")
+
+    titles = sum(1 for k in texts if k.endswith(".title"))
+    print(f"rows            : {len(rows)} ({skipped} soft-deleted, skipped)")
+    print(f"keys            : {len(texts)}  ({titles} titles, {len(texts) - titles} blurbs)")
+    print(f"statements      : {len(statements)}")
+    print(f"longest token   : {max((len('${' + k + '}') for k in texts), default=0)} chars "
+          f"(localization is varchar(50))")
+
+    collisions = [v for v, n in collections.Counter(texts.values()).items() if n > 1]
+    print(f"identical texts : {len(collisions)} distinct strings appear on more than one page "
+          f"-- expected, and harmless: the keys stay separate")
+    print(f"\nwritten to {out.resolve()}")
+
+
+if __name__ == "__main__":
+    main()
