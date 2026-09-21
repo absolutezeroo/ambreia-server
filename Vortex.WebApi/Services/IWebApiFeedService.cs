@@ -90,11 +90,19 @@ public enum FeedRefusal
 /// </summary>
 /// <remarks>
 /// <para>
-/// Every read here carries the same two conditions and they live in one place on purpose: the post
-/// is not deleted, and its author is not hiding their profile. The second is the one worth keeping
-/// in mind — a player who has hidden their profile has said they do not want to be browsed, and a
-/// feed that still lists their posts under their name is the same disclosure by another door. It is
-/// the rule <c>IWebApiPhotoService</c> states for the gallery, for the same reason.
+/// Every read here carries the same condition and it lives in one place on purpose: the post is
+/// not deleted. That is the whole of it.
+/// </para>
+/// <para>
+/// In particular the feed does NOT gate on the author's <c>ProfileVisible</c>, and this paragraph
+/// used to claim that it did. The column defaults to <c>false</c> here — the hotel honours
+/// habbo.com's "your profile is private by default" — so copying the gallery's rule across left the
+/// feed empty for nearly every player, and made <c>PublishAsync</c> answer 200 with a null body,
+/// because it reads its own new row back through this same gate. Publishing is the consent:
+/// posting to a public feed is itself an act of publication, where <c>ProfileVisible</c> governs
+/// whether someone may browse your profile, which is a different question.
+/// <see cref="IWebApiPhotoService"/> keeps that rule for the gallery deliberately — browsing
+/// someone's photos under their name IS browsing them.
 /// </para>
 /// <para>
 /// Anonymous, like the gallery and the profile beside it. <c>viewerId</c> is the signed-in player
