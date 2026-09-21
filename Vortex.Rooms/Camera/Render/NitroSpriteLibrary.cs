@@ -521,7 +521,11 @@ internal sealed class NitroSpriteLibrary(
             frame.FlipH ? -cropped.Width : 0,
             frame.FlipV ? -cropped.Height : 0
         );
-        surface.Canvas.DrawBitmap(cropped, 0, 0);
+        // Nearest, explicitly. The overload without sampling options is obsolete in SkiaSharp 4 and
+        // fails the analyzer gate; it drew nearest anyway when handed no paint, so naming it changes
+        // no pixel. It is also what SkiaCameraCanvas already settled on for sprite blits, and these
+        // are sprites: a mirrored furni frame at 1:1, where any filtering would blur pixel art.
+        surface.Canvas.DrawBitmap(cropped, 0, 0, new SKSamplingOptions(SKFilterMode.Nearest));
 
         return surface.Snapshot();
     }
