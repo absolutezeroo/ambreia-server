@@ -45,6 +45,141 @@ public sealed class FeedPublishTests
         post.Mine.Should().BeTrue();
     }
 
+    /// <remarks>
+    /// Named arguments throughout the three comment facts below. <c>ParentId</c> and
+    /// <c>GroupId</c> are adjacent <c>int?</c>, and putting a post id in the wrong one is refused
+    /// as <c>GroupNotMember</c> — which surfaces as a null post and a NullReferenceException
+    /// wherever the test next touches it, saying nothing whatever about groups.
+    /// </remarks>
+    [Fact]
+    public async Task ACommentAttachesToItsRoot()
+    {
+        await using WebApiTestFactory factory = new();
+        await PlayerAsync(factory, 1, "Prodiigy");
+        await PlayerAsync(factory, 2, "Synes");
+
+        FeedPost root = (
+            await Service(factory)
+                .PublishAsync(
+                    1,
+                    new FeedPublishRequest(FeedPostKind.Status, "coucou", null, null, null, null),
+                    default
+                )
+        ).Post!;
+
+        (FeedRefusal refusal, FeedPost? comment) = await Service(factory)
+            .PublishAsync(
+                2,
+                new FeedPublishRequest(
+                    Kind: FeedPostKind.Status,
+                    Body: "et hop",
+                    PhotoKeys: null,
+                    PollChoices: null,
+                    ParentId: root.Id,
+                    GroupId: null
+                ),
+                default
+            );
+
+        refusal.Should().Be(FeedRefusal.None);
+        comment!.Comments.Should().BeEmpty("the thread is one level deep, so a comment has none");
+
+        FeedPost reread = (await Service(factory).GetPostAsync(root.Id, null, default))!;
+
+        reread.CommentCount.Should().Be(1);
+        reread.Comments.Should().ContainSingle(c => c.Id == comment.Id);
+
+        // Somebody ELSE's comment, and the feed still lists one card: a comment must never surface
+        // as a root of its own.
+        (await Service(factory).GetFeedAsync(1, 0, null, null, default))
+            .Items.Should()
+            .ContainSingle(p => p.Id == root.Id);
+    }
+
+    [Fact]
+    public async Task ACommentOnACommentIsRefused()
+    {
+        await using WebApiTestFactory factory = new();
+        await PlayerAsync(factory, 1, "Prodiigy");
+
+        FeedPost root = (
+            await Service(factory)
+                .PublishAsync(
+                    1,
+                    new FeedPublishRequest(FeedPostKind.Status, "coucou", null, null, null, null),
+                    default
+                )
+        ).Post!;
+
+        FeedPost comment = (
+            await Service(factory)
+                .PublishAsync(
+                    1,
+                    new FeedPublishRequest(
+                        Kind: FeedPostKind.Status,
+                        Body: "et hop",
+                        PhotoKeys: null,
+                        PollChoices: null,
+                        ParentId: root.Id,
+                        GroupId: null
+                    ),
+                    default
+                )
+        ).Post!;
+
+        (FeedRefusal refusal, _) = await Service(factory)
+            .PublishAsync(
+                1,
+                new FeedPublishRequest(
+                    Kind: FeedPostKind.Status,
+                    Body: "encore",
+                    PhotoKeys: null,
+                    PollChoices: null,
+                    ParentId: comment.Id,
+                    GroupId: null
+                ),
+                default
+            );
+
+        refusal.Should().Be(FeedRefusal.ParentNotRoot);
+    }
+
+    [Fact]
+    public async Task ACommentCanCarryAPollOfItsOwn()
+    {
+        await using WebApiTestFactory factory = new();
+        await PlayerAsync(factory, 1, "Prodiigy");
+
+        FeedPost root = (
+            await Service(factory)
+                .PublishAsync(
+                    1,
+                    new FeedPublishRequest(FeedPostKind.Status, "coucou", null, null, null, null),
+                    default
+                )
+        ).Post!;
+
+        // The screenshot gives the comment form the same three tabs as the post form, so a comment
+        // has to hold everything a post holds — which is the whole reason the schema makes a
+        // comment a post with a parent rather than a second table.
+        (FeedRefusal refusal, FeedPost? comment) = await Service(factory)
+            .PublishAsync(
+                1,
+                new FeedPublishRequest(
+                    Kind: FeedPostKind.Poll,
+                    Body: "et vous ?",
+                    PhotoKeys: null,
+                    PollChoices: ["Oui", "Non"],
+                    ParentId: root.Id,
+                    GroupId: null
+                ),
+                default
+            );
+
+        refusal.Should().Be(FeedRefusal.None);
+        comment!.Poll!.Choices.Select(c => c.Label).Should().Equal("Oui", "Non");
+    }
+
     [Fact]
     public async Task AnEmptyStatusIsRefused()
     {
