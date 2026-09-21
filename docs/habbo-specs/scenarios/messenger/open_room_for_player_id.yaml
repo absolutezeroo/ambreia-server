@@ -10,7 +10,7 @@
 
 spec: scenarios
 spec_version: 1
-generated_digest: "sha256:878a5005d44081f7490d5f83b73ca73ea850646f7a07b63ed8e2eccd56f48e7a"
+generated_digest: "sha256:b56db62643e03900c5bbc50ddd521ce5a31b3d953d0157644b199927620c9f3b"
 generated:
   feature: messenger.open_room_for_player_id
   scenarios:
@@ -73,6 +73,43 @@ generated:
       - Whisper
       evidence: ev_b3f57a983a5e
   - scenario: messenger.open_room_for_player_id.guard_10
+    title: "open room for player id: the guard 'isFull || isPasswordMismatch' holds"
+    given:
+      guard: isFull || isPasswordMismatch
+      guard_holds: "true"
+    when:
+      packet: VisitUser
+    expected:
+      status: unknown
+      confidence: unknown
+    needs_evidence: "an official capture of VisitUser sent while 'isFull || isPasswordMismatch' holds: does the server reply, stay silent, or disconnect?"
+    executable: false
+    claims:
+    - origin: vortex
+      authority: vortex_emulator
+      outcome: rejected
+      emits:
+      - CantConnect
+      - Doorbell
+      - FollowFriendFailed
+      - ItemRemove
+      - ObjectRemove
+      - OpenConnection
+      - UserRemove
+      - Users
+      evidence: ev_7c6cea3bc17b
+    - origin: habbo-arcturus-daybreak
+      authority: reference_emulator
+      outcome: success
+      emits:
+      - FollowFriendFailed
+      - FollowFriendFailed
+      - FollowFriendFailed
+      - FollowFriendFailed
+      - RoomForward
+      - Whisper
+      evidence: ev_b3f57a983a5e
+  - scenario: messenger.open_room_for_player_id.guard_11
     title: "open room for player id: the guard 'snapshot.DoorMode == RoomDoorModeType.Locked' holds"
     given:
       guard: snapshot.DoorMode == RoomDoorModeType.Locked
@@ -90,35 +127,6 @@ generated:
       outcome: ignored
       emits: []
       evidence: ev_7c6cea3bc17b
-    - origin: habbo-arcturus-daybreak
-      authority: reference_emulator
-      outcome: success
-      emits:
-      - FollowFriendFailed
-      - FollowFriendFailed
-      - FollowFriendFailed
-      - FollowFriendFailed
-      - RoomForward
-      - Whisper
-      evidence: ev_b3f57a983a5e
-  - scenario: messenger.open_room_for_player_id.guard_11
-    title: "open room for player id: the guard 'roomId <= 0 || playerId <= 0' holds"
-    given:
-      guard: roomId <= 0 || playerId <= 0
-      guard_holds: "true"
-    when:
-      packet: VisitUser
-    expected:
-      status: unknown
-      confidence: unknown
-    needs_evidence: "an official capture of VisitUser sent while 'roomId <= 0 || playerId <= 0' holds: does the server reply, stay silent, or disconnect?"
-    executable: false
-    claims:
-    - origin: vortex
-      authority: vortex_emulator
-      outcome: ignored
-      emits: []
-      evidence: ev_2747c101d5f4
     - origin: habbo-arcturus-daybreak
       authority: reference_emulator
       outcome: success
@@ -358,16 +366,16 @@ generated:
       - Whisper
       evidence: ev_b3f57a983a5e
   - scenario: messenger.open_room_for_player_id.guard_9
-    title: "open room for player id: the guard 'isFull || isPasswordMismatch' holds"
+    title: "open room for player id: the guard 'controllerLevel < RoomControllerType.Owner && await _buil...' holds"
     given:
-      guard: isFull || isPasswordMismatch
+      guard: controllerLevel < RoomControllerType.Owner && await _buildersClubService.IsRoomSealedAsync(roomId.Value, ct).ConfigureAwait(false)
       guard_holds: "true"
     when:
       packet: VisitUser
     expected:
       status: unknown
       confidence: unknown
-    needs_evidence: "an official capture of VisitUser sent while 'isFull || isPasswordMismatch' holds: does the server reply, stay silent, or disconnect?"
+    needs_evidence: "an official capture of VisitUser sent while 'controllerLevel < RoomControllerType.Owner && await _buildersClubService.IsRoomSealedAsync(roomId.Value, ct).ConfigureAwait(false)' holds: does the server reply, stay silent, or disconnect?"
     executable: false
     claims:
     - origin: vortex
@@ -446,20 +454,13 @@ generated:
     source: Vortex.PacketHandlers/FriendList/VisitUserMessageHandler.cs
     symbol: VisitUserMessageHandler
     line: 28
-  - id: ev_2747c101d5f4
-    kind: emulator_flow
-    authority: vortex_emulator
-    origin: vortex
-    source: Vortex.Rooms/RoomModerationStore.cs
-    symbol: RoomModerationStore
-    line: 29
   - id: ev_7c6cea3bc17b
     kind: emulator_flow
     authority: vortex_emulator
     origin: vortex
     source: Vortex.Rooms/RoomService.cs
     symbol: RoomService
-    line: 153
+    line: 156
   - id: ev_7f41f2bdde62
     kind: emulator_flow
     authority: vortex_emulator

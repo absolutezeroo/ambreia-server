@@ -10,35 +10,21 @@
 
 spec: unknown
 spec_version: 1
-generated_digest: "sha256:1956b09dffd3632b0299f1eb7c423fe0b6e689b3686906510aa0ed29fe9e89ee"
+generated_digest: "sha256:dee94c9e35fc84957c6f356d50c9d822d91158d93c48d31b6f53e110fa2eff20"
 generated:
   id: uk_a459ded24c
-  subject: "room.remove_all_rights: who receives FlatControllers, WiredPermissions, YouAreController, YouAreNotController, YouAreOwner"
+  subject: "room.remove_all_rights: who receives FlatControllers"
   severity: medium
   question: "These composers are built on this feature's path but the send call that carries them could not be identified, so their audience is unknown. The recipient is part of the behaviour, not a detail."
   resolved_by: follow the composer to the send call in the emulator, or capture the same action from a second account in the room
   feature: room.remove_all_rights
   known_evidence:
-  - id: ev_329537530b13
+  - id: ev_bbe396e4bac0
     kind: emulator_flow
     authority: vortex_emulator
     origin: vortex
-    source: Vortex.Rooms/Grains/RoomGrain.Settings.cs
-    symbol: RoomGrain
-    line: 721
-  - id: ev_b44ef304d36a
-    kind: emulator_flow
-    authority: vortex_emulator
-    origin: vortex
-    source: Vortex.Players/Grains/PlayerPresenceGrain.Room.cs
-    symbol: PlayerPresenceGrain
-    line: 212
-  - id: ev_b44ef304d36a
-    kind: emulator_flow
-    authority: vortex_emulator
-    origin: vortex
-    source: Vortex.Players/Grains/PlayerPresenceGrain.Room.cs
-    symbol: PlayerPresenceGrain
-    line: 207
+    source: Vortex.Rooms/Grains/Modules/RoomSecurityModule.Rights.cs
+    symbol: RoomSecurityModule
+    line: 205
 verified: {}
 manual: {}

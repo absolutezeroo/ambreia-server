@@ -10,7 +10,7 @@
 
 spec: unknown
 spec_version: 1
-generated_digest: "sha256:9d1ab142268f43d0fb173bc857319df5829aefb91d8c13e9d7e66640bb198f1b"
+generated_digest: "sha256:daf849902ed9160678ea0fc4177428a4b3471b7e36e884209779b3c9ac528a4f"
 generated:
   id: uk_45fd1b972b
   subject: "inventory.request_furni_inventory_when_not_in_room: who receives FurniList"
@@ -25,6 +25,6 @@ generated:
     origin: vortex
     source: Vortex.Players/Grains/Modules/PlayerInventoryModule.cs
     symbol: PlayerInventoryModule
-    line: 49
+    line: 65
 verified: {}
 manual: {}

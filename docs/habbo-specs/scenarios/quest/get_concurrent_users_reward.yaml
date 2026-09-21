@@ -10,7 +10,7 @@
 
 spec: scenarios
 spec_version: 1
-generated_digest: "sha256:c6611345ec31b292353c6eff5a49cbda5fe524c7d75485e7a8b8e5e9bf37bf53"
+generated_digest: "sha256:3dc57312acf6e84e08a3b2c048532b27ccd46e7b8d7334b8015fb20827dce343"
 generated:
   feature: quest.get_concurrent_users_reward
   scenarios:
@@ -103,8 +103,15 @@ generated:
       outcome: success
       emits:
       - BadgeReceived
-      evidence: ev_1156f62d5639
+      evidence: ev_0b129c41cb66
   evidence:
+  - id: ev_0b129c41cb66
+    kind: emulator_flow
+    authority: vortex_emulator
+    origin: vortex
+    source: Vortex.Progression/Grains/BadgeDirectoryGrain.cs
+    symbol: BadgeDirectoryGrain
+    line: 88
   - id: ev_1156f62d5639
     kind: emulator_flow
     authority: vortex_emulator

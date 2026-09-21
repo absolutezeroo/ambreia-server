@@ -10,7 +10,7 @@
 
 spec: scenarios
 spec_version: 1
-generated_digest: "sha256:e1c8af6db71673fafdedef804655a0465b516629d3ae78c5b2e3145136baae7d"
+generated_digest: "sha256:1ba7e0311aefa98bce5dba4587ec1ba8c7f46eaa7076b1329a7691745f8d98a0"
 generated:
   feature: room.ban_user_with_duration
   scenarios:
@@ -365,7 +365,7 @@ generated:
     origin: vortex
     source: Vortex.Rooms/Grains/Modules/RoomAvatarModule.cs
     symbol: RoomAvatarModule
-    line: 163
+    line: 173
   - id: ev_ede1461ee378
     kind: emulator_flow
     authority: vortex_emulator

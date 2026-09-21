@@ -10,7 +10,7 @@
 
 spec: unknown
 spec_version: 1
-generated_digest: "sha256:81c85586e9451d2c849866c87775ac7ab9884f2b301acfbf3e9f97561761fb29"
+generated_digest: "sha256:921a4f09c0fa4de8ece7dbcba1546fadefe908e3238c14be2e34c27d73ee29ac"
 generated:
   id: uk_634edce882
   subject: "inventory.remove_trade_item: what the server sends when it refuses"
@@ -25,7 +25,7 @@ generated:
     origin: vortex
     source: Vortex.Rooms/Grains/Systems/RoomTradingSystem.cs
     symbol: RoomTradingSystem
-    line: 243
+    line: 244
   - id: ev_255a6de11086
     kind: emulator_handler
     authority: vortex_emulator
@@ -46,7 +46,7 @@ generated:
     origin: vortex
     source: Vortex.Rooms/Grains/RoomTradeSession.cs
     symbol: RoomTradeSession
-    line: 89
+    line: 95
   - id: ev_a8707f5e7b6c
     kind: emulator_flow
     authority: vortex_emulator

@@ -10,7 +10,7 @@
 
 spec: unknown
 spec_version: 1
-generated_digest: "sha256:170c7351bb9737362f7abebdebb5dada8279b05fa37a3da2a3dbf4567abdbb72"
+generated_digest: "sha256:075e2123de2629a1308edb61ff9e492dcf813bb2c665617b6172dd4b1074504a"
 generated:
   id: uk_2503cb4bc4
   subject: "room.look_to: what the server sends when it refuses"
@@ -39,7 +39,7 @@ generated:
     origin: vortex
     source: Vortex.Rooms/Grains/RoomGrain.Avatar.cs
     symbol: RoomGrain
-    line: 446
+    line: 464
   - id: ev_b46938ec853d
     kind: emulator_flow
     authority: vortex_emulator
@@ -53,7 +53,7 @@ generated:
     origin: vortex
     source: Vortex.Rooms/Grains/Modules/RoomAvatarModule.cs
     symbol: RoomAvatarModule
-    line: 762
+    line: 827
   - id: ev_ec05fa1b0194
     kind: emulator_flow
     authority: vortex_emulator

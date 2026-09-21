@@ -10,7 +10,7 @@
 
 spec: scenarios
 spec_version: 1
-generated_digest: "sha256:25530e503388d3c418e9f25ef8dea97e35ba5fcf1702ef9b1237a4642fb73605"
+generated_digest: "sha256:29aa0019ba3b3342063e44b639d3e4caa169adacb7aec9ab7aeb50a078dd8e54"
 generated:
   feature: room.enter_one_way_door
   scenarios:
@@ -357,6 +357,6 @@ generated:
     origin: vortex
     source: Vortex.Rooms/Grains/Modules/RoomMapModule.Avatar.cs
     symbol: RoomMapModule
-    line: 325
+    line: 326
 verified: {}
 manual: {}

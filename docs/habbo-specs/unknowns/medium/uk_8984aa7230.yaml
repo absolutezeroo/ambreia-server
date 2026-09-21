@@ -10,7 +10,7 @@
 
 spec: unknown
 spec_version: 1
-generated_digest: "sha256:5aa9af52e268a3afce3d001c64a748fb392ef919d741ef8cdedcf00a0bb22f35"
+generated_digest: "sha256:8005584e7e8f59b38f3a2c4e30da2b438c14fae24af56bb115c991e4b8fe6d59"
 generated:
   id: uk_8984aa7230
   subject: "users.respect_user: what the server sends when it refuses"
@@ -25,14 +25,14 @@ generated:
     origin: vortex
     source: Vortex.Primitives/Orleans/GrainFactoryExtensions.cs
     symbol: GrainFactoryExtensions
-    line: 234
+    line: 235
   - id: ev_1f83e61934ca
     kind: emulator_flow
     authority: vortex_emulator
     origin: vortex
     source: Vortex.Players/Grains/PlayerGrain.cs
     symbol: PlayerGrain
-    line: 87
+    line: 91
   - id: ev_34bf3ac088e2
     kind: emulator_flow
     authority: vortex_emulator
@@ -67,7 +67,7 @@ generated:
     origin: vortex
     source: Vortex.Rooms/Grains/RoomGrain.Avatar.cs
     symbol: RoomGrain
-    line: 368
+    line: 374
   - id: ev_b46938ec853d
     kind: emulator_flow
     authority: vortex_emulator
@@ -81,6 +81,6 @@ generated:
     origin: vortex
     source: Vortex.Rooms/Grains/Modules/RoomAvatarModule.cs
     symbol: RoomAvatarModule
-    line: 39
+    line: 49
 verified: {}
 manual: {}

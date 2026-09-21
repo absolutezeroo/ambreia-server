@@ -10,7 +10,7 @@
 
 spec: unknown
 spec_version: 1
-generated_digest: "sha256:7f4c7d4c6e3cf48993a2747f101a7d322bd8d9077a6da420a8b312a3f7ef1746"
+generated_digest: "sha256:1e0118729e11998c10f3e69ab34afad42a21fe978e3d219c4d7c49fc97726a0e"
 generated:
   id: uk_62ff695da9
   subject: "camera.render_room: what the server sends when it refuses"
@@ -25,7 +25,7 @@ generated:
     origin: vortex
     source: Vortex.Rooms/Camera/CameraPhotoStore.cs
     symbol: CameraPhotoStore
-    line: 53
+    line: 63
   - id: ev_1bc545e05610
     kind: emulator_flow
     authority: vortex_emulator
@@ -39,7 +39,7 @@ generated:
     origin: vortex
     source: Vortex.Primitives/Camera/CameraSceneDecoder.cs
     symbol: CameraSceneDecoder
-    line: 58
+    line: 59
   - id: ev_680fc4a69aa8
     kind: emulator_flow
     authority: vortex_emulator
@@ -82,12 +82,19 @@ generated:
     source: Vortex.Players/Grains/ServerConfigGrain.cs
     symbol: ServerConfigGrain
     line: 109
+  - id: ev_94cf203219e6
+    kind: emulator_flow
+    authority: vortex_emulator
+    origin: vortex
+    source: Vortex.Rooms/Camera/Render/RoomPhotoRenderer.cs
+    symbol: RoomPhotoRenderer
+    line: 41
   - id: ev_f9dc5b28688c
     kind: emulator_flow
     authority: vortex_emulator
     origin: vortex
     source: Vortex.Players/Grains/PlayerCameraGrain.cs
     symbol: PlayerCameraGrain
-    line: 49
+    line: 59
 verified: {}
 manual: {}

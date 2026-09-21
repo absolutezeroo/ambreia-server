@@ -10,7 +10,7 @@
 
 spec: feature
 spec_version: 1
-generated_digest: "sha256:fa853731a94e4007e584ab88eafb3db50aa664e567931746e8b805ebf5bdf903"
+generated_digest: "sha256:433cb2a3bb0ce137dc8619ea0798696ffe98aed717253133a7f4e3a8302574ea"
 generated:
   id: room.click_item_in_room
   domain: room
@@ -79,14 +79,14 @@ generated:
     origin: vortex
     source: Vortex.Rooms/Object/Logic/Furniture/FurnitureLogic.cs
     symbol: FurnitureLogic
-    line: 217
+    line: 248
   - id: ev_7c6cea3bc17b
     kind: emulator_flow
     authority: vortex_emulator
     origin: vortex
     source: Vortex.Rooms/RoomService.cs
     symbol: RoomService
-    line: 602
+    line: 623
   - id: ev_8a097ef973ee
     kind: emulator_flow
     authority: vortex_emulator

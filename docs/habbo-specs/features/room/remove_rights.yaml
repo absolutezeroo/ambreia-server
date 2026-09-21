@@ -10,7 +10,7 @@
 
 spec: feature
 spec_version: 1
-generated_digest: "sha256:216a18e87661ea42248ab78081c66585bcbf22bf09eb4dd9f93d3472056f6358"
+generated_digest: "sha256:656d6ab928af879fa359583db85d24d694a027db779f5cc13835142b0decbfab"
 generated:
   id: room.remove_rights
   domain: room
@@ -34,25 +34,9 @@ generated:
     evidence: ev_329537530b13
   - order: 2
     layer: module
-    symbol: RoomSecurityModule.LoadControllersAsync
-    evidence: ev_82c2d2746361
+    symbol: RoomSecurityModule.RevokeRightsAsync
+    evidence: ev_bbe396e4bac0
   - order: 3
-    layer: domain
-    symbol: WiredActionBranch.Select
-    evidence: ev_f13d6bcce744
-  - order: 4
-    layer: module
-    symbol: RoomSecurityModule.RefreshControllerLevelForPlayerAsync
-    evidence: ev_82c2d2746361
-  - order: 5
-    layer: grain
-    symbol: PlayerPresenceGrain.OnControllerLevelUpdatedAsync
-    evidence: ev_b44ef304d36a
-  - order: 6
-    layer: domain
-    symbol: RoomAvatar.AddStatus
-    evidence: ev_9f45a8c43da8
-  - order: 7
     layer: module
     symbol: EventSystem.PublishAsync
     evidence: ev_34bf3ac088e2
@@ -65,54 +49,18 @@ generated:
     on_fail: return
     observed_in: vortex
     evidence: ev_329537530b13
-  - expression: "!_roomGrain._state.AvatarsByPlayerId.TryGetValue(playerId, out RoomObjectId objectId) || !_roomGrain._state.AvatarsByObjectId.TryGetValue(objectId, out IRoomAvatar? avatar)"
-    on_fail: return
-    observed_in: vortex
-    evidence: ev_82c2d2746361
-  - expression: _state.ActiveRoomId != roomId
-    on_fail: return
-    observed_in: vortex
-    evidence: ev_b44ef304d36a
-  - expression: controllerType >= RoomControllerType.Rights
-    on_fail: return
-    observed_in: vortex
-    evidence: ev_b44ef304d36a
   - expression: _registry is null
     on_fail: return
     observed_in: vortex
     evidence: ev_34bf3ac088e2
   state_changes:
-  - target: avatar
-    value: avatar.AddStatus( AvatarStatusType.FlatControl, ((int)controllerLevel).ToString(CultureInfo.InvariantCulture) )
-    observed_in: vortex
-    evidence: ev_82c2d2746361
   - target: roomGrain
     value: roomGrain.RemoveRightsAsync(ctx.PlayerId, targets, ct)
     observed_in: vortex
     evidence: ev_b0c6819b754b
   outgoing:
     ordering: unknown
-    packets:
-    - packet: FlatControllers
-      recipient: unknown
-      recipient_confidence: unknown
-      evidence: ev_329537530b13
-    - packet: WiredPermissions
-      recipient: unknown
-      recipient_confidence: unknown
-      evidence: ev_b44ef304d36a
-    - packet: YouAreController
-      recipient: unknown
-      recipient_confidence: unknown
-      evidence: ev_b44ef304d36a
-    - packet: YouAreNotController
-      recipient: unknown
-      recipient_confidence: unknown
-      evidence: ev_b44ef304d36a
-    - packet: YouAreOwner
-      recipient: unknown
-      recipient_confidence: unknown
-      evidence: ev_b44ef304d36a
+    packets: []
   reaches_persistence: true
   evidence:
   - id: ev_2ab49cd53acd
@@ -128,7 +76,7 @@ generated:
     origin: vortex
     source: Vortex.Rooms/Grains/RoomGrain.Settings.cs
     symbol: RoomGrain
-    line: 606
+    line: 539
   - id: ev_34bf3ac088e2
     kind: emulator_flow
     authority: vortex_emulator
@@ -136,20 +84,6 @@ generated:
     source: Vortex.Events/EventSystem.cs
     symbol: EventSystem
     line: 14
-  - id: ev_82c2d2746361
-    kind: emulator_flow
-    authority: vortex_emulator
-    origin: vortex
-    source: Vortex.Rooms/Grains/Modules/RoomSecurityModule.cs
-    symbol: RoomSecurityModule
-    line: 319
-  - id: ev_9f45a8c43da8
-    kind: emulator_flow
-    authority: vortex_emulator
-    origin: vortex
-    source: Vortex.Rooms/Object/Avatars/RoomAvatar.cs
-    symbol: RoomAvatar
-    line: 182
   - id: ev_b0c6819b754b
     kind: emulator_flow
     authority: vortex_emulator
@@ -157,32 +91,21 @@ generated:
     source: Vortex.PacketHandlers/Room/Action/RemoveRightsMessageHandler.cs
     symbol: RemoveRightsMessageHandler
     line: 25
-  - id: ev_b44ef304d36a
+  - id: ev_bbe396e4bac0
     kind: emulator_flow
     authority: vortex_emulator
     origin: vortex
-    source: Vortex.Players/Grains/PlayerPresenceGrain.Room.cs
-    symbol: PlayerPresenceGrain
-    line: 193
-  - id: ev_f13d6bcce744
-    kind: emulator_flow
-    authority: vortex_emulator
-    origin: vortex
-    source: Vortex.Rooms/Wired/WiredActionBranch.cs
-    symbol: WiredActionBranch
-    line: 23
+    source: Vortex.Rooms/Grains/Modules/RoomSecurityModule.Rights.cs
+    symbol: RoomSecurityModule
+    line: 101
   scenarios:
   - room.remove_rights.guard_0
   - room.remove_rights.guard_1
   - room.remove_rights.guard_2
-  - room.remove_rights.guard_3
-  - room.remove_rights.guard_4
-  - room.remove_rights.guard_5
   - room.remove_rights.success
   conflicts:
   - cf_fbb4ae59cd
   unknowns:
-  - uk_457ade387d
   - uk_a9f91ec12d
 verified: {}
 manual: {}

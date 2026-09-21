@@ -10,7 +10,7 @@
 
 spec: unknown
 spec_version: 1
-generated_digest: "sha256:e30df4a141d01386261bde317921be59b0484f6cba3835be7d3dd82d59dfd67c"
+generated_digest: "sha256:897fe028f1bc3cba0cb5e1f59f756e5dcfc9be5534cc654e9cb7c82f2fae933c"
 generated:
   id: uk_68c298b463
   subject: "inventory.add_trade_items: what the server sends when it refuses"
@@ -25,7 +25,7 @@ generated:
     origin: vortex
     source: Vortex.Rooms/Grains/Systems/RoomTradingSystem.cs
     symbol: RoomTradingSystem
-    line: 124
+    line: 125
   - id: ev_48fa24e8d4a2
     kind: emulator_flow
     authority: vortex_emulator
@@ -53,7 +53,7 @@ generated:
     origin: vortex
     source: Vortex.Rooms/Grains/RoomTradeSession.cs
     symbol: RoomTradeSession
-    line: 89
+    line: 95
   - id: ev_a8707f5e7b6c
     kind: emulator_flow
     authority: vortex_emulator
@@ -74,7 +74,7 @@ generated:
     origin: vortex
     source: Vortex.Inventory/Grains/InventoryGrain.Furni.cs
     symbol: InventoryGrain
-    line: 858
+    line: 863
   - id: ev_cb734f7b3876
     kind: emulator_flow
     authority: vortex_emulator

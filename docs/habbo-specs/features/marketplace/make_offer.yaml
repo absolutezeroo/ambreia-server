@@ -10,7 +10,7 @@
 
 spec: feature
 spec_version: 1
-generated_digest: "sha256:034b72e6c9078777a4faafe3517480c8a3c6d6b72157a281f6c8b7a29f998dd7"
+generated_digest: "sha256:8498d4589beacd02997f49e4645d84b601689695101dc4a2d63cbb14808ae096"
 generated:
   id: marketplace.make_offer
   domain: marketplace
@@ -213,14 +213,14 @@ generated:
     origin: vortex
     source: Vortex.Inventory/Grains/InventoryGrain.Furni.cs
     symbol: InventoryGrain
-    line: 858
+    line: 863
   - id: ev_d720d639bd09
     kind: emulator_flow
     authority: vortex_emulator
     origin: vortex
     source: Vortex.Players/Grains/Modules/PlayerInventoryModule.cs
     symbol: PlayerInventoryModule
-    line: 118
+    line: 134
   - id: ev_db53958cdf3b
     kind: emulator_flow
     authority: vortex_emulator

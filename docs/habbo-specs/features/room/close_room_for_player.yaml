@@ -10,7 +10,7 @@
 
 spec: feature
 spec_version: 1
-generated_digest: "sha256:6e249dd6c04dcdb5bf13a141d3b21fd00a86691b4848424c26618c5202e28e7a"
+generated_digest: "sha256:d3c58d0bf9242e2502381c9a5f1b4a427adba8a6710b32fecb9912f7fa673d99"
 generated:
   id: room.close_room_for_player
   domain: room
@@ -134,6 +134,10 @@ generated:
     observed_in: vortex
     evidence: ev_761b76967e2f
   - expression: "!avatar.IsWalking"
+    on_fail: return
+    observed_in: vortex
+    evidence: ev_e6fef545a42a
+  - expression: "!_onWalkEnded.Remove(avatar.ObjectId.Value, out Func<CancellationToken, Task>? onEnded)"
     on_fail: return
     observed_in: vortex
     evidence: ev_e6fef545a42a
@@ -305,7 +309,7 @@ generated:
     origin: vortex
     source: Vortex.Rooms/RoomService.cs
     symbol: RoomService
-    line: 515
+    line: 536
   - id: ev_82aaf63b45c1
     kind: emulator_flow
     authority: vortex_emulator
@@ -340,7 +344,7 @@ generated:
     origin: vortex
     source: Vortex.Rooms/Grains/RoomGrain.Avatar.cs
     symbol: RoomGrain
-    line: 107
+    line: 108
   - id: ev_b2d21836a70a
     kind: emulator_flow
     authority: vortex_emulator
@@ -375,7 +379,7 @@ generated:
     origin: vortex
     source: Vortex.Rooms/Grains/Modules/RoomMapModule.Avatar.cs
     symbol: RoomMapModule
-    line: 362
+    line: 363
   - id: ev_e439cab6b248
     kind: emulator_flow
     authority: vortex_emulator
@@ -389,7 +393,7 @@ generated:
     origin: vortex
     source: Vortex.Rooms/Grains/Modules/RoomAvatarModule.cs
     symbol: RoomAvatarModule
-    line: 155
+    line: 165
   scenarios:
   - room.close_room_for_player.guard_0
   - room.close_room_for_player.guard_1
@@ -399,6 +403,7 @@ generated:
   - room.close_room_for_player.guard_5
   - room.close_room_for_player.guard_6
   - room.close_room_for_player.guard_7
+  - room.close_room_for_player.guard_8
   - room.close_room_for_player.success
   conflicts:
   - cf_1cd41cbf9b

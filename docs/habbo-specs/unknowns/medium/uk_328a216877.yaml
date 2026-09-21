@@ -10,7 +10,7 @@
 
 spec: unknown
 spec_version: 1
-generated_digest: "sha256:cf530e72f0028b7073dcbbadbcf7ac2dd23e5c377d599790e3c8a20034757a73"
+generated_digest: "sha256:b8bbe4946dff5eef487040c1ab2969cb334eb71a7908d72542207faa5eddfa9a"
 generated:
   id: uk_328a216877
   subject: "catalog.get_flat_categories: what the server sends when it refuses"
@@ -26,13 +26,20 @@ generated:
     source: Vortex.Catalog/Grains/CatalogPurchaseGrain.RoomAd.cs
     symbol: CatalogPurchaseGrain
     line: 21
+  - id: ev_0b129c41cb66
+    kind: emulator_flow
+    authority: vortex_emulator
+    origin: vortex
+    source: Vortex.Progression/Grains/BadgeDirectoryGrain.cs
+    symbol: BadgeDirectoryGrain
+    line: 88
   - id: ev_1f83e61934ca
     kind: emulator_flow
     authority: vortex_emulator
     origin: vortex
     source: Vortex.Players/Grains/PlayerGrain.cs
     symbol: PlayerGrain
-    line: 402
+    line: 407
   - id: ev_234fbe9c2c98
     kind: emulator_flow
     authority: vortex_emulator
@@ -116,7 +123,7 @@ generated:
     origin: vortex
     source: Vortex.Navigator/NavigatorProvider.cs
     symbol: NavigatorProvider
-    line: 83
+    line: 84
   - id: ev_c6396662000a
     kind: emulator_flow
     authority: vortex_emulator
@@ -130,7 +137,7 @@ generated:
     origin: vortex
     source: Vortex.Players/Grains/Modules/PlayerInventoryModule.cs
     symbol: PlayerInventoryModule
-    line: 126
+    line: 142
   - id: ev_ec0b4c2b0a97
     kind: emulator_flow
     authority: vortex_emulator

@@ -10,7 +10,7 @@
 
 spec: unknown
 spec_version: 1
-generated_digest: "sha256:f3bed519816979ed7111394c0573a91ae7f89b28143854cb8e951ac9992c5a6f"
+generated_digest: "sha256:97f305bce4d875c257809ab5b241bb9d8b23edc75090b032a9c26ea6f4c8b8d0"
 generated:
   id: uk_cb5a471725
   subject: "inventory.avatar_effect_selected: what the server sends when it refuses"
@@ -60,7 +60,7 @@ generated:
     origin: vortex
     source: Vortex.Rooms/Grains/RoomGrain.Avatar.cs
     symbol: RoomGrain
-    line: 293
+    line: 299
   - id: ev_b46938ec853d
     kind: emulator_flow
     authority: vortex_emulator
@@ -74,6 +74,6 @@ generated:
     origin: vortex
     source: Vortex.Rooms/Grains/Modules/RoomAvatarModule.cs
     symbol: RoomAvatarModule
-    line: 615
+    line: 680
 verified: {}
 manual: {}

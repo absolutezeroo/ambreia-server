@@ -10,7 +10,7 @@
 
 spec: scenarios
 spec_version: 1
-generated_digest: "sha256:26c45818588d2a646be3d16cc5c65b5cb2c3ead2dbf2619d4f0f95995606dd9c"
+generated_digest: "sha256:fc585866e31fcbad94148a4e2d690ba204484609b7df6f6451b6670742e7d320"
 generated:
   feature: handshake.info_retrieve
   scenarios:
@@ -84,7 +84,7 @@ generated:
     origin: vortex
     source: Vortex.Primitives/Orleans/GrainFactoryExtensions.cs
     symbol: GrainFactoryExtensions
-    line: 234
+    line: 235
   - id: ev_bc151838dd5f
     kind: emulator_flow
     authority: vortex_emulator

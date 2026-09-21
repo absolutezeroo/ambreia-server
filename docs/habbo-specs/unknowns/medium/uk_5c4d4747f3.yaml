@@ -10,7 +10,7 @@
 
 spec: unknown
 spec_version: 1
-generated_digest: "sha256:6c27fd27f180c956cbb839d30e377a68fac502635030e969bb258978b6732277"
+generated_digest: "sha256:b31b8fa7f74849db1fddb7a42b1f1d83099b100dd805e019dbc26adec5e7a862"
 generated:
   id: uk_5c4d4747f3
   subject: "room.place_wall_item_in_room: who receives FurniListRemove, ItemAdd, ObjectAdd"
@@ -25,7 +25,7 @@ generated:
     origin: vortex
     source: Vortex.Players/Grains/Modules/PlayerInventoryModule.cs
     symbol: PlayerInventoryModule
-    line: 120
+    line: 136
   - id: ev_d55e02c7465d
     kind: emulator_flow
     authority: vortex_emulator

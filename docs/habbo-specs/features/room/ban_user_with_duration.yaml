@@ -10,7 +10,7 @@
 
 spec: feature
 spec_version: 1
-generated_digest: "sha256:ecd08682b9821af3ecab9a832afb551fcb2cb6b35a84c33a1383930600712496"
+generated_digest: "sha256:20c15832bd3fa47a73f16fe95c649acbe8d7daa54c3ebfe74883fe623f787a45"
 generated:
   id: room.ban_user_with_duration
   domain: room
@@ -166,6 +166,10 @@ generated:
     observed_in: vortex
     evidence: ev_b2d21836a70a
   - expression: "!avatar.IsWalking"
+    on_fail: return
+    observed_in: vortex
+    evidence: ev_e6fef545a42a
+  - expression: "!_onWalkEnded.Remove(avatar.ObjectId.Value, out Func<CancellationToken, Task>? onEnded)"
     on_fail: return
     observed_in: vortex
     evidence: ev_e6fef545a42a
@@ -379,7 +383,7 @@ generated:
     origin: vortex
     source: Vortex.Rooms/Grains/Modules/RoomMapModule.Avatar.cs
     symbol: RoomMapModule
-    line: 362
+    line: 363
   - id: ev_e439cab6b248
     kind: emulator_flow
     authority: vortex_emulator
@@ -393,7 +397,7 @@ generated:
     origin: vortex
     source: Vortex.Rooms/Grains/Modules/RoomAvatarModule.cs
     symbol: RoomAvatarModule
-    line: 155
+    line: 165
   - id: ev_ede1461ee378
     kind: emulator_flow
     authority: vortex_emulator

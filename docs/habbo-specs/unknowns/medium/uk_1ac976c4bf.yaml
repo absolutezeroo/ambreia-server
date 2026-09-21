@@ -10,7 +10,7 @@
 
 spec: unknown
 spec_version: 1
-generated_digest: "sha256:6229e3d15b784ad8f94b3c981a5858682c0e542aaa344d73bc2a62aec1e524dd"
+generated_digest: "sha256:1f38c619027f283dd5c2e3c2bde7d2348beb53d00ad5cbaaa2349e59d57108a0"
 generated:
   id: uk_1ac976c4bf
   subject: "users.unignore_user: what the server sends when it refuses"
@@ -25,14 +25,14 @@ generated:
     origin: vortex
     source: Vortex.PacketHandlers/Users/UnignoreUserMessageHandler.cs
     symbol: UnignoreUserMessageHandler
-    line: 12
+    line: 13
   - id: ev_939c64a827dd
     kind: emulator_flow
     authority: vortex_emulator
     origin: vortex
     source: Vortex.PacketHandlers/Users/UnignoreUserMessageHandler.cs
     symbol: UnignoreUserMessageHandler
-    line: 23
+    line: 30
   - id: ev_e805723a88fe
     kind: emulator_flow
     authority: vortex_emulator

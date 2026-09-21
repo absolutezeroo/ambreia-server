@@ -10,7 +10,7 @@
 
 spec: unknown
 spec_version: 1
-generated_digest: "sha256:f4aa1bd937c8c2ea308259c19f0c453c7b788c226eb6b06975081ba19bf4d843"
+generated_digest: "sha256:b3fba96bab45df11e85def1cb79e378e344ad5141bf0512680abb99512fec7ca"
 generated:
   id: uk_19adc2d22c
   subject: "camera.purchase_photo: what the server sends when it refuses"
@@ -74,6 +74,6 @@ generated:
     origin: vortex
     source: Vortex.Players/Grains/PlayerCameraGrain.cs
     symbol: PlayerCameraGrain
-    line: 148
+    line: 243
 verified: {}
 manual: {}

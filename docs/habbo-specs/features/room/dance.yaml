@@ -10,7 +10,7 @@
 
 spec: feature
 spec_version: 1
-generated_digest: "sha256:f752130fc2ec7001b4483fd7de2edc64af832001338396211ecc899cebf0ce70"
+generated_digest: "sha256:4a8142bb4c38c28c2bdfb9f0c3041d3695f3dbd18b2a9f901e570aa1d1d4d4ad"
 generated:
   id: room.dance
   domain: room
@@ -119,14 +119,14 @@ generated:
     origin: vortex
     source: Vortex.Rooms/Object/Avatars/Player/RoomPlayerAvatar.cs
     symbol: RoomPlayerAvatar
-    line: 130
+    line: 204
   - id: ev_ac641f7283b9
     kind: emulator_flow
     authority: vortex_emulator
     origin: vortex
     source: Vortex.Rooms/Grains/RoomGrain.Avatar.cs
     symbol: RoomGrain
-    line: 234
+    line: 235
   - id: ev_b46938ec853d
     kind: emulator_flow
     authority: vortex_emulator
@@ -147,7 +147,7 @@ generated:
     origin: vortex
     source: Vortex.Rooms/Grains/Modules/RoomAvatarModule.cs
     symbol: RoomAvatarModule
-    line: 547
+    line: 609
   scenarios:
   - room.dance.guard_0
   - room.dance.guard_1

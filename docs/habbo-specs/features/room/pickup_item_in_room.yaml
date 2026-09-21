@@ -10,7 +10,7 @@
 
 spec: feature
 spec_version: 1
-generated_digest: "sha256:bae80afbcfffd01ba40eca2f82bd211287378e16598e538bd3d646a811bdc0f1"
+generated_digest: "sha256:04f403357461ba8ea7df9e73157891335978b532cdc0774d227e5831639b709b"
 generated:
   id: room.pickup_item_in_room
   domain: room
@@ -83,7 +83,7 @@ generated:
     origin: vortex
     source: Vortex.Rooms/RoomService.cs
     symbol: RoomService
-    line: 568
+    line: 589
   - id: ev_dd7bbabb2990
     kind: emulator_flow
     authority: vortex_emulator

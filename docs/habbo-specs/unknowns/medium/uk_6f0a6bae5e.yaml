@@ -10,7 +10,7 @@
 
 spec: unknown
 spec_version: 1
-generated_digest: "sha256:fd2b0ac51d646336b1991006bfea2c9597c186430cb6a5ce5c5508997e2d859b"
+generated_digest: "sha256:b6b6f96503aa74d5914a48e9b700b9420a3047e62d3b1d9d1b8fd3160ae22b25"
 generated:
   id: uk_6f0a6bae5e
   subject: "catalog.find_by_product_code: what the server sends when it refuses"
@@ -19,6 +19,13 @@ generated:
   resolved_by: an official capture of each guard being tripped
   feature: catalog.find_by_product_code
   known_evidence:
+  - id: ev_0b129c41cb66
+    kind: emulator_flow
+    authority: vortex_emulator
+    origin: vortex
+    source: Vortex.Progression/Grains/BadgeDirectoryGrain.cs
+    symbol: BadgeDirectoryGrain
+    line: 88
   - id: ev_0c987f4ea07c
     kind: emulator_flow
     authority: vortex_emulator
@@ -32,7 +39,7 @@ generated:
     origin: vortex
     source: Vortex.Players/Grains/PlayerGrain.cs
     symbol: PlayerGrain
-    line: 592
+    line: 597
   - id: ev_2ec03446aa2a
     kind: emulator_flow
     authority: vortex_emulator
@@ -116,7 +123,7 @@ generated:
     origin: vortex
     source: Vortex.Players/Grains/Modules/PlayerInventoryModule.cs
     symbol: PlayerInventoryModule
-    line: 126
+    line: 142
   - id: ev_db00239c6a21
     kind: emulator_flow
     authority: vortex_emulator

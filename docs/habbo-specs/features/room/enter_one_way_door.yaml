@@ -10,7 +10,7 @@
 
 spec: feature
 spec_version: 1
-generated_digest: "sha256:5b0173fedc0b861abaf806906fec96f5dc361de26a2360c22397953033173bb1"
+generated_digest: "sha256:013af5b4031b815aacc1e11b6334ce4bfa40a4f8a15bc3ead07532e7043cfc15"
 generated:
   id: room.enter_one_way_door
   domain: room
@@ -224,14 +224,14 @@ generated:
     origin: vortex
     source: Vortex.Rooms/Grains/Modules/RoomMapModule.Avatar.cs
     symbol: RoomMapModule
-    line: 323
+    line: 324
   - id: ev_e6fef545a42a
     kind: emulator_flow
     authority: vortex_emulator
     origin: vortex
     source: Vortex.Rooms/Grains/Modules/RoomAvatarModule.cs
     symbol: RoomAvatarModule
-    line: 420
+    line: 457
   - id: ev_ec05fa1b0194
     kind: emulator_flow
     authority: vortex_emulator

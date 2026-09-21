@@ -10,7 +10,7 @@
 
 spec: scenarios
 spec_version: 1
-generated_digest: "sha256:327b5d3243a68c5ca283d0f01d81d58a7a237c826cb0f9e31c8811626588a91e"
+generated_digest: "sha256:931352fe4e4751a343b6a9e4c4871184974b01444f2dba66c2d682f32f21ba10"
 generated:
   feature: moderation.post_quiz_answers
   scenarios:
@@ -140,8 +140,15 @@ generated:
       emits:
       - BadgeReceived
       - QuizResults
-      evidence: ev_14db4ca86628
+      evidence: ev_0b129c41cb66
   evidence:
+  - id: ev_0b129c41cb66
+    kind: emulator_flow
+    authority: vortex_emulator
+    origin: vortex
+    source: Vortex.Progression/Grains/BadgeDirectoryGrain.cs
+    symbol: BadgeDirectoryGrain
+    line: 88
   - id: ev_14db4ca86628
     kind: emulator_flow
     authority: vortex_emulator

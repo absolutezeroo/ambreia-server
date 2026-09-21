@@ -10,7 +10,7 @@
 
 spec: unknown
 spec_version: 1
-generated_digest: "sha256:c2bdd75cac6bf50da1aa6817138ee997095f621368cf25b320f7f7abc19bb1a2"
+generated_digest: "sha256:168a2d85af466c1abd4278b3e1d3bf46919ffd87476f8f416c18dc7621c81038"
 generated:
   id: uk_b25d04d686
   subject: "catalog.purchase_from_catalog_as_gift: what the server sends when it refuses"
@@ -25,7 +25,7 @@ generated:
     origin: vortex
     source: Vortex.Players/Grains/PlayerGrain.cs
     symbol: PlayerGrain
-    line: 402
+    line: 407
   - id: ev_34bf3ac088e2
     kind: emulator_flow
     authority: vortex_emulator

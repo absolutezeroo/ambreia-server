@@ -10,7 +10,7 @@
 
 spec: scenarios
 spec_version: 1
-generated_digest: "sha256:e3705f1961ab22e7dc974ee0081b63cc6389c7aa9d5e9edbca6997a9f22ad7b2"
+generated_digest: "sha256:21cb340c6e4d20e0ba8287a61ba68c46c3fff79f7ad792092c6edecf53514347"
 generated:
   feature: room.use_item_in_room
   scenarios:
@@ -295,7 +295,7 @@ generated:
     origin: vortex
     source: Vortex.Rooms/RoomService.cs
     symbol: RoomService
-    line: 592
+    line: 613
   - id: ev_82c2d2746361
     kind: emulator_flow
     authority: vortex_emulator

@@ -10,7 +10,7 @@
 
 spec: feature
 spec_version: 1
-generated_digest: "sha256:7b3e48bbc6f2c073360d48cf4fda5e463b13d7409a2a3276b74936104e1104e0"
+generated_digest: "sha256:576c8553fcb2609287d385b42fdd6eb49dfcab8224300a14f524158234ee0b3d"
 generated:
   id: room.respect_pet
   domain: room
@@ -36,34 +36,6 @@ generated:
     layer: module
     symbol: RoomPetSystem.RespectPetAsync
     evidence: ev_3b983736fec5
-  - order: 3
-    layer: domain
-    symbol: RoomPetRuntime.IsPlant
-    evidence: ev_2dc66f48a5b5
-  - order: 4
-    layer: grain
-    symbol: PlayerGrain.GetSummaryAsync
-    evidence: ev_1f83e61934ca
-  - order: 5
-    layer: grain
-    symbol: PlayerGrain.TryGivePetRespectAsync
-    evidence: ev_1f83e61934ca
-  - order: 6
-    layer: grain
-    symbol: ServerConfigGrain.GetIntAsync
-    evidence: ev_86f81f4f919c
-  - order: 7
-    layer: domain
-    symbol: GrainFactoryExtensions.GetServerConfigGrain
-    evidence: ev_09932710687b
-  - order: 8
-    layer: grain
-    symbol: RoomGrain.PublishDetached
-    evidence: ev_b46938ec853d
-  - order: 9
-    layer: module
-    symbol: EventSystem.PublishAsync
-    evidence: ev_34bf3ac088e2
   checks:
   - expression: ctx.PlayerId <= 0 || ctx.RoomId <= 0 || message.PetId <= 0
     on_fail: return
@@ -73,51 +45,16 @@ generated:
     on_fail: return
     observed_in: vortex
     evidence: ev_3b983736fec5
-  - expression: RoomPetRuntime.IsPlant(pet)
+  - expression: await TryApproachPetAsync(ctx, pet, c => ApplyRespectAsync(ctx, petId, c), ct)
     on_fail: return
     observed_in: vortex
     evidence: ev_3b983736fec5
-  - expression: ageDays < minimumAgeDays
-    on_fail: send_and_return
-    observed_in: vortex
-    evidence: ev_3b983736fec5
-  - expression: "!await _roomGrain._grainFactory.GetPlayerGrain(ctx.PlayerId).TryGivePetRespectAsync(ct)"
-    on_fail: return
-    observed_in: vortex
-    evidence: ev_3b983736fec5
-  - expression: "!allowed"
-    on_fail: return
-    observed_in: vortex
-    evidence: ev_1f83e61934ca
-  - expression: _registry is null
-    on_fail: return
-    observed_in: vortex
-    evidence: ev_34bf3ac088e2
-  state_changes:
-  - target: _state.PetRespectGivenToday
-    value: givenToday
-    observed_in: vortex
-    evidence: ev_1f83e61934ca
-  - target: motion.IsStatsDirty
-    value: "true"
-    observed_in: vortex
-    evidence: ev_3b983736fec5
+  state_changes: []
   outgoing:
     ordering: unknown
-    packets:
-    - packet: PetRespectFailed
-      recipient: unknown
-      recipient_confidence: unknown
-      evidence: ev_3b983736fec5
+    packets: []
   reaches_persistence: false
   evidence:
-  - id: ev_09932710687b
-    kind: emulator_flow
-    authority: vortex_emulator
-    origin: vortex
-    source: Vortex.Primitives/Orleans/GrainFactoryExtensions.cs
-    symbol: GrainFactoryExtensions
-    line: 234
   - id: ev_1557b71ceec2
     kind: emulator_flow
     authority: vortex_emulator
@@ -125,13 +62,6 @@ generated:
     source: Vortex.PacketHandlers/Room/Pets/RespectPetMessageHandler.cs
     symbol: RespectPetMessageHandler
     line: 22
-  - id: ev_1f83e61934ca
-    kind: emulator_flow
-    authority: vortex_emulator
-    origin: vortex
-    source: Vortex.Players/Grains/PlayerGrain.cs
-    symbol: PlayerGrain
-    line: 382
   - id: ev_27dc49cff260
     kind: emulator_handler
     authority: vortex_emulator
@@ -139,27 +69,13 @@ generated:
     source: Vortex.PacketHandlers/Room/Pets/RespectPetMessageHandler.cs
     symbol: RespectPetMessageHandler
     line: 11
-  - id: ev_2dc66f48a5b5
-    kind: emulator_flow
-    authority: vortex_emulator
-    origin: vortex
-    source: Vortex.Rooms/Grains/Systems/RoomPetRuntime.cs
-    symbol: RoomPetRuntime
-    line: 226
-  - id: ev_34bf3ac088e2
-    kind: emulator_flow
-    authority: vortex_emulator
-    origin: vortex
-    source: Vortex.Events/EventSystem.cs
-    symbol: EventSystem
-    line: 14
   - id: ev_3b983736fec5
     kind: emulator_flow
     authority: vortex_emulator
     origin: vortex
     source: Vortex.Rooms/Grains/Systems/RoomPetSystem.Care.cs
     symbol: RoomPetSystem
-    line: 36
+    line: 37
   - id: ev_7e53d81cbdc8
     kind: emulator_flow
     authority: vortex_emulator
@@ -167,31 +83,10 @@ generated:
     source: Vortex.Rooms/Grains/RoomGrain.Pets.cs
     symbol: RoomGrain
     line: 125
-  - id: ev_86f81f4f919c
-    kind: emulator_flow
-    authority: vortex_emulator
-    origin: vortex
-    source: Vortex.Players/Grains/ServerConfigGrain.cs
-    symbol: ServerConfigGrain
-    line: 43
-  - id: ev_b46938ec853d
-    kind: emulator_flow
-    authority: vortex_emulator
-    origin: vortex
-    source: Vortex.Rooms/Grains/RoomGrain.cs
-    symbol: RoomGrain
-    line: 700
   scenarios:
   - room.respect_pet.guard_0
   - room.respect_pet.guard_1
   - room.respect_pet.guard_2
-  - room.respect_pet.guard_3
-  - room.respect_pet.guard_4
-  - room.respect_pet.guard_5
-  - room.respect_pet.guard_6
   - room.respect_pet.success
-  unknowns:
-  - uk_4048d65186
-  - uk_982db84a2e
 verified: {}
 manual: {}

@@ -10,14 +10,22 @@
 
 spec: packet
 spec_version: 1
-generated_digest: "sha256:e60c5c9a9cd4c25156fe0e9253a3208ececee11ad803c6ac7a7363acfe4473e8"
+generated_digest: "sha256:eb1ad47091e1006568d4ca87ee0ad84212b9cf501fec38b1631d3e7f72927fab"
 generated:
   name: RenderRoomThumbnail
   direction: incoming
   domain: camera
-  structure_confidence: unknown
-  mapped_in_vortex: false
-  fields: []
+  structure_confidence: implementation_observed
+  mapped_in_vortex: true
+  vortex_handler: RenderRoomThumbnailMessageHandler
+  fields:
+  - index: 0
+    name: length
+    type: int32
+    name_confidence: implementation_observed
+    type_confidence: implementation_observed
+    evidence:
+    - ev_ee308d113305
   layouts_by_source:
   - origin: habbo-arcturus-daybreak
     authority: reference_emulator
@@ -25,6 +33,13 @@ generated:
     partial: true
     types: []
     evidence: ev_426b6b1b1134
+  - origin: vortex
+    authority: vortex_emulator
+    field_count: 1
+    partial: false
+    types:
+    - int32
+    evidence: ev_ee308d113305
   evidence:
   - id: ev_426b6b1b1134
     kind: reference_handler
@@ -34,5 +49,14 @@ generated:
     symbol: RenderRoomThumbnailMessageEvent
     line: 25
     note: third-party server implementation; evidence, not authority
+  - id: ev_ee308d113305
+    kind: emulator_parser
+    authority: vortex_emulator
+    origin: vortex
+    source: Vortex.Revisions/Revision20260701/Parsers/Camera/RenderRoomThumbnailMessageParser.cs
+    symbol: RenderRoomThumbnailMessageParser
+    line: 17
+  conflicts:
+  - cf_e6511b602c
 verified: {}
 manual: {}

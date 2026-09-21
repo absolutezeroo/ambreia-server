@@ -10,7 +10,7 @@
 
 spec: feature
 spec_version: 1
-generated_digest: "sha256:18371d3451b5e4972db887fec808910176b161bbe051aab1aaa514c556994167"
+generated_digest: "sha256:4e48e8a3000474caf76795916e95e6395ce571b3898a728ed12b641be51425cb"
 generated:
   id: navigator.get_official_room_entries
   domain: navigator
@@ -80,7 +80,7 @@ generated:
     origin: vortex
     source: Vortex.Navigator/NavigatorProvider.cs
     symbol: RoomQueryExtensions
-    line: 783
+    line: 831
   - id: ev_86f81f4f919c
     kind: emulator_flow
     authority: vortex_emulator
@@ -108,7 +108,7 @@ generated:
     origin: vortex
     source: Vortex.Navigator/NavigatorProvider.cs
     symbol: NavigatorProvider
-    line: 599
+    line: 602
   - id: ev_ca6db2d966f5
     kind: emulator_flow
     authority: vortex_emulator

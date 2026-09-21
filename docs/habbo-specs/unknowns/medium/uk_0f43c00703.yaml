@@ -10,7 +10,7 @@
 
 spec: unknown
 spec_version: 1
-generated_digest: "sha256:621f6ba8d2fd8e364aaab3c662405833f0baa61e4ddcc71c1e0fc38df740d044"
+generated_digest: "sha256:a560038c7e82b882b460083a3a3fd075fa5f954cd2546ff7cbe353d710032c9f"
 generated:
   id: uk_0f43c00703
   subject: "users.update_guild_identity: what the server sends when it refuses"
@@ -25,7 +25,7 @@ generated:
     origin: vortex
     source: Vortex.Primitives/Orleans/GrainFactoryExtensions.cs
     symbol: GrainFactoryExtensions
-    line: 234
+    line: 235
   - id: ev_1ae4f9f6764e
     kind: emulator_handler
     authority: vortex_emulator

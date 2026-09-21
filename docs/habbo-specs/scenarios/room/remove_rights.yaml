@@ -10,7 +10,7 @@
 
 spec: scenarios
 spec_version: 1
-generated_digest: "sha256:86d61770c1c815a66d1a2ebd2bc169005a2eabebc44a30d8fce8f7c2a6ff3afb"
+generated_digest: "sha256:d19890eb7ee2573a87fb6515f05c0fab9e0f4871dc23f592d0e35011522276b7"
 generated:
   feature: room.remove_rights
   scenarios:
@@ -61,75 +61,6 @@ generated:
       emits: []
       evidence: ev_56778ef3f9c1
   - scenario: room.remove_rights.guard_2
-    title: "remove rights: the guard '!_roomGrain._state.AvatarsByPlayerId.TryGetValue(playerId...' holds"
-    given:
-      guard: "!_roomGrain._state.AvatarsByPlayerId.TryGetValue(playerId, out RoomObjectId objectId) || !_roomGrain._state.AvatarsByObjectId.TryGetValue(objectId, out IRoomAvatar? avatar)"
-      guard_holds: "true"
-    when:
-      packet: RemoveRights
-    expected:
-      status: unknown
-      confidence: unknown
-    needs_evidence: "an official capture of RemoveRights sent while '!_roomGrain._state.AvatarsByPlayerId.TryGetValue(playerId, out RoomObjectId objectId) || !_roomGrain._state.AvatarsByObjectId.TryGetValue(objectId, out IRoomAvatar? avatar)' holds: does the server reply, stay silent, or disconnect?"
-    executable: false
-    claims:
-    - origin: vortex
-      authority: vortex_emulator
-      outcome: ignored
-      emits: []
-      evidence: ev_82c2d2746361
-    - origin: habbo-arcturus-daybreak
-      authority: reference_emulator
-      outcome: ignored
-      emits: []
-      evidence: ev_56778ef3f9c1
-  - scenario: room.remove_rights.guard_3
-    title: "remove rights: the guard '_state.ActiveRoomId != roomId' holds"
-    given:
-      guard: _state.ActiveRoomId != roomId
-      guard_holds: "true"
-    when:
-      packet: RemoveRights
-    expected:
-      status: unknown
-      confidence: unknown
-    needs_evidence: "an official capture of RemoveRights sent while '_state.ActiveRoomId != roomId' holds: does the server reply, stay silent, or disconnect?"
-    executable: false
-    claims:
-    - origin: vortex
-      authority: vortex_emulator
-      outcome: ignored
-      emits: []
-      evidence: ev_b44ef304d36a
-    - origin: habbo-arcturus-daybreak
-      authority: reference_emulator
-      outcome: ignored
-      emits: []
-      evidence: ev_56778ef3f9c1
-  - scenario: room.remove_rights.guard_4
-    title: "remove rights: the guard 'controllerType >= RoomControllerType.Rights' holds"
-    given:
-      guard: controllerType >= RoomControllerType.Rights
-      guard_holds: "true"
-    when:
-      packet: RemoveRights
-    expected:
-      status: unknown
-      confidence: unknown
-    needs_evidence: "an official capture of RemoveRights sent while 'controllerType >= RoomControllerType.Rights' holds: does the server reply, stay silent, or disconnect?"
-    executable: false
-    claims:
-    - origin: vortex
-      authority: vortex_emulator
-      outcome: ignored
-      emits: []
-      evidence: ev_b44ef304d36a
-    - origin: habbo-arcturus-daybreak
-      authority: reference_emulator
-      outcome: ignored
-      emits: []
-      evidence: ev_56778ef3f9c1
-  - scenario: room.remove_rights.guard_5
     title: "remove rights: the guard '_registry is null' holds"
     given:
       guard: _registry is null
@@ -166,13 +97,8 @@ generated:
     claims:
     - origin: vortex
       authority: vortex_emulator
-      outcome: success
-      emits:
-      - FlatControllers
-      - WiredPermissions
-      - YouAreController
-      - YouAreNotController
-      - YouAreOwner
+      outcome: ignored
+      emits: []
       evidence: ev_2ab49cd53acd
     - origin: habbo-arcturus-daybreak
       authority: reference_emulator
@@ -201,7 +127,7 @@ generated:
     origin: vortex
     source: Vortex.Rooms/Grains/RoomGrain.Settings.cs
     symbol: RoomGrain
-    line: 612
+    line: 545
   - id: ev_34bf3ac088e2
     kind: emulator_flow
     authority: vortex_emulator
@@ -209,13 +135,6 @@ generated:
     source: Vortex.Events/EventSystem.cs
     symbol: EventSystem
     line: 16
-  - id: ev_82c2d2746361
-    kind: emulator_flow
-    authority: vortex_emulator
-    origin: vortex
-    source: Vortex.Rooms/Grains/Modules/RoomSecurityModule.cs
-    symbol: RoomSecurityModule
-    line: 300
   - id: ev_b0c6819b754b
     kind: emulator_flow
     authority: vortex_emulator
@@ -223,12 +142,5 @@ generated:
     source: Vortex.PacketHandlers/Room/Action/RemoveRightsMessageHandler.cs
     symbol: RemoveRightsMessageHandler
     line: 25
-  - id: ev_b44ef304d36a
-    kind: emulator_flow
-    authority: vortex_emulator
-    origin: vortex
-    source: Vortex.Players/Grains/PlayerPresenceGrain.Room.cs
-    symbol: PlayerPresenceGrain
-    line: 199
 verified: {}
 manual: {}

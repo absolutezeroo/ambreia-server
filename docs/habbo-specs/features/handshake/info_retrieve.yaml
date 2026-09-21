@@ -10,7 +10,7 @@
 
 spec: feature
 spec_version: 1
-generated_digest: "sha256:774a84a9b62efd3fb87b459d386b7b838eda6ca1653ef311cfb20791bb205706"
+generated_digest: "sha256:6303bf8c23b2fdb82299ca1bddf48f58b21f21e8895084095a0951bdc1a9dee9"
 generated:
   id: handshake.info_retrieve
   domain: handshake
@@ -65,14 +65,14 @@ generated:
     origin: vortex
     source: Vortex.Primitives/Orleans/GrainFactoryExtensions.cs
     symbol: GrainFactoryExtensions
-    line: 234
+    line: 235
   - id: ev_1f83e61934ca
     kind: emulator_flow
     authority: vortex_emulator
     origin: vortex
     source: Vortex.Players/Grains/PlayerGrain.cs
     symbol: PlayerGrain
-    line: 382
+    line: 386
   - id: ev_2c9dca8e07f3
     kind: emulator_flow
     authority: vortex_emulator

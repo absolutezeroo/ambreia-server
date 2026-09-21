@@ -10,12 +10,12 @@
 
 spec: unknown
 spec_version: 1
-generated_digest: "sha256:f5fdc284570f2f4530c2175ebbf2b70d2faa4bc61ac03714186b5c7f022059e9"
+generated_digest: "sha256:7d9e0962748f79261f033c5e45a30a03277a4c46f8f3308a92a8536b3768d851"
 generated:
   id: uk_4f018bec9e
   subject: "room.remove_all_rights: what the server sends when it refuses"
   severity: medium
-  question: room.remove_all_rights changes state and has 7 guards whose refusal behaviour nothing here attests. Does the official server answer a refused request, and with what?
+  question: room.remove_all_rights changes state and has 4 guards whose refusal behaviour nothing here attests. Does the official server answer a refused request, and with what?
   resolved_by: an official capture of each guard being tripped
   feature: room.remove_all_rights
   known_evidence:
@@ -32,7 +32,7 @@ generated:
     origin: vortex
     source: Vortex.Rooms/Grains/RoomGrain.Settings.cs
     symbol: RoomGrain
-    line: 686
+    line: 553
   - id: ev_34bf3ac088e2
     kind: emulator_flow
     authority: vortex_emulator
@@ -47,26 +47,12 @@ generated:
     source: Vortex.PacketHandlers/Room/Action/RemoveAllRightsMessageHandler.cs
     symbol: RemoveAllRightsMessageHandler
     line: 27
-  - id: ev_82c2d2746361
+  - id: ev_bbe396e4bac0
     kind: emulator_flow
     authority: vortex_emulator
     origin: vortex
-    source: Vortex.Rooms/Grains/Modules/RoomSecurityModule.cs
+    source: Vortex.Rooms/Grains/Modules/RoomSecurityModule.Rights.cs
     symbol: RoomSecurityModule
-    line: 285
-  - id: ev_9f45a8c43da8
-    kind: emulator_flow
-    authority: vortex_emulator
-    origin: vortex
-    source: Vortex.Rooms/Object/Avatars/RoomAvatar.cs
-    symbol: RoomAvatar
-    line: 182
-  - id: ev_b44ef304d36a
-    kind: emulator_flow
-    authority: vortex_emulator
-    origin: vortex
-    source: Vortex.Players/Grains/PlayerPresenceGrain.Room.cs
-    symbol: PlayerPresenceGrain
-    line: 193
+    line: 171
 verified: {}
 manual: {}

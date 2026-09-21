@@ -10,7 +10,7 @@
 
 spec: unknown
 spec_version: 1
-generated_digest: "sha256:6ed823292caf5419ec75b96322dc6ad6f278dd5cdb349366a9388d3a5f6fc022"
+generated_digest: "sha256:c6d6947ae62a7a95d3eaa26f9eb188e77c6bfa69e716e93eb6b8a91bfd247842"
 generated:
   id: uk_bb4843f327
   subject: "room.pickup_item_in_room: what the server sends when it refuses"
@@ -39,7 +39,7 @@ generated:
     origin: vortex
     source: Vortex.Rooms/RoomService.cs
     symbol: RoomService
-    line: 568
+    line: 589
   - id: ev_dd7bbabb2990
     kind: emulator_flow
     authority: vortex_emulator

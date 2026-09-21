@@ -10,7 +10,7 @@
 
 spec: conflict
 spec_version: 1
-generated_digest: "sha256:d6fe3f143b8691a17496bb383fe65aeffeb1fa61c24d3d8b33d92b69d44c1a2d"
+generated_digest: "sha256:2f61f78b0f6096b6763c6c812f337cdc5989a118449d86b0c24a557354ac84cf"
 generated:
   id: cf_08825b6d8a
   kind: field_type
@@ -31,7 +31,7 @@ generated:
     evidence: ev_464edaa78bd2
   - origin: vortex
     authority: vortex_emulator
-    claim: "result_code: int32"
+    claim: "user_id: int32"
     evidence: ev_4b512ec8fb82
   evidence:
   - id: ev_c19676e30531

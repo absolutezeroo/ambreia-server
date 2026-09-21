@@ -10,7 +10,7 @@
 
 spec: unknown
 spec_version: 1
-generated_digest: "sha256:5d64e9b83e3e987d728503ef15656c48b18dbd7c3d713c8dbb2e796cdec27452"
+generated_digest: "sha256:fc892fe30dfb012f96a02f2f6c9a1c69813d6f02a9e5f3dc186c062eda7755bb"
 generated:
   id: uk_5c4fd93197
   subject: "catalog.builders_club_place_wall_item: who receives FurniListRemove, ItemAdd"
@@ -25,7 +25,7 @@ generated:
     origin: vortex
     source: Vortex.Players/Grains/Modules/PlayerInventoryModule.cs
     symbol: PlayerInventoryModule
-    line: 120
+    line: 136
   - id: ev_d55e02c7465d
     kind: emulator_flow
     authority: vortex_emulator

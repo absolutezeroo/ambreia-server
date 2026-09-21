@@ -10,7 +10,7 @@
 
 spec: unknown
 spec_version: 1
-generated_digest: "sha256:44c3eabc56b18d7c320aeed350dd629d18f159222f27e6e7f4976a0bedd00364"
+generated_digest: "sha256:8beddc5a48ff5f122927be5dfe5373c9d51a018efe47a9b0d97e4709fe270d0f"
 generated:
   id: uk_455811187b
   subject: "room.open_room_for_player_id: what the server sends when it refuses"
@@ -123,7 +123,7 @@ generated:
     origin: vortex
     source: Vortex.Rooms/RoomService.cs
     symbol: RoomService
-    line: 64
+    line: 66
   - id: ev_7f41f2bdde62
     kind: emulator_flow
     authority: vortex_emulator
@@ -179,7 +179,7 @@ generated:
     origin: vortex
     source: Vortex.Rooms/Grains/RoomGrain.Avatar.cs
     symbol: RoomGrain
-    line: 107
+    line: 108
   - id: ev_b2d21836a70a
     kind: emulator_flow
     authority: vortex_emulator
@@ -228,7 +228,7 @@ generated:
     origin: vortex
     source: Vortex.Rooms/Grains/Modules/RoomMapModule.Avatar.cs
     symbol: RoomMapModule
-    line: 362
+    line: 363
   - id: ev_e4165c982e0e
     kind: emulator_flow
     authority: vortex_emulator
@@ -249,7 +249,14 @@ generated:
     origin: vortex
     source: Vortex.Rooms/Grains/Modules/RoomAvatarModule.cs
     symbol: RoomAvatarModule
-    line: 155
+    line: 165
+  - id: ev_e81f0934fd67
+    kind: emulator_flow
+    authority: vortex_emulator
+    origin: vortex
+    source: Vortex.Players/BuildersClubService.cs
+    symbol: BuildersClubService
+    line: 71
   - id: ev_ec0b4c2b0a97
     kind: emulator_flow
     authority: vortex_emulator

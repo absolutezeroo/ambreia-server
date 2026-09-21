@@ -10,7 +10,7 @@
 
 spec: unknown
 spec_version: 1
-generated_digest: "sha256:7ade7d7db4bca8f60a185f61d4f63089965e805f4116fb4897f6ead5b23907b3"
+generated_digest: "sha256:347987b9d8af54a2a81d2d4ac30a353f4f724b7dbd2cfe0ac2f62f81d1e511e7"
 generated:
   id: uk_88f399ae45
   subject: "avatar.change_user_name: what the server sends when it refuses"
@@ -25,7 +25,7 @@ generated:
     origin: vortex
     source: Vortex.Players/Grains/PlayerGrain.cs
     symbol: PlayerGrain
-    line: 255
+    line: 259
   - id: ev_26f996b19e2c
     kind: emulator_flow
     authority: vortex_emulator
@@ -67,14 +67,14 @@ generated:
     origin: vortex
     source: Vortex.Rooms/Object/Avatars/Player/RoomPlayerAvatar.cs
     symbol: RoomPlayerAvatar
-    line: 45
+    line: 58
   - id: ev_ac641f7283b9
     kind: emulator_flow
     authority: vortex_emulator
     origin: vortex
     source: Vortex.Rooms/Grains/RoomGrain.Avatar.cs
     symbol: RoomGrain
-    line: 167
+    line: 168
   - id: ev_b46938ec853d
     kind: emulator_flow
     authority: vortex_emulator
@@ -88,7 +88,7 @@ generated:
     origin: vortex
     source: Vortex.Rooms/Grains/Modules/RoomAvatarModule.cs
     symbol: RoomAvatarModule
-    line: 508
+    line: 570
   - id: ev_ede91c591c8c
     kind: emulator_flow
     authority: vortex_emulator

@@ -10,7 +10,7 @@
 
 spec: revision
 spec_version: 1
-generated_digest: "sha256:fb89a464230a8de8a61bed932d7357c3c421ceae0b7da250dfa57e1586b0dbfa"
+generated_digest: "sha256:4cb74c483b281d06fbd9f5b6b23e756c2fe27473fb0a7b36eb6300c42e09c67d"
 generated:
   revision: WIN63-202607011411-782849652
   origin: vortex
@@ -160,6 +160,8 @@ generated:
     Game2ThrowSnowballAtPosition: 2567
     GenerateWiredApiKey: 2819
     GetAchievements: 2435
+    GetBadgeInfo: 3159
+    GetBadgeLeaderboard: 1225
     GetBadgePointLimits: 2944
     GetBadges: 770
     GetBannedUsersFromRoom: 2702
@@ -432,6 +434,7 @@ generated:
     RemoveRights: 3444
     RemoveSaddleFromPet: 2884
     RenderRoom: 3332
+    RenderRoomThumbnail: 1985
     RentableSpaceCancelRent: 61
     RentableSpaceConfigure: 4601
     RentableSpaceGetConfig: 4600
@@ -607,6 +610,8 @@ generated:
     AvatarEffectExpired: 2236
     AvatarEffectSelected: 3629
     AvatarEffects: 2405
+    BadgeInfo: 1153
+    BadgeLeaderboardResult: 2503
     BadgePointLimits: 3510
     BadgeReceived: 2840
     Badges: 2748

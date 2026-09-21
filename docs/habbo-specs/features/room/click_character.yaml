@@ -10,7 +10,7 @@
 
 spec: feature
 spec_version: 1
-generated_digest: "sha256:b2f0ec64368438522e8e3a9f5d13224ddd78b04c5007869160d70fbe66a261c8"
+generated_digest: "sha256:e2fdafb7be6825b8e4d93e731dbc7f080a50c8d3625a9d64a3e0c1d9a512b50c"
 generated:
   id: room.click_character
   domain: room
@@ -70,7 +70,7 @@ generated:
     origin: vortex
     source: Vortex.Rooms/Grains/RoomGrain.Avatar.cs
     symbol: RoomGrain
-    line: 75
+    line: 76
   scenarios:
   - room.click_character.guard_0
   - room.click_character.guard_1

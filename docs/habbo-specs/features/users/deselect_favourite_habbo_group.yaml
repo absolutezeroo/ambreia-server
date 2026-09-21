@@ -10,7 +10,7 @@
 
 spec: feature
 spec_version: 1
-generated_digest: "sha256:84a15b762ed3847c2f147aaa05d8e3091e5936162e0e126a23e5b614f03d78ae"
+generated_digest: "sha256:922057e675990ead308ff17e56d5f8b27b1cbed2e0c96732c54b9b12c0e0b0fa"
 generated:
   id: users.deselect_favourite_habbo_group
   domain: users
@@ -141,7 +141,7 @@ generated:
     origin: vortex
     source: Vortex.Players/Grains/PlayerGrain.cs
     symbol: PlayerGrain
-    line: 422
+    line: 427
   - id: ev_34bf3ac088e2
     kind: emulator_flow
     authority: vortex_emulator
@@ -162,7 +162,7 @@ generated:
     origin: vortex
     source: Vortex.Rooms/Object/Avatars/Player/RoomPlayerAvatar.cs
     symbol: RoomPlayerAvatar
-    line: 87
+    line: 101
   - id: ev_b44ef304d36a
     kind: emulator_flow
     authority: vortex_emulator

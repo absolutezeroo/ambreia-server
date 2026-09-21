@@ -10,7 +10,7 @@
 
 spec: feature
 spec_version: 1
-generated_digest: "sha256:6ffb751fd80d7ae49c2f6698ba72aecde1651aed8d6c81884581eb4647321899"
+generated_digest: "sha256:89eb201630c019a624ff2040bc522fb12e08346a23da58cf97052be16b097ef9"
 generated:
   id: catalog.get_flat_categories
   domain: catalog
@@ -94,9 +94,13 @@ generated:
     evidence: ev_d720d639bd09
   - order: 17
     layer: grain
+    symbol: BadgeDirectoryGrain.GetInfoAsync
+    evidence: ev_0b129c41cb66
+  - order: 18
+    layer: grain
     symbol: PlayerPresenceGrain.SendComposerAsync
     evidence: ev_373e76aa8a80
-  - order: 18
+  - order: 19
     layer: module
     symbol: EventSystem.PublishAsync
     evidence: ev_34bf3ac088e2
@@ -223,13 +227,20 @@ generated:
     source: Vortex.Catalog/Grains/CatalogPurchaseGrain.RoomAd.cs
     symbol: CatalogPurchaseGrain
     line: 21
+  - id: ev_0b129c41cb66
+    kind: emulator_flow
+    authority: vortex_emulator
+    origin: vortex
+    source: Vortex.Progression/Grains/BadgeDirectoryGrain.cs
+    symbol: BadgeDirectoryGrain
+    line: 88
   - id: ev_1f83e61934ca
     kind: emulator_flow
     authority: vortex_emulator
     origin: vortex
     source: Vortex.Players/Grains/PlayerGrain.cs
     symbol: PlayerGrain
-    line: 402
+    line: 407
   - id: ev_234fbe9c2c98
     kind: emulator_flow
     authority: vortex_emulator
@@ -313,7 +324,7 @@ generated:
     origin: vortex
     source: Vortex.Navigator/NavigatorProvider.cs
     symbol: NavigatorProvider
-    line: 83
+    line: 84
   - id: ev_c6396662000a
     kind: emulator_flow
     authority: vortex_emulator
@@ -327,7 +338,7 @@ generated:
     origin: vortex
     source: Vortex.Players/Grains/Modules/PlayerInventoryModule.cs
     symbol: PlayerInventoryModule
-    line: 126
+    line: 142
   - id: ev_ec0b4c2b0a97
     kind: emulator_flow
     authority: vortex_emulator

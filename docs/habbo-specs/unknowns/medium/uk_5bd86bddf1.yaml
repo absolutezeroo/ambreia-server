@@ -10,7 +10,7 @@
 
 spec: unknown
 spec_version: 1
-generated_digest: "sha256:677ada36cc90c2f2ae1484ffae8a0fc8b9f36edcce5fda43a67690b39927ae80"
+generated_digest: "sha256:16f446bdc12ef9aeb61154778f771c9f667cb90e6c6ac1acd2891443b50a2fdf"
 generated:
   id: uk_5bd86bddf1
   subject: "inventory.set_trade_accept: who receives TradingAccept, TradingConfirmation"
@@ -25,13 +25,13 @@ generated:
     origin: vortex
     source: Vortex.Rooms/Grains/Systems/RoomTradingSystem.cs
     symbol: RoomTradingSystem
-    line: 311
+    line: 312
   - id: ev_1d91c4a1b72c
     kind: emulator_flow
     authority: vortex_emulator
     origin: vortex
     source: Vortex.Rooms/Grains/Systems/RoomTradingSystem.cs
     symbol: RoomTradingSystem
-    line: 323
+    line: 324
 verified: {}
 manual: {}

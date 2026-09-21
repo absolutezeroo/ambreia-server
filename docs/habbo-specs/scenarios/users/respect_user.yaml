@@ -10,7 +10,7 @@
 
 spec: scenarios
 spec_version: 1
-generated_digest: "sha256:8e34f35b57c70ff28b1816aa8a9079396047d2f3f38a8f944783bbd79611b3b9"
+generated_digest: "sha256:3fa25e0c46042e52df5306d028f592698fd4f25afcf1f974b1e49ca9f6062f41"
 generated:
   feature: users.respect_user
   scenarios:
@@ -190,14 +190,14 @@ generated:
     origin: vortex
     source: Vortex.Primitives/Orleans/GrainFactoryExtensions.cs
     symbol: GrainFactoryExtensions
-    line: 234
+    line: 235
   - id: ev_1f83e61934ca
     kind: emulator_flow
     authority: vortex_emulator
     origin: vortex
     source: Vortex.Players/Grains/PlayerGrain.cs
     symbol: PlayerGrain
-    line: 107
+    line: 111
   - id: ev_34bf3ac088e2
     kind: emulator_flow
     authority: vortex_emulator
@@ -218,6 +218,6 @@ generated:
     origin: vortex
     source: Vortex.Rooms/Grains/Modules/RoomAvatarModule.cs
     symbol: RoomAvatarModule
-    line: 45
+    line: 55
 verified: {}
 manual: {}

@@ -10,7 +10,7 @@
 
 spec: feature
 spec_version: 1
-generated_digest: "sha256:138a1742ef21d2e751cd3f7b285d39ff46380c079a4f70fb607c19892adbb269"
+generated_digest: "sha256:f175e0a5964687c0665b4efcb7e29ab6452ef53bb4c37315784bc85512ec1606"
 generated:
   id: room.open_mystery_trophy
   domain: room
@@ -157,6 +157,10 @@ generated:
     observed_in: vortex
     evidence: ev_761b76967e2f
   - expression: "!avatar.IsWalking"
+    on_fail: return
+    observed_in: vortex
+    evidence: ev_e6fef545a42a
+  - expression: "!_onWalkEnded.Remove(avatar.ObjectId.Value, out Func<CancellationToken, Task>? onEnded)"
     on_fail: return
     observed_in: vortex
     evidence: ev_e6fef545a42a
@@ -351,7 +355,7 @@ generated:
     origin: vortex
     source: Vortex.Rooms/Grains/Modules/RoomMapModule.Avatar.cs
     symbol: RoomMapModule
-    line: 362
+    line: 363
   - id: ev_e439cab6b248
     kind: emulator_flow
     authority: vortex_emulator
@@ -365,7 +369,7 @@ generated:
     origin: vortex
     source: Vortex.Rooms/Grains/Modules/RoomAvatarModule.cs
     symbol: RoomAvatarModule
-    line: 434
+    line: 475
   - id: ev_f13d6bcce744
     kind: emulator_flow
     authority: vortex_emulator
@@ -377,6 +381,7 @@ generated:
   - room.open_mystery_trophy.guard_0
   - room.open_mystery_trophy.guard_1
   - room.open_mystery_trophy.guard_10
+  - room.open_mystery_trophy.guard_11
   - room.open_mystery_trophy.guard_2
   - room.open_mystery_trophy.guard_3
   - room.open_mystery_trophy.guard_4

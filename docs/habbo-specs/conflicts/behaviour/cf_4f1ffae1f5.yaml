@@ -10,7 +10,7 @@
 
 spec: conflict
 spec_version: 1
-generated_digest: "sha256:f56de54a039739a518f2d932e3ba2142b6ff5ac3b924dfa6fab0e10fe241a6a1"
+generated_digest: "sha256:fce14de2a638bf71e061cc22d9d8d459994793cc330de8446708a4d0e7add186"
 generated:
   id: cf_4f1ffae1f5
   kind: behaviour
@@ -40,7 +40,7 @@ generated:
     origin: vortex
     source: Vortex.PacketHandlers/Users/GetExtendedProfileMessageHandler.cs
     symbol: GetExtendedProfileMessageHandler
-    line: 15
+    line: 18
   official:
     status: unknown
 verified: {}

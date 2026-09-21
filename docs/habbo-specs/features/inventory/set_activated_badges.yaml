@@ -10,7 +10,7 @@
 
 spec: feature
 spec_version: 1
-generated_digest: "sha256:907be9c0958335d7e0efc219e80b89c1bf650d5601be21c9b04acacf610cddd6"
+generated_digest: "sha256:69d5596b4656871ba4a4d76e39370c9d95410e2db4f040569a3e87228d8ad70b"
 generated:
   id: inventory.set_activated_badges
   domain: inventory
@@ -120,7 +120,7 @@ generated:
     origin: vortex
     source: Vortex.Progression/Grains/PlayerBadgeGrain.cs
     symbol: PlayerBadgeGrain
-    line: 81
+    line: 152
   scenarios:
   - inventory.set_activated_badges.guard_0
   - inventory.set_activated_badges.guard_1

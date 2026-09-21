@@ -10,7 +10,7 @@
 
 spec: scenarios
 spec_version: 1
-generated_digest: "sha256:cc5bf39583c9d7c07703c4d2fa6cec2594823dbf5daf40846469c82fdf93616d"
+generated_digest: "sha256:aa857e0fd9d6264dad92641fc7813baf6a513d82ca194a4b1cba1377fc2d2b3c"
 generated:
   feature: users.unignore_user
   scenarios:
@@ -76,8 +76,9 @@ generated:
     claims:
     - origin: vortex
       authority: vortex_emulator
-      outcome: ignored
-      emits: []
+      outcome: success
+      emits:
+      - IgnoreResult
       evidence: ev_7e2402878ca8
     - origin: habbo-arcturus-daybreak
       authority: reference_emulator
@@ -100,14 +101,14 @@ generated:
     origin: vortex
     source: Vortex.PacketHandlers/Users/UnignoreUserMessageHandler.cs
     symbol: UnignoreUserMessageHandler
-    line: 12
+    line: 13
   - id: ev_939c64a827dd
     kind: emulator_flow
     authority: vortex_emulator
     origin: vortex
     source: Vortex.PacketHandlers/Users/UnignoreUserMessageHandler.cs
     symbol: UnignoreUserMessageHandler
-    line: 23
+    line: 30
   - id: ev_e805723a88fe
     kind: emulator_flow
     authority: vortex_emulator

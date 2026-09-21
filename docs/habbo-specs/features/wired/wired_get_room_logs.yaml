@@ -10,7 +10,7 @@
 
 spec: feature
 spec_version: 1
-generated_digest: "sha256:e0b680f442b8801a9ece3de972ddb29817686bdc1e9979f40bc4e3beae565ba6"
+generated_digest: "sha256:c7ecdf61341698e3372d9de0addf0555c83727adf2f93079a9caf3863083ede8"
 generated:
   id: wired.wired_get_room_logs
   domain: wired
@@ -31,11 +31,19 @@ generated:
     layer: grain
     symbol: RoomGrain.GetWiredRoomLogsPageAsync
     evidence: ev_266d52e7bb83
+  - order: 2
+    layer: domain
+    symbol: WiredLogFilter.FromWire
+    evidence: ev_33ea9d040ff7
   checks:
   - expression: ctx is null || ctx.PlayerId <= 0 || ctx.RoomId <= 0
     on_fail: return
     observed_in: vortex
     evidence: ev_97aa8d4ed3db
+  - expression: Convert.ToInt32(candidate) == value
+    on_fail: return
+    observed_in: vortex
+    evidence: ev_33ea9d040ff7
   state_changes: []
   outgoing:
     ordering: unknown
@@ -52,7 +60,14 @@ generated:
     origin: vortex
     source: Vortex.Rooms/Grains/RoomGrain.Wired.Logs.cs
     symbol: RoomGrain
-    line: 16
+    line: 17
+  - id: ev_33ea9d040ff7
+    kind: emulator_flow
+    authority: vortex_emulator
+    origin: vortex
+    source: Vortex.Rooms/Wired/Logs/WiredLogFilter.cs
+    symbol: WiredLogFilter
+    line: 20
   - id: ev_6dfd6b91dcb9
     kind: emulator_handler
     authority: vortex_emulator
@@ -69,6 +84,7 @@ generated:
     line: 24
   scenarios:
   - wired.wired_get_room_logs.guard_0
+  - wired.wired_get_room_logs.guard_1
   - wired.wired_get_room_logs.success
 verified: {}
 manual: {}

@@ -10,7 +10,7 @@
 
 spec: unknown
 spec_version: 1
-generated_digest: "sha256:d33c443a5c7e9e43d391c91884b09fb87ba94bfdaa662c4455e0f6846b474a2a"
+generated_digest: "sha256:b25e85437d22ffd146cf1e0a893c84ca77a94f616844becb820f3cfdf19f89a0"
 generated:
   id: uk_c0949625b4
   subject: "collectibles.add_trade_assets: what the server sends when it refuses"
@@ -32,7 +32,7 @@ generated:
     origin: vortex
     source: Vortex.Rooms/Grains/Systems/RoomTradingSystem.cs
     symbol: RoomTradingSystem
-    line: 191
+    line: 192
   - id: ev_3bca62ae6f6e
     kind: emulator_flow
     authority: vortex_emulator
@@ -60,7 +60,7 @@ generated:
     origin: vortex
     source: Vortex.Rooms/Grains/RoomTradeSession.cs
     symbol: RoomTradeSession
-    line: 56
+    line: 62
   - id: ev_963651d08ab1
     kind: emulator_flow
     authority: vortex_emulator

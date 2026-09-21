@@ -10,7 +10,7 @@
 
 spec: feature
 spec_version: 1
-generated_digest: "sha256:0dc1e8d4ccf9dfed6986306dae37ca72447976f6b61cca1affe414fbc609ff49"
+generated_digest: "sha256:1202da3b7ec25e4959354712d16d03131bb91fe3ba1f70dd536bb0153976b3a2"
 generated:
   id: camera.render_room
   domain: camera
@@ -58,13 +58,21 @@ generated:
     evidence: ev_16ffa5b67103
   - order: 8
     layer: domain
+    symbol: RoomPhotoRenderer.RenderAsync
+    evidence: ev_94cf203219e6
+  - order: 9
+    layer: domain
+    symbol: CameraPhotoStore.SavePhotoAsync
+    evidence: ev_16ffa5b67103
+  - order: 10
+    layer: domain
     symbol: CameraRenderOutcome.Accepted
     evidence: ev_803c67b16ef0
-  - order: 9
+  - order: 11
     layer: domain
     symbol: CameraPhotoStore.PublicPath
     evidence: ev_16ffa5b67103
-  - order: 10
+  - order: 12
     layer: domain
     symbol: AccountSessionStore.Create
     evidence: ev_680fc4a69aa8
@@ -85,6 +93,10 @@ generated:
     on_fail: return
     observed_in: vortex
     evidence: ev_f9dc5b28688c
+  - expression: "!await photoRenderer .RenderAsync(scene, photoKey, ReadRenderLimits(config), ct) .ConfigureAwait(true)"
+    on_fail: return
+    observed_in: vortex
+    evidence: ev_f9dc5b28688c
   - expression: payload.IsEmpty
     on_fail: return
     observed_in: vortex
@@ -97,10 +109,6 @@ generated:
     on_fail: return
     observed_in: vortex
     evidence: ev_441d8acebb35
-  - expression: "!TryResolve(photoKey, SceneExtension, out string? path)"
-    on_fail: return
-    observed_in: vortex
-    evidence: ev_16ffa5b67103
   state_changes:
   - target: now
     value: now.AddHours(-1)
@@ -121,7 +129,7 @@ generated:
     origin: vortex
     source: Vortex.Rooms/Camera/CameraPhotoStore.cs
     symbol: CameraPhotoStore
-    line: 53
+    line: 63
   - id: ev_1bc545e05610
     kind: emulator_flow
     authority: vortex_emulator
@@ -135,7 +143,7 @@ generated:
     origin: vortex
     source: Vortex.Primitives/Camera/CameraSceneDecoder.cs
     symbol: CameraSceneDecoder
-    line: 58
+    line: 59
   - id: ev_680fc4a69aa8
     kind: emulator_flow
     authority: vortex_emulator
@@ -178,13 +186,20 @@ generated:
     source: Vortex.Players/Grains/ServerConfigGrain.cs
     symbol: ServerConfigGrain
     line: 109
+  - id: ev_94cf203219e6
+    kind: emulator_flow
+    authority: vortex_emulator
+    origin: vortex
+    source: Vortex.Rooms/Camera/Render/RoomPhotoRenderer.cs
+    symbol: RoomPhotoRenderer
+    line: 41
   - id: ev_f9dc5b28688c
     kind: emulator_flow
     authority: vortex_emulator
     origin: vortex
     source: Vortex.Players/Grains/PlayerCameraGrain.cs
     symbol: PlayerCameraGrain
-    line: 49
+    line: 59
   scenarios:
   - camera.render_room.guard_0
   - camera.render_room.guard_1

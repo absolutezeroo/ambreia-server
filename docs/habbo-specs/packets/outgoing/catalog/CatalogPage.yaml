@@ -541,5 +541,25 @@ generated:
     source: Vortex.Revisions/Revision20260701/Serializers/Catalog/CatalogPageMessageComposerSerializer.cs
     symbol: CatalogPageMessageComposerSerializer
     line: 10
-verified: {}
-manual: {}
+verified:
+  fields:
+  - index: 8
+    name: front_page_items_count
+    type: int32
+    confidence: client_confirmed
+    evidence: "WIN63-202607011411-782849652/src/unknowns/_SafePkg_1714/_SafeCls_1747.as:102 — the parser reads this count inside `if(param1.bytesAvailable)`, after offer_id and accept_season_currency_as_credits. The whole block is optional trailing data, not a field the packet always carries."
+  - index: 9
+    name: front_page_items
+    type: array
+    confidence: client_confirmed
+    evidence: "_SafeCls_1747.as:103-109 — read only when the guard above holds. Official capture catalog-walk-normal: present on 1 of 165 pages (the frontpage4 front page, 4 items); on the other 164 the packet ends after accept_season_currency_as_credits."
+manual:
+  optional_trailing_block:
+    source: capture catalog-walk-normal, game-us.habbo.com, 2026-09-21, walking all 165 catalogue pages
+    note: "The official server omits the front page items entirely on every page that has none — the packet is 5 bytes of tail (offer_id, then the boolean) and stops. Vortex writes the count unconditionally, so our packet is 4 bytes longer on every page. The official client accepts both: its guard is `bytesAvailable`, so a written 0 reads back as an empty vector. One behavioural difference nobody has needed yet: `flush()` does not reset `_frontPageItems`, so where Habbo leaves the previous page's items in place, Vortex clears them."
+  offer_block_confirmed:
+    source: capture catalog-walk-normal, 4108 offers and 4399 products, every payload consumed to the byte
+    note: "The offer layout Vortex writes is the one the hotel sends; this is what settles it. Two of its generated unknowns are named by the client's own getters in _SafeCls_1923.as: field 5 is `activityPointType` (:91, observed 0 on 3800 offers, 5 on 303, then 101, 7, 4) and field 13 is `previewImage` (:116). The boolean at 12 is read at :57 and exposed by no getter, so it stays unknown — the capture has it true on exactly one offer of 4108, the horse pet `a0 pet15`."
+  preview_image_is_real:
+    source: capture catalog-walk-normal
+    note: "Vortex writes `string.Empty` there because no column holds it. The official server fills it on 23 of 4108 offers, with values like `catalogue/mar23_hanami1_internal.gif` and `catalogue/pet_horse.png` — a per-offer art path, not a flag. Nothing reads it in Vortex yet, so the gap is a missing column and an admin field, not a wire bug."

@@ -10,7 +10,7 @@
 
 spec: unknown
 spec_version: 1
-generated_digest: "sha256:944f073b941b7babf58d885733c28ca599ea4dfb3013ec25f54c18a8bec81048"
+generated_digest: "sha256:7b51a17de807fbab348b8199d4f6f0b648aec1fb345811cd4846ea078afeea44"
 generated:
   id: uk_90dc6c4ca5
   subject: "moderation.mod_mute: what the server sends when it refuses"
@@ -25,7 +25,7 @@ generated:
     origin: vortex
     source: Vortex.Players/Grains/PlayerGrain.cs
     symbol: PlayerGrain
-    line: 1051
+    line: 1056
   - id: ev_34bf3ac088e2
     kind: emulator_flow
     authority: vortex_emulator

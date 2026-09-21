@@ -10,7 +10,7 @@
 
 spec: feature
 spec_version: 1
-generated_digest: "sha256:11934276d88cb12b60163a07da416bf928823e9ae385eb12429aa4d077cfcddf"
+generated_digest: "sha256:05669de783d70f5d7807c3fe49692fcd69991ca354eecfd39445453f23ed9649"
 generated:
   id: users.get_extended_profile_by_name
   domain: users
@@ -51,6 +51,14 @@ generated:
     layer: domain
     symbol: GroupBadgePartProvider.ResolveColorHex
     evidence: ev_35934eb1b8df
+  - order: 7
+    layer: grain
+    symbol: PlayerBadgeGrain.GetRarityCountsAsync
+    evidence: ev_f8656423bf64
+  - order: 8
+    layer: grain
+    symbol: BadgeDirectoryGrain.CountByRarityAsync
+    evidence: ev_0b129c41cb66
   checks:
   - expression: playerId is null
     on_fail: return
@@ -76,6 +84,10 @@ generated:
     on_fail: return
     observed_in: vortex
     evidence: ev_35934eb1b8df
+  - expression: codes.Count == 0
+    on_fail: return
+    observed_in: vortex
+    evidence: ev_f8656423bf64
   state_changes: []
   outgoing:
     ordering: unknown
@@ -86,13 +98,20 @@ generated:
       evidence: ev_3bd2b1e19fbd
   reaches_persistence: false
   evidence:
+  - id: ev_0b129c41cb66
+    kind: emulator_flow
+    authority: vortex_emulator
+    origin: vortex
+    source: Vortex.Progression/Grains/BadgeDirectoryGrain.cs
+    symbol: BadgeDirectoryGrain
+    line: 96
   - id: ev_1f83e61934ca
     kind: emulator_flow
     authority: vortex_emulator
     origin: vortex
     source: Vortex.Players/Grains/PlayerGrain.cs
     symbol: PlayerGrain
-    line: 485
+    line: 490
   - id: ev_35934eb1b8df
     kind: emulator_flow
     authority: vortex_emulator
@@ -106,7 +125,7 @@ generated:
     origin: vortex
     source: Vortex.PacketHandlers/Users/GetExtendedProfileByNameMessageHandler.cs
     symbol: GetExtendedProfileByNameMessageHandler
-    line: 37
+    line: 40
   - id: ev_4a23882e79c7
     kind: emulator_flow
     authority: vortex_emulator
@@ -127,7 +146,7 @@ generated:
     origin: vortex
     source: Vortex.PacketHandlers/Users/GetExtendedProfileByNameMessageHandler.cs
     symbol: GetExtendedProfileByNameMessageHandler
-    line: 16
+    line: 19
   - id: ev_d53218d99bdd
     kind: emulator_flow
     authority: vortex_emulator
@@ -142,6 +161,13 @@ generated:
     source: Vortex.Rooms/Wired/WiredActionBranch.cs
     symbol: WiredActionBranch
     line: 23
+  - id: ev_f8656423bf64
+    kind: emulator_flow
+    authority: vortex_emulator
+    origin: vortex
+    source: Vortex.Progression/Grains/PlayerBadgeGrain.cs
+    symbol: PlayerBadgeGrain
+    line: 74
   scenarios:
   - users.get_extended_profile_by_name.guard_0
   - users.get_extended_profile_by_name.guard_1
@@ -149,6 +175,7 @@ generated:
   - users.get_extended_profile_by_name.guard_3
   - users.get_extended_profile_by_name.guard_4
   - users.get_extended_profile_by_name.guard_5
+  - users.get_extended_profile_by_name.guard_6
   - users.get_extended_profile_by_name.success
 verified: {}
 manual: {}

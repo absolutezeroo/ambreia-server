@@ -10,7 +10,7 @@
 
 spec: feature
 spec_version: 1
-generated_digest: "sha256:dff2146864fce6b182c9ea11383ebad1835c82dc7a50382b6195e346afcd10f4"
+generated_digest: "sha256:2bffd23f1f1e9d66d6ac84a416f8ef23daeb3fca14bea8c21302e47b0c171c98"
 generated:
   id: catalog.builders_club_place_room_item
   domain: catalog
@@ -606,14 +606,14 @@ generated:
     origin: vortex
     source: Vortex.Players/Grains/Modules/PlayerInventoryModule.cs
     symbol: PlayerInventoryModule
-    line: 118
+    line: 134
   - id: ev_db615f36b20b
     kind: emulator_flow
     authority: vortex_emulator
     origin: vortex
     source: Vortex.Rooms/Grains/Modules/RoomMapModule.Avatar.cs
     symbol: RoomMapModule
-    line: 362
+    line: 363
   - id: ev_e1105bc46abc
     kind: emulator_flow
     authority: vortex_emulator
@@ -641,7 +641,7 @@ generated:
     origin: vortex
     source: Vortex.Rooms/Grains/Modules/RoomAvatarModule.cs
     symbol: RoomAvatarModule
-    line: 467
+    line: 529
   - id: ev_e81f0934fd67
     kind: emulator_flow
     authority: vortex_emulator

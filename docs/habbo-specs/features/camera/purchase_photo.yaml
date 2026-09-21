@@ -10,7 +10,7 @@
 
 spec: feature
 spec_version: 1
-generated_digest: "sha256:1b1b9fc14a32eef76d647ea771fe2a04390b677ffd6825eb72c1ae84d21753b3"
+generated_digest: "sha256:2caf30ab4f8320f2b61d7f92ca7de5c5c9c825aef7df3f1bb8f4b347d424d7b2"
 generated:
   id: camera.purchase_photo
   domain: camera
@@ -150,7 +150,7 @@ generated:
     origin: vortex
     source: Vortex.Players/Grains/PlayerCameraGrain.cs
     symbol: PlayerCameraGrain
-    line: 148
+    line: 243
   scenarios:
   - camera.purchase_photo.guard_0
   - camera.purchase_photo.guard_1

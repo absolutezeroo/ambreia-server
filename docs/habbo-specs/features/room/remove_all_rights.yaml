@@ -10,7 +10,7 @@
 
 spec: feature
 spec_version: 1
-generated_digest: "sha256:96616e5e9a2cdb0a0f5ddbdca271513ac437f5cdf3c8b6a7c0c0d651dbf43ec1"
+generated_digest: "sha256:185e83fba21d2d31def61e65caa10245b8e3bf472161203706beea28b8c8cf21"
 generated:
   id: room.remove_all_rights
   domain: room
@@ -34,17 +34,9 @@ generated:
     evidence: ev_329537530b13
   - order: 2
     layer: module
-    symbol: RoomSecurityModule.RefreshControllerLevelForPlayerAsync
-    evidence: ev_82c2d2746361
+    symbol: RoomSecurityModule.RevokeAllRightsAsync
+    evidence: ev_bbe396e4bac0
   - order: 3
-    layer: grain
-    symbol: PlayerPresenceGrain.OnControllerLevelUpdatedAsync
-    evidence: ev_b44ef304d36a
-  - order: 4
-    layer: domain
-    symbol: RoomAvatar.AddStatus
-    evidence: ev_9f45a8c43da8
-  - order: 5
     layer: module
     symbol: EventSystem.PublishAsync
     evidence: ev_34bf3ac088e2
@@ -57,27 +49,11 @@ generated:
     on_fail: return
     observed_in: vortex
     evidence: ev_329537530b13
-  - expression: "!_roomGrain._state.AvatarsByPlayerId.TryGetValue(playerId, out RoomObjectId objectId) || !_roomGrain._state.AvatarsByObjectId.TryGetValue(objectId, out IRoomAvatar? avatar)"
-    on_fail: return
-    observed_in: vortex
-    evidence: ev_82c2d2746361
-  - expression: _state.ActiveRoomId != roomId
-    on_fail: return
-    observed_in: vortex
-    evidence: ev_b44ef304d36a
-  - expression: controllerType >= RoomControllerType.Rights
-    on_fail: return
-    observed_in: vortex
-    evidence: ev_b44ef304d36a
   - expression: _registry is null
     on_fail: return
     observed_in: vortex
     evidence: ev_34bf3ac088e2
   state_changes:
-  - target: avatar
-    value: avatar.AddStatus( AvatarStatusType.FlatControl, ((int)controllerLevel).ToString(CultureInfo.InvariantCulture) )
-    observed_in: vortex
-    evidence: ev_82c2d2746361
   - target: roomGrain
     value: roomGrain.RemoveAllRightsAsync(ctx.PlayerId, ct)
     observed_in: vortex
@@ -88,23 +64,7 @@ generated:
     - packet: FlatControllers
       recipient: unknown
       recipient_confidence: unknown
-      evidence: ev_329537530b13
-    - packet: WiredPermissions
-      recipient: unknown
-      recipient_confidence: unknown
-      evidence: ev_b44ef304d36a
-    - packet: YouAreController
-      recipient: unknown
-      recipient_confidence: unknown
-      evidence: ev_b44ef304d36a
-    - packet: YouAreNotController
-      recipient: unknown
-      recipient_confidence: unknown
-      evidence: ev_b44ef304d36a
-    - packet: YouAreOwner
-      recipient: unknown
-      recipient_confidence: unknown
-      evidence: ev_b44ef304d36a
+      evidence: ev_bbe396e4bac0
   reaches_persistence: true
   evidence:
   - id: ev_235aa2ae57eb
@@ -120,7 +80,7 @@ generated:
     origin: vortex
     source: Vortex.Rooms/Grains/RoomGrain.Settings.cs
     symbol: RoomGrain
-    line: 686
+    line: 553
   - id: ev_34bf3ac088e2
     kind: emulator_flow
     authority: vortex_emulator
@@ -135,34 +95,17 @@ generated:
     source: Vortex.PacketHandlers/Room/Action/RemoveAllRightsMessageHandler.cs
     symbol: RemoveAllRightsMessageHandler
     line: 27
-  - id: ev_82c2d2746361
+  - id: ev_bbe396e4bac0
     kind: emulator_flow
     authority: vortex_emulator
     origin: vortex
-    source: Vortex.Rooms/Grains/Modules/RoomSecurityModule.cs
+    source: Vortex.Rooms/Grains/Modules/RoomSecurityModule.Rights.cs
     symbol: RoomSecurityModule
-    line: 285
-  - id: ev_9f45a8c43da8
-    kind: emulator_flow
-    authority: vortex_emulator
-    origin: vortex
-    source: Vortex.Rooms/Object/Avatars/RoomAvatar.cs
-    symbol: RoomAvatar
-    line: 182
-  - id: ev_b44ef304d36a
-    kind: emulator_flow
-    authority: vortex_emulator
-    origin: vortex
-    source: Vortex.Players/Grains/PlayerPresenceGrain.Room.cs
-    symbol: PlayerPresenceGrain
-    line: 193
+    line: 171
   scenarios:
   - room.remove_all_rights.guard_0
   - room.remove_all_rights.guard_1
   - room.remove_all_rights.guard_2
-  - room.remove_all_rights.guard_3
-  - room.remove_all_rights.guard_4
-  - room.remove_all_rights.guard_5
   - room.remove_all_rights.success
   conflicts:
   - cf_4c70ad2da2

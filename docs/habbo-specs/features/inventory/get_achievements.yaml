@@ -10,7 +10,7 @@
 
 spec: feature
 spec_version: 1
-generated_digest: "sha256:48ed9d1c5f6f746d9b2155eab7bf400127855e7a448a9f893bdef30874755b40"
+generated_digest: "sha256:3113cdd4693c241e10afe8e75d66f13ab45163bc40ccfbcf595e0debba266e1a"
 generated:
   id: inventory.get_achievements
   domain: inventory
@@ -83,7 +83,7 @@ generated:
     origin: vortex
     source: Vortex.Progression/Grains/PlayerAchievementGrain.cs
     symbol: PlayerAchievementGrain
-    line: 101
+    line: 102
   - id: ev_b71b04b4b6c4
     kind: emulator_flow
     authority: vortex_emulator

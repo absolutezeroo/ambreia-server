@@ -10,7 +10,7 @@
 
 spec: unknown
 spec_version: 1
-generated_digest: "sha256:0ef62b194a28d7ad800b974fc24b1a9b846bc962e03ea45668ff2476ea711a9d"
+generated_digest: "sha256:5e82386eaa1646e5c642be230487ef9ac8b09fd468e9abf2032b0c63367c3c14"
 generated:
   id: uk_6d068fa586
   subject: "quest.get_concurrent_users_reward: what the server sends when it refuses"
@@ -19,6 +19,13 @@ generated:
   resolved_by: an official capture of each guard being tripped
   feature: quest.get_concurrent_users_reward
   known_evidence:
+  - id: ev_0b129c41cb66
+    kind: emulator_flow
+    authority: vortex_emulator
+    origin: vortex
+    source: Vortex.Progression/Grains/BadgeDirectoryGrain.cs
+    symbol: BadgeDirectoryGrain
+    line: 88
   - id: ev_1156f62d5639
     kind: emulator_flow
     authority: vortex_emulator
@@ -74,7 +81,7 @@ generated:
     origin: vortex
     source: Vortex.Players/Grains/Modules/PlayerInventoryModule.cs
     symbol: PlayerInventoryModule
-    line: 126
+    line: 142
   - id: ev_e46df41dce67
     kind: emulator_flow
     authority: vortex_emulator

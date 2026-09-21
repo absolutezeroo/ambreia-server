@@ -10,7 +10,7 @@
 
 spec: feature
 spec_version: 1
-generated_digest: "sha256:5c12e67e87b751f999a77fa06e29fcc6d6d7a5b6155fc062c2ed5d68e85ac47c"
+generated_digest: "sha256:7b74ce5ca0ab971ba9c400e3d199c3af6311636e987b0061cb32b23875ab9139"
 generated:
   id: users.respect_user
   domain: users
@@ -113,14 +113,14 @@ generated:
     origin: vortex
     source: Vortex.Primitives/Orleans/GrainFactoryExtensions.cs
     symbol: GrainFactoryExtensions
-    line: 234
+    line: 235
   - id: ev_1f83e61934ca
     kind: emulator_flow
     authority: vortex_emulator
     origin: vortex
     source: Vortex.Players/Grains/PlayerGrain.cs
     symbol: PlayerGrain
-    line: 87
+    line: 91
   - id: ev_34bf3ac088e2
     kind: emulator_flow
     authority: vortex_emulator
@@ -155,7 +155,7 @@ generated:
     origin: vortex
     source: Vortex.Rooms/Grains/RoomGrain.Avatar.cs
     symbol: RoomGrain
-    line: 368
+    line: 374
   - id: ev_b46938ec853d
     kind: emulator_flow
     authority: vortex_emulator
@@ -169,7 +169,7 @@ generated:
     origin: vortex
     source: Vortex.Rooms/Grains/Modules/RoomAvatarModule.cs
     symbol: RoomAvatarModule
-    line: 39
+    line: 49
   scenarios:
   - users.respect_user.guard_0
   - users.respect_user.guard_1

@@ -10,7 +10,7 @@
 
 spec: unknown
 spec_version: 1
-generated_digest: "sha256:4cdc3967fa86cff6a9b29d4aa2a7e8026487075554893fd66e9aad8cbddb1ec6"
+generated_digest: "sha256:954b74e1aef7be2f218f613fc2f24d39e5b80a21f6cdfa117cbcde1826ff6b41"
 generated:
   id: uk_2286658be9
   subject: "room.shout: what the server sends when it refuses"
@@ -60,7 +60,7 @@ generated:
     origin: vortex
     source: Vortex.Rooms/Grains/RoomGrain.Avatar.cs
     symbol: RoomGrain
-    line: 496
+    line: 514
   - id: ev_b46938ec853d
     kind: emulator_flow
     authority: vortex_emulator

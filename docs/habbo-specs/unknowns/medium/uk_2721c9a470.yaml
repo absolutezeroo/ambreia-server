@@ -10,7 +10,7 @@
 
 spec: unknown
 spec_version: 1
-generated_digest: "sha256:bad87e408c86a98f5f80f339f8bbcde275563baaf53c2d5663b16ac9d0b2cf81"
+generated_digest: "sha256:ab56ba822bd4afb86ee32ec91090f93c57b7e0a74e23d2228292ed2acf2a3ea9"
 generated:
   id: uk_2721c9a470
   subject: "wired.set_all_wired_chest_locks: what the server sends when it refuses"
@@ -46,7 +46,7 @@ generated:
     origin: vortex
     source: Vortex.Rooms/Object/Logic/Furniture/FurnitureLogic.cs
     symbol: FurnitureLogic
-    line: 123
+    line: 148
   - id: ev_7aa1dee31dfd
     kind: emulator_flow
     authority: vortex_emulator
@@ -74,7 +74,7 @@ generated:
     origin: vortex
     source: Vortex.Furniture/StuffData/StuffDataBase.cs
     symbol: StuffDataBase
-    line: 43
+    line: 64
   - id: ev_acb5e282c8b3
     kind: emulator_flow
     authority: vortex_emulator

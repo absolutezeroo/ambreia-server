@@ -10,7 +10,7 @@
 
 spec: packet
 spec_version: 1
-generated_digest: "sha256:e9dfa64b5aac974d30f79ba9d35d794d0b75258fdf586def30c7d78d517fdcba"
+generated_digest: "sha256:1946b9d4d78c27f4474520069f348018448f228d4c8377a39ad6b51aced06553"
 generated:
   name: ThumbnailStatus
   direction: outgoing
@@ -19,23 +19,23 @@ generated:
   mapped_in_vortex: true
   fields:
   - index: 0
-    name: unknown_0
+    name: ok
     type: boolean
-    name_is_placeholder: true
-    name_confidence: unknown
+    name_confidence: implementation_observed
     type_confidence: client_confirmed
     note: inside a repeated block
     evidence:
     - ev_13a2bfacce0e
+    - ev_0a3f1637baa7
   - index: 1
-    name: unknown_1
+    name: render_limit_hit
     type: boolean
-    name_is_placeholder: true
-    name_confidence: unknown
+    name_confidence: implementation_observed
     type_confidence: client_confirmed
     note: inside a repeated block
     evidence:
     - ev_13a2bfacce0e
+    - ev_0a3f1637baa7
   layouts_by_source:
   - origin: "as3:WIN63-202607011411-782849652"
     authority: client_code
@@ -59,9 +59,11 @@ generated:
     evidence: ev_902d554a643d
   - origin: vortex
     authority: vortex_emulator
-    field_count: 0
+    field_count: 2
     partial: false
-    types: []
+    types:
+    - boolean
+    - boolean
     evidence: ev_0a3f1637baa7
   evidence:
   - id: ev_13a2bfacce0e
@@ -95,7 +97,7 @@ generated:
     source: Vortex.Revisions/Revision20260701/Serializers/Camera/ThumbnailStatusMessageComposerSerializer.cs
     symbol: ThumbnailStatusMessageComposerSerializer
     line: 6
-  unknowns:
-  - uk_4b0ac0ef82
+  conflicts:
+  - cf_d170edab58
 verified: {}
 manual: {}

@@ -10,7 +10,7 @@
 
 spec: scenarios
 spec_version: 1
-generated_digest: "sha256:e22e9b8b8ecab53963cb47c96a476f5262c075ed0e1143646015b4259cc992dc"
+generated_digest: "sha256:81689157213ff25d16b06c4c7b8128c22ed8c66aa23a3ceeec92d52fec50fdfd"
 generated:
   feature: sound.get_sound_settings
   scenarios:
@@ -88,7 +88,7 @@ generated:
     origin: vortex
     source: Vortex.Players/Grains/PlayerGrain.cs
     symbol: PlayerGrain
-    line: 379
+    line: 383
   - id: ev_e547d106cfb0
     kind: emulator_flow
     authority: vortex_emulator

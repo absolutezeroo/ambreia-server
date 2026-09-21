@@ -10,7 +10,7 @@
 
 spec: scenarios
 spec_version: 1
-generated_digest: "sha256:9da45814723a4072227e28ec6263ef38dd68e9e419fdf33753cd1d82dc1935b3"
+generated_digest: "sha256:25031a4396499df3b87e0e33e32037799cfa94e1de1af20bfb6c112fdbf9fcdd"
 generated:
   feature: room.assign_rights
   scenarios:
@@ -77,82 +77,13 @@ generated:
       authority: vortex_emulator
       outcome: ignored
       emits: []
-      evidence: ev_329537530b13
+      evidence: ev_bbe396e4bac0
     - origin: habbo-arcturus-daybreak
       authority: reference_emulator
       outcome: ignored
       emits: []
       evidence: ev_ba22de774884
   - scenario: room.assign_rights.guard_3
-    title: "assign rights: the guard '!_roomGrain._state.AvatarsByPlayerId.TryGetValue(playerId...' holds"
-    given:
-      guard: "!_roomGrain._state.AvatarsByPlayerId.TryGetValue(playerId, out RoomObjectId objectId) || !_roomGrain._state.AvatarsByObjectId.TryGetValue(objectId, out IRoomAvatar? avatar)"
-      guard_holds: "true"
-    when:
-      packet: AssignRights
-    expected:
-      status: unknown
-      confidence: unknown
-    needs_evidence: "an official capture of AssignRights sent while '!_roomGrain._state.AvatarsByPlayerId.TryGetValue(playerId, out RoomObjectId objectId) || !_roomGrain._state.AvatarsByObjectId.TryGetValue(objectId, out IRoomAvatar? avatar)' holds: does the server reply, stay silent, or disconnect?"
-    executable: false
-    claims:
-    - origin: vortex
-      authority: vortex_emulator
-      outcome: ignored
-      emits: []
-      evidence: ev_82c2d2746361
-    - origin: habbo-arcturus-daybreak
-      authority: reference_emulator
-      outcome: ignored
-      emits: []
-      evidence: ev_ba22de774884
-  - scenario: room.assign_rights.guard_4
-    title: "assign rights: the guard '_state.ActiveRoomId != roomId' holds"
-    given:
-      guard: _state.ActiveRoomId != roomId
-      guard_holds: "true"
-    when:
-      packet: AssignRights
-    expected:
-      status: unknown
-      confidence: unknown
-    needs_evidence: "an official capture of AssignRights sent while '_state.ActiveRoomId != roomId' holds: does the server reply, stay silent, or disconnect?"
-    executable: false
-    claims:
-    - origin: vortex
-      authority: vortex_emulator
-      outcome: ignored
-      emits: []
-      evidence: ev_b44ef304d36a
-    - origin: habbo-arcturus-daybreak
-      authority: reference_emulator
-      outcome: ignored
-      emits: []
-      evidence: ev_ba22de774884
-  - scenario: room.assign_rights.guard_5
-    title: "assign rights: the guard 'controllerType >= RoomControllerType.Rights' holds"
-    given:
-      guard: controllerType >= RoomControllerType.Rights
-      guard_holds: "true"
-    when:
-      packet: AssignRights
-    expected:
-      status: unknown
-      confidence: unknown
-    needs_evidence: "an official capture of AssignRights sent while 'controllerType >= RoomControllerType.Rights' holds: does the server reply, stay silent, or disconnect?"
-    executable: false
-    claims:
-    - origin: vortex
-      authority: vortex_emulator
-      outcome: ignored
-      emits: []
-      evidence: ev_b44ef304d36a
-    - origin: habbo-arcturus-daybreak
-      authority: reference_emulator
-      outcome: ignored
-      emits: []
-      evidence: ev_ba22de774884
-  - scenario: room.assign_rights.guard_6
     title: "assign rights: the guard '_registry is null' holds"
     given:
       guard: _registry is null
@@ -189,13 +120,8 @@ generated:
     claims:
     - origin: vortex
       authority: vortex_emulator
-      outcome: success
-      emits:
-      - FlatControllers
-      - WiredPermissions
-      - YouAreController
-      - YouAreNotController
-      - YouAreOwner
+      outcome: ignored
+      emits: []
       evidence: ev_329537530b13
     - origin: habbo-arcturus-daybreak
       authority: reference_emulator
@@ -232,19 +158,12 @@ generated:
     source: Vortex.PacketHandlers/Room/Action/AssignRightsMessageHandler.cs
     symbol: AssignRightsMessageHandler
     line: 22
-  - id: ev_82c2d2746361
+  - id: ev_bbe396e4bac0
     kind: emulator_flow
     authority: vortex_emulator
     origin: vortex
-    source: Vortex.Rooms/Grains/Modules/RoomSecurityModule.cs
+    source: Vortex.Rooms/Grains/Modules/RoomSecurityModule.Rights.cs
     symbol: RoomSecurityModule
-    line: 300
-  - id: ev_b44ef304d36a
-    kind: emulator_flow
-    authority: vortex_emulator
-    origin: vortex
-    source: Vortex.Players/Grains/PlayerPresenceGrain.Room.cs
-    symbol: PlayerPresenceGrain
-    line: 199
+    line: 57
 verified: {}
 manual: {}

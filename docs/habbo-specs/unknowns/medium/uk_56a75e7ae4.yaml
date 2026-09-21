@@ -10,7 +10,7 @@
 
 spec: unknown
 spec_version: 1
-generated_digest: "sha256:6eff76690e6a54633a26e9c0c27139488d9df610f62c5a2f2de09074345a177b"
+generated_digest: "sha256:460b701bee6b63b7076a90334c668bfe9f37b2189f4c2cd80acf1178e5641cef"
 generated:
   id: uk_56a75e7ae4
   subject: "room.present_open: who receives BadgeReceived"
@@ -25,6 +25,6 @@ generated:
     origin: vortex
     source: Vortex.Players/Grains/Modules/PlayerInventoryModule.cs
     symbol: PlayerInventoryModule
-    line: 128
+    line: 154
 verified: {}
 manual: {}

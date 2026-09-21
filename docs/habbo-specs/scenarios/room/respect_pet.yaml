@@ -10,7 +10,7 @@
 
 spec: scenarios
 spec_version: 1
-generated_digest: "sha256:ff09b733cafd919f8efb72ed1700407076fc40739dea218d855790d17717257e"
+generated_digest: "sha256:8d9a77174a2f0ec30080444c11c0eac972cd27b99c5814409fcb1cdefd09eff6"
 generated:
   feature: room.respect_pet
   scenarios:
@@ -61,16 +61,16 @@ generated:
       emits: []
       evidence: ev_cb9974479c1a
   - scenario: room.respect_pet.guard_2
-    title: "respect pet: the guard 'RoomPetRuntime.IsPlant(pet)' holds"
+    title: "respect pet: the guard 'await TryApproachPetAsync(ctx, pet, c => ApplyRespectAsyn...' holds"
     given:
-      guard: RoomPetRuntime.IsPlant(pet)
+      guard: await TryApproachPetAsync(ctx, pet, c => ApplyRespectAsync(ctx, petId, c), ct)
       guard_holds: "true"
     when:
       packet: RespectPet
     expected:
       status: unknown
       confidence: unknown
-    needs_evidence: "an official capture of RespectPet sent while 'RoomPetRuntime.IsPlant(pet)' holds: does the server reply, stay silent, or disconnect?"
+    needs_evidence: "an official capture of RespectPet sent while 'await TryApproachPetAsync(ctx, pet, c => ApplyRespectAsync(ctx, petId, c), ct)' holds: does the server reply, stay silent, or disconnect?"
     executable: false
     claims:
     - origin: vortex
@@ -78,99 +78,6 @@ generated:
       outcome: ignored
       emits: []
       evidence: ev_3b983736fec5
-    - origin: habbo-arcturus-daybreak
-      authority: reference_emulator
-      outcome: ignored
-      emits: []
-      evidence: ev_cb9974479c1a
-  - scenario: room.respect_pet.guard_3
-    title: "respect pet: the guard 'ageDays < minimumAgeDays' holds"
-    given:
-      guard: ageDays < minimumAgeDays
-      guard_holds: "true"
-    when:
-      packet: RespectPet
-    expected:
-      status: unknown
-      confidence: unknown
-    needs_evidence: "an official capture of RespectPet sent while 'ageDays < minimumAgeDays' holds: does the server reply, stay silent, or disconnect?"
-    executable: false
-    claims:
-    - origin: vortex
-      authority: vortex_emulator
-      outcome: rejected
-      emits:
-      - PetRespectFailed
-      evidence: ev_3b983736fec5
-    - origin: habbo-arcturus-daybreak
-      authority: reference_emulator
-      outcome: ignored
-      emits: []
-      evidence: ev_cb9974479c1a
-  - scenario: room.respect_pet.guard_4
-    title: "respect pet: the guard '!await _roomGrain._grainFactory.GetPlayerGrain(ctx.Player...' holds"
-    given:
-      guard: "!await _roomGrain._grainFactory.GetPlayerGrain(ctx.PlayerId).TryGivePetRespectAsync(ct)"
-      guard_holds: "true"
-    when:
-      packet: RespectPet
-    expected:
-      status: unknown
-      confidence: unknown
-    needs_evidence: "an official capture of RespectPet sent while '!await _roomGrain._grainFactory.GetPlayerGrain(ctx.PlayerId).TryGivePetRespectAsync(ct)' holds: does the server reply, stay silent, or disconnect?"
-    executable: false
-    claims:
-    - origin: vortex
-      authority: vortex_emulator
-      outcome: ignored
-      emits: []
-      evidence: ev_3b983736fec5
-    - origin: habbo-arcturus-daybreak
-      authority: reference_emulator
-      outcome: ignored
-      emits: []
-      evidence: ev_cb9974479c1a
-  - scenario: room.respect_pet.guard_5
-    title: "respect pet: the guard '!allowed' holds"
-    given:
-      guard: "!allowed"
-      guard_holds: "true"
-    when:
-      packet: RespectPet
-    expected:
-      status: unknown
-      confidence: unknown
-    needs_evidence: "an official capture of RespectPet sent while '!allowed' holds: does the server reply, stay silent, or disconnect?"
-    executable: false
-    claims:
-    - origin: vortex
-      authority: vortex_emulator
-      outcome: ignored
-      emits: []
-      evidence: ev_1f83e61934ca
-    - origin: habbo-arcturus-daybreak
-      authority: reference_emulator
-      outcome: ignored
-      emits: []
-      evidence: ev_cb9974479c1a
-  - scenario: room.respect_pet.guard_6
-    title: "respect pet: the guard '_registry is null' holds"
-    given:
-      guard: _registry is null
-      guard_holds: "true"
-    when:
-      packet: RespectPet
-    expected:
-      status: unknown
-      confidence: unknown
-    needs_evidence: "an official capture of RespectPet sent while '_registry is null' holds: does the server reply, stay silent, or disconnect?"
-    executable: false
-    claims:
-    - origin: vortex
-      authority: vortex_emulator
-      outcome: ignored
-      emits: []
-      evidence: ev_34bf3ac088e2
     - origin: habbo-arcturus-daybreak
       authority: reference_emulator
       outcome: ignored
@@ -189,10 +96,9 @@ generated:
     claims:
     - origin: vortex
       authority: vortex_emulator
-      outcome: success
-      emits:
-      - PetRespectFailed
-      evidence: ev_09932710687b
+      outcome: ignored
+      emits: []
+      evidence: ev_1557b71ceec2
     - origin: habbo-arcturus-daybreak
       authority: reference_emulator
       outcome: ignored
@@ -226,13 +132,6 @@ generated:
     symbol: RespectPetMessageEvent
     line: 19
     note: third-party server implementation; evidence, not authority
-  - id: ev_09932710687b
-    kind: emulator_flow
-    authority: vortex_emulator
-    origin: vortex
-    source: Vortex.Primitives/Orleans/GrainFactoryExtensions.cs
-    symbol: GrainFactoryExtensions
-    line: 234
   - id: ev_1557b71ceec2
     kind: emulator_flow
     authority: vortex_emulator
@@ -240,26 +139,12 @@ generated:
     source: Vortex.PacketHandlers/Room/Pets/RespectPetMessageHandler.cs
     symbol: RespectPetMessageHandler
     line: 22
-  - id: ev_1f83e61934ca
-    kind: emulator_flow
-    authority: vortex_emulator
-    origin: vortex
-    source: Vortex.Players/Grains/PlayerGrain.cs
-    symbol: PlayerGrain
-    line: 135
-  - id: ev_34bf3ac088e2
-    kind: emulator_flow
-    authority: vortex_emulator
-    origin: vortex
-    source: Vortex.Events/EventSystem.cs
-    symbol: EventSystem
-    line: 16
   - id: ev_3b983736fec5
     kind: emulator_flow
     authority: vortex_emulator
     origin: vortex
     source: Vortex.Rooms/Grains/Systems/RoomPetSystem.Care.cs
     symbol: RoomPetSystem
-    line: 44
+    line: 45
 verified: {}
 manual: {}

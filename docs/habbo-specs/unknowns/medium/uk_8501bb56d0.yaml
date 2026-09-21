@@ -10,12 +10,12 @@
 
 spec: unknown
 spec_version: 1
-generated_digest: "sha256:ad5deb4f50445926394d66b6d438e86dcaa8b83a30f6f974724dd71d099657c9"
+generated_digest: "sha256:d318614f5246a0d6332c4cb65a12b764c8a80b9bf95b7c7f024a2984f7b14124"
 generated:
   id: uk_8501bb56d0
   subject: "navigator.remove_own_room_rights_room: what the server sends when it refuses"
   severity: medium
-  question: navigator.remove_own_room_rights_room changes state and has 8 guards whose refusal behaviour nothing here attests. Does the official server answer a refused request, and with what?
+  question: navigator.remove_own_room_rights_room changes state and has 5 guards whose refusal behaviour nothing here attests. Does the official server answer a refused request, and with what?
   resolved_by: an official capture of each guard being tripped
   feature: navigator.remove_own_room_rights_room
   known_evidence:
@@ -25,7 +25,7 @@ generated:
     origin: vortex
     source: Vortex.Rooms/Grains/RoomGrain.Settings.cs
     symbol: RoomGrain
-    line: 879
+    line: 693
   - id: ev_34bf3ac088e2
     kind: emulator_flow
     authority: vortex_emulator
@@ -40,27 +40,6 @@ generated:
     source: Vortex.PacketHandlers/Navigator/RemoveOwnRoomRightsRoomMessageHandler.cs
     symbol: RemoveOwnRoomRightsRoomMessageHandler
     line: 11
-  - id: ev_82c2d2746361
-    kind: emulator_flow
-    authority: vortex_emulator
-    origin: vortex
-    source: Vortex.Rooms/Grains/Modules/RoomSecurityModule.cs
-    symbol: RoomSecurityModule
-    line: 319
-  - id: ev_9f45a8c43da8
-    kind: emulator_flow
-    authority: vortex_emulator
-    origin: vortex
-    source: Vortex.Rooms/Object/Avatars/RoomAvatar.cs
-    symbol: RoomAvatar
-    line: 182
-  - id: ev_b44ef304d36a
-    kind: emulator_flow
-    authority: vortex_emulator
-    origin: vortex
-    source: Vortex.Players/Grains/PlayerPresenceGrain.Room.cs
-    symbol: PlayerPresenceGrain
-    line: 193
   - id: ev_ba57947db30c
     kind: emulator_flow
     authority: vortex_emulator
@@ -68,12 +47,12 @@ generated:
     source: Vortex.PacketHandlers/Navigator/RemoveOwnRoomRightsRoomMessageHandler.cs
     symbol: RemoveOwnRoomRightsRoomMessageHandler
     line: 22
-  - id: ev_f13d6bcce744
+  - id: ev_bbe396e4bac0
     kind: emulator_flow
     authority: vortex_emulator
     origin: vortex
-    source: Vortex.Rooms/Wired/WiredActionBranch.cs
-    symbol: WiredActionBranch
-    line: 23
+    source: Vortex.Rooms/Grains/Modules/RoomSecurityModule.Rights.cs
+    symbol: RoomSecurityModule
+    line: 243
 verified: {}
 manual: {}

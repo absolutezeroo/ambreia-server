@@ -10,7 +10,7 @@
 
 spec: scenarios
 spec_version: 1
-generated_digest: "sha256:47e9d20f2b4cc64b6406906b8760e100f4728292d84f7c3ae6a50a1060f48036"
+generated_digest: "sha256:ffb4209e5e9a8d4c3a43f8c59b4a349aae08a3b04b6dfd28beb27ddc217596c1"
 generated:
   feature: room.open_room_for_player_id
   scenarios:
@@ -68,52 +68,82 @@ generated:
       emits: []
       evidence: ev_ef83570fa232
   - scenario: room.open_room_for_player_id.guard_10
-    title: "open room for player id: the guard '!_roomPlayers.TryGetValue(roomId, out HashSet<PlayerId>? ...' holds"
+    title: "open room for player id: the guard '!_onWalkEnded.Remove(avatar.ObjectId.Value, out Func<Canc...' holds"
     given:
-      guard: "!_roomPlayers.TryGetValue(roomId, out HashSet<PlayerId>? players)"
+      guard: "!_onWalkEnded.Remove(avatar.ObjectId.Value, out Func<CancellationToken, Task>? onEnded)"
       guard_holds: "true"
     when:
       packet: OpenFlatConnection
     expected:
       status: unknown
       confidence: unknown
-    needs_evidence: "an official capture of OpenFlatConnection sent while '!_roomPlayers.TryGetValue(roomId, out HashSet<PlayerId>? players)' holds: does the server reply, stay silent, or disconnect?"
+    needs_evidence: "an official capture of OpenFlatConnection sent while '!_onWalkEnded.Remove(avatar.ObjectId.Value, out Func<CancellationToken, Task>? onEnded)' holds: does the server reply, stay silent, or disconnect?"
     executable: false
     claims:
     - origin: vortex
       authority: vortex_emulator
       outcome: ignored
       emits: []
-      evidence: ev_74aa24a9a756
+      evidence: ev_e6fef545a42a
     - origin: habbo-arcturus-daybreak
       authority: reference_emulator
       outcome: ignored
       emits: []
       evidence: ev_ef83570fa232
   - scenario: room.open_room_for_player_id.guard_11
-    title: "open room for player id: the guard '!players.Remove(playerId)' holds"
+    title: "open room for player id: the guard '_registry is null' holds"
     given:
-      guard: "!players.Remove(playerId)"
+      guard: _registry is null
       guard_holds: "true"
     when:
       packet: OpenFlatConnection
     expected:
       status: unknown
       confidence: unknown
-    needs_evidence: "an official capture of OpenFlatConnection sent while '!players.Remove(playerId)' holds: does the server reply, stay silent, or disconnect?"
+    needs_evidence: "an official capture of OpenFlatConnection sent while '_registry is null' holds: does the server reply, stay silent, or disconnect?"
     executable: false
     claims:
     - origin: vortex
       authority: vortex_emulator
       outcome: ignored
       emits: []
-      evidence: ev_74aa24a9a756
+      evidence: ev_34bf3ac088e2
     - origin: habbo-arcturus-daybreak
       authority: reference_emulator
       outcome: ignored
       emits: []
       evidence: ev_ef83570fa232
   - scenario: room.open_room_for_player_id.guard_2
+    title: "open room for player id: the guard 'controllerLevel < RoomControllerType.Owner && await _buil...' holds"
+    given:
+      guard: controllerLevel < RoomControllerType.Owner && await _buildersClubService.IsRoomSealedAsync(roomId.Value, ct).ConfigureAwait(false)
+      guard_holds: "true"
+    when:
+      packet: OpenFlatConnection
+    expected:
+      status: unknown
+      confidence: unknown
+    needs_evidence: "an official capture of OpenFlatConnection sent while 'controllerLevel < RoomControllerType.Owner && await _buildersClubService.IsRoomSealedAsync(roomId.Value, ct).ConfigureAwait(false)' holds: does the server reply, stay silent, or disconnect?"
+    executable: false
+    claims:
+    - origin: vortex
+      authority: vortex_emulator
+      outcome: rejected
+      emits:
+      - CantConnect
+      - Doorbell
+      - ItemRemove
+      - ObjectRemove
+      - OpenConnection
+      - UserRemove
+      - Users
+      evidence: ev_7c6cea3bc17b
+    - origin: habbo-arcturus-daybreak
+      authority: reference_emulator
+      outcome: ignored
+      emits: []
+      evidence: ev_ef83570fa232
+  - scenario: room.open_room_for_player_id.guard_3
     title: "open room for player id: the guard 'isFull || isPasswordMismatch' holds"
     given:
       guard: isFull || isPasswordMismatch
@@ -143,7 +173,7 @@ generated:
       outcome: ignored
       emits: []
       evidence: ev_ef83570fa232
-  - scenario: room.open_room_for_player_id.guard_3
+  - scenario: room.open_room_for_player_id.guard_4
     title: "open room for player id: the guard 'snapshot.DoorMode == RoomDoorModeType.Locked' holds"
     given:
       guard: snapshot.DoorMode == RoomDoorModeType.Locked
@@ -166,7 +196,7 @@ generated:
       outcome: ignored
       emits: []
       evidence: ev_ef83570fa232
-  - scenario: room.open_room_for_player_id.guard_4
+  - scenario: room.open_room_for_player_id.guard_5
     title: "open room for player id: the guard 'roomId <= 0 || playerId <= 0' holds"
     given:
       guard: roomId <= 0 || playerId <= 0
@@ -189,7 +219,7 @@ generated:
       outcome: ignored
       emits: []
       evidence: ev_ef83570fa232
-  - scenario: room.open_room_for_player_id.guard_5
+  - scenario: room.open_room_for_player_id.guard_6
     title: "open room for player id: the guard '_state.ActiveRoomId <= 0' holds"
     given:
       guard: _state.ActiveRoomId <= 0
@@ -212,7 +242,7 @@ generated:
       outcome: ignored
       emits: []
       evidence: ev_ef83570fa232
-  - scenario: room.open_room_for_player_id.guard_6
+  - scenario: room.open_room_for_player_id.guard_7
     title: "open room for player id: the guard '!_roomGrain._state.AvatarsByPlayerId.TryGetValue( playerI...' holds"
     given:
       guard: "!_roomGrain._state.AvatarsByPlayerId.TryGetValue( playerId, out RoomObjectId objectId ) || !_roomGrain._state.AvatarsByObjectId.TryGetValue( objectId, out IRoomAvatar? avatar )"
@@ -235,7 +265,7 @@ generated:
       outcome: ignored
       emits: []
       evidence: ev_ef83570fa232
-  - scenario: room.open_room_for_player_id.guard_7
+  - scenario: room.open_room_for_player_id.guard_8
     title: "open room for player id: the guard '!_roomGrain.MapModule.RemoveItem(item)' holds"
     given:
       guard: "!_roomGrain.MapModule.RemoveItem(item)"
@@ -258,7 +288,7 @@ generated:
       outcome: ignored
       emits: []
       evidence: ev_ef83570fa232
-  - scenario: room.open_room_for_player_id.guard_8
+  - scenario: room.open_room_for_player_id.guard_9
     title: "open room for player id: the guard '!avatar.IsWalking' holds"
     given:
       guard: "!avatar.IsWalking"
@@ -276,29 +306,6 @@ generated:
       outcome: ignored
       emits: []
       evidence: ev_e6fef545a42a
-    - origin: habbo-arcturus-daybreak
-      authority: reference_emulator
-      outcome: ignored
-      emits: []
-      evidence: ev_ef83570fa232
-  - scenario: room.open_room_for_player_id.guard_9
-    title: "open room for player id: the guard '_registry is null' holds"
-    given:
-      guard: _registry is null
-      guard_holds: "true"
-    when:
-      packet: OpenFlatConnection
-    expected:
-      status: unknown
-      confidence: unknown
-    needs_evidence: "an official capture of OpenFlatConnection sent while '_registry is null' holds: does the server reply, stay silent, or disconnect?"
-    executable: false
-    claims:
-    - origin: vortex
-      authority: vortex_emulator
-      outcome: ignored
-      emits: []
-      evidence: ev_34bf3ac088e2
     - origin: habbo-arcturus-daybreak
       authority: reference_emulator
       outcome: ignored
@@ -363,13 +370,6 @@ generated:
     source: Vortex.Events/EventSystem.cs
     symbol: EventSystem
     line: 16
-  - id: ev_74aa24a9a756
-    kind: emulator_flow
-    authority: vortex_emulator
-    origin: vortex
-    source: Vortex.Rooms/Grains/RoomDirectoryGrain.cs
-    symbol: RoomDirectoryGrain
-    line: 114
   - id: ev_761b76967e2f
     kind: emulator_flow
     authority: vortex_emulator
@@ -383,7 +383,7 @@ generated:
     origin: vortex
     source: Vortex.Rooms/RoomService.cs
     symbol: RoomService
-    line: 77
+    line: 79
   - id: ev_b44ef304d36a
     kind: emulator_flow
     authority: vortex_emulator
@@ -397,6 +397,6 @@ generated:
     origin: vortex
     source: Vortex.Rooms/Grains/Modules/RoomAvatarModule.cs
     symbol: RoomAvatarModule
-    line: 163
+    line: 509
 verified: {}
 manual: {}

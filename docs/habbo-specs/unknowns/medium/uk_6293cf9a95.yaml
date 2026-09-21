@@ -10,7 +10,7 @@
 
 spec: unknown
 spec_version: 1
-generated_digest: "sha256:9a2c630ed33f6ed12a5b03e4273ea1c65c66d9faef85e44ff278823840aba650"
+generated_digest: "sha256:bef5bbc5cd4ec4146a75bfcaeff36f9532cda347eee0a70bcee310bc311d5a81"
 generated:
   id: uk_6293cf9a95
   subject: "moderation.resolve: what the server sends when it refuses"
@@ -25,7 +25,7 @@ generated:
     origin: vortex
     source: Vortex.Players/Grains/PlayerGrain.cs
     symbol: PlayerGrain
-    line: 953
+    line: 958
   - id: ev_34bf3ac088e2
     kind: emulator_flow
     authority: vortex_emulator

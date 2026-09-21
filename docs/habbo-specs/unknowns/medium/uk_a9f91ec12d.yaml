@@ -10,12 +10,12 @@
 
 spec: unknown
 spec_version: 1
-generated_digest: "sha256:5207e88d5ce6f4e6ffb2d80892e0cd134d751b224934a19df2f3113e6453e79c"
+generated_digest: "sha256:4dee75f404162162c06b531f3deb04aa9eb255d391e9c98746149cd04af103b2"
 generated:
   id: uk_a9f91ec12d
   subject: "room.remove_rights: what the server sends when it refuses"
   severity: medium
-  question: room.remove_rights changes state and has 7 guards whose refusal behaviour nothing here attests. Does the official server answer a refused request, and with what?
+  question: room.remove_rights changes state and has 4 guards whose refusal behaviour nothing here attests. Does the official server answer a refused request, and with what?
   resolved_by: an official capture of each guard being tripped
   feature: room.remove_rights
   known_evidence:
@@ -32,7 +32,7 @@ generated:
     origin: vortex
     source: Vortex.Rooms/Grains/RoomGrain.Settings.cs
     symbol: RoomGrain
-    line: 606
+    line: 539
   - id: ev_34bf3ac088e2
     kind: emulator_flow
     authority: vortex_emulator
@@ -40,20 +40,6 @@ generated:
     source: Vortex.Events/EventSystem.cs
     symbol: EventSystem
     line: 14
-  - id: ev_82c2d2746361
-    kind: emulator_flow
-    authority: vortex_emulator
-    origin: vortex
-    source: Vortex.Rooms/Grains/Modules/RoomSecurityModule.cs
-    symbol: RoomSecurityModule
-    line: 319
-  - id: ev_9f45a8c43da8
-    kind: emulator_flow
-    authority: vortex_emulator
-    origin: vortex
-    source: Vortex.Rooms/Object/Avatars/RoomAvatar.cs
-    symbol: RoomAvatar
-    line: 182
   - id: ev_b0c6819b754b
     kind: emulator_flow
     authority: vortex_emulator
@@ -61,19 +47,12 @@ generated:
     source: Vortex.PacketHandlers/Room/Action/RemoveRightsMessageHandler.cs
     symbol: RemoveRightsMessageHandler
     line: 25
-  - id: ev_b44ef304d36a
+  - id: ev_bbe396e4bac0
     kind: emulator_flow
     authority: vortex_emulator
     origin: vortex
-    source: Vortex.Players/Grains/PlayerPresenceGrain.Room.cs
-    symbol: PlayerPresenceGrain
-    line: 193
-  - id: ev_f13d6bcce744
-    kind: emulator_flow
-    authority: vortex_emulator
-    origin: vortex
-    source: Vortex.Rooms/Wired/WiredActionBranch.cs
-    symbol: WiredActionBranch
-    line: 23
+    source: Vortex.Rooms/Grains/Modules/RoomSecurityModule.Rights.cs
+    symbol: RoomSecurityModule
+    line: 101
 verified: {}
 manual: {}

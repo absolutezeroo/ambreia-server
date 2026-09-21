@@ -10,7 +10,7 @@
 
 spec: scenarios
 spec_version: 1
-generated_digest: "sha256:d2af5b0a9e74fd9c0761cb1c2a93ea67664ddef27e3d79948ae8e55e3f1864c5"
+generated_digest: "sha256:ae2e0a95af836c1cdcd36638505c1a78c1b4506251e8eb57fb6ed833a06f2261"
 generated:
   feature: camera.render_room
   scenarios:
@@ -107,6 +107,29 @@ generated:
       emits: []
       evidence: ev_4a708ba19eae
   - scenario: camera.render_room.guard_4
+    title: "render room: the guard '!await photoRenderer .RenderAsync(scene, photoKey, ReadRe...' holds"
+    given:
+      guard: "!await photoRenderer .RenderAsync(scene, photoKey, ReadRenderLimits(config), ct) .ConfigureAwait(true)"
+      guard_holds: "true"
+    when:
+      packet: RenderRoom
+    expected:
+      status: unknown
+      confidence: unknown
+    needs_evidence: "an official capture of RenderRoom sent while '!await photoRenderer .RenderAsync(scene, photoKey, ReadRenderLimits(config), ct) .ConfigureAwait(true)' holds: does the server reply, stay silent, or disconnect?"
+    executable: false
+    claims:
+    - origin: vortex
+      authority: vortex_emulator
+      outcome: ignored
+      emits: []
+      evidence: ev_f9dc5b28688c
+    - origin: habbo-arcturus-daybreak
+      authority: reference_emulator
+      outcome: ignored
+      emits: []
+      evidence: ev_4a708ba19eae
+  - scenario: camera.render_room.guard_5
     title: "render room: the guard 'payload.IsEmpty' holds"
     given:
       guard: payload.IsEmpty
@@ -129,7 +152,7 @@ generated:
       outcome: ignored
       emits: []
       evidence: ev_4a708ba19eae
-  - scenario: camera.render_room.guard_5
+  - scenario: camera.render_room.guard_6
     title: "render room: the guard 'payload.Length > limits.MaxPayloadBytes' holds"
     given:
       guard: payload.Length > limits.MaxPayloadBytes
@@ -152,7 +175,7 @@ generated:
       outcome: ignored
       emits: []
       evidence: ev_4a708ba19eae
-  - scenario: camera.render_room.guard_6
+  - scenario: camera.render_room.guard_7
     title: "render room: the guard '!TryInflate( payload, limits.MaxSceneBytes, out inflated,...' holds"
     given:
       guard: "!TryInflate( payload, limits.MaxSceneBytes, out inflated, out int length, out CameraRenderRefusal inflateRefusal )"
@@ -170,29 +193,6 @@ generated:
       outcome: ignored
       emits: []
       evidence: ev_441d8acebb35
-    - origin: habbo-arcturus-daybreak
-      authority: reference_emulator
-      outcome: ignored
-      emits: []
-      evidence: ev_4a708ba19eae
-  - scenario: camera.render_room.guard_7
-    title: "render room: the guard '!TryResolve(photoKey, SceneExtension, out string? path)' holds"
-    given:
-      guard: "!TryResolve(photoKey, SceneExtension, out string? path)"
-      guard_holds: "true"
-    when:
-      packet: RenderRoom
-    expected:
-      status: unknown
-      confidence: unknown
-    needs_evidence: "an official capture of RenderRoom sent while '!TryResolve(photoKey, SceneExtension, out string? path)' holds: does the server reply, stay silent, or disconnect?"
-    executable: false
-    claims:
-    - origin: vortex
-      authority: vortex_emulator
-      outcome: ignored
-      emits: []
-      evidence: ev_16ffa5b67103
     - origin: habbo-arcturus-daybreak
       authority: reference_emulator
       outcome: ignored
@@ -236,7 +236,7 @@ generated:
     origin: vortex
     source: Vortex.Rooms/Camera/CameraPhotoStore.cs
     symbol: CameraPhotoStore
-    line: 61
+    line: 63
   - id: ev_1bc545e05610
     kind: emulator_flow
     authority: vortex_emulator
@@ -250,13 +250,13 @@ generated:
     origin: vortex
     source: Vortex.Primitives/Camera/CameraSceneDecoder.cs
     symbol: CameraSceneDecoder
-    line: 65
+    line: 66
   - id: ev_f9dc5b28688c
     kind: emulator_flow
     authority: vortex_emulator
     origin: vortex
     source: Vortex.Players/Grains/PlayerCameraGrain.cs
     symbol: PlayerCameraGrain
-    line: 85
+    line: 95
 verified: {}
 manual: {}

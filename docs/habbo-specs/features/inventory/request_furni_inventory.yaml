@@ -10,7 +10,7 @@
 
 spec: feature
 spec_version: 1
-generated_digest: "sha256:f568591cdbc30dc3c959bbbcfa5845c31b35e5fd263ef48e66b28d3d9a66f8a5"
+generated_digest: "sha256:bcbbfd84c1d9312f89ae4aed4e70b941a5dcd203745e952b336047794f2486a1"
 generated:
   id: inventory.request_furni_inventory
   domain: inventory
@@ -94,7 +94,7 @@ generated:
     origin: vortex
     source: Vortex.Inventory/Grains/InventoryGrain.Furni.cs
     symbol: InventoryGrain
-    line: 866
+    line: 871
   - id: ev_c67e24bb8d9c
     kind: emulator_handler
     authority: vortex_emulator
@@ -108,7 +108,7 @@ generated:
     origin: vortex
     source: Vortex.Players/Grains/Modules/PlayerInventoryModule.cs
     symbol: PlayerInventoryModule
-    line: 24
+    line: 26
   - id: ev_e3cca687e112
     kind: emulator_flow
     authority: vortex_emulator

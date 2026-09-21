@@ -10,12 +10,12 @@
 
 spec: unknown
 spec_version: 1
-generated_digest: "sha256:0be4753ede55eb0460260d78a1343738748aecb9cc0322b22603051d0390e165"
+generated_digest: "sha256:e93dafb12aa55b0067c34d8f81a73d235ee548166762da35d22134effa27d1fa"
 generated:
   id: uk_f8cd214d39
   subject: "room.open_mystery_trophy: what the server sends when it refuses"
   severity: medium
-  question: room.open_mystery_trophy changes state and has 12 guards whose refusal behaviour nothing here attests. Does the official server answer a refused request, and with what?
+  question: room.open_mystery_trophy changes state and has 13 guards whose refusal behaviour nothing here attests. Does the official server answer a refused request, and with what?
   resolved_by: an official capture of each guard being tripped
   feature: room.open_mystery_trophy
   known_evidence:
@@ -130,7 +130,7 @@ generated:
     origin: vortex
     source: Vortex.Rooms/Grains/Modules/RoomMapModule.Avatar.cs
     symbol: RoomMapModule
-    line: 362
+    line: 363
   - id: ev_e439cab6b248
     kind: emulator_flow
     authority: vortex_emulator
@@ -144,7 +144,7 @@ generated:
     origin: vortex
     source: Vortex.Rooms/Grains/Modules/RoomAvatarModule.cs
     symbol: RoomAvatarModule
-    line: 434
+    line: 475
   - id: ev_f13d6bcce744
     kind: emulator_flow
     authority: vortex_emulator

@@ -10,7 +10,7 @@
 
 spec: unknown
 spec_version: 1
-generated_digest: "sha256:dba2e564a1efe3dc708d18097260e8bd23b4d0d33d94276eb63a7cbebb4a5bc3"
+generated_digest: "sha256:cfbf723258e5c05f50053888ead13beaa9977d3dffbe171709ad20a4b768b648"
 generated:
   id: uk_303fb87d42
   subject: "wired.close_wired_chest: what the server sends when it refuses"
@@ -39,7 +39,7 @@ generated:
     origin: vortex
     source: Vortex.Rooms/Object/Logic/Furniture/FurnitureLogic.cs
     symbol: FurnitureLogic
-    line: 123
+    line: 148
   - id: ev_84ee82d9d8e2
     kind: emulator_flow
     authority: vortex_emulator
@@ -53,7 +53,7 @@ generated:
     origin: vortex
     source: Vortex.Furniture/StuffData/StuffDataBase.cs
     symbol: StuffDataBase
-    line: 43
+    line: 64
   - id: ev_a26c2de0b21a
     kind: emulator_flow
     authority: vortex_emulator

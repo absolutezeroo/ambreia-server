@@ -10,7 +10,7 @@
 
 spec: unknown
 spec_version: 1
-generated_digest: "sha256:8fef39759f499cb8dfe67273feb846994ecc340c880061f0b71838c9be2beee0"
+generated_digest: "sha256:c04f3cd716fec8c0418e98539f345448258ed5b31729dd78afed1a95d698b709"
 generated:
   id: uk_e7e993f5a8
   subject: "navigator.set_room_session_tags: what the server sends when it refuses"
@@ -32,7 +32,7 @@ generated:
     origin: vortex
     source: Vortex.Rooms/Grains/RoomGrain.Settings.cs
     symbol: RoomGrain
-    line: 751
+    line: 563
   - id: ev_34bf3ac088e2
     kind: emulator_flow
     authority: vortex_emulator

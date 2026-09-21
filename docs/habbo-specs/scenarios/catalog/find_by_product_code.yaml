@@ -10,7 +10,7 @@
 
 spec: scenarios
 spec_version: 1
-generated_digest: "sha256:83f7946b3c69be42a2ed0ec57adeb36b82fd66099686975572413b81e3f32b0f"
+generated_digest: "sha256:b883317280f60dba155b4454251198d3bfda3be3162d25750718876083900aec"
 generated:
   feature: catalog.find_by_product_code
   scenarios:
@@ -322,7 +322,7 @@ generated:
       emits:
       - BadgeReceived
       - ClubGiftSelected
-      evidence: ev_0c987f4ea07c
+      evidence: ev_0b129c41cb66
     - origin: habbo-arcturus-daybreak
       authority: reference_emulator
       outcome: success
@@ -343,20 +343,20 @@ generated:
     symbol: SelectClubGiftEvent
     line: 20
     note: third-party server implementation; evidence, not authority
-  - id: ev_0c987f4ea07c
+  - id: ev_0b129c41cb66
     kind: emulator_flow
     authority: vortex_emulator
     origin: vortex
-    source: Vortex.Inventory/Fulfillment/CatalogFulfillmentPlanner.cs
-    symbol: CatalogFulfillmentPlanner
-    line: 90
+    source: Vortex.Progression/Grains/BadgeDirectoryGrain.cs
+    symbol: BadgeDirectoryGrain
+    line: 88
   - id: ev_1f83e61934ca
     kind: emulator_flow
     authority: vortex_emulator
     origin: vortex
     source: Vortex.Players/Grains/PlayerGrain.cs
     symbol: PlayerGrain
-    line: 913
+    line: 918
   - id: ev_34bf3ac088e2
     kind: emulator_flow
     authority: vortex_emulator

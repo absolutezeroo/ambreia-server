@@ -10,7 +10,7 @@
 
 spec: feature
 spec_version: 1
-generated_digest: "sha256:87fea85d3a4f14768d2c7a737dd3936d004134cf43989584831ba18218b71671"
+generated_digest: "sha256:622bd40c505bc3ff0030dd153841888d028d9c5b9d6f4db86224869e1e436803"
 generated:
   id: inventory.confirm_trade
   domain: inventory
@@ -82,7 +82,7 @@ generated:
     origin: vortex
     source: Vortex.Rooms/Grains/Systems/RoomTradingSystem.cs
     symbol: RoomTradingSystem
-    line: 328
+    line: 329
   - id: ev_6938df432a77
     kind: emulator_flow
     authority: vortex_emulator
@@ -96,7 +96,7 @@ generated:
     origin: vortex
     source: Vortex.Rooms/Grains/RoomTradeSession.cs
     symbol: RoomTradeSession
-    line: 74
+    line: 80
   - id: ev_8ae90b7a4d7c
     kind: emulator_handler
     authority: vortex_emulator

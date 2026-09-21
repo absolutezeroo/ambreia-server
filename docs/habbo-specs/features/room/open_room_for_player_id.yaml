@@ -10,7 +10,7 @@
 
 spec: feature
 spec_version: 1
-generated_digest: "sha256:5624e2003fba303a07efd77ad8352a7343ec68489e0ebd0b148c2a2551bbb8a5"
+generated_digest: "sha256:a9d20fff90db8fd97a3410225457c5ea9c254ac40280e94be47a12fbee3e5377"
 generated:
   id: room.open_room_for_player_id
   domain: room
@@ -217,26 +217,30 @@ generated:
     symbol: PermissionSet.Has
     evidence: ev_3fdb23ee39cd
   - order: 48
+    layer: service
+    symbol: BuildersClubService.IsRoomSealedAsync
+    evidence: ev_e81f0934fd67
+  - order: 49
     layer: grain
     symbol: RoomGrain.GetAllAvatarSnapshotsAsync
     evidence: ev_ac641f7283b9
-  - order: 49
+  - order: 50
     layer: module
     symbol: RoomAvatarModule.GetAllAvatarSnapshotsAsync
     evidence: ev_e6fef545a42a
-  - order: 50
+  - order: 51
     layer: module
     symbol: RoomPetSystem.GetPlacedPetAvatarSnapshotsAsync
     evidence: ev_7327c7799f5f
-  - order: 51
+  - order: 52
     layer: module
     symbol: RoomBotSystem.GetPlacedBotAvatarSnapshotsAsync
     evidence: ev_9d8421b6228f
-  - order: 52
+  - order: 53
     layer: grain
     symbol: RoomGrain.RegisterDoorbellRingAsync
     evidence: ev_425e4398d423
-  - order: 53
+  - order: 54
     layer: grain
     symbol: PlayerDirectoryGrain.GetPlayerNameAsync
     evidence: ev_7f41f2bdde62
@@ -247,6 +251,10 @@ generated:
     evidence: ev_7c6cea3bc17b
   - expression: pendingRoom.RoomId == roomId && !pendingRoom.Approved
     on_fail: return
+    observed_in: vortex
+    evidence: ev_7c6cea3bc17b
+  - expression: controllerLevel < RoomControllerType.Owner && await _buildersClubService.IsRoomSealedAsync(roomId.Value, ct).ConfigureAwait(false)
+    on_fail: send_and_return
     observed_in: vortex
     evidence: ev_7c6cea3bc17b
   - expression: isFull || isPasswordMismatch
@@ -274,6 +282,10 @@ generated:
     observed_in: vortex
     evidence: ev_761b76967e2f
   - expression: "!avatar.IsWalking"
+    on_fail: return
+    observed_in: vortex
+    evidence: ev_e6fef545a42a
+  - expression: "!_onWalkEnded.Remove(avatar.ObjectId.Value, out Func<CancellationToken, Task>? onEnded)"
     on_fail: return
     observed_in: vortex
     evidence: ev_e6fef545a42a
@@ -353,6 +365,18 @@ generated:
     on_fail: return
     observed_in: vortex
     evidence: ev_7aa1dee31dfd
+  - expression: roomId <= 0
+    on_fail: return
+    observed_in: vortex
+    evidence: ev_e81f0934fd67
+  - expression: "!hasBuildersClubFurniture"
+    on_fail: return
+    observed_in: vortex
+    evidence: ev_e81f0934fd67
+  - expression: ownerId <= 0
+    on_fail: return
+    observed_in: vortex
+    evidence: ev_e81f0934fd67
   - expression: ringerId <= 0
     on_fail: return
     observed_in: vortex
@@ -539,6 +563,10 @@ generated:
     observed_in: vortex
     evidence: ev_7c6cea3bc17b
   - target: playerPresence
+    value: playerPresence.SetPendingRoomAsync(RoomId.Invalid, false)
+    observed_in: vortex
+    evidence: ev_7c6cea3bc17b
+  - target: playerPresence
     value: playerPresence .SetPendingRoomAsync(RoomId.Invalid, false)
     observed_in: vortex
     evidence: ev_7c6cea3bc17b
@@ -689,7 +717,7 @@ generated:
     origin: vortex
     source: Vortex.Rooms/RoomService.cs
     symbol: RoomService
-    line: 64
+    line: 66
   - id: ev_7f41f2bdde62
     kind: emulator_flow
     authority: vortex_emulator
@@ -745,7 +773,7 @@ generated:
     origin: vortex
     source: Vortex.Rooms/Grains/RoomGrain.Avatar.cs
     symbol: RoomGrain
-    line: 107
+    line: 108
   - id: ev_b2d21836a70a
     kind: emulator_flow
     authority: vortex_emulator
@@ -794,7 +822,7 @@ generated:
     origin: vortex
     source: Vortex.Rooms/Grains/Modules/RoomMapModule.Avatar.cs
     symbol: RoomMapModule
-    line: 362
+    line: 363
   - id: ev_e4165c982e0e
     kind: emulator_flow
     authority: vortex_emulator
@@ -815,7 +843,14 @@ generated:
     origin: vortex
     source: Vortex.Rooms/Grains/Modules/RoomAvatarModule.cs
     symbol: RoomAvatarModule
-    line: 155
+    line: 165
+  - id: ev_e81f0934fd67
+    kind: emulator_flow
+    authority: vortex_emulator
+    origin: vortex
+    source: Vortex.Players/BuildersClubService.cs
+    symbol: BuildersClubService
+    line: 71
   - id: ev_ec0b4c2b0a97
     kind: emulator_flow
     authority: vortex_emulator

@@ -10,7 +10,7 @@
 
 spec: scenarios
 spec_version: 1
-generated_digest: "sha256:8f40ee9d14980eefc3fda9a4b2aa37b0bbb36aa158f5ac81fef2dab60238bf9c"
+generated_digest: "sha256:f6db802e34431003775fc86983382fb571eced4c76bb4fa8f7a46efeb24d7fa1"
 generated:
   feature: room.sign
   scenarios:
@@ -83,6 +83,29 @@ generated:
       outcome: ignored
       emits: []
       evidence: ev_a15faebc3027
+  - scenario: room.sign.guard_3
+    title: "sign: the guard '_registry is null' holds"
+    given:
+      guard: _registry is null
+      guard_holds: "true"
+    when:
+      packet: Sign
+    expected:
+      status: unknown
+      confidence: unknown
+    needs_evidence: "an official capture of Sign sent while '_registry is null' holds: does the server reply, stay silent, or disconnect?"
+    executable: false
+    claims:
+    - origin: vortex
+      authority: vortex_emulator
+      outcome: ignored
+      emits: []
+      evidence: ev_34bf3ac088e2
+    - origin: habbo-arcturus-daybreak
+      authority: reference_emulator
+      outcome: ignored
+      emits: []
+      evidence: ev_a15faebc3027
   - scenario: room.sign.success
     title: "sign: the request is accepted"
     given:
@@ -100,7 +123,7 @@ generated:
       outcome: success
       emits:
       - UserUpdate
-      evidence: ev_8568204207b7
+      evidence: ev_34bf3ac088e2
     - origin: habbo-arcturus-daybreak
       authority: reference_emulator
       outcome: ignored
@@ -115,6 +138,13 @@ generated:
     symbol: SignMessageEvent
     line: 13
     note: third-party server implementation; evidence, not authority
+  - id: ev_34bf3ac088e2
+    kind: emulator_flow
+    authority: vortex_emulator
+    origin: vortex
+    source: Vortex.Events/EventSystem.cs
+    symbol: EventSystem
+    line: 16
   - id: ev_8568204207b7
     kind: emulator_flow
     authority: vortex_emulator
@@ -128,13 +158,13 @@ generated:
     origin: vortex
     source: Vortex.Rooms/Grains/RoomGrain.Avatar.cs
     symbol: RoomGrain
-    line: 423
+    line: 429
   - id: ev_e6fef545a42a
     kind: emulator_flow
     authority: vortex_emulator
     origin: vortex
     source: Vortex.Rooms/Grains/Modules/RoomAvatarModule.cs
     symbol: RoomAvatarModule
-    line: 736
+    line: 801
 verified: {}
 manual: {}

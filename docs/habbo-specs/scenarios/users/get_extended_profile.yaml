@@ -10,7 +10,7 @@
 
 spec: scenarios
 spec_version: 1
-generated_digest: "sha256:f7ed1432033db3bb2143681e4624afa5ae52f3f705711e00972a2842e6cb67b3"
+generated_digest: "sha256:9222958fe5adf505c19c611fd7480ff8679ab83ecdb189086bcfdc0d97f23be8"
 generated:
   feature: users.get_extended_profile
   scenarios:
@@ -89,6 +89,31 @@ generated:
       - ExtendedProfile
       - ExtendedProfile
       evidence: ev_a7ab39560ea1
+  - scenario: users.get_extended_profile.guard_3
+    title: "get extended profile: the guard 'codes.Count == 0' holds"
+    given:
+      guard: codes.Count == 0
+      guard_holds: "true"
+    when:
+      packet: GetExtendedProfile
+    expected:
+      status: unknown
+      confidence: unknown
+    needs_evidence: "an official capture of GetExtendedProfile sent while 'codes.Count == 0' holds: does the server reply, stay silent, or disconnect?"
+    executable: false
+    claims:
+    - origin: vortex
+      authority: vortex_emulator
+      outcome: ignored
+      emits: []
+      evidence: ev_f8656423bf64
+    - origin: habbo-arcturus-daybreak
+      authority: reference_emulator
+      outcome: success
+      emits:
+      - ExtendedProfile
+      - ExtendedProfile
+      evidence: ev_a7ab39560ea1
   - scenario: users.get_extended_profile.success
     title: "get extended profile: the request is accepted"
     given:
@@ -106,7 +131,7 @@ generated:
       outcome: success
       emits:
       - ExtendedProfile
-      evidence: ev_1f83e61934ca
+      evidence: ev_0b129c41cb66
     - origin: habbo-arcturus-daybreak
       authority: reference_emulator
       outcome: success
@@ -123,13 +148,13 @@ generated:
     symbol: GetExtendedProfileMessageEvent
     line: 11
     note: third-party server implementation; evidence, not authority
-  - id: ev_1f83e61934ca
+  - id: ev_0b129c41cb66
     kind: emulator_flow
     authority: vortex_emulator
     origin: vortex
-    source: Vortex.Players/Grains/PlayerGrain.cs
-    symbol: PlayerGrain
-    line: 485
+    source: Vortex.Progression/Grains/BadgeDirectoryGrain.cs
+    symbol: BadgeDirectoryGrain
+    line: 96
   - id: ev_35934eb1b8df
     kind: emulator_flow
     authority: vortex_emulator
@@ -143,7 +168,7 @@ generated:
     origin: vortex
     source: Vortex.PacketHandlers/Users/GetExtendedProfileMessageHandler.cs
     symbol: GetExtendedProfileMessageHandler
-    line: 32
+    line: 35
   - id: ev_d53218d99bdd
     kind: emulator_flow
     authority: vortex_emulator
@@ -151,5 +176,12 @@ generated:
     source: Vortex.Social/Grains/GroupDirectoryGrain.cs
     symbol: GroupDirectoryGrain
     line: 313
+  - id: ev_f8656423bf64
+    kind: emulator_flow
+    authority: vortex_emulator
+    origin: vortex
+    source: Vortex.Progression/Grains/PlayerBadgeGrain.cs
+    symbol: PlayerBadgeGrain
+    line: 91
 verified: {}
 manual: {}

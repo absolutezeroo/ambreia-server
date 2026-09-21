@@ -10,7 +10,7 @@
 
 spec: scenarios
 spec_version: 1
-generated_digest: "sha256:1673fd2b7dc5293955a95a0a02afec870e28c30d187a5e2127a9c52e7ab05533"
+generated_digest: "sha256:2b892fba215510781d947ee7985a200463334865b20c991265fb42a37305155d"
 generated:
   feature: room.delete_room
   scenarios:
@@ -61,6 +61,29 @@ generated:
       emits: []
       evidence: ev_b38347dada23
   - scenario: room.delete_room.guard_10
+    title: "delete room: the guard '_goalTries == 3' holds"
+    given:
+      guard: _goalTries == 3
+      guard_holds: "true"
+    when:
+      packet: DeleteRoom
+    expected:
+      status: unknown
+      confidence: unknown
+    needs_evidence: "an official capture of DeleteRoom sent while '_goalTries == 3' holds: does the server reply, stay silent, or disconnect?"
+    executable: false
+    claims:
+    - origin: vortex
+      authority: vortex_emulator
+      outcome: ignored
+      emits: []
+      evidence: ev_9f45a8c43da8
+    - origin: habbo-arcturus-daybreak
+      authority: reference_emulator
+      outcome: ignored
+      emits: []
+      evidence: ev_b38347dada23
+  - scenario: room.delete_room.guard_11
     title: "delete room: the guard 'types.Length == 0' holds"
     given:
       guard: types.Length == 0
@@ -78,29 +101,6 @@ generated:
       outcome: ignored
       emits: []
       evidence: ev_9f45a8c43da8
-    - origin: habbo-arcturus-daybreak
-      authority: reference_emulator
-      outcome: ignored
-      emits: []
-      evidence: ev_b38347dada23
-  - scenario: room.delete_room.guard_11
-    title: "delete room: the guard '_registry is null' holds"
-    given:
-      guard: _registry is null
-      guard_holds: "true"
-    when:
-      packet: DeleteRoom
-    expected:
-      status: unknown
-      confidence: unknown
-    needs_evidence: "an official capture of DeleteRoom sent while '_registry is null' holds: does the server reply, stay silent, or disconnect?"
-    executable: false
-    claims:
-    - origin: vortex
-      authority: vortex_emulator
-      outcome: ignored
-      emits: []
-      evidence: ev_34bf3ac088e2
     - origin: habbo-arcturus-daybreak
       authority: reference_emulator
       outcome: ignored
@@ -245,6 +245,29 @@ generated:
       emits: []
       evidence: ev_b38347dada23
   - scenario: room.delete_room.guard_8
+    title: "delete room: the guard '!_onWalkEnded.Remove(avatar.ObjectId.Value, out Func<Canc...' holds"
+    given:
+      guard: "!_onWalkEnded.Remove(avatar.ObjectId.Value, out Func<CancellationToken, Task>? onEnded)"
+      guard_holds: "true"
+    when:
+      packet: DeleteRoom
+    expected:
+      status: unknown
+      confidence: unknown
+    needs_evidence: "an official capture of DeleteRoom sent while '!_onWalkEnded.Remove(avatar.ObjectId.Value, out Func<CancellationToken, Task>? onEnded)' holds: does the server reply, stay silent, or disconnect?"
+    executable: false
+    claims:
+    - origin: vortex
+      authority: vortex_emulator
+      outcome: ignored
+      emits: []
+      evidence: ev_e6fef545a42a
+    - origin: habbo-arcturus-daybreak
+      authority: reference_emulator
+      outcome: ignored
+      emits: []
+      evidence: ev_b38347dada23
+  - scenario: room.delete_room.guard_9
     title: "delete room: the guard 'tileId == -1' holds"
     given:
       guard: tileId == -1
@@ -255,29 +278,6 @@ generated:
       status: unknown
       confidence: unknown
     needs_evidence: "an official capture of DeleteRoom sent while 'tileId == -1' holds: does the server reply, stay silent, or disconnect?"
-    executable: false
-    claims:
-    - origin: vortex
-      authority: vortex_emulator
-      outcome: ignored
-      emits: []
-      evidence: ev_9f45a8c43da8
-    - origin: habbo-arcturus-daybreak
-      authority: reference_emulator
-      outcome: ignored
-      emits: []
-      evidence: ev_b38347dada23
-  - scenario: room.delete_room.guard_9
-    title: "delete room: the guard '_goalTries == 3' holds"
-    given:
-      guard: _goalTries == 3
-      guard_holds: "true"
-    when:
-      packet: DeleteRoom
-    expected:
-      status: unknown
-      confidence: unknown
-    needs_evidence: "an official capture of DeleteRoom sent while '_goalTries == 3' holds: does the server reply, stay silent, or disconnect?"
     executable: false
     claims:
     - origin: vortex
@@ -331,13 +331,6 @@ generated:
     source: Vortex.Rooms/Grains/RoomGrain.Settings.cs
     symbol: RoomGrain
     line: 217
-  - id: ev_34bf3ac088e2
-    kind: emulator_flow
-    authority: vortex_emulator
-    origin: vortex
-    source: Vortex.Events/EventSystem.cs
-    symbol: EventSystem
-    line: 16
   - id: ev_7601ba13c0f4
     kind: emulator_flow
     authority: vortex_emulator
@@ -358,7 +351,7 @@ generated:
     origin: vortex
     source: Vortex.Rooms/Object/Avatars/RoomAvatar.cs
     symbol: RoomAvatar
-    line: 193
+    line: 82
   - id: ev_b2d21836a70a
     kind: emulator_flow
     authority: vortex_emulator
@@ -372,6 +365,6 @@ generated:
     origin: vortex
     source: Vortex.Rooms/Grains/Modules/RoomAvatarModule.cs
     symbol: RoomAvatarModule
-    line: 163
+    line: 173
 verified: {}
 manual: {}

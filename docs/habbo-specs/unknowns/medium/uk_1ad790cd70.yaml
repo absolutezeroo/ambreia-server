@@ -10,12 +10,12 @@
 
 spec: unknown
 spec_version: 1
-generated_digest: "sha256:275161a8d3a952b75532ea341b11ae8bdb6e86b6d7705958731a75e8e5a103b4"
+generated_digest: "sha256:ca8071487519ea38857be6c5351cb2b64afefef68dd14bb3b6d0dff867a30318"
 generated:
   id: uk_1ad790cd70
   subject: "room.assign_rights: what the server sends when it refuses"
   severity: medium
-  question: room.assign_rights changes state and has 8 guards whose refusal behaviour nothing here attests. Does the official server answer a refused request, and with what?
+  question: room.assign_rights changes state and has 5 guards whose refusal behaviour nothing here attests. Does the official server answer a refused request, and with what?
   resolved_by: an official capture of each guard being tripped
   feature: room.assign_rights
   known_evidence:
@@ -40,27 +40,13 @@ generated:
     source: Vortex.PacketHandlers/Room/Action/AssignRightsMessageHandler.cs
     symbol: AssignRightsMessageHandler
     line: 22
-  - id: ev_82c2d2746361
+  - id: ev_bbe396e4bac0
     kind: emulator_flow
     authority: vortex_emulator
     origin: vortex
-    source: Vortex.Rooms/Grains/Modules/RoomSecurityModule.cs
+    source: Vortex.Rooms/Grains/Modules/RoomSecurityModule.Rights.cs
     symbol: RoomSecurityModule
-    line: 319
-  - id: ev_9f45a8c43da8
-    kind: emulator_flow
-    authority: vortex_emulator
-    origin: vortex
-    source: Vortex.Rooms/Object/Avatars/RoomAvatar.cs
-    symbol: RoomAvatar
-    line: 182
-  - id: ev_b44ef304d36a
-    kind: emulator_flow
-    authority: vortex_emulator
-    origin: vortex
-    source: Vortex.Players/Grains/PlayerPresenceGrain.Room.cs
-    symbol: PlayerPresenceGrain
-    line: 193
+    line: 39
   - id: ev_c2460091dbdc
     kind: emulator_handler
     authority: vortex_emulator
@@ -68,12 +54,5 @@ generated:
     source: Vortex.PacketHandlers/Room/Action/AssignRightsMessageHandler.cs
     symbol: AssignRightsMessageHandler
     line: 11
-  - id: ev_f13d6bcce744
-    kind: emulator_flow
-    authority: vortex_emulator
-    origin: vortex
-    source: Vortex.Rooms/Wired/WiredActionBranch.cs
-    symbol: WiredActionBranch
-    line: 23
 verified: {}
 manual: {}

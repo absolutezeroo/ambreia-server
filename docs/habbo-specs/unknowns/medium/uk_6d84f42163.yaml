@@ -10,7 +10,7 @@
 
 spec: unknown
 spec_version: 1
-generated_digest: "sha256:ee5695336b59be34f3925b47aa09642abdb1681c8854605d691628ebf365faee"
+generated_digest: "sha256:b81387376196371d906d3bb06d439b0e9b49ec37563702890add276da146847e"
 generated:
   id: uk_6d84f42163
   subject: "room.whisper: what the server sends when it refuses"
@@ -67,7 +67,7 @@ generated:
     origin: vortex
     source: Vortex.Rooms/Grains/RoomGrain.Avatar.cs
     symbol: RoomGrain
-    line: 496
+    line: 514
   - id: ev_b46938ec853d
     kind: emulator_flow
     authority: vortex_emulator

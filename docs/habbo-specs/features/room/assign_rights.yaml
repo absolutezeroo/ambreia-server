@@ -10,7 +10,7 @@
 
 spec: feature
 spec_version: 1
-generated_digest: "sha256:cc376f8b0377074830149a7aedcef89345c3a7f59d4a682963a32f6648b92f47"
+generated_digest: "sha256:7cdfcaafe1a6ff31ea5d07c950e59eab745d5932037a6f203156be98967920d1"
 generated:
   id: room.assign_rights
   domain: room
@@ -34,25 +34,9 @@ generated:
     evidence: ev_329537530b13
   - order: 2
     layer: module
-    symbol: RoomSecurityModule.LoadControllersAsync
-    evidence: ev_82c2d2746361
+    symbol: RoomSecurityModule.GrantRightsAsync
+    evidence: ev_bbe396e4bac0
   - order: 3
-    layer: domain
-    symbol: WiredActionBranch.Select
-    evidence: ev_f13d6bcce744
-  - order: 4
-    layer: module
-    symbol: RoomSecurityModule.RefreshControllerLevelForPlayerAsync
-    evidence: ev_82c2d2746361
-  - order: 5
-    layer: grain
-    symbol: PlayerPresenceGrain.OnControllerLevelUpdatedAsync
-    evidence: ev_b44ef304d36a
-  - order: 6
-    layer: domain
-    symbol: RoomAvatar.AddStatus
-    evidence: ev_9f45a8c43da8
-  - order: 7
     layer: module
     symbol: EventSystem.PublishAsync
     evidence: ev_34bf3ac088e2
@@ -68,55 +52,19 @@ generated:
   - expression: alreadyHasRights
     on_fail: return
     observed_in: vortex
-    evidence: ev_329537530b13
-  - expression: "!_roomGrain._state.AvatarsByPlayerId.TryGetValue(playerId, out RoomObjectId objectId) || !_roomGrain._state.AvatarsByObjectId.TryGetValue(objectId, out IRoomAvatar? avatar)"
-    on_fail: return
-    observed_in: vortex
-    evidence: ev_82c2d2746361
-  - expression: _state.ActiveRoomId != roomId
-    on_fail: return
-    observed_in: vortex
-    evidence: ev_b44ef304d36a
-  - expression: controllerType >= RoomControllerType.Rights
-    on_fail: return
-    observed_in: vortex
-    evidence: ev_b44ef304d36a
+    evidence: ev_bbe396e4bac0
   - expression: _registry is null
     on_fail: return
     observed_in: vortex
     evidence: ev_34bf3ac088e2
   state_changes:
-  - target: avatar
-    value: avatar.AddStatus( AvatarStatusType.FlatControl, ((int)controllerLevel).ToString(CultureInfo.InvariantCulture) )
-    observed_in: vortex
-    evidence: ev_82c2d2746361
   - target: roomGrain
     value: roomGrain .AssignRightsAsync(ctx.PlayerId, message.TargetUserId, ct)
     observed_in: vortex
     evidence: ev_3fffbe68a58d
   outgoing:
     ordering: unknown
-    packets:
-    - packet: FlatControllers
-      recipient: unknown
-      recipient_confidence: unknown
-      evidence: ev_329537530b13
-    - packet: WiredPermissions
-      recipient: unknown
-      recipient_confidence: unknown
-      evidence: ev_b44ef304d36a
-    - packet: YouAreController
-      recipient: unknown
-      recipient_confidence: unknown
-      evidence: ev_b44ef304d36a
-    - packet: YouAreNotController
-      recipient: unknown
-      recipient_confidence: unknown
-      evidence: ev_b44ef304d36a
-    - packet: YouAreOwner
-      recipient: unknown
-      recipient_confidence: unknown
-      evidence: ev_b44ef304d36a
+    packets: []
   reaches_persistence: true
   evidence:
   - id: ev_329537530b13
@@ -140,27 +88,13 @@ generated:
     source: Vortex.PacketHandlers/Room/Action/AssignRightsMessageHandler.cs
     symbol: AssignRightsMessageHandler
     line: 22
-  - id: ev_82c2d2746361
+  - id: ev_bbe396e4bac0
     kind: emulator_flow
     authority: vortex_emulator
     origin: vortex
-    source: Vortex.Rooms/Grains/Modules/RoomSecurityModule.cs
+    source: Vortex.Rooms/Grains/Modules/RoomSecurityModule.Rights.cs
     symbol: RoomSecurityModule
-    line: 319
-  - id: ev_9f45a8c43da8
-    kind: emulator_flow
-    authority: vortex_emulator
-    origin: vortex
-    source: Vortex.Rooms/Object/Avatars/RoomAvatar.cs
-    symbol: RoomAvatar
-    line: 182
-  - id: ev_b44ef304d36a
-    kind: emulator_flow
-    authority: vortex_emulator
-    origin: vortex
-    source: Vortex.Players/Grains/PlayerPresenceGrain.Room.cs
-    symbol: PlayerPresenceGrain
-    line: 193
+    line: 39
   - id: ev_c2460091dbdc
     kind: emulator_handler
     authority: vortex_emulator
@@ -168,24 +102,13 @@ generated:
     source: Vortex.PacketHandlers/Room/Action/AssignRightsMessageHandler.cs
     symbol: AssignRightsMessageHandler
     line: 11
-  - id: ev_f13d6bcce744
-    kind: emulator_flow
-    authority: vortex_emulator
-    origin: vortex
-    source: Vortex.Rooms/Wired/WiredActionBranch.cs
-    symbol: WiredActionBranch
-    line: 23
   scenarios:
   - room.assign_rights.guard_0
   - room.assign_rights.guard_1
   - room.assign_rights.guard_2
   - room.assign_rights.guard_3
-  - room.assign_rights.guard_4
-  - room.assign_rights.guard_5
-  - room.assign_rights.guard_6
   - room.assign_rights.success
   unknowns:
   - uk_1ad790cd70
-  - uk_27c270845f
 verified: {}
 manual: {}

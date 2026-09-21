@@ -10,7 +10,7 @@
 
 spec: feature
 spec_version: 1
-generated_digest: "sha256:badc0638403ede6058ba4ccead492659e8ef0b925bf7a7984ef589c472293a85"
+generated_digest: "sha256:9806be199ae143320ec97f4d6fe5c45acc3a71ece9f56229983ce892403504b4"
 generated:
   id: sound.get_user_song_disks
   domain: sound
@@ -93,7 +93,7 @@ generated:
     origin: vortex
     source: Vortex.Inventory/Grains/InventoryGrain.Furni.cs
     symbol: InventoryGrain
-    line: 873
+    line: 878
   - id: ev_f13d6bcce744
     kind: emulator_flow
     authority: vortex_emulator

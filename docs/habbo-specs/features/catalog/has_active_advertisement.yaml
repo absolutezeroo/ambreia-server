@@ -10,7 +10,7 @@
 
 spec: feature
 spec_version: 1
-generated_digest: "sha256:d170204677ed06875ee3f5749adf196fa99f83d429d1521c6b07813e5348d2d1"
+generated_digest: "sha256:9a7d262d23427503eb3e46647e76279b54c029c21659438ef54b4755210e56f7"
 generated:
   id: catalog.has_active_advertisement
   domain: catalog
@@ -77,7 +77,7 @@ generated:
     origin: vortex
     source: Vortex.Players/Grains/PlayerGrain.cs
     symbol: PlayerGrain
-    line: 592
+    line: 597
   - id: ev_30c3dfabb1ae
     kind: emulator_handler
     authority: vortex_emulator
@@ -98,7 +98,7 @@ generated:
     origin: vortex
     source: Vortex.Navigator/NavigatorProvider.cs
     symbol: RoomQueryExtensions
-    line: 783
+    line: 831
   - id: ev_614cdf3234fd
     kind: emulator_flow
     authority: vortex_emulator
@@ -126,7 +126,7 @@ generated:
     origin: vortex
     source: Vortex.Navigator/NavigatorProvider.cs
     symbol: NavigatorProvider
-    line: 101
+    line: 102
   scenarios:
   - catalog.has_active_advertisement.guard_0
   - catalog.has_active_advertisement.success

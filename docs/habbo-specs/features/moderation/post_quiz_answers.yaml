@@ -10,7 +10,7 @@
 
 spec: feature
 spec_version: 1
-generated_digest: "sha256:5eeca436aa2d32b8239ae4edf251b485aba5d63eb1ece6e9f3972ec72712cd23"
+generated_digest: "sha256:a957ba7e7c27ff440869e96554b99d6c20b3787e68237e03b6451d26225e2370"
 generated:
   id: moderation.post_quiz_answers
   domain: moderation
@@ -49,9 +49,13 @@ generated:
     evidence: ev_d720d639bd09
   - order: 6
     layer: grain
+    symbol: BadgeDirectoryGrain.GetInfoAsync
+    evidence: ev_0b129c41cb66
+  - order: 7
+    layer: grain
     symbol: PlayerPresenceGrain.SendComposerAsync
     evidence: ev_373e76aa8a80
-  - order: 7
+  - order: 8
     layer: module
     symbol: EventSystem.PublishAsync
     evidence: ev_34bf3ac088e2
@@ -94,6 +98,13 @@ generated:
       evidence: ev_fd80c081bc3a
   reaches_persistence: true
   evidence:
+  - id: ev_0b129c41cb66
+    kind: emulator_flow
+    authority: vortex_emulator
+    origin: vortex
+    source: Vortex.Progression/Grains/BadgeDirectoryGrain.cs
+    symbol: BadgeDirectoryGrain
+    line: 88
   - id: ev_14db4ca86628
     kind: emulator_flow
     authority: vortex_emulator
@@ -142,7 +153,7 @@ generated:
     origin: vortex
     source: Vortex.Players/Grains/Modules/PlayerInventoryModule.cs
     symbol: PlayerInventoryModule
-    line: 126
+    line: 142
   - id: ev_df06c80c3a14
     kind: emulator_flow
     authority: vortex_emulator

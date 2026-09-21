@@ -10,7 +10,7 @@
 
 spec: scenarios
 spec_version: 1
-generated_digest: "sha256:2554601cf2c9ffa8d4ad7d1c3ef3c349574e9b58cb82bcb84a5b4b30dde40cdc"
+generated_digest: "sha256:a3c4b7e1f3b3871bdb1365f76ed83e678b8a9e7a70b69f30d39467c1397697ff"
 generated:
   feature: room.cancel_typing
   scenarios:
@@ -128,13 +128,13 @@ generated:
     origin: vortex
     source: Vortex.Rooms/Grains/RoomGrain.Avatar.cs
     symbol: RoomGrain
-    line: 480
+    line: 498
   - id: ev_e6fef545a42a
     kind: emulator_flow
     authority: vortex_emulator
     origin: vortex
     source: Vortex.Rooms/Grains/Modules/RoomAvatarModule.cs
     symbol: RoomAvatarModule
-    line: 811
+    line: 876
 verified: {}
 manual: {}

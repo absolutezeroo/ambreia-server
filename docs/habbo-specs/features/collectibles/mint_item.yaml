@@ -10,7 +10,7 @@
 
 spec: feature
 spec_version: 1
-generated_digest: "sha256:8474da3a3eb2b57d91cc0f2e28dcf2b63fa8cd7736fd07a36bcdec9d258ea8bb"
+generated_digest: "sha256:ca05d7cb1e39685926e2a0dc47938499a5d8b78e07116787adee8183e5a5e684"
 generated:
   id: collectibles.mint_item
   domain: collectibles
@@ -227,14 +227,14 @@ generated:
     origin: vortex
     source: Vortex.Inventory/Grains/InventoryGrain.Furni.cs
     symbol: InventoryGrain
-    line: 858
+    line: 863
   - id: ev_d720d639bd09
     kind: emulator_flow
     authority: vortex_emulator
     origin: vortex
     source: Vortex.Players/Grains/Modules/PlayerInventoryModule.cs
     symbol: PlayerInventoryModule
-    line: 118
+    line: 134
   scenarios:
   - collectibles.mint_item.guard_0
   - collectibles.mint_item.guard_1

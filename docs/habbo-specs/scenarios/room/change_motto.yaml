@@ -10,7 +10,7 @@
 
 spec: scenarios
 spec_version: 1
-generated_digest: "sha256:0e6682f99abb283de26a8ee56ec24fe2ebe2ac9c599f95b13fdba529ede305f9"
+generated_digest: "sha256:1a9ed36a0f470bc03ae4cfdeea967e6abf606fa057ed6b3e18056aa5be6a4643"
 generated:
   feature: room.change_motto
   scenarios:
@@ -125,7 +125,7 @@ generated:
     origin: vortex
     source: Vortex.Players/Grains/PlayerGrain.cs
     symbol: PlayerGrain
-    line: 309
+    line: 313
   - id: ev_2aec8f9f5aa3
     kind: emulator_flow
     authority: vortex_emulator
@@ -146,6 +146,6 @@ generated:
     origin: vortex
     source: Vortex.Rooms/Grains/Modules/RoomAvatarModule.cs
     symbol: RoomAvatarModule
-    line: 513
+    line: 575
 verified: {}
 manual: {}

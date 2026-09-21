@@ -10,7 +10,7 @@
 
 spec: scenarios
 spec_version: 1
-generated_digest: "sha256:606e55d0c159edf3cc145a1e113faf7b7b81815d5136efffdc60f5a04bed7887"
+generated_digest: "sha256:04150912d18468c3184adab93699921a73818a3603314096e3beb361330059a5"
 generated:
   feature: camera.purchase_photo
   scenarios:
@@ -211,6 +211,6 @@ generated:
     origin: vortex
     source: Vortex.Players/Grains/PlayerCameraGrain.cs
     symbol: PlayerCameraGrain
-    line: 150
+    line: 245
 verified: {}
 manual: {}

@@ -10,7 +10,7 @@
 
 spec: unknown
 spec_version: 1
-generated_digest: "sha256:3abc5ef3db278082c9f70e6ffe7dbd2c1f9eb04bcaccf7ad3c9906d897e0abbc"
+generated_digest: "sha256:507e7119875f522f8db5dae735c44c8713648cbf47e9bc609bef7cabd9283bf6"
 generated:
   id: uk_4d5dcd52a1
   subject: "moderation.post_quiz_answers: what the server sends when it refuses"
@@ -19,6 +19,13 @@ generated:
   resolved_by: an official capture of each guard being tripped
   feature: moderation.post_quiz_answers
   known_evidence:
+  - id: ev_0b129c41cb66
+    kind: emulator_flow
+    authority: vortex_emulator
+    origin: vortex
+    source: Vortex.Progression/Grains/BadgeDirectoryGrain.cs
+    symbol: BadgeDirectoryGrain
+    line: 88
   - id: ev_14db4ca86628
     kind: emulator_flow
     authority: vortex_emulator
@@ -67,7 +74,7 @@ generated:
     origin: vortex
     source: Vortex.Players/Grains/Modules/PlayerInventoryModule.cs
     symbol: PlayerInventoryModule
-    line: 126
+    line: 142
   - id: ev_df06c80c3a14
     kind: emulator_flow
     authority: vortex_emulator

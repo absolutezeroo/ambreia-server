@@ -10,7 +10,7 @@
 
 spec: unknown
 spec_version: 1
-generated_digest: "sha256:80f5b34519a70efbdc34672a9701e3dee9f761d2f33a0335980f960f54953b27"
+generated_digest: "sha256:8ec40068b23607f3522a3aafd87c81beada7c8f9ddf453cc4823e9e2b136629e"
 generated:
   id: uk_613df422b3
   subject: "room.present_open: what the server sends when it refuses"
@@ -19,6 +19,13 @@ generated:
   resolved_by: an official capture of each guard being tripped
   feature: room.present_open
   known_evidence:
+  - id: ev_0b129c41cb66
+    kind: emulator_flow
+    authority: vortex_emulator
+    origin: vortex
+    source: Vortex.Progression/Grains/BadgeDirectoryGrain.cs
+    symbol: BadgeDirectoryGrain
+    line: 88
   - id: ev_0c987f4ea07c
     kind: emulator_flow
     authority: vortex_emulator
@@ -137,7 +144,7 @@ generated:
     origin: vortex
     source: Vortex.Players/Grains/Modules/PlayerInventoryModule.cs
     symbol: PlayerInventoryModule
-    line: 126
+    line: 142
   - id: ev_dfd698b29c69
     kind: emulator_flow
     authority: vortex_emulator

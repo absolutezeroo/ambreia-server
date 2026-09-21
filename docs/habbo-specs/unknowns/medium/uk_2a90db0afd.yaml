@@ -10,15 +10,22 @@
 
 spec: unknown
 spec_version: 1
-generated_digest: "sha256:ad9caabd7de6c3e26d659d2d9916701bba1f844a186808396ed8c460f18efcbe"
+generated_digest: "sha256:5cb403588f477f9012ba8e88e59f55d89ef0fd84b5dfbd088039d86331559002"
 generated:
   id: uk_2a90db0afd
   subject: "room.sign: what the server sends when it refuses"
   severity: medium
-  question: room.sign changes state and has 4 guards whose refusal behaviour nothing here attests. Does the official server answer a refused request, and with what?
+  question: room.sign changes state and has 5 guards whose refusal behaviour nothing here attests. Does the official server answer a refused request, and with what?
   resolved_by: an official capture of each guard being tripped
   feature: room.sign
   known_evidence:
+  - id: ev_34bf3ac088e2
+    kind: emulator_flow
+    authority: vortex_emulator
+    origin: vortex
+    source: Vortex.Events/EventSystem.cs
+    symbol: EventSystem
+    line: 14
   - id: ev_8568204207b7
     kind: emulator_flow
     authority: vortex_emulator
@@ -39,7 +46,7 @@ generated:
     origin: vortex
     source: Vortex.Rooms/Grains/RoomGrain.Avatar.cs
     symbol: RoomGrain
-    line: 419
+    line: 425
   - id: ev_b46938ec853d
     kind: emulator_flow
     authority: vortex_emulator
@@ -53,7 +60,7 @@ generated:
     origin: vortex
     source: Vortex.Rooms/Grains/Modules/RoomAvatarModule.cs
     symbol: RoomAvatarModule
-    line: 734
+    line: 799
   - id: ev_e712081d6bbf
     kind: emulator_handler
     authority: vortex_emulator

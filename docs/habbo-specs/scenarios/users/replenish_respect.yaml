@@ -10,7 +10,7 @@
 
 spec: scenarios
 spec_version: 1
-generated_digest: "sha256:acf5a97b801baf5d8469a15abe25b67ae38cefba97afb44dd4a5afaefc8f7249"
+generated_digest: "sha256:a6512fae7e548adeb9817c5ea97ebd477c22541f0842e5a020bb4f946f793940"
 generated:
   feature: users.replenish_respect
   scenarios:
@@ -74,14 +74,14 @@ generated:
     origin: vortex
     source: Vortex.Primitives/Orleans/GrainFactoryExtensions.cs
     symbol: GrainFactoryExtensions
-    line: 234
+    line: 235
   - id: ev_1f83e61934ca
     kind: emulator_flow
     authority: vortex_emulator
     origin: vortex
     source: Vortex.Players/Grains/PlayerGrain.cs
     symbol: PlayerGrain
-    line: 161
+    line: 165
   - id: ev_e7dc5d38da11
     kind: emulator_flow
     authority: vortex_emulator

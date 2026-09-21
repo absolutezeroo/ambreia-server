@@ -10,7 +10,7 @@
 
 spec: unknown
 spec_version: 1
-generated_digest: "sha256:85a97306124367a4088cc9706e82a7bc7b902cc02faa2cd244aee37136ac497a"
+generated_digest: "sha256:3b88a82bfacb3b08f2be5e77ba6731d10f66e53f99fae6d48c9ec8a17ce5f2b0"
 generated:
   id: uk_7e8e3fdf6d
   subject: "room.place_wall_item_in_room: what the server sends when it refuses"
@@ -172,7 +172,7 @@ generated:
     origin: vortex
     source: Vortex.Inventory/Grains/InventoryGrain.Furni.cs
     symbol: InventoryGrain
-    line: 858
+    line: 863
   - id: ev_c716d5e1bc87
     kind: emulator_flow
     authority: vortex_emulator
@@ -200,7 +200,7 @@ generated:
     origin: vortex
     source: Vortex.Players/Grains/Modules/PlayerInventoryModule.cs
     symbol: PlayerInventoryModule
-    line: 118
+    line: 134
   - id: ev_db02cb0a1e67
     kind: emulator_flow
     authority: vortex_emulator
@@ -214,7 +214,7 @@ generated:
     origin: vortex
     source: Vortex.Rooms/Grains/Modules/RoomMapModule.Avatar.cs
     symbol: RoomMapModule
-    line: 362
+    line: 363
   - id: ev_e1105bc46abc
     kind: emulator_flow
     authority: vortex_emulator
@@ -242,6 +242,6 @@ generated:
     origin: vortex
     source: Vortex.Rooms/Grains/Modules/RoomAvatarModule.cs
     symbol: RoomAvatarModule
-    line: 467
+    line: 529
 verified: {}
 manual: {}

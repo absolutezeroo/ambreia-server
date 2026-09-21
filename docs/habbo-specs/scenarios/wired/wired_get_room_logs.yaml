@@ -10,7 +10,7 @@
 
 spec: scenarios
 spec_version: 1
-generated_digest: "sha256:1eaa9b8da7e4a6183f30f0dd9fc454d2416c666064513c97a1c3f1065564625b"
+generated_digest: "sha256:156badb62af682203451c17213fcb251e204fdbe81a5a5145b16e7ca44eab14d"
 generated:
   feature: wired.wired_get_room_logs
   scenarios:
@@ -32,6 +32,24 @@ generated:
       outcome: ignored
       emits: []
       evidence: ev_97aa8d4ed3db
+  - scenario: wired.wired_get_room_logs.guard_1
+    title: "wired get room logs: the guard 'Convert.ToInt32(candidate) == value' holds"
+    given:
+      guard: Convert.ToInt32(candidate) == value
+      guard_holds: "true"
+    when:
+      packet: WiredGetRoomLogs
+    expected:
+      status: unknown
+      confidence: unknown
+    needs_evidence: "an official capture of WiredGetRoomLogs sent while 'Convert.ToInt32(candidate) == value' holds: does the server reply, stay silent, or disconnect?"
+    executable: false
+    claims:
+    - origin: vortex
+      authority: vortex_emulator
+      outcome: ignored
+      emits: []
+      evidence: ev_33ea9d040ff7
   - scenario: wired.wired_get_room_logs.success
     title: "wired get room logs: the request is accepted"
     given:
@@ -57,7 +75,14 @@ generated:
     origin: vortex
     source: Vortex.Rooms/Grains/RoomGrain.Wired.Logs.cs
     symbol: RoomGrain
-    line: 16
+    line: 17
+  - id: ev_33ea9d040ff7
+    kind: emulator_flow
+    authority: vortex_emulator
+    origin: vortex
+    source: Vortex.Rooms/Wired/Logs/WiredLogFilter.cs
+    symbol: WiredLogFilter
+    line: 25
   - id: ev_97aa8d4ed3db
     kind: emulator_flow
     authority: vortex_emulator

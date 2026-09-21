@@ -10,7 +10,7 @@
 
 spec: unknown
 spec_version: 1
-generated_digest: "sha256:cd533fba864476e27e3ca4cdb6016d66a6b7e94a8f4569ad4f6e2ec04616c659"
+generated_digest: "sha256:733b85d61ce2bcc58054d35020df77bad3cfda51d975b085492bba114fcb571d"
 generated:
   id: uk_c873562794
   subject: "inventory.open_trade: who receives TradingOpen"
@@ -25,6 +25,6 @@ generated:
     origin: vortex
     source: Vortex.Rooms/Grains/Systems/RoomTradingSystem.cs
     symbol: RoomTradingSystem
-    line: 102
+    line: 103
 verified: {}
 manual: {}

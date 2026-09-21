@@ -10,7 +10,7 @@
 
 spec: feature
 spec_version: 1
-generated_digest: "sha256:1f1d6b6d5bc1e044100a193afd0335b7bda9f0db599d71f97153c4e8070e7f63"
+generated_digest: "sha256:31fa4aeb8d863e67d6f31fac391c62964721e98e85ad803fc79e2cad950a01c1"
 generated:
   id: catalog.find_by_product_code
   domain: catalog
@@ -86,6 +86,10 @@ generated:
     evidence: ev_d720d639bd09
   - order: 15
     layer: grain
+    symbol: BadgeDirectoryGrain.GetInfoAsync
+    evidence: ev_0b129c41cb66
+  - order: 16
+    layer: grain
     symbol: PlayerPresenceGrain.SendComposerAsync
     evidence: ev_373e76aa8a80
   checks:
@@ -159,6 +163,13 @@ generated:
       evidence: ev_db00239c6a21
   reaches_persistence: true
   evidence:
+  - id: ev_0b129c41cb66
+    kind: emulator_flow
+    authority: vortex_emulator
+    origin: vortex
+    source: Vortex.Progression/Grains/BadgeDirectoryGrain.cs
+    symbol: BadgeDirectoryGrain
+    line: 88
   - id: ev_0c987f4ea07c
     kind: emulator_flow
     authority: vortex_emulator
@@ -172,7 +183,7 @@ generated:
     origin: vortex
     source: Vortex.Players/Grains/PlayerGrain.cs
     symbol: PlayerGrain
-    line: 592
+    line: 597
   - id: ev_2ec03446aa2a
     kind: emulator_flow
     authority: vortex_emulator
@@ -256,7 +267,7 @@ generated:
     origin: vortex
     source: Vortex.Players/Grains/Modules/PlayerInventoryModule.cs
     symbol: PlayerInventoryModule
-    line: 126
+    line: 142
   - id: ev_db00239c6a21
     kind: emulator_flow
     authority: vortex_emulator

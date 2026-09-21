@@ -10,7 +10,7 @@
 
 spec: scenarios
 spec_version: 1
-generated_digest: "sha256:c64ea2e8fd00d6a701e4ddd5a547d9da31ecfee4486b26465616078ffa48b892"
+generated_digest: "sha256:09fff876ea04d512aaa3e82c05533914441eb010fc1a2dd084b3be2483340f8d"
 generated:
   feature: navigator.get_room_count_by_owner
   scenarios:
@@ -31,7 +31,7 @@ generated:
       outcome: success
       emits:
       - CanCreateRoom
-      evidence: ev_8527e203d9ca
+      evidence: ev_1f83e61934ca
     - origin: habbo-arcturus-daybreak
       authority: reference_emulator
       outcome: success
@@ -47,12 +47,12 @@ generated:
     symbol: CanCreateRoomMessageEvent
     line: 10
     note: third-party server implementation; evidence, not authority
-  - id: ev_8527e203d9ca
-    kind: emulator_handler
+  - id: ev_1f83e61934ca
+    kind: emulator_flow
     authority: vortex_emulator
     origin: vortex
-    source: Vortex.PacketHandlers/Navigator/CanCreateRoomMessageHandler.cs
-    symbol: CanCreateRoomMessageHandler
-    line: 14
+    source: Vortex.Players/Grains/PlayerGrain.cs
+    symbol: PlayerGrain
+    line: 597
 verified: {}
 manual: {}

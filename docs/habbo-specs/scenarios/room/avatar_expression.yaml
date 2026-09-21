@@ -10,7 +10,7 @@
 
 spec: scenarios
 spec_version: 1
-generated_digest: "sha256:438c817df6f275a1c0520731eaca7ce42201ed09e66314f86bcbb3c86e366423"
+generated_digest: "sha256:593fd963c4d7ed8128825f29e0d2bdb26e7da72dd4a79a4b1aec864ad778a972"
 generated:
   feature: room.avatar_expression
   scenarios:
@@ -163,13 +163,13 @@ generated:
     origin: vortex
     source: Vortex.Rooms/Grains/RoomGrain.Avatar.cs
     symbol: RoomGrain
-    line: 330
+    line: 336
   - id: ev_e6fef545a42a
     kind: emulator_flow
     authority: vortex_emulator
     origin: vortex
     source: Vortex.Rooms/Grains/Modules/RoomAvatarModule.cs
     symbol: RoomAvatarModule
-    line: 657
+    line: 722
 verified: {}
 manual: {}

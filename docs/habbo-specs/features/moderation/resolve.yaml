@@ -10,7 +10,7 @@
 
 spec: feature
 spec_version: 1
-generated_digest: "sha256:4bc8a6a8520f25c8e54c2152ab520f660c29ae3ede87e82143ef50d9e884710f"
+generated_digest: "sha256:78198f25bd0f49c2b7d4ddef9a4890b0b8568431e97cc200c43accd85f86bcfc"
 generated:
   id: moderation.resolve
   domain: moderation
@@ -133,7 +133,7 @@ generated:
     origin: vortex
     source: Vortex.Players/Grains/PlayerGrain.cs
     symbol: PlayerGrain
-    line: 953
+    line: 958
   - id: ev_34bf3ac088e2
     kind: emulator_flow
     authority: vortex_emulator

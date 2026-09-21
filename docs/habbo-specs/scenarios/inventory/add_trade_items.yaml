@@ -10,7 +10,7 @@
 
 spec: scenarios
 spec_version: 1
-generated_digest: "sha256:2f39ad509eb2306d1b30ffed6d8dddbafa5b251fc73fa6b1d5b755c947196fd5"
+generated_digest: "sha256:094a35c5b0ff0534d5137bc5f9dbba4c7df3460dab04832ef57edcb971102dc0"
 generated:
   feature: inventory.add_trade_items
   scenarios:
@@ -120,7 +120,7 @@ generated:
     origin: vortex
     source: Vortex.Rooms/Grains/Systems/RoomTradingSystem.cs
     symbol: RoomTradingSystem
-    line: 130
+    line: 131
   - id: ev_a8707f5e7b6c
     kind: emulator_flow
     authority: vortex_emulator

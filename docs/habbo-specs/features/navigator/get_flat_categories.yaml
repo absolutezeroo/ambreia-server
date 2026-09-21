@@ -10,7 +10,7 @@
 
 spec: feature
 spec_version: 1
-generated_digest: "sha256:5ba1b00c6dbd42a4a9f113c33b68c576b17f86d46c7f713f1d9a61d763b8e902"
+generated_digest: "sha256:01615d9e037b3ac6a00e55f044f437df64e5b72e4243881dc3605d0c135a6e39"
 generated:
   id: navigator.get_flat_categories
   domain: navigator
@@ -67,7 +67,7 @@ generated:
     origin: vortex
     source: Vortex.Navigator/NavigatorProvider.cs
     symbol: NavigatorProvider
-    line: 83
+    line: 84
   - id: ev_ca6db2d966f5
     kind: emulator_flow
     authority: vortex_emulator

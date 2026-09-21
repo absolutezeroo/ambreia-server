@@ -10,7 +10,7 @@
 
 spec: feature
 spec_version: 1
-generated_digest: "sha256:ff503c756b4e6b26b079ccf01d7295826d7436bf140d2a5b6812553d0f7c9698"
+generated_digest: "sha256:48b9a9b194fe35c77bb93b5657b85cb27147a0d43e1613bfc3fee8e643c1e6c9"
 generated:
   id: navigator.get_promoted_rooms
   domain: navigator
@@ -135,7 +135,7 @@ generated:
     origin: vortex
     source: Vortex.Navigator/NavigatorProvider.cs
     symbol: NavigatorProvider
-    line: 325
+    line: 328
   - id: ev_bcb32cbc0458
     kind: emulator_handler
     authority: vortex_emulator

@@ -10,7 +10,7 @@
 
 spec: unknown
 spec_version: 1
-generated_digest: "sha256:45babc722f0046fd5bc232d86b1050b753eee1dd4761601eef6f39e8d1e3565c"
+generated_digest: "sha256:c85ff2acb024fba649ad0776ca3e17f8f28ffa29f51ac7bf9af545408080802c"
 generated:
   id: uk_01bb066b19
   subject: "camera.photo_competition: what the server sends when it refuses"
@@ -53,7 +53,7 @@ generated:
     origin: vortex
     source: Vortex.Players/Grains/PlayerCameraGrain.cs
     symbol: PlayerCameraGrain
-    line: 311
+    line: 406
   - id: ev_fd3592a2e25d
     kind: emulator_handler
     authority: vortex_emulator

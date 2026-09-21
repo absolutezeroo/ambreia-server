@@ -10,7 +10,7 @@
 
 spec: scenarios
 spec_version: 1
-generated_digest: "sha256:2506548c16de5099fe3446f8c70f379ec8e5461995058c0b6e557c5e29de0f1f"
+generated_digest: "sha256:1919e4559a965dd2482baa811a60c37fbac569ed62817d85842d3f92be1d78f8"
 generated:
   feature: room.open_mystery_trophy
   scenarios:
@@ -51,6 +51,24 @@ generated:
       emits: []
       evidence: ev_b2d21836a70a
   - scenario: room.open_mystery_trophy.guard_10
+    title: "open mystery trophy: the guard '!_onWalkEnded.Remove(avatar.ObjectId.Value, out Func<Canc...' holds"
+    given:
+      guard: "!_onWalkEnded.Remove(avatar.ObjectId.Value, out Func<CancellationToken, Task>? onEnded)"
+      guard_holds: "true"
+    when:
+      packet: OpenMysteryTrophy
+    expected:
+      status: unknown
+      confidence: unknown
+    needs_evidence: "an official capture of OpenMysteryTrophy sent while '!_onWalkEnded.Remove(avatar.ObjectId.Value, out Func<CancellationToken, Task>? onEnded)' holds: does the server reply, stay silent, or disconnect?"
+    executable: false
+    claims:
+    - origin: vortex
+      authority: vortex_emulator
+      outcome: ignored
+      emits: []
+      evidence: ev_e6fef545a42a
+  - scenario: room.open_mystery_trophy.guard_11
     title: "open mystery trophy: the guard '_registry is null' holds"
     given:
       guard: _registry is null
@@ -288,6 +306,6 @@ generated:
     origin: vortex
     source: Vortex.Rooms/Grains/Modules/RoomAvatarModule.cs
     symbol: RoomAvatarModule
-    line: 438
+    line: 509
 verified: {}
 manual: {}

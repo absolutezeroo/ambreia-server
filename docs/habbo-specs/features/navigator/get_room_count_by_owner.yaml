@@ -10,7 +10,7 @@
 
 spec: feature
 spec_version: 1
-generated_digest: "sha256:005f06b532efbced7387a1531e7685e4ecefc311d10583e1fbd4d14036da2ded"
+generated_digest: "sha256:25531fcd81ac0702962da780f46076845148d0445462ab7e8557524831057243"
 generated:
   id: navigator.get_room_count_by_owner
   domain: navigator
@@ -30,9 +30,21 @@ generated:
     evidence: ev_8527e203d9ca
   - order: 1
     layer: grain
+    symbol: PlayerGrain.GetClubSubscriptionAsync
+    evidence: ev_1f83e61934ca
+  - order: 2
+    layer: grain
     symbol: ServerConfigGrain.GetIntAsync
     evidence: ev_86f81f4f919c
-  - order: 2
+  - order: 3
+    layer: domain
+    symbol: RoomsConfig.MaxRoomsKeyFor
+    evidence: ev_9156e8532759
+  - order: 4
+    layer: domain
+    symbol: RoomsConfig.MaxRoomsDefaultFor
+    evidence: ev_9156e8532759
+  - order: 5
     layer: domain
     symbol: NavigatorProvider.GetRoomCountByOwnerAsync
     evidence: ev_bca43a79b6c9
@@ -47,13 +59,20 @@ generated:
       evidence: ev_aaf5d4838732
   reaches_persistence: false
   evidence:
+  - id: ev_1f83e61934ca
+    kind: emulator_flow
+    authority: vortex_emulator
+    origin: vortex
+    source: Vortex.Players/Grains/PlayerGrain.cs
+    symbol: PlayerGrain
+    line: 597
   - id: ev_8527e203d9ca
     kind: emulator_handler
     authority: vortex_emulator
     origin: vortex
     source: Vortex.PacketHandlers/Navigator/CanCreateRoomMessageHandler.cs
     symbol: CanCreateRoomMessageHandler
-    line: 14
+    line: 16
   - id: ev_86f81f4f919c
     kind: emulator_flow
     authority: vortex_emulator
@@ -61,20 +80,27 @@ generated:
     source: Vortex.Players/Grains/ServerConfigGrain.cs
     symbol: ServerConfigGrain
     line: 43
+  - id: ev_9156e8532759
+    kind: emulator_flow
+    authority: vortex_emulator
+    origin: vortex
+    source: Vortex.Primitives/Rooms/RoomsConfig.cs
+    symbol: RoomsConfig
+    line: 36
   - id: ev_aaf5d4838732
     kind: emulator_flow
     authority: vortex_emulator
     origin: vortex
     source: Vortex.PacketHandlers/Navigator/CanCreateRoomMessageHandler.cs
     symbol: CanCreateRoomMessageHandler
-    line: 40
+    line: 54
   - id: ev_bca43a79b6c9
     kind: emulator_flow
     authority: vortex_emulator
     origin: vortex
     source: Vortex.Navigator/NavigatorProvider.cs
     symbol: NavigatorProvider
-    line: 119
+    line: 120
   scenarios:
   - navigator.get_room_count_by_owner.success
   conflicts:

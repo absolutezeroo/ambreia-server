@@ -10,7 +10,7 @@
 
 spec: feature
 spec_version: 1
-generated_digest: "sha256:ea12bd9c284678e7d5d04001a054d8a64d7526cd03410960e13eb4e21f389881"
+generated_digest: "sha256:c37824fc6b6d58df3cf531def2088a985f47dfa6fd2d0da0f0b599d8e85192d6"
 generated:
   id: wired.set_all_wired_chest_locks
   domain: wired
@@ -205,7 +205,7 @@ generated:
     origin: vortex
     source: Vortex.Rooms/Object/Logic/Furniture/FurnitureLogic.cs
     symbol: FurnitureLogic
-    line: 123
+    line: 148
   - id: ev_7aa1dee31dfd
     kind: emulator_flow
     authority: vortex_emulator
@@ -233,7 +233,7 @@ generated:
     origin: vortex
     source: Vortex.Furniture/StuffData/StuffDataBase.cs
     symbol: StuffDataBase
-    line: 43
+    line: 64
   - id: ev_acb5e282c8b3
     kind: emulator_flow
     authority: vortex_emulator

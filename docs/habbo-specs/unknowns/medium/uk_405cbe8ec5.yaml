@@ -10,7 +10,7 @@
 
 spec: unknown
 spec_version: 1
-generated_digest: "sha256:056dc7f6904eb9b828df3e549f4591d65c47110056e2fe783344ee06f2cdae5e"
+generated_digest: "sha256:2dbe452f280ff9e0c7df11b723503a8512318a125feda57507addcedfe91a0ce"
 generated:
   id: uk_405cbe8ec5
   subject: "collectibles.mint_item: what the server sends when it refuses"
@@ -88,13 +88,13 @@ generated:
     origin: vortex
     source: Vortex.Inventory/Grains/InventoryGrain.Furni.cs
     symbol: InventoryGrain
-    line: 858
+    line: 863
   - id: ev_d720d639bd09
     kind: emulator_flow
     authority: vortex_emulator
     origin: vortex
     source: Vortex.Players/Grains/Modules/PlayerInventoryModule.cs
     symbol: PlayerInventoryModule
-    line: 118
+    line: 134
 verified: {}
 manual: {}

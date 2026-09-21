@@ -10,7 +10,7 @@
 
 spec: scenarios
 spec_version: 1
-generated_digest: "sha256:3b1f20d00fd91a7dbdd5ad6e3da593c1d13bdc5044ffe3e52d59e3f94265c8da"
+generated_digest: "sha256:6e593b9b96292a656e66bf5d9891ff41a164b9b262d5147e753dfd9fc285412a"
 generated:
   feature: inventory.get_achievements
   scenarios:
@@ -115,6 +115,6 @@ generated:
     origin: vortex
     source: Vortex.Progression/Grains/PlayerAchievementGrain.cs
     symbol: PlayerAchievementGrain
-    line: 109
+    line: 110
 verified: {}
 manual: {}

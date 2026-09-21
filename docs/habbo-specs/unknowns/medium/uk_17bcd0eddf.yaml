@@ -10,7 +10,7 @@
 
 spec: unknown
 spec_version: 1
-generated_digest: "sha256:a2f8a5521b73acf1d0a874906943121c414bf59820a4fadf812db592a71bb193"
+generated_digest: "sha256:f322c1d7f91d62cfd125580a5907698daf1fbeeb993f5c9e562578208bd32044"
 generated:
   id: uk_17bcd0eddf
   subject: "inventory.set_activated_badges: what the server sends when it refuses"
@@ -60,6 +60,6 @@ generated:
     origin: vortex
     source: Vortex.Progression/Grains/PlayerBadgeGrain.cs
     symbol: PlayerBadgeGrain
-    line: 81
+    line: 152
 verified: {}
 manual: {}

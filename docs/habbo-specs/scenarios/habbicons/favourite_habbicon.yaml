@@ -10,7 +10,7 @@
 
 spec: scenarios
 spec_version: 1
-generated_digest: "sha256:6eaa0ffe8c4bb17a3197588ae01a6946535782829d5213ddd7127b4deb9a8dc1"
+generated_digest: "sha256:3cbfb95c157a1f8ea3cc65bd2aea0149065edc12131e45b43cf4a69a78048782"
 generated:
   feature: habbicons.favourite_habbicon
   scenarios:
@@ -201,7 +201,7 @@ generated:
     origin: vortex
     source: Vortex.Players/Grains/PlayerGrain.cs
     symbol: PlayerGrain
-    line: 424
+    line: 429
   - id: ev_34bf3ac088e2
     kind: emulator_flow
     authority: vortex_emulator
@@ -222,7 +222,7 @@ generated:
     origin: vortex
     source: Vortex.Rooms/Object/Avatars/Player/RoomPlayerAvatar.cs
     symbol: RoomPlayerAvatar
-    line: 93
+    line: 107
   - id: ev_d53218d99bdd
     kind: emulator_flow
     authority: vortex_emulator

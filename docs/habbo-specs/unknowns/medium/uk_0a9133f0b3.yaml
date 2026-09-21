@@ -10,7 +10,7 @@
 
 spec: unknown
 spec_version: 1
-generated_digest: "sha256:b677cd78010701b978fd4857166761afe37d1167369e7b7f6bdb6bf1e0981383"
+generated_digest: "sha256:9fee0f3fd0c2b38b6c23a6a93cb6cdb09ac991a39caeeaed325cafdba95cecba"
 generated:
   id: uk_0a9133f0b3
   subject: "messenger.request_friend: what the server sends when it refuses"
@@ -25,7 +25,7 @@ generated:
     origin: vortex
     source: Vortex.Primitives/Orleans/GrainFactoryExtensions.cs
     symbol: GrainFactoryExtensions
-    line: 234
+    line: 235
   - id: ev_22d108ba3e5f
     kind: emulator_handler
     authority: vortex_emulator

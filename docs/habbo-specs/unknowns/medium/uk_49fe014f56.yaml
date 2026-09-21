@@ -10,7 +10,7 @@
 
 spec: unknown
 spec_version: 1
-generated_digest: "sha256:0b952bed55407b0c9879af93fde1ae5ba5c5e3a1d3b0bf941d7396d0c6a29ab0"
+generated_digest: "sha256:1fb4f01c6c79c231a97a7aceaeedd7bfb49b834ac18606026022cdba67eeb42e"
 generated:
   id: uk_49fe014f56
   subject: "room.delete_room: what the server sends when it refuses"
@@ -137,7 +137,7 @@ generated:
     origin: vortex
     source: Vortex.Rooms/Grains/Modules/RoomMapModule.Avatar.cs
     symbol: RoomMapModule
-    line: 362
+    line: 363
   - id: ev_e439cab6b248
     kind: emulator_flow
     authority: vortex_emulator
@@ -151,7 +151,7 @@ generated:
     origin: vortex
     source: Vortex.Rooms/Grains/Modules/RoomAvatarModule.cs
     symbol: RoomAvatarModule
-    line: 155
+    line: 165
   - id: ev_f13d6bcce744
     kind: emulator_flow
     authority: vortex_emulator

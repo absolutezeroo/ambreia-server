@@ -10,7 +10,7 @@
 
 spec: scenarios
 spec_version: 1
-generated_digest: "sha256:7ab7f179e979b350a7c3d25b74584f5984cbcc986da03c6e63e6f96c5ce38a60"
+generated_digest: "sha256:0929a8aa6905c52b40ee45701e0d9e117ef5f1e89cb30fb51d35c4795fefb86e"
 generated:
   feature: camera.photo_competition
   scenarios:
@@ -136,6 +136,6 @@ generated:
     origin: vortex
     source: Vortex.Players/Grains/PlayerCameraGrain.cs
     symbol: PlayerCameraGrain
-    line: 315
+    line: 410
 verified: {}
 manual: {}

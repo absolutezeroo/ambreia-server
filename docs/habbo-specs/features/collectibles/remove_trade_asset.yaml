@@ -10,7 +10,7 @@
 
 spec: feature
 spec_version: 1
-generated_digest: "sha256:e4b6eec3643356a8f98dd9f75c7360f1783db5e7a3bed291687cd7c9b39f7c9c"
+generated_digest: "sha256:9eefbcef28533f57f0f228f785f6b181ced0b214eba304d4f65d33243c987fd5"
 generated:
   id: collectibles.remove_trade_asset
   domain: collectibles
@@ -92,7 +92,7 @@ generated:
     origin: vortex
     source: Vortex.Rooms/Grains/Systems/RoomTradingSystem.cs
     symbol: RoomTradingSystem
-    line: 273
+    line: 274
   - id: ev_6938df432a77
     kind: emulator_flow
     authority: vortex_emulator
@@ -106,7 +106,7 @@ generated:
     origin: vortex
     source: Vortex.Rooms/Grains/RoomTradeSession.cs
     symbol: RoomTradeSession
-    line: 56
+    line: 62
   - id: ev_91b2b205ea06
     kind: emulator_handler
     authority: vortex_emulator

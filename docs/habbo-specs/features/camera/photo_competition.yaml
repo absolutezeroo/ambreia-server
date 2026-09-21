@@ -10,7 +10,7 @@
 
 spec: feature
 spec_version: 1
-generated_digest: "sha256:0d0c6ad4a9a7691ec8797c258311a0a01a48c3e72d6b2ef3d9078907d4b2ecdc"
+generated_digest: "sha256:62201fc76f7908eb635f4da9fd8a580eaa49725ec8d2f18f6d3d8130594eb468"
 generated:
   id: camera.photo_competition
   domain: camera
@@ -116,7 +116,7 @@ generated:
     origin: vortex
     source: Vortex.Players/Grains/PlayerCameraGrain.cs
     symbol: PlayerCameraGrain
-    line: 311
+    line: 406
   - id: ev_fd3592a2e25d
     kind: emulator_handler
     authority: vortex_emulator
