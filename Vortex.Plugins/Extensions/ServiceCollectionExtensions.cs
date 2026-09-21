@@ -32,7 +32,14 @@ public static class ServiceCollectionExtensions
 
         services.AddHostedService<PluginBootstrapper>();
 
-        if (builder.Environment.IsDevelopment() && pluginSection.GetValue<bool>("HotReloadEnabled"))
+        // Read through the config class, never by key name. The section carries no
+        // HotReloadEnabled key -- appsettings.json has no Vortex:Plugin section at all -- and
+        // GetValue<bool> answers false for a key that is absent instead of falling back to the
+        // option's own default. PluginConfig.HotReloadEnabled says true, and hot reload was off
+        // in development anyway; binding the section gives the default its say.
+        PluginConfig pluginConfig = pluginSection.Get<PluginConfig>() ?? new PluginConfig();
+
+        if (builder.Environment.IsDevelopment() && pluginConfig.HotReloadEnabled)
         {
             services.AddHostedService<PluginHotReloadService>();
         }

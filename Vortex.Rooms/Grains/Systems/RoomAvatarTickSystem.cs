@@ -198,7 +198,14 @@ public sealed class RoomAvatarTickSystem(RoomGrain roomGrain)
                     }
                 }
 
-                throw new VortexException(VortexErrorCodeEnum.InvalidMoveTarget);
+                // A step the map refuses is the ordinary end of a walk, not a failure: the tile was
+                // taken, raised or closed while the avatar was on its way, and there is no longer a
+                // path to the goal. Stop and say nothing. This used to throw and be caught below,
+                // which cost an exception and a warning line per blocked avatar per tick, and made
+                // a real fault in the walk path look exactly like a tile somebody else stepped on.
+                await _roomGrain.AvatarModule.StopWalkingAsync(avatar, ct);
+
+                return;
             }
 
             RoomObjectId prevHighestItemId = _roomGrain._state.TileHighestFloorItems[prevTileId];
@@ -269,9 +276,12 @@ public sealed class RoomAvatarTickSystem(RoomGrain roomGrain)
 
             avatar.NextTileId = nextTileId;
         }
+        // Nothing above throws to say "this step is blocked" any more, so whatever lands here is a
+        // genuine fault in the walk path and is logged as one. Keep it: a room that cannot advance
+        // one avatar must not stop ticking the others.
         catch (Exception ex)
         {
-            _roomGrain._logger.LogWarning(
+            _roomGrain._logger.LogError(
                 ex,
                 "Failed to advance avatar {ObjectId} to next tile in room {RoomId}; stopping walk.",
                 avatar.ObjectId,
