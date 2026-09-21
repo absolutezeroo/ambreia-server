@@ -102,4 +102,18 @@ public interface IWebApiPhotoService
         int? viewerId,
         CancellationToken ct
     );
+
+    /// <summary>
+    /// The caller's OWN photos — published and not deleted, with no <c>ProfileVisible</c> condition.
+    /// </summary>
+    /// <remarks>
+    /// "Mine, for attaching" is a different question from "this player's public gallery", and the
+    /// answer legitimately differs by who is asking. <see cref="GetPlayerPhotosAsync"/> requires the
+    /// owner's <c>ProfileVisible</c>, which defaults to <c>false</c> in this hotel — so a default
+    /// player asking that route for their own photos gets an empty list, which is correct for a
+    /// visitor and wrong for the picker in the feed composer, which needs the caller's own photos
+    /// regardless of that setting. The gallery's rule is untouched; this is a narrower, additional
+    /// read for the one caller who is always allowed to see these rows: their own owner.
+    /// </remarks>
+    Task<IReadOnlyList<PhotoSummary>> GetMyPhotosAsync(int playerId, CancellationToken ct);
 }

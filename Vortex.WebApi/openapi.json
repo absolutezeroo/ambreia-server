@@ -1388,6 +1388,50 @@
         }
       }
     },
+    "/api/user/photos": {
+      "get": {
+        "tags": [
+          "User"
+        ],
+        "summary": "The signed-in player\u0027s own published photos, with no ProfileVisible gate.",
+        "operationId": "MyPhotos",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/PhotoSummary"
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/user/purse": {
       "get": {
         "tags": [

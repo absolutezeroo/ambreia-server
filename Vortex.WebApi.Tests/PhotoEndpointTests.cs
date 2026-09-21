@@ -257,6 +257,38 @@ public sealed class PhotoEndpointTests
     }
 
     /// <summary>
+    /// The reason <c>GET /api/user/photos</c> exists: "mine, for attaching" is not "this player's
+    /// public gallery", and the two routes must disagree on a hidden profile the same way the task
+    /// that added the session-scoped route says they should. `FakePlayerService` resolves the
+    /// authenticated session to player 100, so that is the id seeded here, hidden.
+    /// </summary>
+    [Fact]
+    public async Task MyPhotos_AnswersMineWithAHiddenProfile_WhileThePublicRouteAnswersEmpty()
+    {
+        await using WebApiTestFactory factory = new();
+        await SeedAsync(factory, 100, "Tester", visible: false, keys: [("secrete", Published)]);
+
+        using HttpClient client = factory.CreateAuthenticatedClient();
+
+        JsonElement mine = await GetJsonAsync(client, "/api/user/photos");
+        JsonElement pub = await GetJsonAsync(factory, "/api/public/users/100/photos");
+
+        Keys(mine).Should().Equal("secrete");
+        pub.EnumerateArray().Should().BeEmpty();
+    }
+
+    /// <summary>A visitor with no session has no "mine" to answer.</summary>
+    [Fact]
+    public async Task MyPhotos_IsRefusedWithoutASession()
+    {
+        await using WebApiTestFactory factory = new();
+
+        HttpResponseMessage response = await factory.Client.GetAsync("/api/user/photos");
+
+        response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
+    }
+
+    /// <summary>
     /// The player the signed-in account's selected avatar resolves to — `FakePlayerService` answers
     /// id 100, so the liker is somebody other than the photo's owner, which is the normal case.
     /// </summary>
@@ -280,9 +312,12 @@ public sealed class PhotoEndpointTests
     private static string[] Keys(JsonElement items) =>
         [.. items.EnumerateArray().Select(item => item.GetProperty("key").GetString() ?? "")];
 
-    private static async Task<JsonElement> GetJsonAsync(WebApiTestFactory factory, string url)
+    private static async Task<JsonElement> GetJsonAsync(WebApiTestFactory factory, string url) =>
+        await GetJsonAsync(factory.Client, url);
+
+    private static async Task<JsonElement> GetJsonAsync(HttpClient client, string url)
     {
-        string body = await factory.Client.GetStringAsync(url);
+        string body = await client.GetStringAsync(url);
 
         return JsonDocument.Parse(body).RootElement.Clone();
     }

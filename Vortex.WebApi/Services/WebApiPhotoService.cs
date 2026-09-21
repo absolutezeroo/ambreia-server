@@ -116,6 +116,29 @@ public sealed class WebApiPhotoService(IDbContextFactory<VortexDbContext> dbCtxF
             .ConfigureAwait(false);
     }
 
+    public async Task<IReadOnlyList<PhotoSummary>> GetMyPhotosAsync(
+        int playerId,
+        CancellationToken ct
+    )
+    {
+        await using VortexDbContext db = await _db.CreateDbContextAsync(ct).ConfigureAwait(false);
+
+        // Deliberately NOT Published(db): that gate also requires the owner's ProfileVisible, and
+        // here the owner and the caller are the same player. See IWebApiPhotoService's remarks.
+        return await Project(
+                db.CameraPhotos.AsNoTracking()
+                    .Where(p =>
+                        p.PlayerEntityId == playerId && p.PublishedAt != null && p.DeletedAt == null
+                    )
+                    .OrderByDescending(p => p.PublishedAt)
+                    .ThenByDescending(p => p.Id)
+                    .Take(MaximumProfilePhotos),
+                playerId
+            )
+            .ToListAsync(ct)
+            .ConfigureAwait(false);
+    }
+
     public async Task<PhotoSummary?> SetLikeAsync(
         string key,
         int playerId,

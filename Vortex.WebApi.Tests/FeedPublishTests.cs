@@ -5,8 +5,10 @@ using System.Threading.Tasks;
 using FluentAssertions;
 using Vortex.Database.Context;
 using Vortex.Database.Entities.Feed;
+using Vortex.Database.Entities.Groups;
 using Vortex.Database.Entities.Players;
 using Vortex.Primitives.Feed;
+using Vortex.Primitives.Groups.Enums;
 using Vortex.Primitives.Players.Enums;
 using Vortex.Primitives.Rooms.Enums;
 using Vortex.WebApi.Services;
@@ -203,6 +205,150 @@ public sealed class FeedPublishTests
                     + "posting to the public feed"
             );
         post!.Body.Should().Be("coucou");
+    }
+
+    /// <summary>
+    /// The other half of the trust boundary the class remark names: a photo attached to a post must
+    /// resolve to a row this caller themselves published, never a key that merely exists.
+    /// </summary>
+    [Fact]
+    public async Task APhotoBelongingToSomebodyElseIsRefused()
+    {
+        await using WebApiTestFactory factory = new();
+        await PlayerAsync(factory, 1, "Prodiigy");
+        await PlayerAsync(factory, 2, "Autre");
+
+        await using (VortexDbContext db = await factory.DbContexts.CreateDbContextAsync())
+        {
+            db.CameraPhotos.Add(
+                new Vortex.Database.Entities.Camera.CameraPhotoEntity
+                {
+                    PhotoKey = "lapienne",
+                    PlayerEntityId = 2,
+                    SceneBytes = 1,
+                    RejectedExternalSprites = 0,
+                    PublishedAt = DateTime.UtcNow,
+                }
+            );
+
+            await db.SaveChangesAsync();
+        }
+
+        (FeedRefusal refusal, _) = await Service(factory)
+            .PublishAsync(
+                1,
+                new FeedPublishRequest(FeedPostKind.Photo, "", ["lapienne"], null, null, null),
+                default
+            );
+
+        refusal.Should().Be(FeedRefusal.PhotoNotYours);
+    }
+
+    /// <summary>
+    /// Publishing costs credits precisely because it is the act that makes a photo public — an
+    /// unpublished photo of the caller's own is still private, so attaching it must refuse exactly
+    /// like a stranger's photo would.
+    /// </summary>
+    [Fact]
+    public async Task AnUnpublishedPhotoOfMyOwnIsRefused()
+    {
+        await using WebApiTestFactory factory = new();
+        await PlayerAsync(factory, 1, "Prodiigy");
+
+        await using (VortexDbContext db = await factory.DbContexts.CreateDbContextAsync())
+        {
+            db.CameraPhotos.Add(
+                new Vortex.Database.Entities.Camera.CameraPhotoEntity
+                {
+                    PhotoKey = "privee",
+                    PlayerEntityId = 1,
+                    SceneBytes = 1,
+                    RejectedExternalSprites = 0,
+                    PublishedAt = null,
+                }
+            );
+
+            await db.SaveChangesAsync();
+        }
+
+        (FeedRefusal refusal, _) = await Service(factory)
+            .PublishAsync(
+                1,
+                new FeedPublishRequest(FeedPostKind.Photo, "", ["privee"], null, null, null),
+                default
+            );
+
+        refusal.Should().Be(FeedRefusal.PhotoNotYours);
+    }
+
+    /// <summary>
+    /// The mirror of <see cref="AGroupTheAuthorIsNotInIsRefused"/>: membership is the server's rule,
+    /// so a group the author IS in publishes, carries the group's identity on the card, and still
+    /// keeps the real author underneath it.
+    /// </summary>
+    [Fact]
+    public async Task AGroupTheAuthorIsInPublishesUnderIt()
+    {
+        await using WebApiTestFactory factory = new();
+        await PlayerAsync(factory, 1, "Prodiigy");
+
+        int groupId;
+
+        await using (VortexDbContext db = await factory.DbContexts.CreateDbContextAsync())
+        {
+            // GroupEntity/GroupMemberEntity carry several `required` navigation properties a group
+            // otherwise has no use for in this test (the room, the owner's own entity) — GroupFactory
+            // is the single creation path that already knows how to leave those null! the way the
+            // in-memory provider tolerates (see GroupCreationTests.cs for the same pattern).
+            GroupEntity group = GroupFactory.Create(
+                name: "Interpol",
+                badge: "b0501Xs09114s06017",
+                roomEntityId: 42,
+                ownerPlayerEntityId: 1,
+                type: GroupType.Open,
+                colorOne: "#1E5B73",
+                colorTwo: "#FFCC00",
+                description: "Standard ID"
+            );
+
+            db.Groups.Add(group);
+            await db.SaveChangesAsync();
+
+            db.GroupMembers.Add(
+                new GroupMemberEntity
+                {
+                    GroupEntityId = group.Id,
+                    PlayerEntityId = 1,
+                    Rank = GroupMemberRank.Member,
+                    GroupEntity = group,
+                    PlayerEntity = null!,
+                }
+            );
+
+            await db.SaveChangesAsync();
+
+            groupId = group.Id;
+        }
+
+        (FeedRefusal refusal, FeedPost? post) = await Service(factory)
+            .PublishAsync(
+                1,
+                new FeedPublishRequest(
+                    FeedPostKind.Status,
+                    "au nom du groupe",
+                    null,
+                    null,
+                    null,
+                    groupId
+                ),
+                default
+            );
+
+        refusal.Should().Be(FeedRefusal.None);
+        post!.GroupId.Should().Be(groupId);
+        post.GroupName.Should().Be("Interpol");
+        post.AuthorName.Should()
+            .Be("Prodiigy", "the row keeps the person even when the card shows the group");
     }
 
     private static IWebApiFeedService Service(WebApiTestFactory factory) =>

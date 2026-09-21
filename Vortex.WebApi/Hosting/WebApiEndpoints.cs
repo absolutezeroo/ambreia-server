@@ -335,6 +335,56 @@ internal static partial class WebApiEndpoints
             .WithName("PlayerPhotos")
             .WithSummary("One player's published photos, newest first.")
             .WithTags(TagPublic);
+
+        // Mine, for attaching, is not this player's public gallery above: PlayerPhotos requires the
+        // owner's ProfileVisible, which defaults to FALSE in this hotel, so a default player asking
+        // the public route for their own photos gets an empty list. The feed composer's picker asks
+        // a different question — the caller's own published photos, with no ProfileVisible gate,
+        // because publishing already IS the consent (the same rule WebApiFeedService.Readable()
+        // states for the feed).
+        app.MapGet(
+                "/api/user/photos",
+                async Task<
+                    Results<
+                        Ok<IReadOnlyList<PhotoSummary>>,
+                        NotFound<ApiErrorResponse>,
+                        UnauthorizedError
+                    >
+                > (
+                    HttpContext ctx,
+                    [FromServices] IWebApiPhotoService photos,
+                    [FromServices] WebApiSessionStore sessions,
+                    [FromServices] IWebApiPlayerService players,
+                    CancellationToken ct
+                ) =>
+                {
+                    (int? playerId, IResult? refusal) = await SelectedPlayerAsync(
+                            ctx,
+                            sessions,
+                            players,
+                            ct
+                        )
+                        .ConfigureAwait(false);
+
+                    if (playerId is null)
+                    {
+                        // No session, or a session with no avatar: a photo belongs to a PLAYER, and
+                        // an account without one has nobody's photos to answer.
+                        return refusal is UnauthorizedError unauthorized
+                            ? unauthorized
+                            : TypedResults.NotFound(new ApiErrorResponse("pocket.auth.no_avatars"));
+                    }
+
+                    return TypedResults.Ok(
+                        await photos.GetMyPhotosAsync(playerId.Value, ct).ConfigureAwait(false)
+                    );
+                }
+            )
+            .WithName("MyPhotos")
+            .WithSummary(
+                "The signed-in player's own published photos, with no ProfileVisible gate."
+            )
+            .WithTags(TagUser);
     }
 
     /// <summary>
