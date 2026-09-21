@@ -6,6 +6,7 @@ using Vortex.Database.Entities.Catalog;
 using Vortex.Database.Entities.Collectibles;
 using Vortex.Database.Entities.Commerce;
 using Vortex.Database.Entities.Errors;
+using Vortex.Database.Entities.Feed;
 using Vortex.Database.Entities.Fishing;
 using Vortex.Database.Entities.Furniture;
 using Vortex.Database.Entities.Gamedata;
@@ -146,6 +147,20 @@ public class VortexDbContext(DbContextOptions<VortexDbContext> options)
     public DbSet<CameraPhotoEntity> CameraPhotos { get; init; } = null!;
 
     public DbSet<CameraPhotoLikeEntity> CameraPhotoLikes { get; init; } = null!;
+
+    public DbSet<WebFeedPostEntity> WebFeedPosts { get; init; } = null!;
+
+    public DbSet<WebFeedPostPhotoEntity> WebFeedPostPhotos { get; init; } = null!;
+
+    public DbSet<WebFeedPollChoiceEntity> WebFeedPollChoices { get; init; } = null!;
+
+    public DbSet<WebFeedPollVoteEntity> WebFeedPollVotes { get; init; } = null!;
+
+    public DbSet<WebFeedReactionEntity> WebFeedReactions { get; init; } = null!;
+
+    public DbSet<WebFeedTagEntity> WebFeedTags { get; init; } = null!;
+
+    public DbSet<WebFeedPostTagEntity> WebFeedPostTags { get; init; } = null!;
 
     public DbSet<NavigatorTopLevelContextEntity> NavigatorTopLevelContexts { get; init; } = null!;
 
