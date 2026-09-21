@@ -86,6 +86,24 @@ public sealed class FeedDeleteTests
                 )
         ).Post!;
 
+        // And a REPLY under that comment — the second level the thread allows. Deleting the root
+        // has to reach it too, or it survives under a parent nobody can reach.
+        FeedPost grandChild = (
+            await Service(factory)
+                .PublishAsync(
+                    1,
+                    new FeedPublishRequest(
+                        Kind: FeedPostKind.Status,
+                        Body: "encore",
+                        PhotoKeys: null,
+                        PollChoices: null,
+                        ParentId: child.Id,
+                        GroupId: null
+                    ),
+                    default
+                )
+        ).Post!;
+
         await Service(factory).DeleteAsync(1, root.Id, default);
 
         // Somebody ELSE's comment goes with the post it was made on: it is unreadable out of the
@@ -93,6 +111,7 @@ public sealed class FeedDeleteTests
         (await Service(factory).GetPostAsync(child.Id, null, default))
             .Should()
             .BeNull();
+        (await Service(factory).GetPostAsync(grandChild.Id, null, default)).Should().BeNull();
     }
 
     [Fact]

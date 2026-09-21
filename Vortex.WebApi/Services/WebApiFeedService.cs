@@ -202,11 +202,22 @@ public sealed class WebApiFeedService(IDbContextFactory<VortexDbContext> dbCtxFa
                 return (FeedRefusal.ParentNotFound, null);
             }
 
-            // One level deep. A reply to a reply would make the thread a tree, which the page this
-            // serves does not draw and the read path does not walk.
-            if (parent.ParentEntityId is not null)
+            // TWO levels deep: a post, its comments, and replies to those comments. A reply to a
+            // reply is refused, which is what bounds the tree — the read path fetches exactly two
+            // batches of children and the page indents exactly twice, and neither would survive an
+            // arbitrary depth without becoming a loop.
+            //
+            // So the parent may have a parent, but its parent may not: that is the fourth level.
+            if (parent.ParentEntityId is int grandParentId)
             {
-                return (FeedRefusal.ParentNotRoot, null);
+                bool parentIsItselfAReply = await Readable(db)
+                    .AnyAsync(p => p.Id == grandParentId && p.ParentEntityId != null, ct)
+                    .ConfigureAwait(false);
+
+                if (parentIsItselfAReply)
+                {
+                    return (FeedRefusal.ParentNotRoot, null);
+                }
             }
         }
 
@@ -451,14 +462,30 @@ public sealed class WebApiFeedService(IDbContextFactory<VortexDbContext> dbCtxFa
         post.DeletedAt = now;
 
         // The comments go too, other people's included — see the interface for why. Loaded and
-        // looped rather than `ExecuteUpdateAsync`: a thread holds tens of comments, not
-        // thousands, and the in-memory provider the tests run on does not implement that call.
+        // looped rather than `ExecuteUpdateAsync`: a thread holds tens of rows, not thousands, and
+        // the in-memory provider the tests run on does not implement that call.
+        //
+        // Two passes because the thread is two levels deep: the comments on this post, then the
+        // replies to those comments. Missing the second pass would leave replies live under a
+        // parent nobody can reach — in nobody's feed and nobody's thread.
         List<WebFeedPostEntity> comments = await db
-            .WebFeedPosts.Where(p => p.ParentEntityId == postId && p.DeletedAt == null)
+            .WebFeedPosts.Where(p => p.ParentEntityId == postId)
             .ToListAsync(ct)
             .ConfigureAwait(false);
 
-        foreach (WebFeedPostEntity child in comments)
+        List<int> commentIds = [.. comments.Select(c => c.Id)];
+
+        List<WebFeedPostEntity> replies =
+            commentIds.Count == 0
+                ? []
+                : await db
+                    .WebFeedPosts.Where(p =>
+                        p.ParentEntityId != null && commentIds.Contains(p.ParentEntityId.Value)
+                    )
+                    .ToListAsync(ct)
+                    .ConfigureAwait(false);
+
+        foreach (WebFeedPostEntity child in comments.Concat(replies))
         {
             child.DeletedAt = now;
         }
@@ -539,9 +566,39 @@ public sealed class WebApiFeedService(IDbContextFactory<VortexDbContext> dbCtxFa
             c.ParentEntityId!.Value
         );
 
-        // Every post this batch answers for — the roots AND the comments just fetched — because a
-        // comment is a post with a parent and can carry its own photos, poll, tags and reactions.
-        List<int> allPostIds = [.. rootIds, .. allComments.Select(c => c.Id)];
+        // A SECOND batch, and exactly one: the thread is two levels deep, so replies hang off the
+        // comments just fetched and nothing hangs off a reply. One more query, not one per
+        // comment — and the loop stops here rather than continuing, which is what `PublishAsync`'s
+        // depth guard is protecting.
+        int[] commentIds = [.. allComments.Select(c => c.Id)];
+
+        List<WebFeedPostEntity> allReplies =
+            commentIds.Length == 0
+                ? []
+                : await Readable(db)
+                    .Where(p =>
+                        p.ParentEntityId != null && commentIds.Contains(p.ParentEntityId!.Value)
+                    )
+                    .Include(p => p.PlayerEntity)
+                    .Include(p => p.GroupEntity)
+                    .OrderByDescending(p => p.CreatedAt)
+                    .ThenByDescending(p => p.Id)
+                    .ToListAsync(ct)
+                    .ConfigureAwait(false);
+
+        ILookup<int, WebFeedPostEntity> repliesByParent = allReplies.ToLookup(r =>
+            r.ParentEntityId!.Value
+        );
+
+        // Every post this batch answers for — the roots, their comments AND those comments'
+        // replies — because a comment is a post with a parent and can carry its own photos, poll,
+        // tags and reactions, and so can a reply.
+        List<int> allPostIds =
+        [
+            .. rootIds,
+            .. allComments.Select(c => c.Id),
+            .. allReplies.Select(r => r.Id),
+        ];
 
         Dictionary<int, List<PhotoSummary>> photosByPost = await LoadPhotosAsync(db, allPostIds, ct)
             .ConfigureAwait(false);
@@ -574,20 +631,41 @@ public sealed class WebApiFeedService(IDbContextFactory<VortexDbContext> dbCtxFa
             List<WebFeedPostEntity> preview = children.Take(take).ToList();
             preview.Reverse();
 
+            // A comment carries its own replies, oldest first like the thread above it, and its
+            // own count — the page shows both the same way it shows a root's.
             List<FeedPost> commentPosts =
             [
                 .. preview.Select(child =>
-                    Build(
+                {
+                    List<WebFeedPostEntity> theirReplies = [.. repliesByParent[child.Id]];
+
+                    theirReplies.Reverse();
+
+                    return Build(
                         child,
                         viewerId,
                         photosByPost,
                         pollsByPost,
                         tagsByPost,
                         reactionsByPost,
-                        0,
-                        []
-                    )
-                ),
+                        theirReplies.Count,
+                        [
+                            .. theirReplies.Select(reply =>
+                                Build(
+                                    reply,
+                                    viewerId,
+                                    photosByPost,
+                                    pollsByPost,
+                                    tagsByPost,
+                                    reactionsByPost,
+                                    // A reply has no children: the depth guard makes sure of it.
+                                    0,
+                                    []
+                                )
+                            ),
+                        ]
+                    );
+                }),
             ];
 
             items.Add(

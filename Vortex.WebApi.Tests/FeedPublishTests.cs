@@ -97,7 +97,7 @@ public sealed class FeedPublishTests
     }
 
     [Fact]
-    public async Task ACommentOnACommentIsRefused()
+    public async Task ACommentOnACommentIsAllowedAndCarriesItsReplies()
     {
         await using WebApiTestFactory factory = new();
         await PlayerAsync(factory, 1, "Prodiigy");
@@ -127,7 +127,7 @@ public sealed class FeedPublishTests
                 )
         ).Post!;
 
-        (FeedRefusal refusal, _) = await Service(factory)
+        (FeedRefusal refusal, FeedPost? reply) = await Service(factory)
             .PublishAsync(
                 1,
                 new FeedPublishRequest(
@@ -141,8 +141,76 @@ public sealed class FeedPublishTests
                 default
             );
 
+        refusal.Should().Be(FeedRefusal.None);
+        reply.Should().NotBeNull();
+
+        // The reply hangs under the COMMENT, not beside it under the root: the root still counts
+        // one comment, and that comment carries the reply.
+        FeedPost reread = (await Service(factory).GetPostAsync(root.Id, null, default))!;
+
+        reread.CommentCount.Should().Be(1);
+        reread.Comments.Should().ContainSingle();
+        reread.Comments[0].CommentCount.Should().Be(1);
+        reread.Comments[0].Comments.Should().ContainSingle(c => c.Body == "encore");
+    }
+
+    [Fact]
+    public async Task AReplyToAReplyIsRefused()
+    {
+        await using WebApiTestFactory factory = new();
+        await PlayerAsync(factory, 1, "Prodiigy");
+
+        FeedPost root = (
+            await Service(factory)
+                .PublishAsync(
+                    1,
+                    new FeedPublishRequest(FeedPostKind.Status, "coucou", null, null, null, null),
+                    default
+                )
+        ).Post!;
+
+        FeedPost comment = (await ReplyAsync(factory, root.Id, "et hop"))!;
+        FeedPost reply = (await ReplyAsync(factory, comment.Id, "encore"))!;
+
+        // The fourth level is where it stops. That bound is what keeps the read to two batched
+        // queries and the page to two indents; without it both become a loop.
+        (FeedRefusal refusal, _) = await Service(factory)
+            .PublishAsync(
+                1,
+                new FeedPublishRequest(
+                    Kind: FeedPostKind.Status,
+                    Body: "et encore",
+                    PhotoKeys: null,
+                    PollChoices: null,
+                    ParentId: reply.Id,
+                    GroupId: null
+                ),
+                default
+            );
+
         refusal.Should().Be(FeedRefusal.ParentNotRoot);
     }
+
+    private static async Task<FeedPost?> ReplyAsync(
+        WebApiTestFactory factory,
+        int parentId,
+        string body
+    ) =>
+        (
+            await Service(factory)
+                .PublishAsync(
+                    1,
+                    new FeedPublishRequest(
+                        Kind: FeedPostKind.Status,
+                        Body: body,
+                        PhotoKeys: null,
+                        PollChoices: null,
+                        ParentId: parentId,
+                        GroupId: null
+                    ),
+                    default
+                )
+        ).Post;
 
     [Fact]
     public async Task ACommentCanCarryAPollOfItsOwn()
