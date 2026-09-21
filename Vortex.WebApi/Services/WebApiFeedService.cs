@@ -285,6 +285,36 @@ public sealed class WebApiFeedService(IDbContextFactory<VortexDbContext> dbCtxFa
             );
         }
 
+        foreach (string tag in FeedTags.Extract(text))
+        {
+            // Get-or-create, one row per tag for the whole hotel. Not a race worth locking: the
+            // unique index settles a simultaneous first use of the same tag, and the loser's next
+            // post finds the row the winner made.
+            int tagId = await db
+                .WebFeedTags.Where(t => t.Tag == tag)
+                .Select(t => t.Id)
+                .FirstOrDefaultAsync(ct)
+                .ConfigureAwait(false);
+
+            if (tagId == 0)
+            {
+                WebFeedTagEntity row = new() { Tag = tag };
+
+                db.WebFeedTags.Add(row);
+                await db.SaveChangesAsync(ct).ConfigureAwait(false);
+
+                tagId = row.Id;
+            }
+
+            db.WebFeedPostTags.Add(
+                new WebFeedPostTagEntity
+                {
+                    WebFeedPostEntityId = post.Id,
+                    WebFeedTagEntityId = tagId,
+                }
+            );
+        }
+
         await db.SaveChangesAsync(ct).ConfigureAwait(false);
 
         return (FeedRefusal.None, await GetPostAsync(post.Id, playerId, ct).ConfigureAwait(false));
