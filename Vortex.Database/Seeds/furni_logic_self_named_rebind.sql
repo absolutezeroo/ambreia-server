@@ -23,7 +23,15 @@
 -- list.
 --
 -- Runs after the generated pass, and re-runnable: `logic <> name` touches only the rows still
--- carrying the generated value.
+-- carrying the generated value. Adding a name here therefore needs a new migration to apply the
+-- file again; the rows the earlier round already repaired are skipped by that same guard.
+--
+-- One name deliberately absent: `wf_act_forward_user`. It is a registered key here, so it looks
+-- like it belongs -- but the furni carrying that name is the forward-to-another-room box (its
+-- `logic` is `wf_act_forward_user_to_room`, which is also what `wf_act_teleport_to_room` carries),
+-- and the key was claimed by `WiredActionMoveUser`, which nudges a user one tile inside the room.
+-- Rebinding it would point a room forward at the wrong box. The membership test for this list is
+-- that the name and the behaviour agree, not that the name is a key.
 
 UPDATE `furniture_definitions`
    SET `logic` = `name`
@@ -36,6 +44,8 @@ UPDATE `furniture_definitions`
     'wf_act_give_furni',
     'wf_act_init_transaction',
     'wf_act_neg_send_signal',
+    'wf_act_rel_mov',
+    'wf_act_remove_furni_inventory',
     'wf_act_send_signal',
     'wf_act_toggle_to_rnd',
     'wf_act_unfreeze_habbo',

@@ -15,11 +15,17 @@ using Vortex.Rooms.Wired.Rules;
 
 namespace Vortex.Rooms.Object.Logic.Furniture.Floor.Wired.Actions;
 
-/// <summary>Nudges the selected users one tile in a direction and/or rotates them (Habbo's "move user",
-/// <c>wf_act_forward_user</c>). Client MoveUser.ts: intParams = [move, rotate], where move is -1 (no
-/// move) or a direction 0-7, and rotate is -1 (no rotate), a direction 0-7, 9 (clockwise) or 10
-/// (counter-clockwise).</summary>
-[RoomObjectLogic("wf_act_forward_user")]
+/// <summary>Nudges the selected users one tile in a direction and/or rotates them (Habbo's "move
+/// user"). Client MoveUser.ts: intParams = [move, rotate], where move is -1 (no move) or a direction
+/// 0-7, and rotate is -1 (no rotate), a direction 0-7, 9 (clockwise) or 10 (counter-clockwise).
+/// <para>
+/// The key was <c>wf_act_forward_user</c>, which is a different box: the furni of that name in this
+/// hotel carries <c>wf_act_forward_user_to_room</c> -- the same logic as <c>wf_act_teleport_to_room</c>
+/// -- so "forward user" means forward them to another room, not one tile over. Nothing bound this
+/// class at all. The move-and-rotate furni is <c>wf_act_move_rotate_user</c>, whose name says exactly
+/// what the two int params do, and it binds by <c>wf_act_move_user_tiles</c>.
+/// </para></summary>
+[RoomObjectLogic("wf_act_move_user_tiles")]
 public class WiredActionMoveUser(
     IGrainFactory grainFactory,
     IStuffDataFactory stuffDataFactory,
