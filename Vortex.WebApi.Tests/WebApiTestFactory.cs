@@ -23,6 +23,7 @@ using Vortex.Primitives.Observability;
 using Vortex.Primitives.Shop;
 using Vortex.WebApi.Configuration;
 using Vortex.WebApi.Hosting;
+using Vortex.WebApi.Notifications;
 using Vortex.WebApi.Services;
 using Vortex.WebApi.Session;
 
@@ -162,7 +163,18 @@ internal sealed class WebApiTestFactory : IAsyncDisposable
 
         // Real for the same reason again: the feed's access rule (not deleted, author not hidden)
         // and its roots-only shape are exactly what is worth exercising against a database.
-        builder.Services.AddSingleton<IWebApiFeedService>(new WebApiFeedService(DbContexts));
+        builder.Services.AddSingleton<IWebApiFeedService>(
+            new WebApiFeedService(DbContexts, Events)
+        );
+
+        // Real too, and the sink beside it: what is worth testing about a notification is that the
+        // handler wrote the row the list then reads, which a fake on either side would hide.
+        builder.Services.AddSingleton<IWebApiNotificationService>(
+            new WebApiNotificationService(DbContexts)
+        );
+        builder.Services.AddSingleton<INotificationSink>(
+            new NotificationSink(DbContexts, NullLogger<NotificationSink>.Instance)
+        );
 
         WebApiAppConfigurator.ConfigureServices(builder.Services, config);
 
@@ -216,6 +228,12 @@ internal sealed class WebApiTestFactory : IAsyncDisposable
 
     /// <summary>Seed a photo with <c>Photos.Add(bytes)</c> and fetch it by the key it returns.</summary>
     public FakeCameraPhotoStore Photos { get; } = new();
+
+    /// <summary>
+    /// Everything the feed announced. There is no bus here, so this is how a test asks whether a
+    /// mention, a comment or a repost was raised at all.
+    /// </summary>
+    public FakeEventPublisher Events { get; } = new();
 
     /// <summary>The in-memory database behind the app, so a test can seed the rows it is about.</summary>
     public IDbContextFactory<VortexDbContext> DbContexts { get; }

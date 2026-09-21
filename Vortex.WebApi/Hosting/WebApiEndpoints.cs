@@ -84,6 +84,10 @@ internal static partial class WebApiEndpoints
         // publish route is the composer's, tagged User like every other route behind a session — see
         // WebApiEndpoints.Feed.cs.
         WebApiEndpointsFeed.MapFeed(app, TagPublic, TagUser);
+
+        // No public tag: a notification has exactly one reader, so both of its routes are the
+        // player's own.
+        WebApiEndpointsNotifications.MapNotifications(app, TagUser);
     }
 
     /// <summary>

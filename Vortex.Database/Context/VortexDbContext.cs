@@ -162,6 +162,8 @@ public class VortexDbContext(DbContextOptions<VortexDbContext> options)
 
     public DbSet<WebFeedPostTagEntity> WebFeedPostTags { get; init; } = null!;
 
+    public DbSet<WebNotificationEntity> WebNotifications { get; init; } = null!;
+
     public DbSet<NavigatorTopLevelContextEntity> NavigatorTopLevelContexts { get; init; } = null!;
 
     public DbSet<NavigatorFlatCategoryEntity> NavigatorFlatCategories { get; init; } = null!;

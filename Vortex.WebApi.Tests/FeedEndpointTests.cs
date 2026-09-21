@@ -126,7 +126,7 @@ public sealed class FeedEndpointTests
     }
 
     private static IWebApiFeedService Service(WebApiTestFactory factory) =>
-        new WebApiFeedService(factory.DbContexts);
+        new WebApiFeedService(factory.DbContexts, factory.Events);
 
     private static async Task<FeedPost> StatusAsync(WebApiTestFactory factory) =>
         (

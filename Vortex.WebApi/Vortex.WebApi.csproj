@@ -20,5 +20,6 @@
   <ItemGroup>
     <ProjectReference Include="..\Vortex.Database\Vortex.Database.csproj" />
     <ProjectReference Include="..\Vortex.Primitives\Vortex.Primitives.csproj" />
+    <ProjectReference Include="..\Vortex.Events\Vortex.Events.csproj" />
   </ItemGroup>
 </Project>

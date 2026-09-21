@@ -146,3 +146,9 @@ public sealed record TwoFactorEnrolmentResponse(string Secret, string Uri);
 /// body, which is not what this API has ever done.
 /// </summary>
 public sealed record NameSelectResponse(string Name);
+
+/// <summary>
+/// How many notifications the read swept up. Answered rather than an empty 200 so the page can
+/// zero its own counter without refetching the list it is already showing.
+/// </summary>
+public sealed record NotificationsReadResponse(int Read);

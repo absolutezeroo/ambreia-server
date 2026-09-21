@@ -12291,6 +12291,68 @@ namespace Vortex.Database.Migrations
                     b.ToTable("web_languages");
                 });
 
+            modelBuilder.Entity("Vortex.Database.Entities.Web.WebNotificationEntity", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasColumnName("id");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int?>("ActorPlayerEntityId")
+                        .HasColumnType("int")
+                        .HasColumnName("actor_player_id");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime(6)")
+                        .HasColumnName("created_at");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<DateTime>("CreatedAt"));
+
+                    b.Property<string>("Data")
+                        .HasMaxLength(512)
+                        .HasColumnType("varchar(512)")
+                        .HasColumnName("data");
+
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("datetime(6)")
+                        .HasColumnName("deleted_at");
+
+                    b.Property<int>("Kind")
+                        .HasColumnType("int")
+                        .HasColumnName("kind");
+
+                    b.Property<int>("PlayerEntityId")
+                        .HasColumnType("int")
+                        .HasColumnName("player_id");
+
+                    b.Property<DateTime?>("SeenAt")
+                        .HasColumnType("datetime(6)")
+                        .HasColumnName("seen_at");
+
+                    b.Property<int?>("TargetId")
+                        .HasColumnType("int")
+                        .HasColumnName("target_id");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("datetime(6)")
+                        .HasColumnName("updated_at");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlComputedColumn(b.Property<DateTime>("UpdatedAt"));
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ActorPlayerEntityId");
+
+                    b.HasIndex("PlayerEntityId", "CreatedAt")
+                        .IsDescending();
+
+                    b.ToTable("web_notifications");
+                });
+
             modelBuilder.Entity("Vortex.Database.Entities.Wired.RoomWiredLogEntity", b =>
                 {
                     b.Property<int>("Id")
@@ -14598,6 +14660,23 @@ namespace Vortex.Database.Migrations
                         .IsRequired();
 
                     b.Navigation("Article");
+                });
+
+            modelBuilder.Entity("Vortex.Database.Entities.Web.WebNotificationEntity", b =>
+                {
+                    b.HasOne("Vortex.Database.Entities.Players.PlayerEntity", "ActorPlayerEntity")
+                        .WithMany()
+                        .HasForeignKey("ActorPlayerEntityId");
+
+                    b.HasOne("Vortex.Database.Entities.Players.PlayerEntity", "PlayerEntity")
+                        .WithMany()
+                        .HasForeignKey("PlayerEntityId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("ActorPlayerEntity");
+
+                    b.Navigation("PlayerEntity");
                 });
 
             modelBuilder.Entity("Vortex.Database.Entities.Wired.RoomWiredLogEntity", b =>

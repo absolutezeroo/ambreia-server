@@ -8,6 +8,7 @@ using Microsoft.EntityFrameworkCore;
 using Vortex.Database.Context;
 using Vortex.Database.Entities.Feed;
 using Vortex.Database.Entities.Groups;
+using Vortex.Primitives.Events;
 using Vortex.Primitives.Feed;
 
 namespace Vortex.WebApi.Services;
@@ -36,9 +37,17 @@ namespace Vortex.WebApi.Services;
 /// over each post's comments) turns a 20-post page into hundreds of sequential round trips against a
 /// real database.
 /// </para>
+/// <para>
+/// It announces three things on the event bus — a mention, a comment, a repost — and listens for
+/// none of them. What turns those into a player's notification lives under
+/// <c>Notifications/</c>, and the feed is deliberately ignorant of it: the same events are there
+/// for a plugin to hear.
+/// </para>
 /// </remarks>
-public sealed class WebApiFeedService(IDbContextFactory<VortexDbContext> dbCtxFactory)
-    : IWebApiFeedService
+public sealed class WebApiFeedService(
+    IDbContextFactory<VortexDbContext> dbCtxFactory,
+    IEventPublisher events
+) : IWebApiFeedService
 {
     private const int DefaultPageSize = 20;
     private const int MaximumPageSize = 50;
@@ -328,7 +337,76 @@ public sealed class WebApiFeedService(IDbContextFactory<VortexDbContext> dbCtxFa
 
         await db.SaveChangesAsync(ct).ConfigureAwait(false);
 
+        await AnnounceAsync(db, post, playerId, text, ct).ConfigureAwait(false);
+
         return (FeedRefusal.None, await GetPostAsync(post.Id, playerId, ct).ConfigureAwait(false));
+    }
+
+    /// <summary>
+    /// Says on the bus what this post did to other people: who it named, and whose post it
+    /// answered.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// After the post is committed, never before. A notification pointing at a post id that was
+    /// then rolled back is a link to nothing, and the post existing is the only part that has to
+    /// be true.
+    /// </para>
+    /// <para>
+    /// A name that matches no player raises nothing. That is why the lookup is here at all — the
+    /// page turns every <c>@word</c> into a link without asking anybody, and only a ping needs to
+    /// know the person is real.
+    /// </para>
+    /// </remarks>
+    private async Task AnnounceAsync(
+        VortexDbContext db,
+        WebFeedPostEntity post,
+        int playerId,
+        string text,
+        CancellationToken ct
+    )
+    {
+        IReadOnlyList<string> names = FeedMentions.Extract(text);
+
+        if (names.Count > 0)
+        {
+            // One query for the whole list. Compared on the name as stored, case-insensitively,
+            // because a player writing @prodiigy means Prodiigy.
+            List<int> mentioned = await db
+                .Players.AsNoTracking()
+                .Where(p => names.Contains(p.Name))
+                .Select(p => p.Id)
+                .ToListAsync(ct)
+                .ConfigureAwait(false);
+
+            foreach (int id in mentioned)
+            {
+                await events
+                    .PublishAsync(new FeedMentionedEvent(playerId, id, post.Id), ct)
+                    .ConfigureAwait(false);
+            }
+        }
+
+        if (post.ParentEntityId is not int parentId)
+        {
+            return;
+        }
+
+        // The author of the thing being answered -- which is a comment's author when this is a
+        // reply, not the root's. Answering somebody is what is worth telling them about.
+        int author = await db
+            .WebFeedPosts.AsNoTracking()
+            .Where(p => p.Id == parentId)
+            .Select(p => p.PlayerEntityId)
+            .FirstOrDefaultAsync(ct)
+            .ConfigureAwait(false);
+
+        if (author != 0)
+        {
+            await events
+                .PublishAsync(new FeedCommentedEvent(playerId, author, parentId, post.Id), ct)
+                .ConfigureAwait(false);
+        }
     }
 
     public async Task<FeedPost?> VoteAsync(
@@ -416,6 +494,8 @@ public sealed class WebApiFeedService(IDbContextFactory<VortexDbContext> dbCtxFa
             )
             .ConfigureAwait(false);
 
+        bool reposted = false;
+
         if (on && existing is null)
         {
             db.WebFeedReactions.Add(
@@ -426,6 +506,11 @@ public sealed class WebApiFeedService(IDbContextFactory<VortexDbContext> dbCtxFa
                     Kind = kind,
                 }
             );
+
+            // Only a NEW repost is worth announcing. `existing is null` is what makes that true:
+            // a retried request finds the row already there and falls through, so a flaky
+            // connection cannot ring the same bell twice.
+            reposted = kind == FeedReactionKind.Repost;
         }
         else if (!on && existing is not null)
         {
@@ -437,6 +522,23 @@ public sealed class WebApiFeedService(IDbContextFactory<VortexDbContext> dbCtxFa
         // Both branches fall through when the row is already in the state asked for — that is what
         // makes a retried request a no-op rather than the opposite of what the reader pressed.
         await db.SaveChangesAsync(ct).ConfigureAwait(false);
+
+        if (reposted)
+        {
+            int author = await db
+                .WebFeedPosts.AsNoTracking()
+                .Where(p => p.Id == postId)
+                .Select(p => p.PlayerEntityId)
+                .FirstOrDefaultAsync(ct)
+                .ConfigureAwait(false);
+
+            if (author != 0)
+            {
+                await events
+                    .PublishAsync(new FeedRepostedEvent(playerId, author, postId), ct)
+                    .ConfigureAwait(false);
+            }
+        }
 
         return await GetPostAsync(postId, playerId, ct).ConfigureAwait(false);
     }

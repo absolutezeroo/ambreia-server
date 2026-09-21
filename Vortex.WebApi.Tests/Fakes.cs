@@ -10,6 +10,7 @@ using System.Threading.Tasks;
 using Vortex.Primitives.Authentication;
 using Vortex.Primitives.Camera;
 using Vortex.Primitives.Chain;
+using Vortex.Primitives.Events;
 using Vortex.Primitives.Observability;
 using Vortex.Primitives.Shop;
 using Vortex.WebApi.Services;
@@ -737,4 +738,27 @@ internal sealed class FakeCameraPhotoStore : ICameraPhotoStore
 
     private static bool IsMintedKey(string photoKey) =>
         photoKey.Length == 32 && photoKey.All(char.IsAsciiHexDigitUpper);
+}
+
+/// <summary>
+/// Keeps every event published instead of delivering it.
+/// </summary>
+/// <remarks>
+/// There is no bus in these tests — the handlers are exercised directly — so what a test wants to
+/// know is whether the feed ANNOUNCED the right thing. <see cref="Published"/> is that answer, and
+/// <see cref="Of{T}"/> is how a test asks for the one kind it is about.
+/// </remarks>
+internal sealed class FakeEventPublisher : IEventPublisher
+{
+    public List<IEvent> Published { get; } = [];
+
+    public Task PublishAsync(IEvent @event, CancellationToken ct = default)
+    {
+        Published.Add(@event);
+
+        return Task.CompletedTask;
+    }
+
+    public List<T> Of<T>()
+        where T : IEvent => [.. Published.OfType<T>()];
 }

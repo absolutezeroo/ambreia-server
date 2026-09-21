@@ -8,6 +8,7 @@ using Vortex.Primitives.Hosting;
 using Vortex.Primitives.Plugins;
 using Vortex.WebApi.Configuration;
 using Vortex.WebApi.Hosting;
+using Vortex.WebApi.Notifications;
 using Vortex.WebApi.Services;
 using Vortex.WebApi.Session;
 
@@ -47,6 +48,13 @@ public sealed class WebApiModule : IHostPluginModule
         services.TryAddSingleton<IWebApiRoomService, WebApiRoomService>();
         services.TryAddSingleton<IWebApiPhotoService, WebApiPhotoService>();
         services.TryAddSingleton<IWebApiFeedService, WebApiFeedService>();
+        services.TryAddSingleton<IWebApiNotificationService, WebApiNotificationService>();
+
+        // The notification sink. The HANDLERS that fill it need no registration of their own —
+        // PluginBootstrapper scans this assembly for IEventHandler<T> because this module is
+        // registered, which is the whole reason they could live here rather than in a project of
+        // their own.
+        services.TryAddSingleton<INotificationSink, NotificationSink>();
 
         // The website's write half. Registered here rather than in the dashboard module because the
         // rules it enforces (the block vocabulary, the allowed link schemes) belong to the site, and
