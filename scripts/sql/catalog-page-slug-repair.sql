@@ -1,22 +1,6 @@
--- Step 1 of 2: give every catalogue page a slug that can serve as a translation key.
---
--- `catalog_pages.localization` is the key column, and external_flash_texts already ships 94 keys in
--- Habbo's own shape for it: `catalog.page.<slug>`, with `.text_0` and `.image_0` beside it. So the
--- slug is the key -- but 43 of ours cannot be one:
---
---   * 26 are shared by pages that disagree. `nft` alone covers 25 pages with 25 different titles,
---     so one key would have shown one caption on all 25. `lighting`, `badges` and `bears` share a
---     title but carry different blurbs, which collides just as quietly.
---   * 17 are bare numbers. Unique, so nothing breaks -- but `catalog.page.11` for "Windows" is a
---     key nobody can place, which defeats the point of keying on the slug.
---
--- Each replacement is derived from the page's own title, with a counter only where two pages really
--- do share one. Review them: this renames rows, and the names are yours.
---
--- Then run tools/catalog_converter/extract_catalog_texts.py again -- it refuses to emit the texts
--- file while any of these remain, so it is also the check that this worked.
---
--- 100 rows of 2203.
+-- One slug, several pages that do not say the same thing. A key cannot serve both:
+-- whichever row is written last would rename the others. Review these, run them, then
+-- re-run the extractor.
 
 UPDATE catalog_pages SET localization = 'palooza' WHERE id = 111;   -- was '0', 'Palooza'
 UPDATE catalog_pages SET localization = '2012_carnival' WHERE id = 393;   -- was '0', '2012 - Carnival'
@@ -29,24 +13,24 @@ UPDATE catalog_pages SET localization = 'classics' WHERE id = 405;   -- was '200
 UPDATE catalog_pages SET localization = '2008_sandcastle' WHERE id = 464;   -- was '2008', '2008 - Sandcastle'
 UPDATE catalog_pages SET localization = '2009_raft' WHERE id = 406;   -- was '2009', '2009 - Raft'
 UPDATE catalog_pages SET localization = '2009_snow_baubles' WHERE id = 476;   -- was '2009', '2009 - Snow & Baubles'
-UPDATE catalog_pages SET localization = '2010' WHERE id = 469;   -- was '2010', '2010'
+UPDATE catalog_pages SET localization = 'new_years_2010' WHERE id = 469;   -- was '2010', '2010'
 UPDATE catalog_pages SET localization = '2011_bonfire' WHERE id = 407;   -- was '2011', '2011 - Bonfire'
-UPDATE catalog_pages SET localization = '2011' WHERE id = 470;   -- was '2011', '2011'
+UPDATE catalog_pages SET localization = 'new_years_2011' WHERE id = 470;   -- was '2011', '2011'
 UPDATE catalog_pages SET localization = '2013_garden' WHERE id = 380;   -- was '2013', '2013 - Garden'
-UPDATE catalog_pages SET localization = '2013' WHERE id = 471;   -- was '2013', '2013'
-UPDATE catalog_pages SET localization = '2015' WHERE id = 472;   -- was '2015', '2015'
-UPDATE catalog_pages SET localization = '2016' WHERE id = 6416;   -- was '2016', '2016'
+UPDATE catalog_pages SET localization = 'new_years_2013' WHERE id = 471;   -- was '2013', '2013'
+UPDATE catalog_pages SET localization = 'new_years_2015' WHERE id = 472;   -- was '2015', '2015'
+UPDATE catalog_pages SET localization = 'bonus_items_2016' WHERE id = 6416;   -- was '2016', '2016'
 UPDATE catalog_pages SET localization = '2017_pier' WHERE id = 409;   -- was '2017', '2017 - Pier'
-UPDATE catalog_pages SET localization = '2017' WHERE id = 6417;   -- was '2017', '2017'
-UPDATE catalog_pages SET localization = '2018' WHERE id = 6418;   -- was '2018', '2018'
-UPDATE catalog_pages SET localization = '2019' WHERE id = 6419;   -- was '2019', '2019'
-UPDATE catalog_pages SET localization = '2020' WHERE id = 6420;   -- was '2020', '2020'
-UPDATE catalog_pages SET localization = '2021' WHERE id = 6414;   -- was '2021', '2021'
-UPDATE catalog_pages SET localization = '2022' WHERE id = 6413;   -- was '2022', '2022'
-UPDATE catalog_pages SET localization = '2023' WHERE id = 6415;   -- was '2023', '2023'
-UPDATE catalog_pages SET localization = '2024' WHERE id = 1633;   -- was '2024', '2024'
-UPDATE catalog_pages SET localization = '2025' WHERE id = 768;   -- was '2025', '2025'
-UPDATE catalog_pages SET localization = '2025_2' WHERE id = 1086;   -- was '2025', '2025'
+UPDATE catalog_pages SET localization = 'bonus_items_2017' WHERE id = 6417;   -- was '2017', '2017'
+UPDATE catalog_pages SET localization = 'bonus_items_2018' WHERE id = 6418;   -- was '2018', '2018'
+UPDATE catalog_pages SET localization = 'bonus_items_2019' WHERE id = 6419;   -- was '2019', '2019'
+UPDATE catalog_pages SET localization = 'bonus_items_2020' WHERE id = 6420;   -- was '2020', '2020'
+UPDATE catalog_pages SET localization = 'bonus_items_2021' WHERE id = 6414;   -- was '2021', '2021'
+UPDATE catalog_pages SET localization = 'bonus_items_2022' WHERE id = 6413;   -- was '2022', '2022'
+UPDATE catalog_pages SET localization = 'bonus_items_2023' WHERE id = 6415;   -- was '2023', '2023'
+UPDATE catalog_pages SET localization = 'bonus_items_2024' WHERE id = 1633;   -- was '2024', '2024'
+UPDATE catalog_pages SET localization = 'new_years_2025' WHERE id = 768;   -- was '2025', '2025'
+UPDATE catalog_pages SET localization = 'bonus_items_2025' WHERE id = 1086;   -- was '2025', '2025'
 UPDATE catalog_pages SET localization = 'rollers_2' WHERE id = 42;   -- was '6', 'Rollers'
 UPDATE catalog_pages SET localization = 'teleports' WHERE id = 224;   -- was '9', 'Teleports'
 UPDATE catalog_pages SET localization = 'alhambra' WHERE id = 28;   -- was 'alhambra', 'Alhambra'

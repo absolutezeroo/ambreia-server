@@ -130,9 +130,10 @@ def conflicts(pages):
     return by_slug, bad
 
 
-def repair(bad, taken):
+def repair(bad, taken, parent_slug=None):
     """One proposed slug per offending row, derived from its own title so it stays readable."""
     statements = []
+    parent_slug = parent_slug or {}
 
     for slug, (rows, _) in sorted(bad.items()):
         for row in rows:
@@ -140,6 +141,14 @@ def repair(bad, taken):
             # the same title differ only by a counter: prefixing the old slug produced things like
             # `habbo_club_habbo_club`, which names nothing.
             base = slugify(unescape(row["name"]))
+
+            # A page titled "2013" derives the slug `2013`, which is the bare number we are trying
+            # to get rid of -- it would be flagged again on the next run, forever. The parent names
+            # it instead, which is also the thing a translator needs to tell two "2013" apart.
+            if base.isdigit():
+                parent = parent_slug.get(row["parent_id"])
+                base = f"{parent}_{base}" if parent and not parent.isdigit() else f"page_{base}"
+
             candidate = base
             suffix = 2
 
@@ -201,6 +210,10 @@ def main():
     parser.add_argument("--out", default=".")
     parser.add_argument("--known", help="an existing texts file, to report which keys it already "
                                         "carries and where the wording differs")
+    parser.add_argument("--repair", action="store_true",
+                        help="apply the proposed slug repair in memory and emit the texts anyway. "
+                             "The texts file is then only correct once the repair SQL has been run "
+                             "against the database -- both are written from the same decision.")
     args = parser.parse_args()
 
     rows = rows_of(Path(args.dump).read_text(encoding="utf-8", errors="replace"))
@@ -219,7 +232,8 @@ def main():
     print(f"slugs      : {len(by_slug)} over {len(pages)} pages")
 
     if bad:
-        statements = repair(bad, set(by_slug) - set(bad))
+        parent_slug = {r["id"]: unescape(r["localization"]).strip() for r in pages}
+        statements = repair(bad, set(by_slug) - set(bad), parent_slug)
         path = out / "catalog_slug_conflicts.sql"
         path.write_text(
             "-- One slug, several pages that do not say the same thing. A key cannot serve both:\n"
@@ -228,13 +242,31 @@ def main():
             encoding="utf-8",
         )
 
-        print(f"\nREFUSED: {len(bad)} slug(s) cover pages that differ, {len(statements)} rows affected\n")
+        verb = "REPAIRING" if args.repair else "REFUSED"
+        print(f"\n{verb}: {len(bad)} slug(s) unusable as keys, {len(statements)} rows affected\n")
         for slug, (affected, why) in sorted(bad.items(), key=lambda kv: -len(kv[1][0]))[:10]:
             print(f"  {slug:<22} {len(affected):>2} pages, {why}")
         if len(bad) > 10:
-            print(f"  …and {len(bad) - 10} more")
-        print(f"\nproposed repair written to {path.resolve()}")
-        sys.exit(2)
+            print(f"  ...and {len(bad) - 10} more")
+        print(f"\nrepair written to {path.resolve()}")
+
+        if not args.repair:
+            sys.exit(2)
+
+        # Replay it over the rows we hold, so the texts file and the repair describe one state.
+        renames = dict(re.findall(r"localization = '([^']*)' WHERE id = (\d+);", "\n".join(statements)))
+        renames = {page_id: slug for slug, page_id in renames.items()}
+        for row in pages:
+            if row["id"] in renames:
+                row["localization"] = renames[row["id"]]
+
+        by_slug, still_bad = conflicts(pages)
+
+        if still_bad:
+            print(f"\nthe repair did not settle {len(still_bad)} slug(s) -- refusing", file=sys.stderr)
+            sys.exit(2)
+
+        print(f"repair applied in memory: {len(by_slug)} slugs, all usable\n")
 
     texts, statements = extract(by_slug)
 
