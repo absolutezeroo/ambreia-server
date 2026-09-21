@@ -227,6 +227,7 @@ internal static partial class DashboardEndpoints
         MapGuildOperations(app);
         MapContentOperations(app);
         MapArticleOperations(app);
+        MapFeedOperations(app);
         MapGamedataOperations(app);
         MapHotelViewOperations(app);
         MapConsoleOperations(app);

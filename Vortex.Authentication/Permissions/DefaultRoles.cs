@@ -32,6 +32,10 @@ internal static class DefaultRoles
                 Capabilities.Dashboard.AuditRead,
                 Capabilities.Dashboard.PlayersRead,
                 Capabilities.Dashboard.OpsKickPlayer,
+                // The same authority over the same players' words as Mute above, one surface
+                // further out: the website's feed is public, and a moderator who can silence a
+                // room has no reason to need a second person to take a post down.
+                Capabilities.Dashboard.OpsFeedModerate,
             ]
         ),
         new RoleSeed(

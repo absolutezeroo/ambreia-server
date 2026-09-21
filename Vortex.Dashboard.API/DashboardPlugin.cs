@@ -41,6 +41,7 @@ using Vortex.Primitives.Chain;
 using Vortex.Primitives.Console;
 using Vortex.Primitives.Content;
 using Vortex.Primitives.Crypto;
+using Vortex.Primitives.Feed;
 using Vortex.Primitives.Fishing;
 using Vortex.Primitives.Furniture;
 using Vortex.Primitives.Furniture.Providers;
@@ -150,6 +151,7 @@ public sealed class DashboardPlugin : IVortexPlugin
         // dependencies for the reads, two for the writes, both visible in their constructors.
         services.TryAddSingleton<CatalogReads>();
         services.TryAddSingleton<CatalogOperations>();
+        services.TryAddSingleton<FeedOperations>();
         // Polls, likewise: two dependencies for the reads, two for the writes.
         services.TryAddSingleton<PollReads>();
         services.TryAddSingleton<PollOperations>();
@@ -238,6 +240,7 @@ public sealed class DashboardPlugin : IVortexPlugin
         services.TryAddSingleton<IQuestAdminService, QuestAdminService>();
         services.TryAddSingleton<IQuestContentAdminService, QuestContentAdminService>();
         services.TryAddSingleton<IWebArticleAdminService, WebArticleAdminService>();
+        services.TryAddSingleton<IFeedAdminService, FeedAdminService>();
 
         // The dashboard runs as a self-contained ASP.NET Core (Kestrel) app. Inside the plugin's own
         // container now rather than the host's, which is what makes stopping it a matter of

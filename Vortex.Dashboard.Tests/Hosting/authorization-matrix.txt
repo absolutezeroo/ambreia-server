@@ -199,6 +199,7 @@ POST /api/v1/operations/daily-tasks -> dashboard.ops.quests.manage
 POST /api/v1/operations/daily-tasks/delete -> dashboard.ops.quests.manage
 POST /api/v1/operations/daily-tasks/update -> dashboard.ops.quests.manage
 POST /api/v1/operations/database/backup -> dashboard.ops.database.backup
+POST /api/v1/operations/feed/remove -> dashboard.ops.feed.moderate
 POST /api/v1/operations/fishing/levels -> dashboard.ops.fishing.manage
 POST /api/v1/operations/fishing/levels/delete -> dashboard.ops.fishing.manage
 POST /api/v1/operations/fishing/levels/update -> dashboard.ops.fishing.manage
