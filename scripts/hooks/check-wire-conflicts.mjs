@@ -48,6 +48,17 @@
 // at bool+int and this emulator at bool+int+string for the same bytes. The real order is pinned by
 // Vortex.Revisions.Tests/UserDefinedRoomEvents/WiredClickUserWireTests, read off _SafeCls_3496.
 //
+// 2026-09-21, ThumbnailStatus (outgoing) -- client 1 / vortex 2. Not a disagreement either, and
+// the inverse spelling of shape 3: the client does not guard a *trailing* read, it wraps its whole
+// body. `unknowns/_SafePkg_4018/_SafeCls_4248.parse()` is
+//
+//     if(param1.bytesAvailable) { _ok = readBoolean(); _renderLimitHit = readBoolean(); }
+//
+// with the two fields initialised to true and false before anything is read, which is how an empty
+// body means "ok". The extractor sees the guard and counts one; the parser reads two booleans, and
+// RoomThumbnailCameraWidgetHandler.onThumbnailStatus() consults both isOk() and
+// isRenderLimitHit(). Writing both is correct.
+//
 // And one that is not a wire bug but is worth knowing: HanditemConfiguration's client reads four
 // flags -- isHanditemControlBlocked, chooserDisabled, freeFurniMovementsEnabled, invisibleFurni --
 // and this emulator has only the first. The other three are features nobody has built, not fields
