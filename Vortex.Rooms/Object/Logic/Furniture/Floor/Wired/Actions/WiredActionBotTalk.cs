@@ -19,6 +19,9 @@ namespace Vortex.Rooms.Object.Logic.Furniture.Floor.Wired.Actions;
 /// </para>
 /// </summary>
 [RoomObjectLogic("wf_act_bot_talk")]
+// The furni in this hotel is *named* wf_act_bot_talk but carries wf_act_bot_talk_custom in its
+// `logic` column, which is the only thing a binding reads. Same box, same wired code.
+[RoomObjectLogic("wf_act_bot_talk_custom")]
 public class WiredActionBotTalk(
     IGrainFactory grainFactory,
     IStuffDataFactory stuffDataFactory,

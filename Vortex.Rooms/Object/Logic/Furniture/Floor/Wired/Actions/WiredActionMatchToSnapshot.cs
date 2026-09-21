@@ -37,6 +37,8 @@ namespace Vortex.Rooms.Object.Logic.Furniture.Floor.Wired.Actions;
 /// </para>
 /// </remarks>
 [RoomObjectLogic("wf_act_match_to_sshot")]
+// The hotel's furni is named wf_act_match_to_sshot and binds by wf_act_match_to_sshot_new.
+[RoomObjectLogic("wf_act_match_to_sshot_new")]
 public class WiredActionMatchToSnapshot(
     IGrainFactory grainFactory,
     IStuffDataFactory stuffDataFactory,

@@ -22,6 +22,9 @@ namespace Vortex.Rooms.Object.Logic.Furniture.Floor.Wired.Actions;
 /// </para>
 /// </summary>
 [RoomObjectLogic("wf_act_bot_talk_to_avatar")]
+// As with the plain bot-talk box: the hotel's furni is named for this key but binds by
+// wf_act_bot_talk_to_avatar_custom.
+[RoomObjectLogic("wf_act_bot_talk_to_avatar_custom")]
 public class WiredActionBotTalkToAvatar(
     IGrainFactory grainFactory,
     IStuffDataFactory stuffDataFactory,
