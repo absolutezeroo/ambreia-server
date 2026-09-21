@@ -348,6 +348,58 @@ public sealed class WebApiFeedService(IDbContextFactory<VortexDbContext> dbCtxFa
         return await GetPostAsync(postId, playerId, ct).ConfigureAwait(false);
     }
 
+    public async Task<FeedPost?> SetReactionAsync(
+        int playerId,
+        int postId,
+        FeedReactionKind kind,
+        bool on,
+        CancellationToken ct
+    )
+    {
+        await using VortexDbContext db = await _db.CreateDbContextAsync(ct).ConfigureAwait(false);
+
+        if (!await Readable(db).AnyAsync(p => p.Id == postId, ct).ConfigureAwait(false))
+        {
+            return null;
+        }
+
+        // Matched on all three columns, the same span as the unique index. On the pair alone, a
+        // favourite would find the repost and move it instead of joining it.
+        WebFeedReactionEntity? existing = await db
+            .WebFeedReactions.FirstOrDefaultAsync(
+                r =>
+                    r.WebFeedPostEntityId == postId
+                    && r.PlayerEntityId == playerId
+                    && r.Kind == kind,
+                ct
+            )
+            .ConfigureAwait(false);
+
+        if (on && existing is null)
+        {
+            db.WebFeedReactions.Add(
+                new WebFeedReactionEntity
+                {
+                    WebFeedPostEntityId = postId,
+                    PlayerEntityId = playerId,
+                    Kind = kind,
+                }
+            );
+        }
+        else if (!on && existing is not null)
+        {
+            // Removed outright, not soft-deleted: a soft delete keeps the pair and the unique
+            // index then refuses the next honest reaction. See WebFeedReactionEntity.
+            db.WebFeedReactions.Remove(existing);
+        }
+
+        // Both branches fall through when the row is already in the state asked for — that is what
+        // makes a retried request a no-op rather than the opposite of what the reader pressed.
+        await db.SaveChangesAsync(ct).ConfigureAwait(false);
+
+        return await GetPostAsync(postId, playerId, ct).ConfigureAwait(false);
+    }
+
     /// <summary>
     /// The one condition every read carries. Changing this changes who can be seen, so it exists
     /// once and every query starts from it.

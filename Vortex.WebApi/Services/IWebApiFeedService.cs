@@ -154,4 +154,22 @@ public interface IWebApiFeedService
     /// </para>
     /// </remarks>
     Task<FeedPost?> VoteAsync(int playerId, int postId, int choiceId, CancellationToken ct);
+
+    /// <summary>
+    /// Leaves or withdraws one reaction, and answers the post as it now stands. Null when the post
+    /// is not readable.
+    /// </summary>
+    /// <remarks>
+    /// Takes the WANTED state rather than toggling. A toggle sent twice — a flaky connection
+    /// retrying, a double tap — lands on the opposite of what the reader pressed, and they have no
+    /// way to tell which of the two happened. With the state in the body a retry is a no-op, and
+    /// that is why both branches tolerate finding the row already in the state asked for.
+    /// </remarks>
+    Task<FeedPost?> SetReactionAsync(
+        int playerId,
+        int postId,
+        FeedReactionKind kind,
+        bool on,
+        CancellationToken ct
+    );
 }

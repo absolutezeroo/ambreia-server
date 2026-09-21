@@ -1,3 +1,4 @@
+using Vortex.Primitives.Feed;
 using Vortex.Primitives.Players;
 using Vortex.Primitives.Players.Enums;
 
@@ -110,6 +111,17 @@ public sealed record PhotoLikeRequest(bool Liked);
 /// so a retry can never turn one player into two voices.
 /// </remarks>
 public sealed record FeedVoteRequest(int ChoiceId);
+
+/// <summary>
+/// Whether the caller wants this reaction on this post, or not.
+/// </summary>
+/// <remarks>
+/// The WANTED STATE, like <see cref="PhotoLikeRequest"/> and for the same reason: a toggle sent
+/// twice lands on the opposite of what the reader pressed, and they cannot tell which of the two
+/// happened. <see cref="Kind"/> separates a repost from a favourite, which are independent — the
+/// unique index behind them spans the kind too.
+/// </remarks>
+public sealed record FeedReactionRequest(FeedReactionKind Kind, bool On);
 
 /// <summary>
 /// Sets, or replaces, the account's two security questions. The password is required because these

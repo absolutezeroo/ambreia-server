@@ -184,6 +184,51 @@ internal static partial class WebApiEndpointsFeed
             .WithName("FeedVote")
             .WithSummary("Vote in a poll, or move an existing vote.")
             .WithTags(tagUser);
+
+        // PUT, not POST: this sets a state rather than appending an event, and the request is
+        // idempotent by construction — sending it twice leaves the same one row.
+        app.MapPut(
+                "/api/user/feed/{id:int}/reaction",
+                async Task<Results<Ok<FeedPost>, NotFound<ApiErrorResponse>, UnauthorizedError>> (
+                    HttpContext ctx,
+                    int id,
+                    FeedReactionRequest body,
+                    [FromServices] IWebApiFeedService feed,
+                    [FromServices] WebApiSessionStore sessions,
+                    [FromServices] IWebApiPlayerService players,
+                    CancellationToken ct
+                ) =>
+                {
+                    (int? playerId, IResult? refused) = await WebApiEndpoints
+                        .SelectedPlayerAsync(ctx, sessions, players, ct)
+                        .ConfigureAwait(false);
+
+                    if (playerId is null)
+                    {
+                        // No session, or a session with no avatar: a reaction belongs to a PLAYER,
+                        // and an account without one has nobody to attribute it to.
+                        return refused is UnauthorizedError unauthorized
+                            ? unauthorized
+                            : TypedResults.NotFound(new ApiErrorResponse("pocket.auth.no_avatars"));
+                    }
+
+                    FeedPost? post = await feed.SetReactionAsync(
+                            playerId.Value,
+                            id,
+                            body.Kind,
+                            body.On,
+                            ct
+                        )
+                        .ConfigureAwait(false);
+
+                    return post is null
+                        ? TypedResults.NotFound(new ApiErrorResponse("feed_post_not_found"))
+                        : TypedResults.Ok(post);
+                }
+            )
+            .WithName("FeedReaction")
+            .WithSummary("Leave or withdraw a repost or a favourite.")
+            .WithTags(tagUser);
     }
 
     /// <summary>
