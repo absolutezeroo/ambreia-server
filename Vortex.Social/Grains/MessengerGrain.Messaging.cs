@@ -69,10 +69,20 @@ internal sealed partial class MessengerGrain
         dbCtx.MessengerMessages.Add(msgEntity);
         await dbCtx.SaveChangesAsync(ct).ConfigureAwait(true);
 
-        // Deliver to receiver — fire-and-forget; receiver handles if online or not
+        // Awaited, not fire-and-forget. The receiver decides for itself whether it has a socket to
+        // push to, so nothing here is waiting on a network round trip to a client -- but the call
+        // has to be allowed to fail loudly. Dropped on the floor, a receiver grain that cannot be
+        // reached (activation throwing in HydrateAsync, an unhandled fault in the hop) takes the
+        // message with it: ReceiveMessageAsync never runs, so it never reaches the socket AND its
+        // id never enters _pendingDeliveredIds, leaving the row Delivered = false. The player then
+        // sees nothing -- no message, no sound, no unread marker -- until the next login, where
+        // DeliverOfflinePendingMessagesAsync replays the whole conversation at once. That is
+        // exactly the "I only get my messages when I reconnect" report this came from, and the
+        // swallowed exception is why it left no trace anywhere.
         IMessengerGrain receiverGrain = grainFactory.GetMessengerGrain(receiverId);
-        LogAndForget(
-            receiverGrain.ReceiveMessageAsync(
+
+        await receiverGrain
+            .ReceiveMessageAsync(
                 SelfId,
                 selfEntity.Name,
                 selfEntity.Figure,
@@ -82,7 +92,7 @@ internal sealed partial class MessengerGrain
                 habbiconId,
                 CancellationToken.None
             )
-        );
+            .ConfigureAwait(true);
 
         // Accepted and on its way. Raised after the friend and block rules rather than when the
         // packet arrived, so a message either of them refused is not one anything can reward.
