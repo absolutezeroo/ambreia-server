@@ -135,6 +135,79 @@ public sealed class FeedReadTests
         post.Poll.Choices.Single(c => c.Id == choiceId).Votes.Should().Be(1);
     }
 
+    /// <summary>
+    /// <see cref="WebApiFeedService"/> answers a page by fetching each supporting table ONCE for
+    /// every post on the page, rather than once per post — see the class's own remarks. Batching by
+    /// id set is exactly how one post could end up carrying another's photos, poll or counters if the
+    /// grouping were wrong; a single-post fixture cannot catch that, because there is nothing to leak
+    /// from. Two roots by two different players, each with its own distinct photo, poll, tag,
+    /// reaction and comment count, read in the SAME <see cref="IWebApiFeedService.GetFeedAsync"/>
+    /// call, is the smallest fixture that can.
+    /// </summary>
+    [Fact]
+    public async Task Feed_KeepsEachPostsOwnDataSeparateWhenBatched()
+    {
+        await using WebApiTestFactory factory = new();
+
+        int photoPostId = await SeedPhotoPostAsync(
+            factory,
+            playerId: 1,
+            name: "Alpha",
+            key: "alpha-key",
+            published: true
+        );
+        await SeedTagAsync(factory, photoPostId, "alpha");
+        await SeedCommentAsync(factory, playerId: 1, parentId: photoPostId, body: "a1");
+
+        (int pollPostId, int choiceId) = await SeedPollAsync(factory, playerId: 2, name: "Beta");
+        await SeedTagAsync(factory, pollPostId, "beta");
+        await SeedCommentAsync(factory, playerId: 2, parentId: pollPostId, body: "b1");
+        await SeedCommentAsync(factory, playerId: 2, parentId: pollPostId, body: "b2");
+
+        await using (VortexDbContext db = await factory.DbContexts.CreateDbContextAsync())
+        {
+            db.WebFeedReactions.Add(
+                new WebFeedReactionEntity
+                {
+                    WebFeedPostEntityId = photoPostId,
+                    PlayerEntityId = 2,
+                    Kind = FeedReactionKind.Favorite,
+                }
+            );
+            db.WebFeedPollVotes.Add(
+                new WebFeedPollVoteEntity
+                {
+                    WebFeedPostEntityId = pollPostId,
+                    WebFeedPollChoiceEntityId = choiceId,
+                    PlayerEntityId = 1,
+                }
+            );
+            await db.SaveChangesAsync();
+        }
+
+        FeedPage page = await Service(factory).GetFeedAsync(1, 0, null, null, default);
+
+        page.Items.Should().HaveCount(2);
+
+        FeedPost photoPost = page.Items.Single(p => p.Id == photoPostId);
+        FeedPost pollPost = page.Items.Single(p => p.Id == pollPostId);
+
+        photoPost.Photos.Should().ContainSingle(p => p.Key == "alpha-key");
+        photoPost.Poll.Should().BeNull();
+        photoPost.Tags.Should().Equal("alpha");
+        photoPost.CommentCount.Should().Be(1);
+        photoPost.FavoriteCount.Should().Be(1);
+        photoPost.RepostCount.Should().Be(0);
+
+        pollPost.Photos.Should().BeEmpty();
+        pollPost.Poll.Should().NotBeNull();
+        pollPost.Poll!.Choices.Single(c => c.Id == choiceId).Votes.Should().Be(1);
+        pollPost.Poll.TotalVotes.Should().Be(1);
+        pollPost.Tags.Should().Equal("beta");
+        pollPost.CommentCount.Should().Be(2);
+        pollPost.FavoriteCount.Should().Be(0);
+    }
+
     private static IWebApiFeedService Service(WebApiTestFactory factory) =>
         new WebApiFeedService(factory.DbContexts);
 
@@ -300,5 +373,23 @@ public sealed class FeedReadTests
         await db.SaveChangesAsync();
 
         return (post.Id, choice.Id);
+    }
+
+    private static async Task SeedTagAsync(WebApiTestFactory factory, int postId, string tag)
+    {
+        await using VortexDbContext db = await factory.DbContexts.CreateDbContextAsync();
+
+        WebFeedTagEntity tagEntity = new() { Tag = tag };
+        db.WebFeedTags.Add(tagEntity);
+        await db.SaveChangesAsync();
+
+        db.WebFeedPostTags.Add(
+            new WebFeedPostTagEntity
+            {
+                WebFeedPostEntityId = postId,
+                WebFeedTagEntityId = tagEntity.Id,
+            }
+        );
+        await db.SaveChangesAsync();
     }
 }

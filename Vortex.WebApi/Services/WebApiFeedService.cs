@@ -26,6 +26,15 @@ namespace Vortex.WebApi.Services;
 /// which photo, and this says whether it is still public. A photo the owner unpublished after
 /// posting it leaves the post.
 /// </para>
+/// <para>
+/// Both entry points assemble their posts through <see cref="AssembleAsync"/>, which fetches every
+/// supporting table (comments, photos, poll choices, poll votes, tags, reactions) ONCE for the whole
+/// batch of posts being answered — never once per post, and never once per comment. A page is a
+/// handful of round trips regardless of how many posts are on it or how many comments each one has;
+/// the alternative (a post's own queries run inside a loop over the page, and again inside a loop
+/// over each post's comments) turns a 20-post page into hundreds of sequential round trips against a
+/// real database.
+/// </para>
 /// </remarks>
 public sealed class WebApiFeedService(IDbContextFactory<VortexDbContext> dbCtxFactory)
     : IWebApiFeedService
@@ -35,6 +44,8 @@ public sealed class WebApiFeedService(IDbContextFactory<VortexDbContext> dbCtxFa
 
     /// <summary>What a card shows before "see all N comments" takes over — the screenshot's own count.</summary>
     private const int PreviewComments = 3;
+
+    private static readonly ReactionSummary EmptyReactions = new(0, 0, false, false);
 
     private readonly IDbContextFactory<VortexDbContext> _db = dbCtxFactory;
 
@@ -68,6 +79,8 @@ public sealed class WebApiFeedService(IDbContextFactory<VortexDbContext> dbCtxFa
         int total = await roots.CountAsync(ct).ConfigureAwait(false);
 
         List<WebFeedPostEntity> rows = await roots
+            .Include(p => p.PlayerEntity)
+            .Include(p => p.GroupEntity)
             .OrderByDescending(p => p.CreatedAt)
             .ThenByDescending(p => p.Id)
             .Skip((wantedPage - 1) * wantedSize)
@@ -75,14 +88,8 @@ public sealed class WebApiFeedService(IDbContextFactory<VortexDbContext> dbCtxFa
             .ToListAsync(ct)
             .ConfigureAwait(false);
 
-        List<FeedPost> items = [];
-
-        foreach (WebFeedPostEntity row in rows)
-        {
-            items.Add(
-                await ProjectAsync(db, row, viewerId, PreviewComments, ct).ConfigureAwait(false)
-            );
-        }
+        List<FeedPost> items = await AssembleAsync(db, rows, viewerId, PreviewComments, ct)
+            .ConfigureAwait(false);
 
         return new FeedPage(wantedPage, wantedSize, total, items);
     }
@@ -92,12 +99,24 @@ public sealed class WebApiFeedService(IDbContextFactory<VortexDbContext> dbCtxFa
         await using VortexDbContext db = await _db.CreateDbContextAsync(ct).ConfigureAwait(false);
 
         WebFeedPostEntity? row = await Readable(db)
+            .Include(p => p.PlayerEntity)
+            .Include(p => p.GroupEntity)
             .FirstOrDefaultAsync(p => p.Id == id, ct)
             .ConfigureAwait(false);
 
-        return row is null
-            ? null
-            : await ProjectAsync(db, row, viewerId, int.MaxValue, ct).ConfigureAwait(false);
+        if (row is null)
+        {
+            return null;
+        }
+
+        // A single post still goes through AssembleAsync — with a batch of one — rather than a
+        // second, simpler copy of the projection: a comment can carry a photo, a poll, tags and
+        // reactions exactly like a post, and that assembly is exactly what AssembleAsync already
+        // does. Duplicating it here is how the two would quietly drift.
+        List<FeedPost> items = await AssembleAsync(db, [row], viewerId, int.MaxValue, ct)
+            .ConfigureAwait(false);
+
+        return items[0];
     }
 
     /// <summary>
@@ -110,106 +129,126 @@ public sealed class WebApiFeedService(IDbContextFactory<VortexDbContext> dbCtxFa
     /// <summary>The search key a tag is stored and matched under.</summary>
     internal static string Normalise(string tag) => tag.Trim().TrimStart('#').ToLowerInvariant();
 
-    private static async Task<FeedPost> ProjectAsync(
+    /// <summary>
+    /// Builds a <see cref="FeedPost"/> for every entry in <paramref name="roots"/>, fetching every
+    /// supporting table exactly once for the whole batch instead of once per post.
+    /// </summary>
+    /// <param name="commentPreviewLimit">
+    /// How many of each root's most recent comments to carry. <see cref="PreviewComments"/> for a
+    /// feed page, <see cref="int.MaxValue"/> for a single post read in full.
+    /// </param>
+    private static async Task<List<FeedPost>> AssembleAsync(
         VortexDbContext db,
-        WebFeedPostEntity row,
+        List<WebFeedPostEntity> roots,
         int? viewerId,
-        int commentLimit,
+        int commentPreviewLimit,
         CancellationToken ct
     )
     {
-        // Only a root has comments: the thread is one level deep, so a comment's own children are
-        // an empty list rather than a query nobody answers.
-        bool root = row.ParentEntityId is null;
-
-        int commentCount = root
-            ? await Readable(db)
-                .CountAsync(p => p.ParentEntityId == row.Id, ct)
-                .ConfigureAwait(false)
-            : 0;
-
-        List<FeedPost> comments = [];
-
-        if (root && commentCount > 0 && commentLimit > 0)
+        if (roots.Count == 0)
         {
-            // Newest last, the way a conversation reads, but the PREVIEW has to be the most recent
-            // few — so the take is off the end and the order is restored afterwards.
-            List<WebFeedPostEntity> rows = await Readable(db)
-                .Where(p => p.ParentEntityId == row.Id)
-                .OrderByDescending(p => p.CreatedAt)
-                .ThenByDescending(p => p.Id)
-                .Take(commentLimit == int.MaxValue ? commentCount : commentLimit)
-                .ToListAsync(ct)
-                .ConfigureAwait(false);
-
-            rows.Reverse();
-
-            foreach (WebFeedPostEntity child in rows)
-            {
-                comments.Add(await ProjectAsync(db, child, viewerId, 0, ct).ConfigureAwait(false));
-            }
+            return [];
         }
 
-        List<PhotoSummary> photos =
-            row.Kind == FeedPostKind.Photo
-                ? await ProjectPhotosAsync(db, row.Id, ct).ConfigureAwait(false)
-                : [];
+        int[] rootIds = [.. roots.Select(r => r.Id)];
 
-        FeedPoll? poll =
-            row.Kind == FeedPostKind.Poll
-                ? await ProjectPollAsync(db, row.Id, viewerId, ct).ConfigureAwait(false)
-                : null;
-
-        List<string> tags = await db
-            .WebFeedPostTags.Where(t => t.WebFeedPostEntityId == row.Id)
-            .Select(t => t.WebFeedTagEntity!.Tag)
+        // ONE query for every readable comment on every root in this batch — not one query per
+        // root. Newest first, same as a single post's own comment query used to be; the "take three"
+        // happens afterwards, in memory, per parent, which is also where the full count comes from,
+        // since every comment row is already in hand by then.
+        List<WebFeedPostEntity> allComments = await Readable(db)
+            .Where(p => p.ParentEntityId != null && rootIds.Contains(p.ParentEntityId!.Value))
+            .Include(p => p.PlayerEntity)
+            .Include(p => p.GroupEntity)
+            .OrderByDescending(p => p.CreatedAt)
+            .ThenByDescending(p => p.Id)
             .ToListAsync(ct)
             .ConfigureAwait(false);
 
-        int reposts = await db
-            .WebFeedReactions.CountAsync(
-                r => r.WebFeedPostEntityId == row.Id && r.Kind == FeedReactionKind.Repost,
+        ILookup<int, WebFeedPostEntity> commentsByParent = allComments.ToLookup(c =>
+            c.ParentEntityId!.Value
+        );
+
+        // Every post this batch answers for — the roots AND the comments just fetched — because a
+        // comment is a post with a parent and can carry its own photos, poll, tags and reactions.
+        List<int> allPostIds = [.. rootIds, .. allComments.Select(c => c.Id)];
+
+        Dictionary<int, List<PhotoSummary>> photosByPost = await LoadPhotosAsync(db, allPostIds, ct)
+            .ConfigureAwait(false);
+        Dictionary<int, FeedPoll> pollsByPost = await LoadPollsAsync(db, allPostIds, viewerId, ct)
+            .ConfigureAwait(false);
+        Dictionary<int, List<string>> tagsByPost = await LoadTagsAsync(db, allPostIds, ct)
+            .ConfigureAwait(false);
+        Dictionary<int, ReactionSummary> reactionsByPost = await LoadReactionsAsync(
+                db,
+                allPostIds,
+                viewerId,
                 ct
             )
             .ConfigureAwait(false);
 
-        int favorites = await db
-            .WebFeedReactions.CountAsync(
-                r => r.WebFeedPostEntityId == row.Id && r.Kind == FeedReactionKind.Favorite,
-                ct
-            )
-            .ConfigureAwait(false);
+        List<FeedPost> items = [];
 
-        bool repostedByMe =
-            viewerId is not null
-            && await db
-                .WebFeedReactions.AnyAsync(
-                    r =>
-                        r.WebFeedPostEntityId == row.Id
-                        && r.PlayerEntityId == viewerId
-                        && r.Kind == FeedReactionKind.Repost,
-                    ct
-                )
-                .ConfigureAwait(false);
-
-        bool favoritedByMe =
-            viewerId is not null
-            && await db
-                .WebFeedReactions.AnyAsync(
-                    r =>
-                        r.WebFeedPostEntityId == row.Id
-                        && r.PlayerEntityId == viewerId
-                        && r.Kind == FeedReactionKind.Favorite,
-                    ct
-                )
-                .ConfigureAwait(false);
-
-        await db.Entry(row).Reference(p => p.PlayerEntity).LoadAsync(ct).ConfigureAwait(false);
-
-        if (row.GroupEntityId is not null)
+        foreach (WebFeedPostEntity root in roots)
         {
-            await db.Entry(row).Reference(p => p.GroupEntity).LoadAsync(ct).ConfigureAwait(false);
+            // Already newest-first from the query above.
+            List<WebFeedPostEntity> children = [.. commentsByParent[root.Id]];
+
+            int take =
+                commentPreviewLimit == int.MaxValue
+                    ? children.Count
+                    : Math.Min(commentPreviewLimit, children.Count);
+
+            // The PREVIEW is the most recent few, but a thread reads oldest first — so the take is
+            // off the newest-first list and the order is restored afterwards.
+            List<WebFeedPostEntity> preview = children.Take(take).ToList();
+            preview.Reverse();
+
+            List<FeedPost> commentPosts =
+            [
+                .. preview.Select(child =>
+                    Build(
+                        child,
+                        viewerId,
+                        photosByPost,
+                        pollsByPost,
+                        tagsByPost,
+                        reactionsByPost,
+                        0,
+                        []
+                    )
+                ),
+            ];
+
+            items.Add(
+                Build(
+                    root,
+                    viewerId,
+                    photosByPost,
+                    pollsByPost,
+                    tagsByPost,
+                    reactionsByPost,
+                    children.Count,
+                    commentPosts
+                )
+            );
         }
+
+        return items;
+    }
+
+    private static FeedPost Build(
+        WebFeedPostEntity row,
+        int? viewerId,
+        Dictionary<int, List<PhotoSummary>> photosByPost,
+        Dictionary<int, FeedPoll> pollsByPost,
+        Dictionary<int, List<string>> tagsByPost,
+        Dictionary<int, ReactionSummary> reactionsByPost,
+        int commentCount,
+        List<FeedPost> comments
+    )
+    {
+        ReactionSummary reactions = reactionsByPost.GetValueOrDefault(row.Id) ?? EmptyReactions;
 
         return new FeedPost(
             row.Id,
@@ -225,14 +264,14 @@ public sealed class WebApiFeedService(IDbContextFactory<VortexDbContext> dbCtxFa
             row.Kind,
             row.Body,
             row.CreatedAt,
-            photos,
-            poll,
-            tags,
+            photosByPost.GetValueOrDefault(row.Id) ?? [],
+            pollsByPost.GetValueOrDefault(row.Id),
+            tagsByPost.GetValueOrDefault(row.Id) ?? [],
             commentCount,
-            reposts,
-            favorites,
-            repostedByMe,
-            favoritedByMe,
+            reactions.Reposts,
+            reactions.Favorites,
+            reactions.RepostedByMe,
+            reactions.FavoritedByMe,
             viewerId is not null && row.PlayerEntityId == viewerId,
             comments
         );
@@ -245,15 +284,15 @@ public sealed class WebApiFeedService(IDbContextFactory<VortexDbContext> dbCtxFa
     /// provider's query translator is guaranteed to accept; projecting plain columns first sidesteps
     /// the question entirely. The record's shape is the requirement, not where it gets built.
     /// </summary>
-    private static async Task<List<PhotoSummary>> ProjectPhotosAsync(
+    private static async Task<Dictionary<int, List<PhotoSummary>>> LoadPhotosAsync(
         VortexDbContext db,
-        int postId,
+        List<int> postIds,
         CancellationToken ct
     )
     {
         var rows = await db
             .WebFeedPostPhotos.Where(link =>
-                link.WebFeedPostEntityId == postId
+                postIds.Contains(link.WebFeedPostEntityId)
                 && link.CameraPhotoEntity!.PublishedAt != null
                 && link.CameraPhotoEntity.DeletedAt == null
                 && link.CameraPhotoEntity.PlayerEntity!.ProfileVisible
@@ -261,65 +300,161 @@ public sealed class WebApiFeedService(IDbContextFactory<VortexDbContext> dbCtxFa
             .OrderBy(link => link.Ordinal)
             .Select(link => new
             {
+                link.WebFeedPostEntityId,
                 link.CameraPhotoEntity!.PhotoKey,
                 OwnerId = link.CameraPhotoEntity.PlayerEntityId,
                 OwnerName = link.CameraPhotoEntity.PlayerEntity!.Name,
                 OwnerFigure = link.CameraPhotoEntity.PlayerEntity.Figure,
                 link.CameraPhotoEntity.RoomEntityId,
-                TakenAt = link.CameraPhotoEntity.CreatedAt,
+                // PublishedAt, not CreatedAt — WebApiPhotoService.cs:207 uses the same field of the
+                // same PhotoSummary for the same reason: the gallery orders by PublishedAt, and a
+                // card that said "taken three weeks ago" under a photo published this morning would
+                // be describing a different event from the one the ordering used. The two services
+                // have to agree, or the same photo carries two different dates depending on which
+                // page answered it. Safe to force non-null: the Where above already requires
+                // `PublishedAt != null`.
+                TakenAt = link.CameraPhotoEntity.PublishedAt!.Value,
             })
             .ToListAsync(ct)
             .ConfigureAwait(false);
 
-        return rows.Select(r => new PhotoSummary(
-                r.PhotoKey,
-                r.OwnerId.ToString(CultureInfo.InvariantCulture),
-                r.OwnerName,
-                r.OwnerFigure,
-                r.RoomEntityId,
-                // Not joined: the feed card has no use for a room name, unlike the gallery this
-                // record was designed for.
-                null,
-                r.TakenAt,
-                0,
-                false,
-                new List<string>()
-            ))
-            .ToList();
+        return rows.GroupBy(r => r.WebFeedPostEntityId)
+            .ToDictionary(
+                g => g.Key,
+                g =>
+                    g.Select(r => new PhotoSummary(
+                            r.PhotoKey,
+                            r.OwnerId.ToString(CultureInfo.InvariantCulture),
+                            r.OwnerName,
+                            r.OwnerFigure,
+                            r.RoomEntityId,
+                            // Not joined: the feed card has no use for a room name, unlike the
+                            // gallery this record was designed for.
+                            null,
+                            r.TakenAt,
+                            0,
+                            false,
+                            new List<string>()
+                        ))
+                        .ToList()
+            );
     }
 
-    private static async Task<FeedPoll> ProjectPollAsync(
+    private static async Task<Dictionary<int, FeedPoll>> LoadPollsAsync(
         VortexDbContext db,
-        int postId,
+        List<int> postIds,
         int? viewerId,
         CancellationToken ct
     )
     {
-        List<FeedPollChoice> choices = await db
-            .WebFeedPollChoices.Where(c => c.WebFeedPostEntityId == postId)
+        List<WebFeedPollChoiceEntity> choiceRows = await db
+            .WebFeedPollChoices.Where(c => postIds.Contains(c.WebFeedPostEntityId))
             .OrderBy(c => c.Ordinal)
-            .Select(c => new FeedPollChoice(
-                c.Id,
-                c.Label,
-                db.WebFeedPollVotes.Count(v => v.WebFeedPollChoiceEntityId == c.Id)
-            ))
             .ToListAsync(ct)
             .ConfigureAwait(false);
 
-        int total = await db
-            .WebFeedPollVotes.CountAsync(v => v.WebFeedPostEntityId == postId, ct)
+        if (choiceRows.Count == 0)
+        {
+            return [];
+        }
+
+        List<WebFeedPollVoteEntity> voteRows = await db
+            .WebFeedPollVotes.Where(v => postIds.Contains(v.WebFeedPostEntityId))
+            .ToListAsync(ct)
             .ConfigureAwait(false);
 
-        int? mine = viewerId is null
-            ? null
-            : await db
-                .WebFeedPollVotes.Where(v =>
-                    v.WebFeedPostEntityId == postId && v.PlayerEntityId == viewerId
-                )
-                .Select(v => (int?)v.WebFeedPollChoiceEntityId)
-                .FirstOrDefaultAsync(ct)
-                .ConfigureAwait(false);
+        ILookup<int, WebFeedPollVoteEntity> votesByChoice = voteRows.ToLookup(v =>
+            v.WebFeedPollChoiceEntityId
+        );
+        ILookup<int, WebFeedPollVoteEntity> votesByPost = voteRows.ToLookup(v =>
+            v.WebFeedPostEntityId
+        );
 
-        return new FeedPoll(total, mine, choices);
+        Dictionary<int, FeedPoll> polls = [];
+
+        foreach (
+            IGrouping<int, WebFeedPollChoiceEntity> group in choiceRows.GroupBy(c =>
+                c.WebFeedPostEntityId
+            )
+        )
+        {
+            int postId = group.Key;
+
+            List<FeedPollChoice> choices =
+            [
+                .. group.Select(c => new FeedPollChoice(
+                    c.Id,
+                    c.Label,
+                    votesByChoice[c.Id].Count()
+                )),
+            ];
+
+            int total = votesByPost[postId].Count();
+
+            int? mine = viewerId is null
+                ? null
+                : votesByPost[postId]
+                    .Where(v => v.PlayerEntityId == viewerId)
+                    .Select(v => (int?)v.WebFeedPollChoiceEntityId)
+                    .FirstOrDefault();
+
+            polls[postId] = new FeedPoll(total, mine, choices);
+        }
+
+        return polls;
     }
+
+    private static async Task<Dictionary<int, List<string>>> LoadTagsAsync(
+        VortexDbContext db,
+        List<int> postIds,
+        CancellationToken ct
+    )
+    {
+        var rows = await db
+            .WebFeedPostTags.Where(t => postIds.Contains(t.WebFeedPostEntityId))
+            .Select(t => new { t.WebFeedPostEntityId, Tag = t.WebFeedTagEntity!.Tag })
+            .ToListAsync(ct)
+            .ConfigureAwait(false);
+
+        return rows.GroupBy(r => r.WebFeedPostEntityId)
+            .ToDictionary(g => g.Key, g => g.Select(r => r.Tag).ToList());
+    }
+
+    private static async Task<Dictionary<int, ReactionSummary>> LoadReactionsAsync(
+        VortexDbContext db,
+        List<int> postIds,
+        int? viewerId,
+        CancellationToken ct
+    )
+    {
+        List<WebFeedReactionEntity> rows = await db
+            .WebFeedReactions.Where(r => postIds.Contains(r.WebFeedPostEntityId))
+            .ToListAsync(ct)
+            .ConfigureAwait(false);
+
+        return rows.GroupBy(r => r.WebFeedPostEntityId)
+            .ToDictionary(
+                g => g.Key,
+                g => new ReactionSummary(
+                    g.Count(r => r.Kind == FeedReactionKind.Repost),
+                    g.Count(r => r.Kind == FeedReactionKind.Favorite),
+                    viewerId is not null
+                        && g.Any(r =>
+                            r.PlayerEntityId == viewerId && r.Kind == FeedReactionKind.Repost
+                        ),
+                    viewerId is not null
+                        && g.Any(r =>
+                            r.PlayerEntityId == viewerId && r.Kind == FeedReactionKind.Favorite
+                        )
+                )
+            );
+    }
+
+    /// <summary>The four reaction-derived numbers a post carries, batched per post id.</summary>
+    private sealed record ReactionSummary(
+        int Reposts,
+        int Favorites,
+        bool RepostedByMe,
+        bool FavoritedByMe
+    );
 }
