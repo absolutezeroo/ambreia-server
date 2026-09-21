@@ -81,6 +81,61 @@ public sealed class RelativePositionTests
         At(6, 5, Rotation.None).Should().Be(RelativePosition.Right);
     }
 
+    /// <summary>A piece at 5,5 that is <paramref name="w"/> by <paramref name="l"/> before turning.</summary>
+    private static RelativePosition? Big(int x, int y, Rotation facing, int w, int l) =>
+        RelativePositions.Of(x, y, 5, 5, facing, w, l);
+
+    [Theory]
+    // A 1x6 bench anchored at 5,5 and facing south covers 5,5 through 5,10. Standing on any of
+    // them is standing on the bench -- measured from the anchor, the far end was six tiles away
+    // and answered nothing at all.
+    [InlineData(5, 5)]
+    [InlineData(5, 7)]
+    [InlineData(5, 10)]
+    public void Every_tile_a_long_piece_covers_is_on_it(int x, int y) =>
+        Big(x, y, Rotation.South, 1, 6).Should().Be(RelativePosition.On);
+
+    [Theory]
+    // And the tile beside any of them is beside the piece. South-facing, so its front is -Y and
+    // the tile at +X is off its left shoulder wherever along the length you stand.
+    [InlineData(6, 5)]
+    [InlineData(6, 8)]
+    [InlineData(6, 10)]
+    public void Standing_beside_a_long_piece_works_along_its_whole_length(int x, int y) =>
+        Big(x, y, Rotation.South, 1, 6).Should().Be(RelativePosition.Left);
+
+    [Fact]
+    public void A_turned_piece_covers_a_turned_rectangle()
+    {
+        // 1x6 facing east is 6 wide and 1 long, so it runs along X instead of Y. The room's own
+        // footprint rule; the two disagreeing would put a piece beside a tile it does not occupy.
+        Big(10, 5, Rotation.East, 1, 6).Should().Be(RelativePosition.On);
+        Big(5, 10, Rotation.East, 1, 6).Should().BeNull("it does not run along Y when turned");
+    }
+
+    [Fact]
+    public void A_single_tile_piece_answers_exactly_as_it_always_did()
+    {
+        // The compatibility claim: clamping to a 1x1 footprint is clamping to the piece itself, so
+        // every reading above this line is the reading it had before footprints existed.
+        foreach (Rotation facing in Enum.GetValues<Rotation>())
+        {
+            foreach ((int x, int y) in new[] { (5, 4), (6, 5), (5, 5), (4, 6), (5, 3) })
+            {
+                Big(x, y, facing, 1, 1).Should().Be(RelativePositions.Of(x, y, 5, 5, facing));
+            }
+        }
+    }
+
+    [Fact]
+    public void Beyond_one_tile_from_the_footprint_there_is_still_nothing()
+    {
+        // The rule that keeps "in front of the television" meaning something: two tiles past the
+        // end of a long piece is not beside it.
+        Big(5, 12, Rotation.South, 1, 6).Should().BeNull();
+        Big(7, 8, Rotation.South, 1, 6).Should().BeNull();
+    }
+
     [Fact]
     public void Every_position_names_itself_exactly_once()
     {

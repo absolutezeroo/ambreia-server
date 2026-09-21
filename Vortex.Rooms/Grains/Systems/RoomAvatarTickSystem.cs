@@ -343,7 +343,20 @@ public sealed class RoomAvatarTickSystem(RoomGrain roomGrain)
                 continue;
             }
 
-            if (RelativePositions.Of(x, y, nx, ny, floorItem.Rotation) is not RelativePosition side)
+            // The piece's own position and size, not the tile it was found on: a long sofa answers
+            // from every tile it covers, and "in front of" is in front of the sofa.
+            if (
+                RelativePositions.Of(
+                    x,
+                    y,
+                    floorItem.X,
+                    floorItem.Y,
+                    floorItem.Rotation,
+                    floorItem.Definition.Width,
+                    floorItem.Definition.Length
+                )
+                is not RelativePosition side
+            )
             {
                 continue;
             }

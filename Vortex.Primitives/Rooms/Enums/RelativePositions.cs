@@ -34,21 +34,46 @@ public static class RelativePositions
     /// The way the furniture faces. Everything here is measured against it, which is what makes
     /// "in front of" survive the furniture being turned round.
     /// </param>
+    /// <param name="width">The furniture's width, before rotation. One for most pieces.</param>
+    /// <param name="length">And its length. A sofa is 2x1, a tile puzzle can be 3x3, a pool 2x6.</param>
     /// <remarks>
+    /// <para>
     /// Null beyond one tile rather than a coarse octant. "In front of the television" said of
     /// somebody five tiles away is not a claim anybody means, and answering it would make a filter
     /// match most of the room.
+    /// </para>
+    /// <para>
+    /// Measured against the whole footprint, not the anchor tile. A piece occupies every tile it
+    /// covers -- the room registers it on all of them -- so standing at the far end of a 2x6 is
+    /// standing beside that piece. Measured from the anchor, the delta was five tiles and this
+    /// answered null: no signal at all, for most of the length of every long piece in the hotel.
+    /// Nothing threw and nothing logged; the task simply never advanced.
+    /// </para>
     /// </remarks>
     public static RelativePosition? Of(
         int fromX,
         int fromY,
         int itemX,
         int itemY,
-        Rotation itemRotation
+        Rotation itemRotation,
+        int width = 1,
+        int length = 1
     )
     {
-        int dx = fromX - itemX;
-        int dy = fromY - itemY;
+        // A turned piece covers a turned rectangle. The room's own footprint rule, because the two
+        // disagreeing is how an item comes to be beside a tile it does not occupy.
+        if (width > 0 && length > 0 && itemRotation is Rotation.East or Rotation.West)
+        {
+            (width, length) = (length, width);
+        }
+
+        // The nearest tile OF the piece, which for a 1x1 is the piece itself -- so everything below
+        // is what it always was for the pieces that were already right.
+        int nearX = Math.Clamp(fromX, itemX, itemX + Math.Max(width, 1) - 1);
+        int nearY = Math.Clamp(fromY, itemY, itemY + Math.Max(length, 1) - 1);
+
+        int dx = fromX - nearX;
+        int dy = fromY - nearY;
 
         if (Math.Abs(dx) > 1 || Math.Abs(dy) > 1)
         {
