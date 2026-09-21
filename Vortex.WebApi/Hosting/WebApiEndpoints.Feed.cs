@@ -20,7 +20,7 @@ namespace Vortex.WebApi.Hosting;
 /// </remarks>
 internal static partial class WebApiEndpointsFeed
 {
-    public static void MapFeed(WebApplication app, string tagPublic)
+    public static void MapFeed(WebApplication app, string tagPublic, string tagUser)
     {
         app.MapGet(
                 "/api/public/feed",
@@ -82,5 +82,74 @@ internal static partial class WebApiEndpointsFeed
             .WithName("FeedPost")
             .WithSummary("One post and its comments.")
             .WithTags(tagPublic);
+
+        app.MapPost(
+                "/api/user/feed",
+                async Task<
+                    Results<
+                        Ok<FeedPost>,
+                        BadRequest<ApiErrorResponse>,
+                        NotFound<ApiErrorResponse>,
+                        UnauthorizedError
+                    >
+                > (
+                    HttpContext ctx,
+                    FeedPublishRequest body,
+                    [FromServices] IWebApiFeedService feed,
+                    [FromServices] WebApiSessionStore sessions,
+                    [FromServices] IWebApiPlayerService players,
+                    CancellationToken ct
+                ) =>
+                {
+                    (int? playerId, IResult? refused) = await WebApiEndpoints
+                        .SelectedPlayerAsync(ctx, sessions, players, ct)
+                        .ConfigureAwait(false);
+
+                    if (playerId is null)
+                    {
+                        // No session, or a session with no avatar: a post belongs to a PLAYER, and
+                        // an account without one has nobody to attribute it to.
+                        return refused is UnauthorizedError unauthorized
+                            ? unauthorized
+                            : TypedResults.NotFound(new ApiErrorResponse("pocket.auth.no_avatars"));
+                    }
+
+                    (FeedRefusal refusal, FeedPost? post) = await feed.PublishAsync(
+                            playerId.Value,
+                            body,
+                            ct
+                        )
+                        .ConfigureAwait(false);
+
+                    return refusal switch
+                    {
+                        FeedRefusal.None => TypedResults.Ok(post!),
+                        FeedRefusal.ParentNotFound => TypedResults.NotFound(
+                            new ApiErrorResponse("feed_post_not_found")
+                        ),
+                        _ => TypedResults.BadRequest(new ApiErrorResponse(Code(refusal))),
+                    };
+                }
+            )
+            .WithName("FeedPublish")
+            .WithSummary("Publish a post, or a comment on one.")
+            .WithTags(tagUser);
     }
+
+    /// <summary>
+    /// A refusal to the code the website words. One code per reason rather than a single
+    /// "invalid": the composer has three tabs and a reader has to be told which one is wrong.
+    /// </summary>
+    private static string Code(FeedRefusal refusal) =>
+        refusal switch
+        {
+            FeedRefusal.BodyEmpty => "feed_body_empty",
+            FeedRefusal.BodyTooLong => "feed_body_too_long",
+            FeedRefusal.TooManyPhotos => "feed_too_many_photos",
+            FeedRefusal.PhotoNotYours => "feed_photo_not_yours",
+            FeedRefusal.PollInvalid => "feed_poll_invalid",
+            FeedRefusal.ParentNotRoot => "feed_parent_not_root",
+            FeedRefusal.GroupNotMember => "feed_group_not_member",
+            _ => "feed_invalid",
+        };
 }

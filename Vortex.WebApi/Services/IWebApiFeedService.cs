@@ -55,6 +55,36 @@ public sealed record FeedPost(
 /// <summary>One page of the feed.</summary>
 public sealed record FeedPage(int Page, int PageSize, int Total, IReadOnlyList<FeedPost> Items);
 
+/// <summary>What the composer sends.</summary>
+/// <remarks>
+/// Photos arrive as KEYS because that is what the browser knows — the gallery hands it keys and
+/// <c>photoUrl</c> builds a url out of one. The service resolves each to a row and stores the row's
+/// id; a key that resolves to nothing is a refusal, never a quietly skipped photo.
+/// </remarks>
+public sealed record FeedPublishRequest(
+    FeedPostKind Kind,
+    string Body,
+    IReadOnlyList<string>? PhotoKeys,
+    IReadOnlyList<string>? PollChoices,
+    int? ParentId,
+    int? GroupId
+);
+
+/// <summary>Why a publish was refused, or <see cref="None"/>.</summary>
+public enum FeedRefusal
+{
+    None = 0,
+    BodyEmpty,
+    BodyTooLong,
+    TooManyPhotos,
+    PhotoNotYours,
+    PollInvalid,
+    ParentNotFound,
+    ParentNotRoot,
+    GroupNotMember,
+    KindMismatch,
+}
+
 /// <summary>
 /// The website's social feed.
 /// </summary>
@@ -84,4 +114,17 @@ public interface IWebApiFeedService
 
     /// <summary>One post with all of its comments, or null when it is not readable.</summary>
     Task<FeedPost?> GetPostAsync(int id, int? viewerId, CancellationToken ct);
+
+    /// <summary>
+    /// Publishes a post, or a comment when <see cref="FeedPublishRequest.ParentId"/> is set.
+    /// </summary>
+    /// <remarks>
+    /// Every field is validated here and nowhere else, so the endpoint stays a translation from a
+    /// refusal to a status code and the rules cannot be bypassed by a second caller.
+    /// </remarks>
+    Task<(FeedRefusal Refusal, FeedPost? Post)> PublishAsync(
+        int playerId,
+        FeedPublishRequest body,
+        CancellationToken ct
+    );
 }

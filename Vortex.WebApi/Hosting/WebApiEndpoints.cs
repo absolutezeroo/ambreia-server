@@ -79,9 +79,10 @@ internal static partial class WebApiEndpoints
 
         WebApiEndpointsCamera.MapCamera(app);
 
-        // The website's social feed. Anonymous, like the photo gallery beside it — see
+        // The website's social feed. The reads are anonymous, like the photo gallery beside it; the
+        // publish route is the composer's, tagged User like every other route behind a session — see
         // WebApiEndpoints.Feed.cs.
-        WebApiEndpointsFeed.MapFeed(app, TagPublic);
+        WebApiEndpointsFeed.MapFeed(app, TagPublic, TagUser);
     }
 
     /// <summary>

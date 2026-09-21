@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using Vortex.Database.Context;
 using Vortex.Database.Entities.Feed;
+using Vortex.Database.Entities.Groups;
 using Vortex.Primitives.Feed;
 
 namespace Vortex.WebApi.Services;
@@ -117,6 +118,171 @@ public sealed class WebApiFeedService(IDbContextFactory<VortexDbContext> dbCtxFa
             .ConfigureAwait(false);
 
         return items[0];
+    }
+
+    /// <summary>The screenshot's card shows two; four is the most a two-column grid draws well.</summary>
+    private const int MaximumPhotos = 4;
+
+    private const int MinimumChoices = 2;
+    private const int MaximumChoices = 5;
+
+    public async Task<(FeedRefusal Refusal, FeedPost? Post)> PublishAsync(
+        int playerId,
+        FeedPublishRequest body,
+        CancellationToken ct
+    )
+    {
+        string text = (body.Body ?? string.Empty).Trim();
+
+        if (text.Length > WebFeedPostEntity.BodyLength)
+        {
+            return (FeedRefusal.BodyTooLong, null);
+        }
+
+        IReadOnlyList<string> keys = body.PhotoKeys ?? [];
+        IReadOnlyList<string> choices = (body.PollChoices ?? [])
+            .Select(c => (c ?? string.Empty).Trim())
+            .Where(c => c.Length > 0)
+            .ToList();
+
+        // The kind has to agree with what came with it, in both directions: a Photo post with no
+        // photos renders as an empty card, and a Status post carrying poll choices would silently
+        // drop them.
+        bool agrees = body.Kind switch
+        {
+            FeedPostKind.Status => keys.Count == 0 && choices.Count == 0,
+            FeedPostKind.Photo => keys.Count > 0 && choices.Count == 0,
+            FeedPostKind.Poll => keys.Count == 0 && choices.Count > 0,
+            _ => false,
+        };
+
+        if (!agrees)
+        {
+            return (FeedRefusal.KindMismatch, null);
+        }
+
+        // Text is required except on a photo post, where the pictures are the content.
+        if (text.Length == 0 && body.Kind != FeedPostKind.Photo)
+        {
+            return (FeedRefusal.BodyEmpty, null);
+        }
+
+        if (keys.Count > MaximumPhotos)
+        {
+            return (FeedRefusal.TooManyPhotos, null);
+        }
+
+        if (
+            body.Kind == FeedPostKind.Poll
+            && (
+                choices.Count < MinimumChoices
+                || choices.Count > MaximumChoices
+                || choices.Any(c => c.Length > WebFeedPollChoiceEntity.LabelLength)
+            )
+        )
+        {
+            return (FeedRefusal.PollInvalid, null);
+        }
+
+        await using VortexDbContext db = await _db.CreateDbContextAsync(ct).ConfigureAwait(false);
+
+        if (body.ParentId is int parentId)
+        {
+            WebFeedPostEntity? parent = await db
+                .WebFeedPosts.FirstOrDefaultAsync(p => p.Id == parentId && p.DeletedAt == null, ct)
+                .ConfigureAwait(false);
+
+            if (parent is null)
+            {
+                return (FeedRefusal.ParentNotFound, null);
+            }
+
+            // One level deep. A reply to a reply would make the thread a tree, which the page this
+            // serves does not draw and the read path does not walk.
+            if (parent.ParentEntityId is not null)
+            {
+                return (FeedRefusal.ParentNotRoot, null);
+            }
+        }
+
+        if (body.GroupId is int groupId)
+        {
+            bool member = await db
+                .GroupMembers.AnyAsync(
+                    m => m.GroupEntityId == groupId && m.PlayerEntityId == playerId,
+                    ct
+                )
+                .ConfigureAwait(false);
+
+            if (!member)
+            {
+                return (FeedRefusal.GroupNotMember, null);
+            }
+        }
+
+        // The photos, resolved from keys to rows, each one checked to be this player's and public.
+        List<int> photoIds = [];
+
+        foreach (string key in keys)
+        {
+            int id = await db
+                .CameraPhotos.Where(p =>
+                    p.PhotoKey == key
+                    && p.PlayerEntityId == playerId
+                    && p.PublishedAt != null
+                    && p.DeletedAt == null
+                )
+                .Select(p => p.Id)
+                .FirstOrDefaultAsync(ct)
+                .ConfigureAwait(false);
+
+            if (id == 0)
+            {
+                return (FeedRefusal.PhotoNotYours, null);
+            }
+
+            photoIds.Add(id);
+        }
+
+        WebFeedPostEntity post = new()
+        {
+            PlayerEntityId = playerId,
+            GroupEntityId = body.GroupId,
+            ParentEntityId = body.ParentId,
+            Kind = body.Kind,
+            Body = text,
+        };
+
+        db.WebFeedPosts.Add(post);
+        await db.SaveChangesAsync(ct).ConfigureAwait(false);
+
+        for (int i = 0; i < photoIds.Count; i++)
+        {
+            db.WebFeedPostPhotos.Add(
+                new WebFeedPostPhotoEntity
+                {
+                    WebFeedPostEntityId = post.Id,
+                    CameraPhotoEntityId = photoIds[i],
+                    Ordinal = i,
+                }
+            );
+        }
+
+        for (int i = 0; i < choices.Count; i++)
+        {
+            db.WebFeedPollChoices.Add(
+                new WebFeedPollChoiceEntity
+                {
+                    WebFeedPostEntityId = post.Id,
+                    Ordinal = i,
+                    Label = choices[i],
+                }
+            );
+        }
+
+        await db.SaveChangesAsync(ct).ConfigureAwait(false);
+
+        return (FeedRefusal.None, await GetPostAsync(post.Id, playerId, ct).ConfigureAwait(false));
     }
 
     /// <summary>
