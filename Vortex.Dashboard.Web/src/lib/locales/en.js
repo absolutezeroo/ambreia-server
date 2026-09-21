@@ -2756,8 +2756,11 @@ export default {
     filterLiteral: 'a value',
     filterSameAsStep: 'same as action {n}',
     fact_target: 'Target',
-    fact_item: 'The furniture',
-    fact_def: 'Furniture type',
+    // "The furniture" read as the obvious choice and meant the least useful one: ONE placed object,
+    // by an id that changes the moment somebody picks it up. An operator wrote a task on it and
+    // only found out because the diagram could not draw a sprite for it.
+    fact_item: 'This one placed piece',
+    fact_def: 'Any furniture of this kind',
     fact_kind: 'Floor or wall',
     fact_room: 'Room',
     fact_name: 'Room name',

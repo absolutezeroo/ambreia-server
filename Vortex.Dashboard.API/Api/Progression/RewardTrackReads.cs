@@ -196,6 +196,22 @@ internal sealed class RewardTrackReads(
                 // see which sofa it is about, and the editor cannot remember what it never fetched.
                 List<int> named = [.. stepFilters.Select(NamedDefinition).OfType<int>().Distinct()];
 
+                // And the placed pieces, resolved through the object to the definition it is an
+                // instance of. A task can name furniture either way and both deserve a picture.
+                List<int> placed = [.. stepFilters.Select(NamedItem).OfType<int>().Distinct()];
+
+                Dictionary<int, int> definitionOfItem =
+                    placed.Count == 0
+                        ? []
+                        : await db
+                            .Furnitures.AsNoTracking()
+                            .Where(f => placed.Contains(f.Id))
+                            .Select(f => new { f.Id, f.FurnitureDefinitionEntityId })
+                            .ToDictionaryAsync(f => f.Id, f => f.FurnitureDefinitionEntityId, ct)
+                            .ConfigureAwait(false);
+
+                named = [.. named.Concat(definitionOfItem.Values).Distinct()];
+
                 // The footprint travels with the sprite: a 2x6 drawn on one tile is a picture that
                 // disagrees with itself, and the diagram has to know how many tiles the piece is.
                 Dictionary<int, (string? Url, int Width, int Length)> furniSprites =
@@ -382,13 +398,15 @@ internal sealed class RewardTrackReads(
                                                 stepFilters.Where(f =>
                                                     f.RewardTrackTaskStepEntityId == s.Id
                                                 ),
-                                                furniSprites
+                                                furniSprites,
+                                                definitionOfItem
                                             ),
                                             Tree(
                                                 stepFilters.Where(f =>
                                                     f.RewardTrackTaskStepEntityId == s.Id
                                                 ),
-                                                furniSprites
+                                                furniSprites,
+                                                definitionOfItem
                                             )
                                         ))
                                         .ToList(),
@@ -564,10 +582,17 @@ internal sealed class RewardTrackReads(
     /// </remarks>
     private static RewardTrackFilterRow Condition(
         RewardTrackStepFilterEntity row,
-        Dictionary<int, (string? Url, int Width, int Length)> furniSprites
+        Dictionary<int, (string? Url, int Width, int Length)> furniSprites,
+        Dictionary<int, int> definitionOfItem
     )
     {
-        (string? url, int width, int length) = NamedDefinition(row) is int id
+        // Either way a condition can name furniture: by its kind, or by one placed object that is
+        // an instance of a kind. The second goes through the object first.
+        int? definitionId =
+            NamedDefinition(row)
+            ?? (NamedItem(row) is int itemId ? definitionOfItem.GetValueOrDefault(itemId) : null);
+
+        (string? url, int width, int length) = definitionId is int id
             ? furniSprites.GetValueOrDefault(id)
             : (null, 0, 0);
 
@@ -592,7 +617,22 @@ internal sealed class RewardTrackReads(
     /// taken: "one of these three sofas" has no single sprite, and the first is a better answer
     /// than none for a diagram whose job is to say roughly what this is about.
     /// </remarks>
-    private static int? NamedDefinition(RewardTrackStepFilterEntity row)
+    /// <summary>
+    /// The placed piece this condition is about, or <c>null</c> when it is about something else.
+    /// </summary>
+    /// <remarks>
+    /// A task can name a piece of furniture two ways, and an operator picked the one I had not
+    /// handled: <c>def</c> is the kind of thing and <c>item</c> is one placed object. Both deserve
+    /// a picture, and the second is resolved through the object to the definition it is an
+    /// instance of.
+    /// </remarks>
+    private static int? NamedItem(RewardTrackStepFilterEntity row) =>
+        NamedFurniture(row, RewardTrackFacts.Item);
+
+    private static int? NamedDefinition(RewardTrackStepFilterEntity row) =>
+        NamedFurniture(row, RewardTrackFacts.Definition);
+
+    private static int? NamedFurniture(RewardTrackStepFilterEntity row, string factKey)
     {
         StepValueKind leftKind = row.LeftArg is null ? StepValueKind.Fact : row.LeftKind;
         string leftArg = row.LeftArg ?? row.FactKey;
@@ -600,8 +640,11 @@ internal sealed class RewardTrackReads(
         string rightArg = row.RightArg ?? row.Value;
 
         bool namesIt =
-            (leftKind is StepValueKind.Fact or StepValueKind.StepFact && Names(leftArg))
-            || (rightKind is StepValueKind.Fact or StepValueKind.StepFact && Names(rightArg));
+            (leftKind is StepValueKind.Fact or StepValueKind.StepFact && Names(leftArg, factKey))
+            || (
+                rightKind is StepValueKind.Fact or StepValueKind.StepFact
+                && Names(rightArg, factKey)
+            );
 
         if (!namesIt)
         {
@@ -623,12 +666,8 @@ internal sealed class RewardTrackReads(
             : null;
 
         // A step reference packs its step in front of the key, so the key is what is after it.
-        static bool Names(string arg) =>
-            string.Equals(
-                arg[(arg.IndexOf(':') + 1)..],
-                RewardTrackFacts.Definition,
-                StringComparison.Ordinal
-            );
+        static bool Names(string arg, string key) =>
+            string.Equals(arg[(arg.IndexOf(':') + 1)..], key, StringComparison.Ordinal);
     }
 
     /// <summary>One side, or what the row meant before it could name one.</summary>
@@ -672,7 +711,8 @@ internal sealed class RewardTrackReads(
     /// </remarks>
     private static IReadOnlyList<RewardTrackFilterRow> Flat(
         IEnumerable<RewardTrackStepFilterEntity> rows,
-        Dictionary<int, (string? Url, int Width, int Length)> furniSprites
+        Dictionary<int, (string? Url, int Width, int Length)> furniSprites,
+        Dictionary<int, int> definitionOfItem
     )
     {
         List<RewardTrackFilterRow> flat = [];
@@ -684,7 +724,7 @@ internal sealed class RewardTrackReads(
                 return [];
             }
 
-            flat.Add(Condition(row, furniSprites));
+            flat.Add(Condition(row, furniSprites, definitionOfItem));
         }
 
         return flat;
@@ -701,7 +741,8 @@ internal sealed class RewardTrackReads(
     /// </remarks>
     private static IReadOnlyList<RewardTrackNodeRow> Tree(
         IEnumerable<RewardTrackStepFilterEntity> rows,
-        Dictionary<int, (string? Url, int Width, int Length)> furniSprites
+        Dictionary<int, (string? Url, int Width, int Length)> furniSprites,
+        Dictionary<int, int> definitionOfItem
     )
     {
         Dictionary<int, List<RewardTrackStepFilterEntity>> byParent = [];
@@ -719,14 +760,15 @@ internal sealed class RewardTrackReads(
             siblings.Add(row);
         }
 
-        return Children(byParent, 0, [], furniSprites);
+        return Children(byParent, 0, [], furniSprites, definitionOfItem);
     }
 
     private static List<RewardTrackNodeRow> Children(
         Dictionary<int, List<RewardTrackStepFilterEntity>> byParent,
         int parentId,
         HashSet<int> seen,
-        Dictionary<int, (string? Url, int Width, int Length)> furniSprites
+        Dictionary<int, (string? Url, int Width, int Length)> furniSprites,
+        Dictionary<int, int> definitionOfItem
     )
     {
         if (!byParent.TryGetValue(parentId, out List<RewardTrackStepFilterEntity>? rows))
@@ -746,10 +788,12 @@ internal sealed class RewardTrackReads(
             built.Add(
                 new RewardTrackNodeRow(
                     (int)row.Kind,
-                    row.Kind == PredicateKind.Test ? Condition(row, furniSprites) : null,
+                    row.Kind == PredicateKind.Test
+                        ? Condition(row, furniSprites, definitionOfItem)
+                        : null,
                     row.Kind == PredicateKind.Test
                         ? []
-                        : Children(byParent, row.Id, seen, furniSprites)
+                        : Children(byParent, row.Id, seen, furniSprites, definitionOfItem)
                 )
             );
 

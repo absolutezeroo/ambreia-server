@@ -34,12 +34,20 @@ public static class Facts
     /// </summary>
     public const string TargetKey = RewardTrackFacts.Target;
 
-    /// <summary>The room object id of a piece of furniture: the identity that survives a move.</summary>
+    /// <summary>
+    /// The room object id of a piece of furniture: the identity that survives a move.
+    /// </summary>
+    /// <remarks>
+    /// Labelled for what it is rather than for what it sounds like. "The furniture" was the obvious
+    /// pick in a dropdown and the least useful answer: it names ONE placed object, by an id that
+    /// changes the moment somebody picks it up and puts it down. Written as a literal it is a task
+    /// about one piece in one room; its real use is as the thing a later step points back at.
+    /// </remarks>
     public static readonly FactKey Item = new(
         RewardTrackFacts.Item,
         FactKind.OpaqueId,
         "rewardTracks.fact_item",
-        "The furniture"
+        "This one placed piece"
     );
 
     /// <summary>A furniture definition id — the kind of thing, not the thing.</summary>
@@ -47,7 +55,7 @@ public static class Facts
         RewardTrackFacts.Definition,
         FactKind.FurnitureId,
         "rewardTracks.fact_def",
-        "Furniture type"
+        "Any furniture of this kind"
     );
 
     /// <summary>Floor or wall: the coarse type no definition id can express on its own.</summary>
