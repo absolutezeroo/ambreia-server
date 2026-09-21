@@ -144,6 +144,46 @@ internal static partial class WebApiEndpointsFeed
             .WithName("FeedPublish")
             .WithSummary("Publish a post, or a comment on one.")
             .WithTags(tagUser);
+
+        app.MapPost(
+                "/api/user/feed/{id:int}/vote",
+                async Task<Results<Ok<FeedPost>, NotFound<ApiErrorResponse>, UnauthorizedError>> (
+                    HttpContext ctx,
+                    int id,
+                    FeedVoteRequest body,
+                    [FromServices] IWebApiFeedService feed,
+                    [FromServices] WebApiSessionStore sessions,
+                    [FromServices] IWebApiPlayerService players,
+                    CancellationToken ct
+                ) =>
+                {
+                    (int? playerId, IResult? refused) = await WebApiEndpoints
+                        .SelectedPlayerAsync(ctx, sessions, players, ct)
+                        .ConfigureAwait(false);
+
+                    if (playerId is null)
+                    {
+                        // No session, or a session with no avatar: a vote belongs to a PLAYER, and
+                        // an account without one has nobody to attribute it to.
+                        return refused is UnauthorizedError unauthorized
+                            ? unauthorized
+                            : TypedResults.NotFound(new ApiErrorResponse("pocket.auth.no_avatars"));
+                    }
+
+                    FeedPost? post = await feed.VoteAsync(playerId.Value, id, body.ChoiceId, ct)
+                        .ConfigureAwait(false);
+
+                    // One 404 for three causes — no such poll, deleted, or a choice from a
+                    // different one. Distinguishing them would tell a caller which ids exist, and
+                    // the page has nothing different to do with the answer either way.
+                    return post is null
+                        ? TypedResults.NotFound(new ApiErrorResponse("feed_post_not_found"))
+                        : TypedResults.Ok(post);
+                }
+            )
+            .WithName("FeedVote")
+            .WithSummary("Vote in a poll, or move an existing vote.")
+            .WithTags(tagUser);
     }
 
     /// <summary>

@@ -290,6 +290,64 @@ public sealed class WebApiFeedService(IDbContextFactory<VortexDbContext> dbCtxFa
         return (FeedRefusal.None, await GetPostAsync(post.Id, playerId, ct).ConfigureAwait(false));
     }
 
+    public async Task<FeedPost?> VoteAsync(
+        int playerId,
+        int postId,
+        int choiceId,
+        CancellationToken ct
+    )
+    {
+        await using VortexDbContext db = await _db.CreateDbContextAsync(ct).ConfigureAwait(false);
+
+        // Both halves, and neither is redundant. The choice has to belong to THIS poll, or a
+        // choice id from anywhere in the hotel lands here; and the post has to be a readable poll,
+        // or a vote attaches to a status nothing will ever render it under.
+        bool choiceBelongs = await db
+            .WebFeedPollChoices.AnyAsync(
+                c => c.Id == choiceId && c.WebFeedPostEntityId == postId,
+                ct
+            )
+            .ConfigureAwait(false);
+
+        bool votable = await Readable(db)
+            .AnyAsync(p => p.Id == postId && p.Kind == FeedPostKind.Poll, ct)
+            .ConfigureAwait(false);
+
+        if (!choiceBelongs || !votable)
+        {
+            return null;
+        }
+
+        WebFeedPollVoteEntity? existing = await db
+            .WebFeedPollVotes.FirstOrDefaultAsync(
+                v => v.WebFeedPostEntityId == postId && v.PlayerEntityId == playerId,
+                ct
+            )
+            .ConfigureAwait(false);
+
+        // Moved, not added — see IWebApiFeedService.VoteAsync for why this cannot be left to the
+        // unique index alone.
+        if (existing is null)
+        {
+            db.WebFeedPollVotes.Add(
+                new WebFeedPollVoteEntity
+                {
+                    WebFeedPostEntityId = postId,
+                    WebFeedPollChoiceEntityId = choiceId,
+                    PlayerEntityId = playerId,
+                }
+            );
+        }
+        else
+        {
+            existing.WebFeedPollChoiceEntityId = choiceId;
+        }
+
+        await db.SaveChangesAsync(ct).ConfigureAwait(false);
+
+        return await GetPostAsync(postId, playerId, ct).ConfigureAwait(false);
+    }
+
     /// <summary>
     /// The one condition every read carries. Changing this changes who can be seen, so it exists
     /// once and every query starts from it.

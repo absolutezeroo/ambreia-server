@@ -135,4 +135,23 @@ public interface IWebApiFeedService
         FeedPublishRequest body,
         CancellationToken ct
     );
+
+    /// <summary>
+    /// Records or moves one player's vote, and answers the poll as it now stands. Null when the
+    /// post is not a readable poll, or when the choice belongs to a different one.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// A vote is MOVED, never added to. The unique index on (post, player) says the same thing at
+    /// the database, but EF's in-memory provider does not enforce a unique index, so the rule has
+    /// to hold here as well as there — and a second row would not merely double-count, it would
+    /// make the index refuse the next honest vote on a real MySQL.
+    /// </para>
+    /// <para>
+    /// The choice is checked to belong to the poll named in the route. Without that, a choice id
+    /// is just a number a browser sends, and a vote could be aimed at any choice in the hotel and
+    /// would land silently on a poll nobody meant.
+    /// </para>
+    /// </remarks>
+    Task<FeedPost?> VoteAsync(int playerId, int postId, int choiceId, CancellationToken ct);
 }

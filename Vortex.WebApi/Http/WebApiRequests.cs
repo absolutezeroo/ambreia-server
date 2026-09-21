@@ -101,6 +101,17 @@ public sealed record SafetyLockRequest(bool? Locked, string? CurrentPassword, st
 public sealed record PhotoLikeRequest(bool Liked);
 
 /// <summary>
+/// Which choice the caller is taking in a feed poll.
+/// </summary>
+/// <remarks>
+/// The choice id alone, with the poll named by the route. The service checks the two agree, because
+/// on its own this is a number a browser sends and it would otherwise let a vote land on any poll
+/// in the hotel. Re-sending the same choice is a no-op and sending a different one MOVES the vote,
+/// so a retry can never turn one player into two voices.
+/// </remarks>
+public sealed record FeedVoteRequest(int ChoiceId);
+
+/// <summary>
 /// Sets, or replaces, the account's two security questions. The password is required because these
 /// are a way INTO the account: a thief holding a session who could quietly install questions of
 /// their own would own the recovery path as well as the session.
