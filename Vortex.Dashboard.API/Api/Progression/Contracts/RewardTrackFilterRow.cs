@@ -8,6 +8,13 @@ namespace Vortex.Dashboard.API.Api.Progression.Contracts;
 /// <param name="IconUrl">
 /// The sprite of the furniture this condition names, when it names one by definition id.
 /// </param>
+/// <param name="FurniWidth">
+/// How many tiles across that furniture is, before rotation. Zero when this names none.
+/// </param>
+/// <param name="FurniLength">
+/// And how many along. A sofa is 2x1, a tile puzzle 3x3, a pool 2x6 — and the diagram of the tiles
+/// around it is a lie at 1x1, because the sprite says six tiles and the picture says one.
+/// </param>
 /// <remarks>
 /// The icon is resolved here rather than remembered by the editor. Kept editor-side it was gone
 /// the moment a task was reopened, which is exactly when an operator is reading a condition they
@@ -19,5 +26,7 @@ public sealed record RewardTrackFilterRow(
     string Value,
     RewardTrackValueRow Left,
     RewardTrackValueRow Right,
-    string? IconUrl
+    string? IconUrl,
+    int FurniWidth,
+    int FurniLength
 );

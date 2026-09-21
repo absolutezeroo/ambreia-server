@@ -42,8 +42,8 @@
     sideChoices: SideChoice[];
     /** The operators that mean anything about what is on the left. */
     operatorsFor: (left: SideValue) => { value: number; key: string }[];
-    /** The sprite of the furniture this step is about, for the relation diagram. */
-    furniIcon: string | null;
+    /** The furniture this step is about — its picture and its footprint — for the relation diagram. */
+    furni: { iconUrl: string | null; width: number; length: number };
     picker: string | null;
     onchange: (path: NodePath, node: TreeNode) => void;
     /** Changing a side resets the operator and the other side, which belonged to the old one. */
@@ -67,7 +67,7 @@
     facts,
     sideChoices,
     operatorsFor,
-    furniIcon,
+    furni,
     picker,
     onchange,
     onsidechange,
@@ -215,7 +215,9 @@
           <RelationGrid
             value={test.right.arg}
             {canManage}
-            iconUrl={furniIcon}
+            iconUrl={furni.iconUrl}
+            width={furni.width}
+            length={furni.length}
             onchange={(value: string, op: number) =>
               onchange(path, { ...test, op, right: { ...test.right, arg: value } })}
           />
@@ -384,7 +386,7 @@
           {facts}
           {sideChoices}
           {operatorsFor}
-          {furniIcon}
+          {furni}
           picker={child.kind === TEST && child.left.kind === 0 ? pickerFor(child.left.arg) : null}
           {onchange}
           {onsidechange}

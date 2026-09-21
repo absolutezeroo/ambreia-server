@@ -177,24 +177,30 @@ assert.equal(nodeAt(tree(), [0, 0]), null, 'a test has no children to walk into'
     ...extra,
   });
 
-  // What the server sent, which is the one that survives a reload.
-  assert.equal(furnitureIcon([cond('def', { iconUrl: '/rendered.png' })]), '/rendered.png');
+  // What the server sent, which is the one that survives a reload -- and it carries the footprint,
+  // because a 2x6 drawn on one tile is a picture that disagrees with itself.
+  assert.deepEqual(
+    furnitureIcon([cond('def', { iconUrl: '/rendered.png', furniWidth: 2, furniLength: 6 })]),
+    { iconUrl: '/rendered.png', width: 2, length: 6 },
+  );
   assert.equal(
-    furnitureIcon([group(ANY, group(NOT, cond('def', { iconUrl: '/deep.png' })))]),
+    furnitureIcon([group(ANY, group(NOT, cond('def', { iconUrl: '/deep.png' })))]).iconUrl,
     '/deep.png',
     'found three levels down, because a step nests',
   );
 
-  // And the picker's, for the instant between choosing a piece and saving the task.
-  assert.equal(
+  // And the picker's, for the instant between choosing a piece and saving the task. It knows which
+  // piece and not how big, so one tile until the server answers: a wrong footprint drawn
+  // confidently is worse than a modest one.
+  assert.deepEqual(
     furnitureIcon([cond('def', { picked: { name: 'chair_polyfon', iconUrl: '/picked.png' } })]),
-    '/picked.png',
+    { iconUrl: '/picked.png', width: 1, length: 1 },
   );
 
   // `def`, not `definition`: the fact key is the engine's, and guessing it was why the sprite
   // never appeared at all.
   assert.equal(
-    furnitureIcon([cond('definition', { picked: { name: 'x', iconUrl: '/wrong.png' } })]),
+    furnitureIcon([cond('definition', { picked: { name: 'x', iconUrl: '/wrong.png' } })]).iconUrl,
     null,
     'the fact key has to be the real one',
   );
@@ -214,12 +220,12 @@ assert.equal(nodeAt(tree(), [0, 0]), null, 'a test has no children to walk into'
       group(ALL, { kind: TEST, op: 2, left: { kind: FACT, arg: 'relation', step: -1 }, right: { kind: LITERAL, arg: 'front', step: -1 } }),
     ];
 
-    assert.equal(furnitureIcon(asShipped), '/sofa.png');
+    assert.equal(furnitureIcon(asShipped).iconUrl, '/sofa.png');
   }
 
-  assert.equal(furnitureIcon([cond('def', {})]), null, 'never picked, nothing sent');
-  assert.equal(furnitureIcon([cond('room', {})]), null, 'not about furniture');
-  assert.equal(furnitureIcon(undefined), null, 'a step with no conditions');
+  assert.equal(furnitureIcon([cond('def', {})]).iconUrl, null, 'never picked, nothing sent');
+  assert.equal(furnitureIcon([cond('room', {})]).iconUrl, null, 'not about furniture');
+  assert.deepEqual(furnitureIcon(undefined), { iconUrl: null, width: 1, length: 1 });
 }
 
 // --- one side, as one dropdown option ----------------------------------------------------------

@@ -236,7 +236,7 @@
               facts={factsFor(step.actionCode)}
               sideChoices={sideChoicesFor(step, stepIndex)}
               operatorsFor={(left: SideValue) => operatorsForSide(step, left)}
-              furniIcon={furnitureIcon(step.tree)}
+              furni={furnitureIcon(step.tree)}
               picker={node.kind === TEST && (node as any).left.kind === FACT
                 ? pickerFor(
                     factsFor(step.actionCode).find((f) => f.key === (node as any).left.arg) ?? null

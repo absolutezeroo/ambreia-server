@@ -3100,6 +3100,8 @@ export interface RewardTrackFilterRow {
   left: RewardTrackValueRow;
   right: RewardTrackValueRow;
   iconUrl: string | null;
+  furniWidth: number;
+  furniLength: number;
 }
 
 export interface RewardTrackLevelRow {

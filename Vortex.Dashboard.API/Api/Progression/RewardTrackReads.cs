@@ -196,17 +196,28 @@ internal sealed class RewardTrackReads(
                 // see which sofa it is about, and the editor cannot remember what it never fetched.
                 List<int> named = [.. stepFilters.Select(NamedDefinition).OfType<int>().Distinct()];
 
-                Dictionary<int, string?> furniIcons =
+                // The footprint travels with the sprite: a 2x6 drawn on one tile is a picture that
+                // disagrees with itself, and the diagram has to know how many tiles the piece is.
+                Dictionary<int, (string? Url, int Width, int Length)> furniSprites =
                     named.Count == 0
                         ? []
                         : (
                             await db
                                 .FurnitureDefinitions.AsNoTracking()
                                 .Where(d => named.Contains(d.Id))
-                                .Select(d => new { d.Id, d.Name })
+                                .Select(d => new
+                                {
+                                    d.Id,
+                                    d.Name,
+                                    d.Width,
+                                    d.Length,
+                                })
                                 .ToListAsync(ct)
                                 .ConfigureAwait(false)
-                        ).ToDictionary(d => d.Id, d => _assetUrls.FurniImage(d.Name));
+                        ).ToDictionary(
+                            d => d.Id,
+                            d => (_assetUrls.FurniImage(d.Name), d.Width, d.Length)
+                        );
 
                 List<RewardTrackPrizeEntity> prizes = await db
                     .RewardTrackPrizes.AsNoTracking()
@@ -371,13 +382,13 @@ internal sealed class RewardTrackReads(
                                                 stepFilters.Where(f =>
                                                     f.RewardTrackTaskStepEntityId == s.Id
                                                 ),
-                                                furniIcons
+                                                furniSprites
                                             ),
                                             Tree(
                                                 stepFilters.Where(f =>
                                                     f.RewardTrackTaskStepEntityId == s.Id
                                                 ),
-                                                furniIcons
+                                                furniSprites
                                             )
                                         ))
                                         .ToList(),
@@ -553,16 +564,24 @@ internal sealed class RewardTrackReads(
     /// </remarks>
     private static RewardTrackFilterRow Condition(
         RewardTrackStepFilterEntity row,
-        Dictionary<int, string?> furniIcons
-    ) =>
-        new(
+        Dictionary<int, (string? Url, int Width, int Length)> furniSprites
+    )
+    {
+        (string? url, int width, int length) = NamedDefinition(row) is int id
+            ? furniSprites.GetValueOrDefault(id)
+            : (null, 0, 0);
+
+        return new RewardTrackFilterRow(
             row.FactKey,
             (int)row.Operator,
             row.Value,
             Side(row.LeftKind, row.LeftArg, StepValueKind.Fact, row.FactKey),
             Side(row.RightKind, row.RightArg, StepValueKind.Literal, row.Value),
-            NamedDefinition(row) is int id ? furniIcons.GetValueOrDefault(id) : null
+            url,
+            width,
+            length
         );
+    }
 
     /// <summary>
     /// The furniture definition this condition is about, or <c>null</c> when it is about something
@@ -653,7 +672,7 @@ internal sealed class RewardTrackReads(
     /// </remarks>
     private static IReadOnlyList<RewardTrackFilterRow> Flat(
         IEnumerable<RewardTrackStepFilterEntity> rows,
-        Dictionary<int, string?> furniIcons
+        Dictionary<int, (string? Url, int Width, int Length)> furniSprites
     )
     {
         List<RewardTrackFilterRow> flat = [];
@@ -665,7 +684,7 @@ internal sealed class RewardTrackReads(
                 return [];
             }
 
-            flat.Add(Condition(row, furniIcons));
+            flat.Add(Condition(row, furniSprites));
         }
 
         return flat;
@@ -682,7 +701,7 @@ internal sealed class RewardTrackReads(
     /// </remarks>
     private static IReadOnlyList<RewardTrackNodeRow> Tree(
         IEnumerable<RewardTrackStepFilterEntity> rows,
-        Dictionary<int, string?> furniIcons
+        Dictionary<int, (string? Url, int Width, int Length)> furniSprites
     )
     {
         Dictionary<int, List<RewardTrackStepFilterEntity>> byParent = [];
@@ -700,14 +719,14 @@ internal sealed class RewardTrackReads(
             siblings.Add(row);
         }
 
-        return Children(byParent, 0, [], furniIcons);
+        return Children(byParent, 0, [], furniSprites);
     }
 
     private static List<RewardTrackNodeRow> Children(
         Dictionary<int, List<RewardTrackStepFilterEntity>> byParent,
         int parentId,
         HashSet<int> seen,
-        Dictionary<int, string?> furniIcons
+        Dictionary<int, (string? Url, int Width, int Length)> furniSprites
     )
     {
         if (!byParent.TryGetValue(parentId, out List<RewardTrackStepFilterEntity>? rows))
@@ -727,10 +746,10 @@ internal sealed class RewardTrackReads(
             built.Add(
                 new RewardTrackNodeRow(
                     (int)row.Kind,
-                    row.Kind == PredicateKind.Test ? Condition(row, furniIcons) : null,
+                    row.Kind == PredicateKind.Test ? Condition(row, furniSprites) : null,
                     row.Kind == PredicateKind.Test
                         ? []
-                        : Children(byParent, row.Id, seen, furniIcons)
+                        : Children(byParent, row.Id, seen, furniSprites)
                 )
             );
 

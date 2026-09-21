@@ -51,6 +51,9 @@ export type TestNode = {
    * last week and needs to see which sofa it is about.
    */
   iconUrl?: string | null;
+  /** How many tiles that furniture covers, so the diagram draws the piece and not a guess. */
+  furniWidth?: number;
+  furniLength?: number;
   /**
    * What the last picked value was called, for the name and sprite shown beside the id.
    *
@@ -273,6 +276,8 @@ export type NodeRow = {
     left?: SideValue | null;
     right?: SideValue | null;
     iconUrl?: string | null;
+    furniWidth?: number;
+    furniLength?: number;
   } | null;
   children?: NodeRow[] | null;
 };
@@ -296,6 +301,8 @@ export function fromRows(rows: NodeRow[] | null | undefined): TreeNode[] {
           kind: TEST,
           op: row.test?.op ?? 0,
           iconUrl: row.test?.iconUrl ?? null,
+          furniWidth: row.test?.furniWidth ?? 1,
+          furniLength: row.test?.furniLength ?? 1,
           left: side(row.test?.left, FACT, row.test?.factKey ?? ''),
           right: side(row.test?.right, LITERAL, row.test?.value ?? ''),
         }
@@ -384,19 +391,30 @@ export function decodeSide(encoded: string): SideValue {
  * gone after a reload. That is the moment the picture is worth having, and the grid falls back to
  * a plain block the rest of the time.
  */
-export function furnitureIcon(tree: TreeNode[] | undefined): string | null {
+export function furnitureIcon(tree: TreeNode[] | undefined): Furniture {
   for (const { node } of tests(tree ?? [])) {
-    // The server's, then the picker's: the first survives a reload and the second is what an
-    // operator sees the instant they choose, before anything has been saved.
-    if (node.iconUrl) return node.iconUrl;
+    // The server's, then the picker's: the first survives a reload and carries the footprint, the
+    // second is what an operator sees the instant they choose, before anything has been saved.
+    if (node.iconUrl) {
+      return {
+        iconUrl: node.iconUrl,
+        width: Math.max(node.furniWidth ?? 1, 1),
+        length: Math.max(node.furniLength ?? 1, 1),
+      };
+    }
 
     if (node.left.kind === FACT && node.left.arg === 'def' && node.picked?.iconUrl) {
-      return node.picked.iconUrl;
+      // The picker knows which piece, not how big it is. One tile until the task is saved and the
+      // server answers -- a wrong footprint drawn confidently is worse than a modest one.
+      return { iconUrl: node.picked.iconUrl, width: 1, length: 1 };
     }
   }
 
-  return null;
+  return { iconUrl: null, width: 1, length: 1 };
 }
+
+/** The piece a step is about: its picture and how many tiles it covers. */
+export type Furniture = { iconUrl: string | null; width: number; length: number };
 
 /** One step of a task's sequence, as the editor holds it. */
 export type Step = { actionCode: string; tree?: TreeNode[] };
