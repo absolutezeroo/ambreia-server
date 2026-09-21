@@ -18,6 +18,11 @@ namespace Vortex.Rooms.Object.Logic.Furniture.Floor.Wired.Conditions;
 /// negative variant inherits this and flips <see cref="FurnitureWiredConditionLogic.IsNegative"/>.
 /// </summary>
 [RoomObjectLogic("wf_cnd_actor_in_group")]
+// The same box under the name a custom furni pack in this hotel gives it
+// (`bobbacrew_user_is_in_group`). A logic binds by the `logic` column and by nothing else, so a
+// second furni for a box we already have needs its key here or it is placeable and inert: this one
+// was. The behaviour and the wired code are this class's, so there is nothing else to write.
+[RoomObjectLogic("wf_cnd_habbo_in_group")]
 public class WiredConditionGroupMember(
     IGrainFactory grainFactory,
     IStuffDataFactory stuffDataFactory,

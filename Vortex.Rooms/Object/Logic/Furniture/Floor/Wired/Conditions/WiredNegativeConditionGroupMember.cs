@@ -8,6 +8,8 @@ namespace Vortex.Rooms.Object.Logic.Furniture.Floor.Wired.Conditions;
 
 [RoomObjectLogic("wf_cnd_not_actor_in_group")]
 [RoomObjectLogic("wf_cnd_not_in_group")]
+// `bobbacrew_user_not_in_group`, the custom pack's copy of this box; see the positive twin.
+[RoomObjectLogic("wf_cnd_not_habbo_in_group")]
 public class WiredNegativeConditionGroupMember(
     IGrainFactory grainFactory,
     IStuffDataFactory stuffDataFactory,

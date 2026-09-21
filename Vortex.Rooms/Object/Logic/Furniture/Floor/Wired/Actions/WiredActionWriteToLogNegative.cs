@@ -17,6 +17,8 @@ namespace Vortex.Rooms.Object.Logic.Furniture.Floor.Wired.Actions;
 /// builder cannot otherwise observe at all.
 /// </remarks>
 [RoomObjectLogic("wf_act_neg_write_to_logs")]
+// `wf_act_neg_log`, which is the name this hotel's furni carries; see the positive half.
+[RoomObjectLogic("wf_act_neg_log")]
 public class WiredActionWriteToLogNegative(
     IGrainFactory grainFactory,
     IStuffDataFactory stuffDataFactory,

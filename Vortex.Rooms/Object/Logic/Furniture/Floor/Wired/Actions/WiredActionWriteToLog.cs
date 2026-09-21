@@ -29,6 +29,10 @@ namespace Vortex.Rooms.Object.Logic.Furniture.Floor.Wired.Actions;
 /// </para>
 /// </remarks>
 [RoomObjectLogic("wf_act_write_to_logs")]
+// The name this hotel's furni actually carries. No row in `furniture_definitions` has a `logic` of
+// `wf_act_write_to_logs`; the one write-to-log furni here is `wf_act_log`, so both halves of this
+// box were fully written and completely unreachable.
+[RoomObjectLogic("wf_act_log")]
 public class WiredActionWriteToLog(
     IGrainFactory grainFactory,
     IStuffDataFactory stuffDataFactory,
