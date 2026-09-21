@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
+using Vortex.Primitives.Authentication;
 using Vortex.WebApi.Http;
 using Vortex.WebApi.Services;
 using Vortex.WebApi.Session;
@@ -142,8 +143,8 @@ internal static partial class WebApiEndpointsFeed
                     };
                 }
             )
-            // The publish route alone is rate-limited. See WebApiConfig.FeedPostRateLimit for why
-            // the votes and reactions beside it are not.
+            // Rate-limited, and sharing its budget with the delete below. See
+            // WebApiConfig.FeedPostRateLimit for why the votes and reactions beside it are not.
             .RequireRateLimiting(WebApiEndpoints.FeedPostRateLimitPolicy)
             .WithName("FeedPublish")
             .WithSummary("Publish a post, or a comment on one.")
@@ -237,13 +238,24 @@ internal static partial class WebApiEndpointsFeed
         app.MapDelete(
                 "/api/user/feed/{id:int}",
                 async Task<
-                    Results<Ok<EmptyResponse>, NotFound<ApiErrorResponse>, UnauthorizedError>
+                    Results<
+                        Ok<EmptyResponse>,
+                        BadRequest<ApiErrorResponse>,
+                        NotFound<ApiErrorResponse>,
+                        UnauthorizedError
+                    >
                 > (
                     HttpContext ctx,
                     int id,
+                    // The second factor, when the account has one. On the query string because a
+                    // DELETE carries no body every intermediary is obliged to forward — and a TOTP
+                    // is good for one 30-second window and one use, so what an access log keeps of
+                    // it is already spent by the time anyone reads it.
+                    string? code,
                     [FromServices] IWebApiFeedService feed,
                     [FromServices] WebApiSessionStore sessions,
                     [FromServices] IWebApiPlayerService players,
+                    [FromServices] IAccountMfaService mfa,
                     CancellationToken ct
                 ) =>
                 {
@@ -258,6 +270,35 @@ internal static partial class WebApiEndpointsFeed
                             : TypedResults.NotFound(new ApiErrorResponse("pocket.auth.no_avatars"));
                     }
 
+                    // Deleting is the one thing on the feed that cannot be undone — the post goes
+                    // and its comments, other people's included, go with it — so it is the one
+                    // thing here that asks an account with a second factor to prove itself. The
+                    // reads, the votes and the reactions do not: a stolen session that can vote is
+                    // a nuisance, one that can erase a thread is not.
+                    //
+                    // The gate sits on the route and not in the feed service because a post
+                    // belongs to a PLAYER and a second factor to an ACCOUNT, and this is the only
+                    // place holding both. SelectedPlayerAsync has already refused a request with
+                    // no session, so the account id behind it resolves.
+                    int accountId = ctx.AccountId(sessions)!.Value;
+
+                    if (await mfa.IsEnabledAsync(accountId, ct).ConfigureAwait(false))
+                    {
+                        if (string.IsNullOrWhiteSpace(code))
+                        {
+                            return TypedResults.BadRequest(
+                                new ApiErrorResponse("pocket.auth.mfa_required")
+                            );
+                        }
+
+                        if (!await mfa.VerifyAsync(accountId, code, ct).ConfigureAwait(false))
+                        {
+                            return TypedResults.BadRequest(
+                                new ApiErrorResponse("pocket.auth.invalid_code")
+                            );
+                        }
+                    }
+
                     // One answer for "no such post", "already gone" and "not yours". Telling them
                     // apart would let a caller probe which ids exist and who wrote them, and the
                     // page does the same thing with all three: stop showing the card.
@@ -266,6 +307,11 @@ internal static partial class WebApiEndpointsFeed
                         : TypedResults.NotFound(new ApiErrorResponse("feed_post_not_found"));
                 }
             )
+            // Rate-limited, for the same reason it takes a code at all: six digits is a few
+            // thousand requests, and an unthrottled gate would cost an attacker the time it takes
+            // to send them and nothing else. The publish policy is reused rather than a second one
+            // declared — both are "this session, a handful of writes a minute".
+            .RequireRateLimiting(WebApiEndpoints.FeedPostRateLimitPolicy)
             .WithName("FeedDelete")
             .WithSummary("Delete one of your own posts, and its comments with it.")
             .WithTags(tagUser);

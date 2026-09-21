@@ -51,6 +51,10 @@ export const CAPABILITIES = {
   navigatorRead: 'dashboard.navigator.read',
   opsNavigatorManage: 'dashboard.ops.navigator.manage',
   socialRead: 'dashboard.social.read',
+  // Taking a post off the website's feed. It guards an API route and no page yet — the takedown
+  // is reachable from the endpoint and nothing in this sidebar calls it — but the capability has
+  // to be known here all the same, or the front end cannot see that it exists.
+  opsFeedModerate: 'dashboard.ops.feed.moderate',
   staffRead: 'dashboard.staff.read',
   collectiblesRead: 'dashboard.collectibles.read',
   opsStaffManage: 'dashboard.ops.staff.manage',

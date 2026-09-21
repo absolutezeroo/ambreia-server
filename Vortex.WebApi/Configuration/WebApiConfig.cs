@@ -204,7 +204,8 @@ public sealed class WebApiConfig
         };
 
     /// <summary>
-    /// Fixed-window rate limit applied to <c>POST /api/user/feed</c>.
+    /// Fixed-window rate limit applied to <c>POST /api/user/feed</c> and
+    /// <c>DELETE /api/user/feed/{id}</c>.
     ///
     /// <para>
     /// The feed is the one surface here where the cost of a flood is paid by every reader rather
@@ -213,7 +214,13 @@ public sealed class WebApiConfig
     /// does.
     /// </para>
     /// <para>
-    /// Only the publish route is limited. Votes and reactions are cheap and a reader legitimately
+    /// The delete route shares this budget rather than declaring one of its own, for a different
+    /// reason: it verifies a six-digit second factor, and an unthrottled verifier is one an
+    /// attacker walks through. Ten attempts a minute is the same "a handful of writes" the
+    /// publishes get, and the two together are still more than a person does.
+    /// </para>
+    /// <para>
+    /// Votes and reactions are not limited. They are cheap, they undo, and a reader legitimately
     /// fires several in a row going down a page; rationing those would punish normal use to no
     /// purpose.
     /// </para>
