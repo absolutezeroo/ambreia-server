@@ -949,6 +949,94 @@
         }
       }
     },
+    "/api/public/feed": {
+      "get": {
+        "tags": [
+          "Public"
+        ],
+        "summary": "The social feed: every post, newest first.",
+        "operationId": "Feed",
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "pageSize",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "tag",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FeedPage"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/public/feed/{id}": {
+      "get": {
+        "tags": [
+          "Public"
+        ],
+        "summary": "One post and its comments.",
+        "operationId": "FeedPost",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FeedPost"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/public/shop/products": {
       "get": {
         "tags": [
@@ -2935,6 +3023,194 @@
       "EmptyResponse": {
         "type": "object",
         "additionalProperties": false
+      },
+      "FeedPage": {
+        "required": [
+          "items",
+          "page",
+          "pageSize",
+          "total"
+        ],
+        "type": "object",
+        "properties": {
+          "page": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "pageSize": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "total": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/FeedPost"
+            }
+          }
+        },
+        "additionalProperties": false
+      },
+      "FeedPoll": {
+        "required": [
+          "choices",
+          "totalVotes"
+        ],
+        "type": "object",
+        "properties": {
+          "totalVotes": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "myChoiceId": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          },
+          "choices": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/FeedPollChoice"
+            }
+          }
+        },
+        "additionalProperties": false
+      },
+      "FeedPollChoice": {
+        "required": [
+          "id",
+          "label",
+          "votes"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "label": {
+            "type": "string"
+          },
+          "votes": {
+            "type": "integer",
+            "format": "int32"
+          }
+        },
+        "additionalProperties": false
+      },
+      "FeedPost": {
+        "required": [
+          "authorFigureString",
+          "authorName",
+          "authorUniqueId",
+          "body",
+          "commentCount",
+          "comments",
+          "createdAt",
+          "favoriteCount",
+          "favoritedByMe",
+          "id",
+          "kind",
+          "mine",
+          "photos",
+          "repostCount",
+          "repostedByMe",
+          "tags"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "authorUniqueId": {
+            "type": "string"
+          },
+          "authorName": {
+            "type": "string"
+          },
+          "authorFigureString": {
+            "type": "string"
+          },
+          "groupId": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          },
+          "groupName": {
+            "type": "string",
+            "nullable": true
+          },
+          "groupBadgeCode": {
+            "type": "string",
+            "nullable": true
+          },
+          "kind": {
+            "$ref": "#/components/schemas/FeedPostKind"
+          },
+          "body": {
+            "type": "string"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "photos": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PhotoSummary"
+            }
+          },
+          "poll": {
+            "$ref": "#/components/schemas/FeedPoll"
+          },
+          "tags": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "commentCount": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "repostCount": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "favoriteCount": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "repostedByMe": {
+            "type": "boolean"
+          },
+          "favoritedByMe": {
+            "type": "boolean"
+          },
+          "mine": {
+            "type": "boolean"
+          },
+          "comments": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/FeedPost"
+            }
+          }
+        },
+        "additionalProperties": false
+      },
+      "FeedPostKind": {
+        "enum": [
+          0,
+          1,
+          2
+        ],
+        "type": "integer",
+        "format": "int32"
       },
       "HealthResponse": {
         "required": [

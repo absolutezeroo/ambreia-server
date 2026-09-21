@@ -78,6 +78,10 @@ internal static partial class WebApiEndpoints
         WebApiEndpointsLeaderboard.MapLeaderboard(app, TagPublic);
 
         WebApiEndpointsCamera.MapCamera(app);
+
+        // The website's social feed. Anonymous, like the photo gallery beside it — see
+        // WebApiEndpoints.Feed.cs.
+        WebApiEndpointsFeed.MapFeed(app, TagPublic);
     }
 
     /// <summary>
@@ -2009,7 +2013,7 @@ internal static partial class WebApiEndpoints
     /// The player id, or null with the refusal to answer: a 401 when there is no session at all, and
     /// otherwise null for "signed in, owns no avatar", which each caller words for itself.
     /// </returns>
-    private static async Task<(int? PlayerId, IResult? Refusal)> SelectedPlayerAsync(
+    internal static async Task<(int? PlayerId, IResult? Refusal)> SelectedPlayerAsync(
         HttpContext ctx,
         WebApiSessionStore sessions,
         IWebApiPlayerService players,
