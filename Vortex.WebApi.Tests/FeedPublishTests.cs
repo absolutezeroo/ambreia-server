@@ -3,6 +3,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using FluentAssertions;
 using Vortex.Database.Context;
+using Vortex.Database.Entities.Feed;
 using Vortex.Database.Entities.Players;
 using Vortex.Primitives.Feed;
 using Vortex.Primitives.Players.Enums;
@@ -144,6 +145,35 @@ public sealed class FeedPublishTests
         refusal.Should().Be(FeedRefusal.GroupNotMember);
     }
 
+    [Fact]
+    public async Task ACommentOnAHiddenPlayersPostIsRefused()
+    {
+        await using WebApiTestFactory factory = new();
+        await PlayerAsync(factory, 1, "Prodiigy");
+        int hiddenPostId = await HiddenPostAsync(factory, 2, "Cache");
+
+        (FeedRefusal refusal, _) = await Service(factory)
+            .PublishAsync(
+                1,
+                new FeedPublishRequest(
+                    FeedPostKind.Status,
+                    "coucou",
+                    null,
+                    null,
+                    hiddenPostId,
+                    null
+                ),
+                default
+            );
+
+        refusal
+            .Should()
+            .Be(
+                FeedRefusal.ParentNotFound,
+                "a hidden player's post must not answer differently from one that does not exist"
+            );
+    }
+
     private static IWebApiFeedService Service(WebApiTestFactory factory) =>
         new WebApiFeedService(factory.DbContexts);
 
@@ -165,5 +195,38 @@ public sealed class FeedPublishTests
         );
 
         await db.SaveChangesAsync();
+    }
+
+    /// <summary>A root post by a player who has hidden their profile. Returns the post's id.</summary>
+    private static async Task<int> HiddenPostAsync(WebApiTestFactory factory, int id, string name)
+    {
+        await using VortexDbContext db = await factory.DbContexts.CreateDbContextAsync();
+
+        db.Players.Add(
+            new PlayerEntity
+            {
+                Id = id,
+                Name = name,
+                Figure = "hr-115",
+                Gender = AvatarGenderType.Male,
+                PlayerStatus = PlayerStatusType.Offline,
+                PlayerPerks = PlayerPerkFlags.None,
+                ProfileVisible = false,
+            }
+        );
+
+        await db.SaveChangesAsync();
+
+        WebFeedPostEntity post = new()
+        {
+            PlayerEntityId = id,
+            Kind = FeedPostKind.Status,
+            Body = "invisible",
+        };
+        db.WebFeedPosts.Add(post);
+
+        await db.SaveChangesAsync();
+
+        return post.Id;
     }
 }

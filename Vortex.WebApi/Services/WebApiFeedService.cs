@@ -188,8 +188,13 @@ public sealed class WebApiFeedService(IDbContextFactory<VortexDbContext> dbCtxFa
 
         if (body.ParentId is int parentId)
         {
-            WebFeedPostEntity? parent = await db
-                .WebFeedPosts.FirstOrDefaultAsync(p => p.Id == parentId && p.DeletedAt == null, ct)
+            // Readable(db), not a bare WebFeedPosts query: it also requires the author's
+            // ProfileVisible, exactly like every read. Without it, a caller who guesses ids can
+            // tell ParentNotFound apart from ParentNotRoot/success for a post whose author has
+            // hidden their profile — a small oracle against people who specifically asked not to
+            // be browsed.
+            WebFeedPostEntity? parent = await Readable(db)
+                .FirstOrDefaultAsync(p => p.Id == parentId, ct)
                 .ConfigureAwait(false);
 
             if (parent is null)
