@@ -172,4 +172,22 @@ public interface IWebApiFeedService
         bool on,
         CancellationToken ct
     );
+
+    /// <summary>
+    /// Soft-deletes the caller's own post, and its comments with it. False when the post is not
+    /// theirs or is already gone.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// Soft, so the row survives for the audit trail the rest of this hotel keeps. Because
+    /// <c>Readable(db)</c> is the single gate, one <c>DeletedAt</c> is what removes the post from
+    /// the feed, from a direct read, from voting and from reacting, all at once.
+    /// </para>
+    /// <para>
+    /// The comments go too, including other people's. A comment is unreadable out of the thread it
+    /// answers, and one left live would sit in nobody's feed — the feed lists roots only — and be
+    /// reachable by nobody. Their rows survive as well.
+    /// </para>
+    /// </remarks>
+    Task<bool> DeleteAsync(int playerId, int postId, CancellationToken ct);
 }

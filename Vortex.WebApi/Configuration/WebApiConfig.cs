@@ -204,6 +204,29 @@ public sealed class WebApiConfig
         };
 
     /// <summary>
+    /// Fixed-window rate limit applied to <c>POST /api/user/feed</c>.
+    ///
+    /// <para>
+    /// The feed is the one surface here where the cost of a flood is paid by every reader rather
+    /// than by the flooder: a page of twenty posts is twenty posts by whoever posted fastest. Ten
+    /// a minute is far above what a person writing sentences reaches, and far below what a loop
+    /// does.
+    /// </para>
+    /// <para>
+    /// Only the publish route is limited. Votes and reactions are cheap and a reader legitimately
+    /// fires several in a row going down a page; rationing those would punish normal use to no
+    /// purpose.
+    /// </para>
+    /// </summary>
+    public RateLimitOptions FeedPostRateLimit { get; set; } =
+        new RateLimitOptions
+        {
+            PermitLimit = 10,
+            WindowSeconds = 60,
+            QueueLimit = 0,
+        };
+
+    /// <summary>
     /// Fixed-window rate limit applied to <c>POST /api/public/chain/rpc</c>.
     ///
     /// <para>

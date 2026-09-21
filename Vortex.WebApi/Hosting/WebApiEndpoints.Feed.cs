@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 using Vortex.WebApi.Http;
 using Vortex.WebApi.Services;
 using Vortex.WebApi.Session;
@@ -141,6 +142,9 @@ internal static partial class WebApiEndpointsFeed
                     };
                 }
             )
+            // The publish route alone is rate-limited. See WebApiConfig.FeedPostRateLimit for why
+            // the votes and reactions beside it are not.
+            .RequireRateLimiting(WebApiEndpoints.FeedPostRateLimitPolicy)
             .WithName("FeedPublish")
             .WithSummary("Publish a post, or a comment on one.")
             .WithTags(tagUser);
@@ -228,6 +232,42 @@ internal static partial class WebApiEndpointsFeed
             )
             .WithName("FeedReaction")
             .WithSummary("Leave or withdraw a repost or a favourite.")
+            .WithTags(tagUser);
+
+        app.MapDelete(
+                "/api/user/feed/{id:int}",
+                async Task<
+                    Results<Ok<EmptyResponse>, NotFound<ApiErrorResponse>, UnauthorizedError>
+                > (
+                    HttpContext ctx,
+                    int id,
+                    [FromServices] IWebApiFeedService feed,
+                    [FromServices] WebApiSessionStore sessions,
+                    [FromServices] IWebApiPlayerService players,
+                    CancellationToken ct
+                ) =>
+                {
+                    (int? playerId, IResult? refused) = await WebApiEndpoints
+                        .SelectedPlayerAsync(ctx, sessions, players, ct)
+                        .ConfigureAwait(false);
+
+                    if (playerId is null)
+                    {
+                        return refused is UnauthorizedError unauthorized
+                            ? unauthorized
+                            : TypedResults.NotFound(new ApiErrorResponse("pocket.auth.no_avatars"));
+                    }
+
+                    // One answer for "no such post", "already gone" and "not yours". Telling them
+                    // apart would let a caller probe which ids exist and who wrote them, and the
+                    // page does the same thing with all three: stop showing the card.
+                    return await feed.DeleteAsync(playerId.Value, id, ct).ConfigureAwait(false)
+                        ? TypedResults.Ok(new EmptyResponse())
+                        : TypedResults.NotFound(new ApiErrorResponse("feed_post_not_found"));
+                }
+            )
+            .WithName("FeedDelete")
+            .WithSummary("Delete one of your own posts, and its comments with it.")
             .WithTags(tagUser);
     }
 

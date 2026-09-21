@@ -430,6 +430,44 @@ public sealed class WebApiFeedService(IDbContextFactory<VortexDbContext> dbCtxFa
         return await GetPostAsync(postId, playerId, ct).ConfigureAwait(false);
     }
 
+    public async Task<bool> DeleteAsync(int playerId, int postId, CancellationToken ct)
+    {
+        await using VortexDbContext db = await _db.CreateDbContextAsync(ct).ConfigureAwait(false);
+
+        WebFeedPostEntity? post = await db
+            .WebFeedPosts.FirstOrDefaultAsync(p => p.Id == postId && p.DeletedAt == null, ct)
+            .ConfigureAwait(false);
+
+        // Ownership, not visibility: `Readable(db)` is the read gate and this is a write, so the
+        // question here is whose post it is. Already deleted answers false rather than true, so a
+        // page that retried learns the post is gone.
+        if (post is null || post.PlayerEntityId != playerId)
+        {
+            return false;
+        }
+
+        DateTime now = DateTime.UtcNow;
+
+        post.DeletedAt = now;
+
+        // The comments go too, other people's included — see the interface for why. Loaded and
+        // looped rather than `ExecuteUpdateAsync`: a thread holds tens of comments, not
+        // thousands, and the in-memory provider the tests run on does not implement that call.
+        List<WebFeedPostEntity> comments = await db
+            .WebFeedPosts.Where(p => p.ParentEntityId == postId && p.DeletedAt == null)
+            .ToListAsync(ct)
+            .ConfigureAwait(false);
+
+        foreach (WebFeedPostEntity child in comments)
+        {
+            child.DeletedAt = now;
+        }
+
+        await db.SaveChangesAsync(ct).ConfigureAwait(false);
+
+        return true;
+    }
+
     /// <summary>
     /// The one condition every read carries. Changing this changes who can be seen, so it exists
     /// once and every query starts from it.
@@ -444,6 +482,16 @@ public sealed class WebApiFeedService(IDbContextFactory<VortexDbContext> dbCtxFa
     /// hotel's public feed is itself an act of publication and a different act from letting someone
     /// browse a profile; <c>ProfileVisible</c> governs the second and says nothing about the first.
     /// The gallery (<see cref="IWebApiPhotoService"/>) keeps its own rule — that decision stands.
+    /// </remarks>
+    /// <remarks>
+    /// The <c>DeletedAt</c> clause is REDUNDANT and is kept deliberately. Every
+    /// <c>VortexEntity</c> already carries a global soft-delete query filter
+    /// (<c>ModelBuilderExtensions.ApplySoftDeleteQueryFilter</c>), so an ordinary query cannot see
+    /// a deleted row whether or not this says so. Written out because a reader of this service
+    /// should not have to know about an invisible model-wide filter to understand what a read
+    /// returns — and because the day someone opts a query out with <c>IgnoreQueryFilters()</c>,
+    /// this is the line that keeps the feed honest. It does mean the tests that assert a deleted
+    /// post is unreadable are really exercising the global filter, not this clause.
     /// </remarks>
     private static IQueryable<WebFeedPostEntity> Readable(VortexDbContext db) =>
         db.WebFeedPosts.Where(p => p.DeletedAt == null);

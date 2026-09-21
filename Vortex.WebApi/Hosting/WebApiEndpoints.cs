@@ -37,6 +37,7 @@ internal static partial class WebApiEndpoints
     public const string ReportRateLimitPolicy = "webapi-report";
     public const string ShopOrderRateLimitPolicy = "webapi-shop-order";
     public const string ChainRpcRateLimitPolicy = "webapi-chain-rpc";
+    public const string FeedPostRateLimitPolicy = "webapi-feed-post";
 
     private const string TagPublic = "Public";
     private const string TagAuth = "Authentication";
