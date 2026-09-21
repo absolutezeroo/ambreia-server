@@ -31,6 +31,9 @@
     <EmbeddedResource Include="Assets\*.png" />
     <EmbeddedResource Include="Assets\*.svg" />
     <EmbeddedResource Include="Assets\*.woff2" />
+    <!-- Vite emits both, and the CSS asks for both. Without this the .woff half 404s, which is
+         invisible in a build log and loud in a browser console. -->
+    <EmbeddedResource Include="Assets\*.woff" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Vortex.Database\Vortex.Database.csproj" />

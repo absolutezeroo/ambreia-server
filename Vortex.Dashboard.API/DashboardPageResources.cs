@@ -72,7 +72,35 @@ internal static class DashboardPageResources
             );
         }
 
-        return BytesCache.GetOrAdd(fileName, name => Utf8NoBom.GetBytes(GetText(name)));
+        return BytesCache.GetOrAdd(fileName, LoadBytes);
+    }
+
+    /// <summary>
+    /// The resource's bytes, exactly as they were embedded.
+    /// </summary>
+    /// <remarks>
+    /// Read as bytes, never as text. This used to decode the resource as UTF-8 and re-encode it,
+    /// which round-trips for HTML, CSS and JavaScript and destroys everything else: a byte that is
+    /// not valid UTF-8 comes back as U+FFFD, so every font and every PNG served from this assembly
+    /// arrived corrupt. The browser said so — "OTS parsing error: size of decompressed WOFF 2.0 is
+    /// less than compressed size" is a font whose own header no longer describes it — and the page
+    /// fell back to a system typeface without anything failing loudly enough to notice.
+    /// </remarks>
+    private static byte[] LoadBytes(string fileName)
+    {
+        string resourceName = GetResourceName(fileName);
+
+        using Stream stream =
+            AssetAssembly.GetManifestResourceStream(resourceName)
+            ?? throw new InvalidOperationException(
+                $"Embedded resource '{resourceName}' was not found in '{AssetAssembly.FullName}'."
+            );
+
+        using MemoryStream buffer = new();
+
+        stream.CopyTo(buffer);
+
+        return buffer.ToArray();
     }
 
     private static string LoadText(string fileName)
