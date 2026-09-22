@@ -99,7 +99,7 @@ public sealed class NavigatorService(
         return [.. blocks];
     }
 
-    public async Task<ImmutableArray<NavigatorSearchResultSnapshot>> GetSearchResultsAsync(
+    public async Task<ImmutableArray<RoomInfoSnapshot>> GetSearchResultsAsync(
         string searchCode,
         NavigatorSearchFilterType filterType,
         string filterValue,
@@ -154,52 +154,38 @@ public sealed class NavigatorService(
         return activeRooms.ToDictionary(x => x.RoomId);
     }
 
-    /// <summary>Overlays live room state (name, owner, description, population) on the persisted
-    /// row for any room that currently has an activated grain.</summary>
-    private static ImmutableArray<NavigatorSearchResultSnapshot> ToSearchResults(
+    /// <summary>
+    /// Overlays live room state (name, owner, description, population) on the persisted row for any
+    /// room that currently has an activated grain.
+    /// </summary>
+    /// <remarks>
+    /// A <c>with</c>, deliberately: this used to rebuild the result field by field into an empty
+    /// subclass, and every field the room gained afterwards was dropped here without a compiler
+    /// error. That cost the guild badge once and would have cost the room ad next. Name only what
+    /// the live grain actually overrides.
+    /// </remarks>
+    private static ImmutableArray<RoomInfoSnapshot> ToSearchResults(
         List<RoomInfoSnapshot> rooms,
         Dictionary<RoomId, RoomSummarySnapshot> activeById
     ) =>
         [
             .. rooms.Select(x =>
-            {
-                RoomSummarySnapshot? active = activeById.TryGetValue(
-                    x.RoomId,
-                    out RoomSummarySnapshot? ar
-                )
-                    ? ar
-                    : null;
-
-                return new NavigatorSearchResultSnapshot
-                {
-                    RoomId = x.RoomId,
-                    Name = active?.Name ?? x.Name,
-                    OwnerId = active?.OwnerId ?? x.OwnerId,
-                    OwnerName = active?.OwnerName ?? x.OwnerName,
-                    DoorMode = x.DoorMode,
-                    Population = active?.Population ?? 0,
-                    PlayersMax = x.PlayersMax,
-                    Description = active?.Description ?? x.Description,
-                    TradeType = x.TradeType,
-                    Score = x.Score,
-                    Ranking = x.Ranking,
-                    CategoryId = x.CategoryId,
-                    Tags = x.Tags,
-                    StaffPick = x.StaffPick,
-                    AllowBlocking = x.AllowBlocking,
-                    AllowPets = x.AllowPets,
-                    AllowPetsEat = x.AllowPetsEat,
-                    PaintWall = x.PaintWall,
-                    PaintFloor = x.PaintFloor,
-                    PaintLandscape = x.PaintLandscape,
-                    // Drives RoomBitmaskFlags.GroupData in the navigator entry: the client only
-                    // draws the guild badge when these three are present.
-                    GroupId = x.GroupId,
-                    GroupName = x.GroupName,
-                    GroupBadge = x.GroupBadge,
-                    LastUpdatedUtc = x.LastUpdatedUtc,
-                };
-            }),
+                activeById.TryGetValue(x.RoomId, out RoomSummarySnapshot? active)
+                    ? x with
+                    {
+                        Name = active.Name,
+                        OwnerId = active.OwnerId,
+                        OwnerName = active.OwnerName,
+                        Description = active.Description,
+                        Population = active.Population,
+                    }
+                    // Not in the directory means no activation, which means nobody is in it. The
+                    // persisted headcount is a flush behind and would otherwise show a stale crowd.
+                    : x with
+                    {
+                        Population = 0,
+                    }
+            ),
         ];
 
     public async Task<ImmutableArray<OfficialRoomEntrySnapshot>> GetOfficialRoomEntriesAsync(

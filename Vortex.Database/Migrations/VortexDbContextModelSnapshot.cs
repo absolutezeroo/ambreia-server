@@ -11184,6 +11184,12 @@ namespace Vortex.Database.Migrations
                         .HasDefaultValue(25)
                         .HasColumnName("players_max");
 
+                    b.Property<int>("Ranking")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasDefaultValue(0)
+                        .HasColumnName("ranking");
+
                     b.Property<int>("RoomModelEntityId")
                         .HasColumnType("int")
                         .HasColumnName("model_id");
@@ -14447,7 +14453,7 @@ namespace Vortex.Database.Migrations
             modelBuilder.Entity("Vortex.Database.Entities.Room.RoomAdvertisementEntity", b =>
                 {
                     b.HasOne("Vortex.Database.Entities.Room.RoomEntity", "RoomEntity")
-                        .WithMany()
+                        .WithMany("Advertisements")
                         .HasForeignKey("RoomEntityId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -14884,6 +14890,8 @@ namespace Vortex.Database.Migrations
 
             modelBuilder.Entity("Vortex.Database.Entities.Room.RoomEntity", b =>
                 {
+                    b.Navigation("Advertisements");
+
                     b.Navigation("RoomBans");
 
                     b.Navigation("RoomChats");

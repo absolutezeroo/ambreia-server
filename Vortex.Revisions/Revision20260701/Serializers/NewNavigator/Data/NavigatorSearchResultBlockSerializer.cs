@@ -1,4 +1,5 @@
 using Vortex.Primitives.Orleans.Snapshots.Navigator;
+using Vortex.Primitives.Orleans.Snapshots.Room;
 using Vortex.Primitives.Packets;
 using Vortex.Revisions.Revision20260701.Serializers.Navigator.Data;
 
@@ -16,7 +17,7 @@ internal class NavigatorSearchResultBlockSerializer
             .WriteInteger((int)message.ViewMode)
             .WriteInteger(message.Results.Length);
 
-        foreach (NavigatorSearchResultSnapshot result in message.Results)
+        foreach (RoomInfoSnapshot result in message.Results)
         {
             RoomSettingsSerializer.Serialize(packet, result);
         }

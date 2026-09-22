@@ -185,6 +185,14 @@ public class RoomEntity : VortexEntity
     [DefaultValue(0)]
     public required int Score { get; set; }
 
+    /// <summary>1-based position in the hotel's top-rated-rooms table, 0 when the room is outside
+    /// it. The client labels it "Top rated rooms rank:" (<c>navigator.roomranking</c>) and hides the
+    /// field entirely when it is not positive, so 0 is the honest "unranked" value. Derived from
+    /// <see cref="Score"/> by <c>RoomDirectoryGrain</c>'s flush, never edited by hand.</summary>
+    [Column("ranking")]
+    [DefaultValue(0)]
+    public int Ranking { get; set; }
+
     [Column("staff_pick")]
     [DefaultValue(false)]
     public required bool IsStaffPick { get; set; }
@@ -227,4 +235,10 @@ public class RoomEntity : VortexEntity
 
     [InverseProperty("RoomEntity")]
     public List<RoomChatlogEntity>? RoomChats { get; set; }
+
+    /// <summary>Every ad ever bought for this room, not just the live one -- the table is a purchase
+    /// log. Exists so a room projection can pick the running ad without the query needing the
+    /// context in hand.</summary>
+    [InverseProperty("RoomEntity")]
+    public List<RoomAdvertisementEntity>? Advertisements { get; set; }
 }

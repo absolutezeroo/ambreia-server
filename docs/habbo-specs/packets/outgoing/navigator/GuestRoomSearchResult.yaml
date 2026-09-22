@@ -584,4 +584,14 @@ generated:
   unknowns:
   - uk_fb2288e8d5
 verified: {}
-manual: {}
+manual:
+  room_bitmask_bits:
+    source: "official client WIN63-202607011411-782849652, the room-data constructor in _SafePkg_2008/_SafeCls_2172.as:78-121"
+    note: "The six bits, from the constructor that reads them: 1 thumbnail (one string), 2 guild (id, name, badge), 4 room ad (name, description, minutes remaining), 8 showOwner, 16 allowPets, 32 displayRoomEntryAd. Bits 1, 2 and 4 each announce a payload; 8, 16 and 32 are read as flags after them."
+  room_ad_was_never_sent:
+    note: "Bit 4 was left clear and the three fields written as empty/0 until 2026-09-22, so every advertisement this hotel sold was invisible. It is not only the ad panel: RoomEntryElementFactory.as:109 titles a room card with `roomAdName` instead of `roomName` whenever the block is in event view mode, so the events tab rendered nameless rows. The values now come from the live room_advertisements row, and the countdown is computed at send time rather than stored, because a snapshot outlives the moment it was built."
+  display_room_ad_stays_clear:
+    confidence: assumed
+    note: "Bit 32 is deliberately never set. It does not mean \"this room is advertised\": _SafeCls_1951.as:299 answers it with requestRoomEnterAd(), a call out to Habbo's own web ad slot, so setting it asks every entering player's client to fetch an interstitial a private hotel does not serve. A capture of Habbo.fr has it set on 100% of their rooms, which is evidence of what Habbo does, not of what we should do."
+  show_owner_follows_the_name:
+    note: "Bit 8 used to be hardcoded on. The client draws the owner line from the bit alone and never checks the name behind it, so a room with no resolvable owner name rendered an empty label. It now follows OwnerName being non-empty. Habbo.fr additionally clears it on their official rooms, whose owner account is meant to stay hidden; we have no equivalent concept and do not imitate it."

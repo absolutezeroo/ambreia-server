@@ -115,7 +115,7 @@ public sealed class NavigatorSearchRoutingTests
     {
         Recorder recorder = new();
 
-        ImmutableArray<NavigatorSearchResultSnapshot> results = await SearchAsync(
+        ImmutableArray<RoomInfoSnapshot> results = await SearchAsync(
                 recorder,
                 NavigatorSearchCodes.Competition
             )
@@ -143,10 +143,7 @@ public sealed class NavigatorSearchRoutingTests
     {
         Recorder recorder = new();
 
-        ImmutableArray<NavigatorSearchResultSnapshot> results = await SearchAsync(
-                recorder,
-                "categories"
-            )
+        ImmutableArray<RoomInfoSnapshot> results = await SearchAsync(recorder, "categories")
             .ConfigureAwait(true);
 
         results.Should().BeEmpty();
@@ -189,7 +186,7 @@ public sealed class NavigatorSearchRoutingTests
     {
         Recorder recorder = new();
 
-        ImmutableArray<NavigatorSearchResultSnapshot> results = await SearchAsync(
+        ImmutableArray<RoomInfoSnapshot> results = await SearchAsync(
                 recorder,
                 NavigatorSearchCodes.WithFriends
             )
@@ -380,7 +377,7 @@ public sealed class NavigatorSearchRoutingTests
                 CancellationToken.None
             );
 
-    private static Task<ImmutableArray<NavigatorSearchResultSnapshot>> SearchAsync(
+    private static Task<ImmutableArray<RoomInfoSnapshot>> SearchAsync(
         Recorder recorder,
         string searchCode,
         NavigatorSearchFilterType filterType = NavigatorSearchFilterType.Anything,

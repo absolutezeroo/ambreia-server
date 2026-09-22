@@ -3,6 +3,7 @@ using FluentAssertions;
 using Microsoft.Extensions.Options;
 using Vortex.Primitives.Navigator.Enums;
 using Vortex.Primitives.Orleans.Snapshots.Navigator;
+using Vortex.Primitives.Orleans.Snapshots.Room;
 using Vortex.Primitives.Packets;
 using Vortex.Primitives.Players;
 using Vortex.Primitives.Rooms.Enums;
@@ -56,11 +57,7 @@ public sealed class NavigatorGuildBadgeWireTests
         body.End.Should().BeTrue();
     }
 
-    private static NavigatorSearchResultSnapshot Room(
-        int? groupId,
-        string? groupName,
-        string? groupBadge
-    ) =>
+    private static RoomInfoSnapshot Room(int? groupId, string? groupName, string? groupBadge) =>
         new()
         {
             RoomId = 42,
@@ -89,7 +86,7 @@ public sealed class NavigatorGuildBadgeWireTests
             LastUpdatedUtc = DateTime.UnixEpoch,
         };
 
-    private static ClientPacket SerializeBlock(NavigatorSearchResultSnapshot room)
+    private static ClientPacket SerializeBlock(RoomInfoSnapshot room)
     {
         byte[] bytes = Revision
             .Serializers[typeof(NavigatorSearchResultBlocksMessageComposer)]

@@ -831,8 +831,12 @@ file static class RoomQueryExtensions
     public static Task<List<RoomInfoSnapshot>> ToRoomInfoSnapshotsAsync(
         this IQueryable<RoomEntity> query,
         CancellationToken ct
-    ) =>
-        query
+    )
+    {
+        // Captured once so every room in one result set agrees on which ads are still running.
+        DateTime now = DateTime.UtcNow;
+
+        return query
             .Select(x => new RoomInfoSnapshot
             {
                 RoomId = x.Id,
@@ -845,9 +849,7 @@ file static class RoomQueryExtensions
                 PlayersMax = x.PlayersMax,
                 TradeType = x.TradeType,
                 Score = x.Score,
-                // Fixed placeholder: no room-ranking/trending system exists yet (no column, no
-                // computation). Left 0 rather than fabricated so the client shows "unranked".
-                Ranking = 0,
+                Ranking = x.Ranking,
                 CategoryId = x.NavigatorCategoryEntityId ?? -1,
                 Tags = RoomTagMapper.ToTags(x.Tag1, x.Tag2),
                 StaffPick = x.IsStaffPick,
@@ -860,7 +862,27 @@ file static class RoomQueryExtensions
                 PaintWall = x.PaintWall ?? string.Empty,
                 PaintFloor = x.PaintFloor ?? string.Empty,
                 PaintLandscape = x.PaintLandscape ?? string.Empty,
+                // The table is a purchase log, so "the ad" is the live row that runs longest. A
+                // room usually has none and then all three fall back to empty, which is what clears
+                // the room-ad bit in the serializer.
+                AdName =
+                    x.Advertisements!.Where(a => a.DeletedAt == null && a.ExpiresAt > now)
+                        .OrderByDescending(a => a.ExpiresAt)
+                        .Select(a => a.Name)
+                        .FirstOrDefault()
+                    ?? string.Empty,
+                AdDescription =
+                    x.Advertisements!.Where(a => a.DeletedAt == null && a.ExpiresAt > now)
+                        .OrderByDescending(a => a.ExpiresAt)
+                        .Select(a => a.Description)
+                        .FirstOrDefault()
+                    ?? string.Empty,
+                AdExpiresAt = x.Advertisements!.Where(a => a.DeletedAt == null && a.ExpiresAt > now)
+                    .OrderByDescending(a => a.ExpiresAt)
+                    .Select(a => (DateTime?)a.ExpiresAt)
+                    .FirstOrDefault(),
                 LastUpdatedUtc = DateTime.UtcNow,
             })
             .ToListAsync(ct);
+    }
 }

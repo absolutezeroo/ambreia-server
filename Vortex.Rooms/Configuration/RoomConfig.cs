@@ -18,6 +18,22 @@ public class RoomConfig : IWiredLimits
     public int RoomDeactivationDelayMs { get; init; } = 1800000;
 
     /// <summary>
+    /// How often live room occupancy is written back to <c>rooms.users_now</c>, and the top-rated
+    /// ranking recomputed with it.
+    /// <para>
+    /// It cannot ride on <see cref="RoomCheckMs"/>: that sweep is the deactivation clock and runs
+    /// every five minutes, which is far too stale for the navigator, whose room lists are ordered
+    /// and <em>truncated</em> in SQL on this column — a busy room the database still believes is
+    /// empty does not merely sort low, it falls out of the page entirely.
+    /// </para>
+    /// </summary>
+    public int RoomPopulationFlushMs { get; init; } = 30000;
+
+    /// <summary>How many rooms the top-rated ranking covers. The client hides the field unless the
+    /// value is positive, so everything past this stays honestly unranked.</summary>
+    public int RoomRankingSize { get; init; } = 100;
+
+    /// <summary>
     /// How often the room wakes up to look at its clocks.
     /// <para>
     /// <b>50 does not mean twenty times a second on Windows.</b> The default system timer quantum is

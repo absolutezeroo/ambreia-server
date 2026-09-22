@@ -1,17 +1,15 @@
-using System.Collections.Immutable;
 using System.Threading;
 using System.Threading.Tasks;
 using Orleans;
 using Vortex.Messages.Registry;
 using Vortex.Primitives.Navigator;
-using Vortex.Primitives.Navigator.Enums;
-using Vortex.Primitives.Orleans;
-using Vortex.Primitives.Orleans.Snapshots.Navigator;
 using Vortex.Protocol.Messages.Incoming.Navigator;
-using Vortex.Protocol.Messages.Outgoing.NewNavigator;
 
 namespace Vortex.PacketHandlers.Navigator;
 
+/// <summary>Answers with an empty block on purpose: no room-competition subsystem exists, and
+/// falling back to "all rooms" advertised the whole hotel as entrants. See
+/// <see cref="Primitives.Navigator.Enums.NavigatorQueryType.Competition"/>.</summary>
 public class CompetitionRoomsSearchMessageHandler(
     INavigatorService navigatorService,
     IGrainFactory grainFactory
@@ -19,51 +17,16 @@ public class CompetitionRoomsSearchMessageHandler(
 {
     private const string SearchCode = NavigatorSearchCodes.Competition;
 
-    private readonly INavigatorService _navigatorService = navigatorService;
-    private readonly IGrainFactory _grainFactory = grainFactory;
-
-    public async ValueTask HandleAsync(
+    public ValueTask HandleAsync(
         CompetitionRoomsSearchMessage message,
         MessageContext ctx,
         CancellationToken ct
-    )
-    {
-        ImmutableArray<NavigatorSearchResultSnapshot> results = await _navigatorService
-            .GetSearchResultsAsync(
-                SearchCode,
-                NavigatorSearchFilterType.Anything,
-                string.Empty,
-                ctx.PlayerId,
-                ct
-            )
-            .ConfigureAwait(false);
-
-        int viewMode = await _grainFactory
-            .GetPlayerNavigatorGrain(ctx.PlayerId)
-            .GetViewModeAsync(SearchCode, ct)
-            .ConfigureAwait(false);
-
-        await ctx.SendComposerAsync(
-                new NavigatorSearchResultBlocksMessageComposer
-                {
-                    SearchCodeOriginal = SearchCode,
-                    FilteringData = string.Empty,
-                    Blocks =
-                    [
-                        new NavigatorSearchResultBlockSnapshot
-                        {
-                            SearchCode = SearchCode,
-                            Text = string.Empty,
-                            ActionAllowed = NavigatorActionAllowedType.Back,
-                            Localization = string.Empty,
-                            ForceClosed = false,
-                            ViewMode = (NavigatorViewModeType)viewMode,
-                            Results = results,
-                        },
-                    ],
-                },
-                ct
-            )
-            .ConfigureAwait(false);
-    }
+    ) =>
+        NavigatorSearchHandlerHelper.SendSimpleSearchResultsAsync(
+            navigatorService,
+            grainFactory,
+            SearchCode,
+            ctx,
+            ct
+        );
 }

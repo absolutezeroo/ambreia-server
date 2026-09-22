@@ -3,6 +3,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Vortex.Primitives.Navigator.Enums;
 using Vortex.Primitives.Orleans.Snapshots.Navigator;
+using Vortex.Primitives.Orleans.Snapshots.Room;
 using Vortex.Primitives.Players;
 using Vortex.Primitives.Snapshots.Navigator;
 
@@ -14,7 +15,7 @@ public interface INavigatorService
 
     ImmutableArray<NavigatorFlatCategorySnapshot> GetFlatCategories();
 
-    Task<ImmutableArray<NavigatorSearchResultSnapshot>> GetSearchResultsAsync(
+    Task<ImmutableArray<RoomInfoSnapshot>> GetSearchResultsAsync(
         string searchCode,
         NavigatorSearchFilterType filterType,
         string filterValue,

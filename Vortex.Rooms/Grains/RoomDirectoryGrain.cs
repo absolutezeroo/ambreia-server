@@ -4,9 +4,11 @@ using System.Collections.Immutable;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Orleans;
+using Vortex.Database.Context;
 using Vortex.Primitives.Orleans;
 using Vortex.Primitives.Orleans.Snapshots.Room;
 using Vortex.Primitives.Players;
@@ -20,21 +22,31 @@ namespace Vortex.Rooms.Grains;
 public class RoomDirectoryGrain(
     IOptions<RoomConfig> roomConfig,
     ILogger<IRoomDirectoryGrain> logger,
-    IGrainFactory grainFactory
+    IGrainFactory grainFactory,
+    IDbContextFactory<VortexDbContext> dbContextFactory
 ) : Grain, IRoomDirectoryGrain
 {
     private readonly RoomConfig _roomConfig = roomConfig.Value;
     private readonly ILogger<IRoomDirectoryGrain> _logger = logger;
     private readonly IGrainFactory _grainFactory = grainFactory;
+    private readonly IDbContextFactory<VortexDbContext> _dbContextFactory = dbContextFactory;
 
     private readonly Dictionary<RoomId, RoomActiveSnapshot> _activeRooms = [];
     private readonly Dictionary<RoomId, HashSet<PlayerId>> _roomPlayers = [];
     private readonly Dictionary<RoomId, int> _roomPopulations = [];
 
+    /// <summary>Occupancy the database has not been told about yet, room to headcount. Only what
+    /// changed since the last flush, so a quiet hotel writes nothing at all.</summary>
+    private readonly Dictionary<RoomId, int> _unflushedPopulations = [];
+
     /// <summary>Rooms handling a raid right now. Only the ones that are — an empty set is the norm.</summary>
     private readonly HashSet<RoomId> _raidIncidents = [];
 
-    public override Task OnActivateAsync(CancellationToken ct)
+    /// <summary>Last time the top-rated ranking was renumbered. Ratings move far more slowly than
+    /// occupancy, so it rides the occupancy flush on its own, much longer clock.</summary>
+    private DateTime _lastRankingAt = DateTime.MinValue;
+
+    public override async Task OnActivateAsync(CancellationToken ct)
     {
         this.RegisterGrainTimer<object?>(
             static async (self, tickCt) =>
@@ -44,7 +56,19 @@ public class RoomDirectoryGrain(
             TimeSpan.FromMilliseconds(_roomConfig.RoomCheckMs)
         );
 
-        return Task.CompletedTask;
+        this.RegisterGrainTimer<object?>(
+            static async (self, tickCt) =>
+                await ((RoomDirectoryGrain)self!).FlushRoomActivityAsync(tickCt),
+            this,
+            TimeSpan.FromMilliseconds(_roomConfig.RoomPopulationFlushMs),
+            TimeSpan.FromMilliseconds(_roomConfig.RoomPopulationFlushMs)
+        );
+
+        // There is one activation of this grain for the whole cluster and it holds every room's
+        // occupancy in memory, so at this point no room has anyone in it. Whatever the last silo
+        // left in the column is a ghost — a hotel that crashed with a hundred in the lobby would
+        // otherwise advertise that lobby as full until someone walked back into it.
+        await ClearStaleOccupancyAsync(ct).ConfigureAwait(true);
     }
 
     public Task UpsertActiveRoomAsync(RoomInfoSnapshot snapshot)
@@ -74,6 +98,10 @@ public class RoomDirectoryGrain(
         _roomPlayers.Remove(roomId);
         _roomPopulations.Remove(roomId);
         _raidIncidents.Remove(roomId);
+
+        // Queued after the removal, not before: dropping the in-memory entry is exactly the moment
+        // the room's last persisted headcount became a lie.
+        _unflushedPopulations[roomId] = 0;
 
         return Task.CompletedTask;
     }
@@ -151,11 +179,183 @@ public class RoomDirectoryGrain(
 
     private Task UpdatePopulationAsync(RoomId roomId)
     {
-        _roomPopulations[roomId] = _roomPlayers.TryGetValue(roomId, out HashSet<PlayerId>? players)
+        int population = _roomPlayers.TryGetValue(roomId, out HashSet<PlayerId>? players)
             ? players.Count
             : 0;
 
+        _roomPopulations[roomId] = population;
+        _unflushedPopulations[roomId] = population;
+
         return Task.CompletedTask;
+    }
+
+    /// <summary>
+    /// Writes the occupancy the hotel has actually been living with back to <c>rooms.users_now</c>,
+    /// then refreshes the top-rated ranking off it.
+    /// </summary>
+    /// <remarks>
+    /// The column was set to 0 when a room was created and never written again, so every navigator
+    /// list — all of which order and page on it in SQL — ranked the whole hotel by rating alone, and
+    /// the category visitor counts, which are a <c>SUM</c> of it, read 0 forever.
+    /// <para>
+    /// The pending set is drained before the first await so this grain's own state is consistent
+    /// for the whole write, and the writes are grouped by headcount: distinct headcounts in one
+    /// window are few, where distinct rooms are not. ponytail: one statement per distinct headcount.
+    /// A single <c>UPDATE … CASE</c> is the upgrade if a busy hotel makes the round trips show.
+    /// </para>
+    /// </remarks>
+    internal async Task FlushRoomActivityAsync(CancellationToken ct)
+    {
+        Dictionary<RoomId, int> pending = new(_unflushedPopulations);
+
+        _unflushedPopulations.Clear();
+
+        bool rankingDue =
+            DateTime.UtcNow - _lastRankingAt >= TimeSpan.FromMilliseconds(_roomConfig.RoomCheckMs);
+
+        if (pending.Count == 0 && !rankingDue)
+        {
+            return;
+        }
+
+        try
+        {
+            await using VortexDbContext dbCtx = await _dbContextFactory
+                .CreateDbContextAsync(ct)
+                .ConfigureAwait(true);
+
+            DateTime now = DateTime.UtcNow;
+
+            foreach (
+                IGrouping<int, KeyValuePair<RoomId, int>> group in pending.GroupBy(x => x.Value)
+            )
+            {
+                int[] roomIds = [.. group.Select(x => x.Key.Value)];
+                int population = group.Key;
+
+                // last_active only moves for a room that had someone in it. Bumping it as a room
+                // empties would make "last active" mean "last abandoned".
+                if (population > 0)
+                {
+                    await dbCtx
+                        .Rooms.Where(r => roomIds.Contains(r.Id))
+                        .ExecuteUpdateAsync(
+                            s =>
+                                s.SetProperty(r => r.UsersNow, population)
+                                    .SetProperty(r => r.LastActive, now),
+                            ct
+                        )
+                        .ConfigureAwait(true);
+                }
+                else
+                {
+                    await dbCtx
+                        .Rooms.Where(r => roomIds.Contains(r.Id))
+                        .ExecuteUpdateAsync(s => s.SetProperty(r => r.UsersNow, 0), ct)
+                        .ConfigureAwait(true);
+                }
+            }
+
+            if (rankingDue)
+            {
+                _lastRankingAt = now;
+
+                await RefreshRankingAsync(dbCtx, ct).ConfigureAwait(true);
+            }
+        }
+        catch (Exception ex)
+        {
+            // Logged, not rethrown: an unreachable database must not take the room directory down
+            // with it, and the next tick recomputes from memory anyway. What it cannot recompute is
+            // this window's writes, so they go back on the queue.
+            foreach ((RoomId roomId, int population) in pending)
+            {
+                _unflushedPopulations.TryAdd(roomId, population);
+            }
+
+            _logger.LogError(ex, "Failed to flush room occupancy for {Count} rooms", pending.Count);
+        }
+    }
+
+    /// <summary>
+    /// Renumbers <c>rooms.ranking</c> — the client's "Top rated rooms rank:", which it hides unless
+    /// the value is positive. Only the rows whose place actually moved are written, so a hotel whose
+    /// ratings are settled pays one read and no writes.
+    /// </summary>
+    private async Task RefreshRankingAsync(VortexDbContext dbCtx, CancellationToken ct)
+    {
+        List<RankedRoom> top = await dbCtx
+            .Rooms.AsNoTracking()
+            .Where(r => r.DeletedAt == null && r.Score > 0)
+            .OrderByDescending(r => r.Score)
+            .ThenBy(r => r.Id)
+            .Take(_roomConfig.RoomRankingSize)
+            .Select(r => new RankedRoom { Id = r.Id, Ranking = r.Ranking })
+            .ToListAsync(ct)
+            .ConfigureAwait(true);
+
+        HashSet<int> ranked = [.. top.Select(x => x.Id)];
+
+        for (int i = 0; i < top.Count; i++)
+        {
+            int rank = i + 1;
+
+            if (top[i].Ranking == rank)
+            {
+                continue;
+            }
+
+            int roomId = top[i].Id;
+
+            await dbCtx
+                .Rooms.Where(r => r.Id == roomId)
+                .ExecuteUpdateAsync(s => s.SetProperty(r => r.Ranking, rank), ct)
+                .ConfigureAwait(true);
+        }
+
+        // A room that fell out of the table keeps its old number until something clears it, and a
+        // stale rank reads as a current one — the client cannot tell them apart.
+        await dbCtx
+            .Rooms.Where(r => r.Ranking != 0 && !ranked.Contains(r.Id))
+            .ExecuteUpdateAsync(s => s.SetProperty(r => r.Ranking, 0), ct)
+            .ConfigureAwait(true);
+    }
+
+    /// <summary>Drops occupancy left behind by a previous silo. Failure is logged rather than
+    /// thrown: a stale headcount is a wrong room list, but refusing to activate this grain is no
+    /// hotel at all.</summary>
+    internal async Task ClearStaleOccupancyAsync(CancellationToken ct)
+    {
+        try
+        {
+            await using VortexDbContext dbCtx = await _dbContextFactory
+                .CreateDbContextAsync(ct)
+                .ConfigureAwait(true);
+
+            int cleared = await dbCtx
+                .Rooms.Where(r => r.UsersNow != 0)
+                .ExecuteUpdateAsync(s => s.SetProperty(r => r.UsersNow, 0), ct)
+                .ConfigureAwait(true);
+
+            if (cleared > 0)
+            {
+                _logger.LogInformation(
+                    "Cleared stale occupancy on {Count} rooms left by a previous run",
+                    cleared
+                );
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Failed to clear stale room occupancy at startup");
+        }
+    }
+
+    /// <summary>Projection shape for the ranking pass; only ever exists inside an EF query.</summary>
+    private sealed class RankedRoom
+    {
+        public int Id { get; set; }
+        public int Ranking { get; set; }
     }
 
     /// <summary>

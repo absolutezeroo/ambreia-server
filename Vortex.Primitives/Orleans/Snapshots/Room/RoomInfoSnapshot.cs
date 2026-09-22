@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Immutable;
 using Orleans;
 using Vortex.Primitives.Rooms.Enums;
@@ -57,4 +58,19 @@ public record RoomInfoSnapshot : RoomSummarySnapshot
 
     [Id(16)]
     public required bool StaffPick { get; init; } = false;
+
+    /// <summary>Name of the room's currently running advertisement, empty when it has none. The
+    /// client reads this trio behind bit 4 of the room bitmask and renders it as the room-ad panel;
+    /// leaving it empty is what made a purchased ad invisible everywhere it was sold for.</summary>
+    [Id(17)]
+    public string AdName { get; init; } = string.Empty;
+
+    [Id(18)]
+    public string AdDescription { get; init; } = string.Empty;
+
+    /// <summary>When the advertisement runs out. Kept as the instant rather than as the minutes the
+    /// client wants, because a snapshot outlives the moment it was built and a stored countdown
+    /// would be wrong by however long it sat in a room grain.</summary>
+    [Id(19)]
+    public DateTime? AdExpiresAt { get; init; }
 }

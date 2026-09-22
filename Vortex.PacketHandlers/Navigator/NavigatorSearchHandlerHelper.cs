@@ -7,6 +7,7 @@ using Vortex.Primitives.Navigator;
 using Vortex.Primitives.Navigator.Enums;
 using Vortex.Primitives.Orleans;
 using Vortex.Primitives.Orleans.Snapshots.Navigator;
+using Vortex.Primitives.Orleans.Snapshots.Room;
 using Vortex.Protocol.Messages.Outgoing.NewNavigator;
 
 namespace Vortex.PacketHandlers.Navigator;
@@ -26,7 +27,7 @@ internal static class NavigatorSearchHandlerHelper
         CancellationToken ct
     )
     {
-        ImmutableArray<NavigatorSearchResultSnapshot> results = await navigatorService
+        ImmutableArray<RoomInfoSnapshot> results = await navigatorService
             .GetSearchResultsAsync(
                 searchCode,
                 NavigatorSearchFilterType.Anything,

@@ -7,6 +7,7 @@ using Vortex.Primitives.Navigator;
 using Vortex.Primitives.Navigator.Enums;
 using Vortex.Primitives.Orleans;
 using Vortex.Primitives.Orleans.Snapshots.Navigator;
+using Vortex.Primitives.Orleans.Snapshots.Room;
 using Vortex.Protocol.Messages.Incoming.Navigator;
 using Vortex.Protocol.Messages.Outgoing.NewNavigator;
 
@@ -37,7 +38,7 @@ public class RoomTextSearchMessageHandler(
             query
         );
 
-        ImmutableArray<NavigatorSearchResultSnapshot> results = await _navigatorService
+        ImmutableArray<RoomInfoSnapshot> results = await _navigatorService
             .GetSearchResultsAsync(SearchCode, filterType, filterValue, ctx.PlayerId, ct)
             .ConfigureAwait(false);
 
