@@ -176,6 +176,7 @@ internal sealed class WebApiTestFactory : IAsyncDisposable
         // check-webapi-forwarding.mjs reads this file as text to compare the three registration
         // lists — and an inferred registration is one it cannot see.
         builder.Services.AddSingleton<NotificationBroadcaster>(Broadcast);
+        builder.Services.AddSingleton<FeedBroadcaster>(FeedBroadcast);
         builder.Services.AddSingleton<INotificationSink>(
             new NotificationSink(DbContexts, Broadcast, NullLogger<NotificationSink>.Instance)
         );
@@ -245,6 +246,9 @@ internal sealed class WebApiTestFactory : IAsyncDisposable
     /// only way to know the push actually lands.
     /// </summary>
     public NotificationBroadcaster Broadcast { get; } = new();
+
+    /// <summary>The feed's public fan-out, real for the same reason as the one above.</summary>
+    public FeedBroadcaster FeedBroadcast { get; } = new();
 
     /// <summary>The in-memory database behind the app, so a test can seed the rows it is about.</summary>
     public IDbContextFactory<VortexDbContext> DbContexts { get; }

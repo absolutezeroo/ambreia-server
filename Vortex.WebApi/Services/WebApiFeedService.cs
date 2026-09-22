@@ -38,10 +38,12 @@ namespace Vortex.WebApi.Services;
 /// real database.
 /// </para>
 /// <para>
-/// It announces three things on the event bus — a mention, a comment, a repost — and listens for
-/// none of them. What turns those into a player's notification lives under
-/// <c>Notifications/</c>, and the feed is deliberately ignorant of it: the same events are there
-/// for a plugin to hear.
+/// It announces on the event bus and listens for nothing. Four of its events are personal — a
+/// mention, a comment, a repost, a like — and name whom they concern; the fifth,
+/// <c>FeedChangedEvent</c>, is public and says only that a thread moved, which is what lets every
+/// open page refresh the one card without polling. What turns any of them into something a reader
+/// sees lives under <c>Notifications/</c>, and the feed is deliberately ignorant of it: the same
+/// events are there for a plugin to hear.
 /// </para>
 /// </remarks>
 public sealed class WebApiFeedService(
@@ -338,6 +340,7 @@ public sealed class WebApiFeedService(
         await db.SaveChangesAsync(ct).ConfigureAwait(false);
 
         await AnnounceAsync(db, post, playerId, text, ct).ConfigureAwait(false);
+        await AnnounceChangeAsync(db, post, ct).ConfigureAwait(false);
 
         return (FeedRefusal.None, await GetPostAsync(post.Id, playerId, ct).ConfigureAwait(false));
     }
@@ -409,6 +412,16 @@ public sealed class WebApiFeedService(
         }
     }
 
+    /// <summary>
+    /// Tells every open feed that this thread moved. Separate from <see cref="AnnounceAsync"/>,
+    /// which is about the people concerned; this one is about the page.
+    /// </summary>
+    private async Task AnnounceChangeAsync(
+        VortexDbContext db,
+        WebFeedPostEntity post,
+        CancellationToken ct
+    ) => await AnnounceChangeAsync(db, post.ParentEntityId ?? post.Id, ct).ConfigureAwait(false);
+
     public async Task<FeedPost?> VoteAsync(
         int playerId,
         int postId,
@@ -464,6 +477,11 @@ public sealed class WebApiFeedService(
 
         await db.SaveChangesAsync(ct).ConfigureAwait(false);
 
+        // A vote moves the bars on everyone's copy of the poll, so it is a change like any other.
+        // No notification, though: a poll is answered by design, and telling its author about each
+        // answer would be the noisiest kind on the feed.
+        await AnnounceChangeAsync(db, postId, ct).ConfigureAwait(false);
+
         return await GetPostAsync(postId, playerId, ct).ConfigureAwait(false);
     }
 
@@ -494,7 +512,7 @@ public sealed class WebApiFeedService(
             )
             .ConfigureAwait(false);
 
-        bool reposted = false;
+        bool reacted = false;
 
         if (on && existing is null)
         {
@@ -507,10 +525,10 @@ public sealed class WebApiFeedService(
                 }
             );
 
-            // Only a NEW repost is worth announcing. `existing is null` is what makes that true:
-            // a retried request finds the row already there and falls through, so a flaky
-            // connection cannot ring the same bell twice.
-            reposted = kind == FeedReactionKind.Repost;
+            // Only a NEW reaction is worth announcing, either kind. `existing is null` is what
+            // makes that true: a retried request finds the row already there and falls through,
+            // so a flaky connection cannot ring the same bell twice.
+            reacted = true;
         }
         else if (!on && existing is not null)
         {
@@ -523,7 +541,7 @@ public sealed class WebApiFeedService(
         // makes a retried request a no-op rather than the opposite of what the reader pressed.
         await db.SaveChangesAsync(ct).ConfigureAwait(false);
 
-        if (reposted)
+        if (reacted)
         {
             int author = await db
                 .WebFeedPosts.AsNoTracking()
@@ -535,12 +553,54 @@ public sealed class WebApiFeedService(
             if (author != 0)
             {
                 await events
-                    .PublishAsync(new FeedRepostedEvent(playerId, author, postId), ct)
+                    .PublishAsync(
+                        kind == FeedReactionKind.Repost
+                            ? new FeedRepostedEvent(playerId, author, postId)
+                            : new FeedFavouritedEvent(playerId, author, postId),
+                        ct
+                    )
                     .ConfigureAwait(false);
             }
         }
 
+        // Announced whichever way the reaction went, including a withdrawal: every reader's copy
+        // of that card carries a count, and a count that only ever grows is worse than one that
+        // never moves.
+        await AnnounceChangeAsync(db, postId, ct).ConfigureAwait(false);
+
         return await GetPostAsync(postId, playerId, ct).ConfigureAwait(false);
+    }
+
+    /// <summary>
+    /// Says on the bus that a thread moved, so every open feed can refresh that one card.
+    /// </summary>
+    /// <remarks>
+    /// Always the ROOT, never the comment: a reader's feed is a list of roots, and refreshing the
+    /// root brings its comments with it. Walking up is one indexed read and a thread is at most
+    /// two levels deep, so this is never more than two.
+    /// </remarks>
+    private async Task AnnounceChangeAsync(VortexDbContext db, int postId, CancellationToken ct)
+    {
+        int rootId = postId;
+
+        for (int hop = 0; hop < 2; hop++)
+        {
+            int? parent = await db
+                .WebFeedPosts.AsNoTracking()
+                .Where(p => p.Id == rootId)
+                .Select(p => p.ParentEntityId)
+                .FirstOrDefaultAsync(ct)
+                .ConfigureAwait(false);
+
+            if (parent is not int up)
+            {
+                break;
+            }
+
+            rootId = up;
+        }
+
+        await events.PublishAsync(new FeedChangedEvent(rootId), ct).ConfigureAwait(false);
     }
 
     public async Task<bool> DeleteAsync(int playerId, int postId, CancellationToken ct)
@@ -593,6 +653,12 @@ public sealed class WebApiFeedService(
         }
 
         await db.SaveChangesAsync(ct).ConfigureAwait(false);
+
+        // Announced with the post's parent already read, because the row is now soft-deleted and
+        // walking up from it would still work — but a reader whose card just vanished needs the
+        // ROOT refreshed, and for a deleted root that is itself: the refresh comes back empty and
+        // the card goes.
+        await AnnounceChangeAsync(db, post.ParentEntityId ?? post.Id, ct).ConfigureAwait(false);
 
         return true;
     }

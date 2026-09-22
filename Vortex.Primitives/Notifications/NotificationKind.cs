@@ -73,6 +73,7 @@ public enum NotificationKind
     FeedMentioned = 50,
     FeedCommented = 51,
     FeedReposted = 52,
+    FeedFavourited = 53,
 
     // ---- Account security ------------------------------------------------------------------
     /// <remarks>

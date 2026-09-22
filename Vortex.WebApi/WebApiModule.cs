@@ -53,6 +53,9 @@ public sealed class WebApiModule : IHostPluginModule
         // Before the sink, which takes it: the pub/sub the open tabs listen on.
         services.TryAddSingleton<NotificationBroadcaster>();
 
+        // The feed's own, public where that one is per-player: what the whole page listens to.
+        services.TryAddSingleton<FeedBroadcaster>();
+
         // The notification sink. The HANDLERS that fill it need no registration of their own —
         // PluginBootstrapper scans this assembly for IEventHandler<T> because this module is
         // registered, which is the whole reason they could live here rather than in a project of

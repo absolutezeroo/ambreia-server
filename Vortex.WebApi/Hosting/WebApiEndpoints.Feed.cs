@@ -1,3 +1,5 @@
+using System;
+using System.Globalization;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
@@ -7,6 +9,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
 using Vortex.Primitives.Authentication;
 using Vortex.WebApi.Http;
+using Vortex.WebApi.Notifications;
 using Vortex.WebApi.Services;
 using Vortex.WebApi.Session;
 
@@ -83,6 +86,58 @@ internal static partial class WebApiEndpointsFeed
             )
             .WithName("FeedPost")
             .WithSummary("One post and its comments.")
+            .WithTags(tagPublic);
+
+        // Anonymous, like the feed's other reads: a signed-out visitor watching the page should
+        // see it move too. It carries only the id of the thread that changed, never the thread —
+        // a post's "…ByMe" fields are per-reader, so one pushed copy would be right for the
+        // person who caused it and wrong for everybody else. Each reader refetches that one card
+        // and gets their own answer.
+        //
+        // Same deployment note as the notification stream: nginx needs `proxy_buffering off`, and
+        // the per-frame flush below is what makes the rest of it arrive at all.
+        app.MapGet(
+                "/api/public/feed/stream",
+                async Task (
+                    HttpContext ctx,
+                    [FromServices] FeedBroadcaster feed,
+                    CancellationToken ct
+                ) =>
+                {
+                    ctx.Response.Headers.ContentType = "text/event-stream";
+                    ctx.Response.Headers.CacheControl = "no-cache";
+                    ctx.Response.Headers["X-Accel-Buffering"] = "no";
+
+                    using FeedBroadcaster.Subscription subscription = feed.Subscribe();
+
+                    // An opening frame carrying no id. Without it a proxy cannot tell the response
+                    // has begun, and neither can the browser — EventSource stays "connecting"
+                    // until the first byte, which may be minutes away on a quiet hotel.
+                    await WriteFeedAsync(ctx, "ready", ct).ConfigureAwait(false);
+
+                    try
+                    {
+                        await foreach (
+                            int rootId in subscription.Reader.ReadAllAsync(ct).ConfigureAwait(false)
+                        )
+                        {
+                            await WriteFeedAsync(
+                                    ctx,
+                                    rootId.ToString(CultureInfo.InvariantCulture),
+                                    ct
+                                )
+                                .ConfigureAwait(false);
+                        }
+                    }
+                    catch (OperationCanceledException)
+                    {
+                        // The tab closed. The only way this loop ends, and the `using` is what
+                        // actually unsubscribes.
+                    }
+                }
+            )
+            .WithName("FeedStream")
+            .WithSummary("Which thread just changed, as server-sent events.")
             .WithTags(tagPublic);
 
         app.MapPost(
@@ -315,6 +370,16 @@ internal static partial class WebApiEndpointsFeed
             .WithName("FeedDelete")
             .WithSummary("Delete one of your own posts, and its comments with it.")
             .WithTags(tagUser);
+    }
+
+    /// <summary>
+    /// One SSE frame, flushed immediately — without the flush it sits in Kestrel's buffer until
+    /// the request ends, and this request only ends when the tab closes.
+    /// </summary>
+    private static async Task WriteFeedAsync(HttpContext ctx, string data, CancellationToken ct)
+    {
+        await ctx.Response.WriteAsync($"data: {data}\n\n", ct).ConfigureAwait(false);
+        await ctx.Response.Body.FlushAsync(ct).ConfigureAwait(false);
     }
 
     /// <summary>

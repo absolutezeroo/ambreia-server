@@ -40,3 +40,28 @@ public sealed record FeedCommentedEvent(
 /// has already been read, and "X no longer shares your post" is a line nobody needs.
 /// </remarks>
 public sealed record FeedRepostedEvent(int ActorPlayerId, int AuthorPlayerId, int PostId) : IEvent;
+
+/// <summary>
+/// Somebody liked a post.
+/// </summary>
+/// <remarks>
+/// The commonest interaction on the feed by a wide margin, and the last one to get an event —
+/// the first three were written to a list that did not mention it. Same rule as the repost:
+/// only a NEW like is announced, never the withdrawal of one.
+/// </remarks>
+public sealed record FeedFavouritedEvent(int ActorPlayerId, int AuthorPlayerId, int PostId)
+    : IEvent;
+
+/// <summary>
+/// A post changed in a way every reader should see: it was published, answered, reacted to, voted
+/// in, or deleted.
+/// </summary>
+/// <param name="RootPostId">
+/// The ROOT of the thread, never the comment inside it. A reader's feed is a list of roots, so
+/// the root is the card that has to be refreshed — and refreshing it brings the comment with it.
+/// </param>
+/// <remarks>
+/// Public where the three above are personal: this says "the feed moved", not "you were named".
+/// Nothing about who it concerns, because it concerns everybody reading.
+/// </remarks>
+public sealed record FeedChangedEvent(int RootPostId) : IEvent;

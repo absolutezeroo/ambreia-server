@@ -1037,6 +1037,20 @@
         }
       }
     },
+    "/api/public/feed/stream": {
+      "get": {
+        "tags": [
+          "Public"
+        ],
+        "summary": "Which thread just changed, as server-sent events.",
+        "operationId": "FeedStream",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
     "/api/public/shop/products": {
       "get": {
         "tags": [
@@ -4028,6 +4042,7 @@
           50,
           51,
           52,
+          53,
           60,
           61,
           62,

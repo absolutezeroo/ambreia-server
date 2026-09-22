@@ -245,6 +245,112 @@ public sealed class FeedMentionTests
         factory.Events.Of<FeedRepostedEvent>().Should().ContainSingle();
     }
 
+    /// <summary>
+    /// A like announces itself, exactly as a repost does.
+    /// </summary>
+    /// <remarks>
+    /// It did not, for a while: the first three feed events were written to a list of themes that
+    /// named the mention, the comment and the share, and the commonest interaction of the four
+    /// was simply absent. The repost beside it worked, which is what made it invisible.
+    /// </remarks>
+    [Fact]
+    public async Task ALikeAnnouncesItselfLikeAShareDoes()
+    {
+        await using WebApiTestFactory factory = new();
+        await PlayerAsync(factory, 1, "Prodiigy");
+        await PlayerAsync(factory, 2, "Chloe");
+
+        FeedPost root = await StatusAsync(factory, 1, "mon message");
+
+        await Feed(factory).SetReactionAsync(2, root.Id, FeedReactionKind.Favorite, true, default);
+
+        FeedFavouritedEvent like = factory
+            .Events.Of<FeedFavouritedEvent>()
+            .Should()
+            .ContainSingle()
+            .Subject;
+
+        like.ActorPlayerId.Should().Be(2);
+        like.AuthorPlayerId.Should().Be(1);
+        like.PostId.Should().Be(root.Id);
+
+        // And only once, however many times the button is pressed.
+        await Feed(factory).SetReactionAsync(2, root.Id, FeedReactionKind.Favorite, true, default);
+
+        factory.Events.Of<FeedFavouritedEvent>().Should().ContainSingle();
+    }
+
+    /// <summary>
+    /// Every write on the feed says the thread moved, and always names the ROOT — that is the
+    /// card an open page has to refresh.
+    /// </summary>
+    [Fact]
+    public async Task EveryWriteAnnouncesTheThreadThatMoved()
+    {
+        await using WebApiTestFactory factory = new();
+        await PlayerAsync(factory, 1, "Prodiigy");
+        await PlayerAsync(factory, 2, "Chloe");
+
+        FeedPost root = await StatusAsync(factory, 1, "mon message");
+
+        // Publishing the root is itself a change.
+        factory
+            .Events.Of<FeedChangedEvent>()
+            .Should()
+            .ContainSingle()
+            .Which.RootPostId.Should()
+            .Be(root.Id);
+
+        // A COMMENT names the root, not itself.
+        FeedPost comment = (
+            await Feed(factory)
+                .PublishAsync(
+                    2,
+                    new FeedPublishRequest(
+                        Kind: FeedPostKind.Status,
+                        Body: "bien vu",
+                        PhotoKeys: null,
+                        PollChoices: null,
+                        ParentId: root.Id,
+                        GroupId: null
+                    ),
+                    default
+                )
+        ).Post!;
+
+        factory.Events.Of<FeedChangedEvent>().Should().HaveCount(2);
+        factory.Events.Of<FeedChangedEvent>()[1].RootPostId.Should().Be(root.Id);
+
+        // A REPLY is two levels down and still names the root.
+        await Feed(factory)
+            .PublishAsync(
+                1,
+                new FeedPublishRequest(
+                    Kind: FeedPostKind.Status,
+                    Body: "merci",
+                    PhotoKeys: null,
+                    PollChoices: null,
+                    ParentId: comment.Id,
+                    GroupId: null
+                ),
+                default
+            );
+
+        factory.Events.Of<FeedChangedEvent>()[2].RootPostId.Should().Be(root.Id);
+
+        // A reaction, including one being WITHDRAWN: the count moved on everybody's copy.
+        await Feed(factory).SetReactionAsync(2, root.Id, FeedReactionKind.Favorite, true, default);
+        await Feed(factory).SetReactionAsync(2, root.Id, FeedReactionKind.Favorite, false, default);
+
+        factory.Events.Of<FeedChangedEvent>().Should().HaveCount(5);
+
+        // And a delete.
+        await Feed(factory).DeleteAsync(1, root.Id, default);
+
+        factory.Events.Of<FeedChangedEvent>().Should().HaveCount(6);
+        factory.Events.Of<FeedChangedEvent>()[5].RootPostId.Should().Be(root.Id);
+    }
+
     private static EventContext Context() => new() { CorrelationId = "test" };
 
     private static FeedMentionNotificationHandler Handler(WebApiTestFactory factory) =>

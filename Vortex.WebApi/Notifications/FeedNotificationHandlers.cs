@@ -117,6 +117,64 @@ public sealed class FeedCommentNotificationHandler(
     }
 }
 
+/// <summary>
+/// Somebody liked my post.
+/// </summary>
+/// <remarks>
+/// The commonest one, and the last to be wired: the first three handlers were written to a list
+/// of themes that did not mention the like, so it silently did nothing while the repost beside it
+/// worked.
+/// </remarks>
+public sealed class FeedFavouriteNotificationHandler(
+    INotificationSink notifications,
+    IDbContextFactory<VortexDbContext> dbContextFactory
+) : IEventHandler<FeedFavouritedEvent>
+{
+    public async ValueTask HandleAsync(
+        FeedFavouritedEvent e,
+        EventContext ctx,
+        CancellationToken ct
+    )
+    {
+        if (
+            await FeedNotificationGuard
+                .BlockedAsync(dbContextFactory, e.AuthorPlayerId, e.ActorPlayerId, ct)
+                .ConfigureAwait(false)
+        )
+        {
+            return;
+        }
+
+        await notifications
+            .NotifyAsync(
+                e.AuthorPlayerId,
+                NotificationKind.FeedFavourited,
+                actorPlayerId: e.ActorPlayerId,
+                targetId: e.PostId,
+                ct: ct
+            )
+            .ConfigureAwait(false);
+    }
+}
+
+/// <summary>
+/// A thread moved, so every open feed refreshes that card.
+/// </summary>
+/// <remarks>
+/// No sink and no block check: this is not about anybody. It is the page being told the world
+/// changed, and it reaches every reader including the one who caused it — whose own card is
+/// already correct, and for whom the refresh is a no-op.
+/// </remarks>
+public sealed class FeedChangedHandler(FeedBroadcaster feed) : IEventHandler<FeedChangedEvent>
+{
+    public ValueTask HandleAsync(FeedChangedEvent e, EventContext ctx, CancellationToken ct)
+    {
+        feed.Publish(e.RootPostId);
+
+        return ValueTask.CompletedTask;
+    }
+}
+
 /// <summary>Somebody shared my post.</summary>
 public sealed class FeedRepostNotificationHandler(
     INotificationSink notifications,

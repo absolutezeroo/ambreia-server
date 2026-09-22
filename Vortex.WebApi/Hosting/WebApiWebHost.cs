@@ -276,6 +276,7 @@ internal sealed class WebApiWebHost(
         // container and the stream endpoint in this one, and two broadcasters would mean a push
         // that reaches nobody.
         services.AddSingleton(rootServices.GetRequiredService<NotificationBroadcaster>());
+        services.AddSingleton(rootServices.GetRequiredService<FeedBroadcaster>());
         services.AddSingleton(rootServices.GetRequiredService<RequiredServiceGuard>());
         services.AddSingleton(rootServices.GetRequiredService<IAccountPasswordService>());
         services.AddSingleton(rootServices.GetRequiredService<IAccountMfaService>());
