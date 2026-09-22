@@ -97,10 +97,19 @@ internal sealed partial class MessengerGrain(
             _categories.Add(new FriendCategorySnapshot { Id = cat.Id, Name = cat.Name });
         }
 
+        // `FriendPlayerEntityId != playerId` drops a self-friendship row. Nothing should write one
+        // (SendFriendRequestAsync now refuses a request to oneself), but rows already in the table
+        // survive that guard, and the client takes the list at its word: the avatar-name bubble in
+        // HabboInventory's sibling widget shows a nametag for every room occupant whose name is in
+        // getFriendNames(), so a self-row puts a permanent bubble over the player's own avatar.
         List<MessengerFriendEntity> friends = await dbCtx
             .MessengerFriends.AsNoTracking()
             .Include(f => f.FriendPlayerEntity)
-            .Where(f => f.PlayerEntityId == playerId && f.DeletedAt == null)
+            .Where(f =>
+                f.PlayerEntityId == playerId
+                && f.FriendPlayerEntityId != playerId
+                && f.DeletedAt == null
+            )
             .ToListAsync(ct);
 
         // Resolve who is actually online, rather than assuming everyone is offline.

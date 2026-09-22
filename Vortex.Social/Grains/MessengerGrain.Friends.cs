@@ -93,6 +93,16 @@ internal sealed partial class MessengerGrain
         CancellationToken ct
     )
     {
+        // Nobody befriends themselves. The client never offers the row on one's own avatar, so a
+        // request that arrives here is forged or internal -- and a self-friendship is not inert:
+        // the room's avatar-name bubble shows a nametag for every occupant in getFriendNames(),
+        // which puts a permanent one over the player's own head. FriendRequestNotFound is the
+        // closest code the client knows; it renders as the generic refusal.
+        if (targetId == SelfId)
+        {
+            return FriendListErrorCodeType.FriendRequestNotFound;
+        }
+
         int maxFriends = await this
             .GrainFactory.GetServerConfigGrain()
             .GetIntAsync(MessengerConfig.MaxFriendsKey, MessengerConfig.MaxFriendsDefault)
