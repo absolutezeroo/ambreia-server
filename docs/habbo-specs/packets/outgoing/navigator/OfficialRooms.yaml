@@ -891,4 +891,15 @@ generated:
   unknowns:
   - uk_5a27be7c57
 verified: {}
-manual: {}
+manual:
+  promoted_group_headline_room_is_outside_the_count:
+    source: "official client WIN63-202607011411-782849652, _SafePkg_2008/_SafeCls_4304.as:24-38"
+    note: "A promoted group is code, leaderFigure, an int count, then a room block read unconditionally, and only then a loop from index 1 to count. So the client consumes max(count, 1) rooms: the headline room always, plus count-1 more. Writing count = N followed by N rooms is therefore correct for N >= 1 and fatal for N = 0 -- with no rooms written the client still decodes one, and every group after it and the official entries with them arrive as garbage. NavigatorService.GetPromotedRoomsAsync drops a group whose search finds nothing for exactly this reason, and the serializer guards the count a second time."
+  promoted_group_code_must_be_one_the_client_names:
+    source: "PromotedRoomsListCtrl.as:107 and gamedata/external_texts.json"
+    note: "The heading is getText(\"promotedroomcategory.\" + code) with no fallback, and the client ships fifteen such keys (africaDesert, africaJungle, africaSavannah, battleBallRoom, freezeRoom, friendlyRoom, majesty, partyRoom, petRoom, starsRoomComp, starsRoomComp2, tradingRoom, vipParties1, vipParties2, vipParties3). A group under any other code renders with the raw key as its title. The set is mirrored in NavigatorPromotedCategoryCodes and the admin editor offers it as a list, so the code cannot be typed."
+  promoted_group_leader_is_derived:
+    source: "PromotedRoomsListCtrl.as:110-115 and :187-191"
+    note: "The group's visible \"leader\" is the headline room's own owner (leader_name_txt reads bestRoom.showOwner ? bestRoom.ownerName : \"\"), while leaderFigure is a separate string feeding the avatar widget. Neither is stored: the figure is looked up per request from the headline room's owner, because a figure captured once is wrong the first time that player changes clothes."
+  expander_says_ten:
+    note: "The group's open/close labels are navigator.promotedrooms.viewtopten / hidetopten, so a group is a top ten. Sending more only makes the list disagree with the button that opens it; the cap lives in NavigatorPromotedCategoryCodes.GroupSize."

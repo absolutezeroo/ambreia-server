@@ -361,6 +361,93 @@ internal sealed class NavigatorOperations(
             ct
         );
 
+    public Task<OperationResult> CreateNavigatorPromotedCategoryAsync(
+        CreateNavigatorPromotedCategoryRequest request,
+        string actor,
+        CancellationToken ct
+    ) =>
+        _runner.ExecuteAsync(
+            "ops.navigator.promotedcategory.create",
+            actor,
+            request.Reason,
+            targetPlayerId: null,
+            roomId: null,
+            detail: new { request.Code, request.SearchCode },
+            work: async c =>
+                Throw(
+                    await _navigatorAdmin
+                        .CreatePromotedCategoryAsync(
+                            new NavigatorPromotedCategorySpec(
+                                request.Code,
+                                request.SearchCode,
+                                request.Filter,
+                                request.OrderNum,
+                                request.Visible
+                            ),
+                            c
+                        )
+                        .ConfigureAwait(false)
+                ),
+            ct
+        );
+
+    public Task<OperationResult> UpdateNavigatorPromotedCategoryAsync(
+        UpdateNavigatorPromotedCategoryRequest request,
+        string actor,
+        CancellationToken ct
+    ) =>
+        _runner.ExecuteAsync(
+            "ops.navigator.promotedcategory.update",
+            actor,
+            request.Reason,
+            targetPlayerId: null,
+            roomId: null,
+            detail: new
+            {
+                request.PromotedCategoryId,
+                request.Code,
+                request.SearchCode,
+            },
+            work: async c =>
+                Throw(
+                    await _navigatorAdmin
+                        .UpdatePromotedCategoryAsync(
+                            request.PromotedCategoryId,
+                            new NavigatorPromotedCategorySpec(
+                                request.Code,
+                                request.SearchCode,
+                                request.Filter,
+                                request.OrderNum,
+                                request.Visible
+                            ),
+                            c
+                        )
+                        .ConfigureAwait(false)
+                ),
+            ct
+        );
+
+    public Task<OperationResult> DeleteNavigatorPromotedCategoryAsync(
+        DeleteNavigatorPromotedCategoryRequest request,
+        string actor,
+        CancellationToken ct
+    ) =>
+        _runner.ExecuteAsync(
+            "ops.navigator.promotedcategory.delete",
+            actor,
+            request.Reason,
+            targetPlayerId: null,
+            roomId: null,
+            detail: new { request.PromotedCategoryId },
+            work: async c =>
+                Throw(
+                    await _navigatorAdmin
+                        .DeletePromotedCategoryAsync(request.PromotedCategoryId, c)
+                        .ConfigureAwait(false)
+                ),
+            ct
+        );
+
     public Task<OperationResult> SeedNavigatorDefaultsAsync(
         SeedNavigatorDefaultsRequest request,
         string actor,

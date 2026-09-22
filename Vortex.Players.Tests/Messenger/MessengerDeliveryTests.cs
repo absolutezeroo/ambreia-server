@@ -352,11 +352,13 @@ public sealed class MessengerDeliveryTests : IAsyncLifetime
             PlayerEntity sender = NewPlayer(SenderId, "Sender");
             PlayerEntity receiver = NewPlayer(ReceiverId, "Receiver");
 
-            seed.Players.AddRange(sender, receiver);
-            seed.MessengerFriends.AddRange(
-                NewFriendship(sender, receiver),
-                NewFriendship(receiver, sender)
-            );
+            await seed.Players.AddRangeAsync(sender, receiver).ConfigureAwait(true);
+            await seed
+                .MessengerFriends.AddRangeAsync(
+                    NewFriendship(sender, receiver),
+                    NewFriendship(receiver, sender)
+                )
+                .ConfigureAwait(true);
 
             await seed.SaveChangesAsync().ConfigureAwait(true);
         }

@@ -2192,6 +2192,23 @@ export interface NavigatorHealth {
   seeded: boolean;
 }
 
+export interface NavigatorPromotedCategoryRow {
+  id: number;
+  code: string;
+  clientText: string;
+  searchCode: string;
+  filter: string;
+  orderNum: number;
+  visible: boolean;
+  roomCount: number;
+}
+
+export interface NavigatorPromotedCodeOption {
+  code: string;
+  clientText: string;
+  taken: boolean;
+}
+
 export interface NavigatorQueryTypeOption {
   value: number;
   label: string;
@@ -2221,8 +2238,10 @@ export interface NavigatorSetup {
   contexts: NavigatorContextRow[];
   flatCategories: NavigatorFlatCategoryRow[];
   eventCategories: NavigatorEventCategoryRow[];
+  promotedCategories: NavigatorPromotedCategoryRow[];
   searchCodes: NavigatorSearchCodeOption[];
   queryTypes: NavigatorQueryTypeOption[];
+  promotedCodes: NavigatorPromotedCodeOption[];
 }
 
 export interface NftAssetRow {

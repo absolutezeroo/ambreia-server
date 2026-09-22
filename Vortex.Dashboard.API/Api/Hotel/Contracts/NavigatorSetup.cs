@@ -16,6 +16,8 @@ public sealed record NavigatorSetup(
     IReadOnlyList<NavigatorContextRow> Contexts,
     IReadOnlyList<NavigatorFlatCategoryRow> FlatCategories,
     IReadOnlyList<NavigatorEventCategoryRow> EventCategories,
+    IReadOnlyList<NavigatorPromotedCategoryRow> PromotedCategories,
     IReadOnlyList<NavigatorSearchCodeOption> SearchCodes,
-    IReadOnlyList<NavigatorQueryTypeOption> QueryTypes
+    IReadOnlyList<NavigatorQueryTypeOption> QueryTypes,
+    IReadOnlyList<NavigatorPromotedCodeOption> PromotedCodes
 );

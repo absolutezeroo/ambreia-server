@@ -255,6 +255,62 @@ internal static partial class DashboardEndpoints
         );
         MapPost(
             app,
+            OpsNavigator + "/promoted-categories",
+            async (
+                HttpContext ctx,
+                CreateNavigatorPromotedCategoryRequest body,
+                NavigatorOperations ops,
+                CancellationToken ct
+            ) =>
+                string.IsNullOrWhiteSpace(body.Code) || string.IsNullOrWhiteSpace(body.SearchCode)
+                    ? Results.BadRequest(new { error = "invalid_request" })
+                    : Results.Ok(
+                        await ops.CreateNavigatorPromotedCategoryAsync(body, ctx.ActorEmail(), ct)
+                            .ConfigureAwait(false)
+                    ),
+            Capabilities.Dashboard.OpsNavigatorManage,
+            TagNavigator
+        );
+        MapPost(
+            app,
+            OpsNavigator + "/promoted-categories/update",
+            async (
+                HttpContext ctx,
+                UpdateNavigatorPromotedCategoryRequest body,
+                NavigatorOperations ops,
+                CancellationToken ct
+            ) =>
+                body.PromotedCategoryId <= 0
+                || string.IsNullOrWhiteSpace(body.Code)
+                || string.IsNullOrWhiteSpace(body.SearchCode)
+                    ? Results.BadRequest(new { error = "invalid_request" })
+                    : Results.Ok(
+                        await ops.UpdateNavigatorPromotedCategoryAsync(body, ctx.ActorEmail(), ct)
+                            .ConfigureAwait(false)
+                    ),
+            Capabilities.Dashboard.OpsNavigatorManage,
+            TagNavigator
+        );
+        MapPost(
+            app,
+            OpsNavigator + "/promoted-categories/delete",
+            async (
+                HttpContext ctx,
+                DeleteNavigatorPromotedCategoryRequest body,
+                NavigatorOperations ops,
+                CancellationToken ct
+            ) =>
+                body.PromotedCategoryId <= 0
+                    ? Results.BadRequest(new { error = "invalid_request" })
+                    : Results.Ok(
+                        await ops.DeleteNavigatorPromotedCategoryAsync(body, ctx.ActorEmail(), ct)
+                            .ConfigureAwait(false)
+                    ),
+            Capabilities.Dashboard.OpsNavigatorManage,
+            TagNavigator
+        );
+        MapPost(
+            app,
             OpsNavigator + "/seed-defaults",
             async (
                 HttpContext ctx,

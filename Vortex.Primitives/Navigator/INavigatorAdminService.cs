@@ -64,6 +64,22 @@ public interface INavigatorAdminService
 
     Task<NavigatorAdminResult> DeleteEventCategoryAsync(int categoryId, CancellationToken ct);
 
+    Task<NavigatorAdminResult> CreatePromotedCategoryAsync(
+        NavigatorPromotedCategorySpec spec,
+        CancellationToken ct
+    );
+
+    Task<NavigatorAdminResult> UpdatePromotedCategoryAsync(
+        int promotedCategoryId,
+        NavigatorPromotedCategorySpec spec,
+        CancellationToken ct
+    );
+
+    Task<NavigatorAdminResult> DeletePromotedCategoryAsync(
+        int promotedCategoryId,
+        CancellationToken ct
+    );
+
     /// <summary>
     /// Creates the four client tabs and their standard blocks for any that are missing. An unseeded
     /// hotel answers every navigator request with an empty left pane, and the codes involved are the

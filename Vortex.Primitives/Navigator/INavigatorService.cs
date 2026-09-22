@@ -51,6 +51,14 @@ public interface INavigatorService
         CancellationToken ct
     );
 
+    /// <summary>The promoted-rooms strip shown above that list. Never returns a group without at
+    /// least one room: the client reads a group's headline room outside the count, so an empty one
+    /// desynchronizes everything after it in the packet.</summary>
+    Task<ImmutableArray<PromotedRoomCategorySnapshot>> GetPromotedRoomsAsync(
+        PlayerId playerId,
+        CancellationToken ct
+    );
+
     /// <summary>Live and maximum population per flat category, in the shape the client's
     /// categories-with-visitor-count packet expects.</summary>
     Task<CategoriesWithVisitorCountSnapshot> GetCategoryVisitorCountsAsync(CancellationToken ct);

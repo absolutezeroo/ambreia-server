@@ -22,16 +22,17 @@
   import OpResult from '../components/OpResult.svelte';
   import StatCard from '../components/StatCard.svelte';
   import Tabs from '../components/Tabs.svelte';
-  import { Compass, LayoutList, FolderTree, CalendarRange } from '@lucide/svelte';
+  import { Compass, LayoutList, FolderTree, CalendarRange, Megaphone } from '@lucide/svelte';
   import { t, type Translator } from '../lib/i18n';
   import type {
+    NavigatorPromotedCodeOption,
     NavigatorQueryTypeOption,
     NavigatorSearchCodeOption,
     NavigatorSetup,
   } from '../lib/apiTypes';
 
-  /** Which of the four tables the one drawer is editing. */
-  type NavigatorKind = 'context' | 'quickLink' | 'category' | 'eventCategory';
+  /** Which of the five tables the one drawer is editing. */
+  type NavigatorKind = 'context' | 'quickLink' | 'category' | 'eventCategory' | 'promoted';
 
   /**
    * A draft in the drawer.
@@ -60,6 +61,8 @@
     globalCategory?: string | null;
     staffOnly?: boolean;
     minRank?: number | string;
+    /** promoted */
+    code?: string;
   };
 
   let loading = $state(false);
@@ -74,6 +77,7 @@
     if (kind === 'context') return translator('navigatorConfig.tabsTitle');
     if (kind === 'quickLink') return translator('navigatorConfig.quickLinksTitle');
     if (kind === 'category') return translator('navigatorConfig.categoriesTitle');
+    if (kind === 'promoted') return translator('navigatorConfig.promotedTitle');
     return translator('navigatorConfig.eventCategoriesTitle');
   }
 
@@ -82,6 +86,7 @@
     if (kind === 'context') return translator('navigatorConfig.addTab');
     if (kind === 'category') return translator('navigatorConfig.addCategory');
     if (kind === 'quickLink') return translator('navigatorConfig.addBlock');
+    if (kind === 'promoted') return translator('navigatorConfig.addPromoted');
     return translator('navigatorConfig.addEventCategory');
   }
 
@@ -92,12 +97,14 @@
     contextForm = newContext();
     categoryForm = newCategory();
     eventCategoryForm = newEventCategory();
+    promotedForm = newPromoted();
     await refresh();
   });
 
   let canManage = $derived(hasDashboardCapability($identity, CAPABILITIES.opsNavigatorManage));
   let queryTypes: NavigatorQueryTypeOption[] = $derived(data?.queryTypes || []);
   let searchCodes: NavigatorSearchCodeOption[] = $derived(data?.searchCodes || []);
+  let promotedCodes: NavigatorPromotedCodeOption[] = $derived(data?.promotedCodes || []);
 
   const newContext = (): NavigatorDraft => ({ searchCode: '', visible: true, queryType: 0, orderNum: 0 });
   const newQuickLink = (contextId: number): NavigatorDraft => ({
@@ -120,11 +127,19 @@
     orderNum: 0,
   });
   const newEventCategory = (): NavigatorDraft => ({ name: '', visible: true });
+  const newPromoted = (): NavigatorDraft => ({
+    code: '',
+    searchCode: '',
+    filter: '',
+    orderNum: 0,
+    visible: true,
+  });
 
   let contextForm = $state(newContext());
   let quickLinkForms = $state<Record<number, NavigatorDraft>>({});
   let categoryForm = $state(newCategory());
   let eventCategoryForm = $state(newEventCategory());
+  let promotedForm = $state(newPromoted());
   let editing = $state<{
     kind: NavigatorKind;
     id: number;
@@ -282,6 +297,7 @@
       { id: 'contexts', label: $t('navigatorConfig.tabContexts'), icon: Compass, count: data?.contexts?.length },
       { id: 'categories', label: $t('navigatorConfig.tabCategories'), icon: FolderTree, count: data?.flatCategories?.length },
       { id: 'events', label: $t('navigatorConfig.tabEvents'), icon: CalendarRange, count: data?.eventCategories?.length },
+      { id: 'promoted', label: $t('navigatorConfig.tabPromoted'), icon: Megaphone, count: data?.promotedCategories?.length },
     ]}
   />
 
@@ -529,6 +545,79 @@
 
   </section>
   {/if}
+
+  {#if tab === 'promoted'}
+  <section class="panel" style="margin-top: 12px;">
+    <div class="panel-head"><h2>{$t('navigatorConfig.promotedTitle')}</h2>
+      {#if canManage}
+        <button type="button" class="success" onclick={() => (adding = 'promoted')}>{$t('navigatorConfig.addPromoted')}</button>
+      {/if}
+    </div>
+    <p class="muted">{$t('navigatorConfig.promotedDescription')}</p>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>{$t('navigatorConfig.colId')}</th>
+            <th>{$t('navigatorConfig.colPromotedCode')}</th>
+            <th>{$t('navigatorConfig.searchCode')}</th>
+            <th>{$t('navigatorConfig.colRooms')}</th>
+            <th>{$t('navigatorConfig.colOrder')}</th>
+            <th>{$t('navigatorConfig.colVisible')}</th>
+            {#if canManage}<th>{$t('common.actions')}</th>{/if}
+          </tr>
+        </thead>
+        <tbody>
+          {#each data?.promotedCategories || [] as promoted}
+            <tr>
+              <td>{promoted.id}</td>
+              <td>
+                {promoted.clientText || promoted.code}
+                <span class="muted">{promoted.code}</span>
+              </td>
+              <td><code class="chip">{promoted.searchCode}</code>{#if promoted.filter}<span class="muted">{promoted.filter}</span>{/if}</td>
+              <td>
+                {formatNumber(promoted.roomCount)}
+                <!-- The one number that decides whether this row does anything: a group whose
+                     search finds nothing is withheld from the client entirely. -->
+                {#if promoted.roomCount === 0}
+                  <span class="warn-text">{$t('navigatorConfig.promotedEmptyWarning')}</span>
+                {/if}
+              </td>
+              <td>{promoted.orderNum}</td>
+              <td>{promoted.visible ? $t('common.yes') : $t('common.no')}</td>
+              {#if canManage}
+                <td class="row-actions">
+                  <button type="button" class="ghost-button" onclick={() => startEdit('promoted', promoted)}>
+                    {$t('navigatorConfig.edit')}
+                  </button>
+                  <button
+                    type="button"
+                    class="ghost-button danger"
+                    onclick={() =>
+                      ask(
+                        '/api/v1/operations/navigator/promoted-categories/delete',
+                        { promotedCategoryId: promoted.id },
+                        $t('navigatorConfig.deletePromoted'),
+                        $t('navigatorConfig.deletePromotedSummary', { code: promoted.code })
+                      )}
+                  >
+                    {$t('navigatorConfig.delete')}
+                  </button>
+                </td>
+              {/if}
+            </tr>
+          {:else}
+            <tr>
+              <td colspan={canManage ? 7 : 6} class="muted">{$t('navigatorConfig.noPromoted')}</td>
+            </tr>
+          {/each}
+        </tbody>
+      </table>
+    </div>
+
+  </section>
+  {/if}
 {/if}
 
 {#if editing}
@@ -685,6 +774,55 @@
                         {$t('navigatorConfig.visible')}
                       </label>
                     </form>
+    {:else if open.kind === 'promoted'}
+                    <form
+                      class="edit-grid" id="navigator-editor"
+                      onsubmit={(event) => {
+                        event.preventDefault();
+                        ask(
+                          '/api/v1/operations/navigator/promoted-categories/update',
+                          {
+                            promotedCategoryId: open.id,
+                            code: open.draft.code,
+                            searchCode: open.draft.searchCode,
+                            filter: open.draft.filter ?? '',
+                            orderNum: Number(open.draft.orderNum) || 0,
+                            visible: open.draft.visible,
+                          },
+                          $t('navigatorConfig.updatePromoted'),
+                          $t('navigatorConfig.updatePromotedSummary', { code: open.draft.code })
+                        );
+                      }}
+                    >
+                      <label>
+                        {$t('navigatorConfig.colPromotedCode')}
+                        <select bind:value={open.draft.code}>
+                          {#each promotedCodes as option}
+                            <option value={option.code}>{option.clientText} — {option.code}</option>
+                          {/each}
+                        </select>
+                      </label>
+                      <label>
+                        {$t('navigatorConfig.searchCode')}
+                        <select bind:value={open.draft.searchCode}>
+                          {#each searchCodes as option}
+                            <option value={option.code}>{option.code}</option>
+                          {/each}
+                        </select>
+                      </label>
+                      <label>
+                        {$t('navigatorConfig.colFilter')}
+                        <input autocomplete="off" spellcheck="false" bind:value={open.draft.filter} />
+                      </label>
+                      <label>
+                        {$t('navigatorConfig.order')}
+                        <input autocomplete="off" spellcheck="false" type="number" bind:value={open.draft.orderNum} />
+                      </label>
+                      <label class="check">
+                        <input autocomplete="off" spellcheck="false" type="checkbox" bind:checked={open.draft.visible} />
+                        {$t('navigatorConfig.visible')}
+                      </label>
+                    </form>
     {/if}
 
     {#snippet actions()}
@@ -763,6 +901,13 @@
 
   .warn-panel {
     border-left: 3px solid var(--warn, #e0a33e);
+  }
+
+  /* A promoted group with no rooms is never sent, so the count that says so is the one thing on
+     that row worth colouring. */
+  .warn-text {
+    margin-left: 6px;
+    color: var(--warn, #e0a33e);
   }
 </style>
 
@@ -917,6 +1062,55 @@
         {$t('navigatorConfig.visible')}
       </label>
       </form>
+    {:else if kind === 'promoted'}
+    <form
+      class="edit-grid" id="navigator-creator"
+      onsubmit={(event) => {
+        event.preventDefault();
+        ask(
+          '/api/v1/operations/navigator/promoted-categories',
+          { ...promotedForm, orderNum: Number(promotedForm.orderNum) || 0 },
+          $t('navigatorConfig.addPromoted'),
+          $t('navigatorConfig.addPromotedSummary', { code: promotedForm.code })
+        );
+      }}
+    >
+      <!-- A select, not a text box: the client localizes promotedroomcategory.<code> with no
+           fallback, so a code it does not know renders as the raw key. Codes already used are
+           listed as taken rather than hidden, so the operator can see why one is unavailable. -->
+      <label>
+        {$t('navigatorConfig.colPromotedCode')}
+        <select bind:value={promotedForm.code}>
+          <option value="">{$t('navigatorConfig.pickPromotedCode')}</option>
+          {#each promotedCodes as option}
+            <option value={option.code} disabled={option.taken}>
+              {option.clientText} — {option.code}{option.taken ? ` (${$t('navigatorConfig.codeTaken')})` : ''}
+            </option>
+          {/each}
+        </select>
+      </label>
+      <label>
+        {$t('navigatorConfig.searchCode')}
+        <select bind:value={promotedForm.searchCode}>
+          <option value="">{$t('navigatorConfig.pickSearchCode')}</option>
+          {#each searchCodes as option}
+            <option value={option.code}>{option.code}</option>
+          {/each}
+        </select>
+      </label>
+      <label>
+        {$t('navigatorConfig.colFilter')}
+        <input autocomplete="off" spellcheck="false" bind:value={promotedForm.filter} />
+      </label>
+      <label>
+        {$t('navigatorConfig.order')}
+        <input autocomplete="off" spellcheck="false" type="number" bind:value={promotedForm.orderNum} />
+      </label>
+      <label class="check">
+        <input autocomplete="off" spellcheck="false" type="checkbox" bind:checked={promotedForm.visible} />
+        {$t('navigatorConfig.visible')}
+      </label>
+      </form>
     {/if}
 
     {#snippet actions()}
@@ -930,7 +1124,9 @@
             ? !categoryForm.name?.trim()
             : kind === 'quickLink'
               ? !quickLinkForms[addingContext!]?.searchCode
-              : !eventCategoryForm.name?.trim()}
+              : kind === 'promoted'
+                ? !promotedForm.code || !promotedForm.searchCode
+                : !eventCategoryForm.name?.trim()}
       >{addTitle(kind, $t)}</button>
       <button type="button" class="ghost-button" onclick={() => (adding = null)}>{$t('common.cancel')}</button>
     {/snippet}

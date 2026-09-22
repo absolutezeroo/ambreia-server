@@ -254,6 +254,9 @@ POST /api/v1/operations/navigator/contexts/update -> dashboard.ops.navigator.man
 POST /api/v1/operations/navigator/event-categories -> dashboard.ops.navigator.manage
 POST /api/v1/operations/navigator/event-categories/delete -> dashboard.ops.navigator.manage
 POST /api/v1/operations/navigator/event-categories/update -> dashboard.ops.navigator.manage
+POST /api/v1/operations/navigator/promoted-categories -> dashboard.ops.navigator.manage
+POST /api/v1/operations/navigator/promoted-categories/delete -> dashboard.ops.navigator.manage
+POST /api/v1/operations/navigator/promoted-categories/update -> dashboard.ops.navigator.manage
 POST /api/v1/operations/navigator/quick-links -> dashboard.ops.navigator.manage
 POST /api/v1/operations/navigator/quick-links/delete -> dashboard.ops.navigator.manage
 POST /api/v1/operations/navigator/quick-links/update -> dashboard.ops.navigator.manage

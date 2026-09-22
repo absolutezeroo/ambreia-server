@@ -252,6 +252,95 @@ public sealed class NavigatorService(
         return [.. entries];
     }
 
+    /// <summary>
+    /// The promoted-rooms strip above the official list: one group per configured row, each filled
+    /// by running its search code.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// <b>A group with no rooms must never be emitted.</b> The client's parser reads the group's
+    /// headline room <em>before</em> its loop and outside the count, so a zero-room group leaves it
+    /// decoding a block that was never written and desynchronizes the rest of the packet -- every
+    /// group after it, and the official entries with them.
+    /// </para>
+    /// <para>
+    /// The leader avatar is the headline room's owner, looked up here rather than stored: the
+    /// client draws it from a figure string, and a figure an operator typed once would be wrong the
+    /// first time that player changed clothes.
+    /// </para>
+    /// </remarks>
+    public async Task<ImmutableArray<PromotedRoomCategorySnapshot>> GetPromotedRoomsAsync(
+        PlayerId playerId,
+        CancellationToken ct
+    )
+    {
+        ImmutableArray<NavigatorPromotedCategorySnapshot> configured =
+            _navigatorProvider.GetPromotedCategories();
+
+        if (configured.Length == 0)
+        {
+            return [];
+        }
+
+        NavigatorLimits limits = await GetLimitsAsync().ConfigureAwait(false);
+
+        // The searches are independent, so run them together rather than one round trip per group.
+        List<RoomInfoSnapshot>[] roomsPerGroup = await Task.WhenAll(
+                configured.Select(category =>
+                    FetchRoomsAsync(
+                        category.SearchCode,
+                        NavigatorSearchFilterType.Anything,
+                        category.Filter,
+                        playerId,
+                        limits,
+                        ct
+                    )
+                )
+            )
+            .ConfigureAwait(false);
+
+        Dictionary<RoomId, RoomSummarySnapshot> activeById = await GetActiveRoomsByIdAsync()
+            .ConfigureAwait(false);
+
+        List<(
+            NavigatorPromotedCategorySnapshot Category,
+            ImmutableArray<RoomInfoSnapshot> Rooms
+        )> filled = [];
+
+        for (int i = 0; i < configured.Length; i++)
+        {
+            ImmutableArray<RoomInfoSnapshot> rooms =
+            [
+                .. ToSearchResults(roomsPerGroup[i], activeById)
+                    .Take(NavigatorPromotedCategoryCodes.GroupSize),
+            ];
+
+            if (rooms.Length > 0)
+            {
+                filled.Add((configured[i], rooms));
+            }
+        }
+
+        if (filled.Count == 0)
+        {
+            return [];
+        }
+
+        ImmutableDictionary<int, string> figures = await _navigatorProvider
+            .GetPlayerFiguresAsync([.. filled.Select(x => x.Rooms[0].OwnerId.Value).Distinct()], ct)
+            .ConfigureAwait(false);
+
+        return
+        [
+            .. filled.Select(x => new PromotedRoomCategorySnapshot
+            {
+                Code = x.Category.Code,
+                LeaderFigure = figures.GetValueOrDefault(x.Rooms[0].OwnerId.Value, string.Empty),
+                Rooms = x.Rooms,
+            }),
+        ];
+    }
+
     public async Task<CategoriesWithVisitorCountSnapshot> GetCategoryVisitorCountsAsync(
         CancellationToken ct
     )

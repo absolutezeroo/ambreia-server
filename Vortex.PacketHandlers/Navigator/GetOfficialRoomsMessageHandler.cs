@@ -29,14 +29,18 @@ public class GetOfficialRoomsMessageHandler(INavigatorService navigatorService)
             .GetOfficialRoomEntriesAsync(ct)
             .ConfigureAwait(false);
 
+        ImmutableArray<PromotedRoomCategorySnapshot> promoted = await _navigatorService
+            .GetPromotedRoomsAsync(ctx.PlayerId, ct)
+            .ConfigureAwait(false);
+
         await ctx.SendComposerAsync(
                 new OfficialRoomsMessageComposer
                 {
                     Entries = entries,
-                    // No hotel-wide promo banner and no promoted-room groups exist as data; both are
-                    // sent empty rather than filled with invented entries.
+                    // No hotel-wide promo banner exists as data, so the "absent" marker goes out
+                    // rather than an invented entry.
                     AdRoom = null,
-                    PromotedRooms = [],
+                    PromotedRooms = promoted,
                 },
                 ct
             )

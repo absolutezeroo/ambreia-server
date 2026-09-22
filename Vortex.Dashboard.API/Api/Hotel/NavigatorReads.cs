@@ -21,8 +21,10 @@ namespace Vortex.Dashboard.API.Api.Hotel;
 /// empty table the operator has to interpret.
 /// </para>
 /// </summary>
-internal sealed class NavigatorReads(IDbContextFactory<VortexDbContext> dbContextFactory)
-    : DashboardReads(dbContextFactory)
+internal sealed class NavigatorReads(
+    IDbContextFactory<VortexDbContext> dbContextFactory,
+    INavigatorService navigatorService
+) : DashboardReads(dbContextFactory)
 {
     public Task<NavigatorSetup> NavigatorConfigAsync(CancellationToken ct) =>
         QueryAsync<NavigatorSetup>(
@@ -98,6 +100,48 @@ internal sealed class NavigatorReads(IDbContextFactory<VortexDbContext> dbContex
                     .ToListAsync(ct)
                     .ConfigureAwait(false);
 
+                List<NavigatorPromotedCategoryEntityRow> promotedRows = await db
+                    .NavigatorPromotedCategories.AsNoTracking()
+                    .Where(c => c.DeletedAt == null)
+                    .OrderBy(c => c.OrderNum)
+                    .ThenBy(c => c.Id)
+                    .Select(c => new NavigatorPromotedCategoryEntityRow
+                    {
+                        Id = c.Id,
+                        Code = c.Code,
+                        SearchCode = c.SearchCode,
+                        Filter = c.Filter,
+                        OrderNum = c.OrderNum,
+                        Visible = c.Visible,
+                    })
+                    .ToListAsync(ct)
+                    .ConfigureAwait(false);
+
+                // Asked of the live navigator rather than counted here, because "how many rooms is
+                // this group carrying" is the search resolving, not a column. A group the search
+                // empties is never sent to the client at all, and that is invisible from the row.
+                Dictionary<string, int> promotedRoomCounts = (
+                    await navigatorService.GetPromotedRoomsAsync(default, ct).ConfigureAwait(false)
+                ).ToDictionary(
+                    group => group.Code,
+                    group => group.Rooms.Length,
+                    StringComparer.Ordinal
+                );
+
+                List<NavigatorPromotedCategoryRow> promotedCategories =
+                [
+                    .. promotedRows.Select(c => new NavigatorPromotedCategoryRow(
+                        c.Id,
+                        c.Code,
+                        ClientTextFor(c.Code),
+                        c.SearchCode,
+                        c.Filter,
+                        c.OrderNum,
+                        c.Visible,
+                        promotedRoomCounts.GetValueOrDefault(c.Code)
+                    )),
+                ];
+
                 Dictionary<int, int> linkCountByContext = quickLinks
                     .GroupBy(q => q.contextId)
                     .ToDictionary(g => g.Key, g => g.Count());
@@ -157,6 +201,7 @@ internal sealed class NavigatorReads(IDbContextFactory<VortexDbContext> dbContex
                     items,
                     flatCategories,
                     eventCategories,
+                    promotedCategories,
                     NavigatorSearchCodes
                         .QueryTypeBySearchCode.OrderBy(pair => pair.Key, StringComparer.Ordinal)
                         .Select(pair => new NavigatorSearchCodeOption(
@@ -168,9 +213,40 @@ internal sealed class NavigatorReads(IDbContextFactory<VortexDbContext> dbContex
                         .ToList(),
                     Enum.GetValues<NavigatorQueryType>()
                         .Select(value => new NavigatorQueryTypeOption((int)value, value.ToString()))
+                        .ToList(),
+                    NavigatorPromotedCategoryCodes
+                        .Known.Select(known => new NavigatorPromotedCodeOption(
+                            known.Code,
+                            known.ClientText,
+                            promotedRows.Exists(row =>
+                                string.Equals(row.Code, known.Code, StringComparison.Ordinal)
+                            )
+                        ))
                         .ToList()
                 );
             },
             ct
         );
+
+    /// <summary>The client's own English wording for a code, so the editor shows what a group will
+    /// actually be called rather than its key. Empty for a code the client cannot name — which the
+    /// admin service refuses to store, but a row predating that check would still be listed.</summary>
+    private static string ClientTextFor(string code) =>
+        NavigatorPromotedCategoryCodes
+            .Known.FirstOrDefault(known =>
+                string.Equals(known.Code, code, StringComparison.Ordinal)
+            )
+            .ClientText
+        ?? string.Empty;
+
+    /// <summary>Projection shape for the promoted rows; only ever exists inside this read.</summary>
+    private sealed class NavigatorPromotedCategoryEntityRow
+    {
+        public int Id { get; set; }
+        public string Code { get; set; } = string.Empty;
+        public string SearchCode { get; set; } = string.Empty;
+        public string Filter { get; set; } = string.Empty;
+        public int OrderNum { get; set; }
+        public bool Visible { get; set; }
+    }
 }

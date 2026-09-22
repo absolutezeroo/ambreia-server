@@ -26,6 +26,17 @@ public interface INavigatorProvider
 
     ImmutableArray<NavigatorFlatCategorySnapshot> GetFlatCategories();
 
+    /// <summary>The configured promoted-rooms groups, in display order. Cached with the rest of the
+    /// navigator reference data; the rooms behind each one are resolved per request.</summary>
+    ImmutableArray<NavigatorPromotedCategorySnapshot> GetPromotedCategories();
+
+    /// <summary>Figures for the given players, for the avatar the client draws beside a promoted
+    /// group. Missing players are simply absent from the result.</summary>
+    Task<ImmutableDictionary<int, string>> GetPlayerFiguresAsync(
+        IReadOnlyCollection<int> playerIds,
+        CancellationToken ct = default
+    );
+
     Task<List<RoomInfoSnapshot>> GetAllRoomsAsync(int limit, CancellationToken ct = default);
 
     Task<List<RoomInfoSnapshot>> GetRoomsByOwnerAsync(

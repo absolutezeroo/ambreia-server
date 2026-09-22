@@ -31,6 +31,7 @@ public sealed class NavigatorProvider(
 
     private ImmutableArray<NavigatorTopLevelContextSnapshot> _topLevelContexts = [];
     private ImmutableArray<NavigatorFlatCategorySnapshot> _flatCategories = [];
+    private ImmutableArray<NavigatorPromotedCategorySnapshot> _promotedCategories = [];
     private ImmutableDictionary<string, NavigatorQueryType> _queryTypeBySearchCode =
         ImmutableDictionary<string, NavigatorQueryType>.Empty;
 
@@ -82,6 +83,33 @@ public sealed class NavigatorProvider(
     }
 
     public ImmutableArray<NavigatorFlatCategorySnapshot> GetFlatCategories() => _flatCategories;
+
+    public ImmutableArray<NavigatorPromotedCategorySnapshot> GetPromotedCategories() =>
+        _promotedCategories;
+
+    public async Task<ImmutableDictionary<int, string>> GetPlayerFiguresAsync(
+        IReadOnlyCollection<int> playerIds,
+        CancellationToken ct = default
+    )
+    {
+        if (playerIds.Count == 0)
+        {
+            return ImmutableDictionary<int, string>.Empty;
+        }
+
+        await using VortexDbContext dbCtx = await _dbCtxFactory
+            .CreateDbContextAsync(ct)
+            .ConfigureAwait(false);
+
+        var rows = await dbCtx
+            .Players.AsNoTracking()
+            .Where(p => playerIds.Contains(p.Id))
+            .Select(p => new { p.Id, p.Figure })
+            .ToListAsync(ct)
+            .ConfigureAwait(false);
+
+        return rows.ToImmutableDictionary(p => p.Id, p => p.Figure ?? string.Empty);
+    }
 
     public async Task<List<RoomInfoSnapshot>> GetAllRoomsAsync(
         int limit,
@@ -695,6 +723,25 @@ public sealed class NavigatorProvider(
             )
             .GroupBy(x => x.SearchCode)
             .ToImmutableDictionary(g => g.Key, g => g.First().QueryType);
+
+        _promotedCategories =
+        [
+            .. (
+                await dbCtx
+                    .NavigatorPromotedCategories.AsNoTracking()
+                    .Where(x => x.Visible && x.DeletedAt == null)
+                    .OrderBy(x => x.OrderNum)
+                    .ThenBy(x => x.Id)
+                    .ToListAsync(ct)
+                    .ConfigureAwait(false)
+            ).Select(x => new NavigatorPromotedCategorySnapshot
+            {
+                Id = x.Id,
+                Code = x.Code,
+                SearchCode = x.SearchCode,
+                Filter = x.Filter,
+            }),
+        ];
 
         List<NavigatorFlatCategoryEntity> flatCatEntities = await dbCtx
             .NavigatorFlatCategories.AsNoTracking()

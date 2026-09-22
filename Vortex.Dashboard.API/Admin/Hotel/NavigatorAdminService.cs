@@ -500,6 +500,146 @@ internal sealed class NavigatorAdminService(
         return NavigatorAdminResult.Ok(categoryId);
     }
 
+    public async Task<NavigatorAdminResult> CreatePromotedCategoryAsync(
+        NavigatorPromotedCategorySpec spec,
+        CancellationToken ct
+    )
+    {
+        string? rejection = ValidatePromoted(spec);
+
+        if (rejection is not null)
+        {
+            return NavigatorAdminResult.Fail(rejection);
+        }
+
+        await using VortexDbContext db = await dbContextFactory
+            .CreateDbContextAsync(ct)
+            .ConfigureAwait(false);
+
+        string code = spec.Code.Trim();
+
+        bool taken = await db
+            .NavigatorPromotedCategories.AnyAsync(c => c.Code == code && c.DeletedAt == null, ct)
+            .ConfigureAwait(false);
+
+        if (taken)
+        {
+            return NavigatorAdminResult.Fail("code_already_used");
+        }
+
+        NavigatorPromotedCategoryEntity entity = new()
+        {
+            Code = code,
+            SearchCode = spec.SearchCode.Trim(),
+            Filter = spec.Filter?.Trim() ?? string.Empty,
+            OrderNum = spec.OrderNum,
+            Visible = spec.Visible,
+        };
+
+        db.NavigatorPromotedCategories.Add(entity);
+        await db.SaveChangesAsync(ct).ConfigureAwait(false);
+        await ReloadAsync(ct).ConfigureAwait(false);
+
+        return NavigatorAdminResult.Ok(entity.Id);
+    }
+
+    public async Task<NavigatorAdminResult> UpdatePromotedCategoryAsync(
+        int promotedCategoryId,
+        NavigatorPromotedCategorySpec spec,
+        CancellationToken ct
+    )
+    {
+        string? rejection = ValidatePromoted(spec);
+
+        if (rejection is not null)
+        {
+            return NavigatorAdminResult.Fail(rejection);
+        }
+
+        await using VortexDbContext db = await dbContextFactory
+            .CreateDbContextAsync(ct)
+            .ConfigureAwait(false);
+
+        NavigatorPromotedCategoryEntity? entity = await db
+            .NavigatorPromotedCategories.FirstOrDefaultAsync(c => c.Id == promotedCategoryId, ct)
+            .ConfigureAwait(false);
+
+        if (entity is null)
+        {
+            return NavigatorAdminResult.Fail("promoted_category_not_found");
+        }
+
+        string code = spec.Code.Trim();
+
+        bool taken = await db
+            .NavigatorPromotedCategories.AnyAsync(
+                c => c.Code == code && c.Id != promotedCategoryId && c.DeletedAt == null,
+                ct
+            )
+            .ConfigureAwait(false);
+
+        if (taken)
+        {
+            return NavigatorAdminResult.Fail("code_already_used");
+        }
+
+        entity.Code = code;
+        entity.SearchCode = spec.SearchCode.Trim();
+        entity.Filter = spec.Filter?.Trim() ?? string.Empty;
+        entity.OrderNum = spec.OrderNum;
+        entity.Visible = spec.Visible;
+
+        await db.SaveChangesAsync(ct).ConfigureAwait(false);
+        await ReloadAsync(ct).ConfigureAwait(false);
+
+        return NavigatorAdminResult.Ok(entity.Id);
+    }
+
+    public async Task<NavigatorAdminResult> DeletePromotedCategoryAsync(
+        int promotedCategoryId,
+        CancellationToken ct
+    )
+    {
+        await using VortexDbContext db = await dbContextFactory
+            .CreateDbContextAsync(ct)
+            .ConfigureAwait(false);
+
+        NavigatorPromotedCategoryEntity? entity = await db
+            .NavigatorPromotedCategories.FirstOrDefaultAsync(c => c.Id == promotedCategoryId, ct)
+            .ConfigureAwait(false);
+
+        if (entity is null)
+        {
+            return NavigatorAdminResult.Fail("promoted_category_not_found");
+        }
+
+        db.NavigatorPromotedCategories.Remove(entity);
+        await db.SaveChangesAsync(ct).ConfigureAwait(false);
+        await ReloadAsync(ct).ConfigureAwait(false);
+
+        return NavigatorAdminResult.Ok(promotedCategoryId);
+    }
+
+    /// <summary>
+    /// Both halves of a promoted group are vocabulary, not free text: the code is what the client
+    /// localizes the heading with and the search code is what fills the group, so a typo in either
+    /// produces a group that renders with a raw key or quietly lists the whole hotel.
+    /// </summary>
+    private static string? ValidatePromoted(NavigatorPromotedCategorySpec spec)
+    {
+        if (string.IsNullOrWhiteSpace(spec.Code))
+        {
+            return "code_required";
+        }
+
+        if (!NavigatorPromotedCategoryCodes.IsKnown(spec.Code.Trim()))
+        {
+            return "code_unknown_to_client";
+        }
+
+        return string.IsNullOrWhiteSpace(spec.SearchCode) ? "search_code_required" : null;
+    }
+
     public async Task<NavigatorAdminResult> SeedDefaultsAsync(CancellationToken ct)
     {
         await using VortexDbContext db = await dbContextFactory
