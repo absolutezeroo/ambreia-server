@@ -330,6 +330,66 @@ public sealed class NotificationTests
         tab.Reader.TryRead(out _).Should().BeFalse();
     }
 
+    /// <summary>
+    /// The handler turns a <c>FeedChangedEvent</c> into a push on the feed's broadcaster.
+    /// </summary>
+    /// <remarks>
+    /// The link nothing covered. The feed's own tests prove the event is PUBLISHED, using a fake
+    /// publisher; this proves what happens when one is delivered. What still has no test is the
+    /// bus carrying it between the two, which needs a running host — so if a like ever fails to
+    /// reach an open page, that is the half to suspect, not these.
+    /// </remarks>
+    [Fact]
+    public async Task AFeedChangePushesToEveryOpenPage()
+    {
+        await using WebApiTestFactory factory = new();
+
+        using FeedBroadcaster.Subscription tab = factory.FeedBroadcast.Subscribe();
+        using FeedBroadcaster.Subscription other = factory.FeedBroadcast.Subscribe();
+
+        await new FeedChangedHandler(factory.FeedBroadcast).HandleAsync(
+            new FeedChangedEvent(42),
+            Context(),
+            default
+        );
+
+        // Both tabs, because a feed change is public — unlike a notification, which has one reader.
+        tab.Reader.TryRead(out int mine).Should().BeTrue();
+        mine.Should().Be(42);
+
+        other.Reader.TryRead(out int theirs).Should().BeTrue();
+        theirs.Should().Be(42);
+    }
+
+    /// <summary>
+    /// Two threads moving are two cards to refresh, so the feed's channel keeps both — where the
+    /// notification one keeps only the newest count.
+    /// </summary>
+    [Fact]
+    public async Task TwoThreadsMovingAreBothDelivered()
+    {
+        await using WebApiTestFactory factory = new();
+
+        using FeedBroadcaster.Subscription tab = factory.FeedBroadcast.Subscribe();
+
+        await new FeedChangedHandler(factory.FeedBroadcast).HandleAsync(
+            new FeedChangedEvent(1),
+            Context(),
+            default
+        );
+        await new FeedChangedHandler(factory.FeedBroadcast).HandleAsync(
+            new FeedChangedEvent(2),
+            Context(),
+            default
+        );
+
+        tab.Reader.TryRead(out int first).Should().BeTrue();
+        tab.Reader.TryRead(out int second).Should().BeTrue();
+
+        first.Should().Be(1);
+        second.Should().Be(2);
+    }
+
     private static EventContext Context() => new() { CorrelationId = "test" };
 
     private static INotificationSink Sink(WebApiTestFactory factory) =>
