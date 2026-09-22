@@ -172,8 +172,12 @@ internal sealed class WebApiTestFactory : IAsyncDisposable
         builder.Services.AddSingleton<IWebApiNotificationService>(
             new WebApiNotificationService(DbContexts)
         );
+        // The type argument is spelled out rather than inferred from `Broadcast`, because
+        // check-webapi-forwarding.mjs reads this file as text to compare the three registration
+        // lists — and an inferred registration is one it cannot see.
+        builder.Services.AddSingleton<NotificationBroadcaster>(Broadcast);
         builder.Services.AddSingleton<INotificationSink>(
-            new NotificationSink(DbContexts, NullLogger<NotificationSink>.Instance)
+            new NotificationSink(DbContexts, Broadcast, NullLogger<NotificationSink>.Instance)
         );
 
         WebApiAppConfigurator.ConfigureServices(builder.Services, config);
@@ -234,6 +238,13 @@ internal sealed class WebApiTestFactory : IAsyncDisposable
     /// mention, a comment or a repost was raised at all.
     /// </summary>
     public FakeEventPublisher Events { get; } = new();
+
+    /// <summary>
+    /// The real broadcaster, not a fake. It is a dictionary of channels and nothing else — a fake
+    /// would be the same code under another name, and a test that subscribes then writes is the
+    /// only way to know the push actually lands.
+    /// </summary>
+    public NotificationBroadcaster Broadcast { get; } = new();
 
     /// <summary>The in-memory database behind the app, so a test can seed the rows it is about.</summary>
     public IDbContextFactory<VortexDbContext> DbContexts { get; }

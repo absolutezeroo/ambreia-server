@@ -20,6 +20,7 @@ using Vortex.Primitives.Hosting;
 using Vortex.Primitives.Observability;
 using Vortex.Primitives.Shop;
 using Vortex.WebApi.Configuration;
+using Vortex.WebApi.Notifications;
 using Vortex.WebApi.Services;
 using Vortex.WebApi.Session;
 
@@ -270,6 +271,11 @@ internal sealed class WebApiWebHost(
         services.AddSingleton(rootServices.GetRequiredService<IWebApiPhotoService>());
         services.AddSingleton(rootServices.GetRequiredService<IWebApiFeedService>());
         services.AddSingleton(rootServices.GetRequiredService<IWebApiNotificationService>());
+
+        // The SAME instance as the sink's, which is the whole point: the sink runs in the root
+        // container and the stream endpoint in this one, and two broadcasters would mean a push
+        // that reaches nobody.
+        services.AddSingleton(rootServices.GetRequiredService<NotificationBroadcaster>());
         services.AddSingleton(rootServices.GetRequiredService<RequiredServiceGuard>());
         services.AddSingleton(rootServices.GetRequiredService<IAccountPasswordService>());
         services.AddSingleton(rootServices.GetRequiredService<IAccountMfaService>());

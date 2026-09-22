@@ -50,6 +50,9 @@ public sealed class WebApiModule : IHostPluginModule
         services.TryAddSingleton<IWebApiFeedService, WebApiFeedService>();
         services.TryAddSingleton<IWebApiNotificationService, WebApiNotificationService>();
 
+        // Before the sink, which takes it: the pub/sub the open tabs listen on.
+        services.TryAddSingleton<NotificationBroadcaster>();
+
         // The notification sink. The HANDLERS that fill it need no registration of their own —
         // PluginBootstrapper scans this assembly for IEventHandler<T> because this module is
         // registered, which is the whole reason they could live here rather than in a project of

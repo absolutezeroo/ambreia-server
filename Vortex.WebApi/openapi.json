@@ -3088,6 +3088,20 @@
           }
         }
       }
+    },
+    "/api/user/notifications/stream": {
+      "get": {
+        "tags": [
+          "User"
+        ],
+        "summary": "A live count of unread notifications, as server-sent events.",
+        "operationId": "NotificationsStream",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
     }
   },
   "components": {

@@ -29,6 +29,7 @@ namespace Vortex.WebApi.Notifications;
 /// </remarks>
 public sealed class NotificationSink(
     IDbContextFactory<VortexDbContext> dbContextFactory,
+    NotificationBroadcaster broadcaster,
     ILogger<NotificationSink> logger
 ) : INotificationSink
 {
@@ -74,6 +75,19 @@ public sealed class NotificationSink(
             );
 
             await db.SaveChangesAsync(ct).ConfigureAwait(false);
+
+            // Pushed only once the row is committed, and carrying the count read back from the
+            // same context — so a tab that acts on the push finds the notification already there.
+            // Announcing before the write would race the reader against its own trigger.
+            broadcaster.Publish(
+                playerId,
+                await db
+                    .WebNotifications.CountAsync(
+                        n => n.PlayerEntityId == playerId && n.SeenAt == null,
+                        ct
+                    )
+                    .ConfigureAwait(false)
+            );
         }
         catch (Exception failure)
         {

@@ -272,10 +272,72 @@ public sealed class NotificationTests
         (await Service(factory).GetAsync(2, 1, 0)).Items.Should().ContainSingle();
     }
 
+    /// <summary>
+    /// A notification pushes its new unread count to the tabs already listening.
+    /// </summary>
+    /// <remarks>
+    /// The point of the whole broadcaster: without it the bell can only find out by asking, and
+    /// asking on a timer is a request per visitor per interval for a number that is usually zero.
+    /// </remarks>
+    [Fact]
+    public async Task WritingANotificationPushesTheCountToAListeningTab()
+    {
+        await using WebApiTestFactory factory = new();
+        await PlayerAsync(factory, 1, "Prodiigy");
+
+        using NotificationBroadcaster.Subscription tab = factory.Broadcast.Subscribe(1);
+
+        await Sink(factory).NotifyAsync(1, NotificationKind.BadgeGranted);
+        await Sink(factory).NotifyAsync(1, NotificationKind.ClubPayday);
+
+        // The channel is bounded at one and drops what was not read, so what a tab receives is
+        // the LATEST count and never a backlog -- two writes, one value waiting, and it is 2.
+        tab.Reader.TryRead(out int unread).Should().BeTrue();
+        unread.Should().Be(2);
+        tab.Reader.TryRead(out _).Should().BeFalse();
+    }
+
+    /// <summary>Another player's notification is not pushed to my tab.</summary>
+    [Fact]
+    public async Task APushGoesOnlyToItsOwnPlayersTabs()
+    {
+        await using WebApiTestFactory factory = new();
+        await PlayerAsync(factory, 1, "Prodiigy");
+        await PlayerAsync(factory, 2, "Autre");
+
+        using NotificationBroadcaster.Subscription mine = factory.Broadcast.Subscribe(1);
+
+        await Sink(factory).NotifyAsync(2, NotificationKind.ClubPayday);
+
+        mine.Reader.TryRead(out _).Should().BeFalse();
+    }
+
+    /// <summary>
+    /// Closing a tab unsubscribes it, and a push after that reaches nobody rather than piling up
+    /// in a channel no one will ever read.
+    /// </summary>
+    [Fact]
+    public async Task AClosedTabStopsReceiving()
+    {
+        await using WebApiTestFactory factory = new();
+        await PlayerAsync(factory, 1, "Prodiigy");
+
+        NotificationBroadcaster.Subscription tab = factory.Broadcast.Subscribe(1);
+        tab.Dispose();
+
+        await Sink(factory).NotifyAsync(1, NotificationKind.BadgeGranted);
+
+        tab.Reader.TryRead(out _).Should().BeFalse();
+    }
+
     private static EventContext Context() => new() { CorrelationId = "test" };
 
     private static INotificationSink Sink(WebApiTestFactory factory) =>
-        new NotificationSink(factory.DbContexts, NullLogger<NotificationSink>.Instance);
+        new NotificationSink(
+            factory.DbContexts,
+            factory.Broadcast,
+            NullLogger<NotificationSink>.Instance
+        );
 
     private static IWebApiNotificationService Service(WebApiTestFactory factory) =>
         new WebApiNotificationService(factory.DbContexts);

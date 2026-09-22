@@ -249,7 +249,11 @@ public sealed class FeedMentionTests
 
     private static FeedMentionNotificationHandler Handler(WebApiTestFactory factory) =>
         new(
-            new NotificationSink(factory.DbContexts, NullLogger<NotificationSink>.Instance),
+            new NotificationSink(
+                factory.DbContexts,
+                factory.Broadcast,
+                NullLogger<NotificationSink>.Instance
+            ),
             factory.DbContexts
         );
 
