@@ -79,7 +79,8 @@ public sealed class WebApiNotificationService(IDbContextFactory<VortexDbContext>
                 row.Kind,
                 row.CreatedAt,
                 row.SeenAt is not null,
-                row.ActorPlayerEntityId is int actorId && actors.TryGetValue(actorId, out var actor)
+                row.ActorPlayerEntityId is int actorId
+                && actors.TryGetValue(actorId, out NotificationActor? actor)
                     ? actor
                     : null,
                 row.TargetId,
