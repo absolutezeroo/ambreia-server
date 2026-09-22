@@ -49,8 +49,25 @@ public sealed record FeedPost(
     bool RepostedByMe,
     bool FavoritedByMe,
     bool Mine,
-    IReadOnlyList<FeedPost> Comments
+    IReadOnlyList<FeedPost> Comments,
+    FeedReposter? Reposter = null
 );
+
+/// <summary>
+/// Who put a post back into the feed, when the entry is a repost rather than the original.
+/// </summary>
+/// <remarks>
+/// <para>
+/// Belongs to the feed ENTRY, not to the post, which is why it is null everywhere else: the same
+/// post appears once as its author's original and once per player who shared it, and only the
+/// sharing entries carry this. A post read by id never has one — it is the original.
+/// </para>
+/// <para>
+/// The name and figure are copied rather than left to the reader to look up, for the same reason
+/// the author's are: the card has to draw without a second request.
+/// </para>
+/// </remarks>
+public sealed record FeedReposter(string Name, string FigureString, DateTime At);
 
 /// <summary>One page of the feed.</summary>
 public sealed record FeedPage(int Page, int PageSize, int Total, IReadOnlyList<FeedPost> Items);

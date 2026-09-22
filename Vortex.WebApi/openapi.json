@@ -3635,6 +3635,9 @@
             "items": {
               "$ref": "#/components/schemas/FeedPost"
             }
+          },
+          "reposter": {
+            "$ref": "#/components/schemas/FeedReposter"
           }
         },
         "additionalProperties": false
@@ -3708,6 +3711,27 @@
           },
           "on": {
             "type": "boolean"
+          }
+        },
+        "additionalProperties": false
+      },
+      "FeedReposter": {
+        "required": [
+          "at",
+          "figureString",
+          "name"
+        ],
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "figureString": {
+            "type": "string"
+          },
+          "at": {
+            "type": "string",
+            "format": "date-time"
           }
         },
         "additionalProperties": false

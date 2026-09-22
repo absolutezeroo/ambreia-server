@@ -216,6 +216,100 @@ public sealed class FeedReadTests
         pollPost.FavoriteCount.Should().Be(0);
     }
 
+    /// <summary>
+    /// A share puts the post in the feed AGAIN, under the sharer's name — which is what makes it
+    /// a repost rather than a counter.
+    /// </summary>
+    /// <remarks>
+    /// It was a counter for a while: pressing share wrote a reaction row, moved a number, and put
+    /// the post in nobody's feed. The button said "share" and shared nothing.
+    /// </remarks>
+    [Fact]
+    public async Task ASharePutsThePostInTheFeedAgainUnderTheSharersName()
+    {
+        await using WebApiTestFactory factory = new();
+
+        int postId = await SeedPostAsync(factory, 1, "Prodiigy", visible: true, "mon message");
+        await EnsurePlayerAsync(factory, 2, "Chloe", visible: true);
+
+        await Service(factory).SetReactionAsync(2, postId, FeedReactionKind.Repost, true, default);
+
+        FeedPage page = await Service(factory).GetFeedAsync(1, 0, null, null, default);
+
+        // Two entries for ONE post: the original and the share.
+        page.Total.Should().Be(2);
+        page.Items.Should().HaveCount(2);
+        page.Items.Should().OnlyContain(p => p.Id == postId);
+
+        // The share is newer, so it comes first, and it is the one carrying the sharer.
+        page.Items[0].Reposter.Should().NotBeNull();
+        page.Items[0].Reposter!.Name.Should().Be("Chloe");
+        page.Items[0].Reposter!.FigureString.Should().Be("hr-115");
+
+        // The original is still the original: nobody put it there.
+        page.Items[1].Reposter.Should().BeNull();
+
+        // And the body is the AUTHOR'S on both — a share points at the post, it does not copy it.
+        page.Items.Should()
+            .OnlyContain(p => p.Body == "mon message" && p.AuthorName == "Prodiigy");
+    }
+
+    /// <summary>Withdrawing the share takes its entry out again.</summary>
+    [Fact]
+    public async Task UnsharingRemovesTheEntry()
+    {
+        await using WebApiTestFactory factory = new();
+
+        int postId = await SeedPostAsync(factory, 1, "Prodiigy", visible: true, "mon message");
+        await EnsurePlayerAsync(factory, 2, "Chloe", visible: true);
+
+        await Service(factory).SetReactionAsync(2, postId, FeedReactionKind.Repost, true, default);
+        await Service(factory).SetReactionAsync(2, postId, FeedReactionKind.Repost, false, default);
+
+        FeedPage page = await Service(factory).GetFeedAsync(1, 0, null, null, default);
+
+        page.Total.Should().Be(1);
+        page.Items.Should().ContainSingle().Which.Reposter.Should().BeNull();
+    }
+
+    /// <summary>
+    /// A LIKE is not a share and puts nothing in the feed. The two reactions live in one table and
+    /// differ by a single column, so this is the assertion that keeps them apart.
+    /// </summary>
+    [Fact]
+    public async Task ALikeDoesNotPutThePostInTheFeedAgain()
+    {
+        await using WebApiTestFactory factory = new();
+
+        int postId = await SeedPostAsync(factory, 1, "Prodiigy", visible: true, "mon message");
+        await EnsurePlayerAsync(factory, 2, "Chloe", visible: true);
+
+        await Service(factory)
+            .SetReactionAsync(2, postId, FeedReactionKind.Favorite, true, default);
+
+        FeedPage page = await Service(factory).GetFeedAsync(1, 0, null, null, default);
+
+        page.Total.Should().Be(1);
+        page.Items.Should().ContainSingle().Which.FavoriteCount.Should().Be(1);
+    }
+
+    /// <summary>
+    /// A post read by id is the original and never carries a sharer — the sharer belongs to the
+    /// feed ENTRY, and a direct read is not one.
+    /// </summary>
+    [Fact]
+    public async Task ReadingAPostByIdNeverCarriesASharer()
+    {
+        await using WebApiTestFactory factory = new();
+
+        int postId = await SeedPostAsync(factory, 1, "Prodiigy", visible: true, "mon message");
+        await EnsurePlayerAsync(factory, 2, "Chloe", visible: true);
+
+        await Service(factory).SetReactionAsync(2, postId, FeedReactionKind.Repost, true, default);
+
+        (await Service(factory).GetPostAsync(postId, null, default))!.Reposter.Should().BeNull();
+    }
+
     private static IWebApiFeedService Service(WebApiTestFactory factory) =>
         new WebApiFeedService(factory.DbContexts, factory.Events);
 

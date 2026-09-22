@@ -88,19 +88,57 @@ public sealed class WebApiFeedService(
             roots = roots.Where(p => p.Tags.Any(t => t.WebFeedTagEntity!.Tag == wanted));
         }
 
-        int total = await roots.CountAsync(ct).ConfigureAwait(false);
+        // The feed is not a list of posts: it is a list of ENTRIES, and a post enters it once as
+        // its author's original and once more for every player who shares it. That is what makes
+        // a repost a repost rather than a counter — before this, pressing share wrote a row that
+        // moved a number and put the post in nobody's feed.
+        //
+        // Ordered by the moment of the ENTRY, so a share of an old post arrives at the top where
+        // the sharer meant to put it.
+        IQueryable<FeedEntry> originals = roots.Select(p => new FeedEntry
+        {
+            PostId = p.Id,
+            ReposterId = null,
+            At = p.CreatedAt,
+        });
 
-        List<WebFeedPostEntity> rows = await roots
-            .Include(p => p.PlayerEntity)
-            .Include(p => p.GroupEntity)
-            .OrderByDescending(p => p.CreatedAt)
-            .ThenByDescending(p => p.Id)
+        IQueryable<FeedEntry> shares = db
+            .WebFeedReactions.Where(r =>
+                r.Kind == FeedReactionKind.Repost
+                && r.DeletedAt == null
+                // Roots only. A reaction may be left on a comment too, and a shared comment
+                // surfacing as a top-level card would be a thread fragment with no thread.
+                && roots.Select(p => p.Id).Contains(r.WebFeedPostEntityId)
+            )
+            .Select(r => new FeedEntry
+            {
+                PostId = r.WebFeedPostEntityId,
+                ReposterId = r.PlayerEntityId,
+                At = r.CreatedAt,
+            });
+
+        // Concat and not Union: two entries can legitimately be identical in every column the
+        // projection carries — the same post shared by the same player twice cannot happen, the
+        // unique index sees to it — but Union would also deduplicate, and paging over a set whose
+        // size depends on deduplication is a page count that drifts.
+        IQueryable<FeedEntry> entries = originals.Concat(shares);
+
+        int total = await entries.CountAsync(ct).ConfigureAwait(false);
+
+        // The tiebreak has to separate an original from a share OF THAT POST, which `PostId`
+        // cannot: they carry the same one. `ReposterId` does, and it breaks the tie the right way
+        // — null sorts last descending, so the share lands above the original it copies, which is
+        // the order the two happened in.
+        List<FeedEntry> shown = await entries
+            .OrderByDescending(e => e.At)
+            .ThenByDescending(e => e.ReposterId)
+            .ThenByDescending(e => e.PostId)
             .Skip((wantedPage - 1) * wantedSize)
             .Take(wantedSize)
             .ToListAsync(ct)
             .ConfigureAwait(false);
 
-        List<FeedPost> items = await AssembleAsync(db, rows, viewerId, PreviewComments, ct)
+        List<FeedPost> items = await AssembleEntriesAsync(db, shown, viewerId, ct)
             .ConfigureAwait(false);
 
         return new FeedPage(wantedPage, wantedSize, total, items);
@@ -702,6 +740,108 @@ public sealed class WebApiFeedService(
     /// How many of each root's most recent comments to carry. <see cref="PreviewComments"/> for a
     /// feed page, <see cref="int.MaxValue"/> for a single post read in full.
     /// </param>
+    /// <summary>
+    /// One line of the feed before it is filled in: which post, and who put it there.
+    /// </summary>
+    /// <remarks>
+    /// A class with settable properties rather than a record, because EF has to project into it
+    /// from two different queries and then <c>Concat</c> them — a positional record's constructor
+    /// is not something the provider can translate on both sides.
+    /// </remarks>
+    private sealed class FeedEntry
+    {
+        public int PostId { get; set; }
+
+        /// <summary>Null for an original; the sharer for a repost.</summary>
+        public int? ReposterId { get; set; }
+
+        /// <summary>When it entered the feed — the post's date, or the share's.</summary>
+        public DateTime At { get; set; }
+    }
+
+    /// <summary>
+    /// Turns a page of entries into a page of cards.
+    /// </summary>
+    /// <remarks>
+    /// The DISTINCT posts are assembled once and then handed out per entry, because a page can
+    /// hold the same post twice — its author's original and somebody's share of it — and
+    /// assembling it twice would double every query behind it.
+    /// </remarks>
+    private static async Task<List<FeedPost>> AssembleEntriesAsync(
+        VortexDbContext db,
+        List<FeedEntry> entries,
+        int? viewerId,
+        CancellationToken ct
+    )
+    {
+        if (entries.Count == 0)
+        {
+            return [];
+        }
+
+        int[] postIds = [.. entries.Select(e => e.PostId).Distinct()];
+
+        List<WebFeedPostEntity> rows = await Readable(db)
+            .Include(p => p.PlayerEntity)
+            .Include(p => p.GroupEntity)
+            .Where(p => postIds.Contains(p.Id))
+            .ToListAsync(ct)
+            .ConfigureAwait(false);
+
+        List<FeedPost> assembled = await AssembleAsync(db, rows, viewerId, PreviewComments, ct)
+            .ConfigureAwait(false);
+
+        Dictionary<int, FeedPost> byId = assembled.ToDictionary(p => p.Id);
+
+        // Every sharer named on this page, in one read. A page is very often several shares by the
+        // same handful of players, so this is a dictionary and not a lookup per entry.
+        int[] reposterIds =
+        [
+            .. entries
+                .Where(e => e.ReposterId is not null)
+                .Select(e => e.ReposterId!.Value)
+                .Distinct(),
+        ];
+
+        Dictionary<int, (string Name, string Figure)> reposters =
+            reposterIds.Length == 0
+                ? []
+                : await db
+                    .Players.AsNoTracking()
+                    .Where(p => reposterIds.Contains(p.Id))
+                    .Select(p => new
+                    {
+                        p.Id,
+                        p.Name,
+                        p.Figure,
+                    })
+                    .ToDictionaryAsync(p => p.Id, p => (p.Name, p.Figure), ct)
+                    .ConfigureAwait(false);
+
+        List<FeedPost> items = [];
+
+        foreach (FeedEntry entry in entries)
+        {
+            if (!byId.TryGetValue(entry.PostId, out FeedPost? post))
+            {
+                // The post went between the entry query and this one. Skipping beats a hole.
+                continue;
+            }
+
+            if (
+                entry.ReposterId is int sharer
+                && reposters.TryGetValue(sharer, out (string Name, string Figure) who)
+            )
+            {
+                post = post with { Reposter = new FeedReposter(who.Name, who.Figure, entry.At) };
+            }
+
+            items.Add(post);
+        }
+
+        return items;
+    }
+
     private static async Task<List<FeedPost>> AssembleAsync(
         VortexDbContext db,
         List<WebFeedPostEntity> roots,
