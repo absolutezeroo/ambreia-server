@@ -255,7 +255,9 @@ public sealed class AuditWriterService : BackgroundService
         }
     }
 
-    private static object MapDeadLetterPayload(DurableRecord record)
+    // Internal for DurableRecordDeadLetterTests: a record type added to MapEntity and not here
+    // loses the WHOLE batch it sits in, ledger rows included, exactly when the database is down.
+    internal static object MapDeadLetterPayload(DurableRecord record)
     {
         return record switch
         {
@@ -279,6 +281,13 @@ public sealed class AuditWriterService : BackgroundService
                 occurredAt = item.OccurredAt,
                 correlationId = item.CorrelationId,
                 item = item.Event,
+            },
+            WordFilterHitRecord hit => new
+            {
+                kind = nameof(WordFilterHitRecord),
+                occurredAt = hit.OccurredAt,
+                correlationId = hit.CorrelationId,
+                hit = hit.Hit,
             },
             _ => throw new ArgumentOutOfRangeException(nameof(record), record.GetType().Name, null),
         };
