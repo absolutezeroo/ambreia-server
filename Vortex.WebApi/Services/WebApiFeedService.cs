@@ -10,6 +10,7 @@ using Vortex.Database.Entities.Feed;
 using Vortex.Database.Entities.Groups;
 using Vortex.Primitives.Events;
 using Vortex.Primitives.Feed;
+using Vortex.Primitives.Moderation.WordFilter;
 
 namespace Vortex.WebApi.Services;
 
@@ -48,9 +49,12 @@ namespace Vortex.WebApi.Services;
 /// </remarks>
 public sealed class WebApiFeedService(
     IDbContextFactory<VortexDbContext> dbCtxFactory,
-    IEventPublisher events
+    IEventPublisher events,
+    IWordFilter wordFilter
 ) : IWebApiFeedService
 {
+    private readonly IWordFilter _wordFilter = wordFilter;
+
     private const int DefaultPageSize = 20;
     private const int MaximumPageSize = 50;
 
@@ -229,6 +233,56 @@ public sealed class WebApiFeedService(
                 || choices.Any(c => c.Length > WebFeedPollChoiceEntity.LabelLength)
             )
         )
+        {
+            return (FeedRefusal.PollInvalid, null);
+        }
+
+        // Last of the shape checks, so a post refused for its shape is not journaled as a filter
+        // hit; and before anything is read or written, so a refused post leaves nothing behind.
+        // The tags and mentions below are pulled out of `text`, so they come from the filtered body
+        // — a replaced word must not live on as a hashtag.
+        WordFilterResult filteredBody = _wordFilter.Apply(
+            text,
+            WordFilterSource.FeedPost,
+            playerId
+        );
+
+        if (filteredBody.Refused)
+        {
+            return (FeedRefusal.WordFiltered, null);
+        }
+
+        text = filteredBody.Text;
+
+        List<string> filteredChoices = new(choices.Count);
+
+        foreach (string choice in choices)
+        {
+            WordFilterResult filtered = _wordFilter.Apply(
+                choice,
+                WordFilterSource.FeedPost,
+                playerId
+            );
+
+            if (filtered.Refused)
+            {
+                return (FeedRefusal.WordFiltered, null);
+            }
+
+            filteredChoices.Add(filtered.Text);
+        }
+
+        choices = filteredChoices;
+
+        // A replacement can be longer than what it replaced ("bobba" for "con"), so a text at its
+        // limit can cross it. Same answers as the checks above give, rather than a row the column
+        // cannot hold.
+        if (text.Length > WebFeedPostEntity.BodyLength)
+        {
+            return (FeedRefusal.BodyTooLong, null);
+        }
+
+        if (choices.Any(c => c.Length > WebFeedPollChoiceEntity.LabelLength))
         {
             return (FeedRefusal.PollInvalid, null);
         }

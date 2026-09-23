@@ -145,7 +145,7 @@ public sealed class FeedVoteTests
     }
 
     private static IWebApiFeedService Service(WebApiTestFactory factory) =>
-        new WebApiFeedService(factory.DbContexts, factory.Events);
+        new WebApiFeedService(factory.DbContexts, factory.Events, factory.WordFilter);
 
     private static async Task<FeedPost> PollAsync(WebApiTestFactory factory, int playerId) =>
         (

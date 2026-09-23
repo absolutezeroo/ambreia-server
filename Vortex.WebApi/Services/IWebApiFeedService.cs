@@ -100,6 +100,9 @@ public enum FeedRefusal
     ParentNotRoot,
     GroupNotMember,
     KindMismatch,
+
+    /// <summary>The hotel-wide word filter refused the body or a poll choice.</summary>
+    WordFiltered,
 }
 
 /// <summary>

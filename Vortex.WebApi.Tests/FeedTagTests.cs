@@ -173,7 +173,7 @@ public sealed class FeedTagTests
     }
 
     private static IWebApiFeedService Service(WebApiTestFactory factory) =>
-        new WebApiFeedService(factory.DbContexts, factory.Events);
+        new WebApiFeedService(factory.DbContexts, factory.Events, factory.WordFilter);
 
     private static async Task PlayerAsync(WebApiTestFactory factory, int id, string name)
     {

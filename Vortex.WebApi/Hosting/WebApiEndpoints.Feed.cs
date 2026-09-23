@@ -397,6 +397,7 @@ internal static partial class WebApiEndpointsFeed
             FeedRefusal.ParentNotRoot => "feed_parent_not_root",
             FeedRefusal.GroupNotMember => "feed_group_not_member",
             FeedRefusal.KindMismatch => "feed_kind_mismatch",
+            FeedRefusal.WordFiltered => "feed_word_filtered",
             _ => "feed_invalid",
         };
 }

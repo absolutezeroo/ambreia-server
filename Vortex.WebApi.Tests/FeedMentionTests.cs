@@ -367,7 +367,7 @@ public sealed class FeedMentionTests
         new WebApiNotificationService(factory.DbContexts);
 
     private static IWebApiFeedService Feed(WebApiTestFactory factory) =>
-        new WebApiFeedService(factory.DbContexts, factory.Events);
+        new WebApiFeedService(factory.DbContexts, factory.Events, factory.WordFilter);
 
     private static async Task<FeedPost> StatusAsync(
         WebApiTestFactory factory,
