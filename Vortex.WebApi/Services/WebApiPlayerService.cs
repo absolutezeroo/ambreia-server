@@ -82,9 +82,11 @@ public sealed class WebApiPlayerService(
             _logger.LogWarning("Avatar creation refused: name '{Name}' is not well formed", name);
             return (false, 0, "pocket.auth.name_not_valid");
         }
-        // Journaled against the ACCOUNT: there is no player yet. The same answer as a malformed name,
-        // because to the page a forbidden name is a name it cannot have.
-        else if (_wordFilter.Apply(name, WordFilterSource.Username, accountId).Refused)
+        // Test, not Apply: there is no player yet, and the journal reads its player column as a
+        // player — an account id there would name an unrelated player who holds the same number.
+        // Any hit refuses a name. The same answer as a malformed name, because to the page a
+        // forbidden name is a name it cannot have.
+        else if (_wordFilter.Test(name).Hit)
         {
             return (false, 0, "pocket.auth.name_not_valid");
         }

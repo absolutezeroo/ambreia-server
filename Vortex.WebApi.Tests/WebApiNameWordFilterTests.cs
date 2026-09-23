@@ -37,8 +37,12 @@ public sealed class WebApiNameWordFilterTests
         _filter.Applied.Should().BeEmpty();
     }
 
+    /// <summary>
+    /// Refused, and journaled against NOBODY: there is no player yet, and the journal's player
+    /// column read with an account id names an unrelated player who happens to hold that number.
+    /// </summary>
     [Fact]
-    public async Task CreatingAnAvatar_RefusesAFilteredName_AndJournalsItAgainstTheAccount()
+    public async Task CreatingAnAvatar_RefusesAFilteredName_WithoutBlamingAPlayer()
     {
         (bool success, int playerId, string? error) = await Service()
             .CreateAvatarAsync(7, "Connard", "hr-115", "M", CancellationToken.None);
@@ -46,11 +50,7 @@ public sealed class WebApiNameWordFilterTests
         success.Should().BeFalse();
         playerId.Should().Be(0);
         error.Should().Be("pocket.auth.name_not_valid");
-        _filter
-            .Applied.Should()
-            .ContainSingle()
-            .Which.Should()
-            .Be(("Connard", WordFilterSource.Username, 7));
+        _filter.Applied.Should().BeEmpty();
     }
 
     [Fact]
