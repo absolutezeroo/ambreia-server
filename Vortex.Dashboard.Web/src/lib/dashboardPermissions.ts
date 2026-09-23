@@ -55,6 +55,8 @@ export const CAPABILITIES = {
   // is reachable from the endpoint and nothing in this sidebar calls it — but the capability has
   // to be known here all the same, or the front end cannot see that it exists.
   opsFeedModerate: 'dashboard.ops.feed.moderate',
+  // The hotel-wide word list and the journal of what it caught — one grant for both.
+  opsWordFilterManage: 'dashboard.ops.wordfilter.manage',
   staffRead: 'dashboard.staff.read',
   collectiblesRead: 'dashboard.collectibles.read',
   opsStaffManage: 'dashboard.ops.staff.manage',
@@ -98,6 +100,7 @@ export const ROUTE_PERMISSIONS = {
   petsStats: [CAPABILITIES.petsRead],
   cfhStats: [CAPABILITIES.cfhRead],
   chatlogs: [CAPABILITIES.chatlogsRead],
+  wordFilter: [CAPABILITIES.opsWordFilterManage],
   catalogPurchases: [CAPABILITIES.catalogPurchasesRead],
   wiredStats: [CAPABILITIES.wiredRead],
   targetedOffers: [CAPABILITIES.targetedOffersRead],

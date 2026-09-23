@@ -3656,3 +3656,52 @@ export interface WiredTotals {
   roomsWithWired: number;
 }
 
+export interface WordFilterAction {
+}
+
+export interface WordFilterHitPage {
+  page: number;
+  limit: number;
+  total: number;
+  items: WordFilterHitRow[];
+}
+
+export interface WordFilterHitRow {
+  id: number;
+  playerId: number;
+  playerName: string | null;
+  avatarUrl: string | null;
+  source: number;
+  wordId: number;
+  word: string | null;
+  action: number;
+  originalText: string;
+  occurredAt: string;
+}
+
+export interface WordFilterMatch {
+}
+
+export interface WordFilterSource {
+}
+
+export interface WordFilterTestResult {
+  text: string;
+  refused: boolean;
+  changed: boolean;
+}
+
+export interface WordFilterWordList {
+  items: WordFilterWordRow[];
+}
+
+export interface WordFilterWordRow {
+  id: number;
+  word: string;
+  action: number;
+  match: number;
+  replacement: string | null;
+  createdBy: string | null;
+  createdAt: string;
+}
+
