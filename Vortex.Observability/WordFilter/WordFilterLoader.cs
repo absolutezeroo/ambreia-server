@@ -29,7 +29,9 @@ internal sealed class WordFilterLoader(
                             t.Exception,
                             "Word filter failed its first load; it passes everything until the next edit of the list"
                         ),
-                    TaskContinuationOptions.OnlyOnFaulted
+                    CancellationToken.None,
+                    TaskContinuationOptions.OnlyOnFaulted,
+                    TaskScheduler.Default
                 )
         );
 

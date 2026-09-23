@@ -305,6 +305,9 @@ public sealed class DashboardPlugin : IVortexPlugin
         services.UseHostService<IAccountPasswordService>();
         services.UseHostService<IPermissionService>();
         services.UseHostService<ICfhTicketService>();
+        // The live word filter: its dry run for the page's test box, and the reload an edit ends on.
+        // The host's instance, never a second one — a copy here would reload a list nobody filters with.
+        services.UseHostService<IWordFilter>();
 
         // The catalogues and vocabularies the editors write against, plus the reloader that makes a
         // write visible to the running hotel.
@@ -313,6 +316,10 @@ public sealed class DashboardPlugin : IVortexPlugin
         services.UseHostService<ICatalogSnapshotProvider<BuildersClubCatalog>>();
         services.UseHostService<IFurnitureDefinitionProvider>();
         services.UseHostService<INavigatorProvider>();
+        // NavigatorReads resolves a promoted group's rooms through the live search, and was added
+        // without this line — which fails the whole dashboard at startup, not just its page.
+        // DashboardPluginContainerTests is what catches that now.
+        services.UseHostService<INavigatorService>();
         services.UseHostService<ISongProvider>();
         services.UseHostService<ICurrencyTypeProvider>();
         services.UseHostService<IHabbiconCatalog>();
