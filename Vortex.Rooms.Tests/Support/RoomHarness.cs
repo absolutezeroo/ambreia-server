@@ -152,7 +152,8 @@ internal sealed class RoomHarness
             new RoomWiredLogChannel(),
             FakeProxy.Create<ISongProvider>(_ => null),
             TestRoomGames.Provider(),
-            BuildCommerceJournal()
+            BuildCommerceJournal(),
+            RoomGrainStubs.PassThroughWordFilter()
         );
 
         // The security module reads the room's own snapshot to decide who owns the place, so a

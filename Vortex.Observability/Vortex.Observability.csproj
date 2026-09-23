@@ -12,6 +12,7 @@
          on them, so they are shared rather than promoted to public. -->
     <InternalsVisibleTo Include="Vortex.Rooms.Tests" />
     <InternalsVisibleTo Include="Vortex.Database.Tests" />
+    <InternalsVisibleTo Include="Vortex.Hosting.Tests" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Vortex.Database\Vortex.Database.csproj" />

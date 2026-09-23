@@ -144,6 +144,10 @@ public class VortexDbContext(DbContextOptions<VortexDbContext> options)
 
     public DbSet<CfhTicketEntity> CfhTickets { get; init; } = null!;
 
+    public DbSet<WordFilterWordEntity> WordFilterWords { get; init; } = null!;
+
+    public DbSet<WordFilterHitEntity> WordFilterHits { get; init; } = null!;
+
     public DbSet<CameraPhotoEntity> CameraPhotos { get; init; } = null!;
 
     public DbSet<CameraPhotoLikeEntity> CameraPhotoLikes { get; init; } = null!;

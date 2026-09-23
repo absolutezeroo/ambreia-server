@@ -19,6 +19,7 @@ using Vortex.Primitives.Camera;
 using Vortex.Primitives.Chain;
 using Vortex.Primitives.Crypto;
 using Vortex.Primitives.Hosting;
+using Vortex.Primitives.Moderation.WordFilter;
 using Vortex.Primitives.Observability;
 using Vortex.Primitives.Shop;
 using Vortex.WebApi.Configuration;
@@ -164,8 +165,12 @@ internal sealed class WebApiTestFactory : IAsyncDisposable
         // Real for the same reason again: the feed's access rule (not deleted, author not hidden)
         // and its roots-only shape are exactly what is worth exercising against a database.
         builder.Services.AddSingleton<IWebApiFeedService>(
-            new WebApiFeedService(DbContexts, Events)
+            new WebApiFeedService(DbContexts, Events, WordFilter)
         );
+
+        // Forwarded in production (WebApiWebHost.ForwardSingletons) — the same instance the grains
+        // filter with. Registered here so check-webapi-forwarding.mjs finds the three lists agree.
+        builder.Services.AddSingleton<IWordFilter>(WordFilter);
 
         // Real too, and the sink beside it: what is worth testing about a notification is that the
         // handler wrote the row the list then reads, which a fake on either side would hide.
@@ -239,6 +244,12 @@ internal sealed class WebApiTestFactory : IAsyncDisposable
     /// mention, a comment or a repost was raised at all.
     /// </summary>
     public FakeEventPublisher Events { get; } = new();
+
+    /// <summary>
+    /// The hotel-wide word filter the feed service and the routes both see. Passes everything unless
+    /// a test sets its <see cref="FakeWordFilter.Answer"/>.
+    /// </summary>
+    public FakeWordFilter WordFilter { get; } = new();
 
     /// <summary>
     /// The real broadcaster, not a fake. It is a dictionary of channels and nothing else — a fake

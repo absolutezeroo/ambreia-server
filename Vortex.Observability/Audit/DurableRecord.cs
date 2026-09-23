@@ -1,4 +1,5 @@
 using System;
+using Vortex.Observability.WordFilter;
 using Vortex.Primitives.Observability;
 
 namespace Vortex.Observability.Audit;
@@ -21,6 +22,12 @@ internal sealed record LedgerRecord(
 
 internal sealed record ItemRecord(
     ItemForensicEvent Event,
+    DateTime OccurredAt,
+    string? CorrelationId
+) : DurableRecord(OccurredAt, CorrelationId);
+
+internal sealed record WordFilterHitRecord(
+    WordFilterHit Hit,
     DateTime OccurredAt,
     string? CorrelationId
 ) : DurableRecord(OccurredAt, CorrelationId);

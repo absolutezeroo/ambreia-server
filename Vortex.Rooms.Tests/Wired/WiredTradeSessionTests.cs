@@ -278,7 +278,8 @@ public sealed class WiredTradeSessionTests
                 new RoomWiredLogChannel(),
                 FakeProxy.Create<ISongProvider>(_ => null),
                 TestRoomGames.Provider(),
-                FakeProxy.Create<ICommerceJournal>(_ => Task.CompletedTask)
+                FakeProxy.Create<ICommerceJournal>(_ => Task.CompletedTask),
+                RoomGrainStubs.PassThroughWordFilter()
             );
 
             Grain._state.ItemsById[CHEST_ID] = ChestItem();

@@ -9,6 +9,7 @@ using Microsoft.Extensions.Options;
 using Orleans;
 using Vortex.Database.Context;
 using Vortex.Database.Entities.Players;
+using Vortex.Primitives.Moderation.WordFilter;
 using Vortex.Primitives.Orleans;
 using Vortex.Primitives.Players.Enums;
 using Vortex.Primitives.Players.Enums.Wallet;
@@ -21,12 +22,14 @@ namespace Vortex.WebApi.Services;
 public sealed class WebApiPlayerService(
     IDbContextFactory<VortexDbContext> dbCtxFactory,
     IGrainFactory grainFactory,
+    IWordFilter wordFilter,
     IOptions<WebApiConfig> options,
     ILogger<WebApiPlayerService> logger
 ) : IWebApiPlayerService
 {
     private readonly IDbContextFactory<VortexDbContext> _db = dbCtxFactory;
     private readonly IGrainFactory _grainFactory = grainFactory;
+    private readonly IWordFilter _wordFilter = wordFilter;
     private readonly WebApiConfig _config = options.Value;
     private readonly ILogger<WebApiPlayerService> _logger = logger;
 
@@ -77,6 +80,14 @@ public sealed class WebApiPlayerService(
             // collide with anything a player is allowed to pick, and the onboarding rename replaces
             // it through SetNameAsync, which does enforce the policy.
             _logger.LogWarning("Avatar creation refused: name '{Name}' is not well formed", name);
+            return (false, 0, "pocket.auth.name_not_valid");
+        }
+        // Test, not Apply: there is no player yet, and the journal reads its player column as a
+        // player — an account id there would name an unrelated player who holds the same number.
+        // Any hit refuses a name. The same answer as a malformed name, because to the page a
+        // forbidden name is a name it cannot have.
+        else if (_wordFilter.Test(name).Hit)
+        {
             return (false, 0, "pocket.auth.name_not_valid");
         }
 
@@ -140,6 +151,13 @@ public sealed class WebApiPlayerService(
 
     public async Task<bool> NameAvailableAsync(string name, CancellationToken ct)
     {
+        // Test, not Apply: the page probes while the player types, like the in-game check does, and
+        // journaling every probe would bury the journal. The claim is what journals.
+        if (_wordFilter.Test(name).Hit)
+        {
+            return false;
+        }
+
         await using VortexDbContext db = await _db.CreateDbContextAsync(ct).ConfigureAwait(false);
         return !await db.Players.AnyAsync(p => p.Name == name, ct).ConfigureAwait(false);
     }
@@ -151,7 +169,10 @@ public sealed class WebApiPlayerService(
         // with no lock on it. A name is public identity — whisper, gifting, friend requests and
         // LetUserIn all resolve by exact string — so one that the client's own dialog would refuse
         // is a working impersonation.
-        if (!NameShape.IsWellFormed(name))
+        if (
+            !NameShape.IsWellFormed(name)
+            || _wordFilter.Apply(name, WordFilterSource.Username, playerId).Refused
+        )
         {
             return false;
         }

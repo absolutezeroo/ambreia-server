@@ -17,6 +17,7 @@ using Vortex.Primitives.Camera;
 using Vortex.Primitives.Chain;
 using Vortex.Primitives.Crypto;
 using Vortex.Primitives.Hosting;
+using Vortex.Primitives.Moderation.WordFilter;
 using Vortex.Primitives.Observability;
 using Vortex.Primitives.Shop;
 using Vortex.WebApi.Configuration;
@@ -271,6 +272,11 @@ internal sealed class WebApiWebHost(
         services.AddSingleton(rootServices.GetRequiredService<IWebApiPhotoService>());
         services.AddSingleton(rootServices.GetRequiredService<IWebApiFeedService>());
         services.AddSingleton(rootServices.GetRequiredService<IWebApiNotificationService>());
+
+        // The very instance the grains filter with: one compiled list, one reload. No route takes it
+        // as a parameter today — the feed and player services above were built with it in the root
+        // container — but forwarding it is what keeps a future route from building its own.
+        services.AddSingleton(rootServices.GetRequiredService<IWordFilter>());
 
         // The SAME instance as the sink's, which is the whole point: the sink runs in the root
         // container and the stream endpoint in this one, and two broadcasters would mean a push

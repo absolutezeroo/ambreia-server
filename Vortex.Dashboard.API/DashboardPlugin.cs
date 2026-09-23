@@ -48,6 +48,7 @@ using Vortex.Primitives.Furniture.Providers;
 using Vortex.Primitives.Habbicons;
 using Vortex.Primitives.Hosting;
 using Vortex.Primitives.Moderation;
+using Vortex.Primitives.Moderation.WordFilter;
 using Vortex.Primitives.MysteryBox;
 using Vortex.Primitives.Navigator;
 using Vortex.Primitives.Networking;
@@ -152,6 +153,9 @@ public sealed class DashboardPlugin : IVortexPlugin
         services.TryAddSingleton<CatalogReads>();
         services.TryAddSingleton<CatalogOperations>();
         services.TryAddSingleton<FeedOperations>();
+        // The word filter: the reads take the live filter too, for the dry run.
+        services.TryAddSingleton<WordFilterReads>();
+        services.TryAddSingleton<WordFilterOperations>();
         // Polls, likewise: two dependencies for the reads, two for the writes.
         services.TryAddSingleton<PollReads>();
         services.TryAddSingleton<PollOperations>();
@@ -241,6 +245,7 @@ public sealed class DashboardPlugin : IVortexPlugin
         services.TryAddSingleton<IQuestContentAdminService, QuestContentAdminService>();
         services.TryAddSingleton<IWebArticleAdminService, WebArticleAdminService>();
         services.TryAddSingleton<IFeedAdminService, FeedAdminService>();
+        services.TryAddSingleton<IWordFilterAdminService, WordFilterAdminService>();
 
         // The dashboard runs as a self-contained ASP.NET Core (Kestrel) app. Inside the plugin's own
         // container now rather than the host's, which is what makes stopping it a matter of
@@ -300,6 +305,9 @@ public sealed class DashboardPlugin : IVortexPlugin
         services.UseHostService<IAccountPasswordService>();
         services.UseHostService<IPermissionService>();
         services.UseHostService<ICfhTicketService>();
+        // The live word filter: its dry run for the page's test box, and the reload an edit ends on.
+        // The host's instance, never a second one — a copy here would reload a list nobody filters with.
+        services.UseHostService<IWordFilter>();
 
         // The catalogues and vocabularies the editors write against, plus the reloader that makes a
         // write visible to the running hotel.
@@ -308,6 +316,10 @@ public sealed class DashboardPlugin : IVortexPlugin
         services.UseHostService<ICatalogSnapshotProvider<BuildersClubCatalog>>();
         services.UseHostService<IFurnitureDefinitionProvider>();
         services.UseHostService<INavigatorProvider>();
+        // NavigatorReads resolves a promoted group's rooms through the live search, and was added
+        // without this line — which fails the whole dashboard at startup, not just its page.
+        // DashboardPluginContainerTests is what catches that now.
+        services.UseHostService<INavigatorService>();
         services.UseHostService<ISongProvider>();
         services.UseHostService<ICurrencyTypeProvider>();
         services.UseHostService<IHabbiconCatalog>();

@@ -8,6 +8,7 @@ using Vortex.Database.Entities.Room;
 using Vortex.Events.Registry;
 using Vortex.Primitives.Action;
 using Vortex.Primitives.Events;
+using Vortex.Primitives.Moderation.WordFilter;
 using Vortex.Primitives.Navigator.Enums;
 using Vortex.Primitives.Orleans;
 using Vortex.Primitives.Pets.Snapshots;
@@ -17,6 +18,7 @@ using Vortex.Primitives.Rooms.Events.Player;
 using Vortex.Primitives.Rooms.Object;
 using Vortex.Primitives.Rooms.Object.Avatars;
 using Vortex.Protocol.Messages.Outgoing.Habbicons;
+using Vortex.Protocol.Messages.Outgoing.Notifications;
 using Vortex.Protocol.Messages.Outgoing.Room.Chat;
 using Vortex.Rooms.Object.Avatars.Player;
 
@@ -116,8 +118,16 @@ public sealed class RoomChatSystem(RoomGrain roomGrain)
 
         // After the cancellable event, so a handler still sees what was actually typed, and before
         // the line reaches anybody -- including the speaker, who must see the same masked text as
-        // the room or they would not know the filter exists.
-        text = ApplyFilterWords(text);
+        // the room or they would not know the filter exists. The hotel's list first, then the room
+        // owner's; a refusal by the hotel's ends the line here, for everybody.
+        string? allowed = await ApplyHotelFilterAsync(playerId, text).ConfigureAwait(true);
+
+        if (allowed is null)
+        {
+            return;
+        }
+
+        text = ApplyFilterWords(allowed);
 
         await SendChatAsync(
             avatar.ObjectId,
@@ -378,6 +388,31 @@ public sealed class RoomChatSystem(RoomGrain roomGrain)
                 _roomGrain.RoomId
             );
         }
+    }
+
+    /// <summary>
+    /// The hotel-wide word filter, before the room's own. Null means refused: the line reaches
+    /// nobody, the speaker included, and the speaker is told why.
+    /// </summary>
+    internal async Task<string?> ApplyHotelFilterAsync(PlayerId playerId, string text)
+    {
+        WordFilterResult result = _roomGrain._wordFilter.Apply(
+            text,
+            WordFilterSource.RoomChat,
+            playerId.Value
+        );
+
+        if (!result.Refused)
+        {
+            return result.Text;
+        }
+
+        await _roomGrain
+            ._grainFactory.GetPlayerPresenceGrain(playerId)
+            .SendComposerAsync(WordFilterNotice.Create(_roomGrain._wordFilter.RefusedMessage))
+            .ConfigureAwait(true);
+
+        return null;
     }
 
     /// <summary>

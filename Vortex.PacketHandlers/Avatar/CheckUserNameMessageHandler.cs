@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
 using Orleans;
 using Vortex.Messages.Registry;
+using Vortex.Primitives.Moderation.WordFilter;
 using Vortex.Primitives.Orleans;
 using Vortex.Primitives.Players;
 using Vortex.Primitives.Players.Enums;
@@ -20,11 +21,15 @@ namespace Vortex.PacketHandlers.Avatar;
 /// see <see cref="CheckUserNameResultMessageComposer"/>. An unanswered probe leaves the dialog
 /// spinning its wait indicator forever, so every path here has to send exactly one result.
 /// </remarks>
-public class CheckUserNameMessageHandler(IGrainFactory grainFactory, IConfiguration configuration)
-    : IMessageHandler<CheckUserNameMessage>
+public class CheckUserNameMessageHandler(
+    IGrainFactory grainFactory,
+    IConfiguration configuration,
+    IWordFilter wordFilter
+) : IMessageHandler<CheckUserNameMessage>
 {
     private readonly IGrainFactory _grainFactory = grainFactory;
     private readonly IConfiguration _configuration = configuration;
+    private readonly IWordFilter _wordFilter = wordFilter;
 
     public async ValueTask HandleAsync(
         CheckUserNameMessage message,
@@ -46,6 +51,13 @@ public class CheckUserNameMessageHandler(IGrainFactory grainFactory, IConfigurat
 
         NameChangeResultCode result = NameChangePolicy.Validate(name, minLength, maxLength);
         ImmutableArray<string> suggestions = [];
+
+        // Test, not Apply: this probe fires on every pause in typing, and journaling each one would
+        // bury the journal. The claim (ChangeUserName) is what journals. Any hit counts for a name.
+        if (result == NameChangeResultCode.Ok && _wordFilter.Test(name).Hit)
+        {
+            result = NameChangeResultCode.NameNotValid;
+        }
 
         if (result == NameChangeResultCode.Ok)
         {

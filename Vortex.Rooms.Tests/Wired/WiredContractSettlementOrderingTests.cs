@@ -250,7 +250,8 @@ public sealed class WiredContractSettlementOrderingTests
                 new RoomWiredLogChannel(),
                 FakeProxy.Create<ISongProvider>(_ => null),
                 TestRoomGames.Provider(),
-                BuildJournal()
+                BuildJournal(),
+                RoomGrainStubs.PassThroughWordFilter()
             );
 
             Grain._state.ItemsById[CHEST_ID] = ItemWithLogic("furniture_furnichest");

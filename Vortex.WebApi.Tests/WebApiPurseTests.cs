@@ -130,6 +130,7 @@ public sealed class WebApiPurseTests
             new WebApiPlayerService(
                 factory,
                 DispatchProxy.Create<IGrainFactory, UnusedGrainFactory>(),
+                new FakeWordFilter(),
                 Options.Create(new WebApiConfig()),
                 NullLogger<WebApiPlayerService>.Instance
             ),

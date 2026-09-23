@@ -11,6 +11,7 @@ using Vortex.Primitives.Authentication;
 using Vortex.Primitives.Camera;
 using Vortex.Primitives.Chain;
 using Vortex.Primitives.Events;
+using Vortex.Primitives.Moderation.WordFilter;
 using Vortex.Primitives.Observability;
 using Vortex.Primitives.Shop;
 using Vortex.WebApi.Services;
@@ -761,4 +762,34 @@ internal sealed class FakeEventPublisher : IEventPublisher
 
     public List<T> Of<T>()
         where T : IEvent => [.. Published.OfType<T>()];
+}
+
+/// <summary>
+/// The hotel-wide word filter, answering whatever the test says. An empty list by default: every
+/// text comes back untouched, which is what every test that is not about the filter needs.
+/// </summary>
+/// <remarks>
+/// The matching itself is tested where it lives (<c>Vortex.Hosting.Tests/WordFilter</c>); what is
+/// worth testing here is what the web API does with each answer.
+/// </remarks>
+internal sealed class FakeWordFilter : IWordFilter
+{
+    public Func<string, WordFilterResult> Answer { get; set; } =
+        text => new WordFilterResult(text, false, false);
+
+    /// <summary>Every <see cref="Apply"/> call, in order — the ones that would be journaled.</summary>
+    public List<(string Text, WordFilterSource Source, int PlayerId)> Applied { get; } = [];
+
+    public string RefusedMessage => WordFilterConfig.RefusedMessageDefault;
+
+    public WordFilterResult Apply(string text, WordFilterSource source, int playerId)
+    {
+        Applied.Add((text, source, playerId));
+
+        return Answer(text);
+    }
+
+    public WordFilterResult Test(string text) => Answer(text);
+
+    public Task ReloadAsync(CancellationToken ct) => Task.CompletedTask;
 }

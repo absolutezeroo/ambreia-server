@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
 using Orleans;
 using Vortex.Messages.Registry;
+using Vortex.Primitives.Moderation.WordFilter;
 using Vortex.Primitives.Orleans;
 using Vortex.Primitives.Players;
 using Vortex.Primitives.Players.Enums;
@@ -24,11 +25,15 @@ namespace Vortex.PacketHandlers.Avatar;
 /// The name is re-validated here rather than trusted from the preceding check: the check is
 /// advisory, and the name can have been taken in between.
 /// </remarks>
-public class ChangeUserNameMessageHandler(IGrainFactory grainFactory, IConfiguration configuration)
-    : IMessageHandler<ChangeUserNameMessage>
+public class ChangeUserNameMessageHandler(
+    IGrainFactory grainFactory,
+    IConfiguration configuration,
+    IWordFilter wordFilter
+) : IMessageHandler<ChangeUserNameMessage>
 {
     private readonly IGrainFactory _grainFactory = grainFactory;
     private readonly IConfiguration _configuration = configuration;
+    private readonly IWordFilter _wordFilter = wordFilter;
 
     public async ValueTask HandleAsync(
         ChangeUserNameMessage message,
@@ -50,6 +55,15 @@ public class ChangeUserNameMessageHandler(IGrainFactory grainFactory, IConfigura
 
         NameChangeResultCode result = NameChangePolicy.Validate(name, minLength, maxLength);
         ImmutableArray<string> suggestions = [];
+
+        // Apply, not Test: this is the claim, so it journals. A Username refuses on any hit.
+        if (
+            result == NameChangeResultCode.Ok
+            && _wordFilter.Apply(name, WordFilterSource.Username, ctx.PlayerId).Refused
+        )
+        {
+            result = NameChangeResultCode.NameNotValid;
+        }
 
         if (result == NameChangeResultCode.Ok)
         {

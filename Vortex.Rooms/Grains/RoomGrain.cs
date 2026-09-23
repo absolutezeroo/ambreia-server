@@ -23,6 +23,7 @@ using Vortex.Primitives.Commerce;
 using Vortex.Primitives.Events;
 using Vortex.Primitives.Furniture.Providers;
 using Vortex.Primitives.Groups.Enums;
+using Vortex.Primitives.Moderation.WordFilter;
 using Vortex.Primitives.Networking;
 using Vortex.Primitives.Observability;
 using Vortex.Primitives.Orleans;
@@ -90,6 +91,9 @@ public sealed partial class RoomGrain : Grain, IRoomGrain
     /// </summary>
     internal readonly ICommerceJournal _commerceJournal;
 
+    /// <summary>The hotel-wide word filter, asked before the room's own on every player chat line.</summary>
+    internal readonly IWordFilter _wordFilter;
+
     internal readonly RoomWiredLogChannel _wiredLogChannel;
     internal readonly IRoomWiredVariablesProvider _wiredVariablesProvider;
     internal readonly IRoomEventListenerProvider _eventListenerProvider;
@@ -151,10 +155,12 @@ public sealed partial class RoomGrain : Grain, IRoomGrain
         RoomWiredLogChannel wiredLogChannel,
         ISongProvider songProvider,
         IRoomGameProvider gameProvider,
+        ICommerceJournal commerceJournal,
         // Last on purpose: GrainActivationContext.CreateWithIntegerKey takes params object[], so a
         // dependency inserted anywhere else compiles cleanly in every test that builds this grain
-        // and then fails at activation.
-        ICommerceJournal commerceJournal
+        // and then fails at activation. Appending keeps that failure at the end of the list, where
+        // a reader of the test looks for it.
+        IWordFilter wordFilter
     )
     {
         _dbCtxFactory = dbCtxFactory;
@@ -180,6 +186,7 @@ public sealed partial class RoomGrain : Grain, IRoomGrain
         _wiredLogChannel = wiredLogChannel;
         _songProvider = songProvider;
         _commerceJournal = commerceJournal;
+        _wordFilter = wordFilter;
 
         _state = new RoomLiveState { RoomId = (RoomId)this.GetPrimaryKeyLong() };
         PathingSystem = new RoomPathingSystem(this);
