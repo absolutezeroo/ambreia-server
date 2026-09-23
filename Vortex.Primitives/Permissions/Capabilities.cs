@@ -131,6 +131,16 @@ public static class Capabilities
         /// </para>
         /// </remarks>
         public const string OpsFeedModerate = "dashboard.ops.feed.moderate";
+
+        /// <summary>
+        /// Keeping the hotel-wide word list — adding, editing and removing words — and reading the
+        /// journal of what it caught.
+        /// </summary>
+        /// <remarks>
+        /// One capability for both, because the journal is how an operator decides what the list
+        /// should hold: the reason to read it is almost always the edit that follows.
+        /// </remarks>
+        public const string OpsWordFilterManage = "dashboard.ops.wordfilter.manage";
         public const string PetsRead = "dashboard.pets.read";
         public const string CfhRead = "dashboard.cfh.read";
 
@@ -307,6 +317,7 @@ public static class Capabilities
             GroupsRead,
             OpsGuildsManage,
             OpsFeedModerate,
+            OpsWordFilterManage,
             PetsRead,
             CfhRead,
             ChatlogsRead,

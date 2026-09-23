@@ -36,6 +36,9 @@ internal static class DefaultRoles
                 // further out: the website's feed is public, and a moderator who can silence a
                 // room has no reason to need a second person to take a post down.
                 Capabilities.Dashboard.OpsFeedModerate,
+                // Same reasoning again: the word list decides what every player may write, which
+                // is the moderator's remit, and the journal is the record of who tried.
+                Capabilities.Dashboard.OpsWordFilterManage,
             ]
         ),
         new RoleSeed(

@@ -121,6 +121,9 @@ GET /api/v1/targeted-offers/images -> dashboard.targeted_offers.read
 GET /api/v1/targeted-offers/stats -> dashboard.targeted_offers.read
 GET /api/v1/targeted-offers/{offerId:int} -> dashboard.targeted_offers.read
 GET /api/v1/wired/stats -> dashboard.wired.read
+GET /api/v1/wordfilter/hits -> dashboard.ops.wordfilter.manage
+GET /api/v1/wordfilter/test -> dashboard.ops.wordfilter.manage
+GET /api/v1/wordfilter/words -> dashboard.ops.wordfilter.manage
 POST /api/login -> ANONYMOUS
 POST /api/logout -> ANONYMOUS
 POST /api/v1/account/mfa/begin -> AUTHENTICATED
@@ -322,3 +325,6 @@ POST /api/v1/operations/targeted-offers/products/update -> dashboard.ops.targete
 POST /api/v1/operations/targeted-offers/update -> dashboard.ops.targeted_offers.manage
 POST /api/v1/operations/vouchers -> dashboard.ops.vouchers.manage
 POST /api/v1/operations/vouchers/deactivate -> dashboard.ops.vouchers.manage
+POST /api/v1/operations/wordfilter/words -> dashboard.ops.wordfilter.manage
+POST /api/v1/operations/wordfilter/words/remove -> dashboard.ops.wordfilter.manage
+POST /api/v1/operations/wordfilter/words/update -> dashboard.ops.wordfilter.manage

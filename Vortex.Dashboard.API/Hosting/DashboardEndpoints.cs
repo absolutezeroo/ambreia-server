@@ -199,6 +199,7 @@ internal static partial class DashboardEndpoints
         MapBenchmarkReads(app);
         MapBenchmarkRunReads(app);
         MapConsoleReads(app);
+        MapWordFilterReads(app);
     }
 
     public static void MapOperations(WebApplication app)
@@ -228,6 +229,7 @@ internal static partial class DashboardEndpoints
         MapContentOperations(app);
         MapArticleOperations(app);
         MapFeedOperations(app);
+        MapWordFilterOperations(app);
         MapGamedataOperations(app);
         MapHotelViewOperations(app);
         MapConsoleOperations(app);

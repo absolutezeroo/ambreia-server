@@ -48,6 +48,7 @@ using Vortex.Primitives.Furniture.Providers;
 using Vortex.Primitives.Habbicons;
 using Vortex.Primitives.Hosting;
 using Vortex.Primitives.Moderation;
+using Vortex.Primitives.Moderation.WordFilter;
 using Vortex.Primitives.MysteryBox;
 using Vortex.Primitives.Navigator;
 using Vortex.Primitives.Networking;
@@ -152,6 +153,9 @@ public sealed class DashboardPlugin : IVortexPlugin
         services.TryAddSingleton<CatalogReads>();
         services.TryAddSingleton<CatalogOperations>();
         services.TryAddSingleton<FeedOperations>();
+        // The word filter: the reads take the live filter too, for the dry run.
+        services.TryAddSingleton<WordFilterReads>();
+        services.TryAddSingleton<WordFilterOperations>();
         // Polls, likewise: two dependencies for the reads, two for the writes.
         services.TryAddSingleton<PollReads>();
         services.TryAddSingleton<PollOperations>();
@@ -241,6 +245,7 @@ public sealed class DashboardPlugin : IVortexPlugin
         services.TryAddSingleton<IQuestContentAdminService, QuestContentAdminService>();
         services.TryAddSingleton<IWebArticleAdminService, WebArticleAdminService>();
         services.TryAddSingleton<IFeedAdminService, FeedAdminService>();
+        services.TryAddSingleton<IWordFilterAdminService, WordFilterAdminService>();
 
         // The dashboard runs as a self-contained ASP.NET Core (Kestrel) app. Inside the plugin's own
         // container now rather than the host's, which is what makes stopping it a matter of
