@@ -2,14 +2,18 @@ using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Linq;
+using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
+using Orleans;
 using Vortex.Dashboard.API.Api.Hotel.Contracts;
 using Vortex.Dashboard.API.Infrastructure;
 using Vortex.Database.Context;
 using Vortex.Database.Entities.Moderation;
+using Vortex.Observability.WordFilter;
 using Vortex.Primitives.Moderation.WordFilter;
+using Vortex.Primitives.Orleans;
 
 namespace Vortex.Dashboard.API.Api.Hotel;
 
@@ -19,11 +23,13 @@ namespace Vortex.Dashboard.API.Api.Hotel;
 internal sealed class WordFilterReads(
     IDbContextFactory<VortexDbContext> dbContextFactory,
     DashboardAssetUrls assetUrls,
-    IWordFilter wordFilter
+    IWordFilter wordFilter,
+    IGrainFactory grainFactory
 ) : DashboardReads(dbContextFactory)
 {
     private readonly DashboardAssetUrls _assetUrls = assetUrls;
     private readonly IWordFilter _wordFilter = wordFilter;
+    private readonly IGrainFactory _grainFactory = grainFactory;
 
     public Task<WordFilterWordList> WordsAsync(CancellationToken ct) =>
         QueryAsync(
@@ -125,13 +131,76 @@ internal sealed class WordFilterReads(
         );
 
     /// <summary>
-    /// What the live filter would do with <paramref name="text"/>, journaling nothing. A read, not
-    /// an operation: it changes nothing, so it takes no reason and leaves no audit row.
+    /// What the filter would do with <paramref name="text"/>, journaling nothing. A read, not an
+    /// operation: it changes nothing, so it takes no reason and leaves no audit row.
     /// </summary>
-    public WordFilterTestResult Test(string? text)
+    /// <remarks>
+    /// With no draft it asks the live filter. With one, it compiles a throwaway set — the saved
+    /// words, the draft in place of the word it edits — because trying a word before saving it is
+    /// the box's whole point, and the live set does not have it yet.
+    /// </remarks>
+    public async Task<WordFilterTestResult> TestAsync(
+        string? text,
+        WordFilterDraft? draft,
+        CancellationToken ct
+    )
     {
-        WordFilterResult result = _wordFilter.Test(text ?? string.Empty);
+        text ??= string.Empty;
 
-        return new WordFilterTestResult(result.Text, result.Refused, result.Changed);
+        if (draft is null || string.IsNullOrWhiteSpace(draft.Word))
+        {
+            WordFilterResult live = _wordFilter.Test(text);
+
+            return new WordFilterTestResult(live.Text, live.Refused, live.Changed);
+        }
+
+        List<WordFilterEntry> entries = await QueryAsync(
+                db =>
+                    db.WordFilterWords.AsNoTracking()
+                        .Where(w => w.Id != draft.Id)
+                        .Select(w => new WordFilterEntry(
+                            w.Id,
+                            w.Word,
+                            w.Action,
+                            w.Match,
+                            w.Replacement
+                        ))
+                        .ToListAsync(ct),
+                ct
+            )
+            .ConfigureAwait(false);
+
+        entries.Add(
+            new WordFilterEntry(
+                draft.Id ?? 0,
+                draft.Word,
+                draft.Action,
+                draft.Match,
+                string.IsNullOrWhiteSpace(draft.Replacement) ? null : draft.Replacement.Trim()
+            )
+        );
+
+        string replacement =
+            await _grainFactory
+                .GetServerConfigGrain()
+                .GetValueAsync(WordFilterConfig.ReplacementKey)
+                .ConfigureAwait(false)
+            ?? WordFilterConfig.ReplacementDefault;
+
+        try
+        {
+            WordFilterVerdict verdict = WordFilterSet
+                .Build(entries, replacement, DraftMatchTimeout)
+                .Evaluate(text);
+
+            return new WordFilterTestResult(verdict.Text, verdict.Refused, verdict.Changed);
+        }
+        catch (Exception ex) when (ex is RegexMatchTimeoutException or ArgumentException)
+        {
+            // The live filter fails open on these; the dry run says so the same way.
+            return new WordFilterTestResult(text, false, false);
+        }
     }
+
+    private static readonly TimeSpan DraftMatchTimeout = TimeSpan.FromMilliseconds(50);
 }

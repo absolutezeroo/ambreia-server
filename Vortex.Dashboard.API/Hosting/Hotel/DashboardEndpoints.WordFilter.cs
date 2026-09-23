@@ -39,10 +39,39 @@ internal static partial class DashboardEndpoints
             TagWordFilter
         );
         // A GET, not an operation: it changes nothing, so it takes no reason and leaves no audit.
+        // The drawer's draft rides along in the query; without a usable one the live list answers.
         MapReadGet<WordFilterTestResult>(
             app,
             ApiWordFilter + "/test",
-            (string? text, WordFilterReads reads) => Results.Ok(reads.Test(text)),
+            (
+                string? text,
+                string? word,
+                int? action,
+                int? match,
+                string? replacement,
+                int? id,
+                WordFilterReads reads,
+                CancellationToken ct
+            ) =>
+                OkAsync(
+                    reads.TestAsync(
+                        text,
+                        !string.IsNullOrWhiteSpace(word)
+                        && action is int a
+                        && Enum.IsDefined((WordFilterAction)a)
+                        && match is int m
+                        && Enum.IsDefined((WordFilterMatch)m)
+                            ? new WordFilterDraft(
+                                id,
+                                word,
+                                (WordFilterAction)a,
+                                (WordFilterMatch)m,
+                                replacement
+                            )
+                            : null,
+                        ct
+                    )
+                ),
             Capabilities.Dashboard.OpsWordFilterManage,
             TagWordFilter
         );

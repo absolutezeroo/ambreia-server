@@ -43,5 +43,17 @@ public sealed record WordFilterHitPage(
     IReadOnlyList<WordFilterHitRow> Items
 );
 
-/// <summary>What the live filter would do with a sentence. Journals nothing.</summary>
+/// <summary>What the filter would do with a sentence. Journals nothing.</summary>
 public sealed record WordFilterTestResult(string Text, bool Refused, bool Changed);
+
+/// <summary>
+/// The word being written in the drawer, tried beside the saved list before it is saved.
+/// <see cref="Id"/> is the word being edited, which the draft stands in for; null for a new one.
+/// </summary>
+public sealed record WordFilterDraft(
+    int? Id,
+    string Word,
+    WordFilterAction Action,
+    WordFilterMatch Match,
+    string? Replacement
+);

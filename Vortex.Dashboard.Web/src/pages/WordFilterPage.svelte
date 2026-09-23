@@ -97,7 +97,23 @@
     return match === MATCH.partial ? $t('wordFilter.matchPartial') : $t('wordFilter.matchWhole');
   }
 
+  // Re-tried whenever the sentence or any field of the draft moves: changing Replace to Refuse has
+  // to change the verdict under the operator's eyes, not on the next keystroke in the test box.
+  $effect(() => {
+    void [testText, drawer?.form.word, drawer?.form.action, drawer?.form.match, drawer?.form.replacement];
+    scheduleTest();
+  });
+
+  // A drawer starts with an empty test box: a sentence tried against one word must not greet the
+  // next word with a verdict that was never about it.
+  function resetTest() {
+    clearTimeout(testTimer);
+    testText = '';
+    testResult = null;
+  }
+
   function openCreate() {
+    resetTest();
     drawer = {
       mode: 'create',
       id: null,
@@ -106,6 +122,7 @@
   }
 
   function openEdit(row: WordFilterWordRow) {
+    resetTest();
     const form: WordForm = {
       word: row.word,
       action: row.action,
@@ -160,10 +177,23 @@
     }
 
     testTimer = setTimeout(async () => {
+      // The draft rides along: the box exists to try the word before saving it, and the server
+      // tries it beside the saved list — in place of the word being edited, when there is one.
+      const params = new URLSearchParams({ text: testText });
+      const open = drawer;
+
+      if (open?.form.word.trim()) {
+        params.set('word', open.form.word.trim());
+        params.set('action', String(Number(open.form.action)));
+        params.set('match', String(Number(open.form.match)));
+        if (Number(open.form.action) !== ACTION.refuse && open.form.replacement.trim()) {
+          params.set('replacement', open.form.replacement.trim());
+        }
+        if (open.mode === 'edit') params.set('id', String(open.id));
+      }
+
       try {
-        testResult = await apiGet<WordFilterTestResult>(
-          `/api/v1/wordfilter/test?${new URLSearchParams({ text: testText })}`,
-        );
+        testResult = await apiGet<WordFilterTestResult>(`/api/v1/wordfilter/test?${params}`);
       } catch {
         testResult = null;
       }
@@ -453,7 +483,6 @@
           rows="2"
           placeholder={$t('wordFilter.testPlaceholder')}
           bind:value={testText}
-          oninput={scheduleTest}
         ></textarea>
         <p class="field-hint">{$t('wordFilter.testHint')}</p>
         {#if testResult}

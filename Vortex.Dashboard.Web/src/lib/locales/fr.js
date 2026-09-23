@@ -2649,7 +2649,7 @@ export default {
     updated: 'Mot mis à jour.',
     removed: 'Mot supprimé.',
     test: 'Tester une phrase',
-    testHint: "Teste la liste telle qu'enregistrée — un mot en cours d'ajout n'y est pas encore.",
+    testHint: "Teste la liste enregistrée avec ce mot tel que vous l'écrivez, avant toute sauvegarde.",
     testPlaceholder: "Tapez ce qu'un joueur pourrait écrire…",
     testRefused: 'Refusé',
     testChanged: 'Devient',

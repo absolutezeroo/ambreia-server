@@ -2638,7 +2638,7 @@ export default {
     updated: 'Word updated.',
     removed: 'Word removed.',
     test: 'Try a sentence',
-    testHint: 'Runs against the list as saved — a word you are adding now is not in it yet.',
+    testHint: 'Tries the saved list with this word as you are writing it, before anything is saved.',
     testPlaceholder: 'Type what a player might write…',
     testRefused: 'Refused',
     testChanged: 'Becomes',
