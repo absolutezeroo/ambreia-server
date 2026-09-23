@@ -1,4 +1,5 @@
 using System.Collections.Immutable;
+using Vortex.Primitives.Moderation.WordFilter;
 
 namespace Vortex.Primitives.Server;
 
@@ -294,6 +295,22 @@ public static class ConfigKeyCatalog
             ConfigValueKind.String,
             "What a filtered word is replaced with in the line everyone sees. Read when a room loads its filter and when the filter is edited, not per chat line, so a change reaches an already-awake room on its next edit or reload.",
             "Rooms"
+        ),
+        // The hotel-wide word filter. Its constants live beside it in this project, so unlike the
+        // keys above they are named rather than repeated as literals.
+        new(
+            WordFilterConfig.ReplacementKey,
+            WordFilterConfig.ReplacementDefault,
+            ConfigValueKind.String,
+            "What a word on the hotel-wide filter is replaced with, when that word's action is Replace and it names no replacement of its own. Read when the list compiles; editing any word reloads it.",
+            "Moderation"
+        ),
+        new(
+            WordFilterConfig.RefusedMessageKey,
+            WordFilterConfig.RefusedMessageDefault,
+            ConfigValueKind.String,
+            "The bubble a player sees when the hotel-wide filter refuses what they wrote. Read when the list compiles; editing any word reloads it.",
+            "Moderation"
         ),
         // Raid protection. A room owner picks low/medium/high in their own panel; what each of the
         // three means in arrivals per minute is the hotel's call, and it has to be, because the
