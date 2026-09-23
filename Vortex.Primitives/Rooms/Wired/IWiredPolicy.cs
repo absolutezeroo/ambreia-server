@@ -27,6 +27,11 @@ public interface IWiredPolicy
     public int ExecutionWindowMs { get; set; }
     public WiredAnimationModeType AnimationMode { get; set; }
     public int AnimationTimeMs { get; set; }
+
+    /// <summary>How high the pile's moves arc: a furni's <c>curveStrength</c>, a user's
+    /// <c>jumpPower</c>. Zero is a flat slide, which is what a pile without the movement-curve
+    /// add-on has.</summary>
+    public int CurveStrength { get; set; }
     public TimeSpan Delay { get; set; }
     public bool ShortCircuitOnFirstEffectSuccess { get; set; }
 }

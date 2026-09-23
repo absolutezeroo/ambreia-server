@@ -19,6 +19,7 @@ public sealed class WiredPolicy : IWiredPolicy
     // users snapped to their destination instead of sliding. 500ms is Habbo's standard object/avatar
     // slide; the animation-time addon (wf_xtra_anim_time) can still tune it 50-2000ms per box.
     public int AnimationTimeMs { get; set; } = 500;
+    public int CurveStrength { get; set; }
     public TimeSpan Delay { get; set; } = TimeSpan.Zero;
     public bool ShortCircuitOnFirstEffectSuccess { get; set; }
 }

@@ -125,6 +125,7 @@ internal sealed class WiredExecutionContext(IWiredRoomHost host)
                         Policy.AnimationMode == WiredAnimationModeType.Instant
                             ? 0
                             : Policy.AnimationTimeMs,
+                    CurveStrength = Policy.CurveStrength != 0 ? Policy.CurveStrength : null,
                 };
 
                 foreach (IWiredAddon addon in Addons)
@@ -266,6 +267,12 @@ internal sealed class WiredExecutionContext(IWiredRoomHost host)
                             moveType == SlideAvatarMoveType.Slide ? Policy.AnimationTimeMs : 0,
                         BodyDirection = facing,
                         HeadDirection = facing,
+                        // The client arcs a user's slide by this, as it arcs a furni's by
+                        // curveStrength (AvatarLogic.getCurveStrength); a teleport has no slide.
+                        JumpPower =
+                            moveType == SlideAvatarMoveType.Slide && Policy.CurveStrength != 0
+                                ? Policy.CurveStrength
+                                : null,
                     }
                 );
 
