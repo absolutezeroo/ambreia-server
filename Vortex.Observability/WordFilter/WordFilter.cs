@@ -161,6 +161,19 @@ public sealed class WordFilter : IWordFilter
 
             return new WordFilterVerdict(text, false, false, 0, default);
         }
+        catch (ArgumentException ex)
+        {
+            // Same reasoning for a text the normaliser cannot take: the one known case (a
+            // noncharacter) is handled there, and anything like it must not cost a player their line.
+            _logger.LogWarning(
+                VortexEventIds.WordFilterTimedOut,
+                ex,
+                "Word filter could not read a {Length}-character text; let through",
+                text.Length
+            );
+
+            return new WordFilterVerdict(text, false, false, 0, default);
+        }
     }
 
     private static async Task<(IReadOnlyList<WordFilterEntry>, string, string)> LoadAsync(

@@ -58,6 +58,33 @@ public sealed class WordFilterSetTests
         set.Evaluate("t'es un asssss").Changed.Should().BeTrue();
     }
 
+    /// <summary>
+    /// Partial means "inside a word", not "across two": the letters of "sex" sit in "les ex" with a
+    /// space between them, and ordinary French must not be mangled for it.
+    /// </summary>
+    [Theory]
+    [InlineData("tu connais les ex", "sex")]
+    [InlineData("je suis pas sûr", "ass")]
+    public void Partial_DoesNotReachAcrossTwoWords(string text, string word)
+    {
+        WordFilterVerdict verdict = Set(Replace(word, WordFilterMatch.Partial)).Evaluate(text);
+
+        verdict.Changed.Should().BeFalse();
+        verdict.Text.Should().BeSameAs(text);
+    }
+
+    [Theory]
+    [InlineData("t'es c o n", "t'es bobba")]
+    [InlineData("c.o.n", "bobba")]
+    [InlineData("unconcert", "unbobbacert")]
+    public void Partial_StillCatchesASpelledOutWord_AndOneInsideAnother(
+        string text,
+        string expected
+    )
+    {
+        Set(Replace("con", WordFilterMatch.Partial)).Evaluate(text).Text.Should().Be(expected);
+    }
+
     [Fact]
     public void Partial_MatchesInsideALongerWord()
     {

@@ -25,6 +25,18 @@ public sealed class WordFilterNormalizerTests
         WordFilterNormalizer.Normalize(input).Should().Be(expected);
     }
 
+    /// <summary>
+    /// U+FFFE and U+FFFF are noncharacters NFKD refuses outright, and both are valid UTF-8 a player
+    /// can put in any chat line.
+    /// </summary>
+    [Theory]
+    [InlineData("a￾b")]
+    [InlineData("a￿b")]
+    public void Normalize_SurvivesNoncharacters(string input)
+    {
+        WordFilterNormalizer.Normalize(input).Should().Be("a b");
+    }
+
     [Fact]
     public void Normalize_KeepsTheLengthOfTheInput()
     {

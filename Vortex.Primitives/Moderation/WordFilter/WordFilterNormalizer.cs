@@ -1,3 +1,4 @@
+using System;
 using System.Text;
 
 namespace Vortex.Primitives.Moderation.WordFilter;
@@ -72,8 +73,17 @@ public static class WordFilterNormalizer
 
         if (c > 127)
         {
-            string decomposed = c.ToString().Normalize(NormalizationForm.FormKD);
-            c = decomposed.Length > 0 ? decomposed[0] : c;
+            try
+            {
+                string decomposed = c.ToString().Normalize(NormalizationForm.FormKD);
+                c = decomposed.Length > 0 ? decomposed[0] : c;
+            }
+            catch (ArgumentException)
+            {
+                // A noncharacter (U+FFFE, U+FDD0…): valid UTF-8 a player can send, and a string NFKD
+                // refuses to take. Not a letter either way.
+                return ' ';
+            }
         }
 
         c = char.ToLowerInvariant(c);

@@ -37,8 +37,8 @@ public readonly record struct WordFilterVerdict(
 /// <remarks>
 /// Each word becomes one regex over the normalised text: every letter of its key is <c>x+</c> (so a
 /// letter may repeat) and letters are joined by <c> *</c> (the normaliser turned separators into
-/// spaces), so "con" is <c>c+ *o+ *n+</c>. WholeWord wraps it in <c>\b</c>; that is what keeps
-/// "concert" clean.
+/// spaces), so "con" is <c>\bc+ *o+ *n+\b</c> — which is what keeps "concert" clean. Partial adds
+/// <c>c+o+n+</c> anywhere: inside a word, but never across the space between two.
 /// <para>
 /// <c>ponytail:</c> one regex per word, tried in turn — O(words × length). Fine for hundreds of words
 /// on chat-length lines; a single Aho-Corasick pass over the normalised text is the upgrade if the
@@ -72,14 +72,20 @@ public sealed class WordFilterSet
                 continue;
             }
 
-            string pattern = string.Join(" *", key.Select(c => Regex.Escape(c.ToString()) + "+"));
+            string[] letters = [.. key.Select(c => Regex.Escape(c.ToString()) + "+")];
 
-            // \b is exactly "not next to [a-z0-9]" here: the normalised text holds nothing but
-            // [a-z0-9 ], so there is no underscore or other word character for \b to disagree on.
-            if (entry.Match == WordFilterMatch.WholeWord)
-            {
-                pattern = @"\b" + pattern + @"\b";
-            }
+            // Spelled out ("c o n", "c.o.n") only as a word of its own. \b is exactly "not next to
+            // [a-z0-9]" here: the normalised text holds nothing but [a-z0-9 ], so there is no
+            // underscore or other word character for \b to disagree on.
+            string spelled = @"\b" + string.Join(" *", letters) + @"\b";
+
+            // WholeWord is the spelled form, which also covers the plain one. Partial adds the plain
+            // letters anywhere — inside a longer word — but never across a space: the letters of
+            // "sex" sit in "les ex", and a space between two ordinary words is not a disguise.
+            string pattern =
+                entry.Match == WordFilterMatch.WholeWord
+                    ? spelled
+                    : string.Concat(letters) + "|" + spelled;
 
             // NonBacktracking: any player can send a 60 000-character line, and this engine is linear
             // in the input by construction. The backtracking engine happens to cope with today's
