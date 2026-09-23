@@ -34,8 +34,9 @@ public sealed class WordFilterTests
     [Fact]
     public void BeforeTheFirstReload_EverythingPasses()
     {
-        WordFilterResult result = NewFilter(Word("con", WordFilterAction.Refuse))
-            .Apply("con", WordFilterSource.RoomChat, 9);
+        using WordFilterService filter = NewFilter(Word("con", WordFilterAction.Refuse));
+
+        WordFilterResult result = filter.Apply("con", WordFilterSource.RoomChat, 9);
 
         result.Refused.Should().BeFalse();
         result.Text.Should().Be("con");
@@ -45,7 +46,7 @@ public sealed class WordFilterTests
     [Fact]
     public async Task Apply_ReplacesAndJournals()
     {
-        WordFilterService filter = NewFilter(Word("con", WordFilterAction.Replace));
+        using WordFilterService filter = NewFilter(Word("con", WordFilterAction.Replace));
         await filter.ReloadAsync(CancellationToken.None);
 
         WordFilterResult result = filter.Apply("t'es con", WordFilterSource.RoomChat, 9);
@@ -70,7 +71,7 @@ public sealed class WordFilterTests
     [Fact]
     public async Task Apply_RefusesAndJournals()
     {
-        WordFilterService filter = NewFilter(Word("con", WordFilterAction.Refuse));
+        using WordFilterService filter = NewFilter(Word("con", WordFilterAction.Refuse));
         await filter.ReloadAsync(CancellationToken.None);
 
         filter.Apply("t'es con", WordFilterSource.Messenger, 9).Refused.Should().BeTrue();
@@ -80,7 +81,7 @@ public sealed class WordFilterTests
     [Fact]
     public async Task ACleanText_IsNotJournaled()
     {
-        WordFilterService filter = NewFilter(Word("con", WordFilterAction.Refuse));
+        using WordFilterService filter = NewFilter(Word("con", WordFilterAction.Refuse));
         await filter.ReloadAsync(CancellationToken.None);
 
         filter.Apply("bonjour", WordFilterSource.RoomChat, 9).Hit.Should().BeFalse();
@@ -90,7 +91,7 @@ public sealed class WordFilterTests
     [Fact]
     public async Task AUsername_IsRefusedByAReplaceWordToo()
     {
-        WordFilterService filter = NewFilter(Word("con", WordFilterAction.Replace));
+        using WordFilterService filter = NewFilter(Word("con", WordFilterAction.Replace));
         await filter.ReloadAsync(CancellationToken.None);
 
         WordFilterResult result = filter.Apply("con", WordFilterSource.Username, 9);
@@ -103,7 +104,7 @@ public sealed class WordFilterTests
     [Fact]
     public async Task Test_NeverJournals()
     {
-        WordFilterService filter = NewFilter(Word("con", WordFilterAction.Refuse));
+        using WordFilterService filter = NewFilter(Word("con", WordFilterAction.Refuse));
         await filter.ReloadAsync(CancellationToken.None);
 
         filter.Test("con").Refused.Should().BeTrue();
@@ -113,7 +114,7 @@ public sealed class WordFilterTests
     [Fact]
     public async Task TheJournal_KeepsAtMost512Characters()
     {
-        WordFilterService filter = NewFilter(Word("con", WordFilterAction.Replace));
+        using WordFilterService filter = NewFilter(Word("con", WordFilterAction.Replace));
         await filter.ReloadAsync(CancellationToken.None);
 
         filter.Apply("con " + new string('x', 1000), WordFilterSource.FeedPost, 9);
@@ -124,7 +125,7 @@ public sealed class WordFilterTests
     [Fact]
     public async Task RefusedMessage_ComesFromTheReload()
     {
-        WordFilterService filter = NewFilter();
+        using WordFilterService filter = NewFilter();
         filter.RefusedMessage.Should().Be(WordFilterConfig.RefusedMessageDefault);
 
         await filter.ReloadAsync(CancellationToken.None);
@@ -136,7 +137,7 @@ public sealed class WordFilterTests
     public async Task AReload_SwapsTheList()
     {
         WordFilterEntry[] words = [Word("con", WordFilterAction.Refuse)];
-        WordFilterService filter = new(
+        using WordFilterService filter = new(
             _ =>
                 Task.FromResult<(IReadOnlyList<WordFilterEntry>, string, string)>(
                     (words, "bobba", "x")
@@ -153,10 +154,46 @@ public sealed class WordFilterTests
         filter.Test("con").Refused.Should().BeFalse();
     }
 
+    /// <summary>
+    /// Two moderators save at once. The first reload reads the list before the second one's write
+    /// and is slow; the second reads after it and is quick. Whatever the timing, the list the hotel
+    /// ends up filtering with is the later read — never the earlier one landing last.
+    /// </summary>
+    [Fact]
+    public async Task ConcurrentReloads_NeverLeaveTheEarlierReadInstalled()
+    {
+        TaskCompletionSource releaseFirst = new(TaskCreationOptions.RunContinuationsAsynchronously);
+        int calls = 0;
+
+        using WordFilterService filter = new(
+            async _ =>
+            {
+                if (Interlocked.Increment(ref calls) == 1)
+                {
+                    await releaseFirst.Task;
+
+                    return ([], "bobba", "x");
+                }
+
+                return ([Word("con", WordFilterAction.Refuse)], "bobba", "x");
+            },
+            _journal.Add,
+            NullLogger<WordFilterService>.Instance
+        );
+
+        Task first = filter.ReloadAsync(CancellationToken.None);
+        Task second = filter.ReloadAsync(CancellationToken.None);
+
+        releaseFirst.SetResult();
+        await Task.WhenAll(first, second);
+
+        filter.Test("con").Refused.Should().BeTrue();
+    }
+
     [Fact]
     public async Task ARegexTimeout_FailsOpen()
     {
-        WordFilterService filter = new(
+        using WordFilterService filter = new(
             _ =>
                 Task.FromResult<(IReadOnlyList<WordFilterEntry>, string, string)>(
                     (

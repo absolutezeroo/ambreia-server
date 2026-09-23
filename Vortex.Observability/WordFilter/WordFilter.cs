@@ -42,9 +42,11 @@ public sealed record WordFilterHit(
 /// broadcast (an Orleans stream every silo's filter subscribes to).
 /// </para>
 /// </remarks>
-public sealed class WordFilter : IWordFilter
+public sealed class WordFilter : IWordFilter, IDisposable
 {
     private static readonly TimeSpan DefaultMatchTimeout = TimeSpan.FromMilliseconds(50);
+
+    private readonly SemaphoreSlim _reloadGate = new(1, 1);
 
     private readonly Func<
         CancellationToken,
@@ -127,13 +129,23 @@ public sealed class WordFilter : IWordFilter
 
     public async Task ReloadAsync(CancellationToken ct)
     {
-        (IReadOnlyList<WordFilterEntry> words, string replacement, string refused) = await _source(
-                ct
-            )
-            .ConfigureAwait(false);
+        // Read and swap under one gate. Two edits saved at once each end on a reload, and without
+        // it the earlier read can land last and install a list missing the later edit — silently,
+        // until somebody edits again.
+        await _reloadGate.WaitAsync(ct).ConfigureAwait(false);
 
-        _set = WordFilterSet.Build(words, replacement, _matchTimeout);
-        _refusedMessage = refused;
+        try
+        {
+            (IReadOnlyList<WordFilterEntry> words, string replacement, string refused) =
+                await _source(ct).ConfigureAwait(false);
+
+            _set = WordFilterSet.Build(words, replacement, _matchTimeout);
+            _refusedMessage = refused;
+        }
+        finally
+        {
+            _reloadGate.Release();
+        }
 
         _logger.LogInformation(
             VortexEventIds.WordFilterLoaded,
@@ -141,6 +153,8 @@ public sealed class WordFilter : IWordFilter
             _set.Count
         );
     }
+
+    public void Dispose() => _reloadGate.Dispose();
 
     private WordFilterVerdict Evaluate(string text)
     {
