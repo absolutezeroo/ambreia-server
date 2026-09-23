@@ -37,7 +37,7 @@ public readonly record struct WordFilterVerdict(
 /// <remarks>
 /// Each word becomes one regex over the normalised text: every letter of its key is <c>x+</c> (so a
 /// letter may repeat) and letters are joined by <c> *</c> (the normaliser turned separators into
-/// spaces), so "con" is <c>c+ *o+ *n+</c>. WholeWord adds boundary guards; they are what keep
+/// spaces), so "con" is <c>c+ *o+ *n+</c>. WholeWord wraps it in <c>\b</c>; that is what keeps
 /// "concert" clean.
 /// <para>
 /// <c>ponytail:</c> one regex per word, tried in turn — O(words × length). Fine for hundreds of words
@@ -74,11 +74,18 @@ public sealed class WordFilterSet
 
             string pattern = string.Join(" *", key.Select(c => Regex.Escape(c.ToString()) + "+"));
 
+            // \b is exactly "not next to [a-z0-9]" here: the normalised text holds nothing but
+            // [a-z0-9 ], so there is no underscore or other word character for \b to disagree on.
             if (entry.Match == WordFilterMatch.WholeWord)
             {
-                pattern = "(?<![a-z0-9])" + pattern + "(?![a-z0-9])";
+                pattern = @"\b" + pattern + @"\b";
             }
 
+            // NonBacktracking: any player can send a 60 000-character line, and this engine is linear
+            // in the input by construction. The backtracking engine happens to cope with today's
+            // patterns (it makes `a+` atomic), but that is an optimisation it may or may not apply
+            // to a future pattern, and a timeout here fails open. It is also why the patterns use
+            // \b rather than lookarounds, which this engine does not support.
             words.Add(
                 new CompiledWord(
                     entry.Id,
@@ -86,7 +93,7 @@ public sealed class WordFilterSet
                     entry.Replacement ?? defaultReplacement,
                     new Regex(
                         pattern,
-                        RegexOptions.Compiled | RegexOptions.CultureInvariant,
+                        RegexOptions.NonBacktracking | RegexOptions.CultureInvariant,
                         matchTimeout
                     )
                 )

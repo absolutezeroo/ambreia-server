@@ -12,6 +12,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Vortex.Database.Context;
 using Vortex.Database.Entities.Audit;
+using Vortex.Database.Entities.Moderation;
 using Vortex.Observability.Configuration;
 using Vortex.Observability.Diagnostics;
 using Vortex.Primitives.Observability;
@@ -299,6 +300,7 @@ public sealed class AuditWriterService : BackgroundService
             AuditRecord audit => MapAudit(audit),
             LedgerRecord ledger => MapLedger(ledger),
             ItemRecord item => MapItem(item),
+            WordFilterHitRecord hit => MapWordFilterHit(hit),
             _ => throw new ArgumentOutOfRangeException(
                 nameof(record),
                 record.GetType().Name,
@@ -357,6 +359,19 @@ public sealed class AuditWriterService : BackgroundService
             RoomId = record.Event.RoomId,
             CorrelationId = record.CorrelationId,
             Data = record.Event.Data,
+        };
+    }
+
+    private static WordFilterHitEntity MapWordFilterHit(WordFilterHitRecord record)
+    {
+        return new WordFilterHitEntity
+        {
+            PlayerEntityId = record.Hit.PlayerId,
+            Source = record.Hit.Source,
+            WordId = record.Hit.WordId,
+            Action = record.Hit.Action,
+            OriginalText = record.Hit.OriginalText,
+            OccurredAt = record.OccurredAt,
         };
     }
 }

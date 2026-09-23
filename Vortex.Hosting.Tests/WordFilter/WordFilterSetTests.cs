@@ -113,6 +113,29 @@ public sealed class WordFilterSetTests
         verdict.FirstWordId.Should().Be(0);
     }
 
+    /// <summary>
+    /// Any player can send a 60 000-character chat line, and it must be filtered inside the timeout
+    /// rather than failing open. A regression pin: today's backtracking engine also passes it (it
+    /// makes <c>a+</c> atomic), so this does not by itself prove the engine choice — the
+    /// NonBacktracking option does that by construction.
+    /// </summary>
+    [Fact]
+    public void ALongAdversarialLine_IsFilteredWithinTheTimeout()
+    {
+        WordFilterSet set = WordFilterSet.Build(
+            [new WordFilterEntry(1, "ab", WordFilterAction.Refuse, WordFilterMatch.Partial, null)],
+            "bobba",
+            TimeSpan.FromMilliseconds(100)
+        );
+
+        // The trailing "cb" matters: with no 'b' anywhere, the engine rejects the line on a single
+        // scan for the required letter. With one after a blocker, every start position runs a+ to
+        // the 'c', fails on it, and backtracks.
+        Action evaluate = () => set.Evaluate(new string('a', 60_000) + "cb");
+
+        evaluate.Should().NotThrow();
+    }
+
     [Fact]
     public void TheEmptySet_PassesEverything()
     {

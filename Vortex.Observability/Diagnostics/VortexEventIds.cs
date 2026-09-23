@@ -35,6 +35,12 @@ public static class VortexEventIds
         nameof(AuditDeadLetterWriteFailed)
     );
 
+    // The hotel-wide word filter, whose journal rides the audit channel.
+    public static readonly EventId WordFilterHitDropped = new(1210, nameof(WordFilterHitDropped));
+    public static readonly EventId WordFilterTimedOut = new(1211, nameof(WordFilterTimedOut));
+    public static readonly EventId WordFilterLoaded = new(1212, nameof(WordFilterLoaded));
+    public static readonly EventId WordFilterLoadFailed = new(1213, nameof(WordFilterLoadFailed));
+
     public static readonly EventId DashboardReady = new(1300, nameof(DashboardReady));
     public static readonly EventId DashboardDisabled = new(1301, nameof(DashboardDisabled));
     public static readonly EventId DashboardFault = new(1302, nameof(DashboardFault));
