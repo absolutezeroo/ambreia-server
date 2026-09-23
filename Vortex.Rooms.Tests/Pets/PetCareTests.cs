@@ -246,7 +246,8 @@ public sealed class PetCareTests
                 new RoomWiredLogChannel(),
                 FakeProxy.Create<ISongProvider>(_ => null),
                 TestRoomGames.Provider(),
-                FakeProxy.Create<ICommerceJournal>(_ => Task.CompletedTask)
+                FakeProxy.Create<ICommerceJournal>(_ => Task.CompletedTask),
+                RoomGrainStubs.PassThroughWordFilter()
             );
 
             // Every care path broadcasts; the stream is armed during activation, which never runs

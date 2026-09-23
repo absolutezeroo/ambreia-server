@@ -206,7 +206,8 @@ public sealed class RoomGrainMysteryBoxAbandonTests
                 new RoomWiredLogChannel(),
                 FakeProxy.Create<ISongProvider>(_ => null),
                 TestRoomGames.Provider(),
-                FakeProxy.Create<ICommerceJournal>(_ => Task.CompletedTask)
+                FakeProxy.Create<ICommerceJournal>(_ => Task.CompletedTask),
+                RoomGrainStubs.PassThroughWordFilter()
             );
 
             IRoomItem box = FakeProxy.Create<IRoomItem>(call =>

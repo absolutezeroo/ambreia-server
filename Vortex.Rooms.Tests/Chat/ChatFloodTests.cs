@@ -147,7 +147,8 @@ public sealed class ChatFloodTests
             new RoomWiredLogChannel(),
             FakeProxy.Create<ISongProvider>(_ => null),
             TestRoomGames.Provider(),
-            FakeProxy.Create<ICommerceJournal>(_ => Task.CompletedTask)
+            FakeProxy.Create<ICommerceJournal>(_ => Task.CompletedTask),
+            RoomGrainStubs.PassThroughWordFilter()
         );
 
         grain._state.RoomSnapshot = NewRoomSnapshot();
