@@ -28,6 +28,7 @@
     <ProjectReference Include="..\Vortex.Observability\Vortex.Observability.csproj" />
     <ProjectReference Include="..\Vortex.Plugins\Vortex.Plugins.csproj" />
     <ProjectReference Include="..\Vortex.Primitives\Vortex.Primitives.csproj" />
+    <ProjectReference Include="..\Vortex.Tests.Support\Vortex.Tests.Support.csproj" />
     <ProjectReference Include="..\Vortex.WebApi\Vortex.WebApi.csproj" />
   </ItemGroup>
 </Project>

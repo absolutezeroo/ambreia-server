@@ -162,7 +162,7 @@ public sealed class WordFilterTests
     [Fact]
     public async Task ConcurrentReloads_NeverLeaveTheEarlierReadInstalled()
     {
-        TaskCompletionSource releaseFirst = new(TaskCreationOptions.RunContinuationsAsynchronously);
+        using SemaphoreSlim releaseFirst = new(0, 1);
         int calls = 0;
 
         using WordFilterService filter = new(
@@ -170,7 +170,7 @@ public sealed class WordFilterTests
             {
                 if (Interlocked.Increment(ref calls) == 1)
                 {
-                    await releaseFirst.Task;
+                    await releaseFirst.WaitAsync();
 
                     return ([], "bobba", "x");
                 }
@@ -184,7 +184,7 @@ public sealed class WordFilterTests
         Task first = filter.ReloadAsync(CancellationToken.None);
         Task second = filter.ReloadAsync(CancellationToken.None);
 
-        releaseFirst.SetResult();
+        releaseFirst.Release();
         await Task.WhenAll(first, second);
 
         filter.Test("con").Refused.Should().BeTrue();
@@ -200,9 +200,8 @@ public sealed class WordFilterTests
                         [
                             new WordFilterEntry(
                                 1,
-                                // Partial "ab" over a run of 'a' with no 'b': every start position
-                                // runs a+ to the end and backtracks — quadratic, so it cannot beat
-                                // a one-tick timeout.
+                                // A one-tick timeout against a 200 000-character line: even the
+                                // linear engine cannot scan that inside it, so the timeout fires.
                                 "ab",
                                 WordFilterAction.Refuse,
                                 WordFilterMatch.Partial,
