@@ -366,6 +366,8 @@ internal sealed partial class RoomService(
         // for nothing at all, so there is no later request to hang it on.
         WiredClickUserSnapshot clickUser = await room.GetClickUserStateAsync(ct)
             .ConfigureAwait(false);
+        IReadOnlyList<string> enabledAchievements = await room.GetEnabledAchievementsAsync(ct)
+            .ConfigureAwait(false);
 
         // None of a dance, a worn effect or a hand item is part of the Users payload, so each one
         // has to be replayed for the player walking in. Bots dance too, and their dance is as
@@ -474,7 +476,11 @@ internal sealed partial class RoomService(
                 // setting here, so this pins them to their defaults rather than leaving the client's
                 // own defaults to decide. The official server sends it on every entry.
                 new HanditemConfigurationMessageComposer { IsHanditemControlBlocked = false },
-                new WiredEnvironmentMessageComposer { HasClickUserWired = clickUser.Present },
+                new WiredEnvironmentMessageComposer
+                {
+                    HasClickUserWired = clickUser.Present,
+                    EnabledAchievements = enabledAchievements,
+                },
                 new YouAreControllerMessageComposer
                 {
                     RoomId = roomId,

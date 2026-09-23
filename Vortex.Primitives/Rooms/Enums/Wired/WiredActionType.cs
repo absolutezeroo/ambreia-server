@@ -75,6 +75,9 @@ public enum WiredActionType
     /// <summary>The same line, on the branch where the conditions did not hold.</summary>
     NEG_WRITE_TO_LOG = 50,
 
+    /// <summary>Advances a wired achievement (<c>WF_*</c>) for the resolved users.</summary>
+    PROGRESS_ACHIEVEMENT = 51,
+
     /// <summary>Takes the selected furni out of the room, into their owner's inventory.</summary>
     REMOVE_FURNI = 56,
 

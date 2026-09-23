@@ -282,6 +282,7 @@ export const LOGIC_GROUPS = [
       { value: 'wf_act_flee', label: 'wf_act_flee' },
       { value: 'wf_act_freeze_habbo', label: 'wf_act_freeze_habbo' },
       { value: 'wf_act_furni_to_user', label: 'wf_act_furni_to_user' },
+      { value: 'wf_act_give_achievement', label: 'wf_act_give_achievement' },
       { value: 'wf_act_give_currency', label: 'wf_act_give_currency' },
       { value: 'wf_act_give_effect', label: 'wf_act_give_effect' },
       { value: 'wf_act_give_furni', label: 'wf_act_give_furni' },
@@ -306,6 +307,7 @@ export const LOGIC_GROUPS = [
       { value: 'wf_act_neg_log', label: 'wf_act_neg_log' },
       { value: 'wf_act_neg_send_signal', label: 'wf_act_neg_send_signal' },
       { value: 'wf_act_neg_write_to_logs', label: 'wf_act_neg_write_to_logs' },
+      { value: 'wf_act_progress_achievement', label: 'wf_act_progress_achievement' },
       { value: 'wf_act_raise_furni', label: 'wf_act_raise_furni' },
       { value: 'wf_act_rel_mov', label: 'wf_act_rel_mov' },
       { value: 'wf_act_remove_furni_inventory', label: 'wf_act_remove_furni_inventory' },
@@ -351,6 +353,7 @@ export const LOGIC_GROUPS = [
   {
     label: 'Wired: Extras',
     options: [
+      { value: 'wf_xtra_achievement_enabler', label: 'wf_xtra_achievement_enabler' },
       { value: 'wf_xtra_anim_time', label: 'wf_xtra_anim_time' },
       { value: 'wf_xtra_custom_contract', label: 'wf_xtra_custom_contract' },
       { value: 'wf_xtra_execution_limit', label: 'wf_xtra_execution_limit' },

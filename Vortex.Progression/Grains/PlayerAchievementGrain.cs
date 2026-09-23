@@ -152,6 +152,9 @@ internal sealed class PlayerAchievementGrain(
     public Task ProgressDailyAsync(string achievementName, int amount, CancellationToken ct) =>
         ProgressCoreAsync(achievementName, amount, oncePerDay: true, absolute: false, ct);
 
+    public Task ProgressToAsync(string achievementName, int total, CancellationToken ct) =>
+        ProgressCoreAsync(achievementName, total, oncePerDay: false, absolute: true, ct);
+
     public async Task ProgressBabyPetColoursAsync(int petType, CancellationToken ct)
     {
         if (!BabyPetAchievements.ByPetType.TryGetValue(petType, out string? achievementName))

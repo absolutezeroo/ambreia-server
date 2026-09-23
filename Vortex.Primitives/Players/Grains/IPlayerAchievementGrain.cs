@@ -39,6 +39,13 @@ public interface IPlayerAchievementGrain : IGrainWithIntegerKey
     public Task ProgressDailyAsync(string achievementName, int amount, CancellationToken ct);
 
     /// <summary>
+    /// Raises the achievement's progress to <paramref name="total"/> — never lowers it, because an
+    /// achievement does not go backwards. For the wired "set progress" mode. Also <c>[OneWay]</c>.
+    /// </summary>
+    [OneWay]
+    public Task ProgressToAsync(string achievementName, int total, CancellationToken ct);
+
+    /// <summary>
     /// Recounts the distinct colours of one baby pet type this player owns, and raises that
     /// breeding achievement to the count.
     /// </summary>

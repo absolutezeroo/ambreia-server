@@ -21,8 +21,9 @@ public sealed record WiredEnvironmentMessageComposer : IComposer
     public required bool HasClickUserWired { get; init; }
 
     /// <summary>
-    /// Achievement names wired has enabled in this room. Empty here: no box in this repository
-    /// enables one, and naming achievements nothing can award would be an invention.
+    /// Achievement names the room's achievement-enabler add-ons allow, bare (no <c>ACH_WF_</c>):
+    /// the choices the client offers in the "progress achievement" effect, and the filter its
+    /// achievements window applies to the <c>wired_games</c> category.
     /// </summary>
     [Id(1)]
     public IReadOnlyList<string> EnabledAchievements { get; init; } = [];
