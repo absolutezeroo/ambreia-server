@@ -17,9 +17,10 @@
 // So this is the cross-check for one shape only -- a capability named and not implemented behind it:
 //
 //   CanInterceptChanges  the "variable changed" trigger listens for a change event. Only a
-//                        FurnitureWiredVariableLogic raises one, and only an IWiredDerivedVariable
-//                        has the room raise one on its behalf. Anything else is a trigger that can
-//                        be configured and can never fire.
+//                        FurnitureWiredVariableLogic raises one, and only an IWiredDerivedVariable or
+//                        an IWiredPolledVariable (a value that moves with time, asked every wired
+//                        tick) has the room raise one on its behalf. Anything else is a trigger that
+//                        can be configured and can never fire.
 //   CanWriteValue        the "change variable value" effect filters on this. The internal bases
 //                        refuse every write unless the leaf overrides a hook, so a leaf that
 //                        declares it without one is a row the builder can pick and watch do nothing.
@@ -216,7 +217,9 @@ for (const [name, type] of types) {
   const body = stripComments(type.source.slice(type.bodyStart));
   const declared = new Set([...body.matchAll(/WiredVariableFlags\.(\w+)/g)].map((m) => m[1]));
 
-  const derived = line.includes('IWiredDerivedVariable') || body.includes('IWiredDerivedVariable');
+  const derived = ['IWiredDerivedVariable', 'IWiredPolledVariable'].some(
+    (announcer) => line.includes(announcer) || body.includes(announcer)
+  );
   const honoursEverything = family.has(HONOURS_EVERYTHING);
 
   const checks = [

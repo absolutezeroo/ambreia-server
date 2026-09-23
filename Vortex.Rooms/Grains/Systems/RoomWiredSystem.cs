@@ -267,6 +267,8 @@ public sealed partial class RoomWiredSystem : IRoomEventListener
 
         await ProcessVariableBoxesAsync(now, ct);
 
+        await PollVariablesAsync(now, ct);
+
         if (_triggers.IsDirty)
         {
             Diagnostics.IndexRebuilt();

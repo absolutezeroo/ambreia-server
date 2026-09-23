@@ -436,6 +436,33 @@ public sealed partial class RoomWiredSystem
         return derivedChanges;
     }
 
+    /// <summary>
+    /// Announces what the time-driven variables did since the last tick, through the same door a
+    /// written variable's change takes, so the "variable changed" trigger and the FX displays see
+    /// both alike.
+    /// </summary>
+    /// <remarks>
+    /// The changes are gathered before any is announced: announcing runs the room's derived-change
+    /// scan over the same registry this walks.
+    /// </remarks>
+    private async Task PollVariablesAsync(long now, CancellationToken ct)
+    {
+        List<WiredVariableChangedEvent>? changes = null;
+
+        foreach (IWiredVariable variable in _variableById.Values)
+        {
+            if (variable is IWiredPolledVariable polled)
+            {
+                (changes ??= []).AddRange(polled.Poll(now));
+            }
+        }
+
+        foreach (WiredVariableChangedEvent change in changes ?? [])
+        {
+            await OnRoomEventAsync(change, ct);
+        }
+    }
+
     private bool ProcessVariable(IWiredVariable variable)
     {
         WiredVariableSnapshot snapshot = variable.GetVarSnapshot();

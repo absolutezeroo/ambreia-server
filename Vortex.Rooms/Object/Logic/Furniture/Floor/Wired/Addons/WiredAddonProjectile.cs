@@ -4,16 +4,21 @@ using System.Threading;
 using System.Threading.Tasks;
 using Orleans;
 using Vortex.Primitives.Furniture.Providers;
+using Vortex.Primitives.Rooms;
 using Vortex.Primitives.Rooms.Enums;
 using Vortex.Primitives.Rooms.Enums.Wired;
+using Vortex.Primitives.Rooms.Object;
 using Vortex.Primitives.Rooms.Object.Avatars;
 using Vortex.Primitives.Rooms.Object.Furniture.Floor;
 using Vortex.Primitives.Rooms.Object.Logic;
 using Vortex.Primitives.Rooms.Snapshots.Wired;
+using Vortex.Primitives.Rooms.Snapshots.Wired.Variables;
 using Vortex.Primitives.Rooms.Wired;
 using Vortex.Primitives.Rooms.Wired.Variable;
 using Vortex.Rooms.Wired;
+using Vortex.Rooms.Wired.Projectile;
 using Vortex.Rooms.Wired.Rules;
+using Vortex.Rooms.Wired.Variables;
 
 namespace Vortex.Rooms.Object.Logic.Furniture.Floor.Wired.Addons;
 
@@ -40,11 +45,15 @@ namespace Vortex.Rooms.Object.Logic.Furniture.Floor.Wired.Addons;
 /// slide by <c>strength / 100</c> of a quarter of its length.</item>
 /// </list>
 /// <para>
-/// Not done: the "bunny hop" checkbox (param 13) and the internal variables (param 11). A hop in
-/// place cannot be drawn — the client's jump arc is proportional to the distance slid, so an avatar
-/// jumping on its own tile never leaves it — and the internal variables need the projectile tracked
-/// tile by tile while it flies, which a start-to-end move does not do. Both params are stored and
-/// ignored.
+/// The internal variables (param 11, a bit per reading) hang off the furni variable box the add-on
+/// is stacked with, as the level-up readings do: each shaped move is kept as a
+/// <see cref="ProjectileFlight"/>, and the readings interpolate it on the room clock
+/// (<see cref="WiredProjectileSubVariable"/>).
+/// </para>
+/// <para>
+/// Not done: the "bunny hop" checkbox (param 13). A hop in place cannot be drawn — the client's
+/// jump arc is proportional to the distance slid, so an avatar jumping on its own tile never leaves
+/// it. The param is stored and ignored.
 /// </para>
 /// <para>
 /// The logic key is derived: no furnidata in any tree has a projectile add-on, so there is no
@@ -56,9 +65,30 @@ public class WiredAddonProjectile(
     IGrainFactory grainFactory,
     IStuffDataFactory stuffDataFactory,
     IRoomFloorItemContext ctx
-) : FurnitureWiredAddonLogic(grainFactory, stuffDataFactory, ctx)
+) : FurnitureWiredAddonLogic(grainFactory, stuffDataFactory, ctx), IWiredSubVariableSource
 {
     public override int WiredCode => (int)WiredAddonType.PROJECTILE;
+
+    /// <summary>
+    /// The internal variables, by the bit the dialog's checkbox sets in param 11: the name suffix,
+    /// and whether the dialog calls it "interceptable" (<c>SubVariableParam</c>'s third argument).
+    /// </summary>
+    private static readonly (string Name, bool Interceptable)[] Readings =
+    [
+        ("animation.tiles_travelled", true),
+        ("animation.user_collisions", true),
+        ("animation.furni_collisions", true),
+        ("animation.position.x", false),
+        ("animation.position.y", false),
+        ("animation.position.altitude", false),
+        ("animation.is_travelling", true),
+    ];
+
+    private const int InternalVariables = 11;
+
+    /// <summary>The last flight shaped for each furni. Replaced by the next one, never needed
+    /// longer: every reading is about the most recent shot.</summary>
+    private readonly Dictionary<int, ProjectileFlight> _flights = [];
 
     // readIntParamsFromForm(), in order.
     private const int RotateToMovement = 0;
@@ -95,7 +125,7 @@ public class WiredAddonProjectile(
             new WiredBoolParamRule(false), // 8 distance counts height
             new WiredRangeParamRule(0, 100000, 0), // 9 speed increase, ms
             new WiredRangeParamRule(0, 7, 0), // 10 rotation offset
-            new WiredParamRule(0), // 11 internal variables mask (stored, not implemented)
+            new WiredParamRule(0), // 11 internal variables, a bit per reading
             new WiredBoolParamRule(false), // 12 turn the shooter
             new WiredBoolParamRule(false), // 13 bunny hop (stored, not implemented)
             new WiredRangeParamRule(0, 2, 0), // 14 distance: normal / overshoot X / always X
@@ -208,12 +238,123 @@ public class WiredAddonProjectile(
             await TurnShootersAsync(selection, dx, dy, ctx);
         }
 
+        // The client stretches the slide by (T + o) / T in x and y, and not in z.
+        double stretch = (time + (overshoot ?? 0)) / (double)time;
+
+        _flights[item.ObjectId.Value] = new ProjectileFlight(
+            StartMs: _ctx.NowMs(),
+            DurationMs: time + (overshoot ?? 0),
+            SourceX: move.SourceX,
+            SourceY: move.SourceY,
+            SourceZ: move.SourceZ.Value,
+            VisualDeltaX: dx * stretch,
+            VisualDeltaY: dy * stretch,
+            DeltaZ: move.TargetZ.Value - move.SourceZ.Value,
+            VisualSteps: (int)Math.Round(steps * stretch),
+            PathDeltaX: dx,
+            PathDeltaY: dy
+        );
+
         return move with
         {
             AnimationTime = time,
             OvershootingDistance = overshoot ?? move.OvershootingDistance,
             CurveStrength = curve != 0 ? curve : move.CurveStrength,
         };
+    }
+
+    public IReadOnlyList<IWiredVariable> CreateSubVariables(IWiredVariable parent)
+    {
+        WiredVariableSnapshot parentSnapshot = parent.GetVarSnapshot();
+        int mask = Param(InternalVariables);
+
+        // A projectile is a furni; its readings mean nothing on a user or room variable.
+        if (
+            mask == 0
+            || parentSnapshot.TargetType != WiredVariableTargetType.Furni
+            || string.IsNullOrEmpty(parentSnapshot.VariableName)
+        )
+        {
+            return [];
+        }
+
+        List<IWiredVariable> derived = [];
+
+        for (int reading = 0; reading < Readings.Length; reading++)
+        {
+            if ((mask & (1 << reading)) == 0)
+            {
+                continue;
+            }
+
+            derived.Add(
+                new WiredProjectileSubVariable(
+                    this,
+                    parent,
+                    WiredVariableIdBuilder.CreateFromBoxSubId(_ctx.ObjectId.Value, reading),
+                    $"{parentSnapshot.VariableName}.{Readings[reading].Name}",
+                    reading,
+                    Readings[reading].Interceptable
+                )
+            );
+        }
+
+        return derived;
+    }
+
+    internal RoomId RoomId => _ctx.RoomId;
+
+    internal long NowMs() => _ctx.NowMs();
+
+    internal IEnumerable<int> FlownFurniIds => _flights.Keys;
+
+    /// <summary>
+    /// A reading of the last flight shaped for <paramref name="furniId"/>, at
+    /// <paramref name="nowMs"/>; false for a furni this add-on never shot.
+    /// </summary>
+    /// <remarks>
+    /// Collisions count what stands on the real path the projectile has crossed so far, its source
+    /// tile excluded (the shooter stands there) and itself excluded — the overshoot is drawn, not
+    /// travelled, and may run through a wall.
+    /// </remarks>
+    internal bool TryRead(int reading, int furniId, long nowMs, out int value)
+    {
+        value = 0;
+
+        if (!_flights.TryGetValue(furniId, out ProjectileFlight? flight))
+        {
+            return false;
+        }
+
+        value = reading switch
+        {
+            0 => flight.TilesTravelled(nowMs),
+            1 => Collisions(flight, nowMs, furniId, users: true),
+            2 => Collisions(flight, nowMs, furniId, users: false),
+            3 => flight.X(nowMs),
+            4 => flight.Y(nowMs),
+            5 => flight.Altitude(nowMs),
+            _ => flight.IsTravelling(nowMs) ? 1 : 0,
+        };
+
+        return true;
+    }
+
+    private int Collisions(ProjectileFlight flight, long nowMs, int furniId, bool users)
+    {
+        HashSet<RoomObjectId> hit = [];
+
+        for (int step = 1; step <= flight.PathStepsCrossed(nowMs); step++)
+        {
+            (int x, int y) = flight.PathTile(step);
+            int tile = _ctx.Map.ToIdx(x, y);
+
+            hit.UnionWith(users ? _ctx.Map.AvatarStackAt(tile) : _ctx.Map.FloorStackAt(tile));
+        }
+
+        hit.Remove(new RoomObjectId(furniId));
+
+        return hit.Count;
     }
 
     /// <summary>
