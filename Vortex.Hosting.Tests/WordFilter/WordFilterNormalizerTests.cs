@@ -34,11 +34,21 @@ public sealed class WordFilterNormalizerTests
     }
 
     [Theory]
-    [InlineData("Coonnn", "con")]
+    [InlineData("CON", "con")]
     [InlineData("c o n", "con")]
     [InlineData("C.0.N", "con")]
     public void Key_IsTheSameForEverySpellingOfAWord(string word, string expected)
     {
         WordFilterNormalizer.Key(word).Should().Be(expected);
+    }
+
+    /// <summary>
+    /// Doubled letters are part of a word, not noise: "ass" and "as" are two words, and collapsing
+    /// one into the other would ban the French "as".
+    /// </summary>
+    [Fact]
+    public void Key_KeepsDoubledLetters()
+    {
+        WordFilterNormalizer.Key("ass").Should().Be("ass");
     }
 }

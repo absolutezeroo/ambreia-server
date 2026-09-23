@@ -37,9 +37,14 @@ public static class WordFilterNormalizer
         );
 
     /// <summary>
-    /// A word's identity: normalised, separators dropped, repeated letters collapsed. Two words with
-    /// the same key are the same entry — "Coonnn" and "c.o.n" cannot both be listed.
+    /// A word's identity, and the letters its pattern is built from: normalised, separators dropped.
+    /// Two words with the same key are the same entry — "CON" and "c.0.n" cannot both be listed.
     /// </summary>
+    /// <remarks>
+    /// Doubled letters are kept. The matcher already lets any letter repeat in the text
+    /// ("con" catches "cooon"), so collapsing them here would only lose words: "ass" would become
+    /// "as" and ban the French word.
+    /// </remarks>
     public static string Key(string word)
     {
         string normalized = Normalize(word.Trim());
@@ -47,7 +52,7 @@ public static class WordFilterNormalizer
 
         foreach (char c in normalized)
         {
-            if (c != ' ' && (key.Length == 0 || key[^1] != c))
+            if (c != ' ')
             {
                 key.Append(c);
             }
