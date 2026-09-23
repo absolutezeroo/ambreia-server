@@ -19,7 +19,9 @@ using Vortex.Primitives.Rooms.Snapshots.Wired.Variables;
 using Vortex.Primitives.Rooms.Wired.Variable;
 using Vortex.Protocol.Messages.Incoming.Userdefinedroomevents;
 using Vortex.Rooms.Object.Logic.Furniture.Floor.Wired;
+using Vortex.Rooms.Object.Logic.Furniture.Floor.Wired.Addons;
 using Vortex.Rooms.Object.Logic.Furniture.Floor.Wired.Variables;
+using Vortex.Rooms.Wired;
 using Vortex.Rooms.Wired.Variables;
 
 namespace Vortex.Rooms.Grains;
@@ -156,6 +158,33 @@ public sealed partial class RoomGrain
         await wiredLogic.LoadWiredAsync(ct);
 
         WiredDataSnapshot snapshot = wiredLogic.GetSnapshot();
+
+        if (wiredLogic is WiredAddonGlobalPlaceholder)
+        {
+            // The same reason as the reference variable below, for the other rooms' placeholders;
+            // this room's own are left out, since the dialog offers them "from another room".
+            await using VortexDbContext placeholderDbCtx = await _dbCtxFactory.CreateDbContextAsync(
+                ct
+            );
+
+            return snapshot with
+            {
+                ContextSnapshots =
+                [
+                    .. snapshot.ContextSnapshots,
+                    new WiredSharedPlaceholderListSnapshot
+                    {
+                        ContextType = WiredContextType.SharedGlobalPlaceholders,
+                        Elements = await WiredGlobalPlaceholderIndex.LoadForOwnerAsync(
+                            placeholderDbCtx,
+                            playerId.Value,
+                            RoomId.Value,
+                            ct
+                        ),
+                    },
+                ],
+            };
+        }
 
         if (wiredLogic is not WiredVariableReference)
         {

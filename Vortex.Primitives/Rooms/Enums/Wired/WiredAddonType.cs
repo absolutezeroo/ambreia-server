@@ -26,6 +26,7 @@ public enum WiredAddonType
     VARIABLE_TEXT_CONVERTER = 1000,
     VARIABLE_LEVEL_UP = 1001,
     VARIABLE_TIME_UTIL = 1002,
+    GLOBAL_PLACEHOLDER = 2000,
     ACHIEVEMENT_ENABLER = 2001,
 
     // The six Variable FX displays, from the AIR 1.0.31 client's AddonCodes. They are absent from

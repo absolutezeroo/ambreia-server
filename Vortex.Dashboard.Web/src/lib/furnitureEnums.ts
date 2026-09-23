@@ -367,6 +367,7 @@ export const LOGIC_GROUPS = [
       { value: 'wf_xtra_fx_number_display', label: 'wf_xtra_fx_number_display' },
       { value: 'wf_xtra_fx_progress_bar', label: 'wf_xtra_fx_progress_bar' },
       { value: 'wf_xtra_fx_status_bar', label: 'wf_xtra_fx_status_bar' },
+      { value: 'wf_xtra_global_placeholder', label: 'wf_xtra_global_placeholder' },
       { value: 'wf_xtra_mov_carry_users', label: 'wf_xtra_mov_carry_users' },
       { value: 'wf_xtra_mov_curve', label: 'wf_xtra_mov_curve' },
       { value: 'wf_xtra_mov_no_animation', label: 'wf_xtra_mov_no_animation' },

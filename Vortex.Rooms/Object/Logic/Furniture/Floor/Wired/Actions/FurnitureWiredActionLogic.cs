@@ -6,6 +6,7 @@ using Microsoft.Extensions.Logging;
 using Orleans;
 using Vortex.Primitives.Furniture.Providers;
 using Vortex.Primitives.Rooms.Enums.Wired;
+using Vortex.Primitives.Rooms.Grains;
 using Vortex.Primitives.Rooms.Object.Furniture;
 using Vortex.Primitives.Rooms.Object.Furniture.Floor;
 using Vortex.Primitives.Rooms.Wired;
@@ -72,6 +73,40 @@ public abstract class FurnitureWiredActionLogic(
                     _ctx.RoomId
                 );
             }
+        }
+
+        return await ApplyGlobalPlaceholdersAsync(text, ct);
+    }
+
+    /// <summary>
+    /// The room's global placeholders, after the pile's own add-ons: they belong to no pile, so a
+    /// pile's placeholder of the same name is the nearer one and wins. Asked only of a text that
+    /// still carries a <c>$(</c>, which is almost none of them.
+    /// </summary>
+    private async Task<string> ApplyGlobalPlaceholdersAsync(string text, CancellationToken ct)
+    {
+        if (!text.Contains("$(", StringComparison.Ordinal))
+        {
+            return text;
+        }
+
+        try
+        {
+            foreach (
+                (string token, string value) in await _ctx.RoomAs<IRoomWired>()
+                    .GetGlobalPlaceholdersAsync(ct)
+            )
+            {
+                text = text.Replace(token, value, StringComparison.Ordinal);
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(
+                ex,
+                "Global placeholders failed in room {RoomId}; the text is said without them.",
+                _ctx.RoomId
+            );
         }
 
         return text;

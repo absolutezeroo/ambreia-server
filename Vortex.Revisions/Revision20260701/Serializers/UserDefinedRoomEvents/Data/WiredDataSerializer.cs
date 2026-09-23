@@ -197,6 +197,19 @@ internal class WiredDataSerializer
                 }
 
                 break;
+            case WiredSharedPlaceholderListSnapshot placeholders:
+                // SharedGlobalPlaceholderList: a count, then (room id, room name, name) each.
+                packet.WriteInteger(placeholders.Elements.Count);
+
+                foreach (WiredSharedPlaceholderSnapshot element in placeholders.Elements)
+                {
+                    packet
+                        .WriteInteger(element.RoomId)
+                        .WriteString(element.RoomName)
+                        .WriteString(element.PlaceholderName);
+                }
+
+                break;
         }
     }
 }
