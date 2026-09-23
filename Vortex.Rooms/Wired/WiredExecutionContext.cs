@@ -72,7 +72,7 @@ internal sealed class WiredExecutionContext(IWiredRoomHost host)
         }
     }
 
-    public Task ProcessFloorItemMovementAsync(
+    public async Task ProcessFloorItemMovementAsync(
         IRoomFloorItem floorItem,
         int tileIdx,
         Altitude? z,
@@ -81,35 +81,63 @@ internal sealed class WiredExecutionContext(IWiredRoomHost host)
     {
         if (floorItem is null)
         {
-            return Task.CompletedTask;
+            return;
         }
 
         try
         {
             (int sourceX, int sourceY, Altitude sourceZ) = (floorItem.X, floorItem.Y, floorItem.Z);
+            (int targetX, int targetY) = Actions.GetTileXY(tileIdx);
 
-            Altitude finalZ = z ?? floorItem.Z;
-            Rotation finalRot = rot ?? floorItem.Rotation;
+            Rotation? addonRot = null;
 
-            if (Actions.MoveFloorItem(floorItem, tileIdx, z, rot))
+            foreach (IWiredAddon addon in Addons)
             {
-                FloorItemMoves.Add(
-                    new()
-                    {
-                        ObjectId = floorItem.ObjectId,
-                        SourceX = sourceX,
-                        SourceY = sourceY,
-                        SourceZ = sourceZ,
-                        TargetX = floorItem.X,
-                        TargetY = floorItem.Y,
-                        TargetZ = floorItem.Z,
-                        Rotation = floorItem.Rotation,
-                        AnimationTime =
-                            Policy.AnimationMode == WiredAnimationModeType.Instant
-                                ? 0
-                                : Policy.AnimationTimeMs,
-                    }
-                );
+                addonRot =
+                    await addon.RotateFloorItemMoveAsync(
+                        floorItem,
+                        targetX,
+                        targetY,
+                        this,
+                        CancellationToken.None
+                    ) ?? addonRot;
+            }
+
+            // A rotation an add-on asked for is cosmetic; the move is what the action promised. A
+            // furni that cannot take it (a two-direction item asked to face a diagonal) still moves.
+            bool moved =
+                (addonRot is not null && Actions.MoveFloorItem(floorItem, tileIdx, z, addonRot))
+                || Actions.MoveFloorItem(floorItem, tileIdx, z, rot);
+
+            if (moved)
+            {
+                WiredFloorItemMovementSnapshot move = new()
+                {
+                    ObjectId = floorItem.ObjectId,
+                    SourceX = sourceX,
+                    SourceY = sourceY,
+                    SourceZ = sourceZ,
+                    TargetX = floorItem.X,
+                    TargetY = floorItem.Y,
+                    TargetZ = floorItem.Z,
+                    Rotation = floorItem.Rotation,
+                    AnimationTime =
+                        Policy.AnimationMode == WiredAnimationModeType.Instant
+                            ? 0
+                            : Policy.AnimationTimeMs,
+                };
+
+                foreach (IWiredAddon addon in Addons)
+                {
+                    move = await addon.ShapeFloorItemMoveAsync(
+                        floorItem,
+                        move,
+                        this,
+                        CancellationToken.None
+                    );
+                }
+
+                FloorItemMoves.Add(move);
             }
         }
         catch (Exception ex)
@@ -121,8 +149,6 @@ internal sealed class WiredExecutionContext(IWiredRoomHost host)
                 tileIdx
             );
         }
-
-        return Task.CompletedTask;
     }
 
     public Task ProcessWallItemMovementAsync(
