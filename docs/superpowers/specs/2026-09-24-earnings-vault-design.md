@@ -29,55 +29,141 @@ Out (separate slices): Daily gift, Donations, Bonus bag, Games, Agency (the feat
 routing Marketplace (already has its own claim via `CreditsOwed` — a second claim path risks double
 payment), Surprise boxes (products), Wired chest withdrawals, Level progression.
 
+## Design principle
+
+A payout source knows **what** it pays and **why** — never how the Earnings window works. Adding a
+future category (daily gift, donations, marketplace…) must be a one-line change in that source, with
+no knowledge of the wire, of vault reward types, or of which currencies the vault can hold. Every
+vault-specific rule lives in exactly one place:
+
+| Rule | Lives in |
+|---|---|
+| Which currencies the Earnings window can hold, and their wire type | `VaultRewardRouting` |
+| A currency it cannot hold is paid straight to the wallet | `PlayerVaultGrain.EarnAsync` |
+| A deposit is recorded once per source event | `source_key` unique index |
+| How a claimed row turns into a payout | one `IVaultRewardSettler` per reward type |
+| Telling the client something changed | `PlayerVaultGrain`, after a deposit |
+
 ## Design
 
-### 1. Vault grain (`Vortex.Collectibles/Grains/PlayerVaultGrain.cs`)
+### 1. The single entry point — `IPlayerVaultGrain.EarnAsync`
 
-- **One row per deposit.** `AddIncomeRewardAsync` stops merging into an existing row; every deposit
-  inserts an immutable row. The client already sums rows per category
-  (`EarningsView.onIncomeRewardDataReceived`).
-- **Idempotent per-row claim.** For each claimed row: `IPlayerWalletGrain.CreditOnceAsync(...)` with
-  a step key `vault-row-{id}`, then delete that row. A crash between credit and delete is recovered
-  by the next claim: the credit is a no-op, the row is deleted. No loss, no double payment.
-- **Claim All.** The parser reads the byte signed (`(sbyte)`); `VaultRewardCategoryType.All = -1`
-  claims every category. The response echoes `-1`, which the client handles (all rows zeroed, all
-  buttons disabled).
-- **Product rows.** None are produced in this slice. If one exists, the claim leaves it in place
-  instead of deleting it unpaid.
-- **Notification.** After a successful deposit, send `IncomeRewardNotificationMessageComposer
-  { RewardCategory }` via `PlayerPresenceGrain.SendComposerAsync`. Offline player: nothing is sent;
-  the status is read on the next window open.
-- **Enum.** Add `Games = 11`, `WiredChest = 12`, `Agency = 13` (from `EarningsView.windowProcedure`).
+```csharp
+Task EarnAsync(IncomeEarning earning, CancellationToken ct);
 
-### 2. Achievements (`Vortex.Progression/Grains/PlayerAchievementGrain.cs`, level-up payout)
+[GenerateSerializer, Immutable]
+public sealed record IncomeEarning
+{
+    [Id(0)] public required VaultRewardCategoryType Category { get; init; }
+    [Id(1)] public required CurrencyKind Currency { get; init; }
+    [Id(2)] public required int Amount { get; init; }
+    [Id(3)] public required string SourceKey { get; init; }   // e.g. "club-payday:2026-09-01"
+}
+```
 
-- A level-up reward in **credits or duckets** is deposited with
-  `AddIncomeRewardAsync(Achievements, Credits|Duckets, amount)` instead of `GrantCurrencyAsync`.
-- Any other currency (diamonds, seasonal points…) stays a direct grant: the vault wire only knows
-  reward types `0 = duckets`, `1 = credits`.
-- The deposit stays inside the existing `RecordOwedPayoutAsync` operation, so the commerce journal
-  still covers it.
+It replaces `AddIncomeRewardAsync` (which has no caller). Sources speak `CurrencyKind`, the wallet's
+own vocabulary — not `VaultRewardType`.
 
-### 3. HC payday (`Vortex.Players/Grains/PlayerGrain.cs`, `CheckAndGrantPaydayAsync`)
+- **Routing.** `VaultRewardRouting.TryGetRewardType(CurrencyKind, out VaultRewardType)` — a pure
+  static mapping: credits → `Credits (1)`, activity points type 0 → `Duckets (0)`, anything else →
+  none. When there is none, `EarnAsync` pays the currency straight to the wallet through
+  `IPlayerWalletGrain.CreditOnceAsync`, keyed on the same `SourceKey`, so the caller never branches
+  on currency and the direct path is exactly as idempotent as the vault path.
+- **Operation ids.** Every wallet credit the vault makes uses a deterministic `CommerceOperationId`
+  (name-based UUID of `vault:{playerId}:{key}`), so a retry maps onto the same receipt.
+- **Idempotent deposits.** New column `source_key` with a unique index on `(player_id, source_key)`.
+  A second deposit with the same key is a no-op. This closes the payday re-deposit exposure (a
+  deposit followed by a failed `UpsertKickbackAsync` no longer pays twice) and makes every future
+  source safely retryable. Migration backfills existing rows with `legacy:{id}`.
+- **One row per deposit.** No merging into an existing row: rows are immutable once written. The
+  client already sums rows per category (`EarningsView.onIncomeRewardDataReceived`).
+- **Notification.** After an inserted (not deduplicated) deposit, send
+  `IncomeRewardNotificationMessageComposer { RewardCategory }` via
+  `PlayerPresenceGrain.SendComposerAsync`. Offline: nothing is sent; the status is read on the next
+  window open.
 
-- `GrantCreditsAsync(totalReward)` becomes `AddIncomeRewardAsync(HabboClub, Credits, totalReward)`.
-- `ClubPaydayEvent` and `KickbackTotalRewarded` are unchanged: the payday is earned when deposited,
-  and cashed when claimed.
+### 2. Claim — settlers per reward type
+
+```csharp
+public interface IVaultRewardSettler
+{
+    IReadOnlySet<VaultRewardType> Handles { get; }
+    Task<bool> SettleAsync(int playerId, VaultIncomeRow row, CancellationToken ct);
+}
+```
+
+- `ClaimAsync(category)` loads the matching rows (`All = -1` → every category), finds the settler for
+  each row's reward type, settles, and deletes the row **only if it settled**.
+- `CurrencyVaultRewardSettler` handles `Credits` and `Duckets`, paying with
+  `IPlayerWalletGrain.CreditOnceAsync` and step key `vault-row-{id}`. A crash between credit and
+  delete is recovered by the next claim: the credit is a no-op, the row is deleted. No loss, no double
+  payment.
+- A row with no registered settler (`Product`, in this slice) stays in place. The slice that first
+  deposits products (surprise boxes, bonus bag) adds a `ProductVaultRewardSettler` and registers it —
+  the grain does not change.
+- Settlers are registered in DI and injected as `IEnumerable<IVaultRewardSettler>`; a startup check
+  fails if two settlers claim the same reward type.
+- Result: `true` if at least one row settled and none failed; the response echoes the requested
+  category (including `-1`), which the client already handles.
+
+### 3. Wire fixes
+
+- `IncomeRewardClaimMessageParser` reads the category byte **signed** (`(sbyte)packet.PopByte()`), so
+  Claim All arrives as `VaultRewardCategoryType.All = -1`.
+- `IncomeRewardClaimResponseMessageComposerSerializer` writes `(byte)(sbyte)category`, i.e. `0xFF`
+  for `All`, which the client reads back as `-1`.
+- Enum gains `All = -1`, `Games = 11`, `WiredChest = 12`, `Agency = 13`
+  (`EarningsView.windowProcedure`).
+
+### 4. Sources
+
+**Achievements** (`PlayerAchievementGrain`, level-up payout inside `RecordOwedPayoutAsync`):
+
+```csharp
+await vault.EarnAsync(new IncomeEarning {
+    Category = VaultRewardCategoryType.Achievements,
+    Currency = CurrencyRewardRules.KindFor(levelUp.RewardType),
+    Amount = levelUp.RewardAmount,
+    SourceKey = $"achievement:{definition.Id}:level:{levelUp.Level}",
+}, innerCt);
+```
+
+No currency branch: diamonds and other currencies are paid directly by `EarnAsync`. The commerce
+journal still wraps the call.
+
+**HC payday** (`PlayerGrain.CheckAndGrantPaydayAsync`): `GrantCreditsAsync(totalReward)` becomes
+`EarnAsync(HabboClub, credits, totalReward, $"club-payday:{payday:yyyy-MM-dd}")`. `ClubPaydayEvent`
+and `KickbackTotalRewarded` are unchanged: the payday is earned when deposited, cashed when claimed.
+
+### 5. Files (one type per file)
+
+| New | Project |
+|---|---|
+| `IncomeEarning` | `Vortex.Primitives/Vault` |
+| `VaultRewardRouting` | `Vortex.Primitives/Vault` |
+| `IVaultRewardSettler`, `VaultIncomeRow` | `Vortex.Collectibles/Vault` |
+| `CurrencyVaultRewardSettler` | `Vortex.Collectibles/Vault` |
+| EF migration `AddVaultIncomeSourceKey` | `Vortex.Database` |
+
+Changed: `IPlayerVaultGrain`, `PlayerVaultGrain`, `PlayerVaultIncomeRewardEntity`,
+`VaultRewardCategoryType`, the claim parser and response serializer, `PlayerAchievementGrain`,
+`PlayerGrain`, the Collectibles DI registration.
 
 ## Error handling
 
-- The deposit replaces the direct grant at the same point in each caller, so each caller keeps its
-  current failure semantics: achievements through the commerce journal, payday as before (a deposit
-  followed by a failed `UpsertKickbackAsync` re-deposits on the next check — the same exposure the
-  direct grant has today, not widened by this change).
-- A claim that fails mid-way leaves the unpaid rows in place; the response is `false` for that
-  category and the client re-enables its button.
+- Deposit failure throws to the source, which keeps its current failure semantics (achievements:
+  commerce journal; payday: retried on the next check, now safe thanks to `source_key`).
+- A settler failure leaves its row in place; other rows in the same claim still settle; the response
+  is `false` and the client re-enables the button.
 
 ## Testing
 
-- Wire: Claim All round trip — parser yields `All` from `0xFF`, response serializes `-1`.
-- Grain: a replayed claim after a simulated failure credits once.
-- Grain: product row survives a claim.
-- Achievements: a duckets reward lands in the vault; a diamonds reward stays direct.
-- Payday: deposits into the vault instead of the wallet.
-- Notification is sent after a deposit.
+- `VaultRewardRouting`: credits → 1, duckets → 0, diamonds → none.
+- Wire: Claim All round trip — parser yields `All` from `0xFF`, response serializes `0xFF`.
+- Grain: same `SourceKey` twice → one row, one notification.
+- Grain: non-vault currency → direct wallet grant, no row.
+- Grain: replayed claim after a failure between credit and delete → credited once.
+- Grain: a row with no settler survives a claim.
+- Achievements: a duckets level-up deposits with the expected source key.
+- Payday: deposits into the vault; a repeated check for the same payday does not deposit twice.
+
