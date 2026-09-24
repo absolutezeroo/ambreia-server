@@ -15,6 +15,7 @@ using Vortex.Authentication;
 using Vortex.Benchmark;
 using Vortex.Catalog;
 using Vortex.Chain.Extensions;
+using Vortex.Collectibles;
 using Vortex.Crypto.Extensions;
 using Vortex.Database.Extensions;
 using Vortex.Database.Migrations;
@@ -148,6 +149,7 @@ internal class Program
         builder.Services.AddHostPlugin<ProgressionModule>(builder);
         builder.Services.AddHostPlugin<HabbiconsModule>(builder);
         builder.Services.AddHostPlugin<RewardTracksModule>(builder);
+        builder.Services.AddHostPlugin<CollectiblesModule>(builder);
         builder.Services.AddHostPlugin<InventoryModule>(builder);
         builder.Services.AddHostPlugin<MarketplaceModule>(builder);
         builder.Services.AddHostPlugin<FishingModule>(builder);
