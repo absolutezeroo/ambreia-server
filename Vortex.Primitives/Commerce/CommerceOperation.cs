@@ -147,6 +147,18 @@ public enum CommerceOperationKind
     /// moment their entity ids met.
     /// </summary>
     NftClaim = 21,
+
+    /// <summary>
+    /// Cashing one Earnings row. The id is derived from the row, so a claim retried after a crash
+    /// between the credit and the claimed mark finds its receipt and only marks.
+    /// </summary>
+    VaultIncome = 22,
+
+    /// <summary>
+    /// An earning paid straight to the wallet — a currency the Earnings window cannot hold, or a
+    /// category the operator routed direct. Derived from the player; the step is the source key.
+    /// </summary>
+    VaultIncomeDirect = 23,
 }
 
 /// <summary>
@@ -238,6 +250,9 @@ public static class CommerceStepKeys
 
     /// <summary>The critical business event the journal relays once the operation is terminal.</summary>
     public const string RELAY = "relay";
+
+    /// <summary>Paying one claimed Earnings row.</summary>
+    public const string VAULT_CLAIM = "vault-claim";
 
     /// <summary>One step of an operation that repeats, e.g. the nth effect of a bundle.</summary>
     public static string Indexed(string step, int index) => $"{step}:{index}";
