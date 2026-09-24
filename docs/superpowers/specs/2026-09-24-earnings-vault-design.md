@@ -39,7 +39,8 @@ vault-specific rule lives in exactly one place:
 | Rule | Lives in |
 |---|---|
 | Which currencies the Earnings window can hold, and their wire type | `VaultRewardRouting` |
-| A currency it cannot hold is paid straight to the wallet | `PlayerVaultGrain.EarnAsync` |
+| Whether a category goes through the vault or is paid directly (operator's choice) | `earnings.<category>.to_vault` config keys, read by `EarningsRoutingPolicy` |
+| A currency it cannot hold, or a category routed direct, is paid straight to the wallet | `PlayerVaultGrain.EarnAsync` |
 | A deposit is recorded once per source event | `source_key` unique index |
 | How a claimed row turns into a payout | one `IVaultRewardSettler` per reward type |
 | Telling the client something changed | `PlayerVaultGrain`, after a deposit |
@@ -81,6 +82,28 @@ own vocabulary — not `VaultRewardType`.
   `IncomeRewardNotificationMessageComposer { RewardCategory }` via
   `PlayerPresenceGrain.SendComposerAsync`. Offline: nothing is sent; the status is read on the next
   window open.
+
+### 1b. Routing policy — operator-editable, per category
+
+Whether a category's earnings wait in the vault or land in the wallet immediately is a hotel choice,
+not a code constant: an operator may want paydays auto-credited again, or a future category (daily
+gift) paid directly during an event. So the choice is a runtime setting, the same mechanism as every
+other tunable (`IServerConfigGrain` + `ConfigKeyCatalog`, which already feeds the dashboard's
+server-config editor — no new dashboard page).
+
+- One `Bool` key per category: `earnings.achievements.to_vault`, `earnings.habbo_club.to_vault`
+  (group **Earnings**), defaults `true`. Constants live in `EarningsConfig` (one class, like
+  `ClubConfig`).
+- `EarningsRoutingPolicy` maps a category to its key and reads it live from `IServerConfigGrain`.
+  `EarnAsync` asks it first: `false` → the direct wallet path (same `CreditOnceAsync` + `SourceKey`
+  as the non-vault-currency path), no row, no notification.
+- **A key is declared by the slice that wires its source, never ahead of it.** A switch for a
+  category nothing pays into (daily gift, donations today) would be offered in the dashboard, flipped,
+  saved — and do nothing. The mechanism covers every category now; the catalogue lists only the live
+  ones. Wiring a new source = one `EarnAsync` call + one catalogue entry + one `EarningsConfig`
+  constant.
+- Flipping a key to `false` affects new earnings only. Rows already in the vault stay claimable —
+  nothing already earned is moved or lost.
 
 ### 2. Claim — settlers per reward type
 
@@ -143,10 +166,12 @@ and `KickbackTotalRewarded` are unchanged: the payday is earned when deposited, 
 | `VaultRewardRouting` | `Vortex.Primitives/Vault` |
 | `IVaultRewardSettler`, `VaultIncomeRow` | `Vortex.Collectibles/Vault` |
 | `CurrencyVaultRewardSettler` | `Vortex.Collectibles/Vault` |
+| `EarningsConfig` (keys + defaults) | `Vortex.Collectibles/Configuration` |
+| `EarningsRoutingPolicy` | `Vortex.Collectibles/Vault` |
 | EF migration `AddVaultIncomeSourceKey` | `Vortex.Database` |
 
 Changed: `IPlayerVaultGrain`, `PlayerVaultGrain`, `PlayerVaultIncomeRewardEntity`,
-`VaultRewardCategoryType`, the claim parser and response serializer, `PlayerAchievementGrain`,
+`VaultRewardCategoryType`, `ConfigKeyCatalog` (two entries, group Earnings), the claim parser and response serializer, `PlayerAchievementGrain`,
 `PlayerGrain`, the Collectibles DI registration.
 
 ## Error handling
@@ -162,6 +187,11 @@ Changed: `IPlayerVaultGrain`, `PlayerVaultGrain`, `PlayerVaultIncomeRewardEntity
 - Wire: Claim All round trip — parser yields `All` from `0xFF`, response serializes `0xFF`.
 - Grain: same `SourceKey` twice → one row, one notification.
 - Grain: non-vault currency → direct wallet grant, no row.
+- Grain: category routed `to_vault = false` → direct wallet grant, no row, no notification; rows
+  deposited before the flip are still claimable.
+- Catalogue: every `EarningsRoutingPolicy` key is declared in `ConfigKeyCatalog` with the same
+  default. `EarningsRoutingPolicy` throws for a category that has no key, so a source wired without
+  its switch fails its own test instead of silently defaulting.
 - Grain: replayed claim after a failure between credit and delete → credited once.
 - Grain: a row with no settler survives a claim.
 - Achievements: a duckets level-up deposits with the expected source key.
