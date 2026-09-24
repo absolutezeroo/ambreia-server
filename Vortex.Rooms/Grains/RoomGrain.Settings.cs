@@ -636,7 +636,25 @@ public sealed partial class RoomGrain
     public Task<int?> RateRoomAsync(PlayerId actor, int points, CancellationToken ct) =>
         RatingSystem.RateRoomAsync(actor, points, ct);
 
-    public async Task SetStaffPickAsync(PlayerId actor, bool staffPick, CancellationToken ct)
+    public Task<bool?> ToggleStaffPickAsync(PlayerId actor, CancellationToken ct) =>
+        // null means "decide from the stored row". See IRoomSettings.ToggleStaffPickAsync: the
+        // client posts back the state it already believed, so obeying that boolean wrote the value
+        // that was already there and picking a room did nothing at all.
+        ApplyStaffPickAsync(actor, desired: null, ct);
+
+    public async Task<bool> SetStaffPickAsync(
+        PlayerId actor,
+        bool staffPick,
+        CancellationToken ct
+    ) => await ApplyStaffPickAsync(actor, staffPick, ct).ConfigureAwait(true) is not null;
+
+    /// <summary>Writes the staff pick, flipping the stored value when <paramref name="desired"/> is
+    /// null. Answers the value now stored, or null when nothing was written.</summary>
+    private async Task<bool?> ApplyStaffPickAsync(
+        PlayerId actor,
+        bool? desired,
+        CancellationToken ct
+    )
     {
         // Same shape as ApplyStaffRoomActionsAsync: a staff power with no in-room level behind it,
         // checked until now only by the packet handler although the method is a member of a public
@@ -654,7 +672,7 @@ public sealed partial class RoomGrain
                 Capabilities.Navigator.StaffPick
             );
 
-            return;
+            return null;
         }
 
         try
@@ -669,8 +687,10 @@ public sealed partial class RoomGrain
 
             if (entity is null)
             {
-                return;
+                return null;
             }
+
+            bool staffPick = desired ?? !entity.IsStaffPick;
 
             entity.IsStaffPick = staffPick;
 
@@ -681,10 +701,14 @@ public sealed partial class RoomGrain
                 StaffPick = staffPick,
                 LastUpdatedUtc = DateTime.UtcNow,
             };
+
+            return staffPick;
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Failed to set staff pick for room {RoomId}.", _state.RoomId);
+
+            return null;
         }
     }
 

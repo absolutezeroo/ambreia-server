@@ -93,8 +93,32 @@ public interface IRoomSettings : IGrainWithIntegerKey
     /// not voted before. Answers the <c>canRate</c> flag the client is sent on entry.</summary>
     Task<bool> CanRateAsync(PlayerId actor, CancellationToken ct);
 
-    /// <summary>Staff-only: the grain resolves <c>Capabilities.Navigator.StaffPick</c> for
+    /// <summary>
+    /// Flips this room's staff pick and answers with the value it now holds.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// A toggle, not a setter, because the client does not send the state it wants. Its button
+    /// handler flips only its own caption and then posts back the value it already believed
+    /// (<c>RoomInfoViewCtrl.onStaffPick</c> passes <c>currentRoomIsStaffPick</c> unchanged, and
+    /// nothing but the room-info packet ever writes that field). Obeying that boolean writes the
+    /// value already stored, which is why picking a room did nothing at all until 2026-09-24. The
+    /// stored row is the only thing that knows the truth, so the flip happens here.
+    /// </para>
+    /// <para>
+    /// Staff-only: the grain resolves <c>Capabilities.Navigator.StaffPick</c> for
     /// <paramref name="actor"/> and does nothing without it. The handler checks too, to answer the
-    /// client without waking a room, but this is the check that decides.</summary>
-    Task SetStaffPickAsync(PlayerId actor, bool staffPick, CancellationToken ct);
+    /// client without waking a room, but this is the check that decides.
+    /// </para>
+    /// </remarks>
+    /// <returns>The staff pick after the flip, or <c>null</c> when nothing was changed.</returns>
+    Task<bool?> ToggleStaffPickAsync(PlayerId actor, CancellationToken ct);
+
+    /// <summary>
+    /// Sets this room's staff pick to <paramref name="staffPick"/>. For a caller that knows the
+    /// state it wants -- the dashboard, which is looking at the row -- where
+    /// <see cref="ToggleStaffPickAsync"/> is for the in-client button, which does not.
+    /// </summary>
+    /// <returns>Whether the write happened.</returns>
+    Task<bool> SetStaffPickAsync(PlayerId actor, bool staffPick, CancellationToken ct);
 }

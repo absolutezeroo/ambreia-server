@@ -100,4 +100,13 @@ generated:
   conflicts:
   - cf_3726e6a2d6
 verified: {}
-manual: {}
+manual:
+  the_boolean_is_not_the_requested_state:
+    source: "official client WIN63-202607011411-782849652, com/sulake/habbo/navigator/inroom/RoomInfoViewCtrl.as:458-462 and :215-235"
+    note: "onStaffPick() calls refreshStaffPick(true), which inverts the BUTTON CAPTION only, and then sends the message with _navigator.data.currentRoomIsStaffPick unchanged. Nothing but the room-info packet ever writes that field (_SafeCls_1951.as:297 and :341). So field 1 carries the state the client currently believes, not the state the player asked for: a server that stores it writes the value already stored, and the pick never happens. Vortex did exactly that until 2026-09-24, which is why rooms.staff_pick was 0 for every room in every hotel and the public rooms view was permanently empty. The grain now flips the stored row and ignores the boolean."
+  reference_emulator_agrees:
+    source: "habbo-arcturus-daybreak, ToggleStaffPickMessageEvent.java:20-60"
+    note: "It reads the room id and stops -- it never reads the boolean at all -- then queries its own navigator_publics for the room and inserts or deletes accordingly. That is the same conclusion reached from the client: the message is a toggle, and the server owns the state. It also explains the field-count conflict cf_3726e6a2d6: Arcturus stops after one field because it does not need the second, not because the client omits it. Nitro reads two."
+  button_needs_security_level_seven:
+    source: "RoomInfoViewCtrl.as:221 and com/sulake/habbo/navigator/_SafeCls_1951.as:199-208"
+    note: "refreshStaffPick hides the button unless navigator data has roomPicker, which is set only when UserRights reports securityLevel >= 7 (eventMod is the separate >= 5). Vortex granted Capabilities.Navigator.StaffPick to moderators while SecurityLevelPolicy reported 5 for them, so a moderator held the right and never saw the control. The policy now returns Community (7) for any holder of that capability."

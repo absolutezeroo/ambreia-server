@@ -304,6 +304,7 @@ POST /api/v1/operations/reward-tracks/tasks/delete -> dashboard.ops.reward_track
 POST /api/v1/operations/reward-tracks/update -> dashboard.ops.reward_tracks.manage
 POST /api/v1/operations/rooms/close -> dashboard.ops.rooms.manage
 POST /api/v1/operations/rooms/kick -> dashboard.ops.rooms.manage
+POST /api/v1/operations/rooms/staff-pick -> dashboard.ops.rooms.manage
 POST /api/v1/operations/songs -> dashboard.ops.songs.manage
 POST /api/v1/operations/songs/delete -> dashboard.ops.songs.manage
 POST /api/v1/operations/songs/reload -> dashboard.ops.songs.manage

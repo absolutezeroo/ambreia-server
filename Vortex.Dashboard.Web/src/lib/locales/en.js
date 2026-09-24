@@ -369,6 +369,12 @@ export default {
     replayClear: 'Back to latest',
     inspect: 'Inspect',
     players: 'players',
+    staffPicked: 'Staff pick',
+    pick: 'Add to staff picks',
+    pickSummary:
+      'Put {room} (#{id}) in the staff picks: it joins the public rooms view and the hotel’s picked blocks.',
+    unpick: 'Remove from staff picks',
+    unpickSummary: 'Take {room} (#{id}) out of the staff picks.',
     colTime: 'Time',
     colEvent: 'Event',
     colActor: 'Actor',

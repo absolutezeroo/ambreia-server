@@ -3292,6 +3292,7 @@ export interface RoomTimelineHeader {
   playersMax: number;
   lastActive: string;
   modelName: string;
+  staffPick: boolean;
 }
 
 export interface RoomTimelineRow {

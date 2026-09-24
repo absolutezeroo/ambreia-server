@@ -70,7 +70,7 @@ public interface IRoomModeration : IGrainWithIntegerKey
     /// pass. Unlike everything else on this facet the actor is not required to be present in the
     /// room, and no in-room controller level is consulted: the grain resolves
     /// <c>Capabilities.Room.ModerateAny</c> for the actor instead and refuses without it, the same
-    /// contract as <see cref="IRoomSettings.SetStaffPickAsync"/>.
+    /// contract as <see cref="IRoomSettings.ToggleStaffPickAsync"/>.
     /// </summary>
     /// <param name="unlockDoor">Force the door back to open, undoing a lock used to trap visitors.</param>
     /// <param name="resetNameAndDescription">Replace an offensive name and description with a neutral placeholder.</param>

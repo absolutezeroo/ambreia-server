@@ -1,13 +1,16 @@
 ﻿<script lang="ts">
 
   import { apiGet } from '../lib/api';
+  import { createWriteOps } from '../lib/writeOps';
   import { formatDate, summarizeData } from '../lib/format';
   import EntityLink from '../components/EntityLink.svelte';
   import PageHeader from '../components/PageHeader.svelte';
   import PickerModal from '../components/PickerModal.svelte';
   import AccessDeniedNotice from '../components/AccessDeniedNotice.svelte';
-  import { isPermissionDeniedError } from '../lib/permissions';
-  import { openPlayer, openItem } from '../lib/session';
+  import ConfirmReasonModal from '../components/ConfirmReasonModal.svelte';
+  import { isPermissionDeniedError, hasDashboardCapability } from '../lib/permissions';
+  import { CAPABILITIES } from '../lib/dashboardPermissions';
+  import { openPlayer, openItem, identity } from '../lib/session';
   import { readParam, readNumberParam, writeParams } from '../lib/urlState';
   import Pagination from '../components/Pagination.svelte';
   import TableFilter from '../components/TableFilter.svelte';
@@ -27,6 +30,12 @@
   let data = $state<RoomTimeline | null>(null);
   let error = $state('');
   let forbidden = $state(false);
+
+  // The staff pick is the only thing on this page an operator changes rather than reads, and it
+  // belongs here because it applies to any room -- the room-control page lists only the active
+  // ones, and a room worth putting in the public list is rarely busy at the moment you decide it.
+  const ops = createWriteOps();
+  let canPick = $derived(hasDashboardCapability($identity, CAPABILITIES.opsRoomsManage));
 
   // The request already returns the whole window, so narrowing it is a reading operation rather
   // than another call: event type, free text and a date range, all applied to what is here.
@@ -156,6 +165,29 @@
         <span>{data.room.usersNow}/{data.room.playersMax} {$t('roomsTimeline.players')}</span>
         <span>{data.room.modelName}</span>
         <EntityLink id={data.room.roomOwnerId} label={data.room.roomOwnerName} {openPlayer} {openItem} />
+        {#if data.room.staffPick}
+          <span class="pick-badge">{$t('roomsTimeline.staffPicked')}</span>
+        {/if}
+        {#if canPick}
+          {@const room = data.room}
+          <button
+            type="button"
+            class={room.staffPick ? 'ghost-button' : 'success'}
+            onclick={() =>
+              ops.ask(
+                '/api/v1/operations/rooms/staff-pick',
+                { roomId: room.roomId, staffPick: !room.staffPick },
+                $t(room.staffPick ? 'roomsTimeline.unpick' : 'roomsTimeline.pick'),
+                $t(room.staffPick ? 'roomsTimeline.unpickSummary' : 'roomsTimeline.pickSummary', {
+                  room: room.name,
+                  id: room.roomId,
+                }),
+                { onSuccess: load },
+              )}
+          >
+            {$t(room.staffPick ? 'roomsTimeline.unpick' : 'roomsTimeline.pick')}
+          </button>
+        {/if}
       </div>
     {/if}
   </section>
@@ -276,3 +308,28 @@
     onClose={() => (picking = false)}
   />
 {/if}
+
+<ConfirmReasonModal
+  open={Boolean($ops.pending)}
+  title={$ops.pending?.title ?? ''}
+  changes={$ops.pending?.changes ?? []}
+  noteOnly={$ops.pending?.noteOnly ?? false}
+  summary={$ops.pending?.summary ?? ''}
+  confirmLabel={$ops.pending?.title ?? $t('common.confirm')}
+  busy={$ops.busy}
+  error={$ops.error}
+  onconfirm={ops.confirm}
+  oncancel={() => ops.cancel()}
+/>
+
+<style>
+  /* The room summary is a row of facts; the pick is the one that is also a decision, so it reads
+     as a badge rather than as another grey span. */
+  .pick-badge {
+    padding: 2px 8px;
+    border-radius: 999px;
+    background: var(--accent-soft, rgba(212, 175, 55, 0.15));
+    color: var(--accent, #d4af37);
+    font-weight: 600;
+  }
+</style>

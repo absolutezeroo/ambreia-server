@@ -36,8 +36,11 @@ public class ToggleStaffPickMessageHandler(
 
         IRoomSettings roomGrain = grainFactory.GetRoomSettings(message.RoomId);
 
-        await roomGrain
-            .SetStaffPickAsync(ctx.PlayerId, message.IsStaffPicked, ct)
-            .ConfigureAwait(false);
+        // message.IsStaffPicked is deliberately ignored. It is not the state the player asked for:
+        // the client's button flips only its own caption and posts back the value it already had,
+        // so honouring it wrote the value that was already stored and the pick never happened. The
+        // grain flips the row it owns instead -- which is also what the reference emulator does,
+        // reading the room id and nothing else.
+        await roomGrain.ToggleStaffPickAsync(ctx.PlayerId, ct).ConfigureAwait(false);
     }
 }

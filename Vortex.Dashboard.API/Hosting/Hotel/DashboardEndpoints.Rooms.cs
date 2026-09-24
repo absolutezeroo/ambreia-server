@@ -110,5 +110,23 @@ internal static partial class DashboardEndpoints
             Capabilities.Dashboard.OpsRoomsManage,
             TagOperations
         );
+        MapPost(
+            app,
+            ApiOperations + "/rooms/staff-pick",
+            async (
+                HttpContext ctx,
+                SetRoomStaffPickRequest body,
+                RoomOperations ops,
+                CancellationToken ct
+            ) =>
+                body.RoomId <= 0
+                    ? Results.BadRequest(new { error = "invalid_request" })
+                    : Results.Ok(
+                        await ops.SetRoomStaffPickAsync(body, ctx.ActorEmail(), ct)
+                            .ConfigureAwait(false)
+                    ),
+            Capabilities.Dashboard.OpsRoomsManage,
+            TagOperations
+        );
     }
 }

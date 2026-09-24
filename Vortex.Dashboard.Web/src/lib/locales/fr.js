@@ -369,6 +369,12 @@ export default {
     replayClear: 'Revenir au plus récent',
     inspect: 'Inspecter',
     players: 'joueurs',
+    staffPicked: 'Choix du staff',
+    pick: 'Ajouter aux choix du staff',
+    pickSummary:
+      'Mettre {room} (#{id}) dans les choix du staff : elle rejoint la vue des salles publiques et les blocs choisis de l’hôtel.',
+    unpick: 'Retirer des choix du staff',
+    unpickSummary: 'Retirer {room} (#{id}) des choix du staff.',
     colTime: 'Heure',
     colEvent: 'Événement',
     colActor: 'Acteur',
