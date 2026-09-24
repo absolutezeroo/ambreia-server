@@ -268,6 +268,23 @@ public static class ConfigKeyCatalog
             "Badge granted while VIP",
             "Habbo Club"
         ),
+        // Earnings window routing. One switch per category with a live source — mirrors
+        // Vortex.Collectibles EarningsConfig / EarningsRoutingPolicy (duplicated here because
+        // Primitives can't reference that feature project).
+        new(
+            "earnings.achievements.to_vault",
+            "true",
+            ConfigValueKind.Bool,
+            "Credits and duckets from achievement levels wait in the Earnings window until the player claims them. Off: they land in the wallet immediately. Other currencies are always paid directly. Earnings already waiting stay claimable when this changes.",
+            "Earnings"
+        ),
+        new(
+            "earnings.habbo_club.to_vault",
+            "true",
+            ConfigValueKind.Bool,
+            "The Habbo Club payday waits in the Earnings window until the player claims it. Off: it lands in the wallet on payday. Paydays already waiting stay claimable when this changes.",
+            "Earnings"
+        ),
         new(
             "rooms.max_rooms_per_player",
             "50",
