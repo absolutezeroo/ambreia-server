@@ -167,6 +167,9 @@ internal sealed class WebApiTestFactory : IAsyncDisposable
         builder.Services.AddSingleton<IWebApiFeedService>(
             new WebApiFeedService(DbContexts, Events, WordFilter)
         );
+        builder.Services.AddSingleton<IWebApiAlbumService>(
+            new WebApiAlbumService(DbContexts, Events, WordFilter)
+        );
 
         // Forwarded in production (WebApiWebHost.ForwardSingletons) — the same instance the grains
         // filter with. Registered here so check-webapi-forwarding.mjs finds the three lists agree.

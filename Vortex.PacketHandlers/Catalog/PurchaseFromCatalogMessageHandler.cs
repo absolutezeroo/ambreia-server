@@ -5,11 +5,13 @@ using System.Threading.Tasks;
 using Orleans;
 using Vortex.Catalog.Exceptions;
 using Vortex.Messages.Registry;
+using Vortex.PacketHandlers.Moderation;
 using Vortex.Primitives.Catalog;
 using Vortex.Primitives.Catalog.Enums;
 using Vortex.Primitives.Catalog.Grains;
 using Vortex.Primitives.Catalog.Providers;
 using Vortex.Primitives.Catalog.Snapshots;
+using Vortex.Primitives.Moderation.WordFilter;
 using Vortex.Primitives.Orleans;
 using Vortex.Primitives.Orleans.Snapshots.Players;
 using Vortex.Primitives.Players.Enums;
@@ -26,9 +28,11 @@ namespace Vortex.PacketHandlers.Catalog;
 public class PurchaseFromCatalogMessageHandler(
     IGrainFactory grainFactory,
     ICatalogService catalogService,
-    ICatalogClubOfferProvider clubOfferProvider
+    ICatalogClubOfferProvider clubOfferProvider,
+    IWordFilter wordFilter
 ) : IMessageHandler<PurchaseFromCatalogMessage>
 {
+    private readonly IWordFilter _wordFilter = wordFilter;
     private readonly IGrainFactory _grainFactory = grainFactory;
     private readonly ICatalogService _catalogService = catalogService;
     private readonly ICatalogClubOfferProvider _clubOfferProvider = clubOfferProvider;
@@ -216,6 +220,20 @@ public class PurchaseFromCatalogMessageHandler(
         CancellationToken ct
     )
     {
+        // Before the grain, which debits: a pet (or bot) refused its name costs nothing.
+        // PurchaseError closes the catalogue's pending purchase; the bubble says why.
+        string? extraParam = await _wordFilter
+            .PassPurchaseExtraAsync(ctx, message.ExtraParam, ct)
+            .ConfigureAwait(false);
+
+        if (extraParam is null)
+        {
+            await ctx.SendComposerAsync(new PurchaseErrorMessageComposer(), ct)
+                .ConfigureAwait(false);
+
+            return;
+        }
+
         try
         {
             ICatalogPurchaseGrain purchaseGrain = _grainFactory.GetCatalogPurchaseGrain(
@@ -225,7 +243,7 @@ public class PurchaseFromCatalogMessageHandler(
                 .PurchaseOfferFromCatalogAsync(
                     CatalogType.Normal,
                     message.OfferId,
-                    message.ExtraParam ?? string.Empty,
+                    extraParam,
                     message.Quantity,
                     ct
                 )

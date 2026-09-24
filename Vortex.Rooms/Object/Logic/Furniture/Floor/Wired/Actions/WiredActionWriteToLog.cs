@@ -41,6 +41,10 @@ public class WiredActionWriteToLog(
 {
     public override int WiredCode => (int)WiredActionType.WRITE_TO_LOG;
 
+    /// <summary>The line lands in the room's wired log, which everyone with rights reads.</summary>
+    public override (int Start, int Length)? ProseInStringParam(string stringParam) =>
+        (0, stringParam.Length);
+
     public override List<IWiredParamRule> GetIntParamRules() =>
         [
             new WiredEnumParamRule<WiredLogLevel>(

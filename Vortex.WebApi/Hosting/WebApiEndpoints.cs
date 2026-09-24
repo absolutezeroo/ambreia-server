@@ -85,6 +85,9 @@ internal static partial class WebApiEndpoints
         // WebApiEndpoints.Feed.cs.
         WebApiEndpointsFeed.MapFeed(app, TagPublic, TagUser);
 
+        // Photo albums, each with a card in the feed above — see WebApiEndpoints.Album.cs.
+        WebApiEndpointsAlbum.MapAlbums(app, TagPublic, TagUser);
+
         // No public tag: a notification has exactly one reader, so both of its routes are the
         // player's own.
         WebApiEndpointsNotifications.MapNotifications(app, TagUser);

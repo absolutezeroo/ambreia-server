@@ -2,7 +2,9 @@ using System.Threading;
 using System.Threading.Tasks;
 using Orleans;
 using Vortex.Messages.Registry;
+using Vortex.PacketHandlers.Moderation;
 using Vortex.Primitives.Action;
+using Vortex.Primitives.Moderation.WordFilter;
 using Vortex.Primitives.Orleans;
 using Vortex.Primitives.Rooms.Snapshots.Wired;
 using Vortex.Protocol.Messages.Incoming.Userdefinedroomevents.Wiredtrading.Contracts;
@@ -18,10 +20,11 @@ namespace Vortex.PacketHandlers.UserDefinedRoomEvents.Wiredtrading;
 /// the server's reading of the save — a field the server declined to keep leaves the screen instead
 /// of lingering there until the next open.
 /// </remarks>
-public class SaveWiredContractMessageHandler(IGrainFactory grainFactory)
+public class SaveWiredContractMessageHandler(IGrainFactory grainFactory, IWordFilter wordFilter)
     : IMessageHandler<SaveWiredContractMessage>
 {
     private readonly IGrainFactory _grainFactory = grainFactory;
+    private readonly IWordFilter _wordFilter = wordFilter;
 
     public async ValueTask HandleAsync(
         SaveWiredContractMessage message,
@@ -34,14 +37,33 @@ public class SaveWiredContractMessageHandler(IGrainFactory grainFactory)
             return;
         }
 
-        WiredContractSnapshot? saved = await _grainFactory
-            .GetRoomWired(ctx.RoomId)
-            .SaveWiredContractAsync(
-                ActionContext.CreateForPlayer(ctx.PlayerId, ctx.RoomId),
-                message.Contract,
-                ct
-            )
+        // The two texts the trade window shows the other party. A refusal answers like any refused
+        // save (the editor stays open), and the bubble beside it gives the real reason — the
+        // client's only fail text reads "Invalid or empty requirements", which would mislead alone.
+        string? receiveText = await _wordFilter
+            .PassAsync(ctx, message.Contract.ReceiveText, WordFilterSource.Wired, ct)
             .ConfigureAwait(false);
+        string? rewardText = receiveText is null
+            ? null
+            : await _wordFilter
+                .PassAsync(ctx, message.Contract.RewardText, WordFilterSource.Wired, ct)
+                .ConfigureAwait(false);
+
+        WiredContractSnapshot? saved =
+            receiveText is null || rewardText is null
+                ? null
+                : await _grainFactory
+                    .GetRoomWired(ctx.RoomId)
+                    .SaveWiredContractAsync(
+                        ActionContext.CreateForPlayer(ctx.PlayerId, ctx.RoomId),
+                        message.Contract with
+                        {
+                            ReceiveText = receiveText,
+                            RewardText = rewardText,
+                        },
+                        ct
+                    )
+                    .ConfigureAwait(false);
 
         if (saved is null)
         {

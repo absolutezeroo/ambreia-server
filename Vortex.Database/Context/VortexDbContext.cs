@@ -166,6 +166,10 @@ public class VortexDbContext(DbContextOptions<VortexDbContext> options)
 
     public DbSet<WebFeedPostTagEntity> WebFeedPostTags { get; init; } = null!;
 
+    public DbSet<WebAlbumEntity> WebAlbums { get; init; } = null!;
+
+    public DbSet<WebAlbumPhotoEntity> WebAlbumPhotos { get; init; } = null!;
+
     public DbSet<WebNotificationEntity> WebNotifications { get; init; } = null!;
 
     public DbSet<NavigatorTopLevelContextEntity> NavigatorTopLevelContexts { get; init; } = null!;

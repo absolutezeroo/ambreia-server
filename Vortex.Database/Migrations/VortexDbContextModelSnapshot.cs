@@ -2705,6 +2705,114 @@ namespace Vortex.Database.Migrations
                     b.ToTable("error_occurrences");
                 });
 
+            modelBuilder.Entity("Vortex.Database.Entities.Feed.WebAlbumEntity", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasColumnName("id");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("CreatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime(6)")
+                        .HasColumnName("created_at");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<DateTime>("CreatedAt"));
+
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("datetime(6)")
+                        .HasColumnName("deleted_at");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("varchar(500)")
+                        .HasColumnName("description");
+
+                    b.Property<int>("FeedPostEntityId")
+                        .HasColumnType("int")
+                        .HasColumnName("feed_post_id");
+
+                    b.Property<int>("PlayerEntityId")
+                        .HasColumnType("int")
+                        .HasColumnName("player_id");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasMaxLength(60)
+                        .HasColumnType("varchar(60)")
+                        .HasColumnName("title");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("datetime(6)")
+                        .HasColumnName("updated_at");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlComputedColumn(b.Property<DateTime>("UpdatedAt"));
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("FeedPostEntityId")
+                        .IsUnique();
+
+                    b.HasIndex("PlayerEntityId", "CreatedAt");
+
+                    b.ToTable("web_albums");
+                });
+
+            modelBuilder.Entity("Vortex.Database.Entities.Feed.WebAlbumPhotoEntity", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasColumnName("id");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("CameraPhotoEntityId")
+                        .HasColumnType("int")
+                        .HasColumnName("photo_id");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime(6)")
+                        .HasColumnName("created_at");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<DateTime>("CreatedAt"));
+
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("datetime(6)")
+                        .HasColumnName("deleted_at");
+
+                    b.Property<int>("Ordinal")
+                        .HasColumnType("int")
+                        .HasColumnName("ordinal");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("datetime(6)")
+                        .HasColumnName("updated_at");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlComputedColumn(b.Property<DateTime>("UpdatedAt"));
+
+                    b.Property<int>("WebAlbumEntityId")
+                        .HasColumnType("int")
+                        .HasColumnName("album_id");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CameraPhotoEntityId");
+
+                    b.HasIndex("WebAlbumEntityId", "CameraPhotoEntityId")
+                        .IsUnique();
+
+                    b.HasIndex("WebAlbumEntityId", "Ordinal");
+
+                    b.ToTable("web_album_photos");
+                });
+
             modelBuilder.Entity("Vortex.Database.Entities.Feed.WebFeedPollChoiceEntity", b =>
                 {
                     b.Property<int>("Id")
@@ -2819,6 +2927,10 @@ namespace Vortex.Database.Migrations
                         .HasMaxLength(500)
                         .HasColumnType("varchar(500)")
                         .HasColumnName("body");
+
+                    b.Property<DateTime?>("BumpedAt")
+                        .HasColumnType("datetime(6)")
+                        .HasColumnName("bumped_at");
 
                     b.Property<DateTime>("CreatedAt")
                         .ValueGeneratedOnAdd()
@@ -13290,6 +13402,44 @@ namespace Vortex.Database.Migrations
                     b.Navigation("PlayerEntity");
                 });
 
+            modelBuilder.Entity("Vortex.Database.Entities.Feed.WebAlbumEntity", b =>
+                {
+                    b.HasOne("Vortex.Database.Entities.Feed.WebFeedPostEntity", "FeedPostEntity")
+                        .WithMany()
+                        .HasForeignKey("FeedPostEntityId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Vortex.Database.Entities.Players.PlayerEntity", "PlayerEntity")
+                        .WithMany()
+                        .HasForeignKey("PlayerEntityId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("FeedPostEntity");
+
+                    b.Navigation("PlayerEntity");
+                });
+
+            modelBuilder.Entity("Vortex.Database.Entities.Feed.WebAlbumPhotoEntity", b =>
+                {
+                    b.HasOne("Vortex.Database.Entities.Camera.CameraPhotoEntity", "CameraPhotoEntity")
+                        .WithMany()
+                        .HasForeignKey("CameraPhotoEntityId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Vortex.Database.Entities.Feed.WebAlbumEntity", "WebAlbumEntity")
+                        .WithMany("Photos")
+                        .HasForeignKey("WebAlbumEntityId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("CameraPhotoEntity");
+
+                    b.Navigation("WebAlbumEntity");
+                });
+
             modelBuilder.Entity("Vortex.Database.Entities.Feed.WebFeedPollChoiceEntity", b =>
                 {
                     b.HasOne("Vortex.Database.Entities.Feed.WebFeedPostEntity", "WebFeedPostEntity")
@@ -14971,6 +15121,11 @@ namespace Vortex.Database.Migrations
             modelBuilder.Entity("Vortex.Database.Entities.Collectibles.NftCollectionEntity", b =>
                 {
                     b.Navigation("Items");
+                });
+
+            modelBuilder.Entity("Vortex.Database.Entities.Feed.WebAlbumEntity", b =>
+                {
+                    b.Navigation("Photos");
                 });
 
             modelBuilder.Entity("Vortex.Database.Entities.Feed.WebFeedPollChoiceEntity", b =>

@@ -14,9 +14,9 @@ namespace Vortex.Primitives.Moderation.WordFilter;
 public interface IWordFilter
 {
     /// <summary>
-    /// Filters <paramref name="text"/> and journals any hit against the player. A
-    /// <see cref="WordFilterSource.Username"/> is refused on any hit, whatever the word's action — a
-    /// name with "bobba" spliced into it is not a name anyone chose.
+    /// Filters <paramref name="text"/> and journals any hit against the player. A key source — a
+    /// name, a search tag, see <see cref="WordFilterSourceRules.IsStrict"/> — is refused on any hit,
+    /// whatever the word's action: a key with "bobba" spliced into it is not one anyone chose.
     /// </summary>
     WordFilterResult Apply(string text, WordFilterSource source, int playerId);
 

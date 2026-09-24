@@ -28,6 +28,10 @@ public class WiredActionKickUser(
 {
     public override int WiredCode => (int)WiredActionType.KICK_FROM_ROOM;
 
+    /// <summary>The kick message is shown to the player it kicks.</summary>
+    public override (int Start, int Length)? ProseInStringParam(string stringParam) =>
+        (0, stringParam.Length);
+
     public override List<WiredPlayerSourceType[]> GetAllowedPlayerSources() =>
         [
             [

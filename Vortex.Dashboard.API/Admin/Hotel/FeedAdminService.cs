@@ -64,6 +64,19 @@ public sealed class FeedAdminService(IDbContextFactory<VortexDbContext> dbCtxFac
             child.DeletedAt = now;
         }
 
+        // An album lives and dies with its card, so taking the card down takes the album with it —
+        // the same rule as WebApiAlbumService.DeleteWithCardAsync, spelled out here for the reason
+        // the remarks above give.
+        List<WebAlbumEntity> albums = await db
+            .WebAlbums.Where(a => a.FeedPostEntityId == postId)
+            .ToListAsync(ct)
+            .ConfigureAwait(false);
+
+        foreach (WebAlbumEntity album in albums)
+        {
+            album.DeletedAt = now;
+        }
+
         await db.SaveChangesAsync(ct).ConfigureAwait(false);
 
         return true;

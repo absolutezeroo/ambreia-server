@@ -139,6 +139,14 @@ public abstract class FurnitureWiredLogic(
     }
 
     /// <summary>
+    /// The part of the string parameter a player reads — a message the box shows, a line a bot
+    /// says — which the hotel-wide word filter checks on save. Null, the default, when the string is
+    /// not prose at all: a bot's name, a keyword a trigger listens for, a time zone, a variable's
+    /// name. Those are keys, and filtering them would only break what they point at.
+    /// </summary>
+    public virtual (int Start, int Length)? ProseInStringParam(string stringParam) => null;
+
+    /// <summary>
     /// The rule for every int param the box actually carries, tail included.
     /// </summary>
     /// <remarks>

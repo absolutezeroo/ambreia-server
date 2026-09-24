@@ -3,8 +3,10 @@ using System.Threading.Tasks;
 using Orleans;
 using Vortex.Catalog.Exceptions;
 using Vortex.Messages.Registry;
+using Vortex.PacketHandlers.Moderation;
 using Vortex.Primitives.Catalog.Enums;
 using Vortex.Primitives.Catalog.Snapshots;
+using Vortex.Primitives.Moderation.WordFilter;
 using Vortex.Primitives.Orleans;
 using Vortex.Primitives.Players;
 using Vortex.Protocol.Messages.Incoming.Catalog;
@@ -12,10 +14,13 @@ using Vortex.Protocol.Messages.Outgoing.Catalog;
 
 namespace Vortex.PacketHandlers.Catalog;
 
-public class PurchaseFromCatalogAsGiftMessageHandler(IGrainFactory grainFactory)
-    : IMessageHandler<PurchaseFromCatalogAsGiftMessage>
+public class PurchaseFromCatalogAsGiftMessageHandler(
+    IGrainFactory grainFactory,
+    IWordFilter wordFilter
+) : IMessageHandler<PurchaseFromCatalogAsGiftMessage>
 {
     private readonly IGrainFactory _grainFactory = grainFactory;
+    private readonly IWordFilter _wordFilter = wordFilter;
 
     public async ValueTask HandleAsync(
         PurchaseFromCatalogAsGiftMessage message,
@@ -46,6 +51,25 @@ public class PurchaseFromCatalogAsGiftMessageHandler(IGrainFactory grainFactory)
             return;
         }
 
+        // The card's message, and the name a gifted pet or bot carries in the extra parameter —
+        // both before the grain, which debits. The receiver's name is a lookup key, not prose.
+        string? giftMessage = await _wordFilter
+            .PassAsync(ctx, message.Message ?? string.Empty, WordFilterSource.Gift, ct)
+            .ConfigureAwait(false);
+        string? extraParam = giftMessage is null
+            ? null
+            : await _wordFilter
+                .PassPurchaseExtraAsync(ctx, message.ExtraParam, ct)
+                .ConfigureAwait(false);
+
+        if (giftMessage is null || extraParam is null)
+        {
+            await ctx.SendComposerAsync(new PurchaseErrorMessageComposer(), ct)
+                .ConfigureAwait(false);
+
+            return;
+        }
+
         try
         {
             // Everything the purchase involves -- offer lookup, the giftable check, the club gate,
@@ -56,14 +80,14 @@ public class PurchaseFromCatalogAsGiftMessageHandler(IGrainFactory grainFactory)
                 .PurchaseOfferAsGiftAsync(
                     CatalogType.Normal,
                     message.OfferCode,
-                    message.ExtraParam ?? string.Empty,
+                    extraParam,
                     receiverId.Value,
                     new GiftWrappingSpec
                     {
                         StuffTypeId = message.BoxStuffTypeId,
                         BoxTypeId = message.BoxTypeId,
                         RibbonTypeId = message.RibbonTypeId,
-                        Message = message.Message ?? string.Empty,
+                        Message = giftMessage,
                         ShowPurchaserName = message.ShowPurchaserName,
                     },
                     ct

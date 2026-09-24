@@ -100,8 +100,9 @@ public sealed class WordFilter : IWordFilter, IDisposable
             return new WordFilterResult(verdict.Text, false, false);
         }
 
-        // A name with "bobba" spliced into it is not a name anyone chose: any hit refuses it.
-        bool refused = verdict.Refused || source == WordFilterSource.Username;
+        // A key with "bobba" spliced into it — a name, a search tag — is not one anyone chose: any
+        // hit refuses it.
+        bool refused = verdict.Refused || WordFilterSourceRules.IsStrict(source);
 
         _journal(
             new WordFilterHit(

@@ -30,12 +30,8 @@ namespace Vortex.PacketHandlers.Tests;
 /// The hotel-wide word filter at the five packet handlers that take a player's text: what it refuses
 /// reaches no grain, what it replaces is what the grain gets, and the player is told.
 /// </summary>
-public sealed class WordFilterHandlerTests
+public sealed class WordFilterHandlerTests : WordFilterHandlerFixture
 {
-    private readonly List<object> _sent = [];
-    private readonly List<ProxyCall> _grainCalls = [];
-    private readonly List<ProxyCall> _filterCalls = [];
-
     [Fact]
     public async Task ARefusedMotto_IsNeverSaved_AndTheBubbleIsSent()
     {
@@ -45,8 +41,8 @@ public sealed class WordFilterHandlerTests
             CancellationToken.None
         );
 
-        _grainCalls.Should().NotContain(c => c.Method.Name == "SetMottoAsync");
-        _sent.Should().ContainSingle().Which.Should().BeOfType<NotificationDialogMessageComposer>();
+        GrainCalls.Should().NotContain(c => c.Method.Name == "SetMottoAsync");
+        Sent.Should().ContainSingle().Which.Should().BeOfType<NotificationDialogMessageComposer>();
     }
 
     [Fact]
@@ -58,13 +54,13 @@ public sealed class WordFilterHandlerTests
             CancellationToken.None
         );
 
-        _grainCalls
+        GrainCalls
             .Should()
             .ContainSingle(c => c.Method.Name == "SetMottoAsync")
             .Which.Args![0]
             .Should()
             .Be("bobba");
-        _filterCalls
+        FilterCalls
             .Should()
             .ContainSingle()
             .Which.Args.Should()
@@ -84,8 +80,8 @@ public sealed class WordFilterHandlerTests
             CancellationToken.None
         );
 
-        _grainCalls.Should().NotContain(c => c.Method.Name == "ReceiveRoomInviteAsync");
-        _sent.Should().ContainSingle().Which.Should().BeOfType<NotificationDialogMessageComposer>();
+        GrainCalls.Should().NotContain(c => c.Method.Name == "ReceiveRoomInviteAsync");
+        Sent.Should().ContainSingle().Which.Should().BeOfType<NotificationDialogMessageComposer>();
     }
 
     [Fact]
@@ -101,8 +97,8 @@ public sealed class WordFilterHandlerTests
             CancellationToken.None
         );
 
-        _filterCalls.Should().ContainSingle();
-        _grainCalls
+        FilterCalls.Should().ContainSingle();
+        GrainCalls
             .FindAll(c => c.Method.Name == "ReceiveRoomInviteAsync")
             .Should()
             .HaveCount(2)
@@ -118,11 +114,10 @@ public sealed class WordFilterHandlerTests
             CancellationToken.None
         );
 
-        _grainCalls.Should().NotContain(c => c.Method.Name == "SendMessageAsync");
-        _sent.Should().HaveCount(2);
-        _sent.Should().ContainSingle(s => s is NotificationDialogMessageComposer);
-        _sent
-            .Should()
+        GrainCalls.Should().NotContain(c => c.Method.Name == "SendMessageAsync");
+        Sent.Should().HaveCount(2);
+        Sent.Should().ContainSingle(s => s is NotificationDialogMessageComposer);
+        Sent.Should()
             .ContainSingle(s => s is InstantMessageErrorMessageComposer)
             .Which.As<InstantMessageErrorMessageComposer>()
             .ErrorCode.Should()
@@ -138,7 +133,7 @@ public sealed class WordFilterHandlerTests
             CancellationToken.None
         );
 
-        _grainCalls
+        GrainCalls
             .Should()
             .ContainSingle(c => c.Method.Name == "SendMessageAsync")
             .Which.Args![1]
@@ -155,14 +150,13 @@ public sealed class WordFilterHandlerTests
             CancellationToken.None
         );
 
-        _sent
-            .Should()
+        Sent.Should()
             .ContainSingle()
             .Which.As<CheckUserNameResultMessageComposer>()
             .ResultCode.Should()
             .Be((int)NameChangeResultCode.NameNotValid);
-        _grainCalls.Should().NotContain(c => c.Method.Name == "GetPlayerIdAsync");
-        _filterCalls.Should().OnlyContain(c => c.Method.Name == nameof(IWordFilter.Test));
+        GrainCalls.Should().NotContain(c => c.Method.Name == "GetPlayerIdAsync");
+        FilterCalls.Should().OnlyContain(c => c.Method.Name == nameof(IWordFilter.Test));
     }
 
     [Fact]
@@ -174,70 +168,16 @@ public sealed class WordFilterHandlerTests
             CancellationToken.None
         );
 
-        _sent
-            .Should()
+        Sent.Should()
             .ContainSingle()
             .Which.As<ChangeUserNameResultMessageComposer>()
             .ResultCode.Should()
             .Be((int)NameChangeResultCode.NameNotValid);
-        _grainCalls.Should().NotContain(c => c.Method.Name == "SetNameAsync");
-        _filterCalls
+        GrainCalls.Should().NotContain(c => c.Method.Name == "SetNameAsync");
+        FilterCalls
             .Should()
             .ContainSingle()
             .Which.Args.Should()
             .Equal("Connard", WordFilterSource.Username, 501);
     }
-
-    private MessageContext Context() =>
-        new(
-            FakeProxy.Create<ISessionContext>(call =>
-            {
-                if (call.Method.Name == nameof(ISessionContext.SendComposerAsync))
-                {
-                    _sent.Add(call.Args![0]!);
-                }
-
-                return null;
-            }),
-            PlayerId.Parse(501),
-            new RoomId(0)
-        );
-
-    // Every grain the handler asks for is a proxy recording its calls into _grainCalls.
-    private IGrainFactory Grains() =>
-        FakeProxy.Create<IGrainFactory>(call =>
-            call.Method.Name == nameof(IGrainFactory.GetGrain) && call.Method.IsGenericMethod
-                ? FakeProxy.CreateFor(
-                    call.Method.GetGenericArguments()[0],
-                    inner =>
-                    {
-                        _grainCalls.Add(inner);
-
-                        return null;
-                    }
-                )
-                : null
-        );
-
-    private static IConfiguration Config() => new ConfigurationBuilder().Build();
-
-    private IWordFilter Refusing() => Filter(text => new WordFilterResult(text, true, false));
-
-    private IWordFilter Replacing(string with) =>
-        Filter(_ => new WordFilterResult(with, false, true));
-
-    private IWordFilter Filter(System.Func<string, WordFilterResult> answer) =>
-        FakeProxy.Create<IWordFilter>(call =>
-        {
-            _filterCalls.Add(call);
-
-            return call.Method.Name switch
-            {
-                nameof(IWordFilter.Apply) or nameof(IWordFilter.Test) => answer(
-                    (string)call.Args![0]!
-                ),
-                "get_RefusedMessage" => "Interdit.",
-                _ => null,
-            };
-        });
 }

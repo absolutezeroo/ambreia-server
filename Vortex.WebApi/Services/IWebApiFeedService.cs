@@ -50,7 +50,8 @@ public sealed record FeedPost(
     bool FavoritedByMe,
     bool Mine,
     IReadOnlyList<FeedPost> Comments,
-    FeedReposter? Reposter = null
+    FeedReposter? Reposter = null,
+    FeedAlbum? Album = null
 );
 
 /// <summary>

@@ -101,6 +101,30 @@ public sealed class WordFilterTests
         _journal.Should().ContainSingle().Which.Action.Should().Be(WordFilterAction.Refuse);
     }
 
+    /// <summary>Keys, not prose: a tag, a pet's name and a bot's name are refused on any hit too.</summary>
+    [Theory]
+    [InlineData(WordFilterSource.RoomTag)]
+    [InlineData(WordFilterSource.PetName)]
+    [InlineData(WordFilterSource.BotName)]
+    public async Task AKeySource_IsRefusedByAReplaceWordToo(WordFilterSource source)
+    {
+        using WordFilterService filter = NewFilter(Word("con", WordFilterAction.Replace));
+        await filter.ReloadAsync(CancellationToken.None);
+
+        filter.Apply("con", source, 9).Refused.Should().BeTrue();
+    }
+
+    [Theory]
+    [InlineData(WordFilterSource.BotChatter)]
+    [InlineData(WordFilterSource.Room)]
+    public async Task AProseSource_IsOnlyReplaced(WordFilterSource source)
+    {
+        using WordFilterService filter = NewFilter(Word("con", WordFilterAction.Replace));
+        await filter.ReloadAsync(CancellationToken.None);
+
+        filter.Apply("con", source, 9).Text.Should().Be("bobba");
+    }
+
     [Fact]
     public async Task Test_NeverJournals()
     {
