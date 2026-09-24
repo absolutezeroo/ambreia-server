@@ -36,7 +36,8 @@ internal static class TestFloorItems
         PlayerId ownerId,
         int width = 1,
         int length = 1,
-        IRoomObjectLogic? preAttachedLogic = null
+        IRoomObjectLogic? preAttachedLogic = null,
+        bool canWalk = true
     )
     {
         int x = 0;
@@ -44,7 +45,7 @@ internal static class TestFloorItems
         Rotation rotation = Rotation.North;
         Altitude z = Altitude.Zero;
         IRoomObjectLogic? attached = preAttachedLogic;
-        FurnitureDefinitionSnapshot definition = Definition(width, length);
+        FurnitureDefinitionSnapshot definition = Definition(width, length, canWalk);
 
         return FakeProxy.Create<IRoomFloorItem>(call =>
         {
@@ -117,7 +118,11 @@ internal static class TestFloorItems
             }
         );
 
-    public static FurnitureDefinitionSnapshot Definition(int width, int length) =>
+    public static FurnitureDefinitionSnapshot Definition(
+        int width,
+        int length,
+        bool canWalk = true
+    ) =>
         new()
         {
             Id = 1,
@@ -131,7 +136,7 @@ internal static class TestFloorItems
             Length = length,
             StackHeight = Altitude.FromInt(1),
             CanStack = true,
-            CanWalk = true,
+            CanWalk = canWalk,
             CanSit = false,
             CanLay = false,
             CanRecycle = false,

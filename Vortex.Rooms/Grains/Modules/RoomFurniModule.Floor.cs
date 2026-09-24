@@ -227,7 +227,12 @@ public sealed partial class RoomFurniModule
                         !_roomGrain._roomConfig.PlaceItemsOnAvatars
                         && tileFlags.Has(RoomTileFlags.AvatarOccupied)
                     )
-                    || (tileFlags.Has(RoomTileFlags.AvatarOccupied) && !tItem.Logic.CanWalk())
+                    // A new item has no logic yet — it is attached after this check — so the
+                    // definition answers, as it does for the stack height.
+                    || (
+                        tileFlags.Has(RoomTileFlags.AvatarOccupied)
+                        && !(tItem.Logic?.CanWalk() ?? tItem.Definition.CanWalk)
+                    )
                 )
                 {
                     return Task.FromResult(false);
