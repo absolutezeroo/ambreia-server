@@ -35,6 +35,20 @@ public class WiredActionBotTalk(
 
     public override int WiredCode => (int)WiredActionType.BOT_TALK;
 
+    public override (int Start, int Length)? ProseInStringParam(string stringParam) =>
+        LineAfterBotName(stringParam);
+
+    /// <summary>
+    /// Everything after the first separator — the line the bot says. The bot's name before it is a
+    /// key the room finds the bot by, and is left alone. No separator means no line.
+    /// </summary>
+    internal static (int Start, int Length)? LineAfterBotName(string stringParam)
+    {
+        int separator = stringParam.IndexOf(FieldSeparator);
+
+        return separator < 0 ? null : (separator + 1, stringParam.Length - separator - 1);
+    }
+
     public override List<IWiredParamRule> GetIntParamRules() =>
         [
             new WiredRangeParamRule(0, 1, 0), // 0 = talk, 1 = shout

@@ -35,6 +35,9 @@ public class WiredActionBotTalkToAvatar(
 
     public override int WiredCode => (int)WiredActionType.BOT_TALK_DIRECT_TO_AVTR;
 
+    public override (int Start, int Length)? ProseInStringParam(string stringParam) =>
+        WiredActionBotTalk.LineAfterBotName(stringParam);
+
     public override List<IWiredParamRule> GetIntParamRules() =>
         [
             new WiredRangeParamRule(0, 1, 0), // 0 = talk, 1 = whisper

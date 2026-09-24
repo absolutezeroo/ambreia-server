@@ -40,6 +40,10 @@ public class WiredActionMuteUser(
 
     public override int WiredCode => (int)WiredActionType.MUTE_USER;
 
+    /// <summary>The mute message is shown to the player it mutes.</summary>
+    public override (int Start, int Length)? ProseInStringParam(string stringParam) =>
+        (0, stringParam.Length);
+
     public override List<IWiredParamRule> GetIntParamRules() =>
         [new WiredRangeParamRule(0, MaxMinutes, 0)];
 

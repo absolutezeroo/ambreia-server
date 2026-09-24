@@ -2,7 +2,9 @@ using System.Threading;
 using System.Threading.Tasks;
 using Orleans;
 using Vortex.Messages.Registry;
+using Vortex.PacketHandlers.Moderation;
 using Vortex.Primitives.Help.Grains;
+using Vortex.Primitives.Moderation.WordFilter;
 using Vortex.Primitives.Orleans;
 using Vortex.Protocol.Messages.Incoming.Help;
 using Vortex.Protocol.Messages.Outgoing.Help;
@@ -17,7 +19,7 @@ namespace Vortex.PacketHandlers.Help;
 /// it waits for the server to send it back. Skipping the echo leaves the sender typing into a
 /// window where nothing they say ever appears.
 /// </remarks>
-public class GuideSessionMessageMessageHandler(IGrainFactory grainFactory)
+public class GuideSessionMessageMessageHandler(IGrainFactory grainFactory, IWordFilter wordFilter)
     : IMessageHandler<GuideSessionMessageMessage>
 {
     public async ValueTask HandleAsync(
@@ -27,6 +29,16 @@ public class GuideSessionMessageMessageHandler(IGrainFactory grainFactory)
     )
     {
         if (ctx.PlayerId <= 0 || string.IsNullOrEmpty(message.Message))
+        {
+            return;
+        }
+
+        // Like any chat: a refused line reaches neither side, the sender is told why.
+        string? line = await wordFilter
+            .PassAsync(ctx, message.Message, WordFilterSource.Guide, ct)
+            .ConfigureAwait(false);
+
+        if (line is null)
         {
             return;
         }
@@ -46,7 +58,7 @@ public class GuideSessionMessageMessageHandler(IGrainFactory grainFactory)
 
         GuideSessionMessageMessageComposer echo = new()
         {
-            ChatMessage = message.Message,
+            ChatMessage = line,
             SenderId = ctx.PlayerId,
         };
 

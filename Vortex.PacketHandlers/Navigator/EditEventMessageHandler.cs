@@ -2,6 +2,8 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 using Vortex.Messages.Registry;
+using Vortex.PacketHandlers.Moderation;
+using Vortex.Primitives.Moderation.WordFilter;
 using Vortex.Primitives.Rooms;
 using Vortex.Protocol.Messages.Incoming.Navigator;
 using Vortex.Protocol.Messages.Outgoing.Navigator;
@@ -10,8 +12,10 @@ namespace Vortex.PacketHandlers.Navigator;
 
 /// <summary>Edits the ad copy of a currently-active room advertisement -- see
 /// CancelEventMessageHandler for the "Event" naming note.</summary>
-public class EditEventMessageHandler(IRoomAdvertisementService roomAdvertisements)
-    : IMessageHandler<EditEventMessage>
+public class EditEventMessageHandler(
+    IRoomAdvertisementService roomAdvertisements,
+    IWordFilter wordFilter
+) : IMessageHandler<EditEventMessage>
 {
     public async ValueTask HandleAsync(
         EditEventMessage message,
@@ -24,8 +28,22 @@ public class EditEventMessageHandler(IRoomAdvertisementService roomAdvertisement
             return;
         }
 
+        string? name = await wordFilter
+            .PassAsync(ctx, message.Name, WordFilterSource.RoomEvent, ct)
+            .ConfigureAwait(false);
+        string? description = name is null
+            ? null
+            : await wordFilter
+                .PassAsync(ctx, message.Description, WordFilterSource.RoomEvent, ct)
+                .ConfigureAwait(false);
+
+        if (name is null || description is null)
+        {
+            return;
+        }
+
         RoomAdvertisementSnapshot? updated = await roomAdvertisements
-            .EditAsync(message.Id, ctx.PlayerId, message.Name, message.Description, ct)
+            .EditAsync(message.Id, ctx.PlayerId, name, description, ct)
             .ConfigureAwait(false);
 
         if (updated is null)

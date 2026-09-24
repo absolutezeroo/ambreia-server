@@ -35,6 +35,10 @@ public class WiredActionShowMessage(
 
     public override int WiredCode => (int)WiredActionType.CHAT;
 
+    /// <summary>The whole message is shown to players (placeholders and all).</summary>
+    public override (int Start, int Length)? ProseInStringParam(string stringParam) =>
+        (0, stringParam.Length);
+
     public override List<IWiredParamRule> GetIntParamRules() =>
         [
             new WiredRangeParamRule(0, 1, 0), // visibility: 0 = triggerer only, 1 = whole room

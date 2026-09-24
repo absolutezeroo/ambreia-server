@@ -12,6 +12,7 @@ using Vortex.Primitives.Action;
 using Vortex.Primitives.Events;
 using Vortex.Primitives.Inventory.Grains;
 using Vortex.Primitives.Inventory.Snapshots;
+using Vortex.Primitives.Moderation.WordFilter;
 using Vortex.Primitives.Orleans;
 using Vortex.Primitives.Rooms.Enums;
 using Vortex.Primitives.Rooms.Object;
@@ -19,6 +20,7 @@ using Vortex.Primitives.Rooms.Object.Furniture;
 using Vortex.Primitives.Rooms.Object.Furniture.Floor;
 using Vortex.Primitives.Rooms.Snapshots.Wired;
 using Vortex.Protocol.Messages.Incoming.Userdefinedroomevents;
+using Vortex.Protocol.Messages.Outgoing.Notifications;
 using Vortex.Rooms.Grains.Systems;
 using Vortex.Rooms.Object.Logic.Furniture.Floor.Wired;
 
@@ -294,6 +296,41 @@ public sealed partial class RoomActionModule
         if (item.Logic is not FurnitureWiredLogic wiredLogic)
         {
             throw new VortexException(VortexErrorCodeEnum.FloorItemNotFound);
+        }
+
+        // The hotel-wide word filter, on the part of the string players read — which only the box
+        // knows: a message, a line a bot says. A bot's name, a trigger's keyword and the like are
+        // keys and are not the filter's business (FurnitureWiredLogic.ProseInStringParam).
+        if (wiredLogic.ProseInStringParam(update.StringParam) is { Length: > 0 } prose)
+        {
+            string stringParam = update.StringParam;
+            (int start, int length) = prose;
+            WordFilterResult filtered = _roomGrain._wordFilter.Apply(
+                stringParam.Substring(start, length),
+                WordFilterSource.Wired,
+                ctx.PlayerId
+            );
+
+            if (filtered.Refused)
+            {
+                await _roomGrain
+                    ._grainFactory.GetPlayerPresenceGrain(ctx.PlayerId)
+                    .SendComposerAsync(
+                        WordFilterNotice.Create(_roomGrain._wordFilter.RefusedMessage)
+                    )
+                    .ConfigureAwait(true);
+
+                return false;
+            }
+
+            if (filtered.Changed)
+            {
+                update = update with
+                {
+                    StringParam =
+                        stringParam[..start] + filtered.Text + stringParam[(start + length)..],
+                };
+            }
         }
 
         if (!await wiredLogic.ApplyWiredUpdateAsync(ctx, update, ct))

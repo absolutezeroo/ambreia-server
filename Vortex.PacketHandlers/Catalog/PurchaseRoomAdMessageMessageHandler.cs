@@ -4,9 +4,11 @@ using System.Threading.Tasks;
 using Orleans;
 using Vortex.Catalog.Exceptions;
 using Vortex.Messages.Registry;
+using Vortex.PacketHandlers.Moderation;
 using Vortex.Primitives.Action;
 using Vortex.Primitives.Catalog.Grains;
 using Vortex.Primitives.Catalog.Snapshots;
+using Vortex.Primitives.Moderation.WordFilter;
 using Vortex.Primitives.Navigator;
 using Vortex.Primitives.Orleans;
 using Vortex.Primitives.Rooms.Enums;
@@ -18,7 +20,8 @@ namespace Vortex.PacketHandlers.Catalog;
 
 public class PurchaseRoomAdMessageMessageHandler(
     IGrainFactory grainFactory,
-    INavigatorProvider navigatorProvider
+    INavigatorProvider navigatorProvider,
+    IWordFilter wordFilter
 ) : IMessageHandler<PurchaseRoomAdMessageMessage>
 {
     /// <summary>Real Habbo badge granted on a player's first-ever room-ad purchase.</summary>
@@ -37,6 +40,30 @@ public class PurchaseRoomAdMessageMessageHandler(
 
         if (await SafetyLockGuard.RefusedAsync(grainFactory, ctx, ct).ConfigureAwait(false))
         {
+            return;
+        }
+
+        // Before the purchase, which debits: a refused event costs nothing. PurchaseError closes
+        // the catalogue's pending purchase; the bubble says why. The description is optional on
+        // this packet and stays null when absent.
+        string? name = await wordFilter
+            .PassAsync(ctx, message.Name, WordFilterSource.RoomEvent, ct)
+            .ConfigureAwait(false);
+        string? description = message.Description;
+        bool refused = name is null;
+
+        if (!refused && description is not null)
+        {
+            description = await wordFilter
+                .PassAsync(ctx, description, WordFilterSource.RoomEvent, ct)
+                .ConfigureAwait(false);
+            refused = description is null;
+        }
+
+        if (name is null || refused)
+        {
+            await ctx.SendComposerAsync(new PurchaseErrorMessageComposer(), ct)
+                .ConfigureAwait(false);
             return;
         }
 
@@ -70,8 +97,8 @@ public class PurchaseRoomAdMessageMessageHandler(
                 .PurchaseRoomAdAsync(
                     message.OfferId,
                     message.FlatId,
-                    message.Name,
-                    message.Description,
+                    name,
+                    description,
                     message.Extended,
                     message.CategoryId,
                     ct
