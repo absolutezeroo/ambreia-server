@@ -56,10 +56,13 @@ namespace Vortex.Rooms.Object.Logic.Furniture.Floor.Wired.Addons;
 /// it. The param is stored and ignored.
 /// </para>
 /// <para>
-/// The logic key is derived: no furnidata in any tree has a projectile add-on, so there is no
-/// classname to bind to. A definition that should use this box needs <c>logic</c> set to it.
+/// Habbo's own furni for it is <c>wf_xtra_rotate_to_dir</c> ("WIRED Add-On: Projectile" in
+/// habbo.com's furnidata, revision 74952) — the name predates the box growing into a projectile.
+/// <c>wf_xtra_projectile</c> is the key this box was first bound to, before that was found, and is
+/// kept so a definition already pointing at it keeps working.
 /// </para>
 /// </remarks>
+[RoomObjectLogic("wf_xtra_rotate_to_dir")]
 [RoomObjectLogic("wf_xtra_projectile")]
 public class WiredAddonProjectile(
     IGrainFactory grainFactory,

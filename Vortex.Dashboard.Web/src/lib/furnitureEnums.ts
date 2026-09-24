@@ -376,6 +376,7 @@ export const LOGIC_GROUPS = [
       { value: 'wf_xtra_or_eval', label: 'wf_xtra_or_eval' },
       { value: 'wf_xtra_projectile', label: 'wf_xtra_projectile' },
       { value: 'wf_xtra_random', label: 'wf_xtra_random' },
+      { value: 'wf_xtra_rotate_to_dir', label: 'wf_xtra_rotate_to_dir' },
       { value: 'wf_xtra_scan_chest_furni_by_type', label: 'wf_xtra_scan_chest_furni_by_type' },
       { value: 'wf_xtra_text_output_furni_name', label: 'wf_xtra_text_output_furni_name' },
       { value: 'wf_xtra_text_output_username', label: 'wf_xtra_text_output_username' },
