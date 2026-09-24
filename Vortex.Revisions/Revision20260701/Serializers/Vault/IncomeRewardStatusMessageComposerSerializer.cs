@@ -17,7 +17,7 @@ internal class IncomeRewardStatusMessageComposerSerializer(int header)
         foreach (IncomeRewardSnapshot reward in message.IncomeRewards)
         {
             packet
-                .WriteByte((byte)reward.RewardCategory)
+                .WriteByte(unchecked((byte)(sbyte)reward.RewardCategory))
                 .WriteByte((byte)reward.RewardType)
                 .WriteInteger(reward.Amount)
                 .WriteString(reward.ProductCode);

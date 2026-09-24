@@ -11,6 +11,8 @@ internal class IncomeRewardClaimResponseMessageComposerSerializer(int header)
         IncomeRewardClaimResponseMessageComposer message
     )
     {
-        packet.WriteByte((byte)message.RewardCategory).WriteBoolean(message.Result);
+        packet
+            .WriteByte(unchecked((byte)(sbyte)message.RewardCategory))
+            .WriteBoolean(message.Result);
     }
 }

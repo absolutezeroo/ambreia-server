@@ -1,7 +1,12 @@
 namespace Vortex.Primitives.Vault.Enums;
 
+/// <summary>
+/// The Earnings window's rows, numbered as the client's EarningsView sends them. <see cref="All"/>
+/// is its Claim All button: one byte, 0xFF, read back signed.
+/// </summary>
 public enum VaultRewardCategoryType
 {
+    All = -1,
     Tutorial = 0,
     DailyGift = 1,
     Achievements = 2,
@@ -13,4 +18,7 @@ public enum VaultRewardCategoryType
     Donation = 8,
     Suprise = 9,
     SnowStorm = 10,
+    Games = 11,
+    WiredChest = 12,
+    Agency = 13,
 }

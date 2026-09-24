@@ -7,6 +7,10 @@ namespace Vortex.Revisions.Revision20260701.Parsers.Vault;
 
 internal class IncomeRewardClaimMessageParser : IParser
 {
+    // Signed: Claim All is -1 on the wire (0xFF), and every real category fits in 0..127.
     public IMessageEvent Parse(IClientPacket packet) =>
-        new IncomeRewardClaimMessage { Category = (VaultRewardCategoryType)packet.PopByte() };
+        new IncomeRewardClaimMessage
+        {
+            Category = (VaultRewardCategoryType)unchecked((sbyte)packet.PopByte()),
+        };
 }
