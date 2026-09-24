@@ -11,6 +11,7 @@ using Orleans;
 using Vortex.Collectibles.Grains;
 using Vortex.Collectibles.Vault;
 using Vortex.Database.Context;
+using Vortex.Database.Entities.Commerce;
 using Vortex.Database.Entities.Players;
 using Vortex.Primitives.Commerce;
 using Vortex.Primitives.Events;
@@ -252,6 +253,25 @@ public sealed class PlayerVaultGrainTests
     }
 
     [Fact]
+    public async Task AKeyWithACommittedDirectReceiptButNoRow_IsNotPaidAgainAfterAFlipToVault()
+    {
+        Harness h = await Harness.StartAsync();
+        string key = "club-payday:2026-09-01";
+
+        // Models the crash: the direct credit's receipt committed, but the row that would have
+        // spent the key for the vault path too never landed.
+        await h.SeedCommittedDirectReceiptAsync(key);
+
+        h.Config["earnings.habbo_club.to_vault"] = true;
+        await h.Grain.EarnAsync(Credits(VaultRewardCategoryType.HabboClub, 40, key), default);
+
+        (await h.ReadRowsAsync()).Should().BeEmpty();
+        h.Published.OfType<VaultIncomeDepositedEvent>().Should().BeEmpty();
+        h.AppliedCredits.Should().BeEmpty();
+        h.WalletCredits.Should().BeEmpty(); // IsKeySpentAsync stops it before the wallet is even called
+    }
+
+    [Fact]
     public async Task ADirectEarning_LeavesAClaimedRowThatSpendsTheKey()
     {
         Harness h = await Harness.StartAsync();
@@ -312,6 +332,30 @@ public sealed class PlayerVaultGrainTests
     }
 
     [Fact]
+    public async Task AMarkClaimedFailure_LeavesTheRowUnclaimed_AndASecondClaimFinishesWithoutPayingAgain()
+    {
+        Harness h = await Harness.StartAsync();
+        await h.Grain.EarnAsync(
+            Credits(VaultRewardCategoryType.HabboClub, 40, "club-payday:2026-09-01"),
+            default
+        );
+
+        h.FailingUpdates.Enabled = true; // the settler pays, then the ClaimedAt update fails
+        (await h.Grain.ClaimAsync(VaultRewardCategoryType.HabboClub, default)).Should().BeFalse();
+
+        h.AppliedCredits.Should().ContainSingle();
+        (await h.ReadRowsAsync()).Should().ContainSingle().Which.ClaimedAt.Should().BeNull();
+        (await h.Grain.GetIncomeRewardsAsync(default)).Should().ContainSingle();
+
+        h.FailingUpdates.Enabled = false;
+        (await h.Grain.ClaimAsync(VaultRewardCategoryType.HabboClub, default)).Should().BeTrue();
+
+        h.AppliedCredits.Should().ContainSingle(); // the row's receipt already existed: no extra credit
+        (await h.ReadRowsAsync()).Should().ContainSingle().Which.ClaimedAt.Should().NotBeNull();
+        (await h.Grain.GetIncomeRewardsAsync(default)).Should().BeEmpty();
+    }
+
+    [Fact]
     public async Task AClaimedRow_IsMarked_NotDeleted()
     {
         Harness h = await Harness.StartAsync();
@@ -341,11 +385,13 @@ public sealed class PlayerVaultGrainTests
 
         private Harness(
             DbContextOptions<VortexDbContext> options,
-            FailingInsertInterceptor failingInserts
+            FailingInsertInterceptor failingInserts,
+            FailingUpdateInterceptor failingUpdates
         )
         {
             _options = options;
             FailingInserts = failingInserts;
+            FailingUpdates = failingUpdates;
         }
 
         public PlayerVaultGrain Grain { get; private set; } = null!;
@@ -369,6 +415,9 @@ public sealed class PlayerVaultGrainTests
         /// <summary>Makes an Earnings insert fail with something other than a duplicate key.</summary>
         public FailingInsertInterceptor FailingInserts { get; }
 
+        /// <summary>Makes the claim's <c>ClaimedAt</c> update fail after the settler already paid.</summary>
+        public FailingUpdateInterceptor FailingUpdates { get; }
+
         public async Task<List<PlayerVaultIncomeRewardEntity>> ReadRowsAsync()
         {
             await using VortexDbContext dbCtx = new(_options);
@@ -376,13 +425,42 @@ public sealed class PlayerVaultGrainTests
             return await dbCtx.PlayerVaultIncomeRewards.AsNoTracking().ToListAsync();
         }
 
+        /// <summary>
+        /// Models a direct credit that committed and crashed before its row landed: the receipt is
+        /// in both places <see cref="IPlayerVaultGrain.EarnAsync"/> could learn about it from — the
+        /// fake wallet's own set (a retried <c>CreditOnceAsync</c> would see it) and the
+        /// <c>commerce_receipts</c> table the grain's <c>IsKeySpentAsync</c> actually reads.
+        /// </summary>
+        public async Task SeedCommittedDirectReceiptAsync(string sourceKey)
+        {
+            CommerceOperationId operationId = CommerceOperationId.Deterministic(
+                CommerceOperationKind.VaultIncomeDirect,
+                PlayerId
+            );
+
+            _receipts.Add((operationId, sourceKey));
+
+            await using VortexDbContext dbCtx = new(_options);
+            dbCtx.CommerceReceipts.Add(
+                new CommerceReceiptEntity
+                {
+                    OperationId = operationId.Value,
+                    StepKey = sourceKey,
+                    Result = "applied",
+                    CreatedAt = DateTime.UtcNow,
+                }
+            );
+            await dbCtx.SaveChangesAsync();
+        }
+
         public static async Task<Harness> StartAsync(bool seedProductRow = false)
         {
             FailingInsertInterceptor failingInserts = new();
+            FailingUpdateInterceptor failingUpdates = new();
             DbContextOptions<VortexDbContext> options =
                 new DbContextOptionsBuilder<VortexDbContext>()
                     .UseInMemoryDatabase($"vault-{Guid.NewGuid():N}")
-                    .AddInterceptors(failingInserts)
+                    .AddInterceptors(failingInserts, failingUpdates)
                     .Options;
 
             if (seedProductRow)
@@ -404,7 +482,7 @@ public sealed class PlayerVaultGrainTests
                 await seed.SaveChangesAsync();
             }
 
-            Harness h = new(options, failingInserts);
+            Harness h = new(options, failingInserts, failingUpdates);
             IGrainFactory grainFactory = h.BuildGrainFactory();
 
             h.Grain = GrainActivationContext.CreateWithIntegerKey<PlayerVaultGrain>(
@@ -504,6 +582,24 @@ public sealed class PlayerVaultGrainTests
             && eventData
                 .Context!.ChangeTracker.Entries<PlayerVaultIncomeRewardEntity>()
                 .Any(e => e.State == EntityState.Added)
+                ? throw new DbUpdateException("disk full")
+                : ValueTask.FromResult(result);
+    }
+
+    /// <summary>A write failure on the claim's mark-as-claimed update, after the settler already paid.</summary>
+    private sealed class FailingUpdateInterceptor : SaveChangesInterceptor
+    {
+        public bool Enabled { get; set; }
+
+        public override ValueTask<InterceptionResult<int>> SavingChangesAsync(
+            DbContextEventData eventData,
+            InterceptionResult<int> result,
+            CancellationToken cancellationToken = default
+        ) =>
+            Enabled
+            && eventData
+                .Context!.ChangeTracker.Entries<PlayerVaultIncomeRewardEntity>()
+                .Any(e => e.State == EntityState.Modified)
                 ? throw new DbUpdateException("disk full")
                 : ValueTask.FromResult(result);
     }

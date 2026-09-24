@@ -37,17 +37,22 @@ The flush timer runs at `AchievementConfig.ProgressFlushIntervalMs` (5000 ms),
 ```
 RemoveBadgeAsync(previous)
   → GrantBadgeAsync(final)
-    → per level: wallet.GrantCurrencyAsync(CurrencyRewardRules.KindFor(rewardType), amount)
+    → per level: vault.EarnAsync(AchievementEarning.For(definition.Id, levelUp))
       → IPlayerGrain.AddAchievementScoreAsync
         → HabboAchievementNotificationMessageComposer + AchievementsScoreEventMessageComposer
           → AchievementLevelUpEvent      ← last
 ```
 
+`AchievementEarning.For` builds the `IncomeEarning` from the level-up's reward type/amount; credits
+and duckets wait in the Earnings window unless `earnings.achievements.to_vault` is `false`, other
+currencies (activity points) are paid straight to the wallet. Shared reward-type mapping is
 `CurrencyRewardRules.KindFor(rewardType)`: negative = Credits, otherwise the activity-point type.
-Shared by achievements, quests and daily tasks.
 
-> **Every runtime grant call site discards `GrantCurrencyAsync`'s `bool`.** A grant to a currency with
-> no enabled `currency_types` row is a logged no-op that the player never hears about.
+> **This no longer silently drops a failed grant.** The old direct `wallet.GrantCurrencyAsync` call
+> returned a `bool` the achievement grain discarded — a currency with no enabled `currency_types` row
+> was a logged no-op the player never heard about. `vault.EarnAsync`'s direct-pay branch instead calls
+> `PlayerWalletGrain.CreditOnceAsync`, which **throws** on the same missing row, so the failure now
+> surfaces. Quests and daily tasks (below) still call `GrantCurrencyAsync` directly and still drop it.
 > → [Economy overview](../06-economy/overview.md)
 
 Wire shape: `AchievementData` is a 14-field cumulative block, and **level = completed + 1**.

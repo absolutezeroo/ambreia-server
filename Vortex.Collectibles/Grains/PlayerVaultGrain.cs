@@ -8,6 +8,7 @@ using Microsoft.Extensions.Logging;
 using Orleans;
 using Vortex.Collectibles.Configuration;
 using Vortex.Collectibles.Vault;
+using Vortex.Database.Commerce;
 using Vortex.Database.Context;
 using Vortex.Database.Entities.Players;
 using Vortex.Primitives.Commerce;
@@ -110,10 +111,9 @@ internal sealed class PlayerVaultGrain(
         {
             // Direct: the wallet receipt makes the credit itself idempotent, and the row inserted
             // after it, claimed at birth, spends the key for the vault path too. A crash between the
-            // two is finished by the retry: the credit is a receipt no-op, then the row lands.
-            // Known ceiling: that crash followed by the operator flipping the switch to vault before
-            // the retry pays twice, because the vault path never reads direct receipts. Closing it
-            // means a receipt lookup here; the window is one crash and one flip wide.
+            // two — credit committed, row never lands — is covered without a retry: IsKeySpentAsync
+            // also reads the direct receipt, so a later EarnAsync for the same key (vault or direct)
+            // finds it already spent.
             await grainFactory
                 .GetPlayerWalletGrain(PlayerId)
                 .CreditOnceAsync(
@@ -223,7 +223,8 @@ internal sealed class PlayerVaultGrain(
 
     /// <summary>
     /// Checked against the table, not the unclaimed cache: a key whose row was already claimed, or
-    /// paid direct, must stay spent.
+    /// paid direct, must stay spent. Also checked against the direct path's wallet receipt, so a
+    /// crash between that credit committing and its row landing does not leave the key payable again.
     /// </summary>
     private async Task<bool> IsKeySpentAsync(string sourceKey, CancellationToken ct)
     {
@@ -231,9 +232,25 @@ internal sealed class PlayerVaultGrain(
             .CreateDbContextAsync(ct)
             .ConfigureAwait(true);
 
-        return await dbCtx
+        bool hasRow = await dbCtx
             .PlayerVaultIncomeRewards.AnyAsync(
                 r => r.PlayerEntityId == PlayerId && r.SourceKey == sourceKey,
+                ct
+            )
+            .ConfigureAwait(true);
+
+        if (hasRow)
+        {
+            return true;
+        }
+
+        return await dbCtx
+            .HasCommittedReceiptAsync(
+                CommerceOperationId.Deterministic(
+                    CommerceOperationKind.VaultIncomeDirect,
+                    PlayerId
+                ),
+                sourceKey,
                 ct
             )
             .ConfigureAwait(true);
