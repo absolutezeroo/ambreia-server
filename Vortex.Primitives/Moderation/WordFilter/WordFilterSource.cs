@@ -57,6 +57,9 @@ public enum WordFilterSource
 
     /// <summary>A guide session's chat or a help request's description.</summary>
     Guide = 18,
+
+    /// <summary>A website photo album's title or description.</summary>
+    Album = 19,
 }
 
 /// <summary>What each source means for the filter's outcome.</summary>

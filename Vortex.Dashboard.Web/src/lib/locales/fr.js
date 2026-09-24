@@ -2680,6 +2680,7 @@ export default {
       16: 'Message cadeau',
       17: 'Wired',
       18: 'Guide',
+      19: 'Album photo',
     },
     originalText: "Ce qu'il a écrit",
     occurredAt: 'Quand',

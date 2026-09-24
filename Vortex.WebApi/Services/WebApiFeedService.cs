@@ -98,12 +98,13 @@ public sealed class WebApiFeedService(
         // moved a number and put the post in nobody's feed.
         //
         // Ordered by the moment of the ENTRY, so a share of an old post arrives at the top where
-        // the sharer meant to put it.
+        // the sharer meant to put it. An original enters at its last bump when it has one: an
+        // album's card comes back up when photos are added to it.
         IQueryable<FeedEntry> originals = roots.Select(p => new FeedEntry
         {
             PostId = p.Id,
             ReposterId = null,
-            At = p.CreatedAt,
+            At = p.BumpedAt ?? p.CreatedAt,
         });
 
         IQueryable<FeedEntry> shares = db
@@ -744,6 +745,9 @@ public sealed class WebApiFeedService(
             child.DeletedAt = now;
         }
 
+        // An album lives and dies with its card: deleting the card is how an album is deleted.
+        await WebApiAlbumService.DeleteWithCardAsync(db, postId, now, ct).ConfigureAwait(false);
+
         await db.SaveChangesAsync(ct).ConfigureAwait(false);
 
         // Announced with the post's parent already read, because the row is now soft-deleted and
@@ -976,6 +980,12 @@ public sealed class WebApiFeedService(
             )
             .ConfigureAwait(false);
 
+        // Roots only: an album's card is always a root — PublishAsync refuses the kind outright,
+        // so only WebApiAlbumService writes one, and it never writes a comment.
+        Dictionary<int, FeedAlbum> albumsByPost = await WebApiAlbumService
+            .LoadCardsAsync(db, rootIds, ct)
+            .ConfigureAwait(false);
+
         List<FeedPost> items = [];
 
         foreach (WebFeedPostEntity root in roots)
@@ -1040,7 +1050,10 @@ public sealed class WebApiFeedService(
                     reactionsByPost,
                     children.Count,
                     commentPosts
-                )
+                ) with
+                {
+                    Album = albumsByPost.GetValueOrDefault(root.Id),
+                }
             );
         }
 

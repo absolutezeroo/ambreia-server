@@ -11,4 +11,10 @@ public enum FeedPostKind
 
     /// <summary>One question and two to five choices.</summary>
     Poll = 2,
+
+    /// <summary>
+    /// An album's card: no body of its own, it shows the album it belongs to and comes back up when
+    /// photos are added to it.
+    /// </summary>
+    Album = 3,
 }

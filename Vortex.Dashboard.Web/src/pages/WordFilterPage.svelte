@@ -30,7 +30,7 @@
   const ACTION = { replace: 0, refuse: 1 } as const;
   const MATCH = { whole: 0, partial: 1 } as const;
   // Vortex.Primitives/Moderation/WordFilter/WordFilterSource.cs, in its order.
-  const SOURCES = Array.from({ length: 19 }, (_, i) => i);
+  const SOURCES = Array.from({ length: 20 }, (_, i) => i);
 
   type WordForm = { word: string; action: number; match: number; replacement: string };
 

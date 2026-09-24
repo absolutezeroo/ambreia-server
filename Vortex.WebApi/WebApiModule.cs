@@ -48,6 +48,7 @@ public sealed class WebApiModule : IHostPluginModule
         services.TryAddSingleton<IWebApiRoomService, WebApiRoomService>();
         services.TryAddSingleton<IWebApiPhotoService, WebApiPhotoService>();
         services.TryAddSingleton<IWebApiFeedService, WebApiFeedService>();
+        services.TryAddSingleton<IWebApiAlbumService, WebApiAlbumService>();
         services.TryAddSingleton<IWebApiNotificationService, WebApiNotificationService>();
 
         // Before the sink, which takes it: the pub/sub the open tabs listen on.
