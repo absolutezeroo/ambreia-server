@@ -18,6 +18,7 @@ using Vortex.Primitives.Commerce;
 using Vortex.Primitives.Events;
 using Vortex.Primitives.Players.Grains;
 using Vortex.Primitives.Players.Snapshots;
+using Vortex.Primitives.Vault;
 using Vortex.Progression.Configuration;
 using Vortex.Progression.Grains;
 using Vortex.Tests.Support;
@@ -198,6 +199,28 @@ public sealed class PlayerAchievementGrainTests
             .Be(1, "the guard now reads the in-memory timestamp, not the row's lagging updated_at");
     }
 
+    /// <summary>
+    /// PROG-REWARD-032 continued: the level's currency now earns through the Earnings vault
+    /// instead of being granted to the wallet directly -- EarnAsync is idempotent on the source
+    /// key, a direct wallet grant is not.
+    /// </summary>
+    [Fact]
+    public async Task ALevelUpsReward_EarnsThroughTheVault_NotTheWalletDirectly()
+    {
+        Harness harness = await Harness
+            .CreateAsync(rewardAmount: 10, rewardType: 0)
+            .ConfigureAwait(true);
+
+        await harness
+            .Grain.ProgressAsync(RoomEntry, 5, CancellationToken.None)
+            .ConfigureAwait(true);
+
+        IncomeEarning earning = harness.VaultEarnings.Should().ContainSingle().Subject;
+        earning.SourceKey.Should().Be($"achievement:{AchievementId}:level:1");
+
+        harness.WalletCalls.Should().NotContain(nameof(IPlayerWalletGrain.GrantCurrencyAsync));
+    }
+
     [Fact]
     public async Task ASecondFlush_WithNothingNew_LeavesTheDatabaseAlone()
     {
@@ -225,19 +248,29 @@ public sealed class PlayerAchievementGrainTests
             PlayerAchievementGrain grain,
             DbContextOptions<VortexDbContext> options,
             CountingDbContextFactory factory,
-            List<IEvent> published
+            List<IEvent> published,
+            List<IncomeEarning> vaultEarnings,
+            List<string> walletCalls
         )
         {
             Grain = grain;
             _options = options;
             Factory = factory;
             Published = published;
+            VaultEarnings = vaultEarnings;
+            WalletCalls = walletCalls;
         }
 
         public PlayerAchievementGrain Grain { get; }
 
         /// <summary>Everything the grain raised, in order. The forensics timeline reads these.</summary>
         public List<IEvent> Published { get; }
+
+        /// <summary>Every earning the fake Earnings vault received, in order.</summary>
+        public List<IncomeEarning> VaultEarnings { get; }
+
+        /// <summary>Every method the fake wallet grain was called with, in order.</summary>
+        public List<string> WalletCalls { get; }
 
         /// <summary>The operations the grain opened, and the states it moved them through.</summary>
         public required List<CommerceOperationKind> JournalKinds { get; init; }
@@ -267,7 +300,12 @@ public sealed class PlayerAchievementGrainTests
                 .ConfigureAwait(true);
         }
 
-        public static async Task<Harness> CreateAsync(int seededProgress = 0, int seededLevel = 0)
+        public static async Task<Harness> CreateAsync(
+            int seededProgress = 0,
+            int seededLevel = 0,
+            int rewardAmount = 0,
+            int rewardType = 0
+        )
         {
             DbContextOptions<VortexDbContext> options =
                 new DbContextOptionsBuilder<VortexDbContext>()
@@ -296,11 +334,13 @@ public sealed class PlayerAchievementGrainTests
             List<IEvent> published = [];
             List<CommerceOperationKind> journalKinds = [];
             List<CommerceOperationState> journalStates = [];
+            List<IncomeEarning> vaultEarnings = [];
+            List<string> walletCalls = [];
 
             PlayerAchievementGrain grain =
                 GrainActivationContext.CreateWithIntegerKey<PlayerAchievementGrain>(
                     PlayerId,
-                    BuildGrainFactory(),
+                    BuildGrainFactory(vaultEarnings, walletCalls, rewardAmount, rewardType),
                     factory,
                     Options.Create(new AchievementConfig()),
                     FakeProxy.Create<IEventPublisher>(call =>
@@ -331,7 +371,7 @@ public sealed class PlayerAchievementGrainTests
 
             await grain.OnActivateAsync(CancellationToken.None).ConfigureAwait(true);
 
-            return new Harness(grain, options, factory, published)
+            return new Harness(grain, options, factory, published, vaultEarnings, walletCalls)
             {
                 JournalKinds = journalKinds,
                 JournalStates = journalStates,
@@ -340,16 +380,22 @@ public sealed class PlayerAchievementGrainTests
 
         /// <summary>
         /// Only the definition cache is answered for real. Everything progression fans out to --
-        /// presence, inventory, wallet, resolutions -- is a stub: what it does with a level-up is
-        /// its own business, and none of it is what these tests are pinning.
+        /// presence, inventory, resolutions -- is a stub: what it does with a level-up is its own
+        /// business, and none of it is what these tests are pinning. The vault and the wallet are
+        /// recording fakes so a test can pin which one a reward actually reaches.
         /// </summary>
-        private static IGrainFactory BuildGrainFactory()
+        private static IGrainFactory BuildGrainFactory(
+            List<IncomeEarning> vaultEarnings,
+            List<string> walletCalls,
+            int rewardAmount = 0,
+            int rewardType = 0
+        )
         {
             IAchievementManagerGrain manager = FakeProxy.Create<IAchievementManagerGrain>(call =>
                 call.Method.Name switch
                 {
                     nameof(IAchievementManagerGrain.GetDefinitionsAsync) => Task.FromResult(
-                        ImmutableArray.Create(Definition())
+                        ImmutableArray.Create(Definition(rewardAmount, rewardType))
                     ),
                     nameof(IAchievementManagerGrain.GetByNameAsync) =>
                         Task.FromResult<AchievementDefinitionSnapshot?>(
@@ -358,7 +404,7 @@ public sealed class PlayerAchievementGrainTests
                                 RoomEntry,
                                 StringComparison.Ordinal
                             )
-                                ? Definition()
+                                ? Definition(rewardAmount, rewardType)
                                 : null
                         ),
                     nameof(IAchievementManagerGrain.GetDefaultCategoryAsync) => Task.FromResult(
@@ -384,12 +430,37 @@ public sealed class PlayerAchievementGrainTests
                     : null
             );
 
+            // Records every earning it is handed and answers as EarnAsync really does: nothing to
+            // await but a completed task. The fallback proxy below answers null for a Task-returning
+            // method's *result*, which DispatchProxy still turns into Task.CompletedTask -- but this
+            // one also needs to capture the argument, so it gets its own fake.
+            IPlayerVaultGrain vault = FakeProxy.Create<IPlayerVaultGrain>(call =>
+            {
+                if (
+                    call.Method.Name == nameof(IPlayerVaultGrain.EarnAsync)
+                    && call.Args?[0] is IncomeEarning earning
+                )
+                {
+                    vaultEarnings.Add(earning);
+                }
+
+                return Task.CompletedTask;
+            });
+
+            IPlayerWalletGrain wallet = FakeProxy.Create<IPlayerWalletGrain>(call =>
+            {
+                walletCalls.Add(call.Method.Name);
+                return null;
+            });
+
             return FakeProxy.Create<IGrainFactory>(call =>
                 call.Method.IsGenericMethod
                     ? call.Method.GetGenericArguments()[0] switch
                     {
                         Type t when t == typeof(IAchievementManagerGrain) => manager,
                         Type t when t == typeof(IBadgeDirectoryGrain) => badges,
+                        Type t when t == typeof(IPlayerVaultGrain) => vault,
+                        Type t when t == typeof(IPlayerWalletGrain) => wallet,
                         Type t => FakeProxy.CreateFor(t, _ => null),
                     }
                     : null
@@ -397,7 +468,10 @@ public sealed class PlayerAchievementGrainTests
         }
 
         /// <summary>Cumulative thresholds 5/20, so one level-up sits five entries in.</summary>
-        private static AchievementDefinitionSnapshot Definition()
+        private static AchievementDefinitionSnapshot Definition(
+            int rewardAmount = 0,
+            int rewardType = 0
+        )
         {
             int[] thresholds = [5, 20];
 
@@ -414,8 +488,8 @@ public sealed class PlayerAchievementGrainTests
                         Level = level,
                         BadgeCode = $"ACH_{RoomEntry}{level}",
                         ProgressRequirement = thresholds[level - 1],
-                        RewardAmount = 0,
-                        RewardType = 0,
+                        RewardAmount = rewardAmount,
+                        RewardType = rewardType,
                         ScorePoints = level,
                     })
                     .ToImmutableArray(),

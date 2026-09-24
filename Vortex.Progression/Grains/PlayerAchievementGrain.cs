@@ -18,7 +18,6 @@ using Vortex.Primitives.Inventory.Grains;
 using Vortex.Primitives.Orleans;
 using Vortex.Primitives.Players.Grains;
 using Vortex.Primitives.Players.Snapshots;
-using Vortex.Primitives.Players.Wallet;
 using Vortex.Progression.Achievements;
 using Vortex.Progression.Configuration;
 using Vortex.Protocol.Messages.Outgoing.Inventory.Achievements;
@@ -328,7 +327,7 @@ internal sealed class PlayerAchievementGrain(
     )
     {
         IInventoryGrain inventory = _grainFactory.GetInventoryGrain((long)PlayerId);
-        IPlayerWalletGrain wallet = _grainFactory.GetPlayerWalletGrain((long)PlayerId);
+        IPlayerVaultGrain vault = _grainFactory.GetPlayerVaultGrain((long)PlayerId);
 
         string badgeHeldBefore =
             oldCompleted >= 1 ? definition.Levels[oldCompleted - 1].BadgeCode : string.Empty;
@@ -367,12 +366,8 @@ internal sealed class PlayerAchievementGrain(
                             continue;
                         }
 
-                        await wallet
-                            .GrantCurrencyAsync(
-                                CurrencyRewardRules.KindFor(levelUp.RewardType),
-                                levelUp.RewardAmount,
-                                innerCt
-                            )
+                        await vault
+                            .EarnAsync(AchievementEarning.For(definition.Id, levelUp), innerCt)
                             .ConfigureAwait(true);
                     }
 
