@@ -8605,6 +8605,10 @@ namespace Vortex.Database.Migrations
                         .HasColumnType("int")
                         .HasColumnName("amount");
 
+                    b.Property<DateTime?>("ClaimedAt")
+                        .HasColumnType("datetime(6)")
+                        .HasColumnName("claimed_at");
+
                     b.Property<DateTime>("CreatedAt")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("datetime(6)")
@@ -8634,6 +8638,12 @@ namespace Vortex.Database.Migrations
                         .HasColumnType("int")
                         .HasColumnName("reward_type");
 
+                    b.Property<string>("SourceKey")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("varchar(64)")
+                        .HasColumnName("source_key");
+
                     b.Property<DateTime>("UpdatedAt")
                         .ValueGeneratedOnAddOrUpdate()
                         .HasColumnType("datetime(6)")
@@ -8643,7 +8653,8 @@ namespace Vortex.Database.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("PlayerEntityId");
+                    b.HasIndex("PlayerEntityId", "SourceKey")
+                        .IsUnique();
 
                     b.ToTable("player_vault_income_rewards");
                 });
