@@ -5,6 +5,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using FluentAssertions;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.Extensions.Logging.Abstractions;
 using Orleans;
 using Vortex.Collectibles.Grains;
@@ -175,6 +176,119 @@ public sealed class PlayerVaultGrainTests
             .ContainSingle()
             .Which.RewardType.Should()
             .Be(VaultRewardType.Product);
+        h.Published.OfType<VaultIncomeClaimedEvent>()
+            .Should()
+            .ContainSingle()
+            .Which.Rewards.Should()
+            .Be(2);
+    }
+
+    [Fact]
+    public async Task OneRowFailingToPay_DoesNotHoldBackTheOthers()
+    {
+        Harness h = await Harness.StartAsync();
+        await h.Grain.EarnAsync(
+            Credits(VaultRewardCategoryType.HabboClub, 40, "club-payday:2026-08-01"),
+            default
+        );
+        await h.Grain.EarnAsync(
+            Credits(VaultRewardCategoryType.HabboClub, 5, "club-payday:2026-09-01"),
+            default
+        );
+
+        h.FailNextCredit = true; // the first row's credit is refused, nothing recorded
+        (await h.Grain.ClaimAsync(VaultRewardCategoryType.HabboClub, default)).Should().BeFalse();
+
+        h.AppliedCredits.Should().ContainSingle().Which.Amount.Should().Be(5);
+        (await h.Grain.GetIncomeRewardsAsync(default))
+            .Should()
+            .ContainSingle()
+            .Which.Amount.Should()
+            .Be(40);
+        (await h.ReadRowsAsync()).Single(r => r.Amount == 5).ClaimedAt.Should().NotBeNull();
+    }
+
+    [Fact]
+    public async Task AKeyDepositedThenRetriedAfterAFlipToDirect_IsNotPaidDirect()
+    {
+        Harness h = await Harness.StartAsync();
+        IncomeEarning payday = Credits(
+            VaultRewardCategoryType.HabboClub,
+            40,
+            "club-payday:2026-09-01"
+        );
+
+        await h.Grain.EarnAsync(payday, default);
+        h.Config["earnings.habbo_club.to_vault"] = false;
+        await h.Grain.EarnAsync(payday, default);
+
+        h.AppliedCredits.Should().BeEmpty();
+        (await h.ReadRowsAsync()).Should().ContainSingle().Which.ClaimedAt.Should().BeNull();
+
+        (await h.Grain.ClaimAsync(VaultRewardCategoryType.HabboClub, default)).Should().BeTrue();
+        h.AppliedCredits.Should().ContainSingle();
+    }
+
+    [Fact]
+    public async Task AKeyPaidDirectThenRetriedAfterAFlipToVault_IsNotDepositedAgain()
+    {
+        Harness h = await Harness.StartAsync();
+        IncomeEarning payday = Credits(
+            VaultRewardCategoryType.HabboClub,
+            40,
+            "club-payday:2026-09-01"
+        );
+
+        h.Config["earnings.habbo_club.to_vault"] = false;
+        await h.Grain.EarnAsync(payday, default);
+        h.AppliedCredits.Should().ContainSingle();
+
+        h.Config["earnings.habbo_club.to_vault"] = true;
+        await h.Grain.EarnAsync(payday, default);
+
+        (await h.Grain.GetIncomeRewardsAsync(default)).Should().BeEmpty();
+        h.Published.OfType<VaultIncomeDepositedEvent>().Should().BeEmpty();
+        h.AppliedCredits.Should().ContainSingle();
+    }
+
+    [Fact]
+    public async Task ADirectEarning_LeavesAClaimedRowThatSpendsTheKey()
+    {
+        Harness h = await Harness.StartAsync();
+        h.Config["earnings.habbo_club.to_vault"] = false;
+
+        await h.Grain.EarnAsync(
+            Credits(VaultRewardCategoryType.HabboClub, 40, "club-payday:2026-09-01"),
+            default
+        );
+
+        PlayerVaultIncomeRewardEntity row = (await h.ReadRowsAsync())
+            .Should()
+            .ContainSingle()
+            .Subject;
+        row.SourceKey.Should().Be("club-payday:2026-09-01");
+        row.ClaimedAt.Should().NotBeNull();
+    }
+
+    [Fact]
+    public async Task AnInsertThatFailsForAnotherReason_Throws()
+    {
+        Harness h = await Harness.StartAsync();
+        h.FailingInserts.Enabled = true;
+
+        await h
+            .Grain.Invoking(g =>
+                g.EarnAsync(
+                    Credits(VaultRewardCategoryType.HabboClub, 40, "club-payday:2026-09-01"),
+                    default
+                )
+            )
+            .Should()
+            .ThrowAsync<DbUpdateException>();
+
+        (await h.ReadRowsAsync()).Should().BeEmpty();
+        (await h.Grain.GetIncomeRewardsAsync(default)).Should().BeEmpty();
+        h.Published.OfType<VaultIncomeDepositedEvent>().Should().BeEmpty();
     }
 
     [Fact]
@@ -187,13 +301,7 @@ public sealed class PlayerVaultGrainTests
         );
 
         h.ThrowAfterNextCredit = true; // wallet commits the receipt, then the call throws
-        bool first = true;
-        await h
-            .Grain.Invoking(async g =>
-                first = await g.ClaimAsync(VaultRewardCategoryType.HabboClub, default)
-            )
-            .Should()
-            .NotThrowAsync();
+        bool first = await h.Grain.ClaimAsync(VaultRewardCategoryType.HabboClub, default);
         first.Should().BeFalse();
         (await h.Grain.GetIncomeRewardsAsync(default)).Should().ContainSingle();
 
@@ -231,7 +339,14 @@ public sealed class PlayerVaultGrainTests
         private readonly DbContextOptions<VortexDbContext> _options;
         private readonly HashSet<(CommerceOperationId, string)> _receipts = [];
 
-        private Harness(DbContextOptions<VortexDbContext> options) => _options = options;
+        private Harness(
+            DbContextOptions<VortexDbContext> options,
+            FailingInsertInterceptor failingInserts
+        )
+        {
+            _options = options;
+            FailingInserts = failingInserts;
+        }
 
         public PlayerVaultGrain Grain { get; private set; } = null!;
 
@@ -248,6 +363,12 @@ public sealed class PlayerVaultGrainTests
         /// <summary>The next credit commits its receipt, then the call throws, like a lost reply.</summary>
         public bool ThrowAfterNextCredit { get; set; }
 
+        /// <summary>The next credit is refused outright: no receipt, nothing applied.</summary>
+        public bool FailNextCredit { get; set; }
+
+        /// <summary>Makes an Earnings insert fail with something other than a duplicate key.</summary>
+        public FailingInsertInterceptor FailingInserts { get; }
+
         public async Task<List<PlayerVaultIncomeRewardEntity>> ReadRowsAsync()
         {
             await using VortexDbContext dbCtx = new(_options);
@@ -257,9 +378,11 @@ public sealed class PlayerVaultGrainTests
 
         public static async Task<Harness> StartAsync(bool seedProductRow = false)
         {
+            FailingInsertInterceptor failingInserts = new();
             DbContextOptions<VortexDbContext> options =
                 new DbContextOptionsBuilder<VortexDbContext>()
                     .UseInMemoryDatabase($"vault-{Guid.NewGuid():N}")
+                    .AddInterceptors(failingInserts)
                     .Options;
 
             if (seedProductRow)
@@ -281,7 +404,7 @@ public sealed class PlayerVaultGrainTests
                 await seed.SaveChangesAsync();
             }
 
-            Harness h = new(options);
+            Harness h = new(options, failingInserts);
             IGrainFactory grainFactory = h.BuildGrainFactory();
 
             h.Grain = GrainActivationContext.CreateWithIntegerKey<PlayerVaultGrain>(
@@ -316,6 +439,12 @@ public sealed class PlayerVaultGrainTests
                 }
 
                 WalletCredits.Add(call);
+
+                if (FailNextCredit)
+                {
+                    FailNextCredit = false;
+                    return Task.FromException<bool>(new InvalidOperationException("refused"));
+                }
 
                 // Models commerce_receipts: one row per (operation, step), and the credit commits
                 // with it or not at all.
@@ -359,6 +488,24 @@ public sealed class PlayerVaultGrainTests
                     : null;
             });
         }
+    }
+
+    /// <summary>A write failure that is not a duplicate key: the grain must not read it as one.</summary>
+    private sealed class FailingInsertInterceptor : SaveChangesInterceptor
+    {
+        public bool Enabled { get; set; }
+
+        public override ValueTask<InterceptionResult<int>> SavingChangesAsync(
+            DbContextEventData eventData,
+            InterceptionResult<int> result,
+            CancellationToken cancellationToken = default
+        ) =>
+            Enabled
+            && eventData
+                .Context!.ChangeTracker.Entries<PlayerVaultIncomeRewardEntity>()
+                .Any(e => e.State == EntityState.Added)
+                ? throw new DbUpdateException("disk full")
+                : ValueTask.FromResult(result);
     }
 
     private sealed class InMemoryDbContextFactory(DbContextOptions<VortexDbContext> options)

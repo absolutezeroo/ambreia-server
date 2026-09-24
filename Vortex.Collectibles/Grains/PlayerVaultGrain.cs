@@ -34,6 +34,13 @@ internal sealed class PlayerVaultGrain(
     ILogger<PlayerVaultGrain> logger
 ) : Grain, IPlayerVaultGrain
 {
+    /// <summary>
+    /// Reward type of the row that spends the key of a currency paid direct because it has no
+    /// Earnings type (diamonds, other activity points). Claimed at birth, so the status packet — which
+    /// reads unclaimed rows only — never sees it; deliberately outside the wire enum.
+    /// </summary>
+    private const int DirectOnlyRewardType = -1;
+
     private readonly List<PlayerVaultIncomeRewardEntity> _unclaimed = [];
 
     private int PlayerId => (int)this.GetPrimaryKeyLong();
@@ -79,6 +86,13 @@ internal sealed class PlayerVaultGrain(
             return;
         }
 
+        // One record spends a key whichever way it was paid, so a retry that lands after the
+        // operator flipped the category's switch finds it spent instead of paying it the other way.
+        if (await IsKeySpentAsync(earning.SourceKey, ct).ConfigureAwait(true))
+        {
+            return;
+        }
+
         bool toVault = await grainFactory
             .GetServerConfigGrain()
             .GetBoolAsync(
@@ -87,15 +101,19 @@ internal sealed class PlayerVaultGrain(
             )
             .ConfigureAwait(true);
 
-        if (
-            !toVault
-            || !VaultRewardRouting.TryGetRewardType(
-                earning.Currency,
-                out VaultRewardType rewardType
-            )
-        )
+        bool hasRewardType = VaultRewardRouting.TryGetRewardType(
+            earning.Currency,
+            out VaultRewardType rewardType
+        );
+
+        if (!toVault || !hasRewardType)
         {
-            // Direct: same idempotency, carried by the wallet receipt instead of a row.
+            // Direct: the wallet receipt makes the credit itself idempotent, and the row inserted
+            // after it, claimed at birth, spends the key for the vault path too. A crash between the
+            // two is finished by the retry: the credit is a receipt no-op, then the row lands.
+            // Known ceiling: that crash followed by the operator flipping the switch to vault before
+            // the retry pays twice, because the vault path never reads direct receipts. Closing it
+            // means a receipt lookup here; the window is one crash and one flip wide.
             await grainFactory
                 .GetPlayerWalletGrain(PlayerId)
                 .CreditOnceAsync(
@@ -115,10 +133,18 @@ internal sealed class PlayerVaultGrain(
                 )
                 .ConfigureAwait(true);
 
+            await TryInsertAsync(
+                    earning,
+                    hasRewardType ? (int)rewardType : DirectOnlyRewardType,
+                    DateTime.UtcNow,
+                    ct
+                )
+                .ConfigureAwait(true);
+
             return;
         }
 
-        if (await TryInsertAsync(earning, rewardType, ct).ConfigureAwait(true))
+        if (await TryInsertAsync(earning, (int)rewardType, null, ct).ConfigureAwait(true))
         {
             await events
                 .PublishAsync(new VaultIncomeDepositedEvent(PlayerId, earning.Category), ct)
@@ -167,7 +193,22 @@ internal sealed class PlayerVaultGrain(
 
         if (settled.Count > 0)
         {
-            await MarkClaimedAsync(settled, ct).ConfigureAwait(true);
+            try
+            {
+                await MarkClaimedAsync(settled, ct).ConfigureAwait(true);
+            }
+            catch (Exception ex) when (ex is not OperationCanceledException)
+            {
+                // Paid but not marked: the rows stay unclaimed, and the next claim marks them
+                // after their receipts answer "already credited". The client still gets an answer.
+                logger.LogError(
+                    ex,
+                    "{Count} Earnings rows were paid to player {PlayerId} but could not be marked claimed; the next claim will mark them.",
+                    settled.Count,
+                    PlayerId
+                );
+                return false;
+            }
 
             await events
                 .PublishAsync(
@@ -180,58 +221,87 @@ internal sealed class PlayerVaultGrain(
         return settled.Count > 0 && !failed;
     }
 
-    private async Task<bool> TryInsertAsync(
-        IncomeEarning earning,
-        VaultRewardType rewardType,
-        CancellationToken ct
-    )
+    /// <summary>
+    /// Checked against the table, not the unclaimed cache: a key whose row was already claimed, or
+    /// paid direct, must stay spent.
+    /// </summary>
+    private async Task<bool> IsKeySpentAsync(string sourceKey, CancellationToken ct)
     {
         await using VortexDbContext dbCtx = await dbCtxFactory
             .CreateDbContextAsync(ct)
             .ConfigureAwait(true);
 
-        // Checked against the table, not the unclaimed cache: a key whose row was already claimed
-        // must stay spent. The unique index is the backstop for a second silo racing this one.
-        bool exists = await dbCtx
+        return await dbCtx
             .PlayerVaultIncomeRewards.AnyAsync(
-                r => r.PlayerEntityId == PlayerId && r.SourceKey == earning.SourceKey,
+                r => r.PlayerEntityId == PlayerId && r.SourceKey == sourceKey,
                 ct
             )
             .ConfigureAwait(true);
+    }
 
-        if (exists)
-        {
-            return false;
-        }
-
+    /// <summary>
+    /// Records the earning's key. <paramref name="claimedAt"/> is set for a direct payment, whose row
+    /// only spends the key and is never shown. False when another writer recorded the key first —
+    /// the unique <c>(player_id, source_key)</c> index is the backstop for a second silo racing this one.
+    /// </summary>
+    private async Task<bool> TryInsertAsync(
+        IncomeEarning earning,
+        int rewardType,
+        DateTime? claimedAt,
+        CancellationToken ct
+    )
+    {
         PlayerVaultIncomeRewardEntity entity = new()
         {
             PlayerEntityId = PlayerId,
             RewardCategory = (int)earning.Category,
-            RewardType = (int)rewardType,
+            RewardType = rewardType,
             Amount = earning.Amount,
             ProductCode = string.Empty,
             SourceKey = earning.SourceKey,
+            ClaimedAt = claimedAt,
         };
 
-        dbCtx.PlayerVaultIncomeRewards.Add(entity);
-
-        try
+        await using (
+            VortexDbContext dbCtx = await dbCtxFactory.CreateDbContextAsync(ct).ConfigureAwait(true)
+        )
         {
-            await dbCtx.SaveChangesAsync(ct).ConfigureAwait(true);
-        }
-        catch (DbUpdateException ex)
-        {
-            logger.LogInformation(
-                ex,
-                "Earning {SourceKey} for player {PlayerId} was already recorded.",
-                earning.SourceKey,
-                PlayerId
-            );
-            return false;
+            dbCtx.PlayerVaultIncomeRewards.Add(entity);
+
+            try
+            {
+                await dbCtx.SaveChangesAsync(ct).ConfigureAwait(true);
+            }
+            catch (DbUpdateException ex)
+            {
+                // Only a row that now exists makes this the duplicate race. Anything else is a
+                // real write failure, and swallowing it would drop an earning without a trace.
+                if (await IsKeySpentAsync(earning.SourceKey, ct).ConfigureAwait(true))
+                {
+                    logger.LogInformation(
+                        ex,
+                        "Earning {SourceKey} for player {PlayerId} was already recorded.",
+                        earning.SourceKey,
+                        PlayerId
+                    );
+                    return false;
+                }
+
+                logger.LogError(
+                    ex,
+                    "Earning {SourceKey} for player {PlayerId} could not be recorded.",
+                    earning.SourceKey,
+                    PlayerId
+                );
+                throw;
+            }
         }
 
-        _unclaimed.Add(entity);
+        if (claimedAt is null)
+        {
+            _unclaimed.Add(entity);
+        }
+
         return true;
     }
 
