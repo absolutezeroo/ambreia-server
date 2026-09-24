@@ -26,7 +26,7 @@ public class IncomeRewardClaimMessageHandler(IGrainFactory grainFactory)
 
         bool success = await _grainFactory
             .GetPlayerVaultGrain(ctx.PlayerId)
-            .ClaimCategoryAsync(message.Category, ct)
+            .ClaimAsync(message.Category, ct)
             .ConfigureAwait(false);
 
         await ctx.SendComposerAsync(
