@@ -13,6 +13,7 @@ using Vortex.Database.Context;
 using Vortex.Database.Entities.Commerce;
 using Vortex.Database.Entities.Players;
 using Vortex.Logging;
+using Vortex.Players.Club;
 using Vortex.Players.Configuration;
 using Vortex.Primitives;
 using Vortex.Primitives.Commerce;
@@ -1504,10 +1505,13 @@ internal sealed partial class PlayerGrain : Grain, IPlayerGrain
 
             if (totalReward > 0)
             {
-                IPlayerWalletGrain wallet = _grainFactory.GetPlayerWalletGrain(
-                    (int)this.GetPrimaryKeyLong()
-                );
-                await wallet.GrantCreditsAsync(totalReward, ct).ConfigureAwait(true);
+                // Earned on payday, cashed from the Earnings window (or paid straight to the wallet
+                // when the operator routes Habbo Club direct). Keyed by the payday date, so a loop
+                // re-run after a failed UpsertKickbackAsync does not pay the same payday twice.
+                await _grainFactory
+                    .GetPlayerVaultGrain((int)this.GetPrimaryKeyLong())
+                    .EarnAsync(ClubPaydayEarning.For(payday, totalReward), ct)
+                    .ConfigureAwait(true);
                 _state.KickbackTotalRewarded += totalReward;
 
                 await _events
