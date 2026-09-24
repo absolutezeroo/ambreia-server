@@ -75,7 +75,7 @@ own vocabulary — not `VaultRewardType`.
 - **Idempotent deposits.** New column `source_key` with a unique index on `(player_id, source_key)`.
   A second deposit with the same key is a no-op. This closes the payday re-deposit exposure (a
   deposit followed by a failed `UpsertKickbackAsync` no longer pays twice) and makes every future
-  source safely retryable. Migration backfills existing rows with `legacy:{id}`.
+  source safely retryable. Migration adds `source_key` and `claimed_at`, backfilling existing rows with `legacy:{id}`.
 - **One row per deposit.** No merging into an existing row: rows are immutable once written. The
   client already sums rows per category (`EarningsView.onIncomeRewardDataReceived`).
 - **Notification.** After an inserted (not deduplicated) deposit, send
@@ -111,16 +111,21 @@ server-config editor — no new dashboard page).
 public interface IVaultRewardSettler
 {
     IReadOnlySet<VaultRewardType> Handles { get; }
-    Task<bool> SettleAsync(int playerId, VaultIncomeRow row, CancellationToken ct);
+    // Returns = paid (now or by an earlier crashed claim); throws = not paid, row stays.
+    Task SettleAsync(int playerId, VaultIncomeRow row, CancellationToken ct);
 }
 ```
 
 - `ClaimAsync(category)` loads the matching rows (`All = -1` → every category), finds the settler for
-  each row's reward type, settles, and deletes the row **only if it settled**.
+  each row's reward type, settles, and marks the row claimed (`claimed_at`) **only if it settled**.
+- **Rows are never deleted.** A deleted row takes its `source_key` with it, and a replayed deposit
+  (a retried payday) would then insert it again and pay twice. Marking keeps the unique index
+  authoritative forever and leaves a per-player earnings history. The status packet reads unclaimed
+  rows only.
 - `CurrencyVaultRewardSettler` handles `Credits` and `Duckets`, paying with
-  `IPlayerWalletGrain.CreditOnceAsync` and step key `vault-row-{id}`. A crash between credit and
-  delete is recovered by the next claim: the credit is a no-op, the row is deleted. No loss, no double
-  payment.
+  `IPlayerWalletGrain.CreditOnceAsync` under operation `Deterministic(VaultIncome, rowId)` and step
+  `vault-claim`. A crash between credit and mark is recovered by the next claim: the credit is a
+  no-op, the row is marked. No loss, no double payment.
 - A row with no registered settler (`Product`, in this slice) stays in place. The slice that first
   deposits products (surprise boxes, bonus bag) adds a `ProductVaultRewardSettler` and registers it —
   the grain does not change.
@@ -192,7 +197,8 @@ Changed: `IPlayerVaultGrain`, `PlayerVaultGrain`, `PlayerVaultIncomeRewardEntity
 - Catalogue: every `EarningsRoutingPolicy` key is declared in `ConfigKeyCatalog` with the same
   default. `EarningsRoutingPolicy` throws for a category that has no key, so a source wired without
   its switch fails its own test instead of silently defaulting.
-- Grain: replayed claim after a failure between credit and delete → credited once.
+- Grain: replayed claim after a failure between credit and mark → credited once.
+- Grain: a deposit replayed AFTER its row was claimed → no new row.
 - Grain: a row with no settler survives a claim.
 - Achievements: a duckets level-up deposits with the expected source key.
 - Payday: deposits into the vault; a repeated check for the same payday does not deposit twice.
