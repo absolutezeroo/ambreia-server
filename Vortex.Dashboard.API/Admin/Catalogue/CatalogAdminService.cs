@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -173,6 +174,20 @@ internal sealed class CatalogAdminService(
         if (hasOffers)
         {
             return CatalogAdminResult.Fail("page_has_offers");
+        }
+
+        // The children guard above cannot see soft-deleted children — the global DeletedAt filter
+        // hides them — but parent_id still references this page and the FK refuses the delete.
+        // They are already gone from every read, so they are detached rather than blocking.
+        List<CatalogPageEntity> deadChildren = await db
+            .CatalogPages.IgnoreQueryFilters()
+            .Where(p => p.ParentEntityId == pageId && p.DeletedAt != null)
+            .ToListAsync(ct)
+            .ConfigureAwait(false);
+
+        foreach (CatalogPageEntity deadChild in deadChildren)
+        {
+            deadChild.ParentEntityId = null;
         }
 
         db.CatalogPages.Remove(entity);

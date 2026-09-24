@@ -190,6 +190,78 @@ public sealed class CatalogAdminServiceTests
         deleteResult.ErrorCode.Should().Be("page_has_children");
     }
 
+    /// <summary>
+    /// A soft-deleted child is invisible to the children guard — the global <c>DeletedAt</c> filter
+    /// hides it — but <c>parent_id</c> still points at the page, so MySQL refused the delete with a
+    /// foreign-key error the operator could do nothing about: the dashboard shows no child to move.
+    /// The dead child is detached instead, and the page goes.
+    /// </summary>
+    [Fact]
+    public async Task DeletePage_WithOnlySoftDeletedChildren_DetachesThemAndDeletes()
+    {
+        DbContextOptions<VortexDbContext> options = NewOptions();
+        CatalogAdminService service = NewService(options, out _, out _);
+
+        CatalogAdminResult parent = await service
+            .CreatePageAsync(
+                new CatalogPageCreateSpec(
+                    CatalogType.Normal,
+                    null,
+                    "parent",
+                    null,
+                    0,
+                    CatalogPageLayout.Default3x3,
+                    null,
+                    null,
+                    0,
+                    true
+                ),
+                CancellationToken.None
+            )
+            .ConfigureAwait(true);
+
+        CatalogAdminResult child = await service
+            .CreatePageAsync(
+                new CatalogPageCreateSpec(
+                    CatalogType.Normal,
+                    parent.Id,
+                    "dead_child",
+                    null,
+                    0,
+                    CatalogPageLayout.Default3x3,
+                    null,
+                    null,
+                    0,
+                    true
+                ),
+                CancellationToken.None
+            )
+            .ConfigureAwait(true);
+
+        await using (VortexDbContext seed = NewContext(options))
+        {
+            (await seed.CatalogPages.FindAsync(child.Id!.Value).ConfigureAwait(true))!.DeletedAt =
+                DateTime.UtcNow;
+            await seed.SaveChangesAsync().ConfigureAwait(true);
+        }
+
+        CatalogAdminResult deleteResult = await service
+            .DeletePageAsync(parent.Id!.Value, CancellationToken.None)
+            .ConfigureAwait(true);
+
+        deleteResult.Success.Should().BeTrue();
+
+        await using VortexDbContext verify = NewContext(options);
+        (
+            await verify
+                .CatalogPages.IgnoreQueryFilters()
+                .SingleAsync(p => p.Id == child.Id!.Value)
+                .ConfigureAwait(true)
+        )
+            .ParentEntityId.Should()
+            .BeNull();
+    }
+
     [Fact]
     public async Task DeletePage_WithOffers_IsBlocked()
     {
