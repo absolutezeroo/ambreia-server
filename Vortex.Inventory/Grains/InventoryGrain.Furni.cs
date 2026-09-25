@@ -38,6 +38,8 @@ using Vortex.Primitives.Inventory.Snapshots;
 using Vortex.Primitives.Orleans;
 using Vortex.Primitives.Pets;
 using Vortex.Primitives.Pets.Snapshots;
+using Vortex.Primitives.Players;
+using Vortex.Primitives.Players.Enums;
 using Vortex.Primitives.Players.Grains;
 using Vortex.Primitives.Rooms.Enums;
 using Vortex.Primitives.Rooms.Object;
@@ -204,6 +206,8 @@ public sealed partial class InventoryGrain
 
         List<PetEntity> committedPets = [];
         List<BotEntity> committedBots = [];
+        bool buildersClubGranted = false;
+        string? buildersClubNotification = null;
 
         VortexDbContext dbCtx = await _dbCtxFactory.CreateDbContextAsync(ct).ConfigureAwait(true);
 
@@ -254,6 +258,36 @@ public sealed partial class InventoryGrain
 
             dbCtx.Pets.AddRange(committedPets);
             dbCtx.Bots.AddRange(committedBots);
+
+            // Builders Club time and furni ride the same transaction: a membership is goods too.
+            if (plan.BuildersClubDays > 0 || plan.BuildersClubFurni > 0)
+            {
+                int playerId = (int)this.GetPrimaryKeyLong();
+
+                PlayerSubscriptionEntity? existing = await dbCtx
+                    .PlayerSubscriptions.FirstOrDefaultAsync(
+                        s =>
+                            s.PlayerEntityId == playerId
+                            && s.SubscriptionType == SubscriptionType.BuildersClub,
+                        ct
+                    )
+                    .ConfigureAwait(true);
+
+                (PlayerSubscriptionEntity row, buildersClubNotification) = BuildersClubGrant.Apply(
+                    existing,
+                    playerId,
+                    plan.BuildersClubDays,
+                    plan.BuildersClubFurni,
+                    DateTime.UtcNow
+                );
+
+                if (existing is null)
+                {
+                    dbCtx.PlayerSubscriptions.Add(row);
+                }
+
+                buildersClubGranted = true;
+            }
 
             // THE PIVOT. Everything the offer promised that this grain owns is durable after this
             // line, and nothing past it may refund the purchase: the goods exist. What remains is
@@ -351,6 +385,30 @@ public sealed partial class InventoryGrain
             effectGrants,
             chatStyleGrants
         );
+
+        if (buildersClubGranted)
+        {
+            try
+            {
+                await _events
+                    .PublishAsync(
+                        new BuildersClubMembershipGrantedEvent(
+                            (PlayerId)this.GetPrimaryKeyLong(),
+                            buildersClubNotification
+                        ),
+                        CancellationToken.None
+                    )
+                    .ConfigureAwait(true);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(
+                    ex,
+                    "Builders Club was granted to player {PlayerId} but could not be announced.",
+                    this.GetPrimaryKeyLong()
+                );
+            }
+        }
     }
 
     /// <summary>

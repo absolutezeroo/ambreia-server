@@ -15,6 +15,10 @@ export const PRODUCT_TYPES = [
   // Extra param is the id in the client's own chat-style library. Only 1000 and up can be granted:
   // below that the client gates the bubble itself and never asks the server about it.
   { value: 7, label: 'Chat style' },
+  // Extra param is the amount: days of membership, or furni added to the placement limit. Sold from
+  // the Builders Club tree's builders_club_loyalty / builders_club_addons pages.
+  { value: 8, label: 'Builders Club days' },
+  { value: 9, label: 'Builders Club furni' },
 ];
 
 export const FURNITURE_CATEGORIES = [

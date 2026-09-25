@@ -443,18 +443,8 @@ public class SSOTicketMessageHandler(
             BuildersClubSubscriptionSnapshot buildersClub = await buildersClubTask.ConfigureAwait(
                 false
             );
-            int buildersClubSecondsLeft = buildersClub.IsActive
-                ? (int)Math.Max(0, (buildersClub.ExpiresAt!.Value - DateTime.UtcNow).TotalSeconds)
-                : 0;
-
             await ctx.SendComposerAsync(
-                    new BuildersClubSubscriptionStatusMessageComposer
-                    {
-                        SecondsLeft = buildersClubSecondsLeft,
-                        FurniLimit = buildersClub.FurniLimit,
-                        MaxFurniLimit = buildersClub.FurniLimit,
-                        SecondsLeftWithGrace = buildersClubSecondsLeft,
-                    },
+                    BuildersClubSubscriptionStatusMessageComposer.From(buildersClub),
                     ct
                 )
                 .ConfigureAwait(false);

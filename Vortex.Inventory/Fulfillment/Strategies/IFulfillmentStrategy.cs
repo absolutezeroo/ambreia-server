@@ -79,6 +79,13 @@ internal sealed class FulfillmentPlanBuilder
 
     public void AddChatStyle(int chatStyleId) => _chatStyleIds.Add(chatStyleId);
 
+    private int _buildersClubDays;
+    private int _buildersClubFurni;
+
+    public void AddBuildersClubDays(int days) => _buildersClubDays += days;
+
+    public void AddBuildersClubFurni(int furni) => _buildersClubFurni += furni;
+
     public FulfillmentPlan Build() =>
         new()
         {
@@ -88,5 +95,7 @@ internal sealed class FulfillmentPlanBuilder
             Bots = _bots,
             Effects = _effects,
             ChatStyleIds = _chatStyleIds,
+            BuildersClubDays = _buildersClubDays,
+            BuildersClubFurni = _buildersClubFurni,
         };
 }

@@ -352,7 +352,7 @@ public sealed class WebApiPlayerService(
                 .Where(t => t.Level == builders.Level)
                 .Select(t => t.FurniLimit)
                 .FirstOrDefaultAsync(ct)
-                .ConfigureAwait(false);
+                .ConfigureAwait(false) + builders.BonusFurniLimit;
 
         return new PlayerPurse(
             balances.GetValueOrDefault(CurrencyType.Credits),

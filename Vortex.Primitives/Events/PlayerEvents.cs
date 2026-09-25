@@ -234,3 +234,13 @@ public sealed record ClothingRedeemedEvent(PlayerId PlayerId, int ItemId) : IEve
 
 /// <summary>A player answered a quiz.</summary>
 public sealed record QuizSubmittedEvent(PlayerId PlayerId, string QuizCode) : IEvent;
+
+/// <summary>
+/// Builders Club days or furni were bought, and the subscription row is already saved.
+/// </summary>
+/// <param name="Notification">
+/// The client's notification type for it (<c>builders_club.membership_made</c>, ...), or null when
+/// only furni was bought.
+/// </param>
+public sealed record BuildersClubMembershipGrantedEvent(PlayerId PlayerId, string? Notification)
+    : IEvent;

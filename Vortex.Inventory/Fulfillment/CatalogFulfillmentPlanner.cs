@@ -75,6 +75,7 @@ public sealed class CatalogFulfillmentPlanner
             new BotFulfillmentStrategy(logger),
             new PetFulfillmentStrategy(),
             new ChatStyleFulfillmentStrategy(),
+            new BuildersClubFulfillmentStrategy(),
         ];
 
     /// <summary>

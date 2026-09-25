@@ -229,5 +229,33 @@ generated:
   conflicts:
   - cf_056a8494a2
   - cf_b3ac1a1c9b
-verified: {}
-manual: {}
+verified:
+  builders_club_shop_pages_buy_through_the_catalogue:
+    confidence: client_confirmed
+    claim: The Builders Club tree's builders_club_loyalty and builders_club_addons pages sell their offers through the ordinary PurchaseFromCatalog, with a page id from the BUILDERS_CLUB tree.
+    reason: Both widgets list page.offers and call showPurchaseConfirmation(offer, page.pageId); the add-ons widget disables its buttons while builderSecondsLeft is 0.
+    evidence:
+    - kind: client_code
+      source: com/sulake/habbo/catalog/viewer/widgets/BuilderAddonsCatalogWidget.as
+      symbol: windowProcedure
+    - kind: client_code
+      source: com/sulake/habbo/catalog/viewer/widgets/BuilderLoyaltyCatalogWidget.as
+      symbol: windowProcedure
+  builders_club_product_wire_code:
+    confidence: assumed
+    claim: Membership days and furni add-ons go on the wire as product types "builders_club_days" and "builders_club_furni", amount in extra_param.
+    reason: "The client's PRODUCT_TYPE_* list has no Builders Club entry and the official code is unknown. Any non-badge code is read like a furni product (class id, extra param, count, unique flag); Product.as only logs that it cannot draw an icon. The offer's name comes from its localization_id, the official product codes (builders_club_14_days, builders_club_addon_45furnis) that productdata names."
+    evidence:
+    - kind: client_code
+      source: com/sulake/habbo/catalog/viewer/Product.as
+      symbol: initProductIcon
+  builders_club_credit_prices:
+    confidence: assumed
+    claim: Membership time is sold for credits in-game.
+    reason: The official front page's subscribe button opens the website shop (web.shop.subscription.relativeUrl); no credit price is recorded anywhere. The seed's prices are an operator's starting point.
+    evidence:
+    - kind: client_code
+      source: com/sulake/habbo/catalog/viewer/widgets/BuilderSubscriptionCatalogWidget.as
+      symbol: windowProcedure
+manual:
+  builders_club_after_purchase: "After a membership purchase the server pushes BuildersClubSubscriptionStatus and a NotificationDialog of type builders_club.membership_made (first ever), _renewed (after a lapse) or _extended (still a member) -- the three types external_variables and external_flash_texts define. An add-on only pushes the status. Seed: scripts/sql/builders_club_membership_pages.sql."

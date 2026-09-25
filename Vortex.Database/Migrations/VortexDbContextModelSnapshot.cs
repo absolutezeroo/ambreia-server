@@ -8575,6 +8575,10 @@ namespace Vortex.Database.Migrations
 
                     MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
 
+                    b.Property<int>("BonusFurniLimit")
+                        .HasColumnType("int")
+                        .HasColumnName("bonus_furni_limit");
+
                     b.Property<DateTime>("CreatedAt")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("datetime(6)")
@@ -8629,6 +8633,10 @@ namespace Vortex.Database.Migrations
                     b.Property<int>("SubscriptionType")
                         .HasColumnType("int")
                         .HasColumnName("subscription_type");
+
+                    b.Property<int>("TotalDays")
+                        .HasColumnType("int")
+                        .HasColumnName("total_days");
 
                     b.Property<int>("TotalMonths")
                         .HasColumnType("int")

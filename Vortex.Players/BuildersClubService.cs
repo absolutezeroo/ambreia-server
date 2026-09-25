@@ -53,7 +53,11 @@ internal sealed class BuildersClubService(IDbContextFactory<VortexDbContext> dbC
             .FirstOrDefaultAsync(ct)
             .ConfigureAwait(false);
 
-        return new BuildersClubSubscriptionSnapshot(true, sub!.ExpiresAt, furniLimit);
+        return new BuildersClubSubscriptionSnapshot(
+            true,
+            sub!.ExpiresAt,
+            furniLimit + sub.BonusFurniLimit
+        );
     }
 
     public async Task<int> GetOwnedFurnitureCountAsync(int playerId, CancellationToken ct = default)
@@ -79,7 +83,12 @@ internal sealed class BuildersClubService(IDbContextFactory<VortexDbContext> dbC
             .Where(s =>
                 s.PlayerEntityId == playerId && s.SubscriptionType == SubscriptionType.BuildersClub
             )
-            .Select(s => new { Start = s.FirstSubscribedAt ?? s.CreatedAt, s.ExpiresAt })
+            .Select(s => new
+            {
+                Start = s.FirstSubscribedAt ?? s.CreatedAt,
+                s.ExpiresAt,
+                s.TotalDays,
+            })
             .FirstOrDefaultAsync(ct)
             .ConfigureAwait(false);
 
@@ -88,11 +97,31 @@ internal sealed class BuildersClubService(IDbContextFactory<VortexDbContext> dbC
             return 0;
         }
 
-        // ponytail: one span from the first subscription to now (or expiry). Nothing renews a
-        // Builders Club row yet, so there is no lapse to subtract; track past days once one does.
-        DateTime end = sub.ExpiresAt < DateTime.UtcNow ? sub.ExpiresAt : DateTime.UtcNow;
+        return MembershipDays(sub.Start, sub.ExpiresAt, sub.TotalDays, DateTime.UtcNow);
+    }
 
-        return end <= sub.Start ? 0 : (int)Math.Ceiling((end - sub.Start).TotalDays);
+    /// <summary>
+    /// Every day granted minus the whole days still ahead, so a started day counts and a lapse
+    /// between periods does not. A row no purchase has touched (<paramref name="totalDays"/> 0,
+    /// written by staff) is one span from its start.
+    /// </summary>
+    internal static int MembershipDays(
+        DateTime start,
+        DateTime expiresAt,
+        int totalDays,
+        DateTime now
+    )
+    {
+        if (totalDays > 0)
+        {
+            double ahead = expiresAt > now ? (expiresAt - now).TotalDays : 0;
+
+            return Math.Max(0, (int)Math.Ceiling(totalDays - ahead));
+        }
+
+        DateTime end = expiresAt < now ? expiresAt : now;
+
+        return end <= start ? 0 : (int)Math.Ceiling((end - start).TotalDays);
     }
 
     public async Task<bool> IsRoomSealedAsync(int roomId, CancellationToken ct = default)

@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Orleans;
@@ -11,9 +12,11 @@ using Vortex.Primitives.Catalog.Enums;
 using Vortex.Primitives.Catalog.Grains;
 using Vortex.Primitives.Catalog.Providers;
 using Vortex.Primitives.Catalog.Snapshots;
+using Vortex.Primitives.Furniture.Enums;
 using Vortex.Primitives.Moderation.WordFilter;
 using Vortex.Primitives.Orleans;
 using Vortex.Primitives.Orleans.Snapshots.Players;
+using Vortex.Primitives.Players;
 using Vortex.Primitives.Players.Enums;
 using Vortex.Primitives.Players.Enums.Wallet;
 using Vortex.Primitives.Players.Grains;
@@ -29,9 +32,11 @@ public class PurchaseFromCatalogMessageHandler(
     IGrainFactory grainFactory,
     ICatalogService catalogService,
     ICatalogClubOfferProvider clubOfferProvider,
-    IWordFilter wordFilter
+    IWordFilter wordFilter,
+    IBuildersClubService buildersClubService
 ) : IMessageHandler<PurchaseFromCatalogMessage>
 {
+    private readonly IBuildersClubService _buildersClubService = buildersClubService;
     private readonly IWordFilter _wordFilter = wordFilter;
     private readonly IGrainFactory _grainFactory = grainFactory;
     private readonly ICatalogService _catalogService = catalogService;
@@ -55,16 +60,35 @@ public class PurchaseFromCatalogMessageHandler(
 
         CatalogSnapshot snapshot = _catalogService.GetCatalogSnapshot(CatalogType.Normal);
 
-        if (
-            snapshot.PagesById.TryGetValue(message.PageId, out CatalogPageSnapshot? page)
-            && page.Layout == CatalogPageLayout.ClubBuy
-        )
+        if (snapshot.PagesById.TryGetValue(message.PageId, out CatalogPageSnapshot? page))
         {
-            await HandleClubPurchaseAsync(message, ctx, ct);
+            if (page.Layout == CatalogPageLayout.ClubBuy)
+            {
+                await HandleClubPurchaseAsync(message, ctx, ct);
+                return;
+            }
+
+            await HandleCatalogPurchaseAsync(message, CatalogType.Normal, ctx, ct);
             return;
         }
 
-        await HandleCatalogPurchaseAsync(message, ctx, ct);
+        // The Builders Club tree's membership and add-on pages sell through the ordinary purchase
+        // (BuilderLoyalty/BuilderAddonsCatalogWidget call showPurchaseConfirmation). Its other pages
+        // are placed for free and stay unbuyable here.
+        CatalogSnapshot buildersClub = _catalogService.GetCatalogSnapshot(CatalogType.BuildersClub);
+
+        bool buildersClubShop =
+            buildersClub.PagesById.TryGetValue(message.PageId, out CatalogPageSnapshot? bcPage)
+            && bcPage.Layout
+                is CatalogPageLayout.BuildersClubLoyalty
+                    or CatalogPageLayout.BuildersClubAddons;
+
+        await HandleCatalogPurchaseAsync(
+            message,
+            buildersClubShop ? CatalogType.BuildersClub : CatalogType.Normal,
+            ctx,
+            ct
+        );
     }
 
     private async ValueTask HandleClubPurchaseAsync(
@@ -216,10 +240,31 @@ public class PurchaseFromCatalogMessageHandler(
 
     private async ValueTask HandleCatalogPurchaseAsync(
         PurchaseFromCatalogMessage message,
+        CatalogType catalogType,
         MessageContext ctx,
         CancellationToken ct
     )
     {
+        // An add-on raises a membership's limit, so without one it buys nothing. The client greys
+        // the button out (BuilderAddonsCatalogWidget); this is the half a crafted packet meets.
+        if (
+            _catalogService
+                .GetCatalogSnapshot(catalogType)
+                .OffersById.TryGetValue(message.OfferId, out CatalogOfferSnapshot? requested)
+            && requested.Products.Any(p => p.ProductType == ProductType.BuildersClubFurni)
+            && !(
+                await _buildersClubService
+                    .GetSubscriptionAsync(ctx.PlayerId, ct)
+                    .ConfigureAwait(false)
+            ).IsActive
+        )
+        {
+            await ctx.SendComposerAsync(new PurchaseErrorMessageComposer(), ct)
+                .ConfigureAwait(false);
+
+            return;
+        }
+
         // Before the grain, which debits: a pet (or bot) refused its name costs nothing.
         // PurchaseError closes the catalogue's pending purchase; the bubble says why.
         string? extraParam = await _wordFilter
@@ -241,7 +286,7 @@ public class PurchaseFromCatalogMessageHandler(
             );
             CatalogOfferSnapshot offer = await purchaseGrain
                 .PurchaseOfferFromCatalogAsync(
-                    CatalogType.Normal,
+                    catalogType,
                     message.OfferId,
                     extraParam,
                     message.Quantity,

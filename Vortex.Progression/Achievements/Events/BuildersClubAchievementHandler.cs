@@ -10,31 +10,35 @@ namespace Vortex.Progression.Achievements.Events;
 
 /// <summary>
 /// "For having %limit% days of Builders Club membership": raised to the membership's length at
-/// each login.
+/// each login and after each purchase of membership time.
 /// </summary>
 /// <remarks>
-/// At login because nothing in the emulator grants or extends a Builders Club subscription — rows
-/// are written by staff — so there is no subscription event to hang it on. Raised, never added, so
-/// logging in twice a day counts nothing twice.
+/// Raised, never added, so logging in twice a day counts nothing twice. The login keeps it moving
+/// while a member simply plays; the purchase makes the first level land the moment it is bought.
 /// </remarks>
 public sealed class BuildersClubAchievementHandler(
     IGrainFactory grainFactory,
     IBuildersClubService buildersClubService
-) : IEventHandler<PlayerLoggedInEvent>
+) : IEventHandler<PlayerLoggedInEvent>, IEventHandler<BuildersClubMembershipGrantedEvent>
 {
-    public async ValueTask HandleAsync(
-        PlayerLoggedInEvent e,
+    public ValueTask HandleAsync(PlayerLoggedInEvent e, EventContext ctx, CancellationToken ct) =>
+        RaiseAsync(e.PlayerId, ct);
+
+    public ValueTask HandleAsync(
+        BuildersClubMembershipGrantedEvent e,
         EventContext ctx,
         CancellationToken ct
-    )
+    ) => RaiseAsync(e.PlayerId.Value, ct);
+
+    private async ValueTask RaiseAsync(int playerId, CancellationToken ct)
     {
-        if (e.PlayerId <= 0)
+        if (playerId <= 0)
         {
             return;
         }
 
         int days = await buildersClubService
-            .GetMembershipDaysAsync(e.PlayerId, ct)
+            .GetMembershipDaysAsync(playerId, ct)
             .ConfigureAwait(false);
 
         if (days <= 0)
@@ -43,7 +47,7 @@ public sealed class BuildersClubAchievementHandler(
         }
 
         await grainFactory
-            .GetPlayerAchievementGrain(e.PlayerId)
+            .GetPlayerAchievementGrain(playerId)
             .ProgressToAsync(AchievementNames.BuildersClub, days, ct)
             .ConfigureAwait(false);
     }
