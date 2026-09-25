@@ -105,6 +105,11 @@ public sealed class CatalogSnapshotProvider<TTag>(
                 .GroupBy(op => op.CatalogOfferEntityId)
                 .ToImmutableDictionary(g => g.Key, g => g.Select(x => x.Id).ToImmutableArray());
 
+            Dictionary<int, string> offerLocalizations = offers.ToDictionary(
+                o => o.Id,
+                o => o.LocalizationId
+            );
+
             ImmutableDictionary<int, CatalogProductSnapshot> productsById = products
                 .Select(x => new CatalogProductSnapshot
                 {
@@ -119,7 +124,10 @@ public sealed class CatalogSnapshotProvider<TTag>(
                                 ?.SpriteId
                                 ?? -1
                             : -1,
-                    ExtraParam = x.ExtraParam,
+                    ExtraParam = ResolveExtraParam(
+                        x.ExtraParam,
+                        offerLocalizations.GetValueOrDefault(x.CatalogOfferEntityId)
+                    ),
                     Quantity = x.Quantity,
                     UniqueSize = x.UniqueSize,
                     UniqueRemaining = x.UniqueRemaining,
@@ -247,5 +255,33 @@ public sealed class CatalogSnapshotProvider<TTag>(
         {
             await dbCtx.DisposeAsync().ConfigureAwait(false);
         }
+    }
+
+    /// <summary>
+    /// A decoration offer (wallpaper, floor, landscape) carries its pattern code in its name, not
+    /// in extra_param: the Arcturus catalog this one was converted from stores
+    /// "wallpaper_single_101" with an empty extradata and derives "101" on the wire. The client
+    /// builds the thumbnail name (th_wall_101) and the room preview from that code, so sending it
+    /// empty left every Spaces tile blank (404 on th_wall_.png). An explicit extra_param wins.
+    /// </summary>
+    internal static string? ResolveExtraParam(string? extraParam, string? offerLocalization)
+    {
+        if (!string.IsNullOrEmpty(extraParam) || offerLocalization is null)
+        {
+            return extraParam;
+        }
+
+        if (
+            !offerLocalization.Contains("wallpaper_single")
+            && !offerLocalization.Contains("floor_single")
+            && !offerLocalization.Contains("landscape_single")
+        )
+        {
+            return extraParam;
+        }
+
+        string[] parts = offerLocalization.Split('_');
+
+        return parts.Length > 2 ? parts[2] : extraParam;
     }
 }
