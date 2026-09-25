@@ -39,8 +39,16 @@ public sealed class AuthenticationModule : IHostPluginModule
         // plugin owns. This is the host's own stable object; what it delegates to is swapped by
         // whichever plugin publishes a revoker, so the hotel never holds a plugin's type — which is
         // exactly what would make that plugin unloadable for the life of the process. See
-        // PluginSessionRevoker.
-        services.AddSingleton<IAccountSessionRevoker, PluginSessionRevoker>();
+        // PluginSessionRevoker. One per plugin that signs people in — the dashboard and the web
+        // API — because an export slot holds a single instance.
+        services.AddSingleton<IAccountSessionRevoker>(sp => new PluginSessionRevoker(
+            sp.GetRequiredService<IPluginCatalog>(),
+            IAccountSessionRevoker.ExportKey
+        ));
+        services.AddSingleton<IAccountSessionRevoker>(sp => new PluginSessionRevoker(
+            sp.GetRequiredService<IPluginCatalog>(),
+            IAccountSessionRevoker.WebApiExportKey
+        ));
 
         services.AddSingleton<IAccountEmailService, AccountEmailService>();
         services.AddSingleton<IAccountSafetyLockService, AccountSafetyLockService>();

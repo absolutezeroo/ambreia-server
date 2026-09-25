@@ -57,8 +57,11 @@ RUN for proj in *.csproj; do \
 # exactly what took it out of this restore. The publish below then failed with NETSDK1004, "assets
 # file not found" — and only in the image: a developer's tree still has obj/project.assets.json from
 # an earlier build, so the same command succeeds locally and says nothing.
+#
+# The web API needs one too, for the same reason: it became a loadable plugin the same way.
 RUN dotnet restore Vortex.Main/Vortex.Main.csproj \
-    && dotnet restore Vortex.Dashboard.API/Vortex.Dashboard.API.csproj
+    && dotnet restore Vortex.Dashboard.API/Vortex.Dashboard.API.csproj \
+    && dotnet restore Vortex.WebApi/Vortex.WebApi.csproj
 
 # --- source + publish ----------------------------------------------------------------------------
 COPY . .
@@ -98,6 +101,13 @@ RUN dotnet publish Vortex.Dashboard.API/Vortex.Dashboard.API.csproj \
         -p:SkipDashboardFrontendBuild=true \
         --output /app/publish-plugins/turbo-dashboard-api
 
+# The web API, published separately for the dashboard's reason above. Missing, the image ships a
+# hotel with no website backend and nothing says so: the game runs, and :8080 answers nothing.
+RUN dotnet publish Vortex.WebApi/Vortex.WebApi.csproj \
+        --configuration Release \
+        --no-restore \
+        --output /app/publish-plugins/turbo-webapi
+
 # =================================================================================================
 # Runtime stage
 # =================================================================================================
@@ -112,11 +122,11 @@ WORKDIR /app
 # (uid 1654). Copying with --chown avoids a second full-size layer just to fix ownership.
 COPY --from=build --chown=app:app /app/publish ./
 
-# The plugins that ship WITH the image. Today that is the dashboard, which used to be compiled into
-# the host and is now a folder the loader discovers.
+# The plugins that ship WITH the image. Today that is the dashboard and the web API, which used to
+# be compiled into the host and are now folders the loader discovers.
 #
 # WARNING FOR THE OPERATOR: a volume mounted at /app/plugins REPLACES this directory, and the hotel
-# comes back with no admin panel. The loader scans every subdirectory of the plugin folder and
+# comes back with no admin panel and no website backend. The loader scans every subdirectory of the plugin folder and
 # expects a manifest.json in each, so there is no "extra plugins" subfolder to mount instead. Ship
 # plugins in the image; to add one outside it, mount the volume AND seed it with this directory's
 # contents.

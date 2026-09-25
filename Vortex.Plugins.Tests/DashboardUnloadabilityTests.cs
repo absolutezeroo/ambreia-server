@@ -50,9 +50,6 @@ namespace Vortex.Plugins.Tests;
 /// </remarks>
 public sealed class DashboardUnloadabilityTests
 {
-    private const string DASHBOARD_ASSEMBLY = "Vortex.Dashboard.API.dll";
-    private const string MODULE_TYPE = "Vortex.Dashboard.API.DashboardPlugin";
-
     /// <summary>
     ///     The control. Without it the dashboard result is unreadable: an instrument that can never
     ///     report success fails on everything alike and looks exactly like a finding.
@@ -79,24 +76,38 @@ public sealed class DashboardUnloadabilityTests
             );
     }
 
-    [Fact]
-    public void TheDashboardAssembly_UnloadsOnceItsServiceProviderIsDisposed()
+    /// <remarks>
+    ///     The web API went through the same conversion and is measured the same way; neither project
+    ///     may be referenced from here, for the reason in the class remarks.
+    /// </remarks>
+    [Theory]
+    [InlineData(
+        "Vortex.Dashboard.API",
+        "Vortex.Dashboard.API.DashboardPlugin",
+        "turbo-dashboard-api"
+    )]
+    [InlineData("Vortex.WebApi", "Vortex.WebApi.WebApiPlugin", "turbo-webapi")]
+    public void APluginAssembly_UnloadsOnceItsServiceProviderIsDisposed(
+        string project,
+        string pluginType,
+        string key
+    )
     {
-        string? dll = FindDashboardAssembly();
+        string? dll = FindPluginAssembly(project);
 
         // Built by a different project, so a machine that has not built it yet fails loudly rather
         // than reporting a pass it never measured.
         dll.Should()
-            .NotBeNull($"{DASHBOARD_ASSEMBLY} must be built for this measurement to mean anything");
+            .NotBeNull($"{project}.dll must be built for this measurement to mean anything");
 
-        WeakReference alc = LoadConfigureAndUnload(dll!);
+        WeakReference alc = LoadConfigureAndUnload(dll!, pluginType, key);
 
         Collected(alc)
             .Should()
             .BeTrue(
                 "an assembly that will not unload cannot be a hot-reloadable plugin: every reload "
                     + "would leak the whole graph. If this fails, the pin is a reference the host "
-                    + "keeps to a dashboard type, and IExport<T> is the indirection that breaks it."
+                    + "keeps to a plugin type, and IExport<T> is the indirection that breaks it."
             );
     }
 
@@ -125,15 +136,14 @@ public sealed class DashboardUnloadabilityTests
     }
 
     /// <summary>
-    ///     Loads the dashboard, runs its module's registrations, disposes everything, unloads, and
-    ///     keeps nothing.
+    ///     Loads a plugin, runs its registrations, disposes everything, unloads, and keeps nothing.
     /// </summary>
     [MethodImpl(MethodImplOptions.NoInlining)]
-    private static WeakReference LoadConfigureAndUnload(string dll)
+    private static WeakReference LoadConfigureAndUnload(string dll, string pluginType, string key)
     {
         LoadedAssembly loaded = AssemblyMemoryLoader.LoadFromBytes(dll);
 
-        Type moduleType = loaded.Assembly.GetType(MODULE_TYPE, throwOnError: true)!;
+        Type moduleType = loaded.Assembly.GetType(pluginType, throwOnError: true)!;
         object module = Activator.CreateInstance(moduleType)!;
 
         ServiceCollection services = [];
@@ -142,14 +152,14 @@ public sealed class DashboardUnloadabilityTests
         // needs one to exist, and the question being asked is about types, not packaging.
         PluginManifest manifest = new()
         {
-            Name = "Vortex Dashboard",
-            Key = "turbo-dashboard-api",
+            Name = key,
+            Key = key,
             Version = "1.0.0",
             Author = "Vortex",
-            AssemblyFile = DASHBOARD_ASSEMBLY,
+            AssemblyFile = Path.GetFileName(dll),
         };
 
-        // Through reflection because this project cannot reference the dashboard — see the remarks
+        // Through reflection because this project cannot reference the plugin — see the remarks
         // on the class. Registration alone is enough for the question being asked: it names every
         // service type the plugin knows, which is what has to come back out.
         moduleType
@@ -211,10 +221,10 @@ public sealed class DashboardUnloadabilityTests
     }
 
     /// <summary>
-    ///     The dashboard's build output, found by walking up to the repository root rather than by a
-    ///     fixed number of <c>..</c> segments, which changes with the build configuration.
+    ///     A plugin project's build output, found by walking up to the repository root rather than by
+    ///     a fixed number of <c>..</c> segments, which changes with the build configuration.
     /// </summary>
-    private static string? FindDashboardAssembly()
+    private static string? FindPluginAssembly(string project)
     {
         DirectoryInfo? directory = new(AppContext.BaseDirectory);
 
@@ -222,11 +232,11 @@ public sealed class DashboardUnloadabilityTests
         {
             string candidate = Path.Combine(
                 directory.FullName,
-                "Vortex.Dashboard.API",
+                project,
                 "bin",
                 "Debug",
                 "net10.0",
-                DASHBOARD_ASSEMBLY
+                $"{project}.dll"
             );
 
             if (File.Exists(candidate))
