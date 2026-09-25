@@ -48,7 +48,6 @@ using Vortex.Runtime.AssemblyProcessing;
 using Vortex.Shop;
 using Vortex.Signals;
 using Vortex.Social;
-using Vortex.WebApi;
 
 namespace Vortex.Main;
 
@@ -153,16 +152,15 @@ internal class Program
         builder.Services.AddHostPlugin<InventoryModule>(builder);
         builder.Services.AddHostPlugin<MarketplaceModule>(builder);
         builder.Services.AddHostPlugin<FishingModule>(builder);
-        // Before the web API: the site's shop routes resolve IShopService out of the root provider.
         builder.Services.AddHostPlugin<ShopModule>(builder);
-        // No dashboard module here any more. The dashboard is a LOADABLE plugin, found in its folder
-        // by PluginManager rather than compiled into this host — registering it here would mean
-        // referencing its assembly, which is exactly what makes a plugin impossible to unload.
+        // No dashboard or web API module here any more. Both are LOADABLE plugins, found in their
+        // folders by PluginManager rather than compiled into this host — registering either here
+        // would mean referencing its assembly, which is exactly what makes a plugin impossible to
+        // unload.
         builder.Services.AddHostPlugin<BenchmarkModule>(builder);
         builder.Services.AddHostPlugin<NavigatorModule>(builder);
         builder.Services.AddHostPlugin<RoomModule>(builder);
         builder.Services.AddHostPlugin<PacketHandlersModule>(builder);
-        builder.Services.AddHostPlugin<WebApiModule>(builder);
 
         builder.Services.AddSingleton<AssemblyProcessor>();
         builder.Services.AddSingleton<IConsoleCommandDispatcher, ConsoleCommandDispatcher>();

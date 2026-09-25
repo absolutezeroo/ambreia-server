@@ -9,6 +9,14 @@
     <FrameworkReference Include="Microsoft.AspNetCore.App" />
   </ItemGroup>
   <ItemGroup>
+    <!--
+      What makes the build output a plugin FOLDER: PluginManager reads manifest.json from a directory
+      and byte-loads the assembly it names. Same arrangement as Vortex.Dashboard.API — see its csproj.
+      Vortex.Main must not reference this project; see its csproj.
+    -->
+    <Content Include="manifest.json" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+  <ItemGroup>
     <PackageReference Include="BCrypt.Net-Next" />
     <PackageReference Include="Microsoft.EntityFrameworkCore" />
     <PackageReference Include="OpenTelemetry" />

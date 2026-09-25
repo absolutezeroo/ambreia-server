@@ -92,7 +92,9 @@
     <ProjectReference Include="..\Vortex.Protocol\Vortex.Protocol.csproj" />
     <ProjectReference Include="..\Vortex.Revisions\Vortex.Revisions.csproj" />
     <ProjectReference Include="..\Vortex.Rooms\Vortex.Rooms.csproj" />
-    <ProjectReference Include="..\Vortex.WebApi\Vortex.WebApi.csproj" />
+    <!-- Vortex.WebApi is deliberately NOT referenced either, for the dashboard's reason above: it is
+         a loadable plugin, and a reference would make it impossible to unload.
+         DashboardUnloadabilityTests measures both plugins and notices if this comes back. -->
     <ProjectReference Include="..\Vortex.Runtime\Vortex.Runtime.csproj" />
     <ProjectReference Include="..\Vortex.Chain\Vortex.Chain.csproj" />
   </ItemGroup>

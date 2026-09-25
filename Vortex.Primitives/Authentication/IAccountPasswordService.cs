@@ -109,6 +109,14 @@ public interface IAccountSessionRevoker
     /// </remarks>
     public const string ExportKey = "account.session.revoker";
 
+    /// <summary>
+    /// The web API's own key. A second one rather than a share of <see cref="ExportKey"/>: an export
+    /// slot is one (type, key) pair holding one instance, so two plugins publishing under the same
+    /// key would each replace the other's, and a password change would sign the account out of only
+    /// whichever loaded last.
+    /// </summary>
+    public const string WebApiExportKey = "account.session.revoker.webapi";
+
     /// <summary>Which front door this holds sessions for, for the log line.</summary>
     string SessionKind { get; }
 

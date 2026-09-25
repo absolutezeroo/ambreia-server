@@ -189,6 +189,17 @@ internal sealed class WebApiTestFactory : IAsyncDisposable
             new NotificationSink(DbContexts, Broadcast, NullLogger<NotificationSink>.Instance)
         );
 
+        // Real: the token IS the feature — how it is signed, when it expires, why it works once.
+        builder.Services.AddSingleton<IWebApiPasswordResetService>(
+            new WebApiPasswordResetService(
+                DbContexts,
+                new FakePasswordService(),
+                Mailer,
+                Options.Create(config),
+                NullLogger<WebApiPasswordResetService>.Instance
+            )
+        );
+
         WebApiAppConfigurator.ConfigureServices(builder.Services, config);
 
         _app = builder.Build();
@@ -235,6 +246,8 @@ internal sealed class WebApiTestFactory : IAsyncDisposable
 
     /// <summary>The shop, shared so a test can read what the routes handed it.</summary>
     public FakeShopService Shop { get; } = new();
+
+    public RecordingPasswordResetMailer Mailer { get; } = new();
 
     /// <summary>What the endpoints emitted, in order, so a test can assert on the record itself.</summary>
     public RecordingAuditSink Audit { get; } = new();

@@ -31,8 +31,8 @@ namespace Vortex.WebApi.Hosting;
 /// Hosts the client-facing web API as a self-contained ASP.NET Core (Kestrel) application running
 /// inside the Orleans generic host — exactly like <c>Vortex.Dashboard.API</c>'s web host. It is its own
 /// isolated minimal web app listening on the configured host/port, but reuses the singletons
-/// registered by <see cref="WebApiModule"/> in the parent container by forwarding them into the web
-/// app's DI. The HTTP surface is the minimal-API endpoints in <see cref="WebApiEndpoints"/>, documented
+/// registered by <see cref="WebApiPlugin"/> in the plugin's container — its own, plus those it
+/// borrows from the hotel — by forwarding them into the web app's DI. The HTTP surface is the minimal-API endpoints in <see cref="WebApiEndpoints"/>, documented
 /// with Swagger/OpenAPI and hardened with CORS, rate limiting and optional HTTPS/HSTS. Disabled unless
 /// <see cref="WebApiConfig.Enabled"/> is set.
 /// </summary>
@@ -273,6 +273,7 @@ internal sealed class WebApiWebHost(
         services.AddSingleton(rootServices.GetRequiredService<IWebApiFeedService>());
         services.AddSingleton(rootServices.GetRequiredService<IWebApiAlbumService>());
         services.AddSingleton(rootServices.GetRequiredService<IWebApiNotificationService>());
+        services.AddSingleton(rootServices.GetRequiredService<IWebApiPasswordResetService>());
 
         // The very instance the grains filter with: one compiled list, one reload. No route takes it
         // as a parameter today — the feed and player services above were built with it in the root

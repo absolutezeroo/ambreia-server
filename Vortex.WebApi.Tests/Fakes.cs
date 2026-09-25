@@ -350,7 +350,25 @@ internal sealed class FakePasswordService : IAccountPasswordService
         int accountId,
         string newPassword,
         CancellationToken ct = default
-    ) => Task.FromResult(PasswordChangeResult.Changed(SessionsRevoked));
+    ) =>
+        Task.FromResult(
+            newPassword.Length < PasswordChangeResult.MINIMUM_LENGTH
+                ? PasswordChangeResult.Failed(PasswordChangeOutcome.TooShort)
+                : PasswordChangeResult.Changed(SessionsRevoked)
+        );
+}
+
+/// <summary>Keeps the mails instead of sending them, so a test can follow the link.</summary>
+internal sealed class RecordingPasswordResetMailer : IPasswordResetMailer
+{
+    public System.Collections.Concurrent.ConcurrentQueue<(string To, string Link)> Sent { get; } =
+        new();
+
+    public Task SendAsync(string to, string link, CancellationToken ct)
+    {
+        Sent.Enqueue((to, link));
+        return Task.CompletedTask;
+    }
 }
 
 /// <summary>

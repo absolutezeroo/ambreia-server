@@ -1,0 +1,8 @@
+{
+  "Name": "Vortex Web API",
+  "Key": "turbo-webapi",
+  "Version": "1.0.0",
+  "Author": "Vortex",
+  "AssemblyFile": "Vortex.WebApi.dll",
+  "ExplicitlyNoTablePrefix": true
+}

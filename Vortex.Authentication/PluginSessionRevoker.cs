@@ -33,13 +33,18 @@ public sealed class PluginSessionRevoker : IAccountSessionRevoker
 {
     private readonly IExport<IAccountSessionRevoker> _export;
 
-    public PluginSessionRevoker(IPluginCatalog plugins)
+    /// <param name="plugins">The host's view of what plugins publish.</param>
+    /// <param name="exportKey">
+    /// Which plugin's slot this reads: one adapter per plugin that signs people in, because a slot
+    /// holds one instance — see <see cref="IAccountSessionRevoker.WebApiExportKey"/>.
+    /// </param>
+    public PluginSessionRevoker(IPluginCatalog plugins, string exportKey)
     {
         ArgumentNullException.ThrowIfNull(plugins);
 
         // Asked for once and kept: the export SLOT is the host's own object and outlives every
         // plugin that fills it. It is what is inside that comes and goes.
-        _export = plugins.GetExport<IAccountSessionRevoker>(IAccountSessionRevoker.ExportKey);
+        _export = plugins.GetExport<IAccountSessionRevoker>(exportKey);
     }
 
     /// <summary>
