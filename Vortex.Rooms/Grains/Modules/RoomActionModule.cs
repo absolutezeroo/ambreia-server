@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using Vortex.Database.Context;
@@ -21,20 +22,31 @@ public sealed partial class RoomActionModule(RoomGrain roomGrain)
     private readonly RoomGrain _roomGrain = roomGrain;
 
     /// <summary>
-    /// No other item in the room shares <paramref name="placed"/>'s definition. A scan, but only on
-    /// a placement, which is a click.
+    /// The room's distinct definitions, and its items sharing <paramref name="placed"/>'s logic,
+    /// <paramref name="placed"/> included either way. A scan, but only on a placement, which is a
+    /// click.
     /// </summary>
-    private bool IsOnlyOneOfItsKind(IRoomItem placed)
+    private (int Kinds, int SameLogic) CountAround(IRoomItem placed)
     {
+        HashSet<int> kinds = [placed.Definition.Id];
+        int sameLogic = 1;
+
         foreach (IRoomItem item in _roomGrain._state.ItemsById.Values)
         {
-            if (item.ObjectId != placed.ObjectId && item.Definition.Id == placed.Definition.Id)
+            if (item.ObjectId == placed.ObjectId)
             {
-                return false;
+                continue;
+            }
+
+            kinds.Add(item.Definition.Id);
+
+            if (item.Definition.LogicName == placed.Definition.LogicName)
+            {
+                sameLogic++;
             }
         }
 
-        return true;
+        return (kinds.Count, sameLogic);
     }
 
     /// <param name="fromWired">

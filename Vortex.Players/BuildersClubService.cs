@@ -68,6 +68,33 @@ internal sealed class BuildersClubService(IDbContextFactory<VortexDbContext> dbC
             .ConfigureAwait(false);
     }
 
+    public async Task<int> GetMembershipDaysAsync(int playerId, CancellationToken ct = default)
+    {
+        await using VortexDbContext dbCtx = await _dbContextFactory
+            .CreateDbContextAsync(ct)
+            .ConfigureAwait(false);
+
+        var sub = await dbCtx
+            .PlayerSubscriptions.AsNoTracking()
+            .Where(s =>
+                s.PlayerEntityId == playerId && s.SubscriptionType == SubscriptionType.BuildersClub
+            )
+            .Select(s => new { Start = s.FirstSubscribedAt ?? s.CreatedAt, s.ExpiresAt })
+            .FirstOrDefaultAsync(ct)
+            .ConfigureAwait(false);
+
+        if (sub is null)
+        {
+            return 0;
+        }
+
+        // ponytail: one span from the first subscription to now (or expiry). Nothing renews a
+        // Builders Club row yet, so there is no lapse to subtract; track past days once one does.
+        DateTime end = sub.ExpiresAt < DateTime.UtcNow ? sub.ExpiresAt : DateTime.UtcNow;
+
+        return end <= sub.Start ? 0 : (int)Math.Ceiling((end - sub.Start).TotalDays);
+    }
+
     public async Task<bool> IsRoomSealedAsync(int roomId, CancellationToken ct = default)
     {
         if (roomId <= 0)

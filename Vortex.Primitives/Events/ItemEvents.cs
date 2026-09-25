@@ -47,9 +47,13 @@ public sealed record TradeCancelledEvent(
 /// Whether it went on a wall rather than the floor. The coarse type an operator means by "a floor
 /// item", which no definition id expresses on its own.
 /// </param>
-/// <param name="FirstOfItsKindInRoom">
-/// No other item of this definition was in the room. Only the room knows it, and it is what
-/// "a room with %limit% different furni" counts.
+/// <param name="LogicName">The definition's logic key, e.g. <c>furniture_floor_hole</c>.</param>
+/// <param name="KindsInRoom">
+/// Distinct definitions in the room after the placement — "a room with %limit% different furni".
+/// </param>
+/// <param name="SameLogicInRoom">
+/// Items in the room sharing <paramref name="LogicName"/>, this one included — "%limit% floor hole
+/// furni". Counts only the room knows, so they ride on the event.
 /// </param>
 public sealed record ItemPlacedEvent(
     int ItemId,
@@ -59,7 +63,9 @@ public sealed record ItemPlacedEvent(
     string? Data,
     int DefinitionId = 0,
     bool IsWallItem = false,
-    bool FirstOfItsKindInRoom = false
+    string LogicName = "",
+    int KindsInRoom = 0,
+    int SameLogicInRoom = 0
 ) : IEvent;
 
 /// <summary>A wallpaper, floor or landscape item was consumed into a room's decoration.</summary>

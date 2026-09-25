@@ -18,6 +18,12 @@ public static class AchievementNames
     public const string RoomDecoFloor = "RoomDecoFloor";
     public const string RoomDecoLandscape = "RoomDecoLandscape";
 
+    /// <summary>"For making Swiss cheese by adding %limit% floor hole furni".</summary>
+    public const string RoomDecoHoleFurniCount = "RoomDecoHoleFurniCount";
+
+    /// <summary>"For having %limit% days of Builders Club membership".</summary>
+    public const string BuildersClub = "BuildersClub";
+
     /// <summary>"For placing %limit% Builders Club furni".</summary>
     public const string RoomDecoBC = "RoomDecoBC";
 

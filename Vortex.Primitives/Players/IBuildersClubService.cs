@@ -16,6 +16,10 @@ public interface IBuildersClubService
     /// push).</summary>
     Task<int> GetOwnedFurnitureCountAsync(int playerId, CancellationToken ct = default);
 
+    /// <summary>Days the player has been a Builders Club member, a started day counting as one;
+    /// 0 if they never were.</summary>
+    Task<int> GetMembershipDaysAsync(int playerId, CancellationToken ct = default);
+
     /// <summary>
     /// Whether the room is sealed because Builders Club furniture is standing in it while its
     /// owner's subscription has lapsed. Such a room is hidden from every navigator listing and

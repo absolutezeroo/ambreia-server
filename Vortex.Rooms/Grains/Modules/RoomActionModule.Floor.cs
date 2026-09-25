@@ -159,6 +159,8 @@ public sealed partial class RoomActionModule
             }
         }
 
+        (int kinds, int sameLogic) = CountAround(floorItem);
+
         // Detached: the room is not waiting for the placer's quest, achievement and daily-task
         // grains to answer before the next click can be served. See RoomGrain.PublishDetached.
         _roomGrain.PublishDetached(
@@ -176,7 +178,9 @@ public sealed partial class RoomActionModule
                     }
                 ),
                 snapshot.Definition.Id,
-                FirstOfItsKindInRoom: IsOnlyOneOfItsKind(floorItem)
+                LogicName: snapshot.Definition.LogicName,
+                KindsInRoom: kinds,
+                SameLogicInRoom: sameLogic
             )
         );
 
