@@ -7,6 +7,16 @@
     <UserSecretsId>a638c0bb-c7d5-45bc-a28e-daf3be3fcdc6</UserSecretsId>
   </PropertyGroup>
   <ItemGroup>
+    <!-- The host's own dependency on ASP.NET Core, because its plugins have one and cannot bring it.
+         The dashboard and the web API are byte-loaded, and every Microsoft.AspNetCore.* they ask
+         for falls through to the default context, which only holds the shared frameworks named in
+         Vortex.Main.runtimeconfig.json. Vortex.WebApi used to put Microsoft.AspNetCore.App there as
+         a project reference; making it a plugin took it out, the runtimeconfig went back to
+         Microsoft.NETCore.App alone, and both plugins died on
+         "Could not load Microsoft.AspNetCore.Http.Abstractions" with "Loaded 0 plugins", on an
+         aspnet image that has the files, because a framework is only loaded when the host names it.
+         PluginHostFrameworkTests fails if this goes. -->
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
     <PackageReference Include="Microsoft.EntityFrameworkCore" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Design" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" />
