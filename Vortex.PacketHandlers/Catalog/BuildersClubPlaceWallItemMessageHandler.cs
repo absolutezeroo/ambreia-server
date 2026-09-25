@@ -74,6 +74,12 @@ public class BuildersClubPlaceWallItemMessageHandler(
                 .GetInventoryGrain(ctx.PlayerId)
                 .RemoveFurnitureAsync(item.ItemId, ct)
                 .ConfigureAwait(false);
+
+            return;
         }
+
+        await BuildersClubPlacementHelper
+            .CreditPlacementAsync(grainFactory, ctx.PlayerId, ct)
+            .ConfigureAwait(false);
     }
 }

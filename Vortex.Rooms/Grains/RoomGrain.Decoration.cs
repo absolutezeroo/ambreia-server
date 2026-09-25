@@ -7,6 +7,7 @@ using Vortex.Database.Context;
 using Vortex.Database.Entities.Furniture;
 using Vortex.Database.Entities.Room;
 using Vortex.Primitives.Action;
+using Vortex.Primitives.Events;
 using Vortex.Primitives.Furniture.Enums;
 using Vortex.Primitives.Furniture.Snapshots.StuffData;
 using Vortex.Primitives.Inventory.Snapshots;
@@ -106,6 +107,8 @@ public sealed partial class RoomGrain
                     new RoomPropertyMessageComposer { Key = key, Value = code }
                 )
                 .ConfigureAwait(true);
+
+            PublishDetached(new RoomDecoratedEvent(ctx.PlayerId.Value, _state.RoomId.Value, key));
 
             return true;
         }

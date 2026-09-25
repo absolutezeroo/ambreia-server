@@ -20,6 +20,23 @@ public sealed partial class RoomActionModule(RoomGrain roomGrain)
 {
     private readonly RoomGrain _roomGrain = roomGrain;
 
+    /// <summary>
+    /// No other item in the room shares <paramref name="placed"/>'s definition. A scan, but only on
+    /// a placement, which is a click.
+    /// </summary>
+    private bool IsOnlyOneOfItsKind(IRoomItem placed)
+    {
+        foreach (IRoomItem item in _roomGrain._state.ItemsById.Values)
+        {
+            if (item.ObjectId != placed.ObjectId && item.Definition.Id == placed.Definition.Id)
+            {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
     /// <param name="fromWired">
     /// True when the room's own wiring is doing this rather than a player.
     /// </param>

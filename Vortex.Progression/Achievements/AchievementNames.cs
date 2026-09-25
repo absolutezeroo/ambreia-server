@@ -13,6 +13,16 @@ public static class AchievementNames
     public const string AvatarLooks = "AvatarLooks";
     public const string FriendListSize = "FriendListSize";
     public const string RoomDecoFurniCount = "RoomDecoFurniCount";
+    public const string RoomDecoFurniTypeCount = "RoomDecoFurniTypeCount";
+    public const string RoomDecoWallpaper = "RoomDecoWallpaper";
+    public const string RoomDecoFloor = "RoomDecoFloor";
+    public const string RoomDecoLandscape = "RoomDecoLandscape";
+
+    /// <summary>"For placing %limit% Builders Club furni".</summary>
+    public const string RoomDecoBC = "RoomDecoBC";
+
+    /// <summary>"For having visitors spend %limit% minutes in your rooms" — credited to the owner.</summary>
+    public const string RoomDecoHosting = "RoomDecoHosting";
     public const string RespectGiven = "RespectGiven";
     public const string RespectEarned = "RespectEarned";
     public const string Name = "Name";

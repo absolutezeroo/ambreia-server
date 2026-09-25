@@ -47,6 +47,10 @@ public sealed record TradeCancelledEvent(
 /// Whether it went on a wall rather than the floor. The coarse type an operator means by "a floor
 /// item", which no definition id expresses on its own.
 /// </param>
+/// <param name="FirstOfItsKindInRoom">
+/// No other item of this definition was in the room. Only the room knows it, and it is what
+/// "a room with %limit% different furni" counts.
+/// </param>
 public sealed record ItemPlacedEvent(
     int ItemId,
     int ActorPlayerId,
@@ -54,8 +58,13 @@ public sealed record ItemPlacedEvent(
     int RoomId,
     string? Data,
     int DefinitionId = 0,
-    bool IsWallItem = false
+    bool IsWallItem = false,
+    bool FirstOfItsKindInRoom = false
 ) : IEvent;
+
+/// <summary>A wallpaper, floor or landscape item was consumed into a room's decoration.</summary>
+/// <param name="Property">The room property it set: <c>wallpaper</c>, <c>floor</c> or <c>landscape</c>.</param>
+public sealed record RoomDecoratedEvent(int PlayerId, int RoomId, string Property) : IEvent;
 
 /// <summary>
 /// A player stepped onto a piece of floor furniture.

@@ -175,7 +175,8 @@ public sealed partial class RoomActionModule
                         rotation = rot.ToString(),
                     }
                 ),
-                snapshot.Definition.Id
+                snapshot.Definition.Id,
+                FirstOfItsKindInRoom: IsOnlyOneOfItsKind(floorItem)
             )
         );
 

@@ -9,6 +9,7 @@ using Vortex.Primitives.Furniture.Enums;
 using Vortex.Primitives.Inventory.Snapshots;
 using Vortex.Primitives.Orleans;
 using Vortex.Primitives.Players;
+using Vortex.Progression.Achievements;
 
 namespace Vortex.PacketHandlers.Catalog;
 
@@ -70,6 +71,17 @@ internal static class BuildersClubPlacementHelper
             )
             .ConfigureAwait(false);
     }
+
+    /// <summary>"For placing %limit% Builders Club furni". Only this flow knows a placement is one:
+    /// the room sees an ordinary item.</summary>
+    public static Task CreditPlacementAsync(
+        IGrainFactory grainFactory,
+        PlayerId playerId,
+        CancellationToken ct
+    ) =>
+        grainFactory
+            .GetPlayerAchievementGrain(playerId.Value)
+            .ProgressAsync(AchievementNames.RoomDecoBC, 1, ct);
 
     /// <summary>Builders Club items can be sold under either catalog tree -- check BuildersClub
     /// first since that's the natural browsing context for this flow, falling back to Normal.</summary>

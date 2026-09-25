@@ -127,7 +127,8 @@ public sealed partial class RoomActionModule
                 snapshot.Definition.Id,
                 // The one thing a definition id cannot say, and the thing an operator means by
                 // "a floor item" when they write a task.
-                IsWallItem: true
+                IsWallItem: true,
+                FirstOfItsKindInRoom: IsOnlyOneOfItsKind(wallItem)
             )
         );
 
