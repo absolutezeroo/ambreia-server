@@ -36,7 +36,7 @@ internal sealed class FurnitureFulfillmentStrategy(IFurnitureDefinitionProvider 
         string? guildExtraData =
             request.GuildIdentity is not null && def.StuffDataType == StuffDataType.StringKey
                 ? BuildGuildExtraData(request.GuildIdentity)
-                : null;
+                : BuildDecorationExtraData(def.FurniCategory, request.Product.ExtraParam);
 
         int copies = request.Quantity * Math.Max(1, request.Product.Quantity);
 
@@ -44,6 +44,34 @@ internal sealed class FurnitureFulfillmentStrategy(IFurnitureDefinitionProvider 
         {
             into.AddFurniture(new PlannedFurniture(def.Id, guildExtraData));
         }
+    }
+
+    /// <summary>
+    /// A wallpaper, floor or landscape carries its pattern code ("101", "1.10") as legacy stuff
+    /// data: the inventory shows it and the room applies it from there (<c>FurniView.as</c> reads
+    /// <c>stuffData.getLegacyString()</c> for categories 2/3/4). Without it every bought decoration
+    /// was the same blank item.
+    /// </summary>
+    internal static string? BuildDecorationExtraData(FurnitureCategory category, string? extraParam)
+    {
+        if (
+            category
+                is not (
+                    FurnitureCategory.WallPaper
+                    or FurnitureCategory.Floor
+                    or FurnitureCategory.Landscape
+                )
+            || string.IsNullOrEmpty(extraParam)
+        )
+        {
+            return null;
+        }
+
+        ExtraData extraData = new(null);
+
+        extraData.UpdateSection(ExtraDataSectionType.STUFF, new { Data = extraParam });
+
+        return extraData.GetJsonString();
     }
 
     /// <summary>

@@ -95,12 +95,18 @@ PRODUCT_TYPE_MAP: dict[str, int] = {
 # FurnitureCategory based on (type, interaction_type)
 # Default=1, WallPaper=2, Floor=3, Landscape=4, PostIt=5, Poster=6
 # ---------------------------------------------------------------------------
-def get_furni_category(item_type: str, interaction_type: str) -> int:
+# The three decorations are keyed on the item NAME too: Arcturus gives them interaction_type
+# "roomeffect", so the interaction test alone imported them as Default and the client placed them
+# as ordinary furni instead of applying them to the room.
+DECORATION_CATEGORIES = {"wallpaper": 2, "floor": 3, "landscape": 4}
+
+
+def get_furni_category(item_type: str, interaction_type: str, item_name: str = "") -> int:
     if item_type == "i":
+        by_name = DECORATION_CATEGORIES.get(item_name.lower())
+        if by_name is not None: return by_name
         it = interaction_type.lower()
-        if it == "wallpaper":   return 2
-        if it == "floor":       return 3
-        if it == "landscape":   return 4
+        if it in DECORATION_CATEGORIES: return DECORATION_CATEGORIES[it]
         if it == "postit":      return 5
         if it == "poster":      return 6
     return 1
@@ -443,7 +449,7 @@ def convert_items_base(src: Path, dst: Path) -> tuple[dict[int, dict], dict[int,
         interaction_type = str(interaction_type or "default").strip().lower()
 
         product_type = PRODUCT_TYPE_MAP.get(item_type, 0)
-        category     = get_furni_category(item_type, interaction_type)
+        category     = get_furni_category(item_type, interaction_type, str(item_name or ""))
         logic        = get_logic(interaction_type)
         extra_data   = str(customparams).strip() if customparams else None
 
