@@ -90,6 +90,8 @@ public sealed class WebApiPlugin : IVortexPlugin
         services.TryAddSingleton<IWebApiFeedService, WebApiFeedService>();
         services.TryAddSingleton<IWebApiAlbumService, WebApiAlbumService>();
         services.TryAddSingleton<IWebApiNotificationService, WebApiNotificationService>();
+        services.TryAddSingleton<IPasswordResetMailer, SmtpPasswordResetMailer>();
+        services.TryAddSingleton<IWebApiPasswordResetService, WebApiPasswordResetService>();
 
         // Before the sink, which takes it: the pub/sub the open tabs listen on.
         services.TryAddSingleton<NotificationBroadcaster>();

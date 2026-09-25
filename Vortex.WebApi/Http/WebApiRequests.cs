@@ -41,6 +41,18 @@ public sealed record ChangePasswordRequest(
         !string.IsNullOrEmpty(CurrentPassword) && !string.IsNullOrEmpty(NewPassword);
 }
 
+/// <summary>habbo.com's <c>forgotPassword/send</c> body: <c>{ email }</c>.</summary>
+public sealed record ForgotPasswordRequest(string? Email)
+{
+    public bool IsValid => !string.IsNullOrWhiteSpace(Email);
+}
+
+/// <summary>habbo.com's <c>forgotPassword/changePassword</c> body: <c>{ token, password }</c>.</summary>
+public sealed record ResetPasswordRequest(string? Token, string? Password)
+{
+    public bool IsValid => !string.IsNullOrEmpty(Token) && !string.IsNullOrEmpty(Password);
+}
+
 public sealed record RegisterRequest(string? Email, string? Password, string? PasswordRepeated)
 {
     public bool IsValid =>

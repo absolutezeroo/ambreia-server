@@ -273,6 +273,7 @@ internal sealed class WebApiWebHost(
         services.AddSingleton(rootServices.GetRequiredService<IWebApiFeedService>());
         services.AddSingleton(rootServices.GetRequiredService<IWebApiAlbumService>());
         services.AddSingleton(rootServices.GetRequiredService<IWebApiNotificationService>());
+        services.AddSingleton(rootServices.GetRequiredService<IWebApiPasswordResetService>());
 
         // The very instance the grains filter with: one compiled list, one reload. No route takes it
         // as a parameter today — the feed and player services above were built with it in the root

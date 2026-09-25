@@ -271,6 +271,17 @@ public sealed class WebApiConfig
             QueueLimit = 0,
         };
 
+    /// <summary>
+    /// The mail server the forgotten-password link is sent through — the only mail this hotel sends.
+    /// Empty <see cref="SmtpOptions.Host"/> (the default) means there is none: the request route then
+    /// answers 503 and the site says the service is unavailable, rather than pretending a mail left.
+    /// </summary>
+    /// <remarks>
+    /// On Coolify these are environment variables: <c>Vortex__WebApi__Smtp__Host</c>,
+    /// <c>__Port</c>, <c>__Username</c>, <c>__Password</c>, <c>__From</c>.
+    /// </remarks>
+    public SmtpOptions Smtp { get; set; } = new SmtpOptions();
+
     public sealed class RateLimitOptions
     {
         public int PermitLimit { get; set; } = 5;
@@ -278,5 +289,29 @@ public sealed class WebApiConfig
         public int WindowSeconds { get; set; } = 60;
 
         public int QueueLimit { get; set; } = 0;
+    }
+
+    public sealed class SmtpOptions
+    {
+        public string Host { get; set; } = string.Empty;
+
+        /// <summary>
+        /// 587 with STARTTLS, which is what every provider offers. Port 465 (implicit TLS) does not
+        /// work: <c>System.Net.Mail.SmtpClient</c> only speaks STARTTLS.
+        /// </summary>
+        public int Port { get; set; } = 587;
+
+        public string Username { get; set; } = string.Empty;
+
+        public string Password { get; set; } = string.Empty;
+
+        /// <summary>The sender address, e.g. <c>no-reply@vortex-hotel.online</c>.</summary>
+        public string From { get; set; } = string.Empty;
+
+        /// <summary>STARTTLS. Off only for a local test relay.</summary>
+        public bool EnableSsl { get; set; } = true;
+
+        public bool IsConfigured =>
+            !string.IsNullOrWhiteSpace(Host) && !string.IsNullOrWhiteSpace(From);
     }
 }

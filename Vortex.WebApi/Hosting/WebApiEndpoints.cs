@@ -655,6 +655,91 @@ internal static partial class WebApiEndpoints
             .WithSummary("Change the signed-in account's password and end every session it has.")
             .WithTags(TagAuth);
 
+        // habbo.com's own two routes and bodies (`passwordReset.send` / `.changePassword` in
+        // sources/habbo.js). Both on the login limiter: the first sends mail to whoever asks, the
+        // second takes a token, and neither should be something a loop can drive.
+        app.MapPost(
+                "/api/public/forgotPassword/send",
+                async Task<
+                    Results<
+                        Ok<ForgotPasswordResponse>,
+                        BadRequest<ApiErrorResponse>,
+                        JsonHttpResult<ApiErrorResponse>
+                    >
+                > (
+                    ForgotPasswordRequest body,
+                    IWebApiPasswordResetService resets,
+                    CancellationToken ct
+                ) =>
+                {
+                    if (body is null || !body.IsValid)
+                    {
+                        return TypedResults.BadRequest(
+                            new ApiErrorResponse("pocket.auth.missing_credentials")
+                        );
+                    }
+
+                    if (!await resets.RequestAsync(body.Email!, ct).ConfigureAwait(false))
+                    {
+                        // The hotel cannot send mail. Said plainly rather than answered with a 200
+                        // for a mail that will never arrive.
+                        return TypedResults.Json(
+                            new ApiErrorResponse("pocket.auth.mail_unavailable"),
+                            statusCode: StatusCodes.Status503ServiceUnavailable
+                        );
+                    }
+
+                    return TypedResults.Ok(new ForgotPasswordResponse(body.Email!.Trim()));
+                }
+            )
+            .RequireRateLimiting(LoginRateLimitPolicy)
+            .WithName("ForgotPasswordSend")
+            .WithSummary("Mail a password reset link, if an account signs in with this address.")
+            .WithTags(TagAuth);
+
+        app.MapPost(
+                "/api/public/forgotPassword/changePassword",
+                async Task<
+                    Results<
+                        Ok<EmptyResponse>,
+                        BadRequest<ApiErrorResponse>,
+                        NotFound<ApiErrorResponse>
+                    >
+                > (
+                    ResetPasswordRequest body,
+                    IWebApiPasswordResetService resets,
+                    CancellationToken ct
+                ) =>
+                {
+                    if (body is null || !body.IsValid)
+                    {
+                        return TypedResults.BadRequest(
+                            new ApiErrorResponse("pocket.auth.missing_credentials")
+                        );
+                    }
+
+                    PasswordResetOutcome outcome = await resets
+                        .ResetAsync(body.Token!, body.Password!, ct)
+                        .ConfigureAwait(false);
+
+                    return outcome switch
+                    {
+                        PasswordResetOutcome.Changed => TypedResults.Ok(EmptyResponse.Instance),
+                        PasswordResetOutcome.TooShort => TypedResults.BadRequest(
+                            new ApiErrorResponse("pocket.auth.password_too_short")
+                        ),
+                        // 404 is what habbo.com's site reads as "this link has expired".
+                        _ => TypedResults.NotFound(
+                            new ApiErrorResponse("pocket.auth.reset_expired")
+                        ),
+                    };
+                }
+            )
+            .RequireRateLimiting(LoginRateLimitPolicy)
+            .WithName("ForgotPasswordChange")
+            .WithSummary("Set a new password with the token a reset link carried.")
+            .WithTags(TagAuth);
+
         app.MapPost(
                 "/api/public/authentication/logout",
                 Ok<EmptyResponse> (HttpContext ctx, WebApiSessionStore sessions) =>

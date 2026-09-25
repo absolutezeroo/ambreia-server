@@ -69,6 +69,12 @@ public sealed record LoginResponse(bool RequiresOnboarding);
 /// <summary>How many sessions the password change ended — the caller's own included.</summary>
 public sealed record PasswordChangeResponse(int SessionsRevoked);
 
+/// <summary>
+/// The address the link went to, echoed as habbo.com's site shows it back ("un e-mail a été envoyé
+/// à …"). The same answer whether or not an account uses it.
+/// </summary>
+public sealed record ForgotPasswordResponse(string Email);
+
 /// <summary>The account id a registration created.</summary>
 public sealed record RegistrationResponse(int Id);
 
