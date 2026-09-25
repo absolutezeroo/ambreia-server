@@ -66,6 +66,8 @@ public class VortexDbContext(DbContextOptions<VortexDbContext> options)
 
     public DbSet<CatalogClubGiftEntity> CatalogClubGifts { get; init; } = null!;
 
+    public DbSet<CatalogGiftWrappingEntity> CatalogGiftWrappings { get; init; } = null!;
+
     public DbSet<CatalogFrontPageItemEntity> CatalogFrontPageItems { get; init; } = null!;
 
     public DbSet<CatalogOfferEntity> CatalogOffers { get; init; } = null!;

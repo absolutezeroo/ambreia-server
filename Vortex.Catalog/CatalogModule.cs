@@ -35,6 +35,10 @@ public sealed class CatalogModule : IHostPluginModule
         services.AddSingleton<IReferenceDataProvider>(sp =>
             (IReferenceDataProvider)sp.GetRequiredService<ICatalogClubGiftProvider>()
         );
+        services.AddSingleton<IGiftWrappingProvider, GiftWrappingProvider>();
+        services.AddSingleton<IReferenceDataProvider>(sp =>
+            (IReferenceDataProvider)sp.GetRequiredService<IGiftWrappingProvider>()
+        );
         services.AddSingleton<ICatalogSnapshotProvider<NormalCatalog>>(
             sp => new CatalogSnapshotProvider<NormalCatalog>(
                 sp.GetRequiredService<IDbContextFactory<VortexDbContext>>(),

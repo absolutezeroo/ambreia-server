@@ -12,6 +12,7 @@ using Vortex.Furniture.Providers;
 using Vortex.Inventory.Configuration;
 using Vortex.Inventory.Fulfillment;
 using Vortex.Inventory.Grains;
+using Vortex.Primitives.Catalog.Providers;
 using Vortex.Primitives.Events;
 using Vortex.Primitives.Furniture.Enums;
 using Vortex.Primitives.Furniture.Providers;
@@ -153,6 +154,8 @@ internal sealed class InventoryGrainFixture : IDisposable
             Options.Create(new InventoryConfig()),
             BuildGrainFactory(),
             new StubDefinitionProvider(),
+            // No parcels: every gift here is handed over unwrapped.
+            FakeProxy.Create<IGiftWrappingProvider>(_ => null),
             new StubFurnitureLoader(),
             new StuffDataFactory(),
             new CatalogFulfillmentPlanner(

@@ -8,6 +8,7 @@ using Vortex.Database.Context;
 using Vortex.Inventory.Configuration;
 using Vortex.Inventory.Fulfillment;
 using Vortex.Inventory.Grains.Modules;
+using Vortex.Primitives.Catalog.Providers;
 using Vortex.Primitives.Events;
 using Vortex.Primitives.Furniture.Providers;
 using Vortex.Primitives.Inventory.Factories;
@@ -21,6 +22,7 @@ public sealed partial class InventoryGrain : Grain, IInventoryGrain
     private readonly InventoryConfig _inventoryConfig;
     private readonly IGrainFactory _grainFactory;
     private readonly IFurnitureDefinitionProvider _furnitureDefinitionProvider;
+    private readonly IGiftWrappingProvider _giftWrappingProvider;
     private readonly IInventoryFurnitureLoader _furnitureItemsLoader;
     private readonly IStuffDataFactory _stuffDataFactory;
     private readonly CatalogFulfillmentPlanner _planner;
@@ -35,6 +37,7 @@ public sealed partial class InventoryGrain : Grain, IInventoryGrain
         IOptions<InventoryConfig> inventoryConfig,
         IGrainFactory grainFactory,
         IFurnitureDefinitionProvider furnitureDefinitionProvider,
+        IGiftWrappingProvider giftWrappingProvider,
         IInventoryFurnitureLoader furnitureItemsLoader,
         IStuffDataFactory stuffDataFactory,
         CatalogFulfillmentPlanner planner,
@@ -46,6 +49,7 @@ public sealed partial class InventoryGrain : Grain, IInventoryGrain
         _inventoryConfig = inventoryConfig.Value;
         _grainFactory = grainFactory;
         _furnitureDefinitionProvider = furnitureDefinitionProvider;
+        _giftWrappingProvider = giftWrappingProvider;
         _furnitureItemsLoader = furnitureItemsLoader;
         _stuffDataFactory = stuffDataFactory;
         _planner = planner;

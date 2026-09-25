@@ -166,6 +166,8 @@ public sealed class DashboardPlugin : IVortexPlugin
         services.TryAddSingleton<ArticleOperations>();
         services.TryAddSingleton<SongReads>();
         services.TryAddSingleton<SongOperations>();
+        services.TryAddSingleton<GiftWrappingReads>();
+        services.TryAddSingleton<GiftWrappingOperations>();
         services.TryAddSingleton<FishingReads>();
         services.TryAddSingleton<FishingOperations>();
         services.TryAddSingleton<NavigatorReads>();
@@ -235,6 +237,7 @@ public sealed class DashboardPlugin : IVortexPlugin
         services.TryAddSingleton<IFishingAdminService, FishingAdminService>();
         services.TryAddSingleton<IFurnitureAdminService, FurnitureAdminService>();
         services.TryAddSingleton<ISongAdminService, SongAdminService>();
+        services.TryAddSingleton<IGiftWrappingAdminService, GiftWrappingAdminService>();
         services.TryAddSingleton<IHabbiconAdminService, HabbiconAdminService>();
         services.TryAddSingleton<INavigatorAdminService, NavigatorAdminService>();
         services.TryAddSingleton<IContentAdminService, ContentAdminService>();
@@ -321,6 +324,7 @@ public sealed class DashboardPlugin : IVortexPlugin
         // DashboardPluginContainerTests is what catches that now.
         services.UseHostService<INavigatorService>();
         services.UseHostService<ISongProvider>();
+        services.UseHostService<IGiftWrappingProvider>();
         services.UseHostService<ICurrencyTypeProvider>();
         services.UseHostService<IHabbiconCatalog>();
         services.UseHostService<IRewardTrackCatalog>();

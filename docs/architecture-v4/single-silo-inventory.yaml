@@ -13,6 +13,7 @@
 reference_data_providers:
   - CatalogClubGiftProvider
   - CatalogClubOfferProvider
+  - GiftWrappingProvider
   - CatalogSnapshotProvider`1
   - CurrencyTypeProvider
   - FurnitureDefinitionProvider

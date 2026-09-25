@@ -175,6 +175,10 @@ public static class Capabilities
         public const string SongsRead = "dashboard.songs.read";
         public const string OpsSongsManage = "dashboard.ops.songs.manage";
 
+        /// <summary>The gift dialog's parcels, boxes and ribbons.</summary>
+        public const string GiftWrappingsRead = "dashboard.gift_wrappings.read";
+        public const string OpsGiftWrappingsManage = "dashboard.ops.gift_wrappings.manage";
+
         /// <summary>Fishing's four content tables, and what players have caught out of them.</summary>
         public const string FishingRead = "dashboard.fishing.read";
         public const string OpsFishingManage = "dashboard.ops.fishing.manage";
@@ -333,6 +337,8 @@ public static class Capabilities
             OpsRewardTracksManage,
             SongsRead,
             OpsSongsManage,
+            GiftWrappingsRead,
+            OpsGiftWrappingsManage,
             FishingRead,
             OpsFishingManage,
             PollsRead,

@@ -184,6 +184,7 @@ internal static partial class DashboardEndpoints
         MapQuestContentReads(app);
         MapMysteryBoxReads(app);
         MapSongReads(app);
+        MapGiftWrappingReads(app);
         MapFishingReads(app);
         MapPrizePoolReads(app);
         MapConfigReads(app);
@@ -218,6 +219,7 @@ internal static partial class DashboardEndpoints
         MapQuestContentOperations(app);
         MapMysteryBoxOperations(app);
         MapSongOperations(app);
+        MapGiftWrappingOperations(app);
         MapFishingOperations(app);
         MapPrizePoolOperations(app);
         MapConfigOperations(app);

@@ -1409,6 +1409,22 @@ export interface GamedataLanguageRow {
   command: string;
 }
 
+export interface GiftWrappingList {
+  wrappingEnabled: boolean;
+  items: GiftWrappingRow[];
+}
+
+export interface GiftWrappingRow {
+  id: number;
+  kind: string;
+  furnitureName: string | null;
+  furnitureIconUrl: string | null;
+  spriteId: number | null;
+  artIndex: number | null;
+  isDefault: boolean;
+  sortOrder: number;
+}
+
 export interface GroupActivityEvent {
   occurredAt: string;
   action: string;

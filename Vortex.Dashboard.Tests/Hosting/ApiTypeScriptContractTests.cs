@@ -66,6 +66,7 @@ public sealed class ApiTypeScriptContractTests
         typeof(CfhStats),
         typeof(ChatlogPage),
         typeof(SongListResponse),
+        typeof(GiftWrappingList),
         typeof(GroupStats),
         typeof(GuildDirectoryPage),
         typeof(GuildModeration),

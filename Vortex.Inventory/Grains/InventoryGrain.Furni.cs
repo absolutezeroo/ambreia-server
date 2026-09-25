@@ -23,6 +23,7 @@ using Vortex.Logging;
 using Vortex.Primitives;
 using Vortex.Primitives.Bots;
 using Vortex.Primitives.Catalog;
+using Vortex.Primitives.Catalog.Providers;
 using Vortex.Primitives.Catalog.Snapshots;
 using Vortex.Primitives.Commerce;
 using Vortex.Primitives.Events;
@@ -981,10 +982,10 @@ public sealed partial class InventoryGrain
     /// 1-7. It is not one: the client draws the parcel preview with
     /// <c>getFurnitureImage(stuffType)</c>, so the value only ever meant a furniture class id, and
     /// the clamp turned every id above seven into the same parcel. The two halves now agree because
-    /// both read the same list — see <see cref="GiftWrapping"/>.
+    /// both read the same list — see <see cref="IGiftWrappingProvider"/>.
     /// </remarks>
     private FurnitureDefinitionSnapshot? ResolvePresentDefinition(int stuffTypeId) =>
-        GiftWrapping.ResolvePresent(_furnitureDefinitionProvider, stuffTypeId);
+        _giftWrappingProvider.ResolvePresent(stuffTypeId);
 
     /// <summary>
     /// Both halves of a present in one blob: the "stuff" section every client in the room can read,

@@ -68,6 +68,7 @@ GET /api/v1/furniture/definitions -> dashboard.furniture.read
 GET /api/v1/gamedata -> dashboard.ops.gamedata.manage
 GET /api/v1/gamedata/entries -> dashboard.ops.gamedata.manage
 GET /api/v1/gamedata/languages -> dashboard.ops.gamedata.manage
+GET /api/v1/gift-wrappings -> dashboard.gift_wrappings.read
 GET /api/v1/groups/stats -> dashboard.groups.read
 GET /api/v1/guilds -> dashboard.ops.guilds.manage
 GET /api/v1/guilds/{guildId:int} -> dashboard.ops.guilds.manage
@@ -224,6 +225,10 @@ POST /api/v1/operations/gamedata/entry/delete -> dashboard.ops.gamedata.manage
 POST /api/v1/operations/gamedata/furni -> dashboard.ops.gamedata.manage
 POST /api/v1/operations/gamedata/language -> dashboard.ops.gamedata.manage
 POST /api/v1/operations/gamedata/language/delete -> dashboard.ops.gamedata.manage
+POST /api/v1/operations/gift-wrappings -> dashboard.ops.gift_wrappings.manage
+POST /api/v1/operations/gift-wrappings/delete -> dashboard.ops.gift_wrappings.manage
+POST /api/v1/operations/gift-wrappings/reload -> dashboard.ops.gift_wrappings.manage
+POST /api/v1/operations/gift-wrappings/update -> dashboard.ops.gift_wrappings.manage
 POST /api/v1/operations/guilds/delete -> dashboard.ops.guilds.manage
 POST /api/v1/operations/guilds/forum/post -> dashboard.ops.guilds.manage
 POST /api/v1/operations/guilds/forum/thread -> dashboard.ops.guilds.manage
