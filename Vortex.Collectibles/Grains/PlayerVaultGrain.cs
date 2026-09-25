@@ -228,21 +228,14 @@ internal sealed class PlayerVaultGrain(
     /// </summary>
     private async Task<bool> IsKeySpentAsync(string sourceKey, CancellationToken ct)
     {
-        await using VortexDbContext dbCtx = await dbCtxFactory
-            .CreateDbContextAsync(ct)
-            .ConfigureAwait(true);
-
-        bool hasRow = await dbCtx
-            .PlayerVaultIncomeRewards.AnyAsync(
-                r => r.PlayerEntityId == PlayerId && r.SourceKey == sourceKey,
-                ct
-            )
-            .ConfigureAwait(true);
-
-        if (hasRow)
+        if (await HasRowAsync(sourceKey, ct).ConfigureAwait(true))
         {
             return true;
         }
+
+        await using VortexDbContext dbCtx = await dbCtxFactory
+            .CreateDbContextAsync(ct)
+            .ConfigureAwait(true);
 
         return await dbCtx
             .HasCommittedReceiptAsync(
@@ -251,6 +244,20 @@ internal sealed class PlayerVaultGrain(
                     PlayerId
                 ),
                 sourceKey,
+                ct
+            )
+            .ConfigureAwait(true);
+    }
+
+    private async Task<bool> HasRowAsync(string sourceKey, CancellationToken ct)
+    {
+        await using VortexDbContext dbCtx = await dbCtxFactory
+            .CreateDbContextAsync(ct)
+            .ConfigureAwait(true);
+
+        return await dbCtx
+            .PlayerVaultIncomeRewards.AnyAsync(
+                r => r.PlayerEntityId == PlayerId && r.SourceKey == sourceKey,
                 ct
             )
             .ConfigureAwait(true);
@@ -293,7 +300,9 @@ internal sealed class PlayerVaultGrain(
             {
                 // Only a row that now exists makes this the duplicate race. Anything else is a
                 // real write failure, and swallowing it would drop an earning without a trace.
-                if (await IsKeySpentAsync(earning.SourceKey, ct).ConfigureAwait(true))
+                // Row only, not the wallet receipt: on the direct path that receipt was committed
+                // a moment ago by this very call, and would pass any failure off as a duplicate.
+                if (await HasRowAsync(earning.SourceKey, ct).ConfigureAwait(true))
                 {
                     logger.LogInformation(
                         ex,

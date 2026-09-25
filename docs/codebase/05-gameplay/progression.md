@@ -52,7 +52,8 @@ currencies (activity points) are paid straight to the wallet. Shared reward-type
 > returned a `bool` the achievement grain discarded — a currency with no enabled `currency_types` row
 > was a logged no-op the player never heard about. `vault.EarnAsync`'s direct-pay branch instead calls
 > `PlayerWalletGrain.CreditOnceAsync`, which **throws** on the same missing row, so the failure now
-> surfaces. Quests and daily tasks (below) still call `GrantCurrencyAsync` directly and still drop it.
+> surfaces. Quests (below) still call `GrantCurrencyAsync` directly and still drop it; daily tasks
+> already pay through `CreditOnceAsync`.
 > → [Economy overview](../06-economy/overview.md)
 
 Wire shape: `AchievementData` is a 14-field cumulative block, and **level = completed + 1**.
