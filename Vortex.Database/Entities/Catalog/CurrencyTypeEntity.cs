@@ -30,7 +30,5 @@ public class CurrencyTypeEntity : VortexEntity
     [DefaultValue(200)]
     public int StartingAmount { get; set; } = 200;
 
-    public List<CatalogOfferEntity>? CatalogOffers { get; set; }
-
     public List<PlayerCurrencyEntity>? PlayerCurrencies { get; set; }
 }

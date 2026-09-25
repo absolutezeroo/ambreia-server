@@ -12,6 +12,7 @@ using Vortex.Primitives.Catalog;
 using Vortex.Primitives.Catalog.Admin;
 using Vortex.Primitives.Catalog.Providers;
 using Vortex.Primitives.Catalog.Tags;
+using Vortex.Primitives.Players.Enums.Wallet;
 
 namespace Vortex.Dashboard.API.Admin.Catalogue;
 
@@ -197,6 +198,25 @@ internal sealed class CatalogAdminService(
         return CatalogAdminResult.Ok(pageId);
     }
 
+    /// <summary>
+    /// An offer's <c>CurrencyTypeId</c> is an activity-point type (5 diamonds), not a
+    /// <c>currency_types</c> row id — see <see cref="CatalogOfferEntity.CurrencyTypeId"/>. It must
+    /// name one the hotel has a currency row for, or the wallet refuses every purchase of it.
+    /// </summary>
+    private static async Task<bool> IsKnownActivityPointTypeAsync(
+        VortexDbContext db,
+        int? activityPointType,
+        CancellationToken ct
+    ) =>
+        activityPointType is not { } type
+        || await db
+            .CurrencyTypes.AsNoTracking()
+            .AnyAsync(
+                c => c.CurrencyType == CurrencyType.ActivityPoints && c.ActivityPointType == type,
+                ct
+            )
+            .ConfigureAwait(false);
+
     public async Task<CatalogAdminResult> CreateOfferAsync(
         CatalogOfferCreateSpec spec,
         CancellationToken ct
@@ -215,17 +235,9 @@ internal sealed class CatalogAdminService(
             return CatalogAdminResult.Fail("page_not_found");
         }
 
-        if (spec.CurrencyTypeId is { } currencyTypeId)
+        if (!await IsKnownActivityPointTypeAsync(db, spec.CurrencyTypeId, ct).ConfigureAwait(false))
         {
-            bool currencyExists = await db
-                .CurrencyTypes.AsNoTracking()
-                .AnyAsync(c => c.Id == currencyTypeId, ct)
-                .ConfigureAwait(false);
-
-            if (!currencyExists)
-            {
-                return CatalogAdminResult.Fail("currency_type_not_found");
-            }
+            return CatalogAdminResult.Fail("currency_type_not_found");
         }
 
         CatalogOfferEntity entity = new()
@@ -269,17 +281,9 @@ internal sealed class CatalogAdminService(
             return CatalogAdminResult.Fail("offer_not_found");
         }
 
-        if (spec.CurrencyTypeId is { } currencyTypeId)
+        if (!await IsKnownActivityPointTypeAsync(db, spec.CurrencyTypeId, ct).ConfigureAwait(false))
         {
-            bool currencyExists = await db
-                .CurrencyTypes.AsNoTracking()
-                .AnyAsync(c => c.Id == currencyTypeId, ct)
-                .ConfigureAwait(false);
-
-            if (!currencyExists)
-            {
-                return CatalogAdminResult.Fail("currency_type_not_found");
-            }
+            return CatalogAdminResult.Fail("currency_type_not_found");
         }
 
         entity.LocalizationId = spec.LocalizationId;

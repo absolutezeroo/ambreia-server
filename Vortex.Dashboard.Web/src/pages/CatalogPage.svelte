@@ -163,6 +163,9 @@
   let currentPage = $state<CatalogPageDetail | null>(null);
 
   let currencyTypes = $state<TargetedOfferCurrency[]>([]);
+  // An offer's currencyTypeId is the activity-point type (5 = diamonds), which is what the purchase
+  // debits and the client reads -- not a currency row id. Only activity-point currencies have one.
+  let activityPointCurrencies = $derived(currencyTypes.filter((c) => c.activityPointType != null));
   let iconTemplate: string | null = '';
 
   // 'new' | 'edit' | null -- which form's icon field the picker modal is currently targeting.
@@ -970,13 +973,14 @@
                   </span>
                 </span>
                 <span class="catalog-row-meta">
-                  {#if offer.costCredits > 0 || !offer.currencyTypeId}
+                  <!-- currencyTypeId 0 is duckets, so it is tested against null, not for truth. -->
+                  {#if offer.costCredits > 0 || offer.currencyTypeId == null}
                     <span class={currencyChipClass(CURRENCY_KIND.credits)}>
                       <CurrencyIcon kind={CURRENCY_KIND.credits} size={13} />
                       {formatNumber(offer.costCredits)}
                     </span>
                   {/if}
-                  {#if offer.currencyTypeId}
+                  {#if offer.currencyTypeId != null}
                     <span class={currencyChipClass(currencyKindFromRewardType(offer.currencyTypeId))}>
                       <CurrencyIcon kind={currencyKindFromRewardType(offer.currencyTypeId)} size={13} />
                       {formatNumber(offer.costCurrency)}
@@ -1242,7 +1246,7 @@
         <label for="new-offer-currency-type">{$t('catalogAdmin.currencyTypeOptional')}</label>
         <select id="new-offer-currency-type" bind:value={newOffer.currencyTypeId}>
           <option value="">{$t('catalogAdmin.none')}</option>
-          {#each currencyTypes as c}<option value={c.id}>{c.name || c.type} (#{c.id})</option>{/each}
+          {#each activityPointCurrencies as c}<option value={c.activityPointType}>{c.name || c.type} (#{c.activityPointType})</option>{/each}
         </select>
       </div>
       <div class="op-field">
@@ -1293,7 +1297,7 @@
         <label for={`edit-offer-currency-type-${editOfferId}`}>{$t('catalogAdmin.currencyTypeOptional')}</label>
         <select id={`edit-offer-currency-type-${editOfferId}`} bind:value={editOfferForm.currencyTypeId}>
           <option value="">{$t('catalogAdmin.none')}</option>
-          {#each currencyTypes as c}<option value={c.id}>{c.name || c.type} (#{c.id})</option>{/each}
+          {#each activityPointCurrencies as c}<option value={c.activityPointType}>{c.name || c.type} (#{c.activityPointType})</option>{/each}
         </select>
       </div>
       <div class="op-field">

@@ -6,6 +6,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging.Abstractions;
 using Vortex.Dashboard.API.Admin.Catalogue;
 using Vortex.Database.Context;
+using Vortex.Database.Entities.Catalog;
 using Vortex.Primitives.Catalog;
 using Vortex.Primitives.Catalog.Admin;
 using Vortex.Primitives.Catalog.Enums;
@@ -13,6 +14,7 @@ using Vortex.Primitives.Catalog.Providers;
 using Vortex.Primitives.Catalog.Snapshots;
 using Vortex.Primitives.Catalog.Tags;
 using Vortex.Primitives.Furniture.Enums;
+using Vortex.Primitives.Players.Enums.Wallet;
 using Xunit;
 
 namespace Vortex.Dashboard.Tests;
@@ -260,6 +262,74 @@ public sealed class CatalogAdminServiceTests
         )
             .ParentEntityId.Should()
             .BeNull();
+    }
+
+    /// <summary>
+    /// An offer's currency is the activity-point type the purchase debits and the client reads
+    /// (5 = diamonds), not a currency_types row id: the diamonds row here is id 3, and the offer
+    /// must store 5.
+    /// </summary>
+    [Theory]
+    [InlineData(5, true)]
+    [InlineData(3, false)]
+    public async Task CreateOffer_CurrencyIsTheActivityPointType(int currency, bool accepted)
+    {
+        DbContextOptions<VortexDbContext> options = NewOptions();
+
+        await using (VortexDbContext db = NewContext(options))
+        {
+            db.CurrencyTypes.Add(
+                new CurrencyTypeEntity
+                {
+                    Id = 3,
+                    Name = "Diamonds",
+                    CurrencyType = CurrencyType.ActivityPoints,
+                    ActivityPointType = 5,
+                    Enabled = true,
+                }
+            );
+            await db.SaveChangesAsync().ConfigureAwait(true);
+        }
+
+        CatalogAdminService service = NewService(options, out _, out _);
+
+        CatalogAdminResult page = await service
+            .CreatePageAsync(
+                new CatalogPageCreateSpec(
+                    CatalogType.Normal,
+                    null,
+                    "diamond_page",
+                    null,
+                    0,
+                    CatalogPageLayout.Default3x3,
+                    null,
+                    null,
+                    0,
+                    true
+                ),
+                CancellationToken.None
+            )
+            .ConfigureAwait(true);
+
+        CatalogAdminResult offer = await service
+            .CreateOfferAsync(
+                new CatalogOfferCreateSpec(
+                    page.Id!.Value,
+                    "offer_loc",
+                    0,
+                    25,
+                    currency,
+                    true,
+                    true,
+                    0,
+                    0,
+                    true
+                ),
+                CancellationToken.None
+            )
+            .ConfigureAwait(true);
+
+        offer.Success.Should().Be(accepted);
     }
 
     [Fact]

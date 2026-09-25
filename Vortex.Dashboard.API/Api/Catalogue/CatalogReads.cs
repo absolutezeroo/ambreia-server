@@ -26,6 +26,7 @@ using Vortex.Primitives.Observability;
 using Vortex.Primitives.Orleans;
 using Vortex.Primitives.Orleans.Snapshots.Room;
 using Vortex.Primitives.Players.Enums;
+using Vortex.Primitives.Players.Enums.Wallet;
 using Vortex.Primitives.Rooms.Grains;
 
 namespace Vortex.Dashboard.API.Api.Catalogue;
@@ -127,9 +128,14 @@ internal sealed class CatalogReads(
                         o.CostCredits,
                         o.CostCurrency,
                         o.CurrencyTypeId,
-                        currencyName = o.CurrencyTypeEntity != null
-                            ? o.CurrencyTypeEntity.Name
-                            : null,
+                        // By activity-point type, not by row id: see CatalogOfferEntity.CurrencyTypeId.
+                        currencyName = db
+                            .CurrencyTypes.Where(c =>
+                                c.CurrencyType == CurrencyType.ActivityPoints
+                                && c.ActivityPointType == o.CurrencyTypeId
+                            )
+                            .Select(c => c.Name)
+                            .FirstOrDefault(),
                         o.CanGift,
                         o.CanBundle,
                         o.ClubLevel,
@@ -255,7 +261,12 @@ internal sealed class CatalogReads(
                         o.CostCredits,
                         o.CostCurrency,
                         o.CurrencyTypeId,
-                        o.CurrencyTypeEntity != null ? o.CurrencyTypeEntity.Name : null,
+                        db.CurrencyTypes.Where(c =>
+                                c.CurrencyType == CurrencyType.ActivityPoints
+                                && c.ActivityPointType == o.CurrencyTypeId
+                            )
+                            .Select(c => c.Name)
+                            .FirstOrDefault(),
                         o.CanGift,
                         o.CanBundle,
                         o.ClubLevel,

@@ -1071,8 +1071,6 @@ namespace Vortex.Database.Migrations
 
                     b.HasIndex("CatalogPageEntityId");
 
-                    b.HasIndex("CurrencyTypeId");
-
                     b.ToTable("catalog_offers");
                 });
 
@@ -13285,12 +13283,6 @@ namespace Vortex.Database.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("Vortex.Database.Entities.Catalog.CurrencyTypeEntity", "CurrencyTypeEntity")
-                        .WithMany("CatalogOffers")
-                        .HasForeignKey("CurrencyTypeId");
-
-                    b.Navigation("CurrencyTypeEntity");
-
                     b.Navigation("Page");
                 });
 
@@ -15184,8 +15176,6 @@ namespace Vortex.Database.Migrations
 
             modelBuilder.Entity("Vortex.Database.Entities.Catalog.CurrencyTypeEntity", b =>
                 {
-                    b.Navigation("CatalogOffers");
-
                     b.Navigation("PlayerCurrencies");
                 });
 
