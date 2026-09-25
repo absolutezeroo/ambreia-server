@@ -31,9 +31,13 @@ public sealed partial class RoomGrain
         string? key = DecorationPropertyKey(item.Definition.FurniCategory);
         string code = (item.StuffData as LegacyStuffSnapshot)?.Data ?? string.Empty;
 
+        // "0" is LegacyStuffData's default, not a pattern: an item bought before decorations kept
+        // their code reads back as "0", and applying it consumed the item and painted nothing (the
+        // client treats "0" as "no pattern"). Refuse it and leave the item in the inventory.
         if (
             key is null
             || string.IsNullOrWhiteSpace(code)
+            || code == "0"
             || item.OwnerId.Value != ctx.PlayerId.Value
         )
         {
