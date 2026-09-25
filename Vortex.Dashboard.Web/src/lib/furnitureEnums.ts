@@ -109,6 +109,7 @@ export const LOGIC_GROUPS = [
       { value: 'furniture_score', label: 'furniture_score' },
       { value: 'furniture_static', label: 'furniture_static' },
       { value: 'furniture_welcome_gift', label: 'furniture_welcome_gift' },
+      { value: 'furniture_window', label: 'furniture_window' },
     ],
   },
   {

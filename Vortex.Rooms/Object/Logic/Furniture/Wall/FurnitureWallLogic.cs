@@ -20,6 +20,9 @@ namespace Vortex.Rooms.Object.Logic.Furniture.Wall;
 [RoomObjectLogic("furniture_multistate")]
 [RoomObjectLogic("furniture_muItistate")]
 [RoomObjectLogic("furniture_static")]
+// A window is plain wall furni on the server; its plane mask is purely client-side
+// (FurnitureWindowLogic.as). Unregistered, every placement logged a fallback warning.
+[RoomObjectLogic("furniture_window")]
 public class FurnitureWallLogic(IStuffDataFactory stuffDataFactory, IRoomWallItemContext ctx)
     : FurnitureLogic<IRoomWallItem, IFurnitureWallLogic, IRoomWallItemContext>(
         stuffDataFactory,
