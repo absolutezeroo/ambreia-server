@@ -2,15 +2,19 @@ using System.Threading;
 using System.Threading.Tasks;
 using Orleans;
 using Vortex.Messages.Registry;
+using Vortex.Primitives.Action;
+using Vortex.Primitives.Inventory.Grains;
+using Vortex.Primitives.Inventory.Snapshots;
 using Vortex.Primitives.Orleans;
-using Vortex.Primitives.Orleans.Snapshots.Room;
-using Vortex.Primitives.Players.Grains;
-using Vortex.Primitives.Rooms.Enums;
 using Vortex.Protocol.Messages.Incoming.Inventory.Furni;
-using Vortex.Protocol.Messages.Outgoing.Room.Engine;
 
 namespace Vortex.PacketHandlers.Inventory.Furni;
 
+/// <summary>
+/// Applies a wallpaper, floor or landscape from the inventory to the room the player is in. The
+/// int on the wire is the item id; this handler used to read it as a room id and only re-send that
+/// room's current properties, so no decoration was ever applied.
+/// </summary>
 public class RequestRoomPropertySetMessageHandler(IGrainFactory grainFactory)
     : IMessageHandler<RequestRoomPropertySetMessage>
 {
@@ -20,60 +24,32 @@ public class RequestRoomPropertySetMessageHandler(IGrainFactory grainFactory)
         CancellationToken ct
     )
     {
-        if (ctx.PlayerId <= 0 || message.RoomId <= 0)
+        ActionContext action = ctx.AsActionContext();
+
+        if (ctx.PlayerId <= 0 || action.RoomId <= 0 || message.ItemId <= 0)
         {
             return;
         }
 
-        RoomSnapshot snapshot = await grainFactory
-            .GetRoomCore(message.RoomId)
-            .GetSnapshotAsync()
+        IInventoryGrain inventory = grainFactory.GetInventoryGrain(ctx.PlayerId);
+
+        FurnitureItemSnapshot? item = await inventory
+            .GetItemSnapshotAsync(message.ItemId, ct)
             .ConfigureAwait(false);
 
-        IPlayerPresenceGrain presence = grainFactory.GetPlayerPresenceGrain(ctx.PlayerId);
+        if (item is null)
+        {
+            return;
+        }
 
-        await presence
-            .SendComposerAsync(
-                new RoomPropertyMessageComposer
-                {
-                    Key = RoomPropertyType.WALLPAPER,
-                    Value = DecorationOrDefault(snapshot.PaintWall),
-                }
-            )
-            .ConfigureAwait(false);
-        await presence
-            .SendComposerAsync(
-                new RoomPropertyMessageComposer
-                {
-                    Key = RoomPropertyType.FLOOR,
-                    Value = DecorationOrDefault(snapshot.PaintFloor),
-                }
-            )
-            .ConfigureAwait(false);
-        await presence
-            .SendComposerAsync(
-                new RoomPropertyMessageComposer
-                {
-                    Key = RoomPropertyType.LANDSCAPE,
-                    Value = DecorationOrDefault(snapshot.PaintLandscape),
-                }
-            )
-            .ConfigureAwait(false);
-        await presence
-            .SendComposerAsync(
-                // No animated-landscape state exists on RoomEntity yet -- always "not animated"
-                // until that concept is modeled, rather than fabricating a value.
-                new RoomPropertyMessageComposer
-                {
-                    Key = RoomPropertyType.LANDSCAPEANIM,
-                    Value = "0",
-                }
-            )
-            .ConfigureAwait(false);
+        if (
+            await grainFactory
+                .GetRoomFurni(action.RoomId)
+                .ApplyDecorationAsync(action, item, ct)
+                .ConfigureAwait(false)
+        )
+        {
+            await inventory.RemoveFurnitureAsync(item.ItemId, ct).ConfigureAwait(false);
+        }
     }
-
-    /// <summary>A room that has never been decorated stores no id; "0" is the client's default
-    /// surface, and an empty string would render as a missing asset.</summary>
-    private static string DecorationOrDefault(string value) =>
-        string.IsNullOrWhiteSpace(value) ? "0" : value;
 }

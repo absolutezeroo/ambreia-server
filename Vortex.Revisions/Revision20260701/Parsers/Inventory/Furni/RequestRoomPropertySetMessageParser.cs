@@ -7,5 +7,5 @@ namespace Vortex.Revisions.Revision20260701.Parsers.Inventory.Furni;
 internal class RequestRoomPropertySetMessageParser : IParser
 {
     public IMessageEvent Parse(IClientPacket packet) =>
-        new RequestRoomPropertySetMessage { RoomId = packet.PopInt() };
+        new RequestRoomPropertySetMessage { ItemId = packet.PopInt() };
 }
