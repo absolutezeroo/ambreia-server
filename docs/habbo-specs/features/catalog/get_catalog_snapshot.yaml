@@ -251,8 +251,8 @@ verified:
       symbol: initProductIcon
   builders_club_credit_prices:
     confidence: assumed
-    claim: Membership time is sold for credits in-game.
-    reason: The official front page's subscribe button opens the website shop (web.shop.subscription.relativeUrl); no credit price is recorded anywhere. The seed's prices are an operator's starting point.
+    claim: Membership time and add-ons are sold in-game for credits or for diamonds, one offer per currency.
+    reason: "The hotel's operator states it sells for diamonds as well; the add-ons widget draws a diamonds price when priceInActivityPoints > 0. The front page's subscribe button opens the website shop (web.shop.subscription.relativeUrl). No official figure is recorded anywhere; the seed's prices are a starting point."
     evidence:
     - kind: client_code
       source: com/sulake/habbo/catalog/viewer/widgets/BuilderSubscriptionCatalogWidget.as
