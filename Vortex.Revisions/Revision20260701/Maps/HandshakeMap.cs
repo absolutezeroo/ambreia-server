@@ -36,6 +36,12 @@ internal sealed class HandshakeMap : IRevisionMap
             )
         );
         builder.MapSerializer(
+            typeof(DisconnectReasonEventMessageComposer),
+            new DisconnectReasonEventMessageComposerSerializer(
+                MessageComposer.DisconnectReasonComposer
+            )
+        );
+        builder.MapSerializer(
             typeof(GenericErrorMessage),
             new GenericErrorMessageSerializer(MessageComposer.GenericErrorComposer)
         );

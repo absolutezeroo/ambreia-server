@@ -330,7 +330,10 @@ internal sealed partial class RoomService(
                 new FloorHeightMapMessageComposer
                 {
                     ScaleType = _roomConfig.DefaultRoomScale,
-                    FixedWallsHeight = _roomConfig.DefaultWallHeight,
+                    // The room's own, as its floor plan editor saved it. This was the config's 0
+                    // for every room -- fixed walls at the lowest height -- so a height picked in
+                    // the editor was stored, read back nowhere, and gone on the next entry.
+                    FixedWallsHeight = snapshot.WallHeight,
                     ModelData = mapSnapshot.ModelData,
                     AreaHideData = [],
                     // Where the client parks the camera before the first avatar exists

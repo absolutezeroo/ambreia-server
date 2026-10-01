@@ -10,7 +10,7 @@ internal class UpdateForumReadMarkerMessageParser : IParser
 {
     public IMessageEvent Parse(IClientPacket packet)
     {
-        int count = packet.PopInt();
+        int count = packet.PopCount(sizeof(int) + sizeof(int) + sizeof(bool));
 
         ImmutableArray<ForumReadMarkerUpdate>.Builder markers =
             ImmutableArray.CreateBuilder<ForumReadMarkerUpdate>(count);

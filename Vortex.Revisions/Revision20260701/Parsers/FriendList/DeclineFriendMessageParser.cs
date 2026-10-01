@@ -17,7 +17,7 @@ public class DeclineFriendMessageParser : IParser
         }
         else
         {
-            int friendsCount = packet.PopInt();
+            int friendsCount = packet.PopCount(sizeof(int));
 
             List<int> friends = new List<int>(friendsCount);
 

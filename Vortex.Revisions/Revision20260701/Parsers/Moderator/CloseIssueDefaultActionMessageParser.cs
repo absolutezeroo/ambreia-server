@@ -10,7 +10,7 @@ internal class CloseIssueDefaultActionMessageParser : IParser
     public IMessageEvent Parse(IClientPacket packet)
     {
         int primaryIssueId = packet.PopInt();
-        int count = packet.PopInt();
+        int count = packet.PopCount(sizeof(int));
         ImmutableArray<int>.Builder otherIssueIds = ImmutableArray.CreateBuilder<int>(count);
 
         for (int i = 0; i < count; i++)

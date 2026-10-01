@@ -16,7 +16,7 @@ internal class CallForHelpFromIMMessageParser : IParser
 
         // The client pushes the flat (userId, text) array and sends length/2 as the count, exactly
         // as the room-based CallForHelp does.
-        int evidenceCount = packet.PopInt();
+        int evidenceCount = packet.PopCount(sizeof(int) + sizeof(ushort));
         ImmutableArray<CfhEvidenceLine>.Builder evidence =
             ImmutableArray.CreateBuilder<CfhEvidenceLine>(evidenceCount);
 

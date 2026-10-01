@@ -10,7 +10,7 @@ internal class CloseIssuesMessageParser : IParser
     public IMessageEvent Parse(IClientPacket packet)
     {
         int closeReason = packet.PopInt();
-        int count = packet.PopInt();
+        int count = packet.PopCount(sizeof(int));
         ImmutableArray<int>.Builder issueIds = ImmutableArray.CreateBuilder<int>(count);
 
         for (int i = 0; i < count; i++)

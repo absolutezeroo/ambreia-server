@@ -33,17 +33,20 @@ internal class PlayerDirectoryGrain(
             return x;
         }
 
-        string dbName;
+        string? dbName;
 
         try
         {
             await using VortexDbContext dbCtx = await _dbCtxFactory.CreateDbContextAsync(ct);
 
+            // An id nobody holds is an answer -- no name -- not a fault. FirstAsync made it an
+            // InvalidOperationException, logged at error level and thrown at whoever asked, for a
+            // lookup the many-ids path below answers by simply leaving the id out.
             dbName = await dbCtx
                 .Players.AsNoTracking()
                 .Where(x => x.Id == (int)playerId)
                 .Select(x => x.Name)
-                .FirstAsync(ct);
+                .FirstOrDefaultAsync(ct);
         }
         catch (Exception ex)
         {
@@ -74,7 +77,10 @@ internal class PlayerDirectoryGrain(
             PlayerId singleId = playerIds[0];
             string singleName = await GetPlayerNameAsync(singleId, ct);
 
-            names.TryAdd(singleId, singleName);
+            if (singleName.Length > 0)
+            {
+                names.TryAdd(singleId, singleName);
+            }
         }
         else
         {
@@ -214,6 +220,7 @@ internal class PlayerDirectoryGrain(
                 .Players.AsNoTracking()
                 .Where(p => p.Name.Contains(query) && p.DeletedAt == null)
                 .OrderBy(p => p.Name)
+                .ThenBy(p => p.Id)
                 .Take(limit)
                 .Select(p => new
                 {

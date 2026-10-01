@@ -10,7 +10,7 @@ public class RemoveFriendMessageParser(int maxFriendIds) : IParser
 {
     public IMessageEvent Parse(IClientPacket packet)
     {
-        int totalFriends = packet.PopInt();
+        int totalFriends = packet.PopCount(sizeof(int));
 
         if (totalFriends < 0 || totalFriends > maxFriendIds)
         {

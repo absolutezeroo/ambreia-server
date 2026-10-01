@@ -14,6 +14,7 @@ using Vortex.Primitives.Orleans;
 using Vortex.Primitives.Orleans.Observers;
 using Vortex.Primitives.Players;
 using Vortex.Primitives.Players.Grains;
+using Vortex.Protocol.Messages.Outgoing.Handshake;
 
 namespace Vortex.Networking.Session;
 
@@ -242,7 +243,11 @@ public sealed class SessionGateway(
                         playerId,
                         existingSessionKey,
                         closeTransport: true,
-                        ct
+                        ct,
+                        farewell: new DisconnectReasonEventMessageComposer
+                        {
+                            Reason = DisconnectReasonEventMessageComposer.ConcurrentLogin,
+                        }
                     )
                     .ConfigureAwait(false);
             }
@@ -318,7 +323,8 @@ public sealed class SessionGateway(
         PlayerId playerId,
         SessionKey sessionKey,
         bool closeTransport,
-        CancellationToken ct
+        CancellationToken ct,
+        IComposer? farewell = null
     )
     {
         bool removedActiveMapping = TryRemovePair(_playerToSession, playerId, sessionKey);
@@ -358,6 +364,25 @@ public sealed class SessionGateway(
 
         if (closeTransport && _sessions.TryGetValue(sessionKey, out ISessionContext? session))
         {
+            // Straight to the socket, not through presence: presence now belongs to the session
+            // that replaced this one, and must not hear its predecessor's goodbye. Without it the
+            // client just loses the connection and shows nothing about why.
+            if (farewell is not null)
+            {
+                try
+                {
+                    await session.SendComposerAsync(farewell, ct).ConfigureAwait(false);
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogDebug(
+                        ex,
+                        "Failed to send the disconnect reason to replaced session {SessionKey}",
+                        sessionKey
+                    );
+                }
+            }
+
             await CloseSessionTransportSafelyAsync(sessionKey, session).ConfigureAwait(false);
         }
     }

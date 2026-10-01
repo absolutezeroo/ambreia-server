@@ -245,6 +245,7 @@ public sealed partial class RoomGrain
             {
                 WallThickness = room.ThicknessWall,
                 FloorThickness = room.ThicknessFloor,
+                WallHeight = room.WallHeight,
                 LastUpdatedUtc = DateTime.UtcNow,
             };
 

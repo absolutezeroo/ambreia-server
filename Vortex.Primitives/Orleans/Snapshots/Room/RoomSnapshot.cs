@@ -50,4 +50,12 @@ public sealed record RoomSnapshot : RoomInfoSnapshot
 
     [Id(13)]
     public bool MuteAllPets { get; init; }
+
+    /// <summary>
+    /// The floor plan editor's wall height: -1 lets the client raise the walls above the highest
+    /// floor tile, anything else fixes them (<c>BCFloorPlanEditor</c> sends -1 when the option is
+    /// off, and <c>FloorHeightMap</c> carries it back on entry).
+    /// </summary>
+    [Id(14)]
+    public int WallHeight { get; init; } = -1;
 }

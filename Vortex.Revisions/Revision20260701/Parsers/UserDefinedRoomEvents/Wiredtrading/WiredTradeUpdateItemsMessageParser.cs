@@ -14,7 +14,7 @@ internal class WiredTradeUpdateItemsMessageParser : IParser
     public IMessageEvent Parse(IClientPacket packet)
     {
         bool remove = packet.PopBoolean();
-        int count = packet.PopInt();
+        int count = packet.PopCount(sizeof(int));
 
         ImmutableArray<int>.Builder ids = ImmutableArray.CreateBuilder<int>(count);
 

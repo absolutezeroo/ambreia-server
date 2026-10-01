@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using Orleans;
+using Orleans.Concurrency;
 using Vortex.Primitives.FriendList.Enums;
 using Vortex.Primitives.Players;
 using Vortex.Primitives.Snapshots.FriendList;
@@ -74,6 +75,18 @@ public partial interface IMessengerGrain : IGrainWithIntegerKey
         int habbiconId,
         CancellationToken ct
     );
+
+    /// <summary>
+    /// The receiving half of <see cref="SendMessageAsync"/>, which awaits it.
+    /// </summary>
+    /// <remarks>
+    /// Interleaved because the sender's turn is held open across this call: two friends writing to
+    /// each other at the same moment each held their own turn while waiting for the other's, and
+    /// both stood still until the 30 s call timeout. Safe to run inside another turn because it
+    /// never awaits: it reads the ignore list, hands the push to presence fire-and-forget, and adds
+    /// an id to the delivered set, which the flush copies and clears in one synchronous step.
+    /// </remarks>
+    [AlwaysInterleave]
     Task ReceiveMessageAsync(
         PlayerId senderId,
         string senderName,

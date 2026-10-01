@@ -9,7 +9,6 @@ public class RoomConfig : IWiredLimits
 
     public Altitude MaxStackHeight { get; init; } = Altitude.FromInt(4000);
     public RoomScaleType DefaultRoomScale { get; init; } = RoomScaleType.Normal;
-    public int DefaultWallHeight { get; init; } = 0;
     public Altitude MaxStepHeight { get; init; } = Altitude.FromInt(200);
     public bool PlaceItemsOnAvatars { get; init; } = true;
     public bool EnableDiagonalChecking { get; init; } = true;

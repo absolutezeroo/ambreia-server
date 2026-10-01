@@ -11,6 +11,7 @@ internal class DisconnectReasonEventMessageComposerSerializer(int header)
         DisconnectReasonEventMessageComposer message
     )
     {
-        //
+        // _SafeCls_3893.parse: one int, read only if present.
+        packet.WriteInteger(message.Reason);
     }
 }

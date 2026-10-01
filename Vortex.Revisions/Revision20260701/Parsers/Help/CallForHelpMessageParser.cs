@@ -15,7 +15,7 @@ internal class CallForHelpMessageParser : IParser
         int reportedUserId = packet.PopInt();
         int roomId = packet.PopInt();
 
-        int evidenceCount = packet.PopInt();
+        int evidenceCount = packet.PopCount(sizeof(int) + sizeof(ushort));
         ImmutableArray<CfhEvidenceLine>.Builder evidence =
             ImmutableArray.CreateBuilder<CfhEvidenceLine>(evidenceCount);
 

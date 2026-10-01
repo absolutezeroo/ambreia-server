@@ -13,6 +13,7 @@ using Vortex.Primitives.Rooms.Enums;
 using Vortex.Primitives.Rooms.Object;
 using Vortex.Primitives.Rooms.Object.Furniture;
 using Vortex.Primitives.Rooms.Snapshots.Furniture;
+using Vortex.Protocol.Messages.Outgoing.Notifications;
 using Vortex.Rooms.Grains.Systems;
 
 namespace Vortex.Rooms.Grains.Modules;
@@ -47,6 +48,29 @@ public sealed partial class RoomActionModule(RoomGrain roomGrain)
         }
 
         return (kinds.Count, sameLogic);
+    }
+
+    /// <summary>
+    /// Refuses a placement or a move onto a square the item cannot take: the hotel's bubble to the
+    /// player, and <c>false</c> to the caller.
+    /// </summary>
+    /// <remarks>
+    /// <c>false</c>, not an exception. The room grain turns either into <c>false</c>, which is what
+    /// makes <c>RoomService</c> send the item's real position back so the client's copy snaps home;
+    /// a throw got there too, but logged a stack trace at error level for what is a player dropping
+    /// a chair on a wall.
+    /// </remarks>
+    private async Task<bool> RefusePlacementAsync(ActionContext ctx)
+    {
+        if (ctx.PlayerId > 0)
+        {
+            await _roomGrain
+                ._grainFactory.GetPlayerPresenceGrain(ctx.PlayerId)
+                .SendComposerAsync(FurniPlacementNotice.Create())
+                .ConfigureAwait(true);
+        }
+
+        return false;
     }
 
     /// <param name="fromWired">

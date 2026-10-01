@@ -103,9 +103,12 @@ public sealed partial class RoomFurniModule(RoomGrain roomGrain)
         int param = -1
     )
     {
+        // The client clicks its own placement preview before PlaceObject lands, and an item another
+        // player has just picked up is still on its screen. Neither is a live item, and neither is
+        // an error worth a stack trace.
         if (!_roomGrain._state.ItemsById.TryGetValue(itemId, out IRoomItem? item))
         {
-            throw new VortexException(VortexErrorCodeEnum.FloorItemNotFound);
+            return false;
         }
 
         await item.Logic.OnClickAsync(ctx, param, ct);

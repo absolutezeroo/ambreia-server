@@ -54,7 +54,7 @@ public sealed partial class RoomActionModule
             )
         )
         {
-            throw new VortexException(VortexErrorCodeEnum.InvalidMoveTarget);
+            return await RefusePlacementAsync(ctx);
         }
 
         // As on the floor: the row enters the room before the room does, so the item is never on a
@@ -167,7 +167,7 @@ public sealed partial class RoomActionModule
             )
         )
         {
-            throw new VortexException(VortexErrorCodeEnum.InvalidMoveTarget);
+            return await RefusePlacementAsync(ctx);
         }
 
         if (

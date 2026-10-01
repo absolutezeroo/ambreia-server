@@ -77,7 +77,8 @@ public sealed partial class RoomFurniModule
         int prevIdx = _roomGrain.MapModule.ToIdx(item.X, item.Y);
         int nextIdx = _roomGrain.MapModule.ToIdx(x, y);
 
-        if (!_roomGrain.MapModule.MoveFloorItem(floor, nextIdx, z, rot))
+        // Only a player's move comes through here; wired turns go to the map directly.
+        if (!_roomGrain.MapModule.MoveFloorItem(floor, nextIdx, z, rot, restackInPlace: true))
         {
             return false;
         }

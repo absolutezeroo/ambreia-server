@@ -9,7 +9,7 @@ public class AcceptFriendMessageParser : IParser
 {
     public IMessageEvent Parse(IClientPacket packet)
     {
-        int friendsCount = packet.PopInt();
+        int friendsCount = packet.PopCount(sizeof(int));
 
         List<int> friends = new List<int>(friendsCount);
 

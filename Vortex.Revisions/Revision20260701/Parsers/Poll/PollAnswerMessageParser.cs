@@ -14,7 +14,7 @@ internal class PollAnswerMessageParser : IParser
 
         // The client pushes the answer count, then that many strings -- one per picked choice, or a
         // single string for a free-text question.
-        int answerCount = packet.PopInt();
+        int answerCount = packet.PopCount(sizeof(ushort));
         ImmutableArray<string>.Builder answers = ImmutableArray.CreateBuilder<string>(answerCount);
 
         for (int i = 0; i < answerCount; i++)

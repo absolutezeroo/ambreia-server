@@ -584,6 +584,7 @@ public sealed partial class RoomGrain : Grain, IRoomGrain
                 HideWalls = entity.HideWalls,
                 WallThickness = entity.ThicknessWall,
                 FloorThickness = entity.ThicknessFloor,
+                WallHeight = entity.WallHeight,
                 LastUpdatedUtc = DateTime.UtcNow,
             };
 

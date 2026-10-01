@@ -82,11 +82,17 @@ public sealed partial class RoomMapModule
         return AddFloorItem(item);
     }
 
+    /// <param name="restackInPlace">
+    /// True for a player turning an item where it stands: it is measured once it is off its own
+    /// tiles, so an item turned under a stack lands on top of it, as the hotel does. Wired turns keep
+    /// the height — a rotating piece at the foot of a build would otherwise climb it every tick.
+    /// </param>
     public bool MoveFloorItem(
         IRoomFloorItem item,
         int tileIdx,
         Altitude? z = null,
-        Rotation? targetRot = null
+        Rotation? targetRot = null,
+        bool restackInPlace = false
     )
     {
         if (!InBounds(tileIdx))
@@ -96,18 +102,18 @@ public sealed partial class RoomMapModule
 
         (int sourceX, int sourceY, Rotation sourceRot) = (item.X, item.Y, item.Rotation);
         (int targetX, int targetY) = GetTileXY(tileIdx);
-        Altitude finalZ =
-            z
-            ?? (
-                sourceX != targetX || sourceY != targetY
-                    ? _roomGrain._state.TileHeights[tileIdx]
-                    : item.Z
-            );
+        bool samePlace = sourceX == targetX && sourceY == targetY;
+        Altitude finalZ = z ?? (samePlace ? item.Z : _roomGrain._state.TileHeights[tileIdx]);
         Rotation finalRot = targetRot ?? sourceRot;
 
-        if (sourceX != targetX || sourceY != targetY || sourceRot != finalRot)
+        if (!samePlace || sourceRot != finalRot)
         {
             RemoveFloorItem(item);
+
+            if (z is null && samePlace && restackInPlace)
+            {
+                finalZ = _roomGrain._state.TileHeights[tileIdx];
+            }
 
             item.SetPosition(targetX, targetY);
             item.SetPositionZ(finalZ);

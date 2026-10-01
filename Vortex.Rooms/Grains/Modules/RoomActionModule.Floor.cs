@@ -58,7 +58,7 @@ public sealed partial class RoomActionModule
                 )
             )
             {
-                throw new VortexException(VortexErrorCodeEnum.InvalidMoveTarget);
+                return await RefusePlacementAsync(ctx);
             }
         }
         else
@@ -84,7 +84,7 @@ public sealed partial class RoomActionModule
                 )
             )
             {
-                throw new VortexException(VortexErrorCodeEnum.InvalidMoveTarget);
+                return await RefusePlacementAsync(ctx);
             }
         }
 
@@ -208,7 +208,7 @@ public sealed partial class RoomActionModule
                 )
             )
             {
-                throw new VortexException(VortexErrorCodeEnum.InvalidMoveTarget);
+                return await RefusePlacementAsync(ctx);
             }
         }
         else
@@ -232,7 +232,7 @@ public sealed partial class RoomActionModule
                 )
             )
             {
-                throw new VortexException(VortexErrorCodeEnum.InvalidMoveTarget);
+                return await RefusePlacementAsync(ctx);
             }
         }
 

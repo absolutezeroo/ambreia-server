@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
@@ -28,14 +29,11 @@ public class WiredSelectorEntitiesByName(
     )
     {
         WiredSelectionSet output = new WiredSelectionSet();
-        HashSet<string> names = _wiredData
-            .StringParam.Split('/')
-            .Select(n => n.Trim().ToLower())
-            .ToHashSet();
+        HashSet<string> names = ParseNames(_wiredData.StringParam);
 
         foreach (IRoomAvatar avatar in _ctx.Lookup.Avatars)
         {
-            if (avatar is not IRoomPlayer roomPlayer || !names.Contains(roomPlayer.Name.ToLower()))
+            if (avatar is not IRoomPlayer roomPlayer || !names.Contains(roomPlayer.Name))
             {
                 continue;
             }
@@ -45,4 +43,17 @@ public class WiredSelectorEntitiesByName(
 
         return Task.FromResult((IWiredSelectionSet)output);
     }
+
+    /// <summary>
+    /// One name per line of the box's text area. The client sends the lines joined by tabs
+    /// (<c>UsersByName.readStringParamFromForm</c> turns every CR, LF and LF-CR into <c>\t</c>), so
+    /// a split on anything else matched a list of one name and nothing longer.
+    /// </summary>
+    public static HashSet<string> ParseNames(string stringParam) =>
+        stringParam
+            .Split(
+                ['\t', '\r', '\n'],
+                StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries
+            )
+            .ToHashSet(StringComparer.OrdinalIgnoreCase);
 }

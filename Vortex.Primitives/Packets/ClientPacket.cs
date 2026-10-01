@@ -89,6 +89,9 @@ public class ClientPacket(int header, ReadOnlyMemory<byte> payload)
         return v;
     }
 
+    public int PopCount(int minBytesPerElement) =>
+        Math.Clamp(PopInt(), 0, Remaining / Math.Max(minBytesPerElement, 1));
+
     public float PopFloat()
     {
         Ensure(4);
