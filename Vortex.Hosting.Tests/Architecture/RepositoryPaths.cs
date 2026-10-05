@@ -28,6 +28,6 @@ internal static class RepositoryPaths
         throw new InvalidOperationException("Could not locate the repository root.");
     }
 
-    public static string ArchitectureV4(params string[] segments) =>
-        Path.Combine([Root(), "docs", "architecture-v4", .. segments]);
+    public static string TestData(params string[] segments) =>
+        Path.Combine([Root(), "Vortex.Hosting.Tests", "Architecture", .. segments]);
 }

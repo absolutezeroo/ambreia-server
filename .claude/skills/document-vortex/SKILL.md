@@ -45,12 +45,9 @@ Treat these categories differently:
 
 - **Code + runtime registration + tests**: primary evidence for implementation facts.
 - **AGENTS.md / CONTEXT.md**: primary evidence for intended architectural constraints.
-- **docs/habbo-specs/**: primary evidence for known Habbo protocol facts and unknowns.
 - **README, audits, ROADMAP, old docs**: orientation and historical evidence only; verify against current code before repeating claims.
 - **Reference emulators**: evidence, never authority.
 - **Assumptions**: must remain explicit assumptions.
-
-Never overwrite generated content inside `docs/habbo-specs/`.
 
 ## Non-negotiable evidence policy
 
@@ -224,20 +221,11 @@ A packet flow should be reconstructed from actual registrations, not guessed fro
 
 For any protocol page:
 
-1. inspect `docs/habbo-specs/README.md`,
-2. use `Vortex.Specs.Cli` when a feature or packet is central,
-3. distinguish `client_confirmed`, reference-emulator evidence, captures, verified/manual blocks, assumptions, conflicts, and unknowns,
-4. never promote a numeric header to global protocol truth because IDs are revision-specific,
-5. document the embedded default revision separately from external/custom plugin revisions.
+1. read the revision parsers/serializers and handlers,
+2. distinguish `client_confirmed`, reference-emulator evidence, captures, verified/manual blocks, assumptions, conflicts, and unknowns,
+3. never promote a numeric header to global protocol truth because IDs are revision-specific,
+4. document the embedded default revision separately from external/custom plugin revisions.
 
-When useful, run commands such as:
-
-```bash
-dotnet run --project Vortex.Specs.Cli -- analyze <feature-id|PacketName>
-dotnet run --project Vortex.Specs.Cli -- conflicts --kind field_count --limit 200
-dotnet run --project Vortex.Specs.Cli -- unknowns --severity critical
-dotnet run --project Vortex.Specs.Cli -- headers
-```
 
 ### Orleans ownership
 
@@ -407,7 +395,6 @@ docs/codebase/
 │   ├── packet-pipeline.md
 │   ├── protocol-model.md
 │   ├── revisions.md
-│   └── habbo-specs.md
 ├── 03-orleans/
 │   ├── overview.md
 │   ├── grain-map.md
@@ -626,7 +613,6 @@ Do not:
 - invent server behavior from client packet structure,
 - describe stale audits as current state without verification,
 - modify production code while documenting unless explicitly requested,
-- edit `docs/habbo-specs/generated` content manually,
 - overwrite unrelated existing `.claude` agents or skills.
 
 ## Completion report

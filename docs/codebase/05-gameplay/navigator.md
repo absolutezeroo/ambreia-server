@@ -90,9 +90,6 @@ service reference — flags **2 of 38 Navigator** and **0 of 7 NewNavigator**.
 For context, the same scan across neighbouring domains: Catalog 3/36, Marketplace 1/10, Vault 2/4,
 FriendList 1/15, Talent 3/3, Collectibles 0/19, Nft 0/5, Quest 0/16.
 
-The specs tree has a sharper measure of the same thing — 134 critical unknowns, dominated by *"the
-handler exists, is registered, parses fine, and does nothing"*.
-→ [Habbo specs](../02-network-protocol/habbo-specs.md)
 
 ## Admin
 

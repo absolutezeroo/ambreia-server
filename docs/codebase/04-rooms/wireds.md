@@ -285,9 +285,6 @@ is `AllowMultiple` and some files are base classes.)
 > echoed back by `RoomGrain.Wired.RoomSettings.cs` but are read by **no authorization decision
 > anywhere** (verified by repo-wide grep — only the entity and that one file mention them).
 >
-> The generated spec `docs/habbo-specs/features/wired/update_action.yaml` lists all six guards in the
-> flow and none is a rights check; `official_behavior.status: unknown`.
->
 > - **Inspected:** `RoomActionModule.Floor.cs` and its neighbours, `RoomGrain.ApplyWiredUpdateAsync`,
 >   all six update handlers, `OpenMessageHandler`, the two mask columns and every reference to them.
 > - **Why unresolved:** nothing records this as deliberate, and it was not verified against a running

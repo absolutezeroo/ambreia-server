@@ -2,8 +2,7 @@
 // The box that is not like its brothers.
 //
 // Every check in this repository so far needs an authority to compare against: the client's form,
-// the admin dropdown, the config catalog, the message registry. That is why check-header-registry
-// and check-wire-conflicts go blind when the AS3 dump is absent, and why check-wired-param-counts
+// the admin dropdown, the config catalog, the message registry. That is why check-wired-param-counts
 // needs a client checkout.
 //
 // This one needs nothing outside the repository, because it uses the code as its own authority.

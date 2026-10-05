@@ -50,9 +50,6 @@
 | `Vortex.Rooms.Tests` | Test | `Vortex.Benchmark`, `Vortex.Collectibles`, `Vortex.Database`, `Vortex.Events`, `Vortex.Furniture`, `Vortex.LoadGen`, `Vortex.Observability`, `Vortex.Players`, `Vortex.Primitives`, `Vortex.Progression`, `Vortex.Protocol`, `Vortex.Rooms`, `Vortex.Social`, `Vortex.Tests.Support` | `Microsoft.NET.Test.Sdk`, `xunit`, `xunit.runner.visualstudio`, `FluentAssertions`, `Microsoft.EntityFrameworkCore.InMemory`, `Microsoft.Orleans.TestingHost` |
 | `Vortex.Runtime` | Library | &mdash; | `Microsoft.Extensions.Logging`, `Microsoft.Extensions.Logging.Console`, `Microsoft.Extensions.Hosting` |
 | `Vortex.Social` | Library | `Vortex.Database`, `Vortex.Events`, `Vortex.Logging`, `Vortex.Primitives`, `Vortex.Protocol`, `Vortex.Runtime` | `Microsoft.Extensions.Hosting`, `Microsoft.Orleans.Sdk` |
-| `Vortex.Specs` | Library | &mdash; | `Microsoft.CodeAnalysis.CSharp` |
-| `Vortex.Specs.Cli` | Executable | `Vortex.Specs` | &mdash; |
-| `Vortex.Specs.Tests` | Test | `Vortex.Specs` | `Microsoft.NET.Test.Sdk`, `xunit`, `xunit.runner.visualstudio`, `FluentAssertions` |
 | `Vortex.Supervisor` | Executable (web SDK) | `Vortex.Logging`, `Vortex.Primitives` | &mdash; |
 | `Vortex.Supervisor.Tests` | Test | `Vortex.Supervisor` | `Microsoft.NET.Test.Sdk`, `xunit`, `xunit.runner.visualstudio`, `FluentAssertions` |
 | `Vortex.Tests.Support` | Library | &mdash; | `Microsoft.Orleans.Core.Abstractions` |

@@ -28,19 +28,8 @@ const failures = [];
 
 // --- dashboard capability / route / locale parity -------------------------------------------------
 // AGENTS.md: the client half of a capability has no cross-check, and every failure is silent.
-if (/^(Vortex\.Primitives\/Permissions\/Capabilities\.cs|Vortex\.Dashboard\.Web\/src\/lib\/(dashboardPermissions|routes)\.js|Vortex\.Dashboard\.Web\/src\/lib\/locales\/(en|fr)\.js)$/.test(rel)) {
+if (/^(Vortex\.Primitives\/Permissions\/Capabilities\.cs|Vortex\.Dashboard\.Web\/src\/lib\/(dashboardPermissions|routes)\.ts|Vortex\.Dashboard\.Web\/src\/lib\/locales\/(en|fr)\.js)$/.test(rel)) {
   const r = spawnSync(process.execPath, [path.join(here, 'check-dashboard-capabilities.mjs')], {
-    cwd: root,
-    encoding: 'utf8',
-  });
-  if (r.status === 2) failures.push(r.stderr.trim());
-}
-
-// --- header id vs the client's registry -----------------------------------------------------------
-// An id the client's registry does not contain registers fine and can never fire. Nothing else sees
-// it: not the build, not the tests, not a grep.
-if (/^Vortex\.Revisions\/[^/]+\/(Headers\.cs|Maps\/[A-Za-z0-9_]+\.cs)$/.test(rel)) {
-  const r = spawnSync(process.execPath, [path.join(here, 'check-header-registry.mjs')], {
     cwd: root,
     encoding: 'utf8',
   });

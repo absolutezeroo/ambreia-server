@@ -40,7 +40,7 @@ public sealed class SingleSiloInventoryTests
             .Should()
             .BeEmpty(
                 "a new reference cache is new multi-silo debt: its ReloadAsync reaches the calling "
-                    + "process only. Add it to docs/architecture-v4/single-silo-inventory.yaml"
+                    + "process only. Add it to Vortex.Hosting.Tests/Architecture/single-silo-inventory.yaml"
             );
     }
 
@@ -74,9 +74,7 @@ public sealed class SingleSiloInventoryTests
         bool inList = false;
 
         foreach (
-            string raw in File.ReadAllLines(
-                RepositoryPaths.ArchitectureV4("single-silo-inventory.yaml")
-            )
+            string raw in File.ReadAllLines(RepositoryPaths.TestData("single-silo-inventory.yaml"))
         )
         {
             string line = raw.TrimEnd();

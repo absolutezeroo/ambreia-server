@@ -5,7 +5,7 @@
 // rule, refuses an update whose count is not exactly GetIntParamRules().Count -- not the parameter,
 // the WHOLE update -- and the refusal is silent: the handler returns without sending anything, not
 // even WiredSaveSuccessEvent, and what the official server answers to a rejected wired save is
-// recorded as unknown (docs/habbo-specs/unknowns/medium/uk_91fc7e0d6b.yaml). The box saves, the
+// unknown. The box saves, the
 // dialog closes, nothing is stored.
 //
 // It has shipped twice: 2ccb45b (two Variable FX displays declared 21 rules against a client that
@@ -15,8 +15,7 @@
 // The authority is the client's own configuration class per box. In vortex-modern-client that is
 // packages/vortex-engine/src/habbo/roomevents/wired_setup/<family>/**/<Box>.ts, whose
 // readIntParamsFromForm() returns the array that goes on the wire. That tree is COMMITTED -- unlike
-// sources/, the AS3 dump, which is gitignored there and is why check-header-registry and
-// check-wire-conflicts degrade to blind. So this check works wherever the client is checked out,
+// sources/, the AS3 dump, which is gitignored there. So this check works wherever the client is checked out,
 // CI included.
 //
 //   node scripts/hooks/check-wired-param-counts.mjs            compare, exit 2 on a NEW disagreement

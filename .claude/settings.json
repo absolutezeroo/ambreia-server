@@ -8,7 +8,6 @@
       "Bash(dotnet csharpier:*)",
       "Bash(dotnet restore:*)",
       "Bash(dotnet tool restore:*)",
-      "Bash(dotnet run --project Vortex.Specs.Cli:*)",
       "Bash(node scripts/hooks/:*)",
       "Bash(npm run lint:*)",
       "Bash(git status:*)",

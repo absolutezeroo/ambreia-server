@@ -15,7 +15,7 @@ namespace Vortex.Hosting.Tests.Architecture;
 /// <c>IPlayerPresenceGrain</c> — and a superseded revision of the architecture note had already
 /// written a rule ("every interleaved method returns an immutable") that would have banned it.
 /// <para>
-/// So the reasoning moved to <c>docs/architecture-v4/interleaving-manifest.yaml</c>, and this test
+/// So the reasoning moved to <c>Vortex.Hosting.Tests/Architecture/interleaving-manifest.yaml</c>, and this test
 /// holds it to the code: every attributed method is listed, every listed method still carries its
 /// attribute, and the property that makes the liveness category safe — no <c>await</c> before the
 /// mutation completes — is checked in the body rather than asserted in prose.
@@ -44,7 +44,7 @@ public sealed class InterleavingManifestTests
             .Should()
             .BeEmpty(
                 "an interleaved method with no manifest entry is an unreviewed concurrency "
-                    + "decision; add it to docs/architecture-v4/interleaving-manifest.yaml with its "
+                    + "decision; add it to Vortex.Hosting.Tests/Architecture/interleaving-manifest.yaml with its "
                     + "category, or an ADR if it fits neither"
             );
     }
@@ -129,10 +129,7 @@ public sealed class InterleavingManifestTests
     }
 
     private static List<Dictionary<string, string>> Manifest() =>
-        ManifestFile.ReadEntries(
-            RepositoryPaths.ArchitectureV4("interleaving-manifest.yaml"),
-            "entries"
-        );
+        ManifestFile.ReadEntries(RepositoryPaths.TestData("interleaving-manifest.yaml"), "entries");
 
     private static string Key(Dictionary<string, string> entry) =>
         Key(entry.GetValueOrDefault("symbol") ?? "?", entry.GetValueOrDefault("overload") ?? "()");

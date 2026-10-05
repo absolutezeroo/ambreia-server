@@ -15,7 +15,7 @@ namespace Vortex.Primitives.Habbicons;
 /// <para>
 /// The client's <c>HabbiconState</c> class also declares 4 and 5 (<c>REWARD</c>); nothing in the
 /// decompiled tree reads either as a wire value, so they are deliberately absent here rather than
-/// guessed at. See <c>docs/habbo-specs</c> and the protocol note in
+/// guessed at. See the protocol note in
 /// <c>docs/walkthroughs/habbicons-and-reward-tracks.md</c>.
 /// </para>
 /// </remarks>

@@ -188,44 +188,6 @@ updated in the *same* method that persists the change, and hydrated from DB on g
 - Active-room membership/discovery belongs to `RoomDirectoryGrain`; do not bypass it with ad-hoc room tracking.
 - Grain lifetime remains Orleans-managed by default; use `[KeepAlive]` only for explicitly justified directory/manager grains.
 
-## Habbo protocol behaviour: consult the specs first
-`docs/habbo-specs/` holds machine-generated behavioural specs built from the official client, the
-reference emulators and any captures available. They exist because we do not have Habbo's server:
-the structure of a packet is knowable from the client, and what the server *does* with it is not.
-
-**Before implementing or modifying any Habbo protocol behaviour:**
-1. `dotnet run --project Vortex.Specs.Cli -- analyze <feature-id|PacketName>`.
-2. Read the packet layout and the confidence on each field.
-3. Read the behavioural scenarios generated from that feature's own guards.
-4. Read the evidence cited — every claim points at a file and line.
-5. Respect `client_confirmed` structure exactly.
-6. Read the conflicts and unknowns listed. They are where the obvious change is a guess.
-7. Never turn an `unknown` into an assumption silently. If a behaviour must be picked to ship,
-   record the choice in the spec's `verified:` block with `confidence: assumed` and the reason.
-8. If you discover new evidence, put it in the tree and re-run `bootstrap`.
-9. Keep serialization in the revision tree and domain logic in the domain — the flow each feature
-   spec records is the shape it expects to find.
-10. Add or update a behavioural test when behaviour changes.
-
-The three rules the whole tree rests on:
-- Existing emulator behaviour is **evidence, not authority**.
-- Reference emulator behaviour is **evidence, not authority**.
-- Unknown official behaviour must remain **explicitly unknown**.
-
-Practical notes:
-- Specs speak in symbolic packet names. Header ids are per-revision and live only in
-  `docs/habbo-specs/revisions/`; a numeric id in a behavioural spec is a validation error.
-- `verified:` and `manual:` blocks are yours and survive regeneration. An edit inside `generated:`
-  is detected by its digest and **blocks** the next regeneration instead of being reverted.
-- Full walkthrough: `docs/walkthroughs/use-the-habbo-specs.md`.
-- Regenerate with `dotnet run --project Vortex.Specs.Cli -- bootstrap`; check with
-  `... -- validate`. An unchanged checkout regenerates byte-identically. `validate` runs in
-  `VortexCloudFastCheck`, so a spec left contradictory fails the gate rather than the next reader.
-- The full verb list, beyond `analyze`/`bootstrap`/`validate`: `conflicts [--kind <k>] [--limit n]`,
-  `unknowns [--severity <s>]`, `headers`, `diff`, `scan-emulator`, `scan-client`, `scan-references`,
-  `import-capture`. `conflicts --kind field_count` is the one worth reading before touching a
-  serializer: it is where our field count disagrees with the client's own code.
-
 ## Packet addition checklist (revision work)
 When adding packet mappings in `Vortex.Revisions/Revision20260701`:
 1. Update `Vortex.Revisions/Revision20260701/Headers.cs`:
@@ -439,22 +401,6 @@ nothing that starts or stops a round learns the game's name.
   - no deferred work without `_context.Match` on it; that stamp is what stops a callback from match
     N mutating match N+1
 
-### Change Habbo protocol behaviour (handler, composer payload, or feature flow)
-- Required context files:
-  - `docs/habbo-specs/README.md`
-  - the feature spec under `docs/habbo-specs/features/<domain>/`
-  - the packet specs it names, under `docs/habbo-specs/packets/`
-- Required first step:
-  - `dotnet run --project Vortex.Specs.Cli -- analyze <feature-id|PacketName>`
-- Forbidden changes:
-  - no behaviour implemented from a reference emulator without recording it as such
-  - no `unknown` quietly resolved into a chosen behaviour
-  - no numeric header id written into a behavioural spec
-- Validation:
-  - `dotnet run --project Vortex.Specs.Cli -- bootstrap` and confirm the diff is what you meant
-  - `dotnet run --project Vortex.Specs.Cli -- validate` reports no errors
-  - `dotnet build Vortex.Main/Vortex.Main.csproj -t:VortexCloudQualityGate`
-
 ### Refactor lookup/cache logic
 - Required context files:
   - `AGENTS.md`
@@ -482,12 +428,9 @@ compiler sees. They are ordinary node scripts — run any of them alone while yo
 | Check | Target | Catches |
 |---|---|---|
 | `node scripts/hooks/check-dashboard-capabilities.mjs` | FastCheck | a hidden page, an undefined route guard, a chunk that 404s, a raw i18n key in the sidebar |
-| `node scripts/hooks/check-header-registry.mjs` | FastCheck | a mapped header id the client's registry does not contain: it registers, and can never fire. 14 are known and baselined; without the client sources beside the repo it degrades to a ceiling check |
-| `dotnet run --project Vortex.Specs.Cli -- validate` | FastCheck | a malformed or contradictory behavioural spec |
 | `node scripts/hooks/check-logic-groups.mjs` | FastCheck | a `[RoomObjectLogic("...")]` key the admin's furniture dropdown does not offer, so no operator can assign the behaviour. `--write` regenerates the block |
 | `cd Vortex.Dashboard.Web && npm run lint` | QualityGate | an undefined identifier in Svelte markup, which `npm run build` compiles and ships |
 | `node scripts/hooks/__test/run.mjs` | QualityGate | a hook that stopped blocking what it was written to block |
-| `node scripts/hooks/check-wire-conflicts.mjs` | QualityGate | a NEW field-count disagreement with the official client (existing ones are baselined), and a NEW packet whose parser reads fewer values than the client passes its composer — `ConflictDetector` excludes partial client layouts on purpose, so a composer body the scanner could not resolve is exempt from the field-count check and only the recorded call-site arity catches it. Skips itself where the client sources are not checked out beside the repo — CI included |
 
 ## Definition of done for AI changes
 - All modified files match nearby patterns and contract rules.

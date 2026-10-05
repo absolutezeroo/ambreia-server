@@ -30,8 +30,7 @@ namespace Vortex.Rooms.Object.Logic.Furniture.Floor.Wired.Addons;
 /// <remarks>
 /// <para>
 /// <b>Nothing here is Habbo's own behaviour, because nobody has it.</b> The client carries only the
-/// dialog (<c>_SafeCls_4053.as</c>, ported as <c>Projectile.ts</c>) and the animation, and
-/// <c>Vortex.Specs.Cli analyze</c> knows nothing about the box. What is built on:
+/// dialog (<c>_SafeCls_4053.as</c>, ported as <c>Projectile.ts</c>) and the animation. What is built on:
 /// </para>
 /// <list type="bullet">
 /// <item>the nineteen ints of <c>readIntParamsFromForm()</c> and their order — exact;</item>

@@ -285,8 +285,7 @@ public sealed partial class RoomActionModule
         //
         // Rights is the same floor the place and move paths use, and the same one Arcturus applies
         // to this packet (evidence, not authority). A refusal stays silent: what the official server
-        // answers to a refused wired save is recorded as unknown in the specs
-        // (docs/habbo-specs/unknowns/uk_91fc7e0d6b.yaml), so this returns false through the same
+        // answers to a refused wired save is unknown, so this returns false through the same
         // path as the six guards already here rather than inventing a validation-error packet.
         if (!await _roomGrain.SecurityModule.CanManipulateFurniAsync(ctx))
         {

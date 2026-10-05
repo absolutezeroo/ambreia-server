@@ -188,5 +188,4 @@ this session**: an emulator was already up, and a second instance collides on :9
 
 - `dashboard-render` — iterate on dashboard visuals with Vite HMR; the CSS an operator sees is
   embedded in the assembly, so `npm run build` exiting 0 proves nothing about the render.
-- `habbo-spec` — before changing any packet, parser, serializer or header id.
 - `AGENTS.md` → "Required validation before completion" for the gate targets.

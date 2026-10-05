@@ -15,7 +15,6 @@ the emulator's process; they do not have a `Main`.
 |---|---|---|
 | `Vortex.Main` | default | the emulator: composition root, Orleans silo, all listeners |
 | `Vortex.LoadGen` | default | out-of-process synthetic client fleet |
-| `Vortex.Specs.Cli` | default | dev-time spec generator; referenced by nothing at runtime |
 
 Evidence: `<OutputType>Exe</OutputType>` appears in exactly those four `.csproj`. Full table:
 [Project index](../generated/project-index.md).
@@ -132,8 +131,6 @@ nothing.
 
 | Project | Owns |
 |---|---|
-| `Vortex.Specs` | Roslyn/AS3/reference-emulator scanners that generate `docs/habbo-specs/`. Zero project references; nothing at runtime references it |
-| `Vortex.Specs.Cli` | `analyze` / `bootstrap` / `validate` / `conflicts` / `headers` / `diff` / `scan-*` / `import-capture` |
 | `Vortex.Benchmark` | in-process benchmark orchestration; launches `Vortex.LoadGen` out of process |
 | `Vortex.LoadGen` | the synthetic client fleet. **Zero project references, deliberately** — a load generator that shares a process with what it measures pollutes its own numbers |
 

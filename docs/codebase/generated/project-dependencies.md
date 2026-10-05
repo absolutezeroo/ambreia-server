@@ -39,7 +39,6 @@ In-degree = how many projects in the solution reference this one directly. A hig
 | `Vortex.Navigator` | 2 | Library |
 | `Vortex.Revisions` | 2 | Library |
 | `Vortex.Rooms` | 2 | Library |
-| `Vortex.Specs` | 2 | Library |
 | `Vortex.Main` | 1 | Executable |
 | `Vortex.Networking` | 1 | Library |
 | `Vortex.PacketHandlers` | 1 | Library |
@@ -59,8 +58,6 @@ In-degree = how many projects in the solution reference this one directly. A hig
 - `Vortex.Plugins.Tests` &mdash; Test
 - `Vortex.Revisions.Tests` &mdash; Test
 - `Vortex.Rooms.Tests` &mdash; Test
-- `Vortex.Specs.Cli` &mdash; Executable
-- `Vortex.Specs.Tests` &mdash; Test
 - `Vortex.Supervisor.Tests` &mdash; Test
 - `Vortex.WebApi.Tests` &mdash; Test
 
@@ -109,9 +106,6 @@ In-degree = how many projects in the solution reference this one directly. A hig
 | `Vortex.Rooms.Tests` | `Vortex.Benchmark`, `Vortex.Collectibles`, `Vortex.Database`, `Vortex.Events`, `Vortex.Furniture`, `Vortex.LoadGen`, `Vortex.Observability`, `Vortex.Players`, `Vortex.Primitives`, `Vortex.Progression`, `Vortex.Protocol`, `Vortex.Rooms`, `Vortex.Social`, `Vortex.Tests.Support` |
 | `Vortex.Runtime` | &mdash; |
 | `Vortex.Social` | `Vortex.Database`, `Vortex.Events`, `Vortex.Logging`, `Vortex.Primitives`, `Vortex.Protocol`, `Vortex.Runtime` |
-| `Vortex.Specs` | &mdash; |
-| `Vortex.Specs.Cli` | `Vortex.Specs` |
-| `Vortex.Specs.Tests` | `Vortex.Specs` |
 | `Vortex.Supervisor` | `Vortex.Logging`, `Vortex.Primitives` |
 | `Vortex.Supervisor.Tests` | `Vortex.Supervisor` |
 | `Vortex.Tests.Support` | &mdash; |

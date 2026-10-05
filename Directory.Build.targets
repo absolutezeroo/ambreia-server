@@ -25,18 +25,12 @@
       from any other author, or a page whose capability was declared in a file nobody touched
       afterwards, went through untouched. Each is under a second and needs no node_modules.
         - capability parity : a page hidden from every operator, a chunk that 404s on navigation
-        - header registry   : an id the client's registry does not contain, registered and dead
         - architecture walls: the CONTEXT.md boundaries that were prose and therefore optional
-        - specs validate    : the behavioural specs AGENTS.md requires to be clean before shipping
         - logic groups      : a furniture behaviour an operator cannot pick because the admin's
                               hand-maintained dropdown never learned the key exists
     -->
     <Exec
       Command="node scripts/hooks/check-dashboard-capabilities.mjs"
-      WorkingDirectory="$(MSBuildThisFileDirectory)"
-    />
-    <Exec
-      Command="node scripts/hooks/check-header-registry.mjs"
       WorkingDirectory="$(MSBuildThisFileDirectory)"
     />
     <Exec
@@ -58,10 +52,6 @@
     -->
     <Exec
       Command="node scripts/hooks/check-webapi-forwarding.mjs"
-      WorkingDirectory="$(MSBuildThisFileDirectory)"
-    />
-    <Exec
-      Command="dotnet run --project Vortex.Specs.Cli -- validate"
       WorkingDirectory="$(MSBuildThisFileDirectory)"
     />
   </Target>
@@ -123,17 +113,6 @@
     <!-- The hooks themselves: exit 0 allows, exit 2 blocks. A broken hook fails open, silently. -->
     <Exec
       Command="node scripts/hooks/__test/run.mjs"
-      WorkingDirectory="$(MSBuildThisFileDirectory)"
-    />
-    <!--
-      Wire-format drift against the client that actually parses our bytes. The specs already compute
-      it; before this, nothing read the answer. Ratchet, not cleanup: the 23 known disagreements are
-      listed in scripts/hooks/wire-conflicts-baseline.json, a 24th fails here. The client sources live
-      outside this repository, so on a checkout without them the script reports that it is blind and
-      exits 0 rather than reporting a clean run it did not perform.
-    -->
-    <Exec
-      Command="node scripts/hooks/check-wire-conflicts.mjs"
       WorkingDirectory="$(MSBuildThisFileDirectory)"
     />
     <!--

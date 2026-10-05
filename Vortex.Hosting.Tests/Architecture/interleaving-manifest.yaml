@@ -1,0 +1,87 @@
+# Every grain method in this repository that is allowed to interleave with another turn.
+#
+# Orleans serialises a grain's turns; an interleaving attribute opts one method out of that and is
+# therefore the only place a half-applied state change can be observed. The rule used to live in a
+# comment on IPlayerPresenceGrain. It lives here now, and
+# Vortex.Hosting.Tests/Architecture/InterleavingManifestTests.cs asserts three things:
+#
+#   a) every method carrying [AlwaysInterleave] / [Reentrant] / [MayInterleave] is listed here;
+#   b) every entry listed here still carries its attribute;
+#   c) a category B body contains no `await` before the mutation completes.
+#
+# Two categories are legal (ARCHITECTURE-V4 §5, principle 3). Anything else needs an ADR first.
+#
+#   ImmutableRead
+#       Reads a snapshot that is immutable or stable for the duration. Mutates nothing. Interleaving
+#       is free because there is no state to catch half-applied.
+#
+#   SynchronousBoundedLivenessOperation
+#       Required to break a call cycle, and safe because the whole mutation happens synchronously
+#       before the first await — the method enqueues, kicks a continuation off with LogAndForget and
+#       returns Task.CompletedTask. No other turn can observe a partial state, because there is no
+#       suspension point inside the state change.
+
+entries:
+  - symbol: Vortex.Primitives.Players.Grains.IPlayerPresenceGrain.SendComposerAsync
+    overload: (IComposer)
+    category: SynchronousBoundedLivenessOperation
+    implementation: Vortex.Players/Grains/PlayerPresenceGrain.cs
+    justification: >
+      Rooms push composers at a player from inside calls that the player's own presence grain made
+      (entering/leaving a room). A non-interleaved send would sit behind that in-flight request:
+      presence blocked awaiting room, room blocked awaiting presence, both unwedged only by the 30s
+      Orleans call timeout. The handler only enqueues onto the outgoing queue synchronously.
+    owner: players
+
+  - symbol: Vortex.Primitives.Players.Grains.IPlayerPresenceGrain.SendComposerAsync
+    overload: (IComposer[])
+    category: SynchronousBoundedLivenessOperation
+    implementation: Vortex.Players/Grains/PlayerPresenceGrain.cs
+    justification: Same deadlock and same synchronous enqueue as the single-composer overload.
+    owner: players
+
+  - symbol: Vortex.Primitives.Rooms.Grains.IRoomCore.GetSnapshotAsync
+    overload: ()
+    category: ImmutableRead
+    implementation: Vortex.Rooms/Grains/RoomGrain.cs
+    justification: >
+      Pure read of the room snapshot. Never mutates _state, so it can run alongside the 50ms tick
+      instead of queueing behind it.
+    owner: rooms
+
+  - symbol: Vortex.Primitives.Rooms.Grains.IRoomCore.GetSummaryAsync
+    overload: ()
+    category: ImmutableRead
+    implementation: Vortex.Rooms/Grains/RoomGrain.cs
+    justification: Pure read; navigator and directory poll it constantly.
+    owner: rooms
+
+  - symbol: Vortex.Primitives.Rooms.Grains.IRoomCore.GetRoomPopulationAsync
+    overload: ()
+    category: ImmutableRead
+    implementation: Vortex.Rooms/Grains/RoomGrain.cs
+    justification: >
+      Counts the room's own avatars and mutates nothing. It replaced a round trip to the
+      cluster-wide directory — a room asking somebody else how many people were standing in it —
+      and it is polled by the navigator, so queueing it behind the 50ms tick would put a scan of
+      the hotel behind every busy room's clock.
+    owner: rooms
+
+  - symbol: Vortex.Primitives.Rooms.Grains.IRoomCore.GetRoomPropertiesAsync
+    overload: ()
+    category: ImmutableRead
+    implementation: Vortex.Rooms/Grains/RoomGrain.cs
+    justification: Pure read of an immutable property array.
+    owner: rooms
+
+  - symbol: Vortex.Primitives.FriendList.Grains.IMessengerGrain.ReceiveMessageAsync
+    overload: (PlayerId, String, String, String, DateTime, Int32, Int32, CancellationToken)
+    category: SynchronousBoundedLivenessOperation
+    implementation: Vortex.Social/Grains/MessengerGrain.Messaging.cs
+    justification: >
+      SendMessageAsync awaits the receiver's ReceiveMessageAsync with its own turn held open, so two
+      friends writing to each other at the same moment each waited on the other's turn until the 30s
+      call timeout. The body never awaits: it reads the ignore list, hands the push to presence with
+      LogAndForget and adds the id to the delivered set, which the flush copies and clears in one
+      synchronous step.
+    owner: social

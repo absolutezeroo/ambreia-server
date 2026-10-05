@@ -15,8 +15,7 @@ namespace Vortex.PacketHandlers.Competition;
 /// client's "nothing scheduled" case and leaves the slot blank -- which is what every dynamic slot
 /// did while this handler answered `string.Empty` unconditionally.
 ///
-/// Official server behaviour is unknown (docs/habbo-specs/features/competition/get_current_timing_code.yaml
-/// says so); the schedule format is not. Every shipped value is `&lt;yyyy-MM-dd HH:mm&gt;,&lt;code&gt;`
+/// Official server behaviour is unknown; the schedule format is not. Every shipped value is `&lt;yyyy-MM-dd HH:mm&gt;,&lt;code&gt;`
 /// pairs separated by `;`, in ascending date order, and `competition.timing` ends on a pair with an
 /// empty code -- i.e. each entry means "from this moment, this code", and the empty tail switches the
 /// campaign off. Arcturus is no help here: it ignores the dates, echoes back only the first entry as

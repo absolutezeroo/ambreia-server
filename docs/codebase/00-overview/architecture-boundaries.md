@@ -133,11 +133,8 @@ Each fills a gap where the build, the tests and `grep` all pass while the featur
 | Check | Gate | Catches |
 |---|---|---|
 | `check-dashboard-capabilities.mjs` | FastCheck + PostToolUse | a page hidden from every operator, an undefined route guard, a chunk that 404s, a raw i18n key in the sidebar |
-| `check-header-registry.mjs` | FastCheck + PostToolUse | a mapped header id the client's registry does not contain — it registers cleanly and can never fire. **3** baselined (`AGENTS.md` and `CLAUDE.md` say 14; they are stale); degrades to a ceiling check without the client sources |
 | `check-architecture-walls.mjs` | FastCheck | the six walls above |
-| `Vortex.Specs.Cli -- validate` | FastCheck | a malformed or self-contradictory behavioural spec |
 | `npm run lint` | QualityGate | an undefined identifier in Svelte markup, which `npm run build` compiles and ships |
-| `check-wire-conflicts.mjs` | QualityGate | a **new** field-count disagreement with the official client. Reports blind and exits 0 without the client sources, rather than faking a pass |
 | `scripts/hooks/__test/run.mjs` | QualityGate | a hook that stopped blocking — a hook that fails open says nothing |
 | `guard-emulator.mjs` | PreToolUse | a command that would kill the running `Vortex.Main` |
 

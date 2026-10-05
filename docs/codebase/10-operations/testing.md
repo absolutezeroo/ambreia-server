@@ -16,7 +16,6 @@ each gap.
 | `Vortex.Players.Tests` | 258 | players, progression, social, collectibles |
 | `Vortex.Revisions.Tests` | 243 | wire-layout pins |
 | `Vortex.Database.Tests` | 178 | EF, InMemory **and** SQLite |
-| `Vortex.Specs.Tests` | 128 | the specs generator |
 | `Vortex.Hosting.Tests` | 99 | config validation, listener security, Orleans endpoints, console dispatcher, boundaries, and an `Architecture/` suite |
 | `Vortex.Dashboard.Tests` | 47 | dashboard API via `TestServer` |
 | `Vortex.Authentication.Tests` | 43 | tickets, MFA, permissions |
@@ -101,11 +100,8 @@ the files it happened to edit."*
 | Bug class | Invisible to | Filled by | Runs in |
 |---|---|---|---|
 | Dashboard capability/route/locale parity — a page hidden from every operator, a chunk that 404s, a raw i18n key | build, `dotnet test`, `npm run build` | `check-dashboard-capabilities.mjs` | FastCheck + PostToolUse |
-| A mapped header id the client's registry does not contain — registers cleanly, can never fire | **everything** | `check-header-registry.mjs` | FastCheck + PostToolUse |
 | Architecture boundaries that were prose | the compiler | `check-architecture-walls.mjs` (6 walls) | FastCheck |
-| A malformed or contradictory behavioural spec | everything | `Vortex.Specs.Cli -- validate` | FastCheck |
 | An undefined identifier in Svelte markup — compiles to a global lookup, renders blank | `npm run build` | `eslint` / `npm run lint` | QualityGate + PostToolUse |
-| Serializer-vs-client field-count drift — a dialog that never opens | build, tests, grep | `check-wire-conflicts.mjs` | QualityGate |
 | **A hook that silently stops blocking** | everything | `scripts/hooks/__test/run.mjs` | QualityGate |
 | Killing the live emulator | n/a | `guard-emulator.mjs` | PreToolUse |
 
@@ -137,9 +133,7 @@ target, no `post-edit.mjs` branch and no `.claude/settings.json` entry. Runnable
 4  dotnet build Vortex.Main/Vortex.Main.csproj  triggers BuildDashboardFrontend (npm ci + vite)
 5  dotnet test Vortex.Cloud.sln
 6  node scripts/hooks/check-dashboard-capabilities.mjs
-7  node scripts/hooks/check-header-registry.mjs
 8  node scripts/hooks/check-architecture-walls.mjs
-9  dotnet run --project Vortex.Specs.Cli -- validate
 ```
 
 ### `VortexCloudQualityGate`
@@ -149,7 +143,6 @@ target, no `post-edit.mjs` branch and no `.claude/settings.json` entry. Runnable
 ```
 1  npm run lint            (Vortex.Dashboard.Web)
 2  node scripts/hooks/__test/run.mjs
-3  node scripts/hooks/check-wire-conflicts.mjs
 4  dotnet format style     --verify-no-changes --exclude-diagnostics IDE1006
 5  dotnet format analyzers --verify-no-changes --exclude-diagnostics IDE1006
 ```

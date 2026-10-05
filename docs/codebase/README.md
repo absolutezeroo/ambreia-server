@@ -18,7 +18,7 @@ repository writes down and the code that ships disagree. It is not a tour of fol
 | Add or change a grain | [Grain map](03-orleans/grain-map.md) · [State ownership](03-orleans/persistence.md) |
 | Work on a room, furni or wired | [Room architecture](04-rooms/room-architecture.md) · [Wireds](04-rooms/wireds.md) |
 | Touch money or items | [Economy overview](06-economy/overview.md) · [Transactions](06-economy/transactions.md) |
-| Change a packet's wire format | [Revisions](02-network-protocol/revisions.md) · [Habbo specs](02-network-protocol/habbo-specs.md) |
+| Change a packet's wire format | [Revisions](02-network-protocol/revisions.md) |
 | Add an admin surface | [Dashboard capabilities](08-dashboard/capabilities.md) |
 | Ship a plugin | [Plugins](09-extensibility/plugins.md) |
 | Run, watch or benchmark the hotel | [Operations](10-operations/observability.md) |
@@ -59,24 +59,18 @@ evidence are kept apart, and the distinction is not cosmetic:
 |---|---|---|
 | **Implementation** | current source, registrations, tests, migrations | what the code does |
 | **Contract** | `AGENTS.md`, `CONTEXT.md`, `CLAUDE.md`, build targets | what the code is *supposed* to do |
-| **Protocol** | `docs/habbo-specs/` with its confidence metadata | what is known about Habbo's wire and behaviour |
 | **Orientation** | READMEs, audits, roadmaps, older docs | where to look; never proof on its own |
 
 Where implementation and contract disagree, **both are documented** and the divergence is flagged.
 History is not rewritten to match either one. Claims that could not be settled from the source appear
 under a page's *Known unknowns* with what was inspected and what would resolve them.
 
-> **Protocol facts do not come from this emulator.** That Vortex implements a behaviour is evidence
-> about Vortex, not a statement about Habbo. Reference emulators are evidence, not authority. A
-> behaviour nobody has captured stays `unknown` — see [Habbo specs](02-network-protocol/habbo-specs.md).
-> Header ids are per-revision and are never quoted here as global protocol truth.
 
 ## Relationship to the rest of `docs/`
 
 | Tree | What it is | Standing |
 |---|---|---|
 | `docs/codebase/` | this — current state reconstructed from code | authoritative for *what the code does today* |
-| `docs/habbo-specs/` | generated behavioural specs + confidence | authoritative for *what is known about Habbo*; never hand-edit |
 | `docs/walkthroughs/` | task recipes ("add a wired box", "add a dashboard page") | current and linked from these pages |
 | `docs/patterns/` | reference-only code samples | current |
 | `docs/architecture-v4/` | **target** architecture and ADRs | aspirational; not a description of today |

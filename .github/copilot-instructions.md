@@ -22,10 +22,6 @@ Include in every request:
 6. Validation commands
 
 ## Core-specific constraints
-- Any change to Habbo protocol behaviour starts at `docs/habbo-specs/`, not at the code — run
-  `dotnet run --project Vortex.Specs.Cli -- analyze <feature-id|PacketName>` first. Emulator and
-  reference-emulator behaviour recorded there is evidence, not authority, and official behaviour
-  nobody has captured stays explicitly unknown. See AGENTS.md, "Habbo protocol behaviour".
 - Keep host composition in `Vortex.Main`.
 - Keep plugin lifecycle logic centralized in `Vortex.Plugins`.
 - Keep packet handlers in `Vortex.PacketHandlers` and domain logic in domain modules.

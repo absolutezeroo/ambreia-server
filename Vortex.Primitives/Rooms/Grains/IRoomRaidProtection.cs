@@ -16,8 +16,7 @@ namespace Vortex.Primitives.Rooms.Grains;
 /// <remarks>
 /// Only the settings half of this exists in any Habbo client. What makes a room decide it is being
 /// raided is server-side and unpublished, so the detector behind
-/// <see cref="EvaluateEntryAsync" /> is this emulator's design, recorded as such in
-/// <c>docs/habbo-specs</c>. See <see cref="RaidDetectionSensitivity" />.
+/// <see cref="EvaluateEntryAsync" /> is this emulator's design. See <see cref="RaidDetectionSensitivity" />.
 /// </remarks>
 [Alias("Vortex.Primitives.Rooms.Grains.IRoomRaidProtection")]
 public interface IRoomRaidProtection : IGrainWithIntegerKey

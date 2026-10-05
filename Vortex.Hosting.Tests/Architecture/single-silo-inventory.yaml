@@ -1,0 +1,49 @@
+# Everything in this process that assumes it is the only silo.
+#
+# The deployment thesis is single-silo (CONTEXT.md, `Vortex:Orleans:MultiSiloReady`). A second silo
+# is refused at startup, so none of this is a live bug — it is the bill that has to be paid before
+# the thesis can be lifted. The failure mode is silent staleness: after an admin edit, the other
+# silos keep serving the old data and nothing anywhere says so.
+#
+# Vortex.Hosting.Tests/Architecture/SingleSiloInventoryTests.cs fails when a component of one of
+# these shapes exists and is not listed here. The point is not to forbid them — it is that the debt
+# stops growing without anyone noticing.
+
+# Reference caches loaded once at startup: ReloadAsync reloads the calling process only.
+reference_data_providers:
+  - CatalogClubGiftProvider
+  - CatalogClubOfferProvider
+  - GiftWrappingProvider
+  - CatalogSnapshotProvider`1
+  - CurrencyTypeProvider
+  - FurnitureDefinitionProvider
+  - GroupBadgePartProvider
+  - MarketplaceSettingsProvider
+  - NavigatorProvider
+  - PetCommandProvider
+  - PetLevelProvider
+  - PetPaletteProvider
+  - PetVocalProvider
+  - AccountLevelProvider
+  - RoomModelProvider
+  - SongProvider
+  - HabbiconCatalog
+  # Holds the action index as well as the definitions. On a second silo, a content edit would leave
+  # the other node still routing gameplay events by the previous campaign's tasks -- so a task
+  # removed there would keep advancing here, which is worse than a stale price.
+  - RewardTrackCatalog
+
+# Metrics aggregated per node: the dashboard reports whichever silo it happens to be talking to.
+aggregators:
+  - LiveStatsAggregator
+  - RoomPerformanceAggregator
+
+# Not shaped like either of the above, and just as silo-local. Listed so the inventory is complete;
+# not asserted by the test, because there is no reliable shape to detect them by.
+other:
+  - name: room outbound fan-out
+    detail: >
+      Memory streams, which the official Orleans guidance restricts to development and testing where
+      durability matters.
+  - name: incident detection
+    detail: Aggregates the node it runs on.

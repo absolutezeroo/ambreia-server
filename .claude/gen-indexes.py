@@ -238,8 +238,7 @@ lines = [
     '# Revision index', '', HEADER, '',
     'Artefacts of the embedded default revision `Revision20260701`, plus shared revision '
     'infrastructure. **Header ids are per-revision and are never global protocol truth** &mdash; see '
-    '[`../02-network-protocol/revisions.md`](../02-network-protocol/revisions.md) and '
-    '[`../02-network-protocol/habbo-specs.md`](../02-network-protocol/habbo-specs.md).', '',
+    '[`../02-network-protocol/revisions.md`](../02-network-protocol/revisions.md).', '',
     '## Written vs mapped', '',
     'A parser or serializer class existing is not the same as it being reachable. Only what a '
     '`Maps/*.cs` class registers into the revision tables can ever run; the remainder compiles, '

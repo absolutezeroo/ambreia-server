@@ -80,24 +80,7 @@ An `IReferenceDataProvider`'s ordering rank at startup. Stage 0 loads before sta
 a stage run under one `Task.WhenAll`. Furniture definitions are stage 0 because the catalog reads them
 at stage 1. → [Startup](../01-runtime/startup.md)
 
-## Habbo-specs vocabulary
-
-Terms with a precise meaning in `docs/habbo-specs/` that must not be loosened:
-
-| Term | Means |
-|---|---|
-| `client_confirmed` | derived from the official client's own code — authoritative for **structure** |
-| `reference_emulator` | Arcturus/Daybreak — **evidence, not authority** |
-| `multi_implementation` | corroborated across implementations (Nitro) |
-| `vortex_emulator` | what *this* codebase does — evidence about us, not about Habbo |
-| `unknown` | nobody has captured it. **Must stay unknown** |
-| `assumed` | a behaviour deliberately chosen to ship, recorded with its reason in a `verified:` block |
-| `generated:` / `verified:` / `manual:` | tool-owned / yours / yours. An edit inside `generated:` **blocks** the next regeneration |
-
-→ [Habbo specs](../02-network-protocol/habbo-specs.md)
-
 ## Sources
 
 - `docs/glossary.md` — the primary glossary
-- `docs/habbo-specs/README.md` — the confidence vocabulary
 - the pages linked above for each added term

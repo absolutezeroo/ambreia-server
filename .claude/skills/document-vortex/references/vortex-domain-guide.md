@@ -15,8 +15,6 @@ This guide is a research checklist, not a statement of implementation truth.
 - `Vortex.Messages`
 - `Vortex.PacketHandlers`
 - `Vortex.Revisions`
-- `Vortex.Specs*`
-- `docs/habbo-specs`
 
 ## Game domains
 - `Vortex.Players`

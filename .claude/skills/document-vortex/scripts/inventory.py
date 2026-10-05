@@ -156,7 +156,6 @@ def main():
         "performance_projects": benchmarks,
         "configuration_keys": sorted(config_keys),
         "symbols": scan_symbols(root),
-        "habbo_specs_present": (root / "docs" / "habbo-specs").exists(),
         "repo_contracts": [x for x in ("AGENTS.md", "CONTEXT.md", "CLAUDE.md") if (root / x).exists()],
     }
 

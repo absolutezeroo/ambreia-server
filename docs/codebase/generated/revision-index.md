@@ -5,7 +5,7 @@
 > Regenerate with `/document-vortex update`. Explanatory pages live one directory up.
 
 
-Artefacts of the embedded default revision `Revision20260701`, plus shared revision infrastructure. **Header ids are per-revision and are never global protocol truth** &mdash; see [`../02-network-protocol/revisions.md`](../02-network-protocol/revisions.md) and [`../02-network-protocol/habbo-specs.md`](../02-network-protocol/habbo-specs.md).
+Artefacts of the embedded default revision `Revision20260701`, plus shared revision infrastructure. **Header ids are per-revision and are never global protocol truth** &mdash; see [`../02-network-protocol/revisions.md`](../02-network-protocol/revisions.md).
 
 ## Written vs mapped
 

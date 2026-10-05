@@ -3,7 +3,6 @@
 //   node scripts/hooks/__test/run.mjs
 import { spawnSync } from 'node:child_process';
 import fs from 'node:fs';
-import os from 'node:os';
 import path from 'node:path';
 
 const root = process.cwd();
@@ -51,7 +50,6 @@ const cases = [
   ],
   // ... mais un vrai kill enchaine derriere une autre commande doit toujours passer a la trappe.
   ['guard-emulator.mjs', cmd('dotnet build || taskkill /F /IM Vortex.Main.exe'), 2, 'kill enchaine apres ||'],
-  ['post-edit.mjs', edit(path.join('Vortex.Revisions', 'Revision20260701', 'Headers.cs')), 0, 'headers connus du client'],
   // csharpier par fichier : sans ca, l'ecart de format n'apparait qu'au bout des ~2 min du pre-commit.
   ['post-edit.mjs', edit(path.join('Vortex.Primitives', '__HookProbeFormat.cs')), 2, 'C# mal formate : reformate et signale'],
   ['post-edit.mjs', edit(path.join('Vortex.Primitives', '__HookProbeClean.cs')), 0, 'C# deja propre : silencieux'],
@@ -77,10 +75,7 @@ const cases = [
   ['guard-commit.mjs', cmd('dotnet build && git commit -m "x"'), 2, 'commit nu enchaine apres &&'],
 ];
 
-// Scripts autonomes : pas de payload sur stdin. Le second cas pointe le check sur une baseline vide
-// pour verifier qu'il bloque vraiment -- sinon seul le chemin passant serait teste.
-const emptyBaseline = path.join(os.tmpdir(), '__HeaderBaseline.json');
-fs.writeFileSync(emptyBaseline, '{"unreachable":[]}\n');
+// Scripts autonomes : pas de payload sur stdin.
 
 // Le mur 3 est a zero depuis que le hub est protocole-libre, donc pointer une baseline vide ne
 // prouve plus rien : il faut une vraie violation. La sonde est un fichier de contrats qui importe le
@@ -115,21 +110,8 @@ fs.writeFileSync(
 );
 
 const direct = [
-  ['check-header-registry.mjs', [], 0, 'registre headers : baseline a jour'],
   ['check-variable-capabilities.mjs', [], 2, 'variable qui annonce une ecriture sans ecriture'],
   ['check-variable-capabilities.mjs', [], 0, 'capacites variables : toutes tenues'],
-  ['check-header-registry.mjs', [], 2, 'header injoignable hors baseline', { VORTEX_HEADER_BASELINE: emptyBaseline }],
-  // Le repli plafond est le seul chemin que la CI emprunte, et il sortait 2 sur 9201 sans jamais
-  // ouvrir le baseline qui le tolere : les trois jobs mouraient sur un header deja accepte.
-  ['check-header-registry.mjs', [], 0, 'repli plafond : le baseline est consulte', { VORTEX_HEADER_NO_CLIENT: '1' }],
-  // Et le repli bloque toujours ce que le baseline ne couvre pas : la porte n'a pas ete desarmee.
-  [
-    'check-header-registry.mjs',
-    [],
-    2,
-    'repli plafond : id hors baseline bloque encore',
-    { VORTEX_HEADER_NO_CLIENT: '1', VORTEX_HEADER_BASELINE: emptyBaseline },
-  ],
   ['check-architecture-walls.mjs', [], 2, 'fuite protocole + reference rendue a un projet protege'],
   ['check-architecture-walls.mjs', [], 0, 'murs archi : les sept tiennent'],
 ];
@@ -164,7 +146,6 @@ for (const [script, argv, want, label, env] of direct) {
 fs.rmSync(probe, { force: true });
 fs.rmSync(csProbe, { force: true });
 fs.rmSync(csProbeClean, { force: true });
-fs.rmSync(emptyBaseline, { force: true });
 fs.rmSync(wallProbe, { force: true });
 fs.rmSync(capabilityProbe, { force: true });
 fs.writeFileSync(freeProject, freeProjectOriginal);

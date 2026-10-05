@@ -12,9 +12,6 @@ Use this as a starting map for update-mode impact detection. Refine using projec
 | `Vortex.Messages/**` | message/composer model | protocol, handlers |
 | `Vortex.PacketHandlers/**` | packet orchestration | target gameplay domains, protocol |
 | `Vortex.Revisions/**` | embedded revision | protocol, affected packet flows |
-| `Vortex.Specs/**` | protocol specifications | protocol truth documentation |
-| `Vortex.Specs.Cli/**` | specs tooling | generated specs documentation |
-| `docs/habbo-specs/**` | protocol evidence | protocol and affected features |
 | `Vortex.Primitives/**` | shared contracts | every dependent domain; inspect dependency graph |
 | `Vortex.Rooms/**` | rooms | furniture, wireds, navigator, persistence |
 | `Vortex.Furniture/**` | furniture | rooms, inventory, catalog |

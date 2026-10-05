@@ -6,8 +6,7 @@ How a header id becomes a parser and a composer becomes bytes, why the answer is
 what the embedded default actually contains.
 
 > **Header ids are per-revision.** Nothing on this page is a statement about "the Habbo protocol".
-> An id is a fact about one client build and one revision table. Behavioural specs name packets
-> symbolically for exactly this reason — see [Habbo specs](habbo-specs.md).
+> An id is a fact about one client build and one revision table.
 
 ## The abstraction
 
@@ -170,63 +169,6 @@ builder.MapSerializer(typeof(XMessageComposer), new XMessageComposerSerializer(M
 
 Checklist: [`docs/walkthroughs/`](../../walkthroughs/) and `AGENTS.md` "Packet addition checklist".
 
-## Wire safety
-
-Two ratchets exist because this bug class is invisible to the compiler, the tests and grep.
-
-### `check-header-registry.mjs` (FastCheck)
-
-Catches **a header id this revision maps that the client's own registry does not contain** — it
-registers cleanly, passes every test, and can never fire.
-
-Mechanism: parse `const int` from `Headers.cs` by enclosing class; intersect with names actually
-referenced in `Maps/*.cs` (an unmapped constant is inert and excluded); locate the client by walking
-repo siblings for `<dir>/sources/<build>/src/com/sulake/habbo/communication`, preferring the build
-whose name matches the revision date stamp; find the registry file **by content** (most
-`table[id] = Class` lines) because its name is obfuscated per build; decide which table is which
-direction **from the classes themselves** (`implements IMessageComposer` = client sends = our
-incoming), refusing to guess if fewer than two directions resolve; diff against the baseline.
-
-Without the client checkout it degrades to a ceiling check against 4101 and says so on stderr. Ten
-`EXTENSIONS` ids are exempt (Vortex furni editor, rentable space) — deliberately outside the official
-range because only a modified client speaks them.
-
-Live output at this commit:
-
-```
-check-header-registry: OK (981 mapped headers, 3 known unreachable, registry from WIN63-202607011411-782849652).
-```
-
-> **Documentation drift:** `AGENTS.md`, `CLAUDE.md` and the script's own header comment all say
-> "14 are known and baselined". `header-registry-baseline.json` holds **3**
-> (`GetRoomEntryDataMessageEvent=1250`, `CustomStackingHeightUpdateMessageComposer=9201`,
-> `IsOfferGiftableEventMessageComposer=1750`), each with a written reason. The three prose claims are
-> stale.
-
-### `check-wire-conflicts.mjs` (QualityGate)
-
-Catches a **new** field-count disagreement with the official client — the shape that desynchronises
-everything after the offending field and surfaces only as a dialog that never opens.
-
-It shells out to `Vortex.Specs.Cli -- conflicts --kind field_count`, and three of its behaviours are
-worth copying elsewhere:
-
-- **exit 2 if it parsed zero entries** — a CLI output-format change must not read as "OK"
-- **exit 0 with an explanation if no `client_code` position exists** — with no client checked out
-  there is nothing to compare, and reporting OK would be worse than saying nothing
-- **filter to `vortex` vs `client_code` only** — a disagreement with a reference emulator is evidence
-  about that emulator, not a bug here
-
-45 subjects are baselined, each read against the WIN63 AS3 and classified as one of three understood
-artifacts (loop-body collapse, method-level parser delegation neither side follows,
-`bytesAvailable > 0` optional trailing reads). That reading also found two **real** bugs, both fixed:
-`AcceptFriendResult` on the wrong header, and `RentableSpaceStatus` writing a trailing field every
-client stops before — commit `f358eaab` in this checkout's history.
-
-```
-check-wire-conflicts: OK (45 known disagreements with the client, 225 field-count conflicts total).
-```
-
 ## Invariant tests
 
 | Test | Proves |
@@ -273,6 +215,4 @@ verified — is [Protocol revision plugins](../09-extensibility/protocol-revisio
 - `Vortex.Networking/Revisions/RevisionManager.cs`, `Package/PackageEncoder.cs`
 - `Vortex.PacketHandlers/Handshake/ClientHelloMessageHandler.cs`
 - `Vortex.Revisions.Tests/EmittedComposerRegistrationTests.cs`, `SerializerPairingTests.cs`
-- `scripts/hooks/check-header-registry.mjs`, `header-registry-baseline.json`
-- `scripts/hooks/check-wire-conflicts.mjs`, `wire-conflicts-baseline.json`
 - [Revision index](../generated/revision-index.md)

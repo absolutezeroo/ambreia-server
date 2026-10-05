@@ -23,8 +23,6 @@ Use for intended invariants such as:
 If implementation violates the contract, document **both** rather than rewriting history.
 
 ### C — Habbo protocol evidence
-`docs/habbo-specs/`, official client evidence imported into specs, captures, and confidence metadata.
-
 Never turn an unknown into a confirmed behavior. Never treat a reference emulator as authority.
 
 ### D — historical/orientation evidence

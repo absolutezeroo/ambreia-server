@@ -24,8 +24,7 @@ namespace Vortex.Rooms.Tests.Wired;
 /// </para>
 /// <para>
 /// Rights is the same floor the place and move paths already use. The refusal is silent because
-/// what the official server answers to a refused wired save is recorded as unknown
-/// (<c>docs/habbo-specs/unknowns/uk_91fc7e0d6b.yaml</c>); returning false takes the same route as
+/// what the official server answers to a refused wired save is unknown; returning false takes the same route as
 /// the guards that were already here, and the handler withholds <c>WiredSaveSuccess</c>.
 /// </para>
 /// </remarks>
