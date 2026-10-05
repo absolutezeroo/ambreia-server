@@ -73,7 +73,6 @@ under a page's *Known unknowns* with what was inspected and what would resolve t
 | `docs/codebase/` | this — current state reconstructed from code | authoritative for *what the code does today* |
 | `docs/walkthroughs/` | task recipes ("add a wired box", "add a dashboard page") | current and linked from these pages |
 | `docs/patterns/` | reference-only code samples | current |
-| `docs/architecture-v4/` | **target** architecture and ADRs | aspirational; not a description of today |
 | `docs/architecture/`, `docs/audits/`, `CONSOLIDATION.md`, `AUDIT-ARCHITECTURE-GLOBALE.md` | dated snapshots | historical; several findings are already fixed |
 | `docs/client-server-architecture.md`, `docs/orleans.md` | older narrative docs | **partly stale** — see below |
 

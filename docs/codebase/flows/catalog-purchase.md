@@ -152,8 +152,6 @@ Their atomicity stories differ and two of them have named risks.
 - `Vortex.Database.Tests/Commerce/CommerceJournalTests.cs` —
   `ThePivotTime_IsStampedOnceAndNeverMoves`
 
-`docs/architecture-v4/decisions/ADR-001-catalog-pivot.md` names this suite as the proof that "goods
-delivered and purchase refunded" is unreachable for catalog, gift and targeted offers.
 
 ## Sources
 

@@ -145,4 +145,3 @@ catalog, gift and targeted offers.
 - `Vortex.Primitives/Snapshots/Catalog/BundleDiscountRulesetSnapshot.cs`
 - `Vortex.Players/Grains/PlayerGrain.cs` — `PurchaseClubAsync`, `ApplyClubMonthsAsync`
 - `Vortex.PacketHandlers/Catalog/{PurchaseFromCatalogMessageHandler,CatalogPurchaseErrorResponder}.cs`
-- `docs/architecture-v4/decisions/ADR-001-catalog-pivot.md`

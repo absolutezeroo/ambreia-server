@@ -134,7 +134,6 @@ Recommended agents:
 Existing repo agents are complementary and may be invoked when relevant:
 
 - `grain-rules-reviewer`
-- `wire-truth-auditor`
 
 Do not duplicate their responsibilities when validation can reuse them.
 
@@ -583,7 +582,7 @@ Do not rewrite the whole documentation. Validate:
 - no stale file paths from refactors,
 - generated indexes reflect current inventory.
 
-Use `vortex-doc-validator`. For grain/protocol-sensitive docs, also consider the repository's existing `grain-rules-reviewer` and `wire-truth-auditor`.
+Use `vortex-doc-validator`. For grain/protocol-sensitive docs, also consider the repository's existing `grain-rules-reviewer`.
 
 ## Quality bar
 

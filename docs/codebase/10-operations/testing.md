@@ -83,9 +83,8 @@ A second SQLite gotcha is documented in the fixtures → [Migrations](../07-data
 
 | Test | Asserts |
 |---|---|
-| `SingleSiloInventoryTests` | every `IReferenceDataProvider` and `*Aggregator` is listed in `docs/architecture-v4/single-silo-inventory.yaml` — **this is what keeps the silo-local debt from growing unnoticed** |
+| `SingleSiloInventoryTests` | every `IReferenceDataProvider` and `*Aggregator` is listed in `Vortex.Hosting.Tests/Architecture/single-silo-inventory.yaml` — **this is what keeps the silo-local debt from growing unnoticed** |
 | `InterleavingManifestTests` | the interleaving manifest |
-| `WorkflowStateTests` | `docs/architecture-v4/STATE.yaml`'s schema |
 | `RoomGrainConcurrencyTests`, `ConfiguredBudgetTests` | |
 
 Plus `ProjectBoundaryTests`, `ConfigValidationTests`, `ListenerSecurityTests`, `OrleansEndpointTests`,

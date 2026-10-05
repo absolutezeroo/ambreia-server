@@ -186,4 +186,3 @@ Behaviour-named and unusually strong on the money paths:
 - `Vortex.Database/Entities/Commerce/CommerceReceiptEntity.cs` — the unique index
 - `Vortex.Players/Grains/PlayerWalletGrain.cs`
 - `Vortex.Players/Grains/Modules/PlayerWalletModule.cs`
-- `docs/architecture-v4/decisions/ADR-001-catalog-pivot.md`, `ADR-002-marketplace-flows.md`

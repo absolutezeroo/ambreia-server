@@ -82,7 +82,7 @@ throw new InvalidOperationException(
 armed.
 
 What has to become cluster-aware first is inventoried in `OrleansHostConfig.MultiSiloReady`'s XML doc
-and asserted against `docs/architecture-v4/single-silo-inventory.yaml` by
+and asserted against `Vortex.Hosting.Tests/Architecture/single-silo-inventory.yaml` by
 `Vortex.Hosting.Tests/Architecture/SingleSiloInventoryTests.cs` — **14 reference-data providers and 2
 aggregators**. That test fails when a new `IReferenceDataProvider` or `*Aggregator` appears that is
 not listed, which is what keeps the debt from growing unnoticed.
@@ -184,5 +184,5 @@ first — a deployment prerequisite this process cannot satisfy for you.
 - `Vortex.Primitives/Orleans/{OrleansStorageNames,OrleansStateNames,OrleansStreamProviders,GrainFactoryExtensions}.cs`
 - `Vortex.Hosting.Tests/Architecture/SingleSiloInventoryTests.cs`
 - `Vortex.Hosting.Tests/OrleansEndpointTests.cs`
-- `docs/architecture-v4/single-silo-inventory.yaml`
+- `Vortex.Hosting.Tests/Architecture/single-silo-inventory.yaml`
 - `appsettings.json`, `docker-compose.yml`

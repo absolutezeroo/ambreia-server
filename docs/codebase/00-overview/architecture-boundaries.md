@@ -123,7 +123,7 @@ throw new InvalidOperationException($"{hosts.Count} active silos are in this clu
 ```
 
 The debt inventory it guards lives in `OrleansHostConfig.MultiSiloReady`'s XML doc and is asserted
-against `docs/architecture-v4/single-silo-inventory.yaml` by
+against `Vortex.Hosting.Tests/Architecture/single-silo-inventory.yaml` by
 `Vortex.Hosting.Tests/Architecture/SingleSiloInventoryTests.cs` (14 providers, 2 aggregators).
 
 ## Checks the compiler cannot run

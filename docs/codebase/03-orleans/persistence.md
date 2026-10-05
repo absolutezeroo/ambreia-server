@@ -67,8 +67,7 @@ nobody debugs it twice.
 
 ## Loss windows
 
-Memory-first persistence buys responsiveness and costs a window. All four are deliberate and
-documented in `docs/architecture-v4/persistence-loss-window.md`, which is accurate against the code.
+Memory-first persistence buys responsiveness and costs a window. All four are deliberate.
 
 | Domain | Window | Knob |
 |---|---|---|
@@ -175,6 +174,6 @@ Never point a script at anything marked 🔴 in the table above.
 - `Vortex.Inventory/Grains/Modules/InventoryFurniModule.cs`
 - `Vortex.Rooms/Grains/RoomDirectoryGrain.cs`
 - `Vortex.Navigator/NavigatorProvider.cs`, `NavigatorService.cs`
-- `docs/architecture-v4/persistence-loss-window.md`, `single-silo-inventory.yaml`
+- `Vortex.Hosting.Tests/Architecture/single-silo-inventory.yaml`
 - `scripts/sql/*.sql`
 - `AGENTS.md` — "Keep live authorization state synced with DB writes"

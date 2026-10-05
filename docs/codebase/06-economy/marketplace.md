@@ -179,4 +179,3 @@ money gone.
 - `Vortex.Database/Entities/Marketplace/{MarketplaceOfferEntity,MarketplaceOfferState}.cs`
 - `Vortex.Database/Entities/Furniture/FurnitureEntity.cs`
 - `Vortex.PacketHandlers/Marketplace/*.cs`
-- `docs/architecture-v4/decisions/ADR-002-marketplace-flows.md`

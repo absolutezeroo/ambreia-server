@@ -130,8 +130,7 @@ froze the hotel while steady state was fine — a shape a naive benchmark misses
 ## In-repo micro-benchmarks
 
 `Vortex.Rooms.Tests` also holds two harnesses that are not xunit facts:
-`RoomObjectHydrationBenchmark` and `WiredEngineBenchmark`. Documented outputs live in
-`docs/architecture-v4/benchmarks/`.
+`RoomObjectHydrationBenchmark` and `WiredEngineBenchmark`.
 
 ## Sources
 
@@ -143,4 +142,3 @@ froze the hotel while steady state was fine — a shape a naive benchmark misses
 - `Vortex.Database/Extensions/ServiceCollectionExtensions.cs` — the pooling measurement
 - `Vortex.Rooms/Grains/Systems/RoomAvatarTickSystem.cs`
 - `Vortex.PacketHandlers/Handshake/SSOTicketMessageHandler.cs`
-- `docs/architecture-v4/benchmarks/{room-hydration,wired-engine}.md`
