@@ -143,6 +143,27 @@ empilement, collisions) et logiques des objets interactifs. Son modèle d’inte
 - **Chantier serveur et client** : une notion de « décor de zone » non modifiable par le joueur et le
   routage du clic vers l’action RPG (spec fille Monde et éditeur de cartes).
 
+### 3.2 ter Déplacements : plus de navigator — APPROUVÉ
+
+Le navigator Habbo (liste de rooms à choisir) n’a pas de rôle dans le MMORPG. Chaque déplacement a son
+entrée dans le jeu :
+
+| Destination | Entrée |
+|---|---|
+| Zone voisine | Passage dans le monde, transition fondue (§3.2) |
+| Donjon | Entrée du donjon dans le monde ou recherche de groupe → instance du groupe |
+| Sa maison | Action « rentrer chez soi » (HUD ou menu personnage) |
+| Maison d’un ami | « Visiter » depuis la liste d’amis, ou porte d’un quartier résidentiel |
+| QG de guilde | Bouton de la fenêtre Guilde |
+| Arène (après V1) | Fenêtre PvP |
+
+La fenêtre navigator est retirée du client ; côté serveur, recherche et onglets partent. Restent le
+registre des rooms actives (`RoomDirectoryGrain`), l’entrée en room avec ses contrôles d’accès, et la
+création de room, qui devient la création de l’instance de maison d’un joueur. Le retrait complet se
+fait avec les specs filles Monde et éditeur de cartes et Groupe et donjons, coordonné avec le client
+(qui envoie encore des messages de navigator à la connexion). Le navigator réduit du M0 est une étape
+intermédiaire.
+
 ### 3.3 Runtime de zone (la couture) — APPROUVÉ
 
 Combat, monstres et compagnons NE DOIVENT PAS dépendre de `Vortex.Rooms`. Ils travaillent contre une
