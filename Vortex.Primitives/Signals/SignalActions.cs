@@ -137,9 +137,6 @@ public static class SignalActions
     /// <inheritdoc cref="RewardTrackActions.ActivateEffect"/>
     public const string ActivateEffect = RewardTrackActions.ActivateEffect;
 
-    /// <inheritdoc cref="RewardTrackActions.CompletePoll"/>
-    public const string CompletePoll = RewardTrackActions.CompletePoll;
-
     /// <inheritdoc cref="RewardTrackActions.SubmitQuiz"/>
     public const string SubmitQuiz = RewardTrackActions.SubmitQuiz;
 
@@ -200,18 +197,6 @@ public static class SignalActions
     /// <inheritdoc cref="RewardTrackActions.BuyGift"/>
     public const string BuyGift = RewardTrackActions.BuyGift;
 
-    /// <inheritdoc cref="RewardTrackActions.BuyTargetedOffer"/>
-    public const string BuyTargetedOffer = RewardTrackActions.BuyTargetedOffer;
-
-    /// <inheritdoc cref="RewardTrackActions.EnterRaffle"/>
-    public const string EnterRaffle = RewardTrackActions.EnterRaffle;
-
-    /// <inheritdoc cref="RewardTrackActions.WinRaffle"/>
-    public const string WinRaffle = RewardTrackActions.WinRaffle;
-
-    /// <inheritdoc cref="RewardTrackActions.RedeemVoucher"/>
-    public const string RedeemVoucher = RewardTrackActions.RedeemVoucher;
-
     /// <inheritdoc cref="RewardTrackActions.ClaimVaultIncome"/>
     public const string ClaimVaultIncome = RewardTrackActions.ClaimVaultIncome;
 
@@ -271,7 +256,6 @@ public static class SignalActions
         EarnBadge,
         AcceptQuest,
         ActivateEffect,
-        CompletePoll,
         SubmitQuiz,
         ClaimDailyTask,
         SaveOutfit,
@@ -292,10 +276,6 @@ public static class SignalActions
         ClaimClubGift,
         OpenPresent,
         BuyGift,
-        BuyTargetedOffer,
-        EnterRaffle,
-        WinRaffle,
-        RedeemVoucher,
         ClaimVaultIncome,
         RespectPet,
         PetRespected,

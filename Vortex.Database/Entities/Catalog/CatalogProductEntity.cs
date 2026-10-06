@@ -33,13 +33,6 @@ public class CatalogProductEntity : VortexEntity
     [DefaultValue(0)]
     public required int UniqueRemaining { get; set; }
 
-    /// <summary>Placeable for free via the Builders Club direct-to-room flow
-    /// (BuildersClubPlaceRoomItem/WallItemMessageHandler), independent of which catalog tree this
-    /// product is normally sold under -- a Normal-catalog item can also be BC-eligible.</summary>
-    [Column("builders_club_eligible")]
-    [DefaultValue(false)]
-    public required bool BuildersClubEligible { get; set; }
-
     [ForeignKey(nameof(CatalogOfferEntityId))]
     public required CatalogOfferEntity Offer { get; set; }
 

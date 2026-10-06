@@ -10,12 +10,11 @@ using Vortex.Database.Context;
 namespace Vortex.Dashboard.API.Api.Catalogue;
 
 /// <summary>
-/// The corners of the economy that have their own tables but no surface of their own: LTD series and
-/// their raffle entries, rentable spaces, the currency catalogue, and the builders-club ladder.
+/// The corners of the economy that have their own tables but no surface of their own: rentable
+/// spaces and the currency catalogue.
 /// <para>
-/// Each is small enough that a single read serves the whole page; what matters is the pairing —
-/// an LTD series is meaningless without its entry outcomes, and a rentable space is meaningless
-/// without whether anyone is renting it.
+/// Each is small enough that a single read serves the whole page; what matters is the pairing — a
+/// rentable space is meaningless without whether anyone is renting it.
 /// </para>
 /// </summary>
 internal sealed partial class EconomyReads
@@ -25,99 +24,6 @@ internal sealed partial class EconomyReads
             async db =>
             {
                 DateTime now = DateTime.UtcNow;
-
-                var series = await db
-                    .LtdSeries.AsNoTracking()
-                    .OrderByDescending(s => s.Id)
-                    .Select(s => new
-                    {
-                        s.Id,
-                        s.CatalogProductEntityId,
-                        s.TotalQuantity,
-                        s.RemainingQuantity,
-                        s.CostCredits,
-                        s.RaffleWindowSeconds,
-                        s.IsActive,
-                        s.HasRaffleFinished,
-                        s.StartsAt,
-                        s.EndsAt,
-                        s.CreatedAt,
-                    })
-                    .ToListAsync(ct)
-                    .ConfigureAwait(false);
-
-                List<int> seriesIds = series.ConvertAll(s => s.Id);
-
-                var entryRows = await db
-                    .LtdRaffleEntries.AsNoTracking()
-                    .Where(e => seriesIds.Contains(e.SeriesEntityId))
-                    .GroupBy(e => new { e.SeriesEntityId, e.Result })
-                    .Select(g => new
-                    {
-                        seriesId = g.Key.SeriesEntityId,
-                        result = g.Key.Result,
-                        count = g.Count(),
-                    })
-                    .ToListAsync(ct)
-                    .ConfigureAwait(false);
-
-                var pendingBySeries = await db
-                    .LtdRaffleEntries.AsNoTracking()
-                    .Where(e => seriesIds.Contains(e.SeriesEntityId) && e.ProcessedAt == null)
-                    .GroupBy(e => e.SeriesEntityId)
-                    .Select(g => new { seriesId = g.Key, pending = g.Count() })
-                    .ToListAsync(ct)
-                    .ConfigureAwait(false);
-
-                Dictionary<int, int> pendingCounts = pendingBySeries.ToDictionary(
-                    p => p.seriesId,
-                    p => p.pending
-                );
-
-                // The product row carries the display name and the furniture the series actually
-                // hands out; an id on its own tells an operator nothing.
-                List<int> productIds = series.ConvertAll(s => s.CatalogProductEntityId);
-
-                Dictionary<int, string> productNames = await db
-                    .CatalogProducts.AsNoTracking()
-                    .Where(p => productIds.Contains(p.Id))
-                    .Join(
-                        db.FurnitureDefinitions.AsNoTracking(),
-                        product => product.FurnitureDefinitionEntityId,
-                        definition => definition.Id,
-                        (product, definition) => new { product.Id, definition.Name }
-                    )
-                    .ToDictionaryAsync(x => x.Id, x => x.Name, ct)
-                    .ConfigureAwait(false);
-
-                List<LtdSeriesRow> ltdItems = series
-                    .Select(s => new LtdSeriesRow(
-                        s.Id,
-                        s.CatalogProductEntityId,
-                        productNames.GetValueOrDefault(s.CatalogProductEntityId),
-                        productNames.TryGetValue(s.CatalogProductEntityId, out string? n)
-                            ? _assetUrls.FurniIcon(n)
-                            : null,
-                        s.TotalQuantity,
-                        s.RemainingQuantity,
-                        s.TotalQuantity - s.RemainingQuantity,
-                        s.CostCredits,
-                        s.RaffleWindowSeconds,
-                        s.IsActive,
-                        s.HasRaffleFinished,
-                        s.StartsAt,
-                        s.EndsAt,
-                        s.IsActive
-                            && !s.HasRaffleFinished
-                            && (s.StartsAt == null || s.StartsAt <= now)
-                            && (s.EndsAt == null || s.EndsAt > now),
-                        pendingCounts.GetValueOrDefault(s.Id),
-                        entryRows
-                            .Where(e => e.seriesId == s.Id)
-                            .Select(e => new LtdRaffleResultCount(e.result, e.count))
-                            .ToList()
-                    ))
-                    .ToList();
 
                 List<RentableSpaceTermRow> rentableTerms = await db
                     .RentableSpaceTerms.AsNoTracking()
@@ -213,28 +119,16 @@ internal sealed partial class EconomyReads
                     .ToListAsync(ct)
                     .ConfigureAwait(false);
 
-                List<BuildersClubTierRow> buildersClub = await db
-                    .BuildersClubTiers.AsNoTracking()
-                    .OrderBy(t => t.Level)
-                    .Select(t => new BuildersClubTierRow(t.Id, t.Level, t.FurniLimit))
-                    .ToListAsync(ct)
-                    .ConfigureAwait(false);
-
                 return new EconomyExtras(
                     new EconomyExtrasTotals(
-                        ltdItems.Count,
-                        ltdItems.Count(s => s.Running),
                         rentableItems.Count,
                         rentableItems.Count(r => r.Rented),
                         rentableTerms.Count,
-                        currencies.Count,
-                        buildersClub.Count
+                        currencies.Count
                     ),
-                    ltdItems,
                     rentableItems,
                     rentableTerms,
-                    currencies,
-                    buildersClub
+                    currencies
                 );
             },
             ct

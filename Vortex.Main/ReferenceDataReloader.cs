@@ -95,12 +95,11 @@ public sealed class ReferenceDataReloader(
     /// The name one cache answers to: its type's, with the generic arguments kept.
     /// </summary>
     /// <remarks>
-    /// <c>Type.Name</c> alone renders every closed generic as its open form —
-    /// <c>CatalogSnapshotProvider&lt;NormalCatalog&gt;</c> and
-    /// <c>CatalogSnapshotProvider&lt;BuildersClubCatalog&gt;</c> both come back as
-    /// <c>CatalogSnapshotProvider`1</c>. They then collided in the table below and the second
-    /// silently replaced the first, which left the normal catalogue — the one every player reads —
-    /// reachable by no name at all, while `reload` looked like it had covered it.
+    /// <c>Type.Name</c> alone renders every closed generic as its open form — two closed
+    /// <c>CatalogSnapshotProvider&lt;T&gt;</c> both came back as <c>CatalogSnapshotProvider`1</c>.
+    /// They then collided in the table below and the second silently replaced the first, which
+    /// left the normal catalogue — the one every player reads — reachable by no name at all, while
+    /// `reload` looked like it had covered it.
     /// </remarks>
     private static string NameOf(Type type)
     {

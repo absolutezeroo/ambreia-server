@@ -23,22 +23,8 @@ public enum ProductType
     /// </remarks>
     ChatStyle = 7,
 
-    /// <summary>
-    /// Builders Club membership time. <c>ExtraParam</c> is the number of days — the product the
-    /// client's productdata names <c>builders_club_14_days</c>, <c>builders_club_1_month</c>, ...
-    /// </summary>
-    /// <remarks>
-    /// The client has no product type for it (<c>PRODUCT_TYPE_*</c> stops at habbicon), and the
-    /// official wire code is unknown. Its own code reads off the wire like any non-badge product,
-    /// and <c>Product.as</c> only logs that it cannot draw an icon for it.
-    /// </remarks>
-    BuildersClubDays = 8,
-
-    /// <summary>
-    /// A Builders Club furni-limit add-on. <c>ExtraParam</c> is the number of furni — the
-    /// <c>builders_club_addon_45furnis</c> family.
-    /// </summary>
-    BuildersClubFurni = 9,
+    // 8 and 9 were the Builders Club days and furni add-ons, removed in M0. Not renumbered: the
+    // values are persisted.
 }
 
 public static class ProductTypeEnumExtension
@@ -54,8 +40,6 @@ public static class ProductTypeEnumExtension
             ProductType.HabboClub => "h",
             ProductType.Pet => "p",
             ProductType.ChatStyle => "chat_style",
-            ProductType.BuildersClubDays => "builders_club_days",
-            ProductType.BuildersClubFurni => "builders_club_furni",
             _ => throw new ArgumentOutOfRangeException(nameof(productType), productType, null),
         };
 
@@ -70,8 +54,6 @@ public static class ProductTypeEnumExtension
             "h" => ProductType.HabboClub,
             "p" => ProductType.Pet,
             "chat_style" => ProductType.ChatStyle,
-            "builders_club_days" => ProductType.BuildersClubDays,
-            "builders_club_furni" => ProductType.BuildersClubFurni,
             _ => throw new ArgumentOutOfRangeException(nameof(productType), productType, null),
         };
 }

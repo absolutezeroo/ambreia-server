@@ -133,23 +133,16 @@ internal static class MessageEvent
     public const int ChangeQueueMessageEvent = 2704;
     public const int OpenFlatConnectionMessageEvent = 3234;
     public const int QuitMessageEvent = 3061;
-    public const int BuildersClubPlaceRoomItemMessageEvent = 3849;
-    public const int BuildersClubPlaceWallItemMessageEvent = 2740; // AS3-verified (shape-only): HabboCatalog::onObjectPlacedInRoom()
-    public const int BuildersClubQueryFurniCountMessageEvent = 1739;
     public const int GetBonusRareInfoMessageEvent = 251;
     public const int GetBundleDiscountRulesetEvent = 317; // AS3-verified: HabboCatalog::sendGetBundleDiscountRuleset(). Note: GetBundleDiscountRulesetVortexEvent (1811) also resolves to this same AS3 message - likely a Vortex-specific duplicate/extension with no distinct AS3 backing, left untouched
     public const int GetCatalogIndexEvent = 2232;
     public const int GetCatalogPageEvent = 2093;
-    public const int GetCatalogPageWithEarliestExpiryEvent = 287;
     public const int GetClubGiftMessageEvent = 472;
     public const int GetClubOffersMessageEvent = 667;
     public const int GetGiftWrappingConfigurationEvent = 940; // AS3-verified: HabboCatalog::getGiftWrappingConfiguration(). Note: GetGiftWrappingConfigurationVortexEvent also resolves to this same AS3 message - likely a Vortex-specific duplicate/extension with no distinct AS3 backing, left untouched
 
     public const int GetHabboClubExtendOfferMessageEvent = 2931; // AS3-verified (direct read, both revisions): ClubDiscountPromoExtension::onClick() -> connection.send(new _SafeCls_2983()) registry@2931 (old _SafeCls_3628@1808 moved)
     public const int GetIsOfferGiftableEvent = 2564; // AS3-verified (old-revision trace): _SafeCls_2064 -> checkGiftable() still exists in current revision at 2564
-    public const int GetLimitedOfferAppearingNextEvent = 3682;
-
-    public const int GetNextTargetedOfferEvent = 848; // AS3-verified (direct read): _composers[848] = _SafeCls_2561 in WIN63 habbo/communication/_SafeCls_2046.as, and OfferController::productDataReady() is its only sender. Was 9004, a placeholder whose own comment flagged it unresolved -- the client asked on 848 and nothing here answered, so no targeted offer could ever arrive
 
     public const int GetProductOfferEvent = 1692;
     public const int GetRoomAdPurchaseInfoEvent = 366; // AS3-verified (old-revision trace): _SafeCls_2000 -> getRoomAdsPurchaseInfo() still exists in current revision at 366
@@ -162,13 +155,9 @@ internal static class MessageEvent
     public const int PurchaseFromCatalogEvent = 1706;
     public const int PurchaseRoomAdMessageEvent = 2928;
     public const int PurchaseSnowWarGameTokensOfferEvent = 3243;
-    public const int PurchaseTargetedOfferEvent = 2497; // shape+AS3-verified: OfferController::purchaseTargetedOffer() (_SafeCls_2498)
     public const int PurchaseVipMembershipExtensionEvent = 2441;
-    public const int RedeemVoucherMessageEvent = 2779;
     public const int RoomAdPurchaseInitiatedEvent = 3607; // AS3-verified (ghost fix): HabboCatalog::sendRoomAdPurchaseInitiatedEvent()
     public const int SelectClubGiftEvent = 2087;
-    public const int SetTargetedOfferStateEvent = 2874; // AS3-verified (old-revision trace): _SafeCls_3316 -> minimizeOffer() still exists in current revision at 2874
-    public const int ShopTargetedOfferViewedEvent = 3046; // AS3-verified (old-revision trace): _SafeCls_3031 -> maximizeMallOffer() still exists in current revision at 3046
     public const int NavigatorAddCollapsedCategoryMessageEvent = 3920;
     public const int NavigatorAddSavedSearchEvent = 1188;
     public const int NavigatorDeleteSavedSearchEvent = 2444;
@@ -509,8 +498,6 @@ internal static class MessageEvent
     public const int GetNftAssetInventoryMessageEvent = 1646; // AS3-verified: CollectiblesModel::requestNftAssets(), answered by TradeNftAssetInventoryMessageComposer. Was called NftTransferAssetsMessageEvent, a permutation of the header below that transfers nothing -- the two names were swapped often enough that the handler carried the wrong documentation
     public const int TransferNftAssetsMessageEvent = 1749; // AS3-verified 2026-08-13: _composers[1749] = _SafeCls_2756, sent by TransferNftsTab with the selected wallet. Corroborated twice -- the modern client maps 1749 to NftTransferAssetsComposer, and the named win63_version tree's ctor takes one String. Had no header at all, so the confirm button did nothing
     public const int PurchaseMintTokenMessageEvent = 67; // AS3-verified (old-revision trace): _SafeCls_2316 -> purchaseMintTokens() still exists in current revision at 67
-    public const int PeerUsersClassificationMessageEvent = 628; // AS3-verified (ghost fix): RoomSession::sendPeerUsersClassificationMessage()
-    public const int RoomUsersClassificationMessageEvent = 157; // AS3-verified (ghost fix): RoomSession::sendRoomUsersClassificationMessage()
     public const int AmbassadorAlertMessageEvent = 3361;
     public const int AssignRightsMessageEvent = 373;
     public const int BanUserWithDurationMessageEvent = 120;
@@ -522,9 +509,6 @@ internal static class MessageEvent
     public const int RemoveRightsMessageEvent = 3444;
     public const int UnbanUserFromRoomMessageEvent = 2804;
     public const int UnmuteUserMessageEvent = 498;
-    public const int PollAnswerEvent = 3386;
-    public const int PollRejectEvent = 1088;
-    public const int PollStartEvent = 743;
     public const int DeleteRoomMessageEvent = 701;
     public const int GetBannedUsersFromRoomMessageEvent = 2702;
     public const int GetCustomRoomFilterMessageEvent = 790;
@@ -650,8 +634,6 @@ internal static class MessageComposer
     public const int GetCustomFilterResultMessageComposer = 2231; // AS3-verified (direct read): WIN63 registry _SafeCls_2046.as _SafeStr_4546[2231] = _SafeCls_3579; WordFilterSettingsView is the only consumer. The previous value was a placeholder with no handler behind it
     public const int ModifyCustomFilterResultMessageComposer = 3622; // AS3-verified (direct read): WIN63 registry _SafeCls_2046.as _SafeStr_4546[3622] = _SafeCls_3793; WordFilterSettingsView is the only consumer. The previous value was a placeholder with no handler behind it
     public const int FurniListRemoveMultipleComposer = 1268; // AS3-verified (direct read): _SafeStr_4546[1268] = _SafeCls_3469 (parser _SafeCls_3854: `stripIds:Vector.<int>`), consumed by the inventory controller; was 149, which has no entry in the WIN63 registry at all
-    public const int LtdRaffleEnteredMessageComposer = 2901; // AS3-verified 2026-08-22 (WIN63 registry + sender): _events[2901] = _SafeCls_1861, HabboCatalog::onLtdRaffleEntered. 1221 was in no registry table.
-    public const int LtdRaffleResultMessageComposer = 3526;
     public const int NftClaimResultMessageComposer = 3601; // AS3-verified (direct read): RewardClaimsTab::onNftClaimResultMessage(_SafeCls_2853) -> _SafeStr_4546[3601]; was 1780, which has no entry in the WIN63 registry at all
     public const int NftClaimsMessageComposer = 108; // AS3-verified (direct read): RewardClaimsTab::onNftClaimsMessage(_SafeCls_3876) -> _SafeStr_4546[108]; was 2053, which has no entry in the WIN63 registry at all
     public const int NftStoreOffersMessageComposer = 3272; // AS3-verified (direct read): ShopTab::onNftStoreOffers(_SafeCls_3611) -> _SafeStr_4546[3272]; corrects a collision (was 3585 = IssueInfoMessageComposer, declared further down)
@@ -733,12 +715,9 @@ internal static class MessageComposer
     public const int CampaignCalendarDataMessageComposer = 1028;
     public const int CampaignCalendarDoorOpenedMessageComposer = 2164;
     public const int BonusRareInfoMessageComposer = 3573;
-    public const int BuildersClubFurniCountMessageComposer = 2378; // AS3-verified (ghost fix): onBuildersClubFurniCount @ HabboCatalog
-    public const int BuildersClubSubscriptionStatusMessageComposer = 1893;
     public const int BundleDiscountRulesetMessageComposer = 1073; // AS3-verified (ghost fix): onBundleDiscountRulesetMessageEvent @ HabboCatalog
     public const int CatalogIndexMessageComposer = 3666;
     public const int CatalogPageMessageComposer = 1660;
-    public const int CatalogPageWithEarliestExpiryMessageComposer = 3389;
     public const int CatalogPublishedMessageComposer = 773; // AS3-verified (ghost fix): onCatalogPublished @ HabboCatalog
     public const int ClubGiftInfoComposer = 3422;
     public const int ClubGiftSelectedComposer = 1842;
@@ -750,7 +729,6 @@ internal static class MessageComposer
     public const int HabboClubOffersMessageComposer = 419;
     public const int IsOfferGiftableEventMessageComposer = 1750; // UNRESOLVED: not found - no matching (OfferId, IsGiftable) response near the targeted-offers or club-gift flows located in either official AS3 revision
     public const int LimitedEditionSoldOutComposer = 533; // AS3-verified (ghost fix): onLimitedEditionSoldOut @ HabboCatalog
-    public const int LimitedOfferAppearingNextMessageComposer = 1084;
     public const int NotEnoughBalanceMessageComposer = 1038;
     public const int ProductOfferComposer = 1911; // AS3-verified (ghost fix): onProductOffer @ HabboCatalog
     public const int PurchaseErrorMessageComposer = 1029;
@@ -760,12 +738,7 @@ internal static class MessageComposer
     public const int SeasonalCalendarDailyOfferMessageComposer = 1641; // AS3-verified (old-revision trace): _SafeCls_3329 -> onDailyOfferMessage() still exists in current revision at 1641
     public const int SellablePetPalettesMessageComposer = 3350; // AS3-verified (ghost fix): onSellablePalettes @ HabboCatalog
     public const int SnowWarGameTokensMessageComposer = 904;
-    public const int TargetedOfferComposer = 2155; // AS3-verified (ghost fix): onTargetedOffer @ OfferController
 
-    public const int TargetedOfferNotFoundComposer = 2013; // AS3-verified: onTargetedOfferNotFound @ OfferController
-
-    public const int VoucherRedeemErrorMessageComposer = 133;
-    public const int VoucherRedeemOkMessageComposer = 1771;
     public const int CallForHelpDisabledNotifyMessageComposer = 421; // AS3-verified (ghost fix): onCallForHelpDisabledNotify @ HabboHelp
     public const int CallForHelpPendingCallsMessageComposer = 2987; // AS3-verified 2026-08-07: _SafeStr_4546[2987] -> the event class HabboHelp binds to onPendingCallsForHelp. Was 678, which the client maps to a class referenced nowhere else in the SWF -- so the packet was going out on a header nothing listens to
     public const int CallForHelpPendingCallsDeletedMessageComposer = 2440; // AS3-verified 2026-08-07: _SafeStr_4546[2440] -> onPendingCallsForHelpDeleted @ HabboHelp. Had no header at all; the composer existed and could never be registered
@@ -967,12 +940,6 @@ internal static class MessageComposer
     public const int RoomSettingsSaveErrorComposer = 879;
     public const int ShowEnforceRoomCategoryDialogComposer = 2944;
     public const int UserUnbannedFromRoomComposer = 2089;
-    public const int PollContentsComposer = 1297;
-    public const int PollErrorComposer = 969;
-    public const int PollOfferComposer = 579;
-    public const int QuestionAnsweredComposer = 1659;
-    public const int QuestionComposer = 2157;
-    public const int QuestionFinishedComposer = 2108;
     public const int Game2FullGameStatusMessageComposer = 1739; // AS3-verified (ghost fix): onFullGameStatus
     public const int CompetitionEntrySubmitResultMessageComposer = 3222;
     public const int CompetitionVotingInfoMessageComposer = 2617; // AS3-verified (ghost fix): onCompetitionVotingInfo
@@ -997,11 +964,6 @@ internal static class MessageComposer
     public const int SanctionInfoMessageComposer = 1634; // AS3-verified (direct read): _SafeStr_4546[1634] = _SafeCls_2679 -> onSanctions @ ModerationMessageHandler
     public const int UserBannedMessageComposer = 3621;
     public const int UserChatlogComposer = 3732;
-
-    // AS3-verified (direct read): _SafeStr_4546[543] = _SafeCls_2530 -> onRoomUserClassification @
-    // ModerationMessageHandler, parsed by _SafeCls_3183 as count x (int userId, string userName,
-    // string classType).
-    public const int UserClassificationComposer = 543; // AS3-verified (ghost fix): onUserChatlog @ ModerationMessageHandler
 
     public const int CraftableProductsMessageComposer = 3155; // AS3-verified: onCraftableProductsMessage @ CraftingWidgetHandler
 
@@ -1146,7 +1108,6 @@ internal static class MessageComposer
     public const int ScrSendUserInfoComposer = 1097;
     public const int UserNameChangedMessageComposer = 2319;
     public const int PromoArticlesMessageComposer = 1082;
-    public const int BuildersClubPlacementWarningMessageComposer = 2458;
     public const int FavoriteMembershipUpdateMessageComposer = 1259; // AS3-verified (name-only): onFavoriteMembershipUpdate @ RoomUsersHandler
     public const int FloorHeightMapMessageComposer = 2885;
     public const int FurnitureAliasesMessageComposer = 154;

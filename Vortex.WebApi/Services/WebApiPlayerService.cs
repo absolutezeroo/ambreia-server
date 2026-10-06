@@ -329,38 +329,16 @@ public sealed class WebApiPlayerService(
         PlayerSubscriptionEntity? club = subscriptions.Find(s =>
             s.SubscriptionType == SubscriptionType.HabboClub
         );
-        PlayerSubscriptionEntity? builders = subscriptions.Find(s =>
-            s.SubscriptionType == SubscriptionType.BuildersClub
-        );
 
         // Rounded UP: a subscription with eight hours left is a day left, not zero days, which is
         // what the counter says everywhere else in the hotel.
         int clubDays = club is null ? 0 : (int)Math.Ceiling((club.ExpiresAt - now).TotalDays);
 
-        // The same count for the other membership. habbo.com's purse prints BOTH in days
-        // (`SHOP_PURSE_HC_DAYS` / `SHOP_PURSE_BC_DAYS`); the furni limit is a different fact
-        // altogether, and the website had been showing it under the days' label — which reads as a
-        // wrong number rather than as another one.
-        int buildersDays = builders is null
-            ? 0
-            : (int)Math.Ceiling((builders.ExpiresAt - now).TotalDays);
-
-        int furniLimit = builders is null
-            ? 0
-            : await db
-                .BuildersClubTiers.AsNoTracking()
-                .Where(t => t.Level == builders.Level)
-                .Select(t => t.FurniLimit)
-                .FirstOrDefaultAsync(ct)
-                .ConfigureAwait(false) + builders.BonusFurniLimit;
-
         return new PlayerPurse(
             balances.GetValueOrDefault(CurrencyType.Credits),
             balances.GetValueOrDefault(CurrencyType.Emeralds),
             balances.GetValueOrDefault(CurrencyType.Silver),
-            clubDays,
-            buildersDays,
-            furniLimit
+            clubDays
         );
     }
 

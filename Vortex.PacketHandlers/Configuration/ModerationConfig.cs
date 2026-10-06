@@ -31,17 +31,6 @@ public static class ModerationConfig
     public const string RoomVisitLimitKey = "moderation.room_visit_limit";
     public const int RoomVisitLimitDefault = 50;
 
-    /// <summary>How recently a player must have registered to answer the staff <c>:anew</c> /
-    /// <c>:uc new</c> classification.</summary>
-    public const string NewUserClassificationDaysKey = "moderation.new_user_classification_days";
-    public const int NewUserClassificationDaysDefault = 7;
-
-    /// <summary>Cap on how many players one <c>:uc hotel</c> sweep will classify. The room-scoped
-    /// form is bounded by the room; the hotel-scoped one is bounded by nothing but this.</summary>
-    public const string UserClassificationHotelLimitKey =
-        "moderation.user_classification_hotel_limit";
-    public const int UserClassificationHotelLimitDefault = 200;
-
     /// <summary>CFH topic used for selfie reports. The client shows no topic picker for those — it
     /// sends a single "report this selfie" — so the categorisation is a server-side choice.</summary>
     public const string SelfieReportTopicKey = "moderation.selfie_report_topic_id";

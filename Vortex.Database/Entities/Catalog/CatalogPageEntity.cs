@@ -10,9 +10,8 @@ namespace Vortex.Database.Entities.Catalog;
 [Table("catalog_pages")]
 public class CatalogPageEntity : VortexEntity
 {
-    /// <summary>Which catalog tree this page belongs to. BuildersClub pages are a real separate
-    /// section, not a filtered view of Normal -- only visible/browsable to active Builders Club
-    /// subscribers (see CatalogSnapshotProvider, which filters by this column).</summary>
+    /// <summary>Which catalog tree this page belongs to (see CatalogSnapshotProvider, which filters
+    /// by this column). Only the Normal tree is left.</summary>
     [Column("catalog_type")]
     [DefaultValue(CatalogType.Normal)]
     public required CatalogType CatalogType { get; set; }

@@ -81,18 +81,6 @@ internal static partial class DashboardEndpoints
             (ops, body, actor, ct) => ops.SaveCurrencyAsync(body, actor, ct),
             body => !string.IsNullOrWhiteSpace(body.Name)
         );
-        Map<BuildersClubTierRequest>(
-            app,
-            "/builders-club",
-            (ops, body, actor, ct) => ops.SaveBuildersClubTierAsync(body, actor, ct),
-            body => body.Level > 0 && body.FurniLimit >= 0
-        );
-        Map<DeleteBuildersClubTierRequest>(
-            app,
-            "/builders-club/delete",
-            (ops, body, actor, ct) => ops.DeleteBuildersClubTierAsync(body, actor, ct),
-            body => body.TierId > 0
-        );
         Map<RentableTermsRequest>(
             app,
             "/rentable-terms",

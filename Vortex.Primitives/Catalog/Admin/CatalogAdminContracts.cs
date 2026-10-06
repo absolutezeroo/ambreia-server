@@ -5,9 +5,8 @@ using Vortex.Primitives.Furniture.Enums;
 namespace Vortex.Primitives.Catalog.Admin;
 
 /// <summary>
-/// Outcome of a catalog admin write. Mirrors <see cref="Snapshots.VoucherCreateResult"/>'s
-/// success/error-code shape, but this service is a plain in-process singleton (not a grain), so
-/// there is no need for Orleans serialization attributes here.
+/// Outcome of a catalog admin write: success, or an error code. This service is a plain in-process
+/// singleton (not a grain), so there is no need for Orleans serialization attributes here.
 /// </summary>
 public sealed record CatalogAdminResult(bool Success, int? Id, string? ErrorCode)
 {
@@ -17,8 +16,8 @@ public sealed record CatalogAdminResult(bool Success, int? Id, string? ErrorCode
 }
 
 /// <summary>
-/// <paramref name="CatalogType"/> decides which of the two structurally-separate catalog trees
-/// (Normal / Builders Club) this page belongs to. It is set once at creation and is deliberately
+/// <paramref name="CatalogType"/> decides which catalog tree this page belongs to (only Normal is
+/// left). It is set once at creation and is deliberately
 /// absent from <see cref="CatalogPageUpdateSpec"/> — <c>CatalogSnapshotProvider</c> partitions
 /// entirely by this column, so changing it after the fact would silently move a page (and every
 /// offer/product under it) across that boundary.
@@ -85,8 +84,7 @@ public sealed record CatalogProductCreateSpec(
     string? ExtraParam,
     int Quantity,
     int UniqueSize,
-    int UniqueRemaining,
-    bool BuildersClubEligible
+    int UniqueRemaining
 );
 
 public sealed record CatalogProductUpdateSpec(
@@ -95,6 +93,5 @@ public sealed record CatalogProductUpdateSpec(
     string? ExtraParam,
     int Quantity,
     int UniqueSize,
-    int UniqueRemaining,
-    bool BuildersClubEligible
+    int UniqueRemaining
 );

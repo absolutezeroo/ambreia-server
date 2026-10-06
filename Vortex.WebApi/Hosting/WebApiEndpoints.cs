@@ -1793,59 +1793,6 @@ internal static partial class WebApiEndpoints
             .WithTags(TagShop);
 
         app.MapPost(
-                "/api/user/shop/voucher",
-                async Task<
-                    Results<
-                        Ok<EmptyResponse>,
-                        BadRequest<ApiErrorResponse>,
-                        NotFound<ApiErrorResponse>,
-                        UnauthorizedError
-                    >
-                > (
-                    HttpContext ctx,
-                    RedeemVoucherRequest body,
-                    WebApiSessionStore sessions,
-                    IWebApiPlayerService players,
-                    IShopService shop,
-                    CancellationToken ct
-                ) =>
-                {
-                    (int? playerId, IResult? refusal) = await SelectedPlayerAsync(
-                            ctx,
-                            sessions,
-                            players,
-                            ct
-                        )
-                        .ConfigureAwait(false);
-
-                    if (playerId is null)
-                    {
-                        return refusal is UnauthorizedError unauthorized
-                            ? unauthorized
-                            : TypedResults.NotFound(new ApiErrorResponse("pocket.auth.no_avatars"));
-                    }
-
-                    if (body is null || !body.IsValid)
-                    {
-                        return TypedResults.BadRequest(new ApiErrorResponse("invalid_request"));
-                    }
-
-                    string? error = await shop.RedeemVoucherAsync(playerId.Value, body.Code!, ct)
-                        .ConfigureAwait(false);
-
-                    return error is null
-                        ? TypedResults.Ok(EmptyResponse.Instance)
-                        : TypedResults.BadRequest(new ApiErrorResponse(error));
-                }
-            )
-            // Same limiter as opening an order: a prepaid code is guessable in a way a product code
-            // is not, and an unthrottled redeem route is a code-guessing oracle.
-            .RequireRateLimiting(ShopOrderRateLimitPolicy)
-            .WithName("RedeemVoucher")
-            .WithSummary("Redeem a prepaid code.")
-            .WithTags(TagShop);
-
-        app.MapPost(
                 "/api/public/shop/webhook/{provider}",
                 async Task<
                     Results<

@@ -171,32 +171,11 @@ internal sealed class InventoryReads(IDbContextFactory<VortexDbContext> dbContex
                                 "/catalog"
                             ),
                             Row(
-                                "targetedOffers",
-                                await db
-                                    .TargetedOffers.CountAsync(o => o.DeletedAt == null, ct)
-                                    .ConfigureAwait(false),
-                                "/targeted-offers"
-                            ),
-                            Row(
-                                "vouchers",
-                                await db
-                                    .Vouchers.CountAsync(v => v.DeletedAt == null, ct)
-                                    .ConfigureAwait(false),
-                                "/vouchers"
-                            ),
-                            Row(
                                 "marketplaceOffers",
                                 await db
                                     .MarketplaceOffers.CountAsync(o => o.DeletedAt == null, ct)
                                     .ConfigureAwait(false),
                                 "/marketplace"
-                            ),
-                            Row(
-                                "ltdSeries",
-                                await db
-                                    .LtdSeries.CountAsync(s => s.DeletedAt == null, ct)
-                                    .ConfigureAwait(false),
-                                "/economy-extras"
                             ),
                             Row(
                                 "currencies",

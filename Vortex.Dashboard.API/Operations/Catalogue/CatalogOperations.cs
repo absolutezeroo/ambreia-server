@@ -302,8 +302,7 @@ internal sealed class CatalogOperations(OperationRunner runner, ICatalogAdminSer
                             request.ExtraParam,
                             request.Quantity,
                             request.UniqueSize,
-                            request.UniqueRemaining,
-                            request.BuildersClubEligible
+                            request.UniqueRemaining
                         ),
                         c
                     )
@@ -346,8 +345,7 @@ internal sealed class CatalogOperations(OperationRunner runner, ICatalogAdminSer
                             request.ExtraParam,
                             request.Quantity,
                             request.UniqueSize,
-                            request.UniqueRemaining,
-                            request.BuildersClubEligible
+                            request.UniqueRemaining
                         ),
                         c
                     )

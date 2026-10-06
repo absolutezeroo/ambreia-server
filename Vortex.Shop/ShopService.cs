@@ -306,24 +306,6 @@ internal sealed class ShopService(
         return ShopWebhookOutcome.Accepted;
     }
 
-    public async Task<string?> RedeemVoucherAsync(int playerId, string code, CancellationToken ct)
-    {
-        if (string.IsNullOrWhiteSpace(code))
-        {
-            return "not_found";
-        }
-
-        // The very grain the game client's own redeem packet calls, unchanged. Its rules — expiry,
-        // one per account, the redemption cap, and releasing the claim when the grant does not land —
-        // are the hotel's rules about vouchers and must not have a second, web-shaped copy.
-        VoucherRedeemResult result = await grainFactory
-            .GetVoucherGrain(code)
-            .RedeemAsync(new PlayerId(playerId), ct)
-            .ConfigureAwait(false);
-
-        return result.Success ? null : result.ErrorCode;
-    }
-
     /// <summary>
     /// Moves the order to <see cref="ShopOrderState.Paid"/> if it is still pending, conditionally, so
     /// two notifications racing cannot both claim it.

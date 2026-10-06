@@ -163,7 +163,6 @@
     "http:POST /api/user/safetyquestions/disable  (Vortex.WebApi/Hosting/WebApiEndpoints.cs)": "account-id",
     "http:POST /api/user/safetyquestions/unlock  (Vortex.WebApi/Hosting/WebApiEndpoints.cs)": "account-id",
     "http:POST /api/user/shop/orders  (Vortex.WebApi/Hosting/WebApiEndpoints.cs)": "selected-player",
-    "http:POST /api/user/shop/voucher  (Vortex.WebApi/Hosting/WebApiEndpoints.cs)": "selected-player",
     "http:POST /api/user/trustedlocations/reset  (Vortex.WebApi/Hosting/WebApiEndpoints.cs)": "account-id",
     "http:POST /api/user/twofactor/disable  (Vortex.WebApi/Hosting/WebApiEndpoints.cs)": "account-id",
     "http:POST /api/user/twofactor/enable  (Vortex.WebApi/Hosting/WebApiEndpoints.cs)": "account-id",

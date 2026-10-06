@@ -287,21 +287,6 @@ internal sealed class SignalDirectoryReads(
             ct
         );
 
-    /// <summary>Polls, by code. A filter stores the code, so that is what the row hands back.</summary>
-    public Task<DirectoryPage> PollsDirectoryAsync(
-        NameValueCollection query,
-        CancellationToken ct
-    ) =>
-        PickerPageAsync(
-            query,
-            db => db.Polls.AsNoTracking(),
-            (polls, term, id) =>
-                polls.Where(p => p.Code.Contains(term) || (id != null && p.Id == id)),
-            polls => polls.OrderBy(p => p.Code),
-            p => new PickerRow(p.Id, p.Code, null) { Value = p.Code },
-            ct
-        );
-
     /// <summary>Quizzes, by code.</summary>
     public Task<DirectoryPage> QuizzesDirectoryAsync(
         NameValueCollection query,
@@ -329,21 +314,6 @@ internal sealed class SignalDirectoryReads(
         CancellationToken ct
     ) => DistinctCodesAsync(query, db => db.Quests.AsNoTracking().Select(q => q.CampaignCode), ct);
 
-    /// <summary>Vouchers, by code.</summary>
-    public Task<DirectoryPage> VouchersDirectoryAsync(
-        NameValueCollection query,
-        CancellationToken ct
-    ) =>
-        PickerPageAsync(
-            query,
-            db => db.Vouchers.AsNoTracking(),
-            (vouchers, term, id) =>
-                vouchers.Where(v => v.Code.Contains(term) || (id != null && v.Id == id)),
-            vouchers => vouchers.OrderBy(v => v.Code),
-            v => new PickerRow(v.Id, v.Code, null) { Value = v.Code },
-            ct
-        );
-
     /// <summary>Club gifts, by product code.</summary>
     public Task<DirectoryPage> ClubGiftsDirectoryAsync(
         NameValueCollection query,
@@ -356,25 +326,6 @@ internal sealed class SignalDirectoryReads(
                 gifts.Where(g => g.ProductCode.Contains(term) || (id != null && g.Id == id)),
             gifts => gifts.OrderBy(g => g.ProductCode),
             g => new PickerRow(g.Id, g.ProductCode, null) { Value = g.ProductCode },
-            ct
-        );
-
-    /// <summary>Targeted offers, by identifier.</summary>
-    public Task<DirectoryPage> TargetedOffersDirectoryAsync(
-        NameValueCollection query,
-        CancellationToken ct
-    ) =>
-        PickerPageAsync(
-            query,
-            db => db.TargetedOffers.AsNoTracking(),
-            (offers, term, id) =>
-                offers.Where(o =>
-                    o.Identifier.Contains(term)
-                    || o.Title.Contains(term)
-                    || (id != null && o.Id == id)
-                ),
-            offers => offers.OrderBy(o => o.Identifier),
-            o => new PickerRow(o.Id, o.Identifier, o.Title) { Value = o.Identifier },
             ct
         );
 

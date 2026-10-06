@@ -7,7 +7,7 @@
   // Eight pages carried a character-for-character copy of this dialog, each with its own
   // `<domain>.confirmEyebrow` and its own copy of the "Reason: {reason}" string.
   //
-  //   <ConfirmStagedModal {ops} eyebrow={$t('polls.confirmEyebrow')} />
+  //   <ConfirmStagedModal {ops} eyebrow={$t('common.confirm')} />
   import Modal from './Modal.svelte';
   import { t } from '../lib/i18n';
 

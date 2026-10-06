@@ -13,6 +13,5 @@ public sealed record CatalogProductSummary(
     string? FurnitureIconUrl,
     int Quantity,
     int UniqueSize,
-    int UniqueRemaining,
-    bool BuildersClubEligible
+    int UniqueRemaining
 );

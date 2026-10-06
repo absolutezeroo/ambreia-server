@@ -133,14 +133,6 @@ internal static partial class DashboardEndpoints
         );
         MapReadGet<DirectoryPage>(
             app,
-            ApiDirectory + "/polls",
-            (HttpContext ctx, SignalDirectoryReads signalDirectory, CancellationToken ct) =>
-                OkAsync(signalDirectory.PollsDirectoryAsync(ctx.QueryAsNameValues(), ct)),
-            Capabilities.Dashboard.PollsRead,
-            TagDirectory
-        );
-        MapReadGet<DirectoryPage>(
-            app,
             ApiDirectory + "/quizzes",
             (HttpContext ctx, SignalDirectoryReads signalDirectory, CancellationToken ct) =>
                 OkAsync(signalDirectory.QuizzesDirectoryAsync(ctx.QueryAsNameValues(), ct)),
@@ -157,25 +149,9 @@ internal static partial class DashboardEndpoints
         );
         MapReadGet<DirectoryPage>(
             app,
-            ApiDirectory + "/vouchers",
-            (HttpContext ctx, SignalDirectoryReads signalDirectory, CancellationToken ct) =>
-                OkAsync(signalDirectory.VouchersDirectoryAsync(ctx.QueryAsNameValues(), ct)),
-            Capabilities.Dashboard.EconomyRead,
-            TagDirectory
-        );
-        MapReadGet<DirectoryPage>(
-            app,
             ApiDirectory + "/club-gifts",
             (HttpContext ctx, SignalDirectoryReads signalDirectory, CancellationToken ct) =>
                 OkAsync(signalDirectory.ClubGiftsDirectoryAsync(ctx.QueryAsNameValues(), ct)),
-            Capabilities.Dashboard.CatalogRead,
-            TagDirectory
-        );
-        MapReadGet<DirectoryPage>(
-            app,
-            ApiDirectory + "/targeted-offers",
-            (HttpContext ctx, SignalDirectoryReads signalDirectory, CancellationToken ct) =>
-                OkAsync(signalDirectory.TargetedOffersDirectoryAsync(ctx.QueryAsNameValues(), ct)),
             Capabilities.Dashboard.CatalogRead,
             TagDirectory
         );

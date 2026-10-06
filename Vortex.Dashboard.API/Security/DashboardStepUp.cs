@@ -39,7 +39,7 @@ internal sealed class StepUpRequired
     ///     day it is written without anyone deciding to protect it.
     ///     </para>
     ///     <para>
-    ///     The four kinds here are: it mints value (currency, items, vouchers), it changes who holds
+    ///     The four kinds here are: it mints value (currency, items), it changes who holds
     ///     power (the staff roster, which is also where a second factor is cleared for someone else),
     ///     it reaches past the hotel (a console command, a server restart, a database backup that
     ///     leaves with every row in it), or it destroys the trail (a forensics purge, the config that
@@ -60,7 +60,6 @@ internal sealed class StepUpRequired
     {
         Vortex.Primitives.Permissions.Capabilities.Dashboard.OpsGrantCurrency,
         Vortex.Primitives.Permissions.Capabilities.Dashboard.OpsGrantItem,
-        Vortex.Primitives.Permissions.Capabilities.Dashboard.OpsManageVouchers,
         Vortex.Primitives.Permissions.Capabilities.Dashboard.OpsStaffManage,
         Vortex.Primitives.Permissions.Capabilities.Dashboard.OpsServerConsole,
         Vortex.Primitives.Permissions.Capabilities.Dashboard.OpsServerControl,

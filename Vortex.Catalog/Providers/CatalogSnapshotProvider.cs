@@ -131,7 +131,6 @@ public sealed class CatalogSnapshotProvider<TTag>(
                     Quantity = x.Quantity,
                     UniqueSize = x.UniqueSize,
                     UniqueRemaining = x.UniqueRemaining,
-                    BuildersClubEligible = x.BuildersClubEligible,
                 })
                 .ToImmutableDictionary(x => x.Id);
 

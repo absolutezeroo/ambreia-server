@@ -195,7 +195,7 @@ internal sealed partial class EconomyReads(
     /// <summary>
     /// "What was this spend actually for" — the ledger's own <c>Reason</c> column is just
     /// Debit/Grant/Adjustment, too coarse to answer that. The business context (catalog purchase,
-    /// marketplace sale, LTD raffle, voucher, admin grant, ...) lives on the
+    /// marketplace sale, admin grant, ...) lives on the
     /// <see cref="AuditEventEntity"/> published for the same operation, sharing the same ambient
     /// correlation id (see
     /// <c>ChannelEconomyLedger</c>/<c>ChannelAuditSink</c>, both stamp

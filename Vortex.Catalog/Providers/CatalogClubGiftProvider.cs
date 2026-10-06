@@ -76,7 +76,6 @@ public sealed class CatalogClubGiftProvider(
             Quantity = e.Quantity,
             UniqueSize = 0,
             UniqueRemaining = 0,
-            BuildersClubEligible = false,
         };
 
         return new CatalogOfferSnapshot

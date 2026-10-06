@@ -130,22 +130,4 @@ public partial interface IInventoryGrain
         string legacyData,
         CancellationToken ct
     );
-    public Task GrantLtdFurnitureAsync(
-        int furniDefinitionId,
-        int serialNumber,
-        int seriesSize,
-        CancellationToken ct
-    );
-
-    /// <summary>Creates exactly one furniture item, but only if the player's current owned-furniture
-    /// count is below <paramref name="furniLimit"/>; returns null (nothing created) otherwise. The
-    /// check-then-create is atomic because Orleans serializes calls to this grain instance -- no
-    /// separate reservation/release step is needed, unlike a non-actor-model server would require.
-    /// </summary>
-    public Task<FurnitureItemSnapshot?> GrantSingleFurnitureIfUnderLimitAsync(
-        int definitionId,
-        string? extraData,
-        int furniLimit,
-        CancellationToken ct
-    );
 }

@@ -66,17 +66,4 @@ public interface IShopService
     /// move an order to <see cref="ShopOrderState.Paid"/>.
     /// </summary>
     Task<ShopWebhookOutcome> HandleWebhookAsync(ShopWebhookRequest request, CancellationToken ct);
-
-    /// <summary>
-    /// Redeems a prepaid code — the shop's other tab. Returns null when it worked, and otherwise the
-    /// refusal code (<c>not_found</c>, <c>expired</c>, <c>already_redeemed</c>, …) for the site to
-    /// word.
-    /// </summary>
-    /// <remarks>
-    /// Here rather than beside the orders because a prepaid card IS a way of buying credits, and the
-    /// website already files it under the shop. It shares none of the order machinery: a code has
-    /// already been paid for by whoever bought the card, so there is no provider, no capture and no
-    /// pivot — the grain that the game client's own redeem packet uses does the whole of it.
-    /// </remarks>
-    Task<string?> RedeemVoucherAsync(int playerId, string code, CancellationToken ct);
 }

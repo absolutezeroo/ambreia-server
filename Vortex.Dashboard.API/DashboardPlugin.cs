@@ -53,7 +53,6 @@ using Vortex.Primitives.Permissions;
 using Vortex.Primitives.Players.Providers;
 using Vortex.Primitives.Plugins;
 using Vortex.Primitives.Plugins.Exports;
-using Vortex.Primitives.Polls;
 using Vortex.Primitives.Prizes;
 using Vortex.Primitives.Quests;
 using Vortex.Primitives.Sound;
@@ -147,9 +146,6 @@ public sealed class DashboardPlugin : IVortexPlugin
         // The word filter: the reads take the live filter too, for the dry run.
         services.TryAddSingleton<WordFilterReads>();
         services.TryAddSingleton<WordFilterOperations>();
-        // Polls, likewise: two dependencies for the reads, two for the writes.
-        services.TryAddSingleton<PollReads>();
-        services.TryAddSingleton<PollOperations>();
         // Quest content: the reads need nothing but a context.
         services.TryAddSingleton<QuestContentReads>();
         services.TryAddSingleton<QuestContentOperations>();
@@ -167,8 +163,6 @@ public sealed class DashboardPlugin : IVortexPlugin
         services.TryAddSingleton<FurnitureOperations>();
         services.TryAddSingleton<QuestReads>();
         services.TryAddSingleton<QuestOperations>();
-        services.TryAddSingleton<TargetedOfferReads>();
-        services.TryAddSingleton<TargetedOfferOperations>();
         services.TryAddSingleton<PrizePoolReads>();
         services.TryAddSingleton<PrizePoolOperations>();
         services.TryAddSingleton<StaffReads>();
@@ -185,7 +179,6 @@ public sealed class DashboardPlugin : IVortexPlugin
         services.TryAddSingleton<StaffActorAccount>();
         services.TryAddSingleton<RoomOperations>();
         services.TryAddSingleton<CurrencyOperations>();
-        services.TryAddSingleton<VouchersOperations>();
         services.TryAddSingleton<ConfigReads>();
         services.TryAddSingleton<ConfigOperations>();
 
@@ -212,14 +205,12 @@ public sealed class DashboardPlugin : IVortexPlugin
         // content-authoring path at all -- which is what being an optional plugin means.
         services.TryAddSingleton<IStaffAdminService, StaffAdminService>();
         services.TryAddSingleton<ICatalogAdminService, CatalogAdminService>();
-        services.TryAddSingleton<ITargetedOfferAdminService, TargetedOfferAdminService>();
         services.TryAddSingleton<IFishingAdminService, FishingAdminService>();
         services.TryAddSingleton<IFurnitureAdminService, FurnitureAdminService>();
         services.TryAddSingleton<ISongAdminService, SongAdminService>();
         services.TryAddSingleton<IGiftWrappingAdminService, GiftWrappingAdminService>();
         services.TryAddSingleton<INavigatorAdminService, NavigatorAdminService>();
         services.TryAddSingleton<IContentAdminService, ContentAdminService>();
-        services.TryAddSingleton<IPollAdminService, PollAdminService>();
         services.TryAddSingleton<IPrizePoolAdminService, PrizePoolAdminService>();
         services.TryAddSingleton<IQuestAdminService, QuestAdminService>();
         services.TryAddSingleton<IQuestContentAdminService, QuestContentAdminService>();
@@ -293,7 +284,6 @@ public sealed class DashboardPlugin : IVortexPlugin
         // write visible to the running hotel.
         services.UseHostService<IReferenceDataReloader>();
         services.UseHostService<ICatalogSnapshotProvider<NormalCatalog>>();
-        services.UseHostService<ICatalogSnapshotProvider<BuildersClubCatalog>>();
         services.UseHostService<IFurnitureDefinitionProvider>();
         services.UseHostService<INavigatorProvider>();
         // NavigatorReads resolves a promoted group's rooms through the live search, and was added

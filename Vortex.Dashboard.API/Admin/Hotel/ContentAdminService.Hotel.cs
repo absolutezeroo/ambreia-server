@@ -16,7 +16,7 @@ using Vortex.Primitives.Players;
 namespace Vortex.Dashboard.API.Admin.Hotel;
 
 /// <summary>
-/// The hotel's smaller editable tables: hand items, bots, the currency/builders-club/rental rows,
+/// The hotel's smaller editable tables: hand items, bots, the currency/rental rows,
 /// and direct player grants.
 /// <para>
 /// Three different live-state rules apply here, and each one is enforced rather than assumed. Hand
@@ -232,69 +232,6 @@ internal sealed partial class ContentAdminService
         await ReloadCurrenciesAsync(ct).ConfigureAwait(false);
 
         return ContentAdminResult.Ok(entity.Id);
-    }
-
-    public async Task<ContentAdminResult> UpsertBuildersClubTierAsync(
-        BuildersClubTierSpec spec,
-        CancellationToken ct
-    )
-    {
-        if (spec.Level <= 0 || spec.FurniLimit < 0)
-        {
-            return ContentAdminResult.Fail("invalid_tier");
-        }
-
-        await using VortexDbContext db = await dbContextFactory
-            .CreateDbContextAsync(ct)
-            .ConfigureAwait(false);
-
-        BuildersClubTierEntity? entity = await db
-            .BuildersClubTiers.FirstOrDefaultAsync(t => t.Level == spec.Level, ct)
-            .ConfigureAwait(false);
-
-        if (entity is null)
-        {
-            entity = new BuildersClubTierEntity
-            {
-                Level = spec.Level,
-                FurniLimit = spec.FurniLimit,
-            };
-            db.BuildersClubTiers.Add(entity);
-        }
-        else
-        {
-            entity.FurniLimit = spec.FurniLimit;
-            entity.DeletedAt = null;
-        }
-
-        // Read straight from the table on every check, so nothing to reload.
-        await db.SaveChangesAsync(ct).ConfigureAwait(false);
-
-        return ContentAdminResult.Ok(entity.Id);
-    }
-
-    public async Task<ContentAdminResult> DeleteBuildersClubTierAsync(
-        int tierId,
-        CancellationToken ct
-    )
-    {
-        await using VortexDbContext db = await dbContextFactory
-            .CreateDbContextAsync(ct)
-            .ConfigureAwait(false);
-
-        BuildersClubTierEntity? entity = await db
-            .BuildersClubTiers.FirstOrDefaultAsync(t => t.Id == tierId, ct)
-            .ConfigureAwait(false);
-
-        if (entity is null)
-        {
-            return ContentAdminResult.Fail("tier_not_found");
-        }
-
-        db.BuildersClubTiers.Remove(entity);
-        await db.SaveChangesAsync(ct).ConfigureAwait(false);
-
-        return ContentAdminResult.Ok(tierId);
     }
 
     public async Task<ContentAdminResult> UpsertRentableSpaceTermsAsync(

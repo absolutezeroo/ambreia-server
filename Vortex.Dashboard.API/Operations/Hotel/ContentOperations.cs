@@ -327,51 +327,6 @@ internal sealed class ContentOperations(OperationRunner runner, IContentAdminSer
             ct
         );
 
-    public Task<OperationResult> SaveBuildersClubTierAsync(
-        BuildersClubTierRequest request,
-        string actor,
-        CancellationToken ct
-    ) =>
-        _runner.ExecuteAsync(
-            "ops.content.builders_club.save",
-            actor,
-            request.Reason,
-            targetPlayerId: null,
-            roomId: null,
-            detail: new { request.Level, request.FurniLimit },
-            work: async c =>
-                Throw(
-                    await _contentAdmin
-                        .UpsertBuildersClubTierAsync(
-                            new BuildersClubTierSpec(request.Level, request.FurniLimit),
-                            c
-                        )
-                        .ConfigureAwait(false)
-                ),
-            ct
-        );
-
-    public Task<OperationResult> DeleteBuildersClubTierAsync(
-        DeleteBuildersClubTierRequest request,
-        string actor,
-        CancellationToken ct
-    ) =>
-        _runner.ExecuteAsync(
-            "ops.content.builders_club.delete",
-            actor,
-            request.Reason,
-            targetPlayerId: null,
-            roomId: null,
-            detail: new { request.TierId },
-            work: async c =>
-                Throw(
-                    await _contentAdmin
-                        .DeleteBuildersClubTierAsync(request.TierId, c)
-                        .ConfigureAwait(false)
-                ),
-            ct
-        );
-
     public Task<OperationResult> SaveRentableTermsAsync(
         RentableTermsRequest request,
         string actor,

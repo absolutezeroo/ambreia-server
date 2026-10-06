@@ -27,7 +27,7 @@
     CatalogPageList,
     CatalogPageRow,
     CatalogProductRow,
-    TargetedOfferCurrency,
+    CatalogCurrency,
   } from '../lib/apiTypes';
   import type { PickerRow } from '../lib/pickers/directories';
 
@@ -71,7 +71,6 @@
     quantity: Num;
     uniqueSize: Num;
     uniqueRemaining: Num;
-    buildersClubEligible: boolean;
   };
 
   /** One step of the breadcrumb: the page and what to call it. */
@@ -95,12 +94,10 @@
 
   const CATALOG_TYPES = [
     { value: 0, key: 'catalogAdmin.typeNormal' },
-    { value: 1, key: 'catalogAdmin.typeBuildersClub' },
   ];
 
   const LAYOUT_OPTIONS = [
-    'default_3x3', 'badge_display', 'builders_club_addons', 'builders_club_frontpage',
-    'builders_club_loyalty', 'club_buy', 'club_gifts', 'frontpage4', 'frontpage_featured',
+    'default_3x3', 'badge_display', 'club_buy', 'club_gifts', 'frontpage4', 'frontpage_featured',
     'guild_custom_furni', 'guild_forum', 'guild_frontpage', 'info_duckets', 'info_loyalty',
     'info_rentables', 'loyalty_vip_buy', 'marketplace', 'marketplace_own_items', 'monkey',
     'petcustomization', 'pets', 'pets2', 'pets3', 'recycler', 'recycler_info', 'recycler_prizes',
@@ -132,7 +129,7 @@
   function emptyProductForm(): ProductForm {
     return {
       productType: 0, furnitureDefinitionId: '', furnitureName: '', furnitureIcon: '', furnitureSprite: '',
-      extraParam: '', quantity: 1, uniqueSize: 0, uniqueRemaining: 0, buildersClubEligible: false,
+      extraParam: '', quantity: 1, uniqueSize: 0, uniqueRemaining: 0,
     };
   }
 
@@ -162,7 +159,7 @@
 
   let currentPage = $state<CatalogPageDetail | null>(null);
 
-  let currencyTypes = $state<TargetedOfferCurrency[]>([]);
+  let currencyTypes = $state<CatalogCurrency[]>([]);
   // An offer's currencyTypeId is the activity-point type (5 = diamonds), which is what the purchase
   // debits and the client reads -- not a currency row id. Only activity-point currencies have one.
   let activityPointCurrencies = $derived(currencyTypes.filter((c) => c.activityPointType != null));
@@ -407,7 +404,6 @@
     { key: 'quantity', label: translate('catalogAdmin.fieldQuantity') },
     { key: 'uniqueSize', label: translate('catalogAdmin.fieldUniqueSize') },
     { key: 'uniqueRemaining', label: translate('catalogAdmin.fieldUniqueRemaining') },
-    { key: 'buildersClubEligible', label: translate('catalogAdmin.fieldBuildersClub') },
   ];
 
   function stageCreatePage() {
@@ -672,7 +668,6 @@
         quantity: Number(newProduct.quantity) || 1,
         uniqueSize: Number(newProduct.uniqueSize) || 0,
         uniqueRemaining: Number(newProduct.uniqueRemaining) || 0,
-        buildersClubEligible: newProduct.buildersClubEligible,
       },
       translate('catalogAdmin.addProductSummary', { id: selectedOfferId }),
       async () => {
@@ -698,7 +693,6 @@
       quantity: product.quantity,
       uniqueSize: product.uniqueSize,
       uniqueRemaining: product.uniqueRemaining,
-      buildersClubEligible: product.buildersClubEligible,
     };
   }
 
@@ -720,7 +714,6 @@
         quantity: Number(editProductForm.quantity) || 1,
         uniqueSize: Number(editProductForm.uniqueSize) || 0,
         uniqueRemaining: Number(editProductForm.uniqueRemaining) || 0,
-        buildersClubEligible: editProductForm.buildersClubEligible,
       },
       translate('catalogAdmin.updateProductSummary', { id: editProductId }),
       async () => {
@@ -966,9 +959,6 @@
                       {#if offer.singleProduct.uniqueSize > 0}
                         <span class="op-chip" title={$t('common.uniqueRemaining')}>{offer.singleProduct.uniqueRemaining}/{offer.singleProduct.uniqueSize}</span>
                       {/if}
-                      {#if offer.singleProduct.buildersClubEligible}
-                        <span class="status-badge status-badge--ok">BC</span>
-                      {/if}
                     {/if}
                   </span>
                 </span>
@@ -1050,9 +1040,6 @@
                                 <span class="op-chip" title={$t('common.quantityLabel')}>x{product.quantity}</span>
                                 {#if product.uniqueSize > 0}
                                   <span class="op-chip" title={$t('common.uniqueRemaining')}>{product.uniqueRemaining}/{product.uniqueSize}</span>
-                                {/if}
-                                {#if product.buildersClubEligible}
-                                  <span class="status-badge status-badge--ok">BC</span>
                                 {/if}
                               </span>
                               {#if canManage}
@@ -1375,9 +1362,6 @@
         <label for="new-product-unique-remaining">{$t('catalogAdmin.uniqueRemaining')}</label>
         <input autocomplete="off" spellcheck="false" id="new-product-unique-remaining" type="number" min="0" bind:value={newProduct.uniqueRemaining} />
       </div>
-      <div class="op-field">
-        <label><input autocomplete="off" spellcheck="false" type="checkbox" bind:checked={newProduct.buildersClubEligible} /> {$t('catalogAdmin.bcEligible')}</label>
-      </div>
       {#if $ops.errors.createProduct}<p class="empty-state danger" role="alert">{$ops.errors.createProduct}</p>{/if}
       {#if $ops.results.createProduct}
         <OpResult result={$ops.results.createProduct} />
@@ -1419,7 +1403,6 @@
         <label for={`edit-product-urem-${editProductId}`}>{$t('catalogAdmin.uniqueRemaining')}</label>
         <input autocomplete="off" spellcheck="false" id={`edit-product-urem-${editProductId}`} type="number" min="0" bind:value={editProductForm.uniqueRemaining} />
       </div>
-      <div class="op-field"><label><input autocomplete="off" spellcheck="false" type="checkbox" bind:checked={editProductForm.buildersClubEligible} /> {$t('catalogAdmin.bcEligible')}</label></div>
       {#if $ops.errors.updateProduct}<p class="empty-state danger" role="alert">{$ops.errors.updateProduct}</p>{/if}
       {#if $ops.results.updateProduct}
         <OpResult result={$ops.results.updateProduct} />

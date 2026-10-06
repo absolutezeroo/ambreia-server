@@ -90,7 +90,6 @@ public sealed class CatalogDecorationExtraParamTests
                 Quantity = 1,
                 UniqueSize = 0,
                 UniqueRemaining = 0,
-                BuildersClubEligible = false,
             };
             seed.CatalogProducts.Add(product);
             seed.SaveChanges();

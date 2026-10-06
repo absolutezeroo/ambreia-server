@@ -50,35 +50,3 @@ public sealed record CatalogGiftPurchasedEvent(
     int OfferId,
     int CreditCost
 ) : IEvent;
-
-/// <summary>A player bought a targeted (personalised/promotional) offer at its special price.</summary>
-public sealed record TargetedOfferPurchasedEvent(
-    int PlayerId,
-    int OfferId,
-    string Identifier,
-    int Quantity,
-    int CreditCost,
-    int ActivityPointCost
-) : IEvent;
-
-/// <summary>A player entered an LTD (limited edition) raffle.</summary>
-public sealed record LtdRaffleEnteredEvent(int PlayerId, int SeriesId, int Cost) : IEvent;
-
-/// <summary>A player won an LTD raffle and was granted the rare item.</summary>
-public sealed record LtdRaffleWonEvent(
-    int PlayerId,
-    int SeriesId,
-    int SerialNumber,
-    int FurniDefinitionId
-) : IEvent;
-
-/// <summary>
-/// A voucher code was redeemed. The wallet credit lands in the ledger either way; this says which
-/// code bought it, which is the only way to notice one code being spread around.
-/// </summary>
-public sealed record VoucherRedeemedEvent(
-    int PlayerId,
-    string Code,
-    int Amount,
-    int? ActivityPointType
-) : IEvent;

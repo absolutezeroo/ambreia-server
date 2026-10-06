@@ -52,23 +52,6 @@ public class FurnitureEntity : VortexEntity
     [Column("extra_data")]
     public string? ExtraData { get; set; }
 
-    /// <summary>
-    /// The item was handed out by Builders Club rather than bought, which makes it rented rather
-    /// than owned: while the owner's subscription is lapsed, any room holding one of these is
-    /// hidden from the navigator and refuses everyone but its owner and staff.
-    /// </summary>
-    /// <remarks>
-    /// Provenance has to be stored, not derived. The same definition can be sold in the Normal
-    /// tree as well as the Builders Club one — see <c>BuildersClubPlacementHelper.ResolveOffer</c>,
-    /// which looks the offer up in both — so recomputing "is this a Builders Club item" from the
-    /// catalog would lock the room of someone who paid credits for the same furni. Written only by
-    /// <c>InventoryGrain.GrantSingleFurnitureIfUnderLimitAsync</c>, whose single caller is the
-    /// Builders Club placement path.
-    /// </remarks>
-    [Column("is_builders_club")]
-    [DefaultValue(false)]
-    public bool IsBuildersClub { get; set; }
-
     [ForeignKey(nameof(PlayerEntityId))]
     public PlayerEntity? PlayerEntity { get; set; }
 

@@ -444,68 +444,6 @@ public sealed class EmptySerializerBatchWireTests
     }
 
     /// <summary>
-    ///     WIN63 unknowns/_SafePkg_2184/_SafeCls_2463.as (header 2458), floor branch: type code 0 is
-    ///     followed by three ints.
-    /// </summary>
-    [Fact]
-    public void BuildersClubPlacementWarning_FloorWritesCoordinates()
-    {
-        ClientPacket packet = Body(
-            typeof(BuildersClubPlacementWarningMessageComposer),
-            new BuildersClubPlacementWarningMessageComposer
-            {
-                TypeCode = 0,
-                PageId = 12,
-                OfferId = 34,
-                ExtraParam = string.Empty,
-                X = 3,
-                Y = 4,
-                Direction = 2,
-                WallLocation = "ignored",
-            }
-        );
-
-        packet.PopInt().Should().Be(0);
-        packet.PopInt().Should().Be(12);
-        packet.PopInt().Should().Be(34);
-        packet.PopString().Should().BeEmpty();
-        packet.PopInt().Should().Be(3);
-        packet.PopInt().Should().Be(4);
-        packet.PopInt().Should().Be(2);
-        packet.Remaining.Should().Be(0);
-    }
-
-    /// <summary>
-    ///     The other branch: a non-zero type code is followed by one string instead, and the
-    ///     coordinates are not written at all.
-    /// </summary>
-    [Fact]
-    public void BuildersClubPlacementWarning_WallWritesLocationInstead()
-    {
-        ClientPacket packet = Body(
-            typeof(BuildersClubPlacementWarningMessageComposer),
-            new BuildersClubPlacementWarningMessageComposer
-            {
-                TypeCode = 1,
-                PageId = 12,
-                OfferId = 34,
-                ExtraParam = string.Empty,
-                X = 3,
-                Y = 4,
-                Direction = 2,
-                WallLocation = ":w=1,2 l=3,4 r",
-            }
-        );
-
-        packet.PopInt().Should().Be(1);
-        packet.PopInt().Should().Be(12);
-        packet.PopInt().Should().Be(34);
-        packet.PopString().Should().BeEmpty();
-        packet.PopString().Should().Be(":w=1,2 l=3,4 r");
-        packet.Remaining.Should().Be(0);
-    }
-
-    /// <summary>
     ///     WIN63 unknowns/_SafePkg_2056/_SafeCls_2564.as (header 1746). Two nested sanction types
     ///     per record, and they bracket the scalars rather than sitting side by side.
     /// </summary>

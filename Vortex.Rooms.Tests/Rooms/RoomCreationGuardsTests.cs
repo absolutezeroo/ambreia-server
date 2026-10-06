@@ -252,8 +252,6 @@ public sealed class RoomCreationGuardsTests : IDisposable
             new TestDbContextFactory(_options),
             FakeProxy.Create<IRoomModerationStore>(_ => null),
             FakeProxy.Create<IRoomAdvertisementService>(_ => null),
-            // Room creation never asks whether a room is sealed; the service just needs one built.
-            FakeProxy.Create<IBuildersClubService>(_ => Task.FromResult(false)),
             FakeProxy.Create<IEventPublisher>(_ => Task.CompletedTask),
             FakeProxy.Create<ICancellableEventPublisher>(_ =>
                 Task.FromResult(new EventContext { CorrelationId = string.Empty, Cancel = false })

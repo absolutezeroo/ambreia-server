@@ -3,7 +3,7 @@
 // you have scrolled somewhere else.
 //
 //   import { toast } from '../lib/toasts';
-//   toast.success('Voucher created');
+//   toast.success('Offer created');
 //   toast.error(describeApiError(err), { timeout: 0 });   // 0 = stays until dismissed
 //
 // The host lives once in AppShell; nothing else needs to render it.

@@ -345,6 +345,5 @@ internal static class CatalogOffers
             Quantity = quantity,
             UniqueSize = 0,
             UniqueRemaining = 0,
-            BuildersClubEligible = false,
         };
 }

@@ -6,9 +6,8 @@ namespace Vortex.Primitives.Catalog;
 
 /// <summary>
 /// CRUD for catalog_pages/catalog_offers/catalog_products, used by the dashboard's catalog admin
-/// surface. Every write reloads both <see cref="Providers.ICatalogSnapshotProvider{TTag}"/>
-/// instances (Normal and Builders Club) so the live in-memory snapshot clients read from never
-/// drifts from the database — see the implementation for why both are reloaded unconditionally.
+/// surface. Every write reloads the <see cref="Providers.ICatalogSnapshotProvider{TTag}"/> so the
+/// live in-memory snapshot clients read from never drifts from the database.
 /// </summary>
 public interface ICatalogAdminService
 {

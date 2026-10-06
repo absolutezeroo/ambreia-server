@@ -46,9 +46,6 @@ public sealed record CurrencySpec(
     int StartingAmount
 );
 
-/// <summary>One rung of the builders' club furni ladder.</summary>
-public sealed record BuildersClubTierSpec(int Level, int FurniLimit);
-
 /// <summary>The rental terms of one rentable space.</summary>
 public sealed record RentableSpaceTermsSpec(
     int FurnitureId,

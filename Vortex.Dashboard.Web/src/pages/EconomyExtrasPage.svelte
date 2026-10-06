@@ -1,7 +1,6 @@
 <script lang="ts">
-  // The economy's smaller tables, each of which had no surface at all: LTD series with their raffle
-  // outcomes, rentable spaces with who is actually renting them, the currency catalogue with how
-  // much of each is held, and the builders-club ladder.
+  // The economy's smaller tables, each of which had no surface at all: rentable spaces with who is
+  // actually renting them, and the currency catalogue with how much of each is held.
   import { onMount } from 'svelte';
   import { apiGet } from '../lib/api';
   import { createWriteOps } from '../lib/writeOps';
@@ -11,7 +10,7 @@
   import ConfirmReasonModal from '../components/ConfirmReasonModal.svelte';
   import LoadingOverlay from '../components/LoadingOverlay.svelte';
   import OpResult from '../components/OpResult.svelte';
-  import { formatNumber, formatDate, formatDuration } from '../lib/format';
+  import { formatNumber, formatDate } from '../lib/format';
   import { isPermissionDeniedError } from '../lib/permissions';
   import { openPlayer } from '../lib/session';
   import AccessDeniedNotice from '../components/AccessDeniedNotice.svelte';
@@ -21,11 +20,11 @@
   import EntityLink from '../components/EntityLink.svelte';
   import StatCard from '../components/StatCard.svelte';
   import Tabs from '../components/Tabs.svelte';
-  import { Ticket, Store, Coins, Hammer } from '@lucide/svelte';
+  import { Store, Coins } from '@lucide/svelte';
   import TableFilter from '../components/TableFilter.svelte';
   import { filterRows } from '../lib/tableView';
   import { t } from '../lib/i18n';
-  import type { EconomyExtras, LtdSeriesRow } from '../lib/apiTypes';
+  import type { EconomyExtras } from '../lib/apiTypes';
 
   /**
    * The three editors' forms. Every number binds to a <input type="number">, which hands back a
@@ -41,8 +40,6 @@
     startingAmount: number | string;
   };
 
-  type TierForm = { level: number | string; furniLimit: number | string };
-
   type TermsForm = {
     furnitureId: number | string;
     price: number | string;
@@ -56,12 +53,9 @@
   let error = $state('');
   let data = $state<EconomyExtras | null>(null);
 
-  // Both grow without bound -- one row per LTD series ever run, one per rented space.
-  let ltdQuery = $state('');
+  // Grows without bound -- one row per rented space.
   let rentQuery = $state('');
-  let ltdRows = $derived(data?.ltdSeries || []);
   let rentRows = $derived(data?.rentableSpaces || []);
-  let ltdView = $derived(filterRows(ltdRows, ltdQuery));
   let rentView = $derived(filterRows(rentRows, rentQuery));
 
   const ops = createWriteOps(refresh);
@@ -69,7 +63,7 @@
   // These sections are independent jobs that were stacked vertically, so reaching the last one
   // meant scrolling past every other. Nothing here is read against anything else -- which is
   // both what makes tabs right and what would have made them wrong.
-  let tab = $state('ltd');
+  let tab = $state('rentables');
 
   let canManage = $derived(hasDashboardCapability($identity, CAPABILITIES.opsContentManage));
 
@@ -81,7 +75,6 @@
     enabled: true,
     startingAmount: 0,
   });
-  const emptyTier = (): TierForm => ({ level: 1, furniLimit: 0 });
   const emptyTerms = (): TermsForm => ({
     furnitureId: 0,
     price: 0,
@@ -91,7 +84,6 @@
   });
 
   let currencyForm = $state<CurrencyForm | null>(null);
-  let tierForm = $state<TierForm | null>(null);
   let termsForm = $state<TermsForm | null>(null);
 
   // Placed-furniture ids have no picker of their own (the furniture picker searches definitions, not
@@ -121,11 +113,6 @@
     }
   }
 
-  function resultSummary(row: LtdSeriesRow) {
-    if (!row.entriesByResult || row.entriesByResult.length === 0) return '—';
-    return row.entriesByResult.map((e) => `${e.result}: ${formatNumber(e.count)}`).join(', ');
-  }
-
   onMount(() => {
     void refresh();
   });
@@ -148,15 +135,6 @@
 {#if data}
   <div class="metric-grid" style="margin-top: 12px;">
     <StatCard
-      label={$t('economyExtras.ltdSeries')}
-      value={formatNumber(data.totals.ltdSeries)}
-      sub={$t('economyExtras.running', { count: formatNumber(data.totals.runningSeries) })}
-    >
-      {#snippet icon()}
-        <Ticket size={15} strokeWidth={2} aria-hidden="true" />
-      {/snippet}
-    </StatCard>
-    <StatCard
       label={$t('economyExtras.rentableSpaces')}
       value={formatNumber(data.totals.rentableSpaces)}
       sub={$t('economyExtras.rentedNow', { count: formatNumber(data.totals.rentedNow) })}
@@ -170,78 +148,16 @@
         <Coins size={15} strokeWidth={2} aria-hidden="true" />
       {/snippet}
     </StatCard>
-    <StatCard label={$t('economyExtras.buildersClubTiers')} value={formatNumber(data.totals.buildersClubTiers)}>
-      {#snippet icon()}
-        <Hammer size={15} strokeWidth={2} aria-hidden="true" />
-      {/snippet}
-    </StatCard>
   </div>
 
   <Tabs
     bind:active={tab}
     storageKey="economyExtras"
     tabs={[
-      { id: 'ltd', label: $t('economyExtras.tabLtd'), icon: Ticket },
       { id: 'rentables', label: $t('economyExtras.tabRentables'), icon: Store },
       { id: 'currencies', label: $t('economyExtras.tabCurrencies'), icon: Coins },
-      { id: 'builders', label: $t('economyExtras.tabBuilders'), icon: Hammer },
     ]}
   />
-
-  {#if tab === 'ltd'}
-  <section class="panel" style="margin-top: 12px;">
-    <div class="panel-head"><h2>{$t('economyExtras.ltdTitle')}</h2></div>
-    <TableFilter bind:query={ltdQuery} shown={ltdView.length} total={ltdRows.length} />
-    <div class="table-wrap">
-      <table>
-        <thead>
-          <tr>
-            <th>{$t('economyExtras.colItem')}</th>
-            <th>{$t('economyExtras.colSold')}</th>
-            <th>{$t('economyExtras.colCost')}</th>
-            <th>{$t('economyExtras.colWindow')}</th>
-            <th>{$t('economyExtras.colState')}</th>
-            <th>{$t('economyExtras.colEntries')}</th>
-            <th>{$t('economyExtras.colEnds')}</th>
-          </tr>
-        </thead>
-        <tbody>
-          {#each ltdView as row}
-            <tr>
-              <td>
-                <span class="cell">
-                  <AssetImage src={row.iconUrl} alt={row.productName || ''} size={32} />
-                  <span>{row.productName || `#${row.productId}`}</span>
-                </span>
-              </td>
-              <td>{formatNumber(row.sold)} / {formatNumber(row.totalQuantity)}</td>
-              <td>{formatNumber(row.costCredits)}</td>
-              <td>{formatDuration(row.raffleWindowSeconds)}</td>
-              <td>
-                {#if row.running}
-                  <span class="status-badge status-badge--ok">{$t('economyExtras.stateRunning')}</span>
-                {:else if row.hasRaffleFinished}
-                  <span class="status-badge status-badge--unknown">{$t('economyExtras.stateFinished')}</span>
-                {:else}
-                  <span class="status-badge status-badge--warn">{$t('economyExtras.stateIdle')}</span>
-                {/if}
-                {#if row.pendingEntries > 0}
-                  <span class="status-badge status-badge--warn">
-                    {$t('economyExtras.pending', { count: row.pendingEntries })}
-                  </span>
-                {/if}
-              </td>
-              <td>{resultSummary(row)}</td>
-              <td>{row.endsAt ? formatDate(row.endsAt) : '—'}</td>
-            </tr>
-          {:else}
-            <tr><td colspan="7" class="muted">{$t('economyExtras.noSeries')}</td></tr>
-          {/each}
-        </tbody>
-      </table>
-    </div>
-  </section>
-  {/if}
 
   {#if tab === 'rentables'}
   <section class="panel" style="margin-top: 12px;">
@@ -405,41 +321,6 @@
   </Drawer>
 {/if}
 
-{#if canManage && tierForm}
-  {@const form = tierForm}
-  <Drawer title={$t('economyExtras.buildersClubTitle')} eyebrow={$t('economyExtras.editorTitle')} onclose={() => (tierForm = null)}>
-        <form id="tier-form"
-          class="inline-form"
-          onsubmit={(event) => {
-            event.preventDefault();
-            ops.ask(
-              '/api/v1/operations/content/builders-club',
-              { level: Number(form.level), furniLimit: Number(form.furniLimit) },
-              $t('economyExtras.saveTier'),
-              $t('economyExtras.saveTierSummary', { level: form.level, limit: form.furniLimit })
-            );
-          }}
-        >
-          <label>
-            {$t('economyExtras.colLevel')}
-            <input autocomplete="off" spellcheck="false" type="number" bind:value={form.level} min="1" />
-          </label>
-          <label>
-            {$t('economyExtras.colFurniLimit')}
-            <input autocomplete="off" spellcheck="false" type="number" bind:value={form.furniLimit} min="0" />
-          </label>
-        </form>
-
-    {#if $ops.error}<p class="empty-state danger" role="alert">{$ops.error}</p>{/if}
-    {#if $ops.result}<OpResult result={$ops.result} />{/if}
-
-    {#snippet actions()}
-      <button type="submit" form="tier-form">{$t('economyExtras.saveTier')}</button>
-      <button type="button" class="ghost-button" onclick={() => (tierForm = null)}>{$t('common.cancel')}</button>
-    {/snippet}
-  </Drawer>
-{/if}
-
 {#if canManage && termsForm}
   {@const form = termsForm}
   <Drawer title={$t('economyExtras.termsEditorTitle')} eyebrow={$t('economyExtras.editorTitle')} onclose={() => (termsForm = null)}>
@@ -503,57 +384,6 @@
 
   {/if}
 
-  {#if tab === 'builders'}
-  <section class="panel" style="margin-top: 12px;">
-    <div class="panel-head">
-      <h2>{$t('economyExtras.buildersClubTitle')}</h2>
-      {#if canManage}
-        <button type="button" class="ghost-button" onclick={() => (tierForm = emptyTier())}>{$t('economyExtras.saveTier')}</button>
-      {/if}
-    </div>
-    <div class="table-wrap">
-      <table>
-        <thead>
-          <tr>
-            <th>{$t('economyExtras.colLevel')}</th>
-            <th>{$t('economyExtras.colFurniLimit')}</th>
-            {#if canManage}<th>{$t('common.actions')}</th>{/if}
-          </tr>
-        </thead>
-        <tbody>
-          {#each data.buildersClub || [] as row}
-            <tr>
-              <td>{row.level}</td>
-              <td>{formatNumber(row.furniLimit)}</td>
-              {#if canManage}
-                <td class="row-actions">
-                  <button type="button" class="ghost-button" onclick={() => (tierForm = { ...row })}>
-                    {$t('economyExtras.edit')}
-                  </button>
-                  <button
-                    type="button"
-                    class="ghost-button danger"
-                    onclick={() =>
-                      ops.ask(
-                        '/api/v1/operations/content/builders-club/delete',
-                        { tierId: row.id },
-                        $t('economyExtras.deleteTier'),
-                        $t('economyExtras.deleteTierSummary', { level: row.level })
-                      )}
-                  >
-                    {$t('economyExtras.delete')}
-                  </button>
-                </td>
-              {/if}
-            </tr>
-          {:else}
-            <tr><td colspan="2" class="muted">{$t('economyExtras.noTiers')}</td></tr>
-          {/each}
-        </tbody>
-      </table>
-    </div>
-  </section>
-  {/if}
 {/if}
 
 <ConfirmReasonModal

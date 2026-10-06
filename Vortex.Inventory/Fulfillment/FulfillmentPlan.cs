@@ -36,12 +36,6 @@ public sealed record FulfillmentPlan
     /// <summary>Chat-bubble style ids, as the client's own style library numbers them.</summary>
     public required IReadOnlyList<int> ChatStyleIds { get; init; }
 
-    /// <summary>Builders Club membership days, summed over the offer.</summary>
-    public int BuildersClubDays { get; init; }
-
-    /// <summary>Builders Club furni-limit add-ons, summed over the offer.</summary>
-    public int BuildersClubFurni { get; init; }
-
     public static readonly FulfillmentPlan Empty = new()
     {
         Furniture = [],
@@ -60,9 +54,7 @@ public sealed record FulfillmentPlan
         && Pets.Count == 0
         && Bots.Count == 0
         && Effects.Count == 0
-        && ChatStyleIds.Count == 0
-        && BuildersClubDays == 0
-        && BuildersClubFurni == 0;
+        && ChatStyleIds.Count == 0;
 }
 
 /// <summary>One furniture row to write: which definition, and the stuff data baked into it.</summary>

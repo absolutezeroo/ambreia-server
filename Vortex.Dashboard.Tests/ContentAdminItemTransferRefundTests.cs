@@ -318,7 +318,6 @@ public sealed class ContentAdminItemTransferRefundTests
                     Quantity = 1,
                     UniqueSize = 0,
                     UniqueRemaining = 0,
-                    BuildersClubEligible = false,
                 }
             );
         }

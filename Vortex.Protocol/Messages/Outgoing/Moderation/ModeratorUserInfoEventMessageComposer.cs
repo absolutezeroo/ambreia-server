@@ -59,8 +59,8 @@ public sealed record ModeratorUserInfoEventMessageComposer : IComposer
     [Id(15)]
     public string PrimaryEmailAddress { get; init; } = string.Empty;
 
-    [Id(16)]
-    public string UserClassification { get; init; } = string.Empty;
+    // Id 16 was the user classification, removed in M0 with the :uc commands; the serializer writes
+    // an empty string in its place. Retired, not reused.
 
     /// <summary>Emits the optional tail the client guards behind <c>bytesAvailable</c>.</summary>
     [Id(17)]

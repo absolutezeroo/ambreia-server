@@ -157,9 +157,6 @@ public static class RewardTrackActions
     /// <summary>Activated an avatar effect. (no Habbo artwork: this hotel's own signal)</summary>
     public const string ActivateEffect = "activate_effect";
 
-    /// <summary>Finished a poll. (no Habbo artwork: this hotel's own signal)</summary>
-    public const string CompletePoll = "complete_poll";
-
     /// <summary>Submitted a quiz. (no Habbo artwork: this hotel's own signal)</summary>
     public const string SubmitQuiz = "submit_quiz";
 
@@ -219,18 +216,6 @@ public static class RewardTrackActions
 
     /// <summary>Bought something for somebody else. (no Habbo artwork: this hotel's own signal)</summary>
     public const string BuyGift = "buy_gift";
-
-    /// <summary>Bought a targeted offer. (no Habbo artwork: this hotel's own signal)</summary>
-    public const string BuyTargetedOffer = "buy_targeted_offer";
-
-    /// <summary>Entered an LTD raffle. (no Habbo artwork: this hotel's own signal)</summary>
-    public const string EnterRaffle = "enter_raffle";
-
-    /// <summary>Won an LTD raffle. (no Habbo artwork: this hotel's own signal)</summary>
-    public const string WinRaffle = "win_raffle";
-
-    /// <summary>Redeemed a voucher. (no Habbo artwork: this hotel's own signal)</summary>
-    public const string RedeemVoucher = "redeem_voucher";
 
     /// <summary>Claimed vault income. (no Habbo artwork: this hotel's own signal)</summary>
     public const string ClaimVaultIncome = "claim_vault_income";

@@ -124,8 +124,8 @@ internal sealed class DashboardAssetUrls(IOptions<ObservabilityConfig> options)
 
     /// <summary>
     /// The effect template with the model already lent, so a form can preview an id <em>nobody owns
-    /// yet</em> — which is exactly the id being granted. Same trick as
-    /// <see cref="TargetedOfferImageTemplate"/>: the page substitutes the last placeholder itself.
+    /// yet</em> — which is exactly the id being granted. The page substitutes the last placeholder
+    /// itself.
     /// </summary>
     public string? EffectImageTemplate =>
         string.IsNullOrWhiteSpace(_config.AvatarEffectImageUrlTemplate)
@@ -190,16 +190,6 @@ internal sealed class DashboardAssetUrls(IOptions<ObservabilityConfig> options)
         "hd-180-1.ch-255-66.lg-280-110.sh-305-62.ha-1012-110.hr-828-61";
 
     /// <summary>
-    /// The raw targeted-offer image template (or null when unset) so the admin form can show the
-    /// configured base and let the operator supply just a filename with a live preview, instead of
-    /// pasting a whole URL. Storage stays a full URL on the wire — this only drives the form.
-    /// </summary>
-    public string? TargetedOfferImageTemplate =>
-        string.IsNullOrWhiteSpace(_config.TargetedOfferImageUrlTemplate)
-            ? null
-            : Template(_config.TargetedOfferImageUrlTemplate);
-
-    /// <summary>
     /// Where the hotel's asset pack sits on this machine, for the routes that serve it. Empty when
     /// unconfigured, which those routes read as "there is nothing to serve".
     /// </summary>
@@ -209,7 +199,7 @@ internal sealed class DashboardAssetUrls(IOptions<ObservabilityConfig> options)
     /// The asset host's <c>c_images</c> root, for the article editor's picture previews.
     /// </summary>
     /// <remarks>
-    /// Derived from the targeted-offer template rather than configured separately, for two reasons:
+    /// Derived from the catalog icon template rather than configured separately, for two reasons:
     /// there is only ever one asset host, and a second key would be a second thing to get wrong; and
     /// deriving it means the origin is already in <see cref="ImgSrcOrigins"/>, so the CSP allows the
     /// previews without another edit. Null when no template is configured — the editor then takes a
@@ -219,7 +209,7 @@ internal sealed class DashboardAssetUrls(IOptions<ObservabilityConfig> options)
     {
         get
         {
-            string? template = TargetedOfferImageTemplate;
+            string? template = CatalogIconTemplate;
             int marker = template?.IndexOf("/c_images/", StringComparison.OrdinalIgnoreCase) ?? -1;
 
             return marker < 0 ? null : template![..(marker + "/c_images".Length)];
@@ -241,7 +231,6 @@ internal sealed class DashboardAssetUrls(IOptions<ObservabilityConfig> options)
         {
             _config.FurniIconUrlTemplate,
             _config.CatalogIconUrlTemplate,
-            _config.TargetedOfferImageUrlTemplate,
             _config.AvatarImageUrlTemplate,
             _config.GroupBadgeUrlTemplate,
             _config.BadgeImageUrlTemplate,

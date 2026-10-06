@@ -53,10 +53,6 @@ public sealed class ApiTypeScriptContractTests
     /// </summary>
     private static readonly Type[] Roots =
     [
-        typeof(PollListResponse),
-        typeof(PollDetail),
-        typeof(PollResults),
-        typeof(PollQuestionTypeOptions),
         typeof(ArticleListResponse),
         typeof(ArticleDetail),
         typeof(ArticleFormMeta),
@@ -106,11 +102,6 @@ public sealed class ApiTypeScriptContractTests
         typeof(PlayerRewardDetail),
         typeof(StaffOverview),
         typeof(StaffAccountSearch),
-        typeof(TargetedOfferList),
-        typeof(TargetedOfferDetail),
-        typeof(TargetedOfferFormMeta),
-        typeof(TargetedOfferImageList),
-        typeof(TargetedOfferStats),
         typeof(ConfigList),
         typeof(NavigatorSetup),
         typeof(DashboardInventory),
@@ -147,7 +138,6 @@ public sealed class ApiTypeScriptContractTests
         typeof(RunConsoleCommandResponse),
         typeof(CfhIssueQueueEntrySnapshot),
         typeof(CfhAppealSnapshot),
-        typeof(VoucherSnapshot),
     ];
 
     [Fact]

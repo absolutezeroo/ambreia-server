@@ -9,18 +9,6 @@ internal sealed class CatalogMap : IRevisionMap
 {
     public void RegisterInto(IRevisionMapBuilder builder)
     {
-        builder.MapParser(
-            MessageEvent.BuildersClubPlaceRoomItemMessageEvent,
-            new BuildersClubPlaceRoomItemMessageParser()
-        );
-        builder.MapParser(
-            MessageEvent.BuildersClubPlaceWallItemMessageEvent,
-            new BuildersClubPlaceWallItemMessageParser()
-        );
-        builder.MapParser(
-            MessageEvent.BuildersClubQueryFurniCountMessageEvent,
-            new BuildersClubQueryFurniCountMessageParser()
-        );
         // charge firework?
         builder.MapParser(
             MessageEvent.GetBonusRareInfoMessageEvent,
@@ -32,10 +20,6 @@ internal sealed class CatalogMap : IRevisionMap
         );
         builder.MapParser(MessageEvent.GetCatalogIndexEvent, new GetCatalogIndexMessageParser());
         builder.MapParser(MessageEvent.GetCatalogPageEvent, new GetCatalogPageMessageParser());
-        builder.MapParser(
-            MessageEvent.GetCatalogPageWithEarliestExpiryEvent,
-            new GetCatalogPageWithEarliestExpiryMessageParser()
-        );
         builder.MapParser(MessageEvent.GetClubGiftMessageEvent, new GetClubGiftInfoMessageParser());
         builder.MapParser(MessageEvent.GetClubOffersMessageEvent, new GetClubOffersMessageParser());
         builder.MapParser(
@@ -49,14 +33,6 @@ internal sealed class CatalogMap : IRevisionMap
         builder.MapParser(
             MessageEvent.GetIsOfferGiftableEvent,
             new GetIsOfferGiftableMessageParser()
-        );
-        builder.MapParser(
-            MessageEvent.GetLimitedOfferAppearingNextEvent,
-            new GetLimitedOfferAppearingNextMessageParser()
-        );
-        builder.MapParser(
-            MessageEvent.GetNextTargetedOfferEvent,
-            new GetNextTargetedOfferMessageParser()
         );
         builder.MapParser(MessageEvent.GetProductOfferEvent, new GetProductOfferMessageParser());
         builder.MapParser(
@@ -92,43 +68,18 @@ internal sealed class CatalogMap : IRevisionMap
             new PurchaseRoomAdMessageParser()
         );
         builder.MapParser(
-            MessageEvent.PurchaseTargetedOfferEvent,
-            new PurchaseTargetedOfferMessageParser()
-        );
-        builder.MapParser(
             MessageEvent.PurchaseVipMembershipExtensionEvent,
             new PurchaseVipMembershipExtensionMessageParser()
         );
-        builder.MapParser(MessageEvent.RedeemVoucherMessageEvent, new RedeemVoucherMessageParser());
         builder.MapParser(
             MessageEvent.RoomAdPurchaseInitiatedEvent,
             new RoomAdPurchaseInitiatedMessageParser()
         );
         builder.MapParser(MessageEvent.SelectClubGiftEvent, new SelectClubGiftMessageParser());
-        builder.MapParser(
-            MessageEvent.SetTargetedOfferStateEvent,
-            new SetTargetedOfferStateMessageParser()
-        );
-        builder.MapParser(
-            MessageEvent.ShopTargetedOfferViewedEvent,
-            new ShopTargetedOfferViewedMessageParser()
-        );
 
         builder.MapSerializer(
             typeof(BonusRareInfoMessageComposer),
             new BonusRareInfoMessageComposerSerializer(MessageComposer.BonusRareInfoMessageComposer)
-        );
-        builder.MapSerializer(
-            typeof(BuildersClubFurniCountMessageComposer),
-            new BuildersClubFurniCountMessageComposerSerializer(
-                MessageComposer.BuildersClubFurniCountMessageComposer
-            )
-        );
-        builder.MapSerializer(
-            typeof(BuildersClubSubscriptionStatusMessageComposer),
-            new BuildersClubSubscriptionStatusMessageComposerSerializer(
-                MessageComposer.BuildersClubSubscriptionStatusMessageComposer
-            )
         );
         builder.MapSerializer(
             typeof(BundleDiscountRulesetMessageComposer),
@@ -143,12 +94,6 @@ internal sealed class CatalogMap : IRevisionMap
         builder.MapSerializer(
             typeof(CatalogPageMessageComposer),
             new CatalogPageMessageComposerSerializer(MessageComposer.CatalogPageMessageComposer)
-        );
-        builder.MapSerializer(
-            typeof(CatalogPageWithEarliestExpiryMessageComposer),
-            new CatalogPageWithEarliestExpiryMessageComposerSerializer(
-                MessageComposer.CatalogPageWithEarliestExpiryMessageComposer
-            )
         );
         builder.MapSerializer(
             typeof(CatalogPublishedMessageComposer),
@@ -203,12 +148,6 @@ internal sealed class CatalogMap : IRevisionMap
             )
         );
         builder.MapSerializer(
-            typeof(LimitedOfferAppearingNextMessageComposer),
-            new LimitedOfferAppearingNextMessageComposerSerializer(
-                MessageComposer.LimitedOfferAppearingNextMessageComposer
-            )
-        );
-        builder.MapSerializer(
             typeof(NotEnoughBalanceMessageComposer),
             new NotEnoughBalanceMessageComposerSerializer(
                 MessageComposer.NotEnoughBalanceMessageComposer
@@ -254,28 +193,6 @@ internal sealed class CatalogMap : IRevisionMap
             typeof(SnowWarGameTokensMessageMessageComposer),
             new SnowWarGameTokensMessageMessageComposerSerializer(
                 MessageComposer.SnowWarGameTokensMessageComposer
-            )
-        );
-        builder.MapSerializer(
-            typeof(TargetedOfferEventMessageComposer),
-            new TargetedOfferEventMessageComposerSerializer(MessageComposer.TargetedOfferComposer)
-        );
-        builder.MapSerializer(
-            typeof(TargetedOfferNotFoundEventMessageComposer),
-            new TargetedOfferNotFoundEventMessageComposerSerializer(
-                MessageComposer.TargetedOfferNotFoundComposer
-            )
-        );
-        builder.MapSerializer(
-            typeof(VoucherRedeemErrorMessageComposer),
-            new VoucherRedeemErrorMessageComposerSerializer(
-                MessageComposer.VoucherRedeemErrorMessageComposer
-            )
-        );
-        builder.MapSerializer(
-            typeof(VoucherRedeemOkMessageComposer),
-            new VoucherRedeemOkMessageComposerSerializer(
-                MessageComposer.VoucherRedeemOkMessageComposer
             )
         );
     }

@@ -48,7 +48,7 @@ internal sealed class CatalogReads(
     private readonly DashboardAssetUrls _assetUrls = assetUrls;
 
     /// <summary>Pages at one level of one catalog tree. <c>parentId</c> omitted/blank means the root
-    /// level (pages with no parent) of the given <c>catalogType</c> (0=Normal, 1=BuildersClub).</summary>
+    /// level (pages with no parent) of the given <c>catalogType</c> (0=Normal).</summary>
     public Task<CatalogPageList> CatalogPagesAsync(NameValueCollection query, CancellationToken ct)
     {
         CatalogType catalogType = int.TryParse(query["catalogType"], out int catalogTypeValue)
@@ -177,7 +177,6 @@ internal sealed class CatalogReads(
                                 p.Quantity,
                                 p.UniqueSize,
                                 p.UniqueRemaining,
-                                p.BuildersClubEligible,
                             })
                             .ToListAsync(ct)
                             .ConfigureAwait(false);
@@ -193,8 +192,7 @@ internal sealed class CatalogReads(
                             _assetUrls.ProductImage(p.productType, p.furnitureName, p.ExtraParam),
                             p.Quantity,
                             p.UniqueSize,
-                            p.UniqueRemaining,
-                            p.BuildersClubEligible
+                            p.UniqueRemaining
                         )
                     );
 
@@ -301,7 +299,6 @@ internal sealed class CatalogReads(
                         p.Quantity,
                         p.UniqueSize,
                         p.UniqueRemaining,
-                        p.BuildersClubEligible,
                     })
                     .ToListAsync(ct)
                     .ConfigureAwait(false);
@@ -321,8 +318,7 @@ internal sealed class CatalogReads(
                         p.ExtraParam,
                         p.Quantity,
                         p.UniqueSize,
-                        p.UniqueRemaining,
-                        p.BuildersClubEligible
+                        p.UniqueRemaining
                     ))
                     .ToList();
 
@@ -335,11 +331,11 @@ internal sealed class CatalogReads(
         QueryAsync<CatalogCurrencyList>(
             async db =>
             {
-                List<TargetedOfferCurrency> rows = await db
+                List<CatalogCurrency> rows = await db
                     .CurrencyTypes.AsNoTracking()
                     .Where(c => c.Enabled)
                     .OrderBy(c => c.Id)
-                    .Select(c => new TargetedOfferCurrency(
+                    .Select(c => new CatalogCurrency(
                         c.Id,
                         c.Name,
                         c.CurrencyType.ToString(),

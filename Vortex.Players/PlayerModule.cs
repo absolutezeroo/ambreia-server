@@ -24,7 +24,6 @@ public sealed class PlayerModule : IHostPluginModule
             builder.Configuration.GetSection(PlayerPresenceConfig.SECTION_NAME)
         );
 
-        services.AddSingleton<IUserClassificationService, UserClassificationService>();
         services.AddSingleton<ICurrencyTypeProvider, CurrencyTypeProvider>();
         services.AddSingleton<IReferenceDataProvider>(sp =>
             (IReferenceDataProvider)sp.GetRequiredService<ICurrencyTypeProvider>()
@@ -47,8 +46,6 @@ public sealed class PlayerModule : IHostPluginModule
         );
         services.AddSingleton<IVaultRewardSettler, CurrencyVaultRewardSettler>();
         services.AddSingleton<VaultRewardSettlerMap>();
-        services.AddSingleton<IBuildersClubService, BuildersClubService>();
-        services.AddHostedService<BuildersClubTierSeederService>();
 
         // The admin services moved to the dashboard: authoring content is its job, not the
         // emulator's. A host without that module has no authoring path here, deliberately.

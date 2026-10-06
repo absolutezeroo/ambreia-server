@@ -46,7 +46,6 @@ public class SSOTicketMessageHandler(
     IGrainFactory grainFactory,
     IPermissionService permissionService,
     ICfhTicketService cfhTickets,
-    IBuildersClubService buildersClubService,
     ILogger<SSOTicketMessageHandler> logger
 ) : IMessageHandler<SSOTicketMessage>
 {
@@ -62,7 +61,6 @@ public class SSOTicketMessageHandler(
     private readonly IGrainFactory _grainFactory = grainFactory;
     private readonly IPermissionService _permissionService = permissionService;
     private readonly ICfhTicketService _cfhTickets = cfhTickets;
-    private readonly IBuildersClubService _buildersClubService = buildersClubService;
     private readonly ILogger<SSOTicketMessageHandler> _logger = logger;
 
     public async ValueTask HandleAsync(
@@ -179,8 +177,6 @@ public class SSOTicketMessageHandler(
                 new CurrencyKind { CurrencyType = CurrencyType.Emeralds },
                 ct
             );
-            Task<BuildersClubSubscriptionSnapshot> buildersClubTask =
-                _buildersClubService.GetSubscriptionAsync(playerId, ct);
 
             await Task.WhenAll(
                     subTask,
@@ -195,8 +191,7 @@ public class SSOTicketMessageHandler(
                     creditsTask,
                     activityPointsTask,
                     silverTask,
-                    emeraldsTask,
-                    buildersClubTask
+                    emeraldsTask
                 )
                 .ConfigureAwait(false);
 
@@ -416,14 +411,6 @@ public class SSOTicketMessageHandler(
                 .ConfigureAwait(false);
             await ctx.SendComposerAsync(
                     new IsFirstLoginOfDayMessage { IsFirstLoginOfDay = isFirstLoginOfDay },
-                    ct
-                )
-                .ConfigureAwait(false);
-            BuildersClubSubscriptionSnapshot buildersClub = await buildersClubTask.ConfigureAwait(
-                false
-            );
-            await ctx.SendComposerAsync(
-                    BuildersClubSubscriptionStatusMessageComposer.From(buildersClub),
                     ct
                 )
                 .ConfigureAwait(false);

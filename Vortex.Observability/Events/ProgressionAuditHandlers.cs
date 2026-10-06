@@ -265,47 +265,6 @@ public sealed class AchievementResolutionResetAuditHandler(IAuditSink audit)
     }
 }
 
-/// <summary>A survey was finished.</summary>
-public sealed class PollCompletedAuditHandler(IAuditSink audit) : IEventHandler<PollCompletedEvent>
-{
-    public ValueTask HandleAsync(PollCompletedEvent e, EventContext ctx, CancellationToken ct)
-    {
-        audit.Emit(
-            new AuditEvent
-            {
-                Category = AuditCategory.Progression,
-                Action = "poll.completed",
-                Severity = AuditSeverity.Info,
-                Result = AuditResult.Success,
-                ActorPlayerId = e.PlayerId,
-                Data = JsonSerializer.Serialize(new { e.PollId, poll = e.PollCode }),
-            }
-        );
-
-        return ValueTask.CompletedTask;
-    }
-}
-
-public sealed class PollRejectedAuditHandler(IAuditSink audit) : IEventHandler<PollRejectedEvent>
-{
-    public ValueTask HandleAsync(PollRejectedEvent e, EventContext ctx, CancellationToken ct)
-    {
-        audit.Emit(
-            new AuditEvent
-            {
-                Category = AuditCategory.Progression,
-                Action = "poll.rejected",
-                Severity = AuditSeverity.Info,
-                Result = AuditResult.Success,
-                ActorPlayerId = e.PlayerId,
-                Data = JsonSerializer.Serialize(new { e.PollId }),
-            }
-        );
-
-        return ValueTask.CompletedTask;
-    }
-}
-
 public sealed class DailyTaskClaimedAuditHandler(IAuditSink audit)
     : IEventHandler<DailyTaskClaimedEvent>
 {

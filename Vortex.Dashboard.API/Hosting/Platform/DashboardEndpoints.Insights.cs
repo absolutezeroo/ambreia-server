@@ -16,8 +16,8 @@ namespace Vortex.Dashboard.API.Hosting;
 
 /// <summary>
 /// Read-only surfaces for the domains that own tables but no admin flow: the social graph and guild
-/// forums, the staff/role matrix, the economy's smaller tables (LTD, rentals, currencies, builders
-/// club), what players hold (badges/effects/chat styles/outfits), and NFT collections.
+/// forums, the staff/role matrix, the economy's smaller tables (rentals, currencies), and what
+/// players hold (badges/effects/chat styles/outfits).
 /// <para>
 /// Grouped in one mapper because none of them writes: every route here is a GET behind a read
 /// capability, and the domains that do have operations keep their own file.

@@ -17,7 +17,6 @@ using Vortex.Database.Entities.Navigator;
 using Vortex.Database.Entities.Permissions;
 using Vortex.Database.Entities.Pets;
 using Vortex.Database.Entities.Players;
-using Vortex.Database.Entities.Polls;
 using Vortex.Database.Entities.Prizes;
 using Vortex.Database.Entities.Quests;
 using Vortex.Database.Entities.Room;
@@ -71,16 +70,6 @@ public class VortexDbContext(DbContextOptions<VortexDbContext> options)
     public DbSet<CatalogPageEntity> CatalogPages { get; init; } = null!;
 
     public DbSet<CatalogProductEntity> CatalogProducts { get; init; } = null!;
-
-    public DbSet<TargetedOfferEntity> TargetedOffers { get; init; } = null!;
-
-    public DbSet<TargetedOfferProductEntity> TargetedOfferProducts { get; init; } = null!;
-
-    public DbSet<PlayerTargetedOfferEntity> PlayerTargetedOffers { get; init; } = null!;
-
-    public DbSet<VoucherEntity> Vouchers { get; init; } = null!;
-
-    public DbSet<VoucherRedemptionEntity> VoucherRedemptions { get; init; } = null!;
 
     public DbSet<FurnitureDefinitionEntity> FurnitureDefinitions { get; init; } = null!;
 
@@ -184,8 +173,6 @@ public class VortexDbContext(DbContextOptions<VortexDbContext> options)
 
     public DbSet<PlayerSubscriptionEntity> PlayerSubscriptions { get; init; } = null!;
 
-    public DbSet<BuildersClubTierEntity> BuildersClubTiers { get; init; } = null!;
-
     public DbSet<PlayerKickbackEntity> PlayerKickbacks { get; init; } = null!;
 
     public DbSet<ErrorGroupEntity> ErrorGroups { get; init; } = null!;
@@ -209,10 +196,6 @@ public class VortexDbContext(DbContextOptions<VortexDbContext> options)
     public DbSet<MessengerIgnoredEntity> MessengerIgnored { get; init; } = null!;
 
     public DbSet<MessengerMessageEntity> MessengerMessages { get; init; } = null!;
-
-    public DbSet<LtdSeriesEntity> LtdSeries { get; init; } = null!;
-
-    public DbSet<LtdRaffleEntryEntity> LtdRaffleEntries { get; init; } = null!;
 
     public DbSet<GroupEntity> Groups { get; init; } = null!;
 
@@ -339,16 +322,6 @@ public class VortexDbContext(DbContextOptions<VortexDbContext> options)
 
     public DbSet<PlayerCommunityGoalContributionEntity> PlayerCommunityGoalContributions { get; init; } =
         null!;
-
-    public DbSet<PollEntity> Polls { get; init; } = null!;
-
-    public DbSet<PollQuestionEntity> PollQuestions { get; init; } = null!;
-
-    public DbSet<PollQuestionChoiceEntity> PollQuestionChoices { get; init; } = null!;
-
-    public DbSet<PlayerPollEntity> PlayerPolls { get; init; } = null!;
-
-    public DbSet<PlayerPollAnswerEntity> PlayerPollAnswers { get; init; } = null!;
 
     public DbSet<PrizePoolEntity> PrizePools { get; init; } = null!;
 
@@ -507,86 +480,6 @@ public class VortexDbContext(DbContextOptions<VortexDbContext> options)
             .HasOne(c => c.CommunityGoalEntity)
             .WithMany()
             .HasForeignKey(c => c.CommunityGoalEntityId)
-            .OnDelete(DeleteBehavior.Restrict);
-
-        // A poll owns its questions and a question owns its choices, so editing a survey down to
-        // nothing leaves no orphan rows. The NPS follow-up link is self-referencing and must stay
-        // Restrict: MySQL rejects a cascading self-FK, and deleting a root question that still has
-        // children is a mistake worth surfacing.
-        mb.Entity<PollQuestionEntity>()
-            .HasOne(q => q.PollEntity)
-            .WithMany()
-            .HasForeignKey(q => q.PollEntityId)
-            .OnDelete(DeleteBehavior.Cascade);
-
-        mb.Entity<PollQuestionEntity>()
-            .HasOne(q => q.ParentQuestionEntity)
-            .WithMany()
-            .HasForeignKey(q => q.ParentQuestionEntityId)
-            .OnDelete(DeleteBehavior.Restrict);
-
-        mb.Entity<PollQuestionChoiceEntity>()
-            .HasOne(c => c.QuestionEntity)
-            .WithMany()
-            .HasForeignKey(c => c.QuestionEntityId)
-            .OnDelete(DeleteBehavior.Cascade);
-
-        // Participation and answers cascade with the player (account deletion takes them), and are
-        // Restrict against the poll so retiring a survey never silently destroys its results.
-        mb.Entity<PlayerPollEntity>()
-            .HasOne(p => p.PlayerEntity)
-            .WithMany()
-            .HasForeignKey(p => p.PlayerEntityId)
-            .OnDelete(DeleteBehavior.Cascade);
-
-        mb.Entity<PlayerPollEntity>()
-            .HasOne(p => p.PollEntity)
-            .WithMany()
-            .HasForeignKey(p => p.PollEntityId)
-            .OnDelete(DeleteBehavior.Restrict);
-
-        mb.Entity<PlayerPollAnswerEntity>()
-            .HasOne(a => a.PlayerEntity)
-            .WithMany()
-            .HasForeignKey(a => a.PlayerEntityId)
-            .OnDelete(DeleteBehavior.Cascade);
-
-        mb.Entity<PlayerPollAnswerEntity>()
-            .HasOne(a => a.PollEntity)
-            .WithMany()
-            .HasForeignKey(a => a.PollEntityId)
-            .OnDelete(DeleteBehavior.Restrict);
-
-        mb.Entity<PlayerPollAnswerEntity>()
-            .HasOne(a => a.QuestionEntity)
-            .WithMany()
-            .HasForeignKey(a => a.QuestionEntityId)
-            .OnDelete(DeleteBehavior.Restrict);
-
-        // Targeted offers: deleting an offer cascades to its bundle products; a player's per-offer
-        // state references the offer non-cascade and is cleaned up with the player.
-        mb.Entity<TargetedOfferProductEntity>()
-            .HasOne(p => p.TargetedOfferEntity)
-            .WithMany(o => o.Products)
-            .HasForeignKey(p => p.TargetedOfferEntityId)
-            .OnDelete(DeleteBehavior.Cascade);
-
-        mb.Entity<TargetedOfferProductEntity>()
-            .HasOne(p => p.FurnitureDefinition)
-            .WithMany()
-            .HasForeignKey(p => p.FurnitureDefinitionEntityId)
-            .OnDelete(DeleteBehavior.Restrict);
-
-        mb.Entity<PlayerTargetedOfferEntity>()
-            .HasOne(p => p.PlayerEntity)
-            .WithMany()
-            .HasForeignKey(p => p.PlayerEntityId)
-            .OnDelete(DeleteBehavior.Cascade);
-
-        mb.Entity<PlayerTargetedOfferEntity>()
-            .HasOne(p => p.TargetedOfferEntity)
-            .WithMany()
-            .HasForeignKey(p => p.TargetedOfferEntityId)
             .OnDelete(DeleteBehavior.Restrict);
 
         // Prize entries carry a plain definition id (no FK) because effect and club prizes

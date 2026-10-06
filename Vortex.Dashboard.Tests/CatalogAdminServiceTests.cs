@@ -20,11 +20,10 @@ using Xunit;
 namespace Vortex.Dashboard.Tests;
 
 /// <summary>
-/// Covers the invariants <c>CatalogAdminService</c> is responsible for: the CatalogType boundary
-/// between Normal/Builders Club pages (mirrors <see cref="CatalogTypeIsolationTests"/>'s read-side
-/// coverage on the write side), the delete-blocked-with-children guards that prevent a silent
-/// cascading mass-delete, and that every successful write reloads BOTH snapshot providers -- the
-/// exact "DB write not reflected in live state" bug class called out in AGENTS.md.
+/// Covers the invariants <c>CatalogAdminService</c> is responsible for: the delete-blocked-with-
+/// children guards that prevent a silent cascading mass-delete, and that every successful write
+/// reloads the snapshot provider -- the exact "DB write not reflected in live state" bug class
+/// called out in AGENTS.md.
 /// </summary>
 public sealed class CatalogAdminServiceTests
 {
@@ -38,29 +37,25 @@ public sealed class CatalogAdminServiceTests
 
     private static CatalogAdminService NewService(
         DbContextOptions<VortexDbContext> options,
-        out FakeSnapshotProvider<NormalCatalog> normalProvider,
-        out FakeSnapshotProvider<BuildersClubCatalog> bcProvider
+        out FakeSnapshotProvider<NormalCatalog> normalProvider
     )
     {
         normalProvider = new FakeSnapshotProvider<NormalCatalog>(CatalogType.Normal);
-        bcProvider = new FakeSnapshotProvider<BuildersClubCatalog>(CatalogType.BuildersClub);
 
         return new CatalogAdminService(
             new TestDbContextFactory(options),
             normalProvider,
-            bcProvider,
             NullLogger<CatalogAdminService>.Instance
         );
     }
 
     [Fact]
-    public async Task CreatePage_Succeeds_AndReloadsBothSnapshotProviders()
+    public async Task CreatePage_Succeeds_AndReloadsTheSnapshotProvider()
     {
         DbContextOptions<VortexDbContext> options = NewOptions();
         CatalogAdminService service = NewService(
             options,
-            out FakeSnapshotProvider<NormalCatalog> normalProvider,
-            out FakeSnapshotProvider<BuildersClubCatalog> bcProvider
+            out FakeSnapshotProvider<NormalCatalog> normalProvider
         );
 
         CatalogAdminResult result = await service
@@ -89,64 +84,14 @@ public sealed class CatalogAdminServiceTests
             .Should()
             .NotBeNull();
 
-        // Both providers reload unconditionally -- the page's own CatalogType decides which tree it
-        // is visible in, but working that out per write path is exactly the class of bug this
-        // simplification avoids (see the class doc on CatalogAdminService).
         normalProvider.ReloadCount.Should().Be(1);
-        bcProvider.ReloadCount.Should().Be(1);
-    }
-
-    [Fact]
-    public async Task CreatePage_UnderParentOfDifferentCatalogType_IsRejected()
-    {
-        DbContextOptions<VortexDbContext> options = NewOptions();
-        CatalogAdminService service = NewService(options, out _, out _);
-
-        CatalogAdminResult bcRoot = await service
-            .CreatePageAsync(
-                new CatalogPageCreateSpec(
-                    CatalogType.BuildersClub,
-                    null,
-                    "bc_root",
-                    null,
-                    0,
-                    CatalogPageLayout.Default3x3,
-                    null,
-                    null,
-                    0,
-                    true
-                ),
-                CancellationToken.None
-            )
-            .ConfigureAwait(true);
-
-        CatalogAdminResult child = await service
-            .CreatePageAsync(
-                new CatalogPageCreateSpec(
-                    CatalogType.Normal,
-                    bcRoot.Id,
-                    "normal_child_under_bc_parent",
-                    null,
-                    0,
-                    CatalogPageLayout.Default3x3,
-                    null,
-                    null,
-                    0,
-                    true
-                ),
-                CancellationToken.None
-            )
-            .ConfigureAwait(true);
-
-        child.Success.Should().BeFalse();
-        child.ErrorCode.Should().Be("parent_catalog_type_mismatch");
     }
 
     [Fact]
     public async Task DeletePage_WithChildren_IsBlocked()
     {
         DbContextOptions<VortexDbContext> options = NewOptions();
-        CatalogAdminService service = NewService(options, out _, out _);
+        CatalogAdminService service = NewService(options, out _);
 
         CatalogAdminResult parent = await service
             .CreatePageAsync(
@@ -202,7 +147,7 @@ public sealed class CatalogAdminServiceTests
     public async Task DeletePage_WithOnlySoftDeletedChildren_DetachesThemAndDeletes()
     {
         DbContextOptions<VortexDbContext> options = NewOptions();
-        CatalogAdminService service = NewService(options, out _, out _);
+        CatalogAdminService service = NewService(options, out _);
 
         CatalogAdminResult parent = await service
             .CreatePageAsync(
@@ -291,7 +236,7 @@ public sealed class CatalogAdminServiceTests
             await db.SaveChangesAsync().ConfigureAwait(true);
         }
 
-        CatalogAdminService service = NewService(options, out _, out _);
+        CatalogAdminService service = NewService(options, out _);
 
         CatalogAdminResult page = await service
             .CreatePageAsync(
@@ -336,7 +281,7 @@ public sealed class CatalogAdminServiceTests
     public async Task DeletePage_WithOffers_IsBlocked()
     {
         DbContextOptions<VortexDbContext> options = NewOptions();
-        CatalogAdminService service = NewService(options, out _, out _);
+        CatalogAdminService service = NewService(options, out _);
 
         CatalogAdminResult page = await service
             .CreatePageAsync(
@@ -386,7 +331,7 @@ public sealed class CatalogAdminServiceTests
     public async Task DeleteOffer_WithProducts_IsBlocked_ThenSucceedsAfterProductRemoved()
     {
         DbContextOptions<VortexDbContext> options = NewOptions();
-        CatalogAdminService service = NewService(options, out _, out _);
+        CatalogAdminService service = NewService(options, out _);
 
         CatalogAdminResult page = await service
             .CreatePageAsync(
@@ -433,8 +378,7 @@ public sealed class CatalogAdminServiceTests
                     null,
                     1,
                     0,
-                    0,
-                    false
+                    0
                 ),
                 CancellationToken.None
             )
@@ -470,7 +414,7 @@ public sealed class CatalogAdminServiceTests
     public async Task UpdatePage_UnknownId_ReturnsNotFound()
     {
         DbContextOptions<VortexDbContext> options = NewOptions();
-        CatalogAdminService service = NewService(options, out _, out _);
+        CatalogAdminService service = NewService(options, out _);
 
         CatalogAdminResult result = await service
             .UpdatePageAsync(

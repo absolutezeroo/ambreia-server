@@ -4,8 +4,7 @@ namespace Vortex.PacketHandlers;
 
 /// <summary>
 /// Parses the classic Habbo wall-item location string (e.g. ":w=X,Y l=WallOffset,Z r=side"),
-/// shared between Room.Engine.PlaceObjectMessageHandler and the Builders Club wall-placement
-/// handler -- both consume the exact same wire format for a wall position.
+/// as Room.Engine.PlaceObjectMessageHandler receives it.
 /// </summary>
 internal static class WallLocationParser
 {

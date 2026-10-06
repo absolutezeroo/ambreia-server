@@ -198,7 +198,6 @@ public sealed class FurnitureAdminServiceTests
                     Quantity = 1,
                     UniqueSize = 0,
                     UniqueRemaining = 0,
-                    BuildersClubEligible = false,
                 }
             );
             await db.SaveChangesAsync().ConfigureAwait(true);

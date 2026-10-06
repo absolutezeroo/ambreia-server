@@ -1020,67 +1020,6 @@
         }
       }
     },
-    "/api/user/shop/voucher": {
-      "post": {
-        "tags": [
-          "Shop"
-        ],
-        "summary": "Redeem a prepaid code.",
-        "operationId": "RedeemVoucher",
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/RedeemVoucherRequest"
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/EmptyResponse"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Bad Request",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiErrorResponse"
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "Not Found",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiErrorResponse"
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "Unauthorized",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiErrorResponse"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
     "/api/public/shop/webhook/{provider}": {
       "post": {
         "tags": [
@@ -3444,8 +3383,6 @@
           0,
           1,
           2,
-          4,
-          5,
           10,
           11,
           12,
@@ -3593,8 +3530,6 @@
       },
       "PlayerPurse": {
         "required": [
-          "buildersClubDays",
-          "buildersFurniLimit",
           "credits",
           "diamonds",
           "duckets",
@@ -3615,14 +3550,6 @@
             "format": "int32"
           },
           "habboClubDays": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "buildersClubDays": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "buildersFurniLimit": {
             "type": "integer",
             "format": "int32"
           }
@@ -3797,23 +3724,6 @@
             "items": {
               "$ref": "#/components/schemas/ProfileBadge"
             }
-          }
-        },
-        "additionalProperties": false
-      },
-      "RedeemVoucherRequest": {
-        "required": [
-          "isValid"
-        ],
-        "type": "object",
-        "properties": {
-          "code": {
-            "type": "string",
-            "nullable": true
-          },
-          "isValid": {
-            "type": "boolean",
-            "readOnly": true
           }
         },
         "additionalProperties": false

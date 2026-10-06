@@ -259,7 +259,7 @@ public sealed class RoomChatSystem(RoomGrain roomGrain)
 
         // Every chat line comes through here — players, bots and pets alike — so this is the one
         // place the smiley-to-expression rule has to live. A caller that already knows the gesture
-        // it wants (a wired action, the word quiz) keeps it.
+        // it wants (a wired action) keeps it.
         if (gesture is AvatarGestureType.None)
         {
             gesture = ChatGestures.FromText(text);

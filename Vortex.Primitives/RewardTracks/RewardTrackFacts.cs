@@ -101,26 +101,17 @@ public static class RewardTrackFacts
     // constant is a filter that changes nothing. Removed rather than fabricated -- the rule this
     // subsystem exists for cuts both ways.
 
-    /// <summary>A poll's code.</summary>
-    public const string Poll = "poll";
-
     /// <summary>A quiz's code.</summary>
     public const string Quiz = "quiz";
 
     /// <summary>A quest campaign's code.</summary>
     public const string Campaign = "campaign";
 
-    /// <summary>A voucher's code.</summary>
-    public const string Voucher = "voucher";
-
     /// <summary>A club gift's product code.</summary>
     public const string ClubGift = "club_gift";
 
     /// <summary>A vault income category.</summary>
     public const string VaultCategory = "vault_category";
-
-    /// <summary>A targeted offer's identifier.</summary>
-    public const string TargetedOffer = "targeted_offer";
 
     /// <summary>A pet's species number.</summary>
     public const string PetType = "pet_type";
@@ -139,9 +130,6 @@ public static class RewardTrackFacts
 
     /// <summary>A count of months.</summary>
     public const string Months = "months";
-
-    /// <summary>A serial number within a limited series.</summary>
-    public const string Serial = "serial";
 
     /// <summary>An avatar figure string.</summary>
     public const string Figure = "figure";

@@ -84,7 +84,6 @@ public static class Capabilities
         public const string OpsGrantCurrency = "dashboard.ops.currency.grant";
         public const string OpsGrantItem = "dashboard.ops.item.grant";
         public const string OpsKickPlayer = "dashboard.ops.player.kick";
-        public const string OpsManageVouchers = "dashboard.ops.vouchers.manage";
         public const string OpsBanAccount = "dashboard.ops.player.ban";
         public const string OpsMutePlayer = "dashboard.ops.player.mute";
         public const string OpsTradingLock = "dashboard.ops.player.trading_lock";
@@ -153,8 +152,6 @@ public static class Capabilities
         /// </summary>
         public const string ChatlogsRead = "dashboard.chatlogs.read";
         public const string CatalogPurchasesRead = "dashboard.catalog.purchases.read";
-        public const string TargetedOffersRead = "dashboard.targeted_offers.read";
-        public const string OpsTargetedOffersManage = "dashboard.ops.targeted_offers.manage";
         public const string QuestsRead = "dashboard.quests.read";
         public const string OpsQuestsManage = "dashboard.ops.quests.manage";
 
@@ -169,10 +166,6 @@ public static class Capabilities
         /// <summary>Fishing's four content tables, and what players have caught out of them.</summary>
         public const string FishingRead = "dashboard.fishing.read";
         public const string OpsFishingManage = "dashboard.ops.fishing.manage";
-
-        /// <summary>Survey definitions, their question trees and the answers players gave.</summary>
-        public const string PollsRead = "dashboard.polls.read";
-        public const string OpsPollsManage = "dashboard.ops.polls.manage";
 
         public const string PrizePoolsRead = "dashboard.prize_pools.read";
         public const string OpsPrizePoolsManage = "dashboard.ops.prize_pools.manage";
@@ -278,7 +271,6 @@ public static class Capabilities
             OpsGrantCurrency,
             OpsGrantItem,
             OpsKickPlayer,
-            OpsManageVouchers,
             OpsBanAccount,
             OpsMutePlayer,
             OpsTradingLock,
@@ -296,8 +288,6 @@ public static class Capabilities
             CfhRead,
             ChatlogsRead,
             CatalogPurchasesRead,
-            TargetedOffersRead,
-            OpsTargetedOffersManage,
             QuestsRead,
             OpsQuestsManage,
             SongsRead,
@@ -306,8 +296,6 @@ public static class Capabilities
             OpsGiftWrappingsManage,
             FishingRead,
             OpsFishingManage,
-            PollsRead,
-            OpsPollsManage,
             PrizePoolsRead,
             OpsPrizePoolsManage,
             ConfigRead,

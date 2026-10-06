@@ -168,8 +168,6 @@ public sealed partial class InventoryGrain
 
         List<PetEntity> committedPets = [];
         List<BotEntity> committedBots = [];
-        bool buildersClubGranted = false;
-        string? buildersClubNotification = null;
 
         VortexDbContext dbCtx = await _dbCtxFactory.CreateDbContextAsync(ct).ConfigureAwait(true);
 
@@ -220,36 +218,6 @@ public sealed partial class InventoryGrain
 
             dbCtx.Pets.AddRange(committedPets);
             dbCtx.Bots.AddRange(committedBots);
-
-            // Builders Club time and furni ride the same transaction: a membership is goods too.
-            if (plan.BuildersClubDays > 0 || plan.BuildersClubFurni > 0)
-            {
-                int playerId = (int)this.GetPrimaryKeyLong();
-
-                PlayerSubscriptionEntity? existing = await dbCtx
-                    .PlayerSubscriptions.FirstOrDefaultAsync(
-                        s =>
-                            s.PlayerEntityId == playerId
-                            && s.SubscriptionType == SubscriptionType.BuildersClub,
-                        ct
-                    )
-                    .ConfigureAwait(true);
-
-                (PlayerSubscriptionEntity row, buildersClubNotification) = BuildersClubGrant.Apply(
-                    existing,
-                    playerId,
-                    plan.BuildersClubDays,
-                    plan.BuildersClubFurni,
-                    DateTime.UtcNow
-                );
-
-                if (existing is null)
-                {
-                    dbCtx.PlayerSubscriptions.Add(row);
-                }
-
-                buildersClubGranted = true;
-            }
 
             // THE PIVOT. Everything the offer promised that this grain owns is durable after this
             // line, and nothing past it may refund the purchase: the goods exist. What remains is
@@ -347,30 +315,6 @@ public sealed partial class InventoryGrain
             effectGrants,
             chatStyleGrants
         );
-
-        if (buildersClubGranted)
-        {
-            try
-            {
-                await _events
-                    .PublishAsync(
-                        new BuildersClubMembershipGrantedEvent(
-                            (PlayerId)this.GetPrimaryKeyLong(),
-                            buildersClubNotification
-                        ),
-                        CancellationToken.None
-                    )
-                    .ConfigureAwait(true);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(
-                    ex,
-                    "Builders Club was granted to player {PlayerId} but could not be announced.",
-                    this.GetPrimaryKeyLong()
-                );
-            }
-        }
     }
 
     /// <summary>
@@ -755,130 +699,6 @@ public sealed partial class InventoryGrain
 
         await GrantFurnitureDefinitionAsync(definitionId, extraData.GetJsonString(), ct)
             .ConfigureAwait(true);
-    }
-
-    public async Task<FurnitureItemSnapshot?> GrantSingleFurnitureIfUnderLimitAsync(
-        int definitionId,
-        string? extraData,
-        int furniLimit,
-        CancellationToken ct
-    )
-    {
-        ImmutableArray<FurnitureItemSnapshot> owned = await _furniModule
-            .GetAllItemSnapshotsAsync(ct)
-            .ConfigureAwait(true);
-
-        if (owned.Length >= furniLimit)
-        {
-            return null;
-        }
-
-        FurnitureDefinitionSnapshot def =
-            _furnitureDefinitionProvider.TryGetDefinition(definitionId)
-            ?? throw new VortexException(VortexErrorCodeEnum.FurnitureDefinitionNotFound);
-
-        FurnitureEntity entity = new()
-        {
-            PlayerEntityId = (int)this.GetPrimaryKeyLong(),
-            FurnitureDefinitionEntityId = def.Id,
-            ExtraData = extraData,
-            // This method exists for one caller, BuildersClubPlacementHelper, so the provenance is
-            // known here and nowhere later: the same definition can also be bought with credits in
-            // the Normal tree, and only the grant path can tell the two apart. It is what makes a
-            // room lockable once the subscription lapses.
-            IsBuildersClub = true,
-        };
-
-        VortexDbContext dbCtx = await _dbCtxFactory.CreateDbContextAsync(ct).ConfigureAwait(true);
-
-        try
-        {
-            dbCtx.Add(entity);
-            await dbCtx.SaveChangesAsync(ct).ConfigureAwait(true);
-        }
-        finally
-        {
-            await dbCtx.DisposeAsync().ConfigureAwait(true);
-        }
-
-        FurnitureItem item = new()
-        {
-            ItemId = entity.Id,
-            OwnerId = entity.PlayerEntityId,
-            OwnerName = string.Empty,
-            Definition = def,
-            ExtraData = new ExtraData(extraData ?? "{}"),
-            StuffData = _stuffDataFactory.CreateStuffData(StuffDataType.LegacyKey),
-        };
-
-        await AddFurnitureAsync(item, ct).ConfigureAwait(true);
-
-        return item.GetSnapshot();
-    }
-
-    public async Task GrantLtdFurnitureAsync(
-        int furniDefinitionId,
-        int serialNumber,
-        int seriesSize,
-        CancellationToken ct
-    )
-    {
-        FurnitureDefinitionSnapshot def =
-            _furnitureDefinitionProvider.TryGetDefinition(furniDefinitionId)
-            ?? throw new VortexException(VortexErrorCodeEnum.FurnitureDefinitionNotFound);
-
-        string extraData = $"{{\"serial\":{serialNumber},\"seriesSize\":{seriesSize}}}";
-
-        FurnitureEntity entity = new()
-        {
-            PlayerEntityId = (int)this.GetPrimaryKeyLong(),
-            FurnitureDefinitionEntityId = def.Id,
-            ExtraData = extraData,
-        };
-
-        VortexDbContext dbCtx = await _dbCtxFactory.CreateDbContextAsync(ct).ConfigureAwait(true);
-
-        try
-        {
-            dbCtx.Add(entity);
-            await dbCtx.SaveChangesAsync(ct).ConfigureAwait(true);
-
-            await AddFurnitureAsync(
-                    new FurnitureItem
-                    {
-                        ItemId = entity.Id,
-                        OwnerId = entity.PlayerEntityId,
-                        OwnerName = string.Empty,
-                        Definition = def,
-                        ExtraData = new ExtraData(extraData),
-                        StuffData = _stuffDataFactory.CreateStuffData(StuffDataType.LegacyKey),
-                    },
-                    ct
-                )
-                .ConfigureAwait(true);
-
-            await _events
-                .PublishAsync(
-                    new ItemCreatedEvent(
-                        entity.Id,
-                        entity.PlayerEntityId,
-                        JsonSerializer.Serialize(
-                            new
-                            {
-                                source = "ltd",
-                                serial = serialNumber,
-                                seriesSize,
-                            }
-                        )
-                    ),
-                    ct
-                )
-                .ConfigureAwait(true);
-        }
-        finally
-        {
-            await dbCtx.DisposeAsync().ConfigureAwait(true);
-        }
     }
 
     public Task<FurnitureItemSnapshot?> GetItemSnapshotAsync(

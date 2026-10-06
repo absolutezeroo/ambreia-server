@@ -93,14 +93,18 @@ public enum CommerceOperationKind
 {
     CatalogPurchase = 0,
     Gift = 1,
-    TargetedOffer = 2,
+
+    // 2 was the targeted offer purchase, removed in M0. Persisted: never reuse it.
+
     MarketplaceList = 3,
     MarketplaceCancel = 4,
     MarketplaceBuy = 5,
     MarketplaceRedeem = 6,
     RentableSpaceRent = 7,
     ClubPurchase = 8,
-    LtdRaffleEntry = 9,
+
+    // 9 was the LTD raffle entry, removed in M0. Persisted: never reuse it.
+
     RoomAdPurchase = 10,
     DailyTaskReward = 11,
 
@@ -169,9 +173,6 @@ public static class CommerceStepKeys
     /// <summary>Wrapping a purchased offer as a present for the recipient.</summary>
     public const string GIFT_WRAP = "gift-wrap";
 
-    /// <summary>The targeted offer's per-player purchase counter.</summary>
-    public const string TARGETED_COUNT = "targeted-count";
-
     /// <summary>Handing the bought item to the buyer, after the marketplace claim.</summary>
     public const string MARKETPLACE_DELIVER = "marketplace-deliver";
 
@@ -195,9 +196,6 @@ public static class CommerceStepKeys
 
     /// <summary>The club months, their badges and the events that go with them.</summary>
     public const string CLUB_MONTHS = "club-months";
-
-    /// <summary>The raffle entry row that makes a paid ticket a ticket.</summary>
-    public const string LTD_ENTRY = "ltd-entry";
 
     /// <summary>Writing the rental itself: who holds the space and until when.</summary>
     public const string RENTABLE_SPACE_GRANT = "rentable-space-grant";

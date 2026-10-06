@@ -188,38 +188,6 @@ public sealed class ShopEndpointTests
         response.StatusCode.Should().Be(HttpStatusCode.NotFound);
     }
 
-    [Fact]
-    public async Task RedeemingAVoucher_NeedsASession()
-    {
-        await using WebApiTestFactory factory = new();
-
-        HttpResponseMessage response = await factory.Client.PostAsJsonAsync(
-            "/api/user/shop/voucher",
-            new { code = "GOOD-CODE" }
-        );
-
-        response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
-    }
-
-    [Fact]
-    public async Task RedeemingAVoucher_ReportsTheGrainsRefusalCode()
-    {
-        await using WebApiTestFactory factory = new();
-        HttpClient client = factory.CreateAuthenticatedClient();
-
-        (await client.PostAsJsonAsync("/api/user/shop/voucher", new { code = "GOOD-CODE" }))
-            .StatusCode.Should()
-            .Be(HttpStatusCode.OK);
-
-        HttpResponseMessage refused = await client.PostAsJsonAsync(
-            "/api/user/shop/voucher",
-            new { code = "NOPE" }
-        );
-
-        refused.StatusCode.Should().Be(HttpStatusCode.BadRequest);
-        (await ReadJsonAsync(refused)).GetProperty("error").GetString().Should().Be("not_found");
-    }
-
     /// <summary>
     /// A POST whose body is exactly the string given, with no serializer in the way — which is the
     /// only way to assert that the webhook route hands the bytes on unchanged.

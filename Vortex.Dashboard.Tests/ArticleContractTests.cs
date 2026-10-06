@@ -22,9 +22,8 @@ namespace Vortex.Dashboard.Tests;
 /// </summary>
 /// <remarks>
 /// <para>
-/// Written before giving those responses explicit types, for the same reason as
-/// <see cref="PollContractTests" />: the contract the editor depends on exists only as the shape
-/// some anonymous literals happen to produce, and nothing declares or checks it.
+/// Written before giving those responses explicit types: the contract the editor depends on exists
+/// only as the shape some anonymous literals happen to produce, and nothing declares or checks it.
 /// </para>
 /// <para>
 /// The image browser is the interesting one. It answers three different shapes today — a refusal

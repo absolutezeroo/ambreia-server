@@ -16,6 +16,5 @@ public sealed record CatalogProductRow(
     string? ExtraParam,
     int Quantity,
     int UniqueSize,
-    int UniqueRemaining,
-    bool BuildersClubEligible
+    int UniqueRemaining
 );

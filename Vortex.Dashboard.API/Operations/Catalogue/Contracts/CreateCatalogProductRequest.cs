@@ -16,6 +16,5 @@ public sealed record CreateCatalogProductRequest(
     int Quantity,
     int UniqueSize,
     int UniqueRemaining,
-    bool BuildersClubEligible,
     string Reason
 ) : IReasonedRequest;

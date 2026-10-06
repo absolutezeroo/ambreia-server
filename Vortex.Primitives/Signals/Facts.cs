@@ -188,14 +188,6 @@ public static class Facts
         "Quantity"
     );
 
-    /// <summary>A poll's code. Picked, never typed: a poll nobody ran is a filter nobody satisfies.</summary>
-    public static readonly FactKey Poll = new(
-        RewardTrackFacts.Poll,
-        FactKind.Text,
-        "rewardTracks.fact_poll",
-        "Poll"
-    );
-
     /// <summary>A quiz's code.</summary>
     public static readonly FactKey Quiz = new(
         RewardTrackFacts.Quiz,
@@ -212,28 +204,12 @@ public static class Facts
         "Campaign"
     );
 
-    /// <summary>A voucher's code.</summary>
-    public static readonly FactKey Voucher = new(
-        RewardTrackFacts.Voucher,
-        FactKind.Text,
-        "rewardTracks.fact_voucher",
-        "Voucher"
-    );
-
     /// <summary>A club gift's product code.</summary>
     public static readonly FactKey ClubGift = new(
         RewardTrackFacts.ClubGift,
         FactKind.Text,
         "rewardTracks.fact_club_gift",
         "Club gift"
-    );
-
-    /// <summary>A targeted offer's identifier.</summary>
-    public static readonly FactKey TargetedOffer = new(
-        RewardTrackFacts.TargetedOffer,
-        FactKind.Text,
-        "rewardTracks.fact_targeted_offer",
-        "Targeted offer"
     );
 
     /// <summary>A vault income category.</summary>
@@ -298,14 +274,6 @@ public static class Facts
         FactKind.Number,
         "rewardTracks.fact_months",
         "Months"
-    );
-
-    /// <summary>Serial number in a limited series.</summary>
-    public static readonly FactKey Serial = new(
-        RewardTrackFacts.Serial,
-        FactKind.Number,
-        "rewardTracks.fact_serial",
-        "Serial number"
     );
 
     /// <summary>An avatar figure string.</summary>
@@ -459,20 +427,16 @@ public static class Facts
         Thread,
         Price,
         Quantity,
-        Poll,
         Quiz,
         Campaign,
-        Voucher,
         ClubGift,
         VaultCategory,
-        TargetedOffer,
         PetType,
         PetCommand,
         GivenName,
         Effect,
         DurationSeconds,
         Months,
-        Serial,
         Figure,
         FigureSet,
         Relation,

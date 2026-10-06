@@ -45,15 +45,6 @@ public class PlayerSubscriptionEntity : VortexEntity
     [Column("hc_badge_granted")]
     public bool HcBadgeGranted { get; set; } = false;
 
-    /// <summary>Builders Club: furni bought as add-ons, on top of the tier's limit.</summary>
-    [Column("bonus_furni_limit")]
-    public int BonusFurniLimit { get; set; } = 0;
-
-    /// <summary>Builders Club: every day of membership ever granted. Minus what is left, it is how
-    /// long the player has been a member, gaps between periods excluded.</summary>
-    [Column("total_days")]
-    public int TotalDays { get; set; } = 0;
-
     [ForeignKey(nameof(PlayerEntityId))]
     public required PlayerEntity PlayerEntity { get; set; }
 }

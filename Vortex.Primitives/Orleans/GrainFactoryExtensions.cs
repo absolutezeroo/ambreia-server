@@ -10,7 +10,6 @@ using Vortex.Primitives.Marketplace.Grains;
 using Vortex.Primitives.Moderation.Grains;
 using Vortex.Primitives.Players;
 using Vortex.Primitives.Players.Grains;
-using Vortex.Primitives.Polls.Grains;
 using Vortex.Primitives.Prizes.Grains;
 using Vortex.Primitives.Quests.Grains;
 using Vortex.Primitives.Rooms;
@@ -167,12 +166,6 @@ public static class GrainFactoryExtensions
     public static IMessengerGrain GetMessengerGrain(this IGrainFactory factory, long playerId) =>
         factory.GetGrain<IMessengerGrain>(playerId);
 
-    public static ILtdRaffleGrain GetLtdRaffleGrain(this IGrainFactory factory, int seriesId) =>
-        factory.GetGrain<ILtdRaffleGrain>(seriesId);
-
-    public static IVoucherGrain GetVoucherGrain(this IGrainFactory factory, string code) =>
-        factory.GetGrain<IVoucherGrain>(code.Trim().ToUpperInvariant());
-
     public static IGroupGrain GetGroupGrain(this IGrainFactory factory, int groupId) =>
         factory.GetGrain<IGroupGrain>(groupId);
 
@@ -262,17 +255,6 @@ public static class GrainFactoryExtensions
     public static ICommunityGoalGrain GetCommunityGoalGrain(this IGrainFactory factory) =>
         factory.GetGrain<ICommunityGoalGrain>(SingletonGrainId.GLOBAL);
 
-    public static IPollManagerGrain GetPollManagerGrain(this IGrainFactory factory) =>
-        factory.GetGrain<IPollManagerGrain>(SingletonGrainId.GLOBAL);
-
-    public static IPlayerPollGrain GetPlayerPollGrain(
-        this IGrainFactory factory,
-        PlayerId playerId
-    ) => factory.GetGrain<IPlayerPollGrain>(playerId.Value);
-
-    public static IPlayerPollGrain GetPlayerPollGrain(this IGrainFactory factory, long playerId) =>
-        factory.GetGrain<IPlayerPollGrain>(playerId);
-
     public static IPrizePoolManagerGrain GetPrizePoolManagerGrain(this IGrainFactory factory) =>
         factory.GetGrain<IPrizePoolManagerGrain>(SingletonGrainId.GLOBAL);
 
@@ -298,15 +280,6 @@ public static class GrainFactoryExtensions
         this IGrainFactory factory,
         long playerId
     ) => factory.GetGrain<IPlayerClothingGrain>(playerId);
-
-    public static ITargetedOfferManagerGrain GetTargetedOfferManagerGrain(
-        this IGrainFactory factory
-    ) => factory.GetGrain<ITargetedOfferManagerGrain>(SingletonGrainId.GLOBAL);
-
-    public static IPlayerTargetedOfferGrain GetPlayerTargetedOfferGrain(
-        this IGrainFactory factory,
-        long playerId
-    ) => factory.GetGrain<IPlayerTargetedOfferGrain>(playerId);
 
     public static IFishingDefinitionsGrain GetFishingDefinitionsGrain(this IGrainFactory factory) =>
         factory.GetGrain<IFishingDefinitionsGrain>(SingletonGrainId.GLOBAL);

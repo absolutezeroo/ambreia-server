@@ -1,13 +1,7 @@
-using System;
-using System.Collections.Immutable;
 using FluentAssertions;
 using Microsoft.Extensions.Options;
-using Vortex.Primitives.Moderation;
-using Vortex.Primitives.Networking;
 using Vortex.Primitives.Packets;
 using Vortex.Protocol.Messages.Incoming.Moderator;
-using Vortex.Protocol.Messages.Incoming.Userclassification;
-using Vortex.Protocol.Messages.Outgoing.Userclassification;
 using Vortex.Revisions.Configuration;
 using Xunit;
 using Rev = Vortex.Revisions.Revision20260701.Revision20260701;
@@ -15,16 +9,13 @@ using Rev = Vortex.Revisions.Revision20260701.Revision20260701;
 namespace Vortex.Revisions.Tests.Moderation;
 
 /// <summary>
-///     Wire contract for the two mod-tool features that had no server side at all: the room tool's
-///     caution/message broadcast, and the staff <c>:uc</c> user-classification commands. Both were
-///     decoded from the WIN63-202607011411 client rather than guessed, so these tests pin the
-///     layouts that reading was based on.
+///     Wire contract for the room tool's caution/message broadcast, a mod-tool feature that had no
+///     server side at all. It was decoded from the WIN63-202607011411 client rather than guessed, so
+///     these tests pin the layout that reading was based on.
 /// </summary>
 public sealed class ModerationWireAdditionsTests
 {
     private const int ModToolRoomAlertMessageEvent = 2735;
-    private const int RoomUsersClassificationMessageEvent = 157;
-    private const int PeerUsersClassificationMessageEvent = 628;
 
     private static readonly Rev Revision = new(Options.Create(new ProtocolLimitsConfig()));
 
@@ -66,81 +57,8 @@ public sealed class ModerationWireAdditionsTests
     }
 
     [Fact]
-    public void RoomUsersClassification_ReadsTheClassificationKeyword()
-    {
-        // _SafeCls_3149(param1:String) -- ":anew" sends the literal "new".
-        ServerPacket sp = new(RoomUsersClassificationMessageEvent);
-        sp.WriteString("new");
-
-        RoomUsersClassificationMessage message = (RoomUsersClassificationMessage)
-            Revision
-                .Parsers[RoomUsersClassificationMessageEvent]
-                .Parse(new ClientPacket(RoomUsersClassificationMessageEvent, sp.ToArray()));
-
-        message.Classification.Should().Be("new");
-    }
-
-    [Fact]
-    public void PeerUsersClassification_ReadsTheClassificationKeyword()
-    {
-        ServerPacket sp = new(PeerUsersClassificationMessageEvent);
-        sp.WriteString("paying");
-
-        PeerUsersClassificationMessage message = (PeerUsersClassificationMessage)
-            Revision
-                .Parsers[PeerUsersClassificationMessageEvent]
-                .Parse(new ClientPacket(PeerUsersClassificationMessageEvent, sp.ToArray()));
-
-        message.Classification.Should().Be("paying");
-    }
-
-    [Fact]
-    public void UserClassification_SerializesCountThenIdNameLabelPerRow()
-    {
-        // _SafeCls_3183.parse builds two id-keyed maps, so every row is (int, string, string).
-        UserClassificationMessageComposer composer = new()
-        {
-            Entries =
-            [
-                new UserClassificationEntry(11, "Alice", UserClassifications.New),
-                new UserClassificationEntry(12, "Bob", UserClassifications.Paying),
-            ],
-        };
-
-        ClientPacket body = SerializeBody(composer);
-
-        body.PopInt().Should().Be(2);
-
-        body.PopInt().Should().Be(11);
-        body.PopString().Should().Be("Alice");
-        body.PopString().Should().Be("new");
-
-        body.PopInt().Should().Be(12);
-        body.PopString().Should().Be("Bob");
-        body.PopString().Should().Be("paying");
-
-        body.Remaining.Should().Be(0);
-    }
-
-    [Fact]
-    public void UserClassification_HasARegisteredSerializer()
-    {
-        // A written-but-unmapped serializer is this repo's most-repeated moderation bug: the packet
-        // is dropped by PackageEncoder with nothing but a counter to show for it.
-        Revision.Serializers.Should().ContainKey(typeof(UserClassificationMessageComposer));
-    }
-
-    [Fact]
     public void RoomAlert_HasARegisteredParser()
     {
         Revision.Parsers.Should().ContainKey(ModToolRoomAlertMessageEvent);
-    }
-
-    private static ClientPacket SerializeBody(IComposer composer)
-    {
-        byte[] bytes = Revision.Serializers[composer.GetType()].Serialize(composer).ToArray();
-        byte[] body = new byte[bytes.Length - 6];
-        Array.Copy(bytes, 6, body, 0, body.Length);
-        return new ClientPacket(0, body);
     }
 }

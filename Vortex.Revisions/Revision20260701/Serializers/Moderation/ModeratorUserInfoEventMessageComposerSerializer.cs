@@ -28,7 +28,8 @@ internal class ModeratorUserInfoEventMessageComposerSerializer(int header)
             .WriteInteger(message.IdentityId)
             .WriteInteger(message.IdentityRelatedBanCount)
             .WriteString(message.PrimaryEmailAddress)
-            .WriteString(message.UserClassification);
+            // The user classification, frozen: the feature was removed in M0, the field stays.
+            .WriteString(string.Empty);
 
         // Optional tail: the client reads these two only while bytes remain, so they go out as a
         // pair or not at all.

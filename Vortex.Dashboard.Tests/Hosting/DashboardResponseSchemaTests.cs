@@ -49,10 +49,6 @@ public sealed class DashboardResponseSchemaTests
     /// <summary>Route to the type it must publish. One entry per converted read.</summary>
     private static readonly (string Route, Type Response)[] Declared =
     [
-        ("/api/v1/polls", typeof(PollListResponse)),
-        ("/api/v1/polls/question-types", typeof(PollQuestionTypeOptions)),
-        ("/api/v1/polls/{pollId:int}", typeof(PollDetail)),
-        ("/api/v1/polls/{pollId:int}/results", typeof(PollResults)),
         ("/api/v1/articles", typeof(ArticleListResponse)),
         ("/api/v1/articles/meta", typeof(ArticleFormMeta)),
         ("/api/v1/articles/images", typeof(ArticleImageBrowse)),
@@ -105,7 +101,6 @@ public sealed class DashboardResponseSchemaTests
         ),
         ("/api/v1/operations/console/commands", typeof(IReadOnlyList<ConsoleCommandInfo>)),
         ("/api/v1/operations/cfh/queue", typeof(ImmutableArray<CfhIssueQueueEntrySnapshot>)),
-        ("/api/v1/operations/vouchers/{code}", typeof(VoucherSnapshot)),
         ("/api/v1/achievements", typeof(AchievementListResponse)),
         ("/api/v1/achievements/stats", typeof(AchievementStats)),
         ("/api/v1/achievements/resolutions", typeof(AchievementResolutions)),
@@ -118,11 +113,6 @@ public sealed class DashboardResponseSchemaTests
         ("/api/v1/player-rewards/{playerId:int}", typeof(PlayerRewardDetail)),
         ("/api/v1/staff", typeof(StaffOverview)),
         ("/api/v1/staff/accounts", typeof(StaffAccountSearch)),
-        ("/api/v1/targeted-offers", typeof(TargetedOfferList)),
-        ("/api/v1/targeted-offers/stats", typeof(TargetedOfferStats)),
-        ("/api/v1/targeted-offers/form-meta", typeof(TargetedOfferFormMeta)),
-        ("/api/v1/targeted-offers/images", typeof(TargetedOfferImageList)),
-        ("/api/v1/targeted-offers/{offerId:int}", typeof(TargetedOfferDetail)),
         ("/api/v1/config", typeof(ConfigList)),
         ("/api/v1/navigator/config", typeof(NavigatorSetup)),
         ("/api/v1/monitoring/inventory", typeof(DashboardInventory)),
@@ -165,14 +155,10 @@ public sealed class DashboardResponseSchemaTests
     [Fact]
     public void ALookupThatCanAnswerNothingSaysSoInTheDocument()
     {
-        // Both poll lookups return 404 for an id that is nobody. A generated client that does not
-        // know this treats the 404 body as the poll itself.
+        // The article lookup returns 404 for an id that is nobody. A generated client that does not
+        // know this treats the 404 body as the article itself.
         IReadOnlyDictionary<string, int[]> statuses = PublishedStatusCodes();
 
-        statuses["/api/v1/polls/{pollId:int}"].Should().Contain(StatusCodes.Status404NotFound);
-        statuses["/api/v1/polls/{pollId:int}/results"]
-            .Should()
-            .Contain(StatusCodes.Status404NotFound);
         statuses["/api/v1/articles/{articleId:int}"]
             .Should()
             .Contain(StatusCodes.Status404NotFound);

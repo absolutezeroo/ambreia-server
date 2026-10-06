@@ -6,9 +6,6 @@ public enum CatalogPageLayout
 {
     Default3x3,
     BadgeDisplay,
-    BuildersClubAddons,
-    BuildersClubFrontpage,
-    BuildersClubLoyalty,
     ClubBuy,
     ClubGifts,
     Frontpage4,
@@ -46,9 +43,6 @@ public static class CatalogPageLayoutExtensions
     {
         [CatalogPageLayout.Default3x3] = "default_3x3",
         [CatalogPageLayout.BadgeDisplay] = "badge_display",
-        [CatalogPageLayout.BuildersClubAddons] = "builders_club_addons",
-        [CatalogPageLayout.BuildersClubFrontpage] = "builders_club_frontpage",
-        [CatalogPageLayout.BuildersClubLoyalty] = "builders_club_loyalty",
         [CatalogPageLayout.ClubBuy] = "club_buy",
         [CatalogPageLayout.ClubGifts] = "club_gifts",
         [CatalogPageLayout.Frontpage4] = "frontpage4",

@@ -5,7 +5,7 @@ namespace Vortex.Primitives.Catalog.Enums;
 public enum CatalogType
 {
     Normal = 0,
-    BuildersClub = 1,
+    // 1 was the Builders Club catalog, removed in M0. Not renumbered: the value is persisted.
 }
 
 public static class CatalogTypeExtensions
@@ -14,7 +14,6 @@ public static class CatalogTypeExtensions
         catalogType switch
         {
             CatalogType.Normal => "NORMAL",
-            CatalogType.BuildersClub => "BUILDERS_CLUB",
             _ => throw new ArgumentOutOfRangeException(nameof(catalogType), catalogType, null),
         };
 
@@ -22,7 +21,6 @@ public static class CatalogTypeExtensions
         catalogType switch
         {
             "NORMAL" => CatalogType.Normal,
-            "BUILDERS_CLUB" => CatalogType.BuildersClub,
             _ => throw new ArgumentOutOfRangeException(nameof(catalogType), catalogType, null),
         };
 }

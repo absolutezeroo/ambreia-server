@@ -399,20 +399,21 @@ export interface BotTotals {
   roomsWithBots: number;
 }
 
-export interface BuildersClubTierRow {
-  id: number;
-  level: number;
-  furniLimit: number;
-}
-
 export interface CapabilityGroup {
   area: string;
   capabilities: string[];
 }
 
+export interface CatalogCurrency {
+  id: number;
+  name: string | null;
+  type: string;
+  activityPointType: number | null;
+}
+
 export interface CatalogCurrencyList {
   count: number;
-  items: TargetedOfferCurrency[];
+  items: CatalogCurrency[];
 }
 
 export interface CatalogIconTemplate {
@@ -518,7 +519,6 @@ export interface CatalogProductRow {
   quantity: number;
   uniqueSize: number;
   uniqueRemaining: number;
-  buildersClubEligible: boolean;
 }
 
 export interface CatalogProductSummary {
@@ -530,7 +530,6 @@ export interface CatalogProductSummary {
   quantity: number;
   uniqueSize: number;
   uniqueRemaining: number;
-  buildersClubEligible: boolean;
 }
 
 export interface CatalogPurchasePoint {
@@ -935,21 +934,16 @@ export interface EconomyCurrencyTotals {
 
 export interface EconomyExtras {
   totals: EconomyExtrasTotals;
-  ltdSeries: LtdSeriesRow[];
   rentableSpaces: RentableSpaceRow[];
   rentableTerms: RentableSpaceTermRow[];
   currencies: CurrencyTypeRow[];
-  buildersClub: BuildersClubTierRow[];
 }
 
 export interface EconomyExtrasTotals {
-  ltdSeries: number;
-  runningSeries: number;
   rentableSpaces: number;
   rentedNow: number;
   rentableTerms: number;
   currencies: number;
-  buildersClubTiers: number;
 }
 
 export interface EconomyLedgerEntry {
@@ -1686,30 +1680,6 @@ export interface LiveRoomSnapshot {
   packetsPerMinute: number;
 }
 
-export interface LtdRaffleResultCount {
-  result: string;
-  count: number;
-}
-
-export interface LtdSeriesRow {
-  id: number;
-  productId: number;
-  productName: string | null;
-  iconUrl: string | null;
-  totalQuantity: number;
-  remainingQuantity: number;
-  sold: number;
-  costCredits: number;
-  raffleWindowSeconds: number;
-  isActive: boolean;
-  hasRaffleFinished: boolean;
-  startsAt: string | null;
-  endsAt: string | null;
-  running: boolean;
-  pendingEntries: number;
-  entriesByResult: LtdRaffleResultCount[];
-}
-
 export interface MarketplaceSalePoint {
   bucket: string;
   label: string;
@@ -2145,137 +2115,6 @@ export interface PlayerRewardTotals {
   chatStyleCount: number;
   wardrobeOutfits: number;
   wardrobeUsers: number;
-}
-
-export interface PollChoiceDetail {
-  id: number;
-  value: string;
-  choiceText: string;
-  choiceType: number;
-  sortOrder: number;
-}
-
-export interface PollDetail {
-  id: number;
-  code: string;
-  pollType: string;
-  headline: string;
-  summary: string;
-  startMessage: string;
-  endMessage: string;
-  npsPoll: boolean;
-  enabled: boolean;
-  offerOnRoomEntry: boolean;
-  roomId: number | null;
-  roomName: string | null;
-  sortOrder: number;
-  questions: PollQuestionNode[];
-}
-
-export interface PollFreeTextAnswer {
-  playerId: number;
-  playerName: string | null;
-  avatarUrl: string | null;
-  answer: string;
-  answeredAt: string;
-}
-
-export interface PollFunnel {
-  offered: number;
-  pending: number;
-  started: number;
-  completed: number;
-  rejected: number;
-  completionRate: number;
-  rejectionRate: number;
-}
-
-export interface PollListItem {
-  id: number;
-  code: string;
-  pollType: string;
-  headline: string;
-  summary: string;
-  startMessage: string;
-  endMessage: string;
-  npsPoll: boolean;
-  enabled: boolean;
-  offerOnRoomEntry: boolean;
-  roomId: number | null;
-  roomName: string | null;
-  roomMissing: boolean;
-  sortOrder: number;
-  rootQuestionCount: number;
-  followUpCount: number;
-  offeredCount: number;
-  startedCount: number;
-  completedCount: number;
-  rejectedCount: number;
-  completionRate: number;
-  offerable: boolean;
-}
-
-export interface PollListResponse {
-  count: number;
-  items: PollListItem[];
-}
-
-export interface PollQuestionNode {
-  id: number;
-  sortOrder: number;
-  questionType: number;
-  questionTypeName: string;
-  questionText: string;
-  questionCategory: number;
-  questionAnswerType: number;
-  answerCount: number;
-  choices: PollChoiceDetail[];
-  children: PollQuestionNode[];
-}
-
-export interface PollQuestionResult {
-  id: number;
-  questionText: string;
-  questionType: number;
-  questionTypeName: string;
-  isFollowUp: boolean;
-  parentQuestionId: number | null;
-  questionCategory: number;
-  respondents: number;
-  answerCount: number;
-  tally: PollTallyEntry[];
-  freeText: PollFreeTextAnswer[];
-  freeTextTruncated: boolean;
-}
-
-export interface PollQuestionTypeOption {
-  id: number;
-  name: string;
-  supported: boolean;
-  takesChoices: boolean;
-}
-
-export interface PollQuestionTypeOptions {
-  count: number;
-  items: PollQuestionTypeOption[];
-}
-
-export interface PollResults {
-  id: number;
-  code: string;
-  headline: string;
-  npsPoll: boolean;
-  funnel: PollFunnel;
-  questions: PollQuestionResult[];
-}
-
-export interface PollTallyEntry {
-  value: string;
-  text: string;
-  choiceType: number;
-  count: number;
-  share: number;
-  retired: boolean;
 }
 
 export interface PrizeEntryDraws {
@@ -2875,117 +2714,6 @@ export interface StaffTotals {
   activeBans: number;
 }
 
-export interface TargetedOfferCurrency {
-  id: number;
-  name: string | null;
-  type: string;
-  activityPointType: number | null;
-}
-
-export interface TargetedOfferDetail {
-  id: number;
-  identifier: string;
-  offerType: number;
-  title: string;
-  description: string;
-  imageUrl: string;
-  iconImageUrl: string;
-  productCode: string;
-  priceInCredits: number;
-  priceInActivityPoints: number;
-  activityPointType: number;
-  purchaseLimit: number;
-  expiresAt: string | null;
-  expired: boolean;
-  active: boolean;
-  sortOrder: number;
-  buyerCount: number;
-  totalPurchases: number;
-  products: TargetedOfferProduct[];
-}
-
-export interface TargetedOfferFormMeta {
-  imageTemplate: string | null;
-  currencyTypes: TargetedOfferCurrency[];
-}
-
-export interface TargetedOfferImage {
-  file: string;
-  url: string;
-  thumbUrl: string;
-}
-
-export interface TargetedOfferImageList {
-  count: number;
-  items: TargetedOfferImage[];
-}
-
-export interface TargetedOfferList {
-  count: number;
-  items: TargetedOfferRow[];
-}
-
-export interface TargetedOfferPoint {
-  bucket: string;
-  label: string;
-  purchaseCount: number;
-  creditsSpent: number;
-}
-
-export interface TargetedOfferProduct {
-  id: number;
-  productCode: string;
-  furnitureDefinitionEntityId: number | null;
-  furnitureName: string | null;
-  furnitureIconUrl: string | null;
-  quantity: number;
-}
-
-export interface TargetedOfferRow {
-  id: number;
-  identifier: string;
-  offerType: number;
-  title: string;
-  imageUrl: string;
-  iconImageUrl: string;
-  productCode: string;
-  priceInCredits: number;
-  priceInActivityPoints: number;
-  activityPointType: number;
-  purchaseLimit: number;
-  expiresAt: string | null;
-  expired: boolean;
-  active: boolean;
-  sortOrder: number;
-  productCount: number;
-  buyerCount: number;
-  totalPurchases: number;
-}
-
-export interface TargetedOfferSales {
-  offerId: number;
-  offerName: string;
-  furniIconUrl: string | null;
-  purchaseCount: number;
-  quantity: number;
-  creditsSpent: number;
-  activityPointsSpent: number;
-}
-
-export interface TargetedOfferStats {
-  window: ReportWindow;
-  totals: TargetedOfferTotals;
-  timeline: TargetedOfferPoint[];
-  topOffers: TargetedOfferSales[];
-}
-
-export interface TargetedOfferTotals {
-  purchaseCount: number;
-  totalCreditsSpent: number;
-  totalActivityPointsSpent: number;
-  totalQuantity: number;
-}
-
 export interface TopErrorGroupSnapshot {
   fingerprint: string;
   source: string;
@@ -3013,18 +2741,6 @@ export interface UntouchedAchievement {
   category: string;
   triggered: boolean;
   levels: number;
-}
-
-export interface VoucherSnapshot {
-  exists: boolean;
-  code: string;
-  isActive: boolean;
-  currencyType: number;
-  activityPointType: number | null;
-  amount: number;
-  maxRedemptions: number | null;
-  redemptionCount: number;
-  expiresAt: string | null;
 }
 
 export interface WordFilterAction {

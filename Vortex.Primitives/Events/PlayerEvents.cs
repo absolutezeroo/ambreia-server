@@ -187,15 +187,6 @@ public sealed record AvatarEffectActivatedEvent(
     int DurationSeconds
 ) : IEvent;
 
-/// <summary>
-/// A survey was finished. Deliberately the completion and not each answer: a survey is answered one
-/// question at a time, and a record per question would drown the timeline it belongs to.
-/// </summary>
-public sealed record PollCompletedEvent(PlayerId PlayerId, int PollId, string PollCode) : IEvent;
-
-/// <summary>A survey was declined before it was started.</summary>
-public sealed record PollRejectedEvent(PlayerId PlayerId, int PollId) : IEvent;
-
 /// <summary>A completed daily task paid out. Only once per task: a second click never reaches here.</summary>
 public sealed record DailyTaskClaimedEvent(PlayerId PlayerId, int TaskId) : IEvent;
 
@@ -234,13 +225,3 @@ public sealed record ClothingRedeemedEvent(PlayerId PlayerId, int ItemId) : IEve
 
 /// <summary>A player answered a quiz.</summary>
 public sealed record QuizSubmittedEvent(PlayerId PlayerId, string QuizCode) : IEvent;
-
-/// <summary>
-/// Builders Club days or furni were bought, and the subscription row is already saved.
-/// </summary>
-/// <param name="Notification">
-/// The client's notification type for it (<c>builders_club.membership_made</c>, ...), or null when
-/// only furni was bought.
-/// </param>
-public sealed record BuildersClubMembershipGrantedEvent(PlayerId PlayerId, string? Notification)
-    : IEvent;

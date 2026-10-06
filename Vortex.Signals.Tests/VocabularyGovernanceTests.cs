@@ -60,13 +60,13 @@ public sealed class VocabularyGovernanceTests
         // Removing a key is normally forbidden by this very list; it is safe exactly once, because
         // the actions that carried it were added in the same unreleased change and no content can
         // name them yet. The seven keys below replace it, and none of them may ever be removed.
-        "poll",
+        // "poll" was here, removed with polls (M0).
         "quiz",
         "campaign",
-        "voucher",
+        // "voucher" was here, removed with vouchers (M0).
         "club_gift",
         "vault_category",
-        "targeted_offer",
+        // "targeted_offer" was here, removed with targeted offers (M0).
         "pet_type",
         "pet_command",
         "relation",
@@ -75,7 +75,7 @@ public sealed class VocabularyGovernanceTests
         "seconds",
         // "colour" was here: only the mystery box emitted it, and the RPG fork (M0) removed the box.
         "months",
-        "serial",
+        // "serial" was here, removed with LTD raffles (M0).
         "figure",
         "figure_set",
         "section",
@@ -125,7 +125,7 @@ public sealed class VocabularyGovernanceTests
         "earn_badge",
         "accept_quest",
         "activate_effect",
-        "complete_poll",
+        // "complete_poll" was here, removed with polls (M0).
         "submit_quiz",
         "claim_daily_task",
         "save_outfit",
@@ -147,10 +147,8 @@ public sealed class VocabularyGovernanceTests
         "open_present",
         // "open_mystery_box" and "open_mystery_trophy" were here, removed with the mystery box (M0).
         "buy_gift",
-        "buy_targeted_offer",
-        "enter_raffle",
-        "win_raffle",
-        "redeem_voucher",
+        // "buy_targeted_offer", "enter_raffle", "win_raffle" and "redeem_voucher" were here, removed
+        // with targeted offers, LTD raffles and vouchers (M0).
         "claim_vault_income",
         "respect_pet",
         "pet_respected",

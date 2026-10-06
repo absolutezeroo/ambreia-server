@@ -272,22 +272,6 @@ public sealed class CatalogFulfillmentPlannerTests
             .BeEmpty();
     }
 
-    /// <summary>Membership time and add-ons sum over the offer and multiply like furniture.</summary>
-    [Fact]
-    public void BuildersClubProducts_SumTheirAmountTimesTheQuantity()
-    {
-        FulfillmentPlan plan = Plan(
-            quantity: 2,
-            CatalogOffers.Product(1, ProductType.BuildersClubDays, extraParam: "14"),
-            CatalogOffers.Product(2, ProductType.BuildersClubFurni, extraParam: "45"),
-            CatalogOffers.Product(3, ProductType.BuildersClubFurni, extraParam: "oops")
-        );
-
-        plan.BuildersClubDays.Should().Be(28);
-        plan.BuildersClubFurni.Should().Be(90);
-        plan.IsEmpty.Should().BeFalse();
-    }
-
     [Fact]
     public void AnOfferOfProductTypesNothingCanGrant_PlansNothing()
     {

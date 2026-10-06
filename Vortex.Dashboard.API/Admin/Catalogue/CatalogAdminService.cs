@@ -18,23 +18,17 @@ namespace Vortex.Dashboard.API.Admin.Catalogue;
 
 /// <summary>
 /// CRUD for catalog_pages/catalog_offers/catalog_products. Not a grain — catalog rows aren't
-/// grain-owned and there is no per-item concurrency need the way <c>VoucherGrain</c> has, so a plain
-/// singleton opening a short-lived <see cref="VortexDbContext"/> per call is enough.
+/// grain-owned, so a plain singleton opening a short-lived <see cref="VortexDbContext"/> per call is
+/// enough.
 ///
 /// The live catalog clients see is an immutable in-memory snapshot rebuilt only via
-/// <c>ICatalogSnapshotProvider{TTag}.ReloadAsync</c> — every write here reloads BOTH the Normal and
-/// Builders Club providers afterwards, unconditionally, rather than trying to infer which one the
-/// change belongs to. This is deliberately simple and safe: a page's own CatalogType decides which
-/// tree it is in, but working that out correctly for every one of the 6 write paths (including
-/// products, which are two hops removed from CatalogType) is exactly the kind of live/DB sync bug
-/// this codebase has already been bitten by once (see AGENTS.md). Reload is cheap (full snapshot
-/// rebuild, not per-row) and writes here are a low-frequency admin action, so reloading both is not
-/// a meaningful cost.
+/// <c>ICatalogSnapshotProvider{TTag}.ReloadAsync</c> — every write here reloads it afterwards,
+/// unconditionally. Reload is cheap (full snapshot rebuild, not per-row) and writes here are a
+/// low-frequency admin action.
 /// </summary>
 internal sealed class CatalogAdminService(
     IDbContextFactory<VortexDbContext> dbContextFactory,
     ICatalogSnapshotProvider<NormalCatalog> normalProvider,
-    ICatalogSnapshotProvider<BuildersClubCatalog> buildersClubProvider,
     ILogger<CatalogAdminService> logger
 ) : ICatalogAdminService
 {
@@ -81,7 +75,7 @@ internal sealed class CatalogAdminService(
 
         db.CatalogPages.Add(entity);
         await db.SaveChangesAsync(ct).ConfigureAwait(false);
-        await ReloadBothAsync(ct).ConfigureAwait(false);
+        await ReloadAsync(ct).ConfigureAwait(false);
 
         return CatalogAdminResult.Ok(entity.Id);
     }
@@ -139,7 +133,7 @@ internal sealed class CatalogAdminService(
         entity.Visible = spec.Visible;
 
         await db.SaveChangesAsync(ct).ConfigureAwait(false);
-        await ReloadBothAsync(ct).ConfigureAwait(false);
+        await ReloadAsync(ct).ConfigureAwait(false);
 
         return CatalogAdminResult.Ok(entity.Id);
     }
@@ -193,7 +187,7 @@ internal sealed class CatalogAdminService(
 
         db.CatalogPages.Remove(entity);
         await db.SaveChangesAsync(ct).ConfigureAwait(false);
-        await ReloadBothAsync(ct).ConfigureAwait(false);
+        await ReloadAsync(ct).ConfigureAwait(false);
 
         return CatalogAdminResult.Ok(pageId);
     }
@@ -257,7 +251,7 @@ internal sealed class CatalogAdminService(
 
         db.CatalogOffers.Add(entity);
         await db.SaveChangesAsync(ct).ConfigureAwait(false);
-        await ReloadBothAsync(ct).ConfigureAwait(false);
+        await ReloadAsync(ct).ConfigureAwait(false);
 
         return CatalogAdminResult.Ok(entity.Id);
     }
@@ -297,7 +291,7 @@ internal sealed class CatalogAdminService(
         entity.Visible = spec.Visible;
 
         await db.SaveChangesAsync(ct).ConfigureAwait(false);
-        await ReloadBothAsync(ct).ConfigureAwait(false);
+        await ReloadAsync(ct).ConfigureAwait(false);
 
         return CatalogAdminResult.Ok(entity.Id);
     }
@@ -328,7 +322,7 @@ internal sealed class CatalogAdminService(
 
         db.CatalogOffers.Remove(entity);
         await db.SaveChangesAsync(ct).ConfigureAwait(false);
-        await ReloadBothAsync(ct).ConfigureAwait(false);
+        await ReloadAsync(ct).ConfigureAwait(false);
 
         return CatalogAdminResult.Ok(offerId);
     }
@@ -374,12 +368,11 @@ internal sealed class CatalogAdminService(
             Quantity = spec.Quantity,
             UniqueSize = spec.UniqueSize,
             UniqueRemaining = spec.UniqueRemaining,
-            BuildersClubEligible = spec.BuildersClubEligible,
         };
 
         db.CatalogProducts.Add(entity);
         await db.SaveChangesAsync(ct).ConfigureAwait(false);
-        await ReloadBothAsync(ct).ConfigureAwait(false);
+        await ReloadAsync(ct).ConfigureAwait(false);
 
         return CatalogAdminResult.Ok(entity.Id);
     }
@@ -422,10 +415,9 @@ internal sealed class CatalogAdminService(
         entity.Quantity = spec.Quantity;
         entity.UniqueSize = spec.UniqueSize;
         entity.UniqueRemaining = spec.UniqueRemaining;
-        entity.BuildersClubEligible = spec.BuildersClubEligible;
 
         await db.SaveChangesAsync(ct).ConfigureAwait(false);
-        await ReloadBothAsync(ct).ConfigureAwait(false);
+        await ReloadAsync(ct).ConfigureAwait(false);
 
         return CatalogAdminResult.Ok(entity.Id);
     }
@@ -447,17 +439,16 @@ internal sealed class CatalogAdminService(
 
         db.CatalogProducts.Remove(entity);
         await db.SaveChangesAsync(ct).ConfigureAwait(false);
-        await ReloadBothAsync(ct).ConfigureAwait(false);
+        await ReloadAsync(ct).ConfigureAwait(false);
 
         return CatalogAdminResult.Ok(productId);
     }
 
-    private async Task ReloadBothAsync(CancellationToken ct)
+    private async Task ReloadAsync(CancellationToken ct)
     {
         try
         {
             await normalProvider.ReloadAsync(ct).ConfigureAwait(false);
-            await buildersClubProvider.ReloadAsync(ct).ConfigureAwait(false);
         }
         catch (Exception ex)
         {

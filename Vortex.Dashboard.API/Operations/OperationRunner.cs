@@ -100,7 +100,7 @@ internal sealed partial class OperationRunner(
         }
         catch (InvalidOperationException ex) when (IsDomainCode(ex.Message))
         {
-            // Expected domain-validation rejection (e.g. duplicate voucher code) rather than an
+            // Expected domain-validation rejection (e.g. duplicate catalog code) rather than an
             // infrastructure fault — logged at a lower severity and the reason is surfaced to the
             // operator instead of the generic "operation_failed".
             //

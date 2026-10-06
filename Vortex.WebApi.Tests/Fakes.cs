@@ -154,7 +154,7 @@ internal sealed class FakePlayerService : IWebApiPlayerService
         Task.FromResult<AvatarInfo?>(null);
 
     public Task<PlayerPurse?> GetPurseAsync(int playerId, CancellationToken ct) =>
-        Task.FromResult<PlayerPurse?>(new PlayerPurse(12480, 36, 2145, 27, 14, 50));
+        Task.FromResult<PlayerPurse?>(new PlayerPurse(12480, 36, 2145, 27));
 
     // Private to start with, like the column's default, so a test that saves can tell it moved.
     private readonly Dictionary<int, bool> _visible = [];
@@ -473,9 +473,6 @@ internal sealed class FakeShopService : IShopService
 
         return Task.FromResult(WebhookOutcome);
     }
-
-    public Task<string?> RedeemVoucherAsync(int playerId, string code, CancellationToken ct) =>
-        Task.FromResult(code == "GOOD-CODE" ? null : "not_found");
 }
 
 /// <summary>

@@ -124,8 +124,7 @@ public sealed class WebApiPurseTests
 
         // The grain factory is never reached: the purse read is pure EF. A proxy that throws on any
         // call is what makes a future one fail loudly here instead of silently taking a default —
-        // the same `DispatchProxy` shape `TargetedOfferAdminServiceTests` uses, which is cheaper
-        // than hand-writing a dozen `IGrainFactory` members nothing calls.
+        // a `DispatchProxy`, which is cheaper than hand-writing a dozen `IGrainFactory` members nothing calls.
         return (
             new WebApiPlayerService(
                 factory,

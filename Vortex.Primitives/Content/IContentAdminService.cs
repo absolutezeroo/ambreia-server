@@ -52,13 +52,6 @@ public interface IContentAdminService
         CancellationToken ct
     );
 
-    Task<ContentAdminResult> UpsertBuildersClubTierAsync(
-        BuildersClubTierSpec spec,
-        CancellationToken ct
-    );
-
-    Task<ContentAdminResult> DeleteBuildersClubTierAsync(int tierId, CancellationToken ct);
-
     Task<ContentAdminResult> UpsertRentableSpaceTermsAsync(
         RentableSpaceTermsSpec spec,
         CancellationToken ct

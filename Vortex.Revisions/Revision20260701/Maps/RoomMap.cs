@@ -385,12 +385,6 @@ internal sealed class RoomMap : IRevisionMap
 
         // Room Engine
         builder.MapSerializer(
-            typeof(BuildersClubPlacementWarningMessageComposer),
-            new BuildersClubPlacementWarningMessageComposerSerializer(
-                MessageComposer.BuildersClubPlacementWarningMessageComposer
-            )
-        );
-        builder.MapSerializer(
             typeof(FavoriteMembershipUpdateMessageComposer),
             new FavoriteMembershipUpdateMessageComposerSerializer(
                 MessageComposer.FavoriteMembershipUpdateMessageComposer

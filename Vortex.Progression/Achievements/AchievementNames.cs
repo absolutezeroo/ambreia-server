@@ -21,12 +21,6 @@ public static class AchievementNames
     /// <summary>"For making Swiss cheese by adding %limit% floor hole furni".</summary>
     public const string RoomDecoHoleFurniCount = "RoomDecoHoleFurniCount";
 
-    /// <summary>"For having %limit% days of Builders Club membership".</summary>
-    public const string BuildersClub = "BuildersClub";
-
-    /// <summary>"For placing %limit% Builders Club furni".</summary>
-    public const string RoomDecoBC = "RoomDecoBC";
-
     /// <summary>"For having visitors spend %limit% minutes in your rooms" — credited to the owner.</summary>
     public const string RoomDecoHosting = "RoomDecoHosting";
     public const string RespectGiven = "RespectGiven";

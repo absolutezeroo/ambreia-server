@@ -10,22 +10,18 @@ namespace Vortex.Catalog;
 
 public sealed class CatalogService(
     ILogger<ICatalogService> logger,
-    ICatalogSnapshotProvider<NormalCatalog> normalCatalogProvider,
-    ICatalogSnapshotProvider<BuildersClubCatalog> buildersClubCatalogProvider
+    ICatalogSnapshotProvider<NormalCatalog> normalCatalogProvider
 ) : ICatalogService
 {
     private readonly ILogger<ICatalogService> _logger = logger;
     private readonly ICatalogSnapshotProvider<NormalCatalog> _normalCatalogProvider =
         normalCatalogProvider;
-    private readonly ICatalogSnapshotProvider<BuildersClubCatalog> _buildersClubCatalogProvider =
-        buildersClubCatalogProvider;
 
     public CatalogSnapshot GetCatalogSnapshot(CatalogType catalogType)
     {
         return catalogType switch
         {
             CatalogType.Normal => _normalCatalogProvider.Current,
-            CatalogType.BuildersClub => _buildersClubCatalogProvider.Current,
             _ => throw new NotSupportedException($"Catalog type {catalogType} is not supported."),
         };
     }

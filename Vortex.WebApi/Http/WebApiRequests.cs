@@ -276,11 +276,3 @@ public sealed record StartOrderRequest(string? ProductCode)
     public bool IsValid =>
         !string.IsNullOrWhiteSpace(ProductCode) && ProductCode.Length <= MAX_CODE;
 }
-
-/// <summary>A prepaid code, off the shop's second tab.</summary>
-public sealed record RedeemVoucherRequest(string? Code)
-{
-    public const int MAX_CODE = 64;
-
-    public bool IsValid => !string.IsNullOrWhiteSpace(Code) && Code.Length <= MAX_CODE;
-}

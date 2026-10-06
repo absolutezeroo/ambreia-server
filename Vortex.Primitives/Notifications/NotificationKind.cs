@@ -29,9 +29,8 @@ public enum NotificationKind
     ClubPayday = 1,
     ClubGiftToken = 2,
 
-    // 3 was RewardTrackCompleted, removed in the RPG fork (M0). Persisted: never reuse it.
-    RaffleWon = 4,
-    VoucherRedeemed = 5,
+    // 3 was RewardTrackCompleted, 4 the LTD raffle win and 5 the voucher redemption, removed in the
+    // RPG fork (M0). Persisted: never reuse them.
 
     // ---- Social and groups -----------------------------------------------------------------
     Blocked = 10,
