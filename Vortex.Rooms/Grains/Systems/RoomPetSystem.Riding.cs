@@ -7,6 +7,7 @@ using Vortex.Database.Entities.Pets;
 using Vortex.Primitives.Action;
 using Vortex.Primitives.Events;
 using Vortex.Primitives.Furniture.Enums;
+using Vortex.Primitives.Orleans;
 using Vortex.Primitives.Pets.Snapshots;
 using Vortex.Primitives.Players;
 using Vortex.Primitives.Rooms.Object;
@@ -114,7 +115,15 @@ public sealed partial class RoomPetSystem
             // Re-read: the pet kept ticking while the furniture row was written.
             if (_roomGrain._state.PetsById.TryGetValue(petId, out PetSnapshot? current))
             {
-                await ApplyRidingStateAsync(current, hasSaddle: true, current.RiderId, ct);
+                await ApplyRidingStateAsync(
+                    current with
+                    {
+                        SaddleDefinitionId = saddle.Definition.Id,
+                    },
+                    hasSaddle: true,
+                    current.RiderId,
+                    ct
+                );
             }
         }
         finally
@@ -123,7 +132,10 @@ public sealed partial class RoomPetSystem
         }
     }
 
-    /// <summary>Takes the saddle off, which also throws whoever is riding.</summary>
+    /// <summary>
+    /// Takes the saddle off, which also throws whoever is riding, and hands the saddle back to the
+    /// owner's inventory -- fitting spent the furniture, so this grant is the only way back.
+    /// </summary>
     public async Task RemoveSaddleFromPetAsync(ActionContext ctx, int petId, CancellationToken ct)
     {
         await EnsurePetsLoadedAsync(ct);
@@ -131,12 +143,31 @@ public sealed partial class RoomPetSystem
         if (
             !_roomGrain._state.PetsById.TryGetValue(petId, out PetSnapshot? pet)
             || pet.OwnerId != ctx.PlayerId
+            || !pet.HasSaddle
         )
         {
             return;
         }
 
-        await ApplyRidingStateAsync(pet, hasSaddle: false, rider: null, ct);
+        // The pet loses the saddle in memory before the first await, so a repeated click finds no
+        // saddle and hands nothing back; then the row, then the grant. A crash between the last
+        // two loses this one saddle rather than duplicating it.
+        await ApplyRidingStateAsync(
+            pet with
+            {
+                SaddleDefinitionId = null,
+            },
+            hasSaddle: false,
+            rider: null,
+            ct
+        );
+
+        if (pet.SaddleDefinitionId is int definitionId)
+        {
+            await _roomGrain
+                ._grainFactory.GetInventoryGrain(pet.OwnerId)
+                .GrantFurnitureDefinitionAsync(definitionId, extraData: null, ct);
+        }
     }
 
     /// <summary>Flips whether players other than the owner may ride.</summary>
@@ -222,6 +253,7 @@ public sealed partial class RoomPetSystem
         }
 
         entity.HasSaddle = pet.HasSaddle;
+        entity.SaddleDefinitionId = pet.SaddleDefinitionId;
         entity.RidingPermission = pet.RidingPermission;
 
         await dbCtx.SaveChangesAsync(ct);

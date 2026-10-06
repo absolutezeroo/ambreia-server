@@ -515,7 +515,7 @@ public sealed class RoomTradingSystem(RoomGrain roomGrain)
     /// </summary>
     /// <remarks>
     /// The predicate is the definition of "this player's, and free to move": theirs, not standing in
-    /// a room, not staked in a wired chest, not loaded into a jukebox, not deleted. A row that fails
+    /// a room, not deleted. A row that fails
     /// any of it is not updated and the caller sees a count that does not match what was offered.
     /// </remarks>
     private static Task<int> ClaimForTradeAsync(
@@ -532,8 +532,6 @@ public sealed class RoomTradingSystem(RoomGrain roomGrain)
                     itemIds.Contains(f.Id)
                     && f.PlayerEntityId == fromOwner
                     && f.RoomEntityId == null
-                    && f.WiredChestEntityId == null
-                    && f.JukeboxEntityId == null
                     && f.DeletedAt == null
                 )
                 .ExecuteUpdateAsync(row => row.SetProperty(f => f.PlayerEntityId, toOwner), ct);

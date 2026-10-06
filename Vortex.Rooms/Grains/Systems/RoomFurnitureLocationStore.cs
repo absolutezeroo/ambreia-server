@@ -19,12 +19,11 @@ namespace Vortex.Rooms.Grains.Systems;
 /// </para>
 /// <para>
 /// So location moves at the moment it happens, and it moves conditionally -- the same shape the
-/// trade, the marketplace, the mint and the jukebox all use. The tick is left with the one thing it
-/// is for.
+/// trade and the marketplace use. The tick is left with the one thing it is for.
 /// </para>
 /// <para>
 /// The predicates are the inventory loader's own: a row is free-standing when it belongs to the
-/// player, sits in no room, no wired chest and no jukebox. <c>DeletedAt</c> is absent from both
+/// player and sits in no room. <c>DeletedAt</c> is absent from both
 /// because the global soft-delete query filter supplies it.
 /// </para>
 /// </remarks>
@@ -44,11 +43,7 @@ internal static class RoomFurnitureLocationStore
     ) =>
         dbCtx
             .Furnitures.Where(f =>
-                f.Id == itemId
-                && f.PlayerEntityId == ownerId
-                && f.RoomEntityId == null
-                && f.WiredChestEntityId == null
-                && f.JukeboxEntityId == null
+                f.Id == itemId && f.PlayerEntityId == ownerId && f.RoomEntityId == null
             )
             .ExecuteUpdateAsync(row => row.SetProperty(f => f.RoomEntityId, roomId), ct);
 

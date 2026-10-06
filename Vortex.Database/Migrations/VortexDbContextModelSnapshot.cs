@@ -2471,10 +2471,6 @@ namespace Vortex.Database.Migrations
                         .HasColumnType("int")
                         .HasColumnName("definition_id");
 
-                    b.Property<int?>("JukeboxEntityId")
-                        .HasColumnType("int")
-                        .HasColumnName("jukebox_id");
-
                     b.Property<int>("PlayerEntityId")
                         .HasColumnType("int")
                         .HasColumnName("player_id");
@@ -2505,10 +2501,6 @@ namespace Vortex.Database.Migrations
                         .HasDefaultValue(0)
                         .HasColumnName("wall_offset");
 
-                    b.Property<int?>("WiredChestEntityId")
-                        .HasColumnType("int")
-                        .HasColumnName("wired_chest_id");
-
                     b.Property<int>("X")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int")
@@ -2531,13 +2523,11 @@ namespace Vortex.Database.Migrations
 
                     b.HasIndex("FurnitureDefinitionEntityId");
 
-                    b.HasIndex("JukeboxEntityId");
-
                     b.HasIndex("RentableSpaceFurnitureEntityId");
 
                     b.HasIndex("RoomEntityId");
 
-                    b.HasIndex("PlayerEntityId", "RoomEntityId", "WiredChestEntityId", "JukeboxEntityId", "DeletedAt");
+                    b.HasIndex("PlayerEntityId", "RoomEntityId", "DeletedAt");
 
                     b.ToTable("furniture");
                 });
@@ -4954,6 +4944,10 @@ namespace Vortex.Database.Migrations
                         .HasColumnType("int")
                         .HasColumnName("room_id");
 
+                    b.Property<int?>("SaddleDefinitionId")
+                        .HasColumnType("int")
+                        .HasColumnName("saddle_definition_id");
+
                     b.Property<int>("Thirst")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int")
@@ -6714,12 +6708,6 @@ namespace Vortex.Database.Migrations
                     b.Property<DateTime?>("EndsAt")
                         .HasColumnType("datetime(6)")
                         .HasColumnName("ends_at");
-
-                    b.Property<int>("RewardedLevel")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
-                        .HasDefaultValue(0)
-                        .HasColumnName("rewarded_level");
 
                     b.Property<int>("ScorePerQuest")
                         .ValueGeneratedOnAdd()

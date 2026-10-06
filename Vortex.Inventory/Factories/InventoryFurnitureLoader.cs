@@ -53,12 +53,6 @@ internal sealed class InventoryFurnitureLoader(
                 .Where(x =>
                     x.PlayerEntityId == (int)playerId
                     && x.RoomEntityId == null
-                    // An item sitting in a wired chest is out of its owner's hands until it is
-                    // withdrawn. Without this it would be listed here as well, and the same row
-                    // would exist twice on screen: once in the inventory, once in the chest.
-                    && x.WiredChestEntityId == null
-                    // And the same for a song disk loaded into a jukebox.
-                    && x.JukeboxEntityId == null
                     && x.DeletedAt == null
                 )
                 .ToListAsync(ct)

@@ -78,6 +78,13 @@ public class PetEntity : VortexEntity
     [DefaultValue(false)]
     public bool HasSaddle { get; set; }
 
+    /// <summary>
+    /// The furniture definition of the fitted saddle. Fitting spends the furniture, so this is what
+    /// hands one back to the owner when the saddle comes off.
+    /// </summary>
+    [Column("saddle_definition_id")]
+    public int? SaddleDefinitionId { get; set; }
+
     /// <summary>The owner lets other players ride it. Riding is always allowed to the owner.</summary>
     [Column("riding_permission")]
     [DefaultValue(false)]

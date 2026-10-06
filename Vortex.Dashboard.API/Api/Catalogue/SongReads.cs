@@ -74,24 +74,22 @@ internal sealed class SongReads(IDbContextFactory<VortexDbContext> dbContextFact
                         && f.FurnitureDefinitionEntity != null
                         && f.FurnitureDefinitionEntity.Logic == SoundLogicNames.SongDisk
                     )
-                    .Select(f => new { f.ExtraData, InJukebox = f.JukeboxEntityId != null })
+                    .Select(f => f.ExtraData)
                     .ToListAsync(ct)
                     .ConfigureAwait(false);
 
-                Dictionary<int, (int Total, int Loaded)> counts = [];
+                Dictionary<int, int> counts = [];
 
-                foreach (var disk in disks)
+                foreach (string? disk in disks)
                 {
-                    int songId = SongIdFromExtraData(disk.ExtraData);
+                    int songId = SongIdFromExtraData(disk);
 
                     if (songId <= 0)
                     {
                         continue;
                     }
 
-                    (int carried, int loaded) = counts.GetValueOrDefault(songId);
-
-                    counts[songId] = (carried + 1, loaded + (disk.InJukebox ? 1 : 0));
+                    counts[songId] = counts.GetValueOrDefault(songId) + 1;
                 }
 
                 return new SongListResponse(
@@ -107,8 +105,9 @@ internal sealed class SongReads(IDbContextFactory<VortexDbContext> dbContextFact
                             Math.Round(s.LengthMs / 1000.0, 1),
                             s.OfficialSongId,
                             s.Data,
-                            counts.GetValueOrDefault(s.Id).Total,
-                            counts.GetValueOrDefault(s.Id).Loaded
+                            counts.GetValueOrDefault(s.Id),
+                            // Jukeboxes left with M0; the field stays until the dashboard drops it.
+                            0
                         )),
                     ]
                 );

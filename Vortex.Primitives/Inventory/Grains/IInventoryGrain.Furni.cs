@@ -41,8 +41,8 @@ public partial interface IInventoryGrain
     /// Rebuilds the furniture list from the database.
     /// </summary>
     /// <remarks>
-    /// For ownership that changed somewhere other than here — a trade committing, a wired chest
-    /// handing items back. The list is a cache built once at activation, so without this the player
+    /// For ownership that changed somewhere other than here — a trade committing, an admin
+    /// revoke or transfer. The list is a cache built once at activation, so without this the player
     /// keeps seeing what they owned a moment ago. It reloads everything rather than the rows that
     /// moved: the same trade-off the trade path already takes, and one query beats bookkeeping.
     /// </remarks>

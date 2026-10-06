@@ -79,10 +79,10 @@ SELECT 'pet_commands', COUNT(*) FROM pet_commands;"
 Push-Location $repoRoot  # `source` paths are relative to the client's working directory
 try {
     $guard = & $mysql "-h$Server" "-P$Port" "-u$User" -N -B $Target `
-        -e "SELECT COUNT(*) FROM __efmigrationshistory WHERE MigrationId = '20261006163642_InitialCreate'"
+        -e "SELECT COUNT(*) FROM __efmigrationshistory WHERE MigrationId LIKE '%_InitialCreate'"
     if ($LASTEXITCODE -ne 0) { throw "Cannot read the target's migration history." }
     if ("$guard".Trim() -ne "1") {
-        throw "'$Target' is not a fork database (no 20261006163642_InitialCreate in its history)."
+        throw "'$Target' is not a fork database (no InitialCreate in its history)."
     }
 
     & $mysql "-h$Server" "-P$Port" "-u$User" --default-character-set=utf8mb4 -N -B $Target `

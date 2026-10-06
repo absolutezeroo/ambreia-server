@@ -591,11 +591,6 @@ namespace Vortex.Database.Migrations
                             nullable: false,
                             defaultValue: 0
                         ),
-                        rewarded_level = table.Column<int>(
-                            type: "int",
-                            nullable: false,
-                            defaultValue: 0
-                        ),
                         created_at = table
                             .Column<DateTime>(type: "datetime(6)", nullable: false)
                             .Annotation(
@@ -5579,8 +5574,6 @@ namespace Vortex.Database.Migrations
                             type: "int",
                             nullable: true
                         ),
-                        wired_chest_id = table.Column<int>(type: "int", nullable: true),
-                        jukebox_id = table.Column<int>(type: "int", nullable: true),
                         created_at = table
                             .Column<DateTime>(type: "datetime(6)", nullable: false)
                             .Annotation(
@@ -6513,6 +6506,7 @@ namespace Vortex.Database.Migrations
                             nullable: false,
                             defaultValue: false
                         ),
+                        saddle_definition_id = table.Column<int>(type: "int", nullable: true),
                         riding_permission = table.Column<bool>(
                             type: "tinyint(1)",
                             nullable: false,
@@ -7441,22 +7435,9 @@ namespace Vortex.Database.Migrations
             );
 
             migrationBuilder.CreateIndex(
-                name: "IX_furniture_jukebox_id",
+                name: "IX_furniture_player_id_room_id_deleted_at",
                 table: "furniture",
-                column: "jukebox_id"
-            );
-
-            migrationBuilder.CreateIndex(
-                name: "IX_furniture_player_id_room_id_wired_chest_id_jukebox_id_delete~",
-                table: "furniture",
-                columns: new[]
-                {
-                    "player_id",
-                    "room_id",
-                    "wired_chest_id",
-                    "jukebox_id",
-                    "deleted_at",
-                }
+                columns: new[] { "player_id", "room_id", "deleted_at" }
             );
 
             migrationBuilder.CreateIndex(

@@ -18,6 +18,7 @@ using Vortex.Primitives.Bots;
 using Vortex.Primitives.Commerce;
 using Vortex.Primitives.Events;
 using Vortex.Primitives.Furniture.Providers;
+using Vortex.Primitives.Inventory.Grains;
 using Vortex.Primitives.Navigator.Enums;
 using Vortex.Primitives.Networking;
 using Vortex.Primitives.Observability;
@@ -285,6 +286,9 @@ internal sealed class RoomHarness
 
     /// <summary>Everything the room put on the global event bus, in order.</summary>
     public List<IEvent> PublishedEvents { get; } = [];
+
+    /// <summary>Every furniture definition granted to a player's inventory, in order.</summary>
+    public List<(PlayerId Owner, int DefinitionId)> FurnitureGranted { get; } = [];
 
     /// <summary>Stands in for the behaviours a plugin would register: return true for an event and
     /// the room sees that publish come back cancelled.</summary>
@@ -588,6 +592,23 @@ internal sealed class RoomHarness
             if (call.Method.GetGenericArguments()[0] == typeof(IRoomPersistenceGrain))
             {
                 return FakeProxy.Create<IRoomPersistenceGrain>(_ => null);
+            }
+
+            // Furniture handed back to a player -- a saddle taken off a pet. Recorded so a test can
+            // count what reached the inventory; the inventory grain has a suite of its own.
+            if (call.Method.GetGenericArguments()[0] == typeof(IInventoryGrain))
+            {
+                PlayerId holder = new((int)(long)call.Args![0]!);
+
+                return FakeProxy.Create<IInventoryGrain>(inner =>
+                {
+                    if (inner.Method.Name == nameof(IInventoryGrain.GrantFurnitureDefinitionAsync))
+                    {
+                        FurnitureGranted.Add((holder, (int)inner.Args![0]!));
+                    }
+
+                    return null;
+                });
             }
 
             // Games read their live balance from the server config on every round start. An empty

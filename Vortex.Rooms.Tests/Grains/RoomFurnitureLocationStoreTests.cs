@@ -91,27 +91,6 @@ public sealed class RoomFurnitureLocationStoreTests : IAsyncLifetime
     }
 
     /// <summary>
-    /// The predicate is the inventory loader's own: an item pledged to a wired chest keeps its
-    /// player_id exactly as a loose one does, so ownership alone would let somebody place their own
-    /// shop stock and keep it staked at the same time.
-    /// </summary>
-    [Fact]
-    public async Task AnItemStakedInAChest_IsNotClaimed()
-    {
-        await using (VortexDbContext db = new(_options))
-        {
-            await db.Database.ExecuteSqlRawAsync(
-                "UPDATE furniture SET wired_chest_id = 3 WHERE id = {0}",
-                ITEM
-            );
-        }
-
-        (await ClaimAsync(OWNER)).Should().Be(0);
-
-        (await RowAsync()).RoomEntityId.Should().BeNull();
-    }
-
-    /// <summary>
     /// An item already standing in a room is not claimable into a second one, which is what stops
     /// two rooms holding the same row.
     /// </summary>

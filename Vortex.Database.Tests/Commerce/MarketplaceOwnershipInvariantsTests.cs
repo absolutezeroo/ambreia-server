@@ -64,10 +64,7 @@ public sealed class MarketplaceOwnershipInvariantsTests : IAsyncLifetime
         await using VortexDbContext db = new(_options);
 
         return await db.Furnitures.CountAsync(f =>
-            f.PlayerEntityId == SELLER
-            && f.RoomEntityId == null
-            && f.WiredChestEntityId == null
-            && f.JukeboxEntityId == null
+            f.PlayerEntityId == SELLER && f.RoomEntityId == null
         );
     }
 

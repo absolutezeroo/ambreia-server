@@ -33,6 +33,7 @@ public sealed class PetSaddleTests
     private const int SaddleItemId = 4321;
     private const int SecondSaddleItemId = 4322;
     private const int HorseType = 15;
+    private const int SaddleDefinitionId = 77;
 
     [Fact]
     public async Task TheOwnerSaddlesTheirPet_AndTheSaddleIsSpent()
@@ -53,6 +54,10 @@ public sealed class PetSaddleTests
         await using VortexDbContext db = harness.NewDbContext();
         PetEntity row = db.Pets.Single(p => p.Id == PetId);
         row.HasSaddle.Should().BeTrue("the saddle is written to the pet's row");
+        RoomPetRuntime
+            .ToSnapshot(row)
+            .SaddleDefinitionId.Should()
+            .Be(SaddleDefinitionId, "a reloaded room still knows which saddle to hand back");
         RoomPetRuntime
             .ToSnapshot(row)
             .HasSaddle.Should()
@@ -139,6 +144,81 @@ public sealed class PetSaddleTests
             .ContainSingle(e => e.ItemId == SaddleItemId);
     }
 
+    /// <summary>
+    /// Fitting spends the saddle furniture, so taking it off has to hand one back: the owner
+    /// otherwise loses a saddle every time they unsaddle their pet.
+    /// </summary>
+    [Fact]
+    public async Task TheOwnerRemovesTheSaddle_AndGetsOneSaddleBack()
+    {
+        RoomHarness harness = await ArrangeSaddledAsync().ConfigureAwait(true);
+
+        await harness
+            .Grain.RemoveSaddleFromPetAsync(
+                harness.ContextFor(RoomHarness.Owner),
+                PetId,
+                CancellationToken.None
+            )
+            .ConfigureAwait(true);
+
+        harness.Grain._state.PetsById[PetId].HasSaddle.Should().BeFalse();
+        harness
+            .FurnitureGranted.Should()
+            .Equal([(RoomHarness.Owner, SaddleDefinitionId)], "the saddle goes back to its owner");
+    }
+
+    [Fact]
+    public async Task RemovingTheSaddleTwice_ReturnsOnlyOneSaddle()
+    {
+        RoomHarness harness = await ArrangeSaddledAsync().ConfigureAwait(true);
+
+        for (int i = 0; i < 2; i++)
+        {
+            await harness
+                .Grain.RemoveSaddleFromPetAsync(
+                    harness.ContextFor(RoomHarness.Owner),
+                    PetId,
+                    CancellationToken.None
+                )
+                .ConfigureAwait(true);
+        }
+
+        harness.FurnitureGranted.Should().ContainSingle();
+    }
+
+    [Fact]
+    public async Task SomebodyElseCannotRemoveTheSaddle()
+    {
+        RoomHarness harness = await ArrangeSaddledAsync().ConfigureAwait(true);
+
+        await harness
+            .Grain.RemoveSaddleFromPetAsync(
+                harness.ContextFor(RoomHarness.Stranger),
+                PetId,
+                CancellationToken.None
+            )
+            .ConfigureAwait(true);
+
+        harness.Grain._state.PetsById[PetId].HasSaddle.Should().BeTrue();
+        harness.FurnitureGranted.Should().BeEmpty();
+    }
+
+    private static async Task<RoomHarness> ArrangeSaddledAsync()
+    {
+        RoomHarness harness = await ArrangeAsync().ConfigureAwait(true);
+
+        await harness
+            .Grain.ApplySaddleToPetAsync(
+                harness.ContextFor(RoomHarness.Owner),
+                PetId,
+                new RoomObjectId(SaddleItemId),
+                CancellationToken.None
+            )
+            .ConfigureAwait(true);
+
+        return harness;
+    }
+
     private static async Task<RoomHarness> ArrangeAsync()
     {
         RoomHarness harness = await RoomHarness.CreateAsync().ConfigureAwait(true);
@@ -203,8 +283,8 @@ public sealed class PetSaddleTests
     {
         FurnitureDefinitionSnapshot definition = new()
         {
-            Id = 77,
-            SpriteId = 77,
+            Id = SaddleDefinitionId,
+            SpriteId = SaddleDefinitionId,
             Name = "horse_saddle1",
             ProductType = ProductType.Floor,
             FurniCategory = FurnitureCategory.PetSaddle,

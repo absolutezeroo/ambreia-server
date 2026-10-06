@@ -103,9 +103,9 @@ public sealed partial class RoomActionModule(RoomGrain roomGrain)
 
         item.SetOwnerId(pickerId);
 
-        // The row leaves the room here, not two seconds later on the write-behind tick. Six paths
-        // decide an item is free-standing by asking whether room_id is null -- a trade, a wired
-        // chest, a jukebox, a marketplace listing, a wired settlement -- and until the flush caught
+        // The row leaves the room here, not two seconds later on the write-behind tick. Other paths
+        // decide an item is free-standing by asking whether room_id is null -- a trade, a
+        // marketplace listing -- and until the flush caught
         // up they all refused an item the client had already put in the player's hand. Picking a
         // sofa up and dragging it straight into a trade did nothing, for as long as
         // DirtyItemsTickMs.

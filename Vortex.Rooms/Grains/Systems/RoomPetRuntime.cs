@@ -38,6 +38,7 @@ internal static class RoomPetRuntime
             Happiness = entity.Happiness,
             CreatedAt = entity.CreatedAt,
             HasSaddle = entity.HasSaddle,
+            SaddleDefinitionId = entity.SaddleDefinitionId,
             RidingPermission = entity.RidingPermission,
             X = entity.X,
             Y = entity.Y,

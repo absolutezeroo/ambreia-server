@@ -149,9 +149,9 @@ public sealed class MarketplacePurchaseGrain(
         // the offer has (sold, cancelled, expired) hands out a *fresh* row through DeliverAsync. The
         // original is therefore a second copy however the listing ends, not a thing to give back.
         //
-        // The four conditions are the inventory loader's own predicate. Matching nothing means the
-        // item stopped being the seller's free-standing property between the snapshot read above and
-        // here -- placed in a room, pledged to a chest, already minted -- and the listing must not
+        // The conditions are the inventory loader's own predicate. Matching nothing means the item
+        // stopped being the seller's free-standing property between the snapshot read above and
+        // here -- placed in a room, traded away -- and the listing must not
         // proceed. DeletedAt is absent from the test on purpose: the global soft-delete query filter
         // supplies it.
         //
@@ -165,11 +165,7 @@ public sealed class MarketplacePurchaseGrain(
 
         int claimed = await dbCtx
             .Furnitures.Where(f =>
-                f.Id == furnitureItemId
-                && f.PlayerEntityId == sellerId
-                && f.RoomEntityId == null
-                && f.WiredChestEntityId == null
-                && f.JukeboxEntityId == null
+                f.Id == furnitureItemId && f.PlayerEntityId == sellerId && f.RoomEntityId == null
             )
             .ExecuteUpdateAsync(row => row.SetProperty(f => f.DeletedAt, DateTime.UtcNow), ct)
             .ConfigureAwait(true);

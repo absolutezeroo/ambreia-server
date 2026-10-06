@@ -97,6 +97,10 @@ public sealed record PetSnapshot
     [Id(29)]
     public int Thirst { get; init; } = 100;
 
+    /// <summary>The fitted saddle's furniture definition, handed back when it comes off.</summary>
+    [Id(30)]
+    public int? SaddleDefinitionId { get; init; }
+
     /// <summary>
     /// Age in whole days, counting the day it was created as day one: a pet bought this morning is
     /// one day old, not zero. The panel showed 0 for every pet in the hotel, because the field was

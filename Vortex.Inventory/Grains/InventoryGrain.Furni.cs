@@ -57,11 +57,9 @@ public sealed partial class InventoryGrain
     /// again.
     /// </summary>
     /// <remarks>
-    /// The notification is the point. This exists for the wired chest settlements, which move rows
-    /// by writing <c>WiredChestEntityId</c> straight through EF rather than going through
-    /// <see cref="AddFurnitureAsync"/> -- so nothing on either side ever reached the client, and a
-    /// deposited item sat in the player's inventory looking like it had never left. Reloading only
-    /// fixed the grain's own copy, which is the half nobody can see.
+    /// The notification is the point. Paths that move rows straight through EF rather than through
+    /// <see cref="AddFurnitureAsync"/> never reach the client otherwise, and reloading only fixes
+    /// the grain's own copy, which is the half nobody can see.
     /// </remarks>
     public async Task ReloadFurnitureAsync(CancellationToken ct)
     {
