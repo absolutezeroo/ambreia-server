@@ -30,6 +30,7 @@ public sealed class PlayerPrizeGrainTests
 {
     private const int PLAYER_ID = 77;
     private const string SOURCE = "test-trigger";
+    private const string POOL_CODE = "test-pool";
 
     [Fact]
     public async Task GrantingAnEffect_PublishesThePayoutWithItsPoolAndSource()
@@ -51,7 +52,7 @@ public sealed class PlayerPrizeGrainTests
 
         PrizeAwardedEvent published = harness.Published.Should().ContainSingle().Subject;
         published.PlayerId.Should().Be(PLAYER_ID);
-        published.PoolCode.Should().Be(PrizePoolCodes.MysteryBox);
+        published.PoolCode.Should().Be(POOL_CODE);
         published.EntryId.Should().Be(9);
         published.Variant.Should().Be("blue");
         published.Source.Should().Be(SOURCE);
@@ -108,7 +109,7 @@ public sealed class PlayerPrizeGrainTests
         new()
         {
             Id = 9,
-            PoolCode = PrizePoolCodes.MysteryBox,
+            PoolCode = POOL_CODE,
             Variant = "blue",
             ProductType = productType,
             FurnitureDefinitionId = 1234,

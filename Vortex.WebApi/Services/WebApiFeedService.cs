@@ -25,13 +25,8 @@ namespace Vortex.WebApi.Services;
 /// point where these measure badly — nothing above this class would change.
 /// </para>
 /// <para>
-/// Photos are re-filtered here rather than trusted from <c>web_feed_post_photos</c>: the row says
-/// which photo, and this says whether it is still public. A photo the owner unpublished after
-/// posting it leaves the post.
-/// </para>
-/// <para>
 /// Both entry points assemble their posts through <see cref="AssembleAsync"/>, which fetches every
-/// supporting table (comments, photos, poll choices, poll votes, tags, reactions) ONCE for the whole
+/// supporting table (comments, poll choices, poll votes, tags, reactions) ONCE for the whole
 /// batch of posts being answered — never once per post, and never once per comment. A page is a
 /// handful of round trips regardless of how many posts are on it or how many comments each one has;
 /// the alternative (a post's own queries run inside a loop over the page, and again inside a loop
@@ -98,13 +93,12 @@ public sealed class WebApiFeedService(
         // moved a number and put the post in nobody's feed.
         //
         // Ordered by the moment of the ENTRY, so a share of an old post arrives at the top where
-        // the sharer meant to put it. An original enters at its last bump when it has one: an
-        // album's card comes back up when photos are added to it.
+        // the sharer meant to put it.
         IQueryable<FeedEntry> originals = roots.Select(p => new FeedEntry
         {
             PostId = p.Id,
             ReposterId = null,
-            At = p.BumpedAt ?? p.CreatedAt,
+            At = p.CreatedAt,
         });
 
         IQueryable<FeedEntry> shares = db
@@ -165,7 +159,7 @@ public sealed class WebApiFeedService(
         }
 
         // A single post still goes through AssembleAsync — with a batch of one — rather than a
-        // second, simpler copy of the projection: a comment can carry a photo, a poll, tags and
+        // second, simpler copy of the projection: a comment can carry a poll, tags and
         // reactions exactly like a post, and that assembly is exactly what AssembleAsync already
         // does. Duplicating it here is how the two would quietly drift.
         List<FeedPost> items = await AssembleAsync(db, [row], viewerId, int.MaxValue, ct)
@@ -173,9 +167,6 @@ public sealed class WebApiFeedService(
 
         return items[0];
     }
-
-    /// <summary>The screenshot's card shows two; four is the most a two-column grid draws well.</summary>
-    private const int MaximumPhotos = 4;
 
     private const int MinimumChoices = 2;
     private const int MaximumChoices = 5;
@@ -193,20 +184,18 @@ public sealed class WebApiFeedService(
             return (FeedRefusal.BodyTooLong, null);
         }
 
-        IReadOnlyList<string> keys = body.PhotoKeys ?? [];
         IReadOnlyList<string> choices = (body.PollChoices ?? [])
             .Select(c => (c ?? string.Empty).Trim())
             .Where(c => c.Length > 0)
             .ToList();
 
-        // The kind has to agree with what came with it, in both directions: a Photo post with no
-        // photos renders as an empty card, and a Status post carrying poll choices would silently
+        // The kind has to agree with what came with it, in both directions: a Poll post with no
+        // choices renders as an empty card, and a Status post carrying poll choices would silently
         // drop them.
         bool agrees = body.Kind switch
         {
-            FeedPostKind.Status => keys.Count == 0 && choices.Count == 0,
-            FeedPostKind.Photo => keys.Count > 0 && choices.Count == 0,
-            FeedPostKind.Poll => keys.Count == 0 && choices.Count > 0,
+            FeedPostKind.Status => choices.Count == 0,
+            FeedPostKind.Poll => choices.Count > 0,
             _ => false,
         };
 
@@ -215,15 +204,9 @@ public sealed class WebApiFeedService(
             return (FeedRefusal.KindMismatch, null);
         }
 
-        // Text is required except on a photo post, where the pictures are the content.
-        if (text.Length == 0 && body.Kind != FeedPostKind.Photo)
+        if (text.Length == 0)
         {
             return (FeedRefusal.BodyEmpty, null);
-        }
-
-        if (keys.Count > MaximumPhotos)
-        {
-            return (FeedRefusal.TooManyPhotos, null);
         }
 
         if (
@@ -340,30 +323,6 @@ public sealed class WebApiFeedService(
             }
         }
 
-        // The photos, resolved from keys to rows, each one checked to be this player's and public.
-        List<int> photoIds = [];
-
-        foreach (string key in keys)
-        {
-            int id = await db
-                .CameraPhotos.Where(p =>
-                    p.PhotoKey == key
-                    && p.PlayerEntityId == playerId
-                    && p.PublishedAt != null
-                    && p.DeletedAt == null
-                )
-                .Select(p => p.Id)
-                .FirstOrDefaultAsync(ct)
-                .ConfigureAwait(false);
-
-            if (id == 0)
-            {
-                return (FeedRefusal.PhotoNotYours, null);
-            }
-
-            photoIds.Add(id);
-        }
-
         WebFeedPostEntity post = new()
         {
             PlayerEntityId = playerId,
@@ -375,18 +334,6 @@ public sealed class WebApiFeedService(
 
         db.WebFeedPosts.Add(post);
         await db.SaveChangesAsync(ct).ConfigureAwait(false);
-
-        for (int i = 0; i < photoIds.Count; i++)
-        {
-            db.WebFeedPostPhotos.Add(
-                new WebFeedPostPhotoEntity
-                {
-                    WebFeedPostEntityId = post.Id,
-                    CameraPhotoEntityId = photoIds[i],
-                    Ordinal = i,
-                }
-            );
-        }
 
         for (int i = 0; i < choices.Count; i++)
         {
@@ -745,9 +692,6 @@ public sealed class WebApiFeedService(
             child.DeletedAt = now;
         }
 
-        // An album lives and dies with its card: deleting the card is how an album is deleted.
-        await WebApiAlbumService.DeleteWithCardAsync(db, postId, now, ct).ConfigureAwait(false);
-
         await db.SaveChangesAsync(ct).ConfigureAwait(false);
 
         // Announced with the post's parent already read, because the row is now soft-deleted and
@@ -765,14 +709,13 @@ public sealed class WebApiFeedService(
     /// </summary>
     /// <remarks>
     /// Not deleted — that is the whole of it. This used to also require the author's
-    /// <c>ProfileVisible</c>, copied across from <see cref="IWebApiPhotoService"/>'s rule without
+    /// <c>ProfileVisible</c>, copied across from the photo gallery's rule without
     /// checking what that column defaults to: it defaults to <c>false</c>, so gating the feed on it
     /// made a new player's own posts invisible to everyone including themselves, and made
     /// <see cref="PublishAsync"/> read its own freshly-written row back through the same gate,
     /// answering the write with <see cref="FeedRefusal.None"/> and a null post. Publishing to the
     /// hotel's public feed is itself an act of publication and a different act from letting someone
     /// browse a profile; <c>ProfileVisible</c> governs the second and says nothing about the first.
-    /// The gallery (<see cref="IWebApiPhotoService"/>) keeps its own rule — that decision stands.
     /// </remarks>
     /// <remarks>
     /// The <c>DeletedAt</c> clause is REDUNDANT and is kept deliberately. Every
@@ -957,8 +900,8 @@ public sealed class WebApiFeedService(
         );
 
         // Every post this batch answers for — the roots, their comments AND those comments'
-        // replies — because a comment is a post with a parent and can carry its own photos, poll,
-        // tags and reactions, and so can a reply.
+        // replies — because a comment is a post with a parent and can carry its own poll, tags and
+        // reactions, and so can a reply.
         List<int> allPostIds =
         [
             .. rootIds,
@@ -966,8 +909,6 @@ public sealed class WebApiFeedService(
             .. allReplies.Select(r => r.Id),
         ];
 
-        Dictionary<int, List<PhotoSummary>> photosByPost = await LoadPhotosAsync(db, allPostIds, ct)
-            .ConfigureAwait(false);
         Dictionary<int, FeedPoll> pollsByPost = await LoadPollsAsync(db, allPostIds, viewerId, ct)
             .ConfigureAwait(false);
         Dictionary<int, List<string>> tagsByPost = await LoadTagsAsync(db, allPostIds, ct)
@@ -978,12 +919,6 @@ public sealed class WebApiFeedService(
                 viewerId,
                 ct
             )
-            .ConfigureAwait(false);
-
-        // Roots only: an album's card is always a root — PublishAsync refuses the kind outright,
-        // so only WebApiAlbumService writes one, and it never writes a comment.
-        Dictionary<int, FeedAlbum> albumsByPost = await WebApiAlbumService
-            .LoadCardsAsync(db, rootIds, ct)
             .ConfigureAwait(false);
 
         List<FeedPost> items = [];
@@ -1016,7 +951,6 @@ public sealed class WebApiFeedService(
                     return Build(
                         child,
                         viewerId,
-                        photosByPost,
                         pollsByPost,
                         tagsByPost,
                         reactionsByPost,
@@ -1026,7 +960,6 @@ public sealed class WebApiFeedService(
                                 Build(
                                     reply,
                                     viewerId,
-                                    photosByPost,
                                     pollsByPost,
                                     tagsByPost,
                                     reactionsByPost,
@@ -1044,16 +977,12 @@ public sealed class WebApiFeedService(
                 Build(
                     root,
                     viewerId,
-                    photosByPost,
                     pollsByPost,
                     tagsByPost,
                     reactionsByPost,
                     children.Count,
                     commentPosts
-                ) with
-                {
-                    Album = albumsByPost.GetValueOrDefault(root.Id),
-                }
+                )
             );
         }
 
@@ -1063,7 +992,6 @@ public sealed class WebApiFeedService(
     private static FeedPost Build(
         WebFeedPostEntity row,
         int? viewerId,
-        Dictionary<int, List<PhotoSummary>> photosByPost,
         Dictionary<int, FeedPoll> pollsByPost,
         Dictionary<int, List<string>> tagsByPost,
         Dictionary<int, ReactionSummary> reactionsByPost,
@@ -1077,7 +1005,7 @@ public sealed class WebApiFeedService(
             row.Id,
             // No `UniqueId` on PlayerEntity — the id itself is the only stable public handle this
             // schema has for a player, the same convention WebApiProfileService.BuildUserAsync()
-            // and WebApiPhotoService.Project() already use for the identical field.
+            // already uses for the identical field.
             row.PlayerEntityId.ToString(CultureInfo.InvariantCulture),
             row.PlayerEntity!.Name,
             row.PlayerEntity.Figure,
@@ -1087,7 +1015,6 @@ public sealed class WebApiFeedService(
             row.Kind,
             row.Body,
             row.CreatedAt,
-            photosByPost.GetValueOrDefault(row.Id) ?? [],
             pollsByPost.GetValueOrDefault(row.Id),
             tagsByPost.GetValueOrDefault(row.Id) ?? [],
             commentCount,
@@ -1098,73 +1025,6 @@ public sealed class WebApiFeedService(
             viewerId is not null && row.PlayerEntityId == viewerId,
             comments
         );
-    }
-
-    /// <summary>
-    /// Only the scalars travel through the EF query; <see cref="PhotoSummary"/> is built afterwards
-    /// in memory. Constructing it directly inside the <c>Select</c> — as <c>PhotoSummary</c>'s own
-    /// <c>Likers</c> field needs an empty <c>List&lt;string&gt;</c> literal — is not something every
-    /// provider's query translator is guaranteed to accept; projecting plain columns first sidesteps
-    /// the question entirely. The record's shape is the requirement, not where it gets built.
-    /// </summary>
-    private static async Task<Dictionary<int, List<PhotoSummary>>> LoadPhotosAsync(
-        VortexDbContext db,
-        List<int> postIds,
-        CancellationToken ct
-    )
-    {
-        // Published and not deleted — the owner's ProfileVisible is deliberately not re-checked
-        // here: the author attached their own already-published photo to their own public post,
-        // the same publishing-is-the-consent rule Readable() states. WebApiPhotoService's gallery
-        // keeps ProfileVisible for its own reads; that is a different question (browsing someone's
-        // gallery by name) and its answer does not change.
-        var rows = await db
-            .WebFeedPostPhotos.Where(link =>
-                postIds.Contains(link.WebFeedPostEntityId)
-                && link.CameraPhotoEntity!.PublishedAt != null
-                && link.CameraPhotoEntity.DeletedAt == null
-            )
-            .OrderBy(link => link.Ordinal)
-            .Select(link => new
-            {
-                link.WebFeedPostEntityId,
-                link.CameraPhotoEntity!.PhotoKey,
-                OwnerId = link.CameraPhotoEntity.PlayerEntityId,
-                OwnerName = link.CameraPhotoEntity.PlayerEntity!.Name,
-                OwnerFigure = link.CameraPhotoEntity.PlayerEntity.Figure,
-                link.CameraPhotoEntity.RoomEntityId,
-                // PublishedAt, not CreatedAt — WebApiPhotoService.cs:207 uses the same field of the
-                // same PhotoSummary for the same reason: the gallery orders by PublishedAt, and a
-                // card that said "taken three weeks ago" under a photo published this morning would
-                // be describing a different event from the one the ordering used. The two services
-                // have to agree, or the same photo carries two different dates depending on which
-                // page answered it. Safe to force non-null: the Where above already requires
-                // `PublishedAt != null`.
-                TakenAt = link.CameraPhotoEntity.PublishedAt!.Value,
-            })
-            .ToListAsync(ct)
-            .ConfigureAwait(false);
-
-        return rows.GroupBy(r => r.WebFeedPostEntityId)
-            .ToDictionary(
-                g => g.Key,
-                g =>
-                    g.Select(r => new PhotoSummary(
-                            r.PhotoKey,
-                            r.OwnerId.ToString(CultureInfo.InvariantCulture),
-                            r.OwnerName,
-                            r.OwnerFigure,
-                            r.RoomEntityId,
-                            // Not joined: the feed card has no use for a room name, unlike the
-                            // gallery this record was designed for.
-                            null,
-                            r.TakenAt,
-                            0,
-                            false,
-                            new List<string>()
-                        ))
-                        .ToList()
-            );
     }
 
     private static async Task<Dictionary<int, FeedPoll>> LoadPollsAsync(

@@ -15,8 +15,8 @@ namespace Vortex.Players.Tests.Prizes;
 /// </summary>
 public sealed class PrizePickerTests
 {
-    private const string BoxPool = PrizePoolCodes.MysteryBox;
-    private const string TrophyPool = PrizePoolCodes.MysteryTrophy;
+    private const string BoxPool = "box";
+    private const string TrophyPool = "trophy";
 
     private static PrizeEntrySnapshot Entry(
         int id,

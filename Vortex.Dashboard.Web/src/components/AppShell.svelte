@@ -114,7 +114,6 @@
     '/economy-extras': Store,
     '/player-rewards': Award,
     '/quests': Flag,
-    '/mystery-box': Package,
     '/prize-pools': Gift,
     '/targeted-offers': Ticket,
     '/targeted-offers-stats': BarChart3,

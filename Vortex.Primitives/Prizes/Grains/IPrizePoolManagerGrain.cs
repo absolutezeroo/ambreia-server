@@ -8,8 +8,7 @@ namespace Vortex.Primitives.Prizes.Grains;
 /// <summary>
 /// Singleton grain caching every prize pool and its weighted entries. Pools are read on each draw,
 /// so re-querying them per open would put a table scan on the hot path for data that changes only
-/// when an admin edits it. Mirrors <c>IMysteryBoxManagerGrain</c>, which keeps the box-specific
-/// reference data next door.
+/// when an admin edits it.
 /// </summary>
 public interface IPrizePoolManagerGrain : IGrainWithStringKey
 {

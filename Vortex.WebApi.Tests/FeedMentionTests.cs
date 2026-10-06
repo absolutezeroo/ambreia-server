@@ -202,7 +202,6 @@ public sealed class FeedMentionTests
                 new FeedPublishRequest(
                     Kind: FeedPostKind.Status,
                     Body: "bien vu",
-                    PhotoKeys: null,
                     PollChoices: null,
                     ParentId: root.Id,
                     GroupId: null
@@ -309,7 +308,6 @@ public sealed class FeedMentionTests
                     new FeedPublishRequest(
                         Kind: FeedPostKind.Status,
                         Body: "bien vu",
-                        PhotoKeys: null,
                         PollChoices: null,
                         ParentId: root.Id,
                         GroupId: null
@@ -328,7 +326,6 @@ public sealed class FeedMentionTests
                 new FeedPublishRequest(
                     Kind: FeedPostKind.Status,
                     Body: "merci",
-                    PhotoKeys: null,
                     PollChoices: null,
                     ParentId: comment.Id,
                     GroupId: null
@@ -378,7 +375,7 @@ public sealed class FeedMentionTests
             await Feed(factory)
                 .PublishAsync(
                     playerId,
-                    new FeedPublishRequest(FeedPostKind.Status, body, null, null, null, null),
+                    new FeedPublishRequest(FeedPostKind.Status, body, null, null, null),
                     default
                 )
         ).Post!;

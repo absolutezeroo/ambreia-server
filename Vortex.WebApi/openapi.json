@@ -272,76 +272,6 @@
         }
       }
     },
-    "/api/public/camera/thumbnails/{roomId}.png": {
-      "get": {
-        "tags": [
-          "Camera"
-        ],
-        "operationId": "GetRoomThumbnail",
-        "parameters": [
-          {
-            "name": "roomId",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "integer",
-              "format": "int32"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "OK"
-          }
-        }
-      }
-    },
-    "/api/public/camera/postcards/selfie/photos/{photoKey}.png": {
-      "get": {
-        "tags": [
-          "Camera"
-        ],
-        "operationId": "GetSelfiePhoto",
-        "parameters": [
-          {
-            "name": "photoKey",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "OK"
-          }
-        }
-      }
-    },
-    "/api/public/camera/photos/{photoKey}.png": {
-      "get": {
-        "tags": [
-          "Camera"
-        ],
-        "operationId": "GetCameraPhoto",
-        "parameters": [
-          {
-            "name": "photoKey",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "OK"
-          }
-        }
-      }
-    },
     "/api/public/languages": {
       "get": {
         "tags": [
@@ -813,128 +743,6 @@
         }
       }
     },
-    "/api/public/photos": {
-      "get": {
-        "tags": [
-          "Public"
-        ],
-        "summary": "The photo gallery: every published photo, newest first.",
-        "operationId": "Photos",
-        "parameters": [
-          {
-            "name": "page",
-            "in": "query",
-            "schema": {
-              "type": "integer",
-              "format": "int32"
-            }
-          },
-          {
-            "name": "pageSize",
-            "in": "query",
-            "schema": {
-              "type": "integer",
-              "format": "int32"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/PhotoPage"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/api/public/photos/{key}": {
-      "get": {
-        "tags": [
-          "Public"
-        ],
-        "summary": "One published photo.",
-        "operationId": "Photo",
-        "parameters": [
-          {
-            "name": "key",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/PhotoSummary"
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "Not Found",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiErrorResponse"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/api/public/users/{uniqueId}/photos": {
-      "get": {
-        "tags": [
-          "Public"
-        ],
-        "summary": "One player\u0027s published photos, newest first.",
-        "operationId": "PlayerPhotos",
-        "parameters": [
-          {
-            "name": "uniqueId",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "limit",
-            "in": "query",
-            "schema": {
-              "type": "integer",
-              "format": "int32"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/PhotoSummary"
-                  }
-                }
-              }
-            }
-          }
-        }
-      }
-    },
     "/api/public/feed": {
       "get": {
         "tags": [
@@ -1033,82 +841,6 @@
         "responses": {
           "200": {
             "description": "OK"
-          }
-        }
-      }
-    },
-    "/api/public/albums/{id}": {
-      "get": {
-        "tags": [
-          "Public"
-        ],
-        "summary": "One album and its photos.",
-        "operationId": "Album",
-        "parameters": [
-          {
-            "name": "id",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "integer",
-              "format": "int32"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Album"
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "Not Found",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiErrorResponse"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/api/public/users/{uniqueId}/albums": {
-      "get": {
-        "tags": [
-          "Public"
-        ],
-        "summary": "One player\u0027s albums, newest first.",
-        "operationId": "PlayerAlbums",
-        "parameters": [
-          {
-            "name": "uniqueId",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/FeedAlbum"
-                  }
-                }
-              }
-            }
           }
         }
       }
@@ -1376,111 +1108,6 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ApiErrorResponse"
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "Not Found",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiErrorResponse"
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "Unauthorized",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiErrorResponse"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/api/user/photos/{key}/like": {
-      "put": {
-        "tags": [
-          "User"
-        ],
-        "summary": "Like or unlike a published photo.",
-        "operationId": "PhotoLike",
-        "parameters": [
-          {
-            "name": "key",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/PhotoLikeRequest"
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/PhotoSummary"
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "Not Found",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiErrorResponse"
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "Unauthorized",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiErrorResponse"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/api/user/photos": {
-      "get": {
-        "tags": [
-          "User"
-        ],
-        "summary": "The signed-in player\u0027s own published photos, with no ProfileVisible gate.",
-        "operationId": "MyPhotos",
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/PhotoSummary"
-                  }
                 }
               }
             }
@@ -2874,281 +2501,6 @@
         }
       }
     },
-    "/api/user/albums": {
-      "post": {
-        "tags": [
-          "User"
-        ],
-        "summary": "Create an album and post its card to the feed.",
-        "operationId": "AlbumCreate",
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/AlbumCreateRequest"
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Album"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Bad Request",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiErrorResponse"
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "Not Found",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiErrorResponse"
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "Unauthorized",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiErrorResponse"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/api/user/albums/{id}": {
-      "put": {
-        "tags": [
-          "User"
-        ],
-        "summary": "Rename one of your albums.",
-        "operationId": "AlbumEdit",
-        "parameters": [
-          {
-            "name": "id",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "integer",
-              "format": "int32"
-            }
-          }
-        ],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/AlbumEditRequest"
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Album"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Bad Request",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiErrorResponse"
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "Not Found",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiErrorResponse"
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "Unauthorized",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiErrorResponse"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/api/user/albums/{id}/photos": {
-      "post": {
-        "tags": [
-          "User"
-        ],
-        "summary": "Add photos to one of your albums; its card comes back up.",
-        "operationId": "AlbumAddPhotos",
-        "parameters": [
-          {
-            "name": "id",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "integer",
-              "format": "int32"
-            }
-          }
-        ],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/AlbumPhotosRequest"
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Album"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Bad Request",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiErrorResponse"
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "Not Found",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiErrorResponse"
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "Unauthorized",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiErrorResponse"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/api/user/albums/{id}/photos/{photoKey}": {
-      "delete": {
-        "tags": [
-          "User"
-        ],
-        "summary": "Take one photo out of one of your albums.",
-        "operationId": "AlbumRemovePhoto",
-        "parameters": [
-          {
-            "name": "id",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "integer",
-              "format": "int32"
-            }
-          },
-          {
-            "name": "photoKey",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Album"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Bad Request",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiErrorResponse"
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "Not Found",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiErrorResponse"
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "Unauthorized",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiErrorResponse"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
     "/api/user/notifications": {
       "get": {
         "tags": [
@@ -3278,112 +2630,6 @@
           },
           "verified": {
             "type": "boolean"
-          }
-        },
-        "additionalProperties": false
-      },
-      "Album": {
-        "required": [
-          "createdAt",
-          "description",
-          "feedPostId",
-          "id",
-          "mine",
-          "ownerFigureString",
-          "ownerName",
-          "ownerUniqueId",
-          "photos",
-          "title"
-        ],
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "feedPostId": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "ownerUniqueId": {
-            "type": "string"
-          },
-          "ownerName": {
-            "type": "string"
-          },
-          "ownerFigureString": {
-            "type": "string"
-          },
-          "title": {
-            "type": "string"
-          },
-          "description": {
-            "type": "string"
-          },
-          "createdAt": {
-            "type": "string",
-            "format": "date-time"
-          },
-          "mine": {
-            "type": "boolean"
-          },
-          "photos": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/PhotoSummary"
-            }
-          }
-        },
-        "additionalProperties": false
-      },
-      "AlbumCreateRequest": {
-        "required": [
-          "title"
-        ],
-        "type": "object",
-        "properties": {
-          "title": {
-            "type": "string"
-          },
-          "description": {
-            "type": "string",
-            "nullable": true
-          },
-          "photoKeys": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            },
-            "nullable": true
-          }
-        },
-        "additionalProperties": false
-      },
-      "AlbumEditRequest": {
-        "required": [
-          "title"
-        ],
-        "type": "object",
-        "properties": {
-          "title": {
-            "type": "string"
-          },
-          "description": {
-            "type": "string",
-            "nullable": true
-          }
-        },
-        "additionalProperties": false
-      },
-      "AlbumPhotosRequest": {
-        "type": "object",
-        "properties": {
-          "photoKeys": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            },
-            "nullable": true
           }
         },
         "additionalProperties": false
@@ -3662,39 +2908,6 @@
         "type": "object",
         "additionalProperties": false
       },
-      "FeedAlbum": {
-        "required": [
-          "description",
-          "id",
-          "photoCount",
-          "photos",
-          "title"
-        ],
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "title": {
-            "type": "string"
-          },
-          "description": {
-            "type": "string"
-          },
-          "photoCount": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "photos": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/PhotoSummary"
-            }
-          }
-        },
-        "additionalProperties": false
-      },
       "FeedPage": {
         "required": [
           "items",
@@ -3786,7 +2999,6 @@
           "id",
           "kind",
           "mine",
-          "photos",
           "repostCount",
           "repostedByMe",
           "tags"
@@ -3829,12 +3041,6 @@
             "type": "string",
             "format": "date-time"
           },
-          "photos": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/PhotoSummary"
-            }
-          },
           "poll": {
             "$ref": "#/components/schemas/FeedPoll"
           },
@@ -3873,9 +3079,6 @@
           },
           "reposter": {
             "$ref": "#/components/schemas/FeedReposter"
-          },
-          "album": {
-            "$ref": "#/components/schemas/FeedAlbum"
           }
         },
         "additionalProperties": false
@@ -3883,9 +3086,7 @@
       "FeedPostKind": {
         "enum": [
           0,
-          1,
-          2,
-          3
+          2
         ],
         "type": "integer",
         "format": "int32"
@@ -3902,13 +3103,6 @@
           },
           "body": {
             "type": "string"
-          },
-          "photoKeys": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            },
-            "nullable": true
           },
           "pollChoices": {
             "type": "array",
@@ -4278,7 +3472,6 @@
           60,
           61,
           62,
-          70,
           71,
           72
         ],
@@ -4342,102 +3535,6 @@
           "sessionsRevoked": {
             "type": "integer",
             "format": "int32"
-          }
-        },
-        "additionalProperties": false
-      },
-      "PhotoLikeRequest": {
-        "required": [
-          "liked"
-        ],
-        "type": "object",
-        "properties": {
-          "liked": {
-            "type": "boolean"
-          }
-        },
-        "additionalProperties": false
-      },
-      "PhotoPage": {
-        "required": [
-          "items",
-          "page",
-          "pageSize",
-          "total"
-        ],
-        "type": "object",
-        "properties": {
-          "page": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "pageSize": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "total": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "items": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/PhotoSummary"
-            }
-          }
-        },
-        "additionalProperties": false
-      },
-      "PhotoSummary": {
-        "required": [
-          "key",
-          "likedByMe",
-          "likers",
-          "likes",
-          "ownerFigureString",
-          "ownerName",
-          "ownerUniqueId",
-          "takenAt"
-        ],
-        "type": "object",
-        "properties": {
-          "key": {
-            "type": "string"
-          },
-          "ownerUniqueId": {
-            "type": "string"
-          },
-          "ownerName": {
-            "type": "string"
-          },
-          "ownerFigureString": {
-            "type": "string"
-          },
-          "roomId": {
-            "type": "integer",
-            "format": "int32",
-            "nullable": true
-          },
-          "roomName": {
-            "type": "string",
-            "nullable": true
-          },
-          "takenAt": {
-            "type": "string",
-            "format": "date-time"
-          },
-          "likes": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "likedByMe": {
-            "type": "boolean"
-          },
-          "likers": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
           }
         },
         "additionalProperties": false
@@ -5417,9 +4514,6 @@
   "tags": [
     {
       "name": "Authentication"
-    },
-    {
-      "name": "Camera"
     },
     {
       "name": "Content"

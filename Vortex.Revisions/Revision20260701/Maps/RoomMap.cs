@@ -199,10 +199,6 @@ internal sealed class RoomMap : IRevisionMap
             new GetYoutubeDisplayStatusMessageParser()
         );
         builder.MapParser(
-            MessageEvent.OpenMysteryTrophyMessageEvent,
-            new OpenMysteryTrophyMessageParser()
-        );
-        builder.MapParser(
             MessageEvent.OpenPetPackageMessageEvent,
             new OpenPetPackageMessageParser()
         );

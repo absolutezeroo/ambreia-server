@@ -630,12 +630,6 @@ public sealed partial class RoomGrain
         }
     }
 
-    public Task<bool> CanRateAsync(PlayerId actor, CancellationToken ct) =>
-        RatingSystem.CanRateAsync(actor, ct);
-
-    public Task<int?> RateRoomAsync(PlayerId actor, int points, CancellationToken ct) =>
-        RatingSystem.RateRoomAsync(actor, points, ct);
-
     public Task<bool?> ToggleStaffPickAsync(PlayerId actor, CancellationToken ct) =>
         // null means "decide from the stored row". See IRoomSettings.ToggleStaffPickAsync: the
         // client posts back the state it already believed, so obeying that boolean wrote the value

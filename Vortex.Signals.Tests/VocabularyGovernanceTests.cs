@@ -45,7 +45,7 @@ public sealed class VocabularyGovernanceTests
         "pet",
         "badge",
         "message",
-        "points",
+        // "points" was here: only room rating emitted it, removed in M0.
         "group",
         "thread",
         "price",
@@ -73,7 +73,7 @@ public sealed class VocabularyGovernanceTests
         "given_name",
         "effect",
         "seconds",
-        "colour",
+        // "colour" was here: only the mystery box emitted it, and the RPG fork (M0) removed the box.
         "months",
         "serial",
         "figure",
@@ -114,7 +114,7 @@ public sealed class VocabularyGovernanceTests
         "complete_quest",
         "achievement_level",
         "wired",
-        "rate_room",
+        // "rate_room" was here, removed with room rating (M0).
         "leave_room",
         "update_room_settings",
         "answer_doorbell",
@@ -145,8 +145,7 @@ public sealed class VocabularyGovernanceTests
         "buy_club",
         "claim_club_gift",
         "open_present",
-        "open_mystery_box",
-        "open_mystery_trophy",
+        // "open_mystery_box" and "open_mystery_trophy" were here, removed with the mystery box (M0).
         "buy_gift",
         "buy_targeted_offer",
         "enter_raffle",
@@ -166,14 +165,7 @@ public sealed class VocabularyGovernanceTests
     [
         "floor",
         "wall",
-        "purple",
-        "blue",
-        "green",
-        "yellow",
-        "lilac",
-        "orange",
-        "turquoise",
-        "red",
+        // The eight mystery-box colours were here, the values of "colour"; removed with it (M0).
         "settings",
         "tags",
         "category_trade",

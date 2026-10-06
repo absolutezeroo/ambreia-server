@@ -57,7 +57,6 @@ public sealed class FeedTagTests
                     "photos #coolHashtag",
                     null,
                     null,
-                    null,
                     null
                 ),
                 default
@@ -66,7 +65,7 @@ public sealed class FeedTagTests
         await Service(factory)
             .PublishAsync(
                 1,
-                new FeedPublishRequest(FeedPostKind.Status, "rien", null, null, null, null),
+                new FeedPublishRequest(FeedPostKind.Status, "rien", null, null, null),
                 default
             );
 
@@ -86,14 +85,7 @@ public sealed class FeedTagTests
         await Service(factory)
             .PublishAsync(
                 1,
-                new FeedPublishRequest(
-                    FeedPostKind.Status,
-                    "essai #vortex",
-                    null,
-                    null,
-                    null,
-                    null
-                ),
+                new FeedPublishRequest(FeedPostKind.Status, "essai #vortex", null, null, null),
                 default
             );
 
@@ -113,14 +105,14 @@ public sealed class FeedTagTests
         await Service(factory)
             .PublishAsync(
                 1,
-                new FeedPublishRequest(FeedPostKind.Status, "un #tag", null, null, null, null),
+                new FeedPublishRequest(FeedPostKind.Status, "un #tag", null, null, null),
                 default
             );
 
         await Service(factory)
             .PublishAsync(
                 1,
-                new FeedPublishRequest(FeedPostKind.Status, "deux #tag", null, null, null, null),
+                new FeedPublishRequest(FeedPostKind.Status, "deux #tag", null, null, null),
                 default
             );
 
@@ -140,7 +132,7 @@ public sealed class FeedTagTests
             await Service(factory)
                 .PublishAsync(
                     1,
-                    new FeedPublishRequest(FeedPostKind.Status, "coucou", null, null, null, null),
+                    new FeedPublishRequest(FeedPostKind.Status, "coucou", null, null, null),
                     default
                 )
         ).Post!;
@@ -155,7 +147,6 @@ public sealed class FeedTagTests
                     new FeedPublishRequest(
                         Kind: FeedPostKind.Status,
                         Body: "et hop #reponse",
-                        PhotoKeys: null,
                         PollChoices: null,
                         ParentId: root.Id,
                         GroupId: null

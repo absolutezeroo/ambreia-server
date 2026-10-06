@@ -21,9 +21,7 @@ namespace Vortex.WebApi.Tests;
 /// </summary>
 /// <remarks>
 /// This is the trust boundary of the whole feature: everything here arrives from a browser and
-/// nothing about it is believed. The rule most easily lost in a later edit is the photo ownership
-/// check — without it a player attaches somebody else's published photo and it appears under their
-/// own name, which looks like a feature until it is used.
+/// nothing about it is believed.
 /// </remarks>
 public sealed class FeedPublishTests
 {
@@ -36,7 +34,7 @@ public sealed class FeedPublishTests
         (FeedRefusal refusal, FeedPost? post) = await Service(factory)
             .PublishAsync(
                 1,
-                new FeedPublishRequest(FeedPostKind.Status, "coucou", null, null, null, null),
+                new FeedPublishRequest(FeedPostKind.Status, "coucou", null, null, null),
                 default
             );
 
@@ -62,7 +60,7 @@ public sealed class FeedPublishTests
             await Service(factory)
                 .PublishAsync(
                     1,
-                    new FeedPublishRequest(FeedPostKind.Status, "coucou", null, null, null, null),
+                    new FeedPublishRequest(FeedPostKind.Status, "coucou", null, null, null),
                     default
                 )
         ).Post!;
@@ -73,7 +71,6 @@ public sealed class FeedPublishTests
                 new FeedPublishRequest(
                     Kind: FeedPostKind.Status,
                     Body: "et hop",
-                    PhotoKeys: null,
                     PollChoices: null,
                     ParentId: root.Id,
                     GroupId: null
@@ -106,7 +103,7 @@ public sealed class FeedPublishTests
             await Service(factory)
                 .PublishAsync(
                     1,
-                    new FeedPublishRequest(FeedPostKind.Status, "coucou", null, null, null, null),
+                    new FeedPublishRequest(FeedPostKind.Status, "coucou", null, null, null),
                     default
                 )
         ).Post!;
@@ -118,7 +115,6 @@ public sealed class FeedPublishTests
                     new FeedPublishRequest(
                         Kind: FeedPostKind.Status,
                         Body: "et hop",
-                        PhotoKeys: null,
                         PollChoices: null,
                         ParentId: root.Id,
                         GroupId: null
@@ -133,7 +129,6 @@ public sealed class FeedPublishTests
                 new FeedPublishRequest(
                     Kind: FeedPostKind.Status,
                     Body: "encore",
-                    PhotoKeys: null,
                     PollChoices: null,
                     ParentId: comment.Id,
                     GroupId: null
@@ -164,7 +159,7 @@ public sealed class FeedPublishTests
             await Service(factory)
                 .PublishAsync(
                     1,
-                    new FeedPublishRequest(FeedPostKind.Status, "coucou", null, null, null, null),
+                    new FeedPublishRequest(FeedPostKind.Status, "coucou", null, null, null),
                     default
                 )
         ).Post!;
@@ -180,7 +175,6 @@ public sealed class FeedPublishTests
                 new FeedPublishRequest(
                     Kind: FeedPostKind.Status,
                     Body: "et encore",
-                    PhotoKeys: null,
                     PollChoices: null,
                     ParentId: reply.Id,
                     GroupId: null
@@ -203,7 +197,6 @@ public sealed class FeedPublishTests
                     new FeedPublishRequest(
                         Kind: FeedPostKind.Status,
                         Body: body,
-                        PhotoKeys: null,
                         PollChoices: null,
                         ParentId: parentId,
                         GroupId: null
@@ -222,7 +215,7 @@ public sealed class FeedPublishTests
             await Service(factory)
                 .PublishAsync(
                     1,
-                    new FeedPublishRequest(FeedPostKind.Status, "coucou", null, null, null, null),
+                    new FeedPublishRequest(FeedPostKind.Status, "coucou", null, null, null),
                     default
                 )
         ).Post!;
@@ -236,7 +229,6 @@ public sealed class FeedPublishTests
                 new FeedPublishRequest(
                     Kind: FeedPostKind.Poll,
                     Body: "et vous ?",
-                    PhotoKeys: null,
                     PollChoices: ["Oui", "Non"],
                     ParentId: root.Id,
                     GroupId: null
@@ -257,7 +249,7 @@ public sealed class FeedPublishTests
         (FeedRefusal refusal, _) = await Service(factory)
             .PublishAsync(
                 1,
-                new FeedPublishRequest(FeedPostKind.Status, "   ", null, null, null, null),
+                new FeedPublishRequest(FeedPostKind.Status, "   ", null, null, null),
                 default
             );
 
@@ -273,14 +265,7 @@ public sealed class FeedPublishTests
         (FeedRefusal refusal, _) = await Service(factory)
             .PublishAsync(
                 1,
-                new FeedPublishRequest(
-                    FeedPostKind.Status,
-                    new string('a', 501),
-                    null,
-                    null,
-                    null,
-                    null
-                ),
+                new FeedPublishRequest(FeedPostKind.Status, new string('a', 501), null, null, null),
                 default
             );
 
@@ -296,7 +281,7 @@ public sealed class FeedPublishTests
         (FeedRefusal refusal, _) = await Service(factory)
             .PublishAsync(
                 1,
-                new FeedPublishRequest(FeedPostKind.Poll, "Pizza ?", null, ["Oui"], null, null),
+                new FeedPublishRequest(FeedPostKind.Poll, "Pizza ?", ["Oui"], null, null),
                 default
             );
 
@@ -315,7 +300,6 @@ public sealed class FeedPublishTests
                 new FeedPublishRequest(
                     FeedPostKind.Poll,
                     "Pizza ou burger ?",
-                    null,
                     ["Pizza", "Burger", "Les deux"],
                     null,
                     null
@@ -337,14 +321,7 @@ public sealed class FeedPublishTests
         (FeedRefusal refusal, _) = await Service(factory)
             .PublishAsync(
                 1,
-                new FeedPublishRequest(
-                    FeedPostKind.Status,
-                    "au nom du groupe",
-                    null,
-                    null,
-                    null,
-                    99
-                ),
+                new FeedPublishRequest(FeedPostKind.Status, "au nom du groupe", null, null, 99),
                 default
             );
 
@@ -361,14 +338,7 @@ public sealed class FeedPublishTests
         (FeedRefusal refusal, _) = await Service(factory)
             .PublishAsync(
                 1,
-                new FeedPublishRequest(
-                    FeedPostKind.Status,
-                    "coucou",
-                    null,
-                    null,
-                    deletedPostId,
-                    null
-                ),
+                new FeedPublishRequest(FeedPostKind.Status, "coucou", null, deletedPostId, null),
                 default
             );
 
@@ -397,7 +367,7 @@ public sealed class FeedPublishTests
         (FeedRefusal refusal, FeedPost? post) = await Service(factory)
             .PublishAsync(
                 1,
-                new FeedPublishRequest(FeedPostKind.Status, "coucou", null, null, null, null),
+                new FeedPublishRequest(FeedPostKind.Status, "coucou", null, null, null),
                 default
             );
 
@@ -408,80 +378,6 @@ public sealed class FeedPublishTests
                     + "posting to the public feed"
             );
         post!.Body.Should().Be("coucou");
-    }
-
-    /// <summary>
-    /// The other half of the trust boundary the class remark names: a photo attached to a post must
-    /// resolve to a row this caller themselves published, never a key that merely exists.
-    /// </summary>
-    [Fact]
-    public async Task APhotoBelongingToSomebodyElseIsRefused()
-    {
-        await using WebApiTestFactory factory = new();
-        await PlayerAsync(factory, 1, "Prodiigy");
-        await PlayerAsync(factory, 2, "Autre");
-
-        await using (VortexDbContext db = await factory.DbContexts.CreateDbContextAsync())
-        {
-            db.CameraPhotos.Add(
-                new Vortex.Database.Entities.Camera.CameraPhotoEntity
-                {
-                    PhotoKey = "lapienne",
-                    PlayerEntityId = 2,
-                    SceneBytes = 1,
-                    RejectedExternalSprites = 0,
-                    PublishedAt = DateTime.UtcNow,
-                }
-            );
-
-            await db.SaveChangesAsync();
-        }
-
-        (FeedRefusal refusal, _) = await Service(factory)
-            .PublishAsync(
-                1,
-                new FeedPublishRequest(FeedPostKind.Photo, "", ["lapienne"], null, null, null),
-                default
-            );
-
-        refusal.Should().Be(FeedRefusal.PhotoNotYours);
-    }
-
-    /// <summary>
-    /// Publishing costs credits precisely because it is the act that makes a photo public — an
-    /// unpublished photo of the caller's own is still private, so attaching it must refuse exactly
-    /// like a stranger's photo would.
-    /// </summary>
-    [Fact]
-    public async Task AnUnpublishedPhotoOfMyOwnIsRefused()
-    {
-        await using WebApiTestFactory factory = new();
-        await PlayerAsync(factory, 1, "Prodiigy");
-
-        await using (VortexDbContext db = await factory.DbContexts.CreateDbContextAsync())
-        {
-            db.CameraPhotos.Add(
-                new Vortex.Database.Entities.Camera.CameraPhotoEntity
-                {
-                    PhotoKey = "privee",
-                    PlayerEntityId = 1,
-                    SceneBytes = 1,
-                    RejectedExternalSprites = 0,
-                    PublishedAt = null,
-                }
-            );
-
-            await db.SaveChangesAsync();
-        }
-
-        (FeedRefusal refusal, _) = await Service(factory)
-            .PublishAsync(
-                1,
-                new FeedPublishRequest(FeedPostKind.Photo, "", ["privee"], null, null, null),
-                default
-            );
-
-        refusal.Should().Be(FeedRefusal.PhotoNotYours);
     }
 
     /// <summary>
@@ -539,7 +435,6 @@ public sealed class FeedPublishTests
                 new FeedPublishRequest(
                     FeedPostKind.Status,
                     "au nom du groupe",
-                    null,
                     null,
                     null,
                     groupId

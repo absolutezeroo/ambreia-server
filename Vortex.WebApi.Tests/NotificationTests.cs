@@ -111,31 +111,6 @@ public sealed class NotificationTests
     }
 
     /// <summary>
-    /// Rating a room tells its OWNER, who is not on the event — the lookup is the point.
-    /// </summary>
-    [Fact]
-    public async Task RatingARoomTellsItsOwner()
-    {
-        await using WebApiTestFactory factory = new();
-        await PlayerAsync(factory, 1, "Proprio");
-        await PlayerAsync(factory, 2, "Visiteur");
-        await RoomAsync(factory, 10, ownerId: 1);
-
-        await new RoomRatedNotificationHandler(Sink(factory), factory.DbContexts).HandleAsync(
-            new RoomRatedEvent(2, 10, 1),
-            Context(),
-            default
-        );
-
-        NotificationPage owner = await Service(factory).GetAsync(1, 1, 0);
-
-        owner.Items.Should().ContainSingle();
-        owner.Items[0].Kind.Should().Be(NotificationKind.RoomRated);
-        owner.Items[0].TargetId.Should().Be(10);
-        owner.Items[0].Actor!.Name.Should().Be("Visiteur");
-    }
-
-    /// <summary>
     /// Reading clears the counter for the WHOLE list, not for the page that was on screen — a bell
     /// that will not go out is worse than one that is occasionally too eager.
     /// </summary>

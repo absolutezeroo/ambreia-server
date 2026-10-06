@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
@@ -65,13 +64,6 @@ public class WebFeedPostEntity : VortexEntity
     /// </summary>
     public const int BodyLength = 500;
 
-    /// <summary>
-    /// When the post last came back up, or null if it never has. The feed orders its originals on
-    /// this or <c>CreatedAt</c>: an album's card is bumped when photos are added to it.
-    /// </summary>
-    [Column("bumped_at")]
-    public DateTime? BumpedAt { get; set; }
-
     [ForeignKey(nameof(PlayerEntityId))]
     public PlayerEntity? PlayerEntity { get; set; }
 
@@ -82,8 +74,6 @@ public class WebFeedPostEntity : VortexEntity
     public WebFeedPostEntity? ParentEntity { get; set; }
 
     public ICollection<WebFeedPostEntity> Children { get; set; } = [];
-
-    public ICollection<WebFeedPostPhotoEntity> Photos { get; set; } = [];
 
     public ICollection<WebFeedPollChoiceEntity> PollChoices { get; set; } = [];
 

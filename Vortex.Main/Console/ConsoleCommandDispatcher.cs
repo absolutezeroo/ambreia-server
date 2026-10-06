@@ -5,16 +5,11 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Orleans;
 using Vortex.Main.Hosting;
 using Vortex.Plugins;
 using Vortex.Primitives.Console;
 using Vortex.Primitives.Hosting;
-using Vortex.Primitives.MysteryBox;
-using Vortex.Primitives.MysteryBox.Admin;
-using Vortex.Primitives.Orleans;
 using Vortex.Primitives.Permissions;
-using Vortex.Primitives.Players;
 
 namespace Vortex.Main.Console;
 
@@ -56,23 +51,11 @@ public sealed class ConsoleCommandDispatcher(IServiceProvider services) : IConso
             "Reload a single plugin by key.",
             Capabilities.Dashboard.OpsConfigManage
         ),
-        new(
-            "mystery-key",
-            "mystery-key <username> <colour>",
-            "Give a player a mystery box key.",
-            Capabilities.Dashboard.OpsMysteryBoxManage
-        ),
-        new(
-            "mystery-box",
-            "mystery-box <username> <colour>",
-            "Give a player a mystery box.",
-            Capabilities.Dashboard.OpsMysteryBoxManage
-        ),
-        // `reload-mystery-box` and `reload-fishing` were here. They reloaded a grain rather than an
-        // IReferenceDataProvider, which is the only reason they were separate words for the same
-        // idea; both grains are now named caches under `reload`, composed in Program.cs.
+        // `reload-fishing` was here. It reloaded a grain rather than an IReferenceDataProvider, which
+        // is the only reason it was a separate word for the same idea; the grain is now a named
+        // cache under `reload`, composed in Program.cs.
         //
-        // The general form of the two above, and of every reload button four domains grew
+        // The general form of that command, and of every reload button four domains grew
         // separately. Content written outside an admin service -- a SQL script, a restore -- is
         // invisible until the cache holding it is read again, and this is the way to do that
         // without restarting the hotel.
@@ -242,153 +225,6 @@ public sealed class ConsoleCommandDispatcher(IServiceProvider services) : IConso
                 catch (Exception ex)
                 {
                     write($"Reload failed for '{args[0]}': {ex.Message}");
-                }
-
-                return true;
-            }
-
-            // Mystery box keys are not furniture, so there is no catalogue or inventory route to
-            // hand one out — this is the operator's grant path (and what a quest reward or a
-            // dashboard action would call into).
-            case "mystery-key":
-            {
-                if (args.Length < 2)
-                {
-                    write(
-                        "Usage: mystery-key <username> <colour>  (colours: "
-                            + string.Join(", ", MysteryBoxColors.All)
-                            + ")"
-                    );
-
-                    return true;
-                }
-
-                string colour = MysteryBoxColors.Normalize(args[1]);
-
-                if (colour.Length == 0)
-                {
-                    write(
-                        $"'{args[1]}' is not a colour the client can render. Valid colours: "
-                            + string.Join(", ", MysteryBoxColors.All)
-                    );
-
-                    return true;
-                }
-
-                try
-                {
-                    IGrainFactory grains = services.GetRequiredService<IGrainFactory>();
-                    PlayerId? playerId = await grains
-                        .GetPlayerDirectoryGrain()
-                        .GetPlayerIdAsync(args[0], ct)
-                        .ConfigureAwait(false);
-
-                    if (playerId is null)
-                    {
-                        write($"No player named '{args[0]}'.");
-
-                        return true;
-                    }
-
-                    MysteryBoxAdminResult result = await services
-                        .GetRequiredService<IMysteryBoxAdminService>()
-                        .GrantKeyAsync(playerId.Value.Value, colour, "console", ct)
-                        .ConfigureAwait(false);
-
-                    write(
-                        result.Success
-                            ? $"Gave {args[0]} a {colour} mystery box key."
-                            : $"Could not give {args[0]} a key: {result.ErrorCode}"
-                    );
-                }
-                catch (Exception ex)
-                {
-                    write($"mystery-key failed: {ex.Message}");
-                }
-
-                return true;
-            }
-
-            // The generic item grant can create the same furniture, but only from a raw definition
-            // id and without refreshing the recipient's tracker; this picks the box by colour.
-            case "mystery-box":
-            {
-                if (args.Length < 2)
-                {
-                    write(
-                        "Usage: mystery-box <username> <colour>  (colours: "
-                            + string.Join(", ", MysteryBoxColors.All)
-                            + ")"
-                    );
-
-                    return true;
-                }
-
-                string boxColour = MysteryBoxColors.Normalize(args[1]);
-
-                if (boxColour.Length == 0)
-                {
-                    write(
-                        $"'{args[1]}' is not a colour the client can render. Valid colours: "
-                            + string.Join(", ", MysteryBoxColors.All)
-                    );
-
-                    return true;
-                }
-
-                try
-                {
-                    IMysteryBoxAdminService admin =
-                        services.GetRequiredService<IMysteryBoxAdminService>();
-                    IGrainFactory grains = services.GetRequiredService<IGrainFactory>();
-
-                    // Any furniture running the mystery box logic will do; the colour is baked into
-                    // the item's state, not into the definition.
-                    int definitionId = (
-                        await grains
-                            .GetMysteryBoxManagerGrain()
-                            .GetBoxDefinitionIdsAsync(ct)
-                            .ConfigureAwait(false)
-                    ).FirstOrDefault();
-
-                    if (definitionId <= 0)
-                    {
-                        write("No furniture definition runs the mystery box logic.");
-
-                        return true;
-                    }
-
-                    PlayerId? boxPlayerId = await grains
-                        .GetPlayerDirectoryGrain()
-                        .GetPlayerIdAsync(args[0], ct)
-                        .ConfigureAwait(false);
-
-                    if (boxPlayerId is null)
-                    {
-                        write($"No player named '{args[0]}'.");
-
-                        return true;
-                    }
-
-                    MysteryBoxAdminResult result = await admin
-                        .GrantBoxAsync(
-                            boxPlayerId.Value.Value,
-                            definitionId,
-                            boxColour,
-                            "console",
-                            ct
-                        )
-                        .ConfigureAwait(false);
-
-                    write(
-                        result.Success
-                            ? $"Gave {args[0]} a {boxColour} mystery box."
-                            : $"Could not give {args[0]} a box: {result.ErrorCode}"
-                    );
-                }
-                catch (Exception ex)
-                {
-                    write($"mystery-box failed: {ex.Message}");
                 }
 
                 return true;

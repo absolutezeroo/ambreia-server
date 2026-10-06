@@ -10,7 +10,6 @@ using Vortex.Dashboard.API.Api.Progression.Contracts;
 using Vortex.Dashboard.API.Infrastructure;
 using Vortex.Database.Context;
 using Vortex.Primitives.Furniture.Enums;
-using Vortex.Primitives.Prizes;
 
 namespace Vortex.Dashboard.API.Api.Progression;
 
@@ -45,9 +44,7 @@ internal sealed class PrizePoolReads(
                         p.Name,
                         p.Variants,
                         p.Notes,
-                        p.Enabled,
-                        p.Code == PrizePoolCodes.MysteryBox
-                            || p.Code == PrizePoolCodes.MysteryTrophy
+                        p.Enabled
                     ))
                     .ToListAsync(ct)
                     .ConfigureAwait(false);

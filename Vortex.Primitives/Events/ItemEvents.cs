@@ -171,23 +171,23 @@ public sealed record ItemPickedUpEvent(
 
 /// <summary>
 /// Why a furniture row stopped existing. Once <c>DeletedAt</c> is stamped the row keeps no trace of
-/// what spent it, so this is the only thing that tells a cracked egg from a binned sticky in the
+/// what spent it, so this is the only thing that tells an opened present from a binned sticky in the
 /// forensics trail.
 /// </summary>
 public enum ItemDeletionReason
 {
-    Binned,
-    CreditRedeemed,
-    PresentOpened,
-    Cracked,
-    MysteryBoxOpened,
-    MysteryTrophyOpened,
-    PetFoodUsedUp,
-    MonsterplantSeedPlanted,
+    Binned = 0,
+    CreditRedeemed = 1,
+    PresentOpened = 2,
+
+    // 3, 4 and 5 were a crackable cracking and the mystery box and trophy opening, removed in M0.
+    // Not renumbered.
+    PetFoodUsedUp = 6,
+    MonsterplantSeedPlanted = 7,
 }
 
 /// <summary>
-/// A furniture item was permanently destroyed (consumed by the room, cracked, opened, ...).
+/// A furniture item was permanently destroyed (consumed by the room, opened, ...).
 /// </summary>
 public sealed record ItemDeletedEvent(
     int ItemId,

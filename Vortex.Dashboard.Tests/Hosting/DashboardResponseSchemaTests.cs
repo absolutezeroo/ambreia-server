@@ -97,7 +97,6 @@ public sealed class DashboardResponseSchemaTests
         ("/api/v1/gamedata", typeof(GamedataFileList)),
         ("/api/v1/gamedata/entries", typeof(GamedataEntryPage)),
         ("/api/v1/gamedata/languages", typeof(GamedataLanguageList)),
-        ("/api/v1/mystery-box/colors", typeof(MysteryBoxColorOptions)),
         ("/api/v1/meta/endpoints", typeof(ApiRouteCatalog)),
         ("/api/v1/directory/rooms/active", typeof(ImmutableArray<RoomSummaryDto>)),
         (
@@ -128,8 +127,6 @@ public sealed class DashboardResponseSchemaTests
         ("/api/v1/navigator/config", typeof(NavigatorSetup)),
         ("/api/v1/monitoring/inventory", typeof(DashboardInventory)),
         ("/api/v1/furniture/definitions", typeof(FurnitureDefinitionPage)),
-        ("/api/v1/mystery-box", typeof(MysteryBoxContent)),
-        ("/api/v1/mystery-box/stats", typeof(MysteryBoxStats)),
         ("/api/v1/quests", typeof(QuestList)),
         ("/api/v1/quests/stats", typeof(QuestStats)),
         ("/api/v1/quests/types", typeof(QuestTypeOptions)),

@@ -24,8 +24,7 @@ public sealed record FeedPoll(
 /// One entry in the feed — or one comment, which is the same shape by construction.
 /// </summary>
 /// <remarks>
-/// Flat, the way <see cref="PhotoSummary"/> is flat, rather than nesting an author object: the two
-/// travel together on the same page and a reader should not have to hold two conventions.
+/// Flat rather than nesting an author object.
 /// <paramref name="Comments"/> holds the three most recent on a root and is empty on a comment —
 /// the thread is one level deep, so a comment has none by definition.
 /// </remarks>
@@ -40,7 +39,6 @@ public sealed record FeedPost(
     FeedPostKind Kind,
     string Body,
     DateTime CreatedAt,
-    IReadOnlyList<PhotoSummary> Photos,
     FeedPoll? Poll,
     IReadOnlyList<string> Tags,
     int CommentCount,
@@ -50,8 +48,7 @@ public sealed record FeedPost(
     bool FavoritedByMe,
     bool Mine,
     IReadOnlyList<FeedPost> Comments,
-    FeedReposter? Reposter = null,
-    FeedAlbum? Album = null
+    FeedReposter? Reposter = null
 );
 
 /// <summary>
@@ -74,15 +71,9 @@ public sealed record FeedReposter(string Name, string FigureString, DateTime At)
 public sealed record FeedPage(int Page, int PageSize, int Total, IReadOnlyList<FeedPost> Items);
 
 /// <summary>What the composer sends.</summary>
-/// <remarks>
-/// Photos arrive as KEYS because that is what the browser knows — the gallery hands it keys and
-/// <c>photoUrl</c> builds a url out of one. The service resolves each to a row and stores the row's
-/// id; a key that resolves to nothing is a refusal, never a quietly skipped photo.
-/// </remarks>
 public sealed record FeedPublishRequest(
     FeedPostKind Kind,
     string Body,
-    IReadOnlyList<string>? PhotoKeys,
     IReadOnlyList<string>? PollChoices,
     int? ParentId,
     int? GroupId
@@ -94,8 +85,6 @@ public enum FeedRefusal
     None = 0,
     BodyEmpty,
     BodyTooLong,
-    TooManyPhotos,
-    PhotoNotYours,
     PollInvalid,
     ParentNotFound,
     ParentNotRoot,
@@ -122,8 +111,6 @@ public enum FeedRefusal
 /// because it reads its own new row back through this same gate. Publishing is the consent:
 /// posting to a public feed is itself an act of publication, where <c>ProfileVisible</c> governs
 /// whether someone may browse your profile, which is a different question.
-/// <see cref="IWebApiPhotoService"/> keeps that rule for the gallery deliberately — browsing
-/// someone's photos under their name IS browsing them.
 /// </para>
 /// <para>
 /// Anonymous, like the gallery and the profile beside it. <c>viewerId</c> is the signed-in player

@@ -109,7 +109,7 @@ public sealed class FeedVoteTests
             await Service(factory)
                 .PublishAsync(
                     1,
-                    new FeedPublishRequest(FeedPostKind.Status, "coucou", null, null, null, null),
+                    new FeedPublishRequest(FeedPostKind.Status, "coucou", null, null, null),
                     default
                 )
         ).Post!;
@@ -155,7 +155,6 @@ public sealed class FeedVoteTests
                     new FeedPublishRequest(
                         FeedPostKind.Poll,
                         "Pizza ou burger ?",
-                        null,
                         ["Pizza", "Burger"],
                         null,
                         null

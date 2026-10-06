@@ -134,13 +134,6 @@ internal sealed class PrizePoolAdminService(
             return PrizeAdminResult.Fail("pool_not_found");
         }
 
-        // The built-in pools are drawn by code from server code paths; deleting one would leave the
-        // mystery box opening into an empty pool with no way back through the UI.
-        if (IsBuiltIn(entity.Code))
-        {
-            return PrizeAdminResult.Fail("pool_is_built_in");
-        }
-
         db.PrizePools.Remove(entity);
         await db.SaveChangesAsync(ct).ConfigureAwait(false);
         await ReloadAsync(ct).ConfigureAwait(false);
@@ -381,9 +374,6 @@ internal sealed class PrizePoolAdminService(
 
         return PrizeAdminResult.Ok(0);
     }
-
-    private static bool IsBuiltIn(string code) =>
-        code is PrizePoolCodes.MysteryBox or PrizePoolCodes.MysteryTrophy;
 
     private static string NormalizeCode(string? code) =>
         string.IsNullOrWhiteSpace(code) ? string.Empty : code.Trim().ToLowerInvariant();

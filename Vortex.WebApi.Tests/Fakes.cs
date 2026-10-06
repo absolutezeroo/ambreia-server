@@ -8,7 +8,6 @@ using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Vortex.Primitives.Authentication;
-using Vortex.Primitives.Camera;
 using Vortex.Primitives.Events;
 using Vortex.Primitives.Moderation.WordFilter;
 using Vortex.Primitives.Observability;
@@ -599,107 +598,6 @@ internal sealed class FakeTrustedLocationService : IAccountTrustedLocationServic
 
         return Task.FromResult(forgotten);
     }
-}
-
-/// <summary>
-/// Photos in a dictionary.
-/// </summary>
-/// <remarks>
-/// Keys are minted and validated exactly as the real store does, because that shape is what the
-/// public route leans on: it hands a url segment straight to <see cref="ReadPhotoAsync"/> and trusts
-/// the store to refuse anything it did not mint. A fake that accepted any string would let a test
-/// pass over a route that serves arbitrary paths.
-/// </remarks>
-internal sealed class FakeCameraPhotoStore : ICameraPhotoStore
-{
-    private readonly ConcurrentDictionary<string, byte[]> _photos = new(StringComparer.Ordinal);
-    private readonly ConcurrentDictionary<int, byte[]> _thumbnails = new();
-    private readonly ConcurrentDictionary<string, byte[]> _small = new(StringComparer.Ordinal);
-
-    public string NewPhotoKey() => Guid.NewGuid().ToString("N").ToUpperInvariant();
-
-    /// <summary>Puts a photo in the store without going through a render.</summary>
-    public string Add(byte[] png)
-    {
-        string key = NewPhotoKey();
-
-        _photos[key] = png;
-
-        return key;
-    }
-
-    public Task<bool> SaveSceneAsync(
-        string photoKey,
-        ReadOnlyMemory<byte> deflatedScene,
-        CancellationToken ct
-    ) => Task.FromResult(IsMintedKey(photoKey));
-
-    public Task<bool> SavePhotoAsync(
-        string photoKey,
-        ReadOnlyMemory<byte> png,
-        CancellationToken ct
-    )
-    {
-        if (!IsMintedKey(photoKey))
-        {
-            return Task.FromResult(false);
-        }
-
-        _photos[photoKey] = png.ToArray();
-
-        return Task.FromResult(true);
-    }
-
-    public Task<ReadOnlyMemory<byte>> ReadPhotoAsync(string photoKey, CancellationToken ct) =>
-        Task.FromResult(
-            IsMintedKey(photoKey) && _photos.TryGetValue(photoKey, out byte[]? png)
-                ? new ReadOnlyMemory<byte>(png)
-                : ReadOnlyMemory<byte>.Empty
-        );
-
-    public string PublicPath(string photoKey, string urlPathPrefix) =>
-        IsMintedKey(photoKey) ? $"{urlPathPrefix}{photoKey}.png" : string.Empty;
-
-    /// <summary>
-    /// The small copy, derived from the photo and kept — the shape the real store has, because a
-    /// fake that stored the two independently would let a test pass over a route that serves a
-    /// small copy of a photo nobody took.
-    /// </summary>
-    public Task<ReadOnlyMemory<byte>> ReadSmallPhotoAsync(string photoKey, CancellationToken ct) =>
-        Task.FromResult(
-            IsMintedKey(photoKey) && _photos.TryGetValue(photoKey, out byte[]? png)
-                ? new ReadOnlyMemory<byte>(_small.GetOrAdd(photoKey, _ => [.. png, 0xEE]))
-                : ReadOnlyMemory<byte>.Empty
-        );
-
-    /// <summary>Puts a room's thumbnail in the store without going through a render.</summary>
-    public void AddRoomThumbnail(int roomId, byte[] png) => _thumbnails[roomId] = png;
-
-    public Task<bool> SaveRoomThumbnailAsync(
-        int roomId,
-        ReadOnlyMemory<byte> png,
-        CancellationToken ct
-    )
-    {
-        if (roomId <= 0)
-        {
-            return Task.FromResult(false);
-        }
-
-        _thumbnails[roomId] = png.ToArray();
-
-        return Task.FromResult(true);
-    }
-
-    public Task<ReadOnlyMemory<byte>> ReadRoomThumbnailAsync(int roomId, CancellationToken ct) =>
-        Task.FromResult(
-            _thumbnails.TryGetValue(roomId, out byte[]? png)
-                ? new ReadOnlyMemory<byte>(png)
-                : ReadOnlyMemory<byte>.Empty
-        );
-
-    private static bool IsMintedKey(string photoKey) =>
-        photoKey.Length == 32 && photoKey.All(char.IsAsciiHexDigitUpper);
 }
 
 /// <summary>

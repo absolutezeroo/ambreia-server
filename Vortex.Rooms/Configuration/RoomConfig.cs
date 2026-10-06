@@ -77,22 +77,6 @@ public class RoomConfig
     /// this is the per-side offer ceiling enforced by the trade session.</summary>
     public int MaxTradeItemsPerSide { get; init; } = 1500;
 
-    /// <summary>
-    /// How many song disks one jukebox holds. The client is told this number and draws that many
-    /// slots, so it is a display bound as much as a limit; the refusal it triggers has its own
-    /// message (<c>JukeboxPlayListFull</c>) and its own dialog.
-    /// </summary>
-    public int JukeboxCapacity { get; init; } = 20;
-
-    /// <summary>How long a half-open mystery box keeps waiting for its other half. The client's wait
-    /// dialog has no timer of its own, so without this a player who walked away leaves the box
-    /// permanently reserved against everyone else.</summary>
-    public int MysteryBoxWaitTimeoutMs { get; init; } = 120000;
-
-    /// <summary>Cap on the inscription a mystery trophy can carry, so an oversized string cannot be
-    /// pushed into the trophy's stuff data (which every viewer of the room then receives).</summary>
-    public int MysteryTrophyInscriptionMaxLength { get; init; } = 100;
-
     /// <summary>Minimum seconds between chat lines from the same player under each room-configured
     /// <c>ChatFloodSensitivityType</c>, keyed Extra/Normal/Minimal (SEC-03). A line arriving before
     /// its slot sends <c>FloodControlMessageComposer</c> with the remaining wait instead of being
@@ -106,51 +90,4 @@ public class RoomConfig
     /// somebody types quickly, and reads as the chat being broken rather than protected.
     /// </summary>
     public int ChatFloodAllowance { get; init; } = 5;
-
-    /// <summary>
-    /// Where camera photos are written: the scene as it arrived, and later the rendered PNG.
-    /// </summary>
-    /// <remarks>
-    /// Deployment config, not hotel config — it names a disk, so it belongs in appsettings rather
-    /// than in the admin-editable server config the camera's prices and limits live in. It must sit
-    /// outside anything served statically: these files are reached through a route that maps a key to
-    /// a path, never by a web server walking a directory.
-    ///
-    /// <para>
-    /// <b>This path has to be a mounted volume in any container deployment.</b> A photo is referenced
-    /// forever — the furniture a player bought carries its url in its stuff data — and a container is
-    /// replaced on every release. Unmounted, the frames stay on the walls and the images behind them
-    /// vanish at the next deploy, which reads as "the camera broke" weeks after the change that did
-    /// it. The default resolves under the content root, which is <c>/app</c> in the image, so the
-    /// mount belongs on <c>/app/data</c>; see the warning beside it in the Dockerfile.
-    /// </para>
-    /// </remarks>
-    public string CameraPhotoRoot { get; init; } = "data/camera-photos";
-
-    /// <summary>
-    /// The longest side, in pixels, of the <c>_small</c> copy of a photo.
-    /// </summary>
-    /// <remarks>
-    /// A photo hung on a wall is not fetched at the size it was taken: the client asks for the
-    /// <c>_small</c> variant and hands that one image to the furniture at both room scales, so
-    /// whatever comes back is drawn at its own size — and a full-resolution photo on a wall is a
-    /// photo the size of the room. 110 is what Habbo's own thumbnails measure and the size of the
-    /// slot the navigator shows one in. A knob, because the right number is a question about
-    /// artwork rather than about code.
-    /// </remarks>
-    public int CameraSmallPhotoSize { get; init; } = 110;
-
-    /// <summary>
-    /// Where the hotel's sprites are extracted to. A camera photo resolves every name in its scene
-    /// against this directory.
-    /// </summary>
-    /// <remarks>
-    /// Loose PNG files, one per asset key, extracted once from the asset pack — the same thing the
-    /// reference emulator asks of its operator. The server does not read <c>.nitro</c> bundles and
-    /// has no business learning to: a photo that is missing a frame is a hole in a picture, and a
-    /// server that decodes bundles is a second asset pipeline to keep in step with the client's.
-    /// A hotel with nothing here still takes photos; they come out as the room's shape and colours
-    /// with no furniture in them, which is a legible way to find out the directory is empty.
-    /// </remarks>
-    public string CameraSpriteRoot { get; init; } = "data/camera-sprites";
 }

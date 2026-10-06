@@ -19,7 +19,7 @@ namespace Vortex.WebApi.Hosting;
 /// The website's social feed.
 /// </summary>
 /// <remarks>
-/// The reads are anonymous, like the photo gallery and the profile: a feed is a page a signed-out
+/// The reads are anonymous, like the profile: a feed is a page a signed-out
 /// visitor opens. The session is still read, because it decides the "…ByMe" fields and nothing
 /// else.
 /// </remarks>
@@ -391,8 +391,6 @@ internal static partial class WebApiEndpointsFeed
         {
             FeedRefusal.BodyEmpty => "feed_body_empty",
             FeedRefusal.BodyTooLong => "feed_body_too_long",
-            FeedRefusal.TooManyPhotos => "feed_too_many_photos",
-            FeedRefusal.PhotoNotYours => "feed_photo_not_yours",
             FeedRefusal.PollInvalid => "feed_poll_invalid",
             FeedRefusal.ParentNotRoot => "feed_parent_not_root",
             FeedRefusal.GroupNotMember => "feed_group_not_member",

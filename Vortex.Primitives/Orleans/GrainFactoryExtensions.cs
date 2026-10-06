@@ -1,6 +1,5 @@
 using Orleans;
 using Vortex.Primitives.Badges.Grains;
-using Vortex.Primitives.Camera.Grains;
 using Vortex.Primitives.Catalog.Grains;
 using Vortex.Primitives.Fishing.Grains;
 using Vortex.Primitives.FriendList.Grains;
@@ -9,7 +8,6 @@ using Vortex.Primitives.Help.Grains;
 using Vortex.Primitives.Inventory.Grains;
 using Vortex.Primitives.Marketplace.Grains;
 using Vortex.Primitives.Moderation.Grains;
-using Vortex.Primitives.MysteryBox.Grains;
 using Vortex.Primitives.Players;
 using Vortex.Primitives.Players.Grains;
 using Vortex.Primitives.Polls.Grains;
@@ -69,17 +67,8 @@ public static class GrainFactoryExtensions
     public static IRoomTrading GetRoomTrading(this IGrainFactory factory, RoomId roomId) =>
         factory.GetGrain<IRoomTrading>((long)roomId.Value);
 
-    public static IRoomMysteryBox GetRoomMysteryBox(this IGrainFactory factory, RoomId roomId) =>
-        factory.GetGrain<IRoomMysteryBox>((long)roomId.Value);
-
     public static IRoomDoorbell GetRoomDoorbell(this IGrainFactory factory, RoomId roomId) =>
         factory.GetGrain<IRoomDoorbell>((long)roomId.Value);
-
-    public static IRoomCrackable GetRoomCrackable(this IGrainFactory factory, RoomId roomId) =>
-        factory.GetGrain<IRoomCrackable>((long)roomId.Value);
-
-    public static IRoomJukebox GetRoomJukebox(this IGrainFactory factory, RoomId roomId) =>
-        factory.GetGrain<IRoomJukebox>((long)roomId.Value);
 
     public static IRoomPersistenceGrain GetRoomPersistenceGrain(
         this IGrainFactory factory,
@@ -218,11 +207,6 @@ public static class GrainFactoryExtensions
         long playerId
     ) => factory.GetGrain<IPlayerEffectGrain>(playerId);
 
-    public static IPlayerCameraGrain GetPlayerCameraGrain(
-        this IGrainFactory factory,
-        PlayerId playerId
-    ) => factory.GetGrain<IPlayerCameraGrain>(playerId.Value);
-
     public static IAchievementManagerGrain GetAchievementManagerGrain(this IGrainFactory factory) =>
         factory.GetGrain<IAchievementManagerGrain>(SingletonGrainId.GLOBAL);
 
@@ -305,9 +289,6 @@ public static class GrainFactoryExtensions
         long playerId
     ) => factory.GetGrain<IPlayerPrizeGrain>(playerId);
 
-    public static IMysteryBoxManagerGrain GetMysteryBoxManagerGrain(this IGrainFactory factory) =>
-        factory.GetGrain<IMysteryBoxManagerGrain>(SingletonGrainId.GLOBAL);
-
     public static IPlayerClothingGrain GetPlayerClothingGrain(
         this IGrainFactory factory,
         PlayerId playerId
@@ -317,16 +298,6 @@ public static class GrainFactoryExtensions
         this IGrainFactory factory,
         long playerId
     ) => factory.GetGrain<IPlayerClothingGrain>(playerId);
-
-    public static IPlayerMysteryBoxGrain GetPlayerMysteryBoxGrain(
-        this IGrainFactory factory,
-        PlayerId playerId
-    ) => factory.GetGrain<IPlayerMysteryBoxGrain>(playerId.Value);
-
-    public static IPlayerMysteryBoxGrain GetPlayerMysteryBoxGrain(
-        this IGrainFactory factory,
-        long playerId
-    ) => factory.GetGrain<IPlayerMysteryBoxGrain>(playerId);
 
     public static ITargetedOfferManagerGrain GetTargetedOfferManagerGrain(
         this IGrainFactory factory

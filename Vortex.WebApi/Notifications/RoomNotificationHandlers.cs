@@ -43,34 +43,6 @@ internal static class RoomOwner
 }
 
 /// <summary>
-/// Somebody rated my room.
-/// </summary>
-/// <remarks>
-/// The sink drops the row when the rater is the owner, so rating your own room notifies nobody.
-/// </remarks>
-public sealed class RoomRatedNotificationHandler(
-    INotificationSink notifications,
-    IDbContextFactory<VortexDbContext> dbContextFactory
-) : IEventHandler<RoomRatedEvent>
-{
-    public async ValueTask HandleAsync(RoomRatedEvent e, EventContext ctx, CancellationToken ct)
-    {
-        int owner = await RoomOwner.OfAsync(dbContextFactory, e.RoomId, ct).ConfigureAwait(false);
-
-        await notifications
-            .NotifyAsync(
-                owner,
-                NotificationKind.RoomRated,
-                actorPlayerId: e.ActorId,
-                targetId: e.RoomId,
-                data: JsonSerializer.Serialize(new { points = e.Points }),
-                ct: ct
-            )
-            .ConfigureAwait(false);
-    }
-}
-
-/// <summary>
 /// Staff acted on my room.
 /// </summary>
 /// <remarks>

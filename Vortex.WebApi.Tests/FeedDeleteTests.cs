@@ -77,7 +77,6 @@ public sealed class FeedDeleteTests
                     new FeedPublishRequest(
                         Kind: FeedPostKind.Status,
                         Body: "et hop",
-                        PhotoKeys: null,
                         PollChoices: null,
                         ParentId: root.Id,
                         GroupId: null
@@ -95,7 +94,6 @@ public sealed class FeedDeleteTests
                     new FeedPublishRequest(
                         Kind: FeedPostKind.Status,
                         Body: "encore",
-                        PhotoKeys: null,
                         PollChoices: null,
                         ParentId: child.Id,
                         GroupId: null
@@ -129,7 +127,6 @@ public sealed class FeedDeleteTests
                 new FeedPublishRequest(
                     Kind: FeedPostKind.Status,
                     Body: "trop tard",
-                    PhotoKeys: null,
                     PollChoices: null,
                     ParentId: post.Id,
                     GroupId: null
@@ -169,7 +166,7 @@ public sealed class FeedDeleteTests
             await Service(factory)
                 .PublishAsync(
                     playerId,
-                    new FeedPublishRequest(FeedPostKind.Status, "coucou", null, null, null, null),
+                    new FeedPublishRequest(FeedPostKind.Status, "coucou", null, null, null),
                     default
                 )
         ).Post!;

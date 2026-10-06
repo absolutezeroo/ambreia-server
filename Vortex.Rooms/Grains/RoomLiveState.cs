@@ -98,10 +98,6 @@ public sealed class RoomLiveState
     /// same <see cref="RoomTradeSession"/> instance. Managed by <c>RoomGrain.Trading.cs</c>.</summary>
     internal Dictionary<PlayerId, RoomTradeSession> TradeSessionsByPlayerId { get; } = [];
 
-    /// <summary>Mystery boxes waiting for their other half, keyed by the box's owner — the only
-    /// identifier the client's cancel message carries. Managed by <c>RoomGrain.MysteryBox.cs</c>.</summary>
-    internal Dictionary<PlayerId, RoomMysteryBoxSession> MysteryBoxSessionsByOwnerId { get; } = [];
-
     public Dictionary<string, string> RoomProperties { get; } = [];
 
     public HashSet<int> DirtyHeightTileIds { get; set; } = [];

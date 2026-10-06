@@ -158,24 +158,3 @@ public sealed class RoomDoorbellAnsweredAuditHandler(IAuditSink audit)
         return ValueTask.CompletedTask;
     }
 }
-
-public sealed class RoomRatedAuditHandler(IAuditSink audit) : IEventHandler<RoomRatedEvent>
-{
-    public ValueTask HandleAsync(RoomRatedEvent e, EventContext ctx, CancellationToken ct)
-    {
-        audit.Emit(
-            new AuditEvent
-            {
-                Category = AuditCategory.Room,
-                Action = "room.rated",
-                Severity = AuditSeverity.Info,
-                Result = AuditResult.Success,
-                ActorPlayerId = e.ActorId,
-                RoomId = e.RoomId,
-                Data = JsonSerializer.Serialize(new { e.Points }),
-            }
-        );
-
-        return ValueTask.CompletedTask;
-    }
-}

@@ -1827,76 +1827,6 @@ export interface ModerationWindow {
   until: string;
 }
 
-export interface MysteryBoxColorOptions {
-  count: number;
-  items: string[];
-}
-
-export interface MysteryBoxContent {
-  definitions: MysteryBoxDefinitionList;
-  prizes: MysteryBoxPrizeList;
-  pools: MysteryBoxPoolOdds[];
-  colors: string[];
-  productTypes: string[];
-}
-
-export interface MysteryBoxDefinitionList {
-  count: number;
-  items: MysteryBoxDefinitionRow[];
-}
-
-export interface MysteryBoxDefinitionRow {
-  id: number;
-  name: string;
-  spriteId: number;
-  totalStates: number;
-  furnitureIconUrl: string | null;
-}
-
-export interface MysteryBoxPoolOdds {
-  pool: string;
-  color: string | null;
-  totalWeight: number;
-  entries: number;
-}
-
-export interface MysteryBoxPrizeList {
-  count: number;
-  items: MysteryBoxPrizeRow[];
-}
-
-export interface MysteryBoxPrizeRow {
-  id: number;
-  pool: string;
-  color: string | null;
-  productType: string;
-  furnitureDefinitionId: number | null;
-  extraParam: string | null;
-  weight: number;
-  enabled: boolean;
-  furnitureName: string | null;
-  furnitureIconUrl: string | null;
-}
-
-export interface MysteryBoxStats {
-  days: number;
-  since: string;
-  boxesOpened: number;
-  trophiesOpened: number;
-  prizesAwarded: number;
-  keysGranted: number;
-  keysConsumed: number;
-  keysOutstanding: number;
-  keysByColor: MysteryKeyColorCount[];
-  boxesInCirculation: number;
-}
-
-export interface MysteryKeyColorCount {
-  color: string;
-  held: number;
-  spent: number;
-}
-
 export interface NavigatorContextRow {
   id: number;
   searchCode: string;
@@ -2425,7 +2355,6 @@ export interface PrizePoolRow {
   variants: string | null;
   notes: string | null;
   enabled: boolean;
-  isBuiltIn: boolean;
 }
 
 export interface PrizePoolStats {

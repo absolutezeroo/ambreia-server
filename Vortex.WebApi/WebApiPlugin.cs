@@ -10,7 +10,6 @@ using Microsoft.Extensions.Options;
 using Orleans;
 using Vortex.Database.Context;
 using Vortex.Primitives.Authentication;
-using Vortex.Primitives.Camera;
 using Vortex.Primitives.Crypto;
 using Vortex.Primitives.Events;
 using Vortex.Primitives.Hosting;
@@ -85,9 +84,7 @@ public sealed class WebApiPlugin : IVortexPlugin
         services.TryAddSingleton<IWebApiArticleService, WebApiArticleService>();
         services.TryAddSingleton<IWebApiProfileService, WebApiProfileService>();
         services.TryAddSingleton<IWebApiRoomService, WebApiRoomService>();
-        services.TryAddSingleton<IWebApiPhotoService, WebApiPhotoService>();
         services.TryAddSingleton<IWebApiFeedService, WebApiFeedService>();
-        services.TryAddSingleton<IWebApiAlbumService, WebApiAlbumService>();
         services.TryAddSingleton<IWebApiNotificationService, WebApiNotificationService>();
         services.TryAddSingleton<IPasswordResetMailer, SmtpPasswordResetMailer>();
         services.TryAddSingleton<IWebApiPasswordResetService, WebApiPasswordResetService>();
@@ -130,7 +127,6 @@ public sealed class WebApiPlugin : IVortexPlugin
         // The very instance the grains filter with: one compiled list, one reload.
         services.UseHostService<IWordFilter>();
         services.UseHostService<IAuditSink>();
-        services.UseHostService<ICameraPhotoStore>();
 
         // Accounts.
         services.UseHostService<IAccountAuthenticator>();

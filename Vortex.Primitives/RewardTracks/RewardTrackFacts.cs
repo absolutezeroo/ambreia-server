@@ -81,9 +81,6 @@ public static class RewardTrackFacts
     /// <summary>What a chat line actually said. Filtered with <c>Contains</c>, never equality.</summary>
     public const string ChatMessage = "message";
 
-    /// <summary>A rating's direction: <c>+1</c> or <c>-1</c>.</summary>
-    public const string RatingPoints = "points";
-
     // The vocabulary the wider coverage needs. Each is a fact some event already carries: nothing
     // here costs a read, and anything that would have is left undeclared rather than faked.
 
@@ -139,9 +136,6 @@ public static class RewardTrackFacts
 
     /// <summary>A duration in seconds — a stay, an effect, a session.</summary>
     public const string DurationSeconds = "seconds";
-
-    /// <summary>A colour name, as the mystery-box vocabulary uses it.</summary>
-    public const string Colour = "colour";
 
     /// <summary>A count of months.</summary>
     public const string Months = "months";

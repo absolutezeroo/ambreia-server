@@ -103,17 +103,6 @@ public sealed record SafetyLockRequest(bool? Locked, string? CurrentPassword, st
 }
 
 /// <summary>
-/// Whether the caller wants their like on this photo, or not.
-/// </summary>
-/// <remarks>
-/// The WANTED STATE, not a toggle. A toggle sent twice — a flaky connection retrying, a double tap —
-/// lands on the opposite of what the player pressed, and the player has no way to tell which of the
-/// two happened. With the state in the body, a retry is a no-op: the row either exists or it does
-/// not, and the unique index makes saying so twice free.
-/// </remarks>
-public sealed record PhotoLikeRequest(bool Liked);
-
-/// <summary>
 /// Which choice the caller is taking in a feed poll.
 /// </summary>
 /// <remarks>
@@ -128,8 +117,8 @@ public sealed record FeedVoteRequest(int ChoiceId);
 /// Whether the caller wants this reaction on this post, or not.
 /// </summary>
 /// <remarks>
-/// The WANTED STATE, like <see cref="PhotoLikeRequest"/> and for the same reason: a toggle sent
-/// twice lands on the opposite of what the reader pressed, and they cannot tell which of the two
+/// The WANTED STATE, not a toggle: a toggle sent twice — a flaky connection retrying, a double
+/// tap — lands on the opposite of what the reader pressed, and they cannot tell which of the two
 /// happened. <see cref="Kind"/> separates a repost from a favourite, which are independent — the
 /// unique index behind them spans the kind too.
 /// </remarks>

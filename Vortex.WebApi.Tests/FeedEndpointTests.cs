@@ -133,7 +133,7 @@ public sealed class FeedEndpointTests
             await Service(factory)
                 .PublishAsync(
                     SignedInPlayerId,
-                    new FeedPublishRequest(FeedPostKind.Status, "coucou", null, null, null, null),
+                    new FeedPublishRequest(FeedPostKind.Status, "coucou", null, null, null),
                     default
                 )
         ).Post!;

@@ -6,7 +6,6 @@ using Vortex.Players.Vault;
 using Vortex.Primitives.Content;
 using Vortex.Primitives.Hosting;
 using Vortex.Primitives.Moderation;
-using Vortex.Primitives.MysteryBox;
 using Vortex.Primitives.Pets.Providers;
 using Vortex.Primitives.Players;
 using Vortex.Primitives.Players.Providers;

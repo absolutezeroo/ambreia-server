@@ -135,7 +135,7 @@ public sealed class FeedReactionTests
             await Service(factory)
                 .PublishAsync(
                     playerId,
-                    new FeedPublishRequest(FeedPostKind.Status, "coucou", null, null, null, null),
+                    new FeedPublishRequest(FeedPostKind.Status, "coucou", null, null, null),
                     default
                 )
         ).Post!;

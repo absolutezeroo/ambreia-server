@@ -1,7 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using Vortex.Database.Entities.Achievements;
 using Vortex.Database.Entities.Audit;
-using Vortex.Database.Entities.Camera;
 using Vortex.Database.Entities.Catalog;
 using Vortex.Database.Entities.Commerce;
 using Vortex.Database.Entities.Errors;
@@ -14,7 +13,6 @@ using Vortex.Database.Entities.Help;
 using Vortex.Database.Entities.Marketplace;
 using Vortex.Database.Entities.Messenger;
 using Vortex.Database.Entities.Moderation;
-using Vortex.Database.Entities.MysteryBox;
 using Vortex.Database.Entities.Navigator;
 using Vortex.Database.Entities.Permissions;
 using Vortex.Database.Entities.Pets;
@@ -116,8 +114,6 @@ public class VortexDbContext(DbContextOptions<VortexDbContext> options)
 
     public DbSet<RoomAdvertisementEntity> RoomAdvertisements { get; init; } = null!;
 
-    public DbSet<RoomRatingEntity> RoomRatings { get; init; } = null!;
-
     public DbSet<RoomChatlogEntity> Chatlogs { get; init; } = null!;
 
     public DbSet<SecurityTicketEntity> SecurityTickets { get; init; } = null!;
@@ -144,13 +140,7 @@ public class VortexDbContext(DbContextOptions<VortexDbContext> options)
 
     public DbSet<WordFilterHitEntity> WordFilterHits { get; init; } = null!;
 
-    public DbSet<CameraPhotoEntity> CameraPhotos { get; init; } = null!;
-
-    public DbSet<CameraPhotoLikeEntity> CameraPhotoLikes { get; init; } = null!;
-
     public DbSet<WebFeedPostEntity> WebFeedPosts { get; init; } = null!;
-
-    public DbSet<WebFeedPostPhotoEntity> WebFeedPostPhotos { get; init; } = null!;
 
     public DbSet<WebFeedPollChoiceEntity> WebFeedPollChoices { get; init; } = null!;
 
@@ -161,10 +151,6 @@ public class VortexDbContext(DbContextOptions<VortexDbContext> options)
     public DbSet<WebFeedTagEntity> WebFeedTags { get; init; } = null!;
 
     public DbSet<WebFeedPostTagEntity> WebFeedPostTags { get; init; } = null!;
-
-    public DbSet<WebAlbumEntity> WebAlbums { get; init; } = null!;
-
-    public DbSet<WebAlbumPhotoEntity> WebAlbumPhotos { get; init; } = null!;
 
     public DbSet<WebNotificationEntity> WebNotifications { get; init; } = null!;
 
@@ -373,8 +359,6 @@ public class VortexDbContext(DbContextOptions<VortexDbContext> options)
     public DbSet<PrizePoolBindingEntity> PrizePoolBindings { get; init; } = null!;
 
     public DbSet<PlayerPrizeClaimEntity> PlayerPrizeClaims { get; init; } = null!;
-
-    public DbSet<PlayerMysteryBoxKeyEntity> PlayerMysteryBoxKeys { get; init; } = null!;
 
     // The hotel's website (Vortex.WebApi serves the public read, the dashboard the editing). None of
     // this is game state: no grain owns it, and nothing on the game socket reads it.
@@ -637,13 +621,6 @@ public class VortexDbContext(DbContextOptions<VortexDbContext> options)
             .HasOne(c => c.PrizePoolEntity)
             .WithMany()
             .HasForeignKey(c => c.PrizePoolEntityId)
-            .OnDelete(DeleteBehavior.Cascade);
-
-        // Keys cascade with their player.
-        mb.Entity<PlayerMysteryBoxKeyEntity>()
-            .HasOne(k => k.PlayerEntity)
-            .WithMany()
-            .HasForeignKey(k => k.PlayerEntityId)
             .OnDelete(DeleteBehavior.Cascade);
     }
 }

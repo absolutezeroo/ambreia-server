@@ -63,21 +63,4 @@ public partial interface IRoomService
         bool admit,
         CancellationToken ct
     );
-
-    /// <summary>Withdraws the caller from the mystery box open they were waiting on. The client
-    /// identifies it by the box furniture's owner, which is all its cancel message carries.</summary>
-    public Task CancelMysteryBoxWaitAsync(
-        ActionContext ctx,
-        PlayerId boxOwnerId,
-        CancellationToken ct
-    );
-
-    /// <summary>Opens an inscribed mystery trophy, replacing it with a random trophy carrying
-    /// <paramref name="inscription"/>.</summary>
-    public Task OpenMysteryTrophyAsync(
-        ActionContext ctx,
-        RoomObjectId objectId,
-        string inscription,
-        CancellationToken ct
-    );
 }

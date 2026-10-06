@@ -1,6 +1,5 @@
 using System.Collections.Immutable;
 using FluentAssertions;
-using Vortex.Primitives.MysteryBox;
 using Vortex.Primitives.Prizes;
 using Xunit;
 
@@ -8,11 +7,11 @@ namespace Vortex.Players.Tests.Prizes;
 
 /// <summary>
 /// The pool's declared variant set is what keeps a typo from quietly parking an entry in the pool
-/// forever. These lock the widening rule the mystery box relied on before pools became data.
+/// forever. These lock the widening rule.
 /// </summary>
 public sealed class PrizeVariantsTests
 {
-    private static readonly ImmutableArray<string> BoxColors = [.. MysteryBoxColors.All];
+    private static readonly ImmutableArray<string> BoxColors = ["purple", "blue", "green", "red"];
 
     [Theory]
     [InlineData(null, "")]
@@ -47,9 +46,9 @@ public sealed class PrizeVariantsTests
     [Fact]
     public void NormalizeForSet_WidensAnUnknownVariantToAny()
     {
-        // "gold" is not a colour the client can tint, so an entry typed with it would match no box
-        // and sit undrawn forever. Widening to "any" is what the mystery box did before pools were
-        // data, and it keeps a typo visible as "drops too often" rather than invisible as "never".
+        // "gold" is not a variant the pool declares, so an entry typed with it would match no draw
+        // and sit undrawn forever. Widening to "any" keeps a typo visible as "drops too often"
+        // rather than invisible as "never".
         PrizeVariants.NormalizeForSet("gold", BoxColors).Should().BeEmpty();
     }
 

@@ -8,9 +8,8 @@ namespace Vortex.Database.Entities.Feed;
 /// <summary>One player reposting or favouriting one post.</summary>
 /// <remarks>
 /// <para>
-/// A row per reaction rather than a counter on the post, for the reason
-/// <see cref="Camera.CameraPhotoLikeEntity"/> already spells out in full and which applies here
-/// word for word: a number cannot be un-reacted correctly, because it does not remember who. Two
+/// A row per reaction rather than a counter on the post: a number cannot be un-reacted correctly,
+/// because it does not remember who. Two
 /// taps, a retry after a timeout, a double click — each increments a counter and none of them can
 /// be taken back.
 /// </para>

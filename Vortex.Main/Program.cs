@@ -190,10 +190,6 @@ internal class Program
                     sp.GetRequiredService<IGrainFactory>()
                         .GetFishingDefinitionsGrain()
                         .ReloadAsync(ct),
-                ["MysteryBox"] = ct =>
-                    sp.GetRequiredService<IGrainFactory>()
-                        .GetMysteryBoxManagerGrain()
-                        .ReloadAsync(ct),
             }
         ));
         builder.Services.AddSingleton<ConsoleCommandService>();

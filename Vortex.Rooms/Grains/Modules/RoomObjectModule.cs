@@ -171,17 +171,13 @@ public sealed partial class RoomObjectModule(RoomGrain roomGrain)
                     return false;
                 }
 
-                // A mystery box that leaves the floor cannot be opened any more, so whoever was
-                // waiting on it has to be released rather than left in front of a dead dialog.
-                await _roomGrain.CancelMysteryBoxSessionForItemAsync(item.ObjectId);
-
                 await _roomGrain.SendComposerToRoomAsync(item.GetRemoveComposer(pickerId));
 
                 // The hooks run between the footprint coming off the map and the identity going,
-                // and that gap is two awaits wide. They are behaviour code -- a wired box rewrites
-                // its ExtraData and tells the room its pile changed, a mystery box ends a session --
-                // so any of them can throw, and when one did the item was left off the map but still
-                // in ItemsById and still in the logic index. A game holding the index bucket kept
+                // and that gap is two awaits wide. They are behaviour code -- a logic can rewrite its
+                // ExtraData or tell the room its pile changed -- so any of them can throw, and when
+                // one did the item was left off the map but still in ItemsById and still in the
+                // logic index. A game holding the index bucket kept
                 // acting on furniture that was no longer anywhere, and the tile it used to stand on
                 // had already forgotten it.
                 //

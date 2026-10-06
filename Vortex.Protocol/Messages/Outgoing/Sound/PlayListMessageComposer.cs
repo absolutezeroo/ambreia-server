@@ -6,13 +6,9 @@ using Vortex.Primitives.Sound.Snapshots;
 namespace Vortex.Protocol.Messages.Outgoing.Sound;
 
 /// <summary>
-/// The sound machine's playlist — the Trax composer's own list, not the jukebox's.
+/// The sound machine's playlist — the Trax composer's own list. Carries the songs themselves rather
+/// than the disks holding them.
 /// </summary>
-/// <remarks>
-/// Carries the songs themselves rather than the disks holding them, which is the difference from
-/// <see cref="JukeboxSongDisksMessageComposer" />: the composer names what it can play, the jukebox
-/// names what is loaded into it.
-/// </remarks>
 [GenerateSerializer, Immutable]
 public sealed record PlayListMessageComposer : IComposer
 {

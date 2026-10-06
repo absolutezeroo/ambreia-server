@@ -13,7 +13,6 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Vortex.Database.Context;
 using Vortex.Primitives.Authentication;
-using Vortex.Primitives.Camera;
 using Vortex.Primitives.Crypto;
 using Vortex.Primitives.Hosting;
 using Vortex.Primitives.Moderation.WordFilter;
@@ -268,9 +267,7 @@ internal sealed class WebApiWebHost(
         services.AddSingleton(rootServices.GetRequiredService<IWebApiArticleService>());
         services.AddSingleton(rootServices.GetRequiredService<IWebApiProfileService>());
         services.AddSingleton(rootServices.GetRequiredService<IWebApiRoomService>());
-        services.AddSingleton(rootServices.GetRequiredService<IWebApiPhotoService>());
         services.AddSingleton(rootServices.GetRequiredService<IWebApiFeedService>());
-        services.AddSingleton(rootServices.GetRequiredService<IWebApiAlbumService>());
         services.AddSingleton(rootServices.GetRequiredService<IWebApiNotificationService>());
         services.AddSingleton(rootServices.GetRequiredService<IWebApiPasswordResetService>());
 
@@ -303,9 +300,6 @@ internal sealed class WebApiWebHost(
         // web API with it.
         services.AddSingleton(rootServices.GetRequiredService<IAuditSink>());
 
-        // Serving a room photo. The store lives in Vortex.Rooms and mints the keys, so this container
-        // gets the same instance rather than a second one pointed at the same directory.
-        services.AddSingleton(rootServices.GetRequiredService<ICameraPhotoStore>());
         services.AddSingleton(
             rootServices.GetRequiredService<IDbContextFactory<VortexDbContext>>()
         );

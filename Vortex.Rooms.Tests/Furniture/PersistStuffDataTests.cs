@@ -28,7 +28,7 @@ public sealed class PersistStuffDataTests
     public void PersistStuffData_WritesTheStuffSectionForPersistentFurniture()
     {
         IExtraData extraData = new ExtraData(null);
-        FurnitureCrackableLogic logic = new(
+        FurnitureFloorLogic logic = new(
             new StuffDataFactory(),
             StubContext(StuffDataType.MapKey, extraData)
         );
@@ -51,7 +51,7 @@ public sealed class PersistStuffDataTests
         // SetStateAsync was refactored to call PersistStuffDataAsync rather than duplicate it;
         // this pins that the state path did not lose its persistence in the move.
         IExtraData extraData = new ExtraData(null);
-        FurnitureCrackableLogic logic = new(
+        FurnitureFloorLogic logic = new(
             new StuffDataFactory(),
             StubContext(StuffDataType.LegacyKey, extraData)
         );
@@ -72,7 +72,7 @@ public sealed class PersistStuffDataTests
         // and persists used to save the new value and broadcast the old one — the furni came back
         // one edit behind for every client, with nothing thrown and nothing logged.
         IExtraData extraData = new ExtraData(null);
-        FurnitureCrackableLogic logic = new(
+        FurnitureFloorLogic logic = new(
             new StuffDataFactory(),
             StubContext(StuffDataType.MapKey, extraData)
         );

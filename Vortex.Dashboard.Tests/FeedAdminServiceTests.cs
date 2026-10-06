@@ -84,38 +84,6 @@ public sealed class FeedAdminServiceTests
     }
 
     [Fact]
-    public async Task TakesAnAlbumDownWithItsCard()
-    {
-        DbContextOptions<VortexDbContext> options = NewOptions();
-        int postId = await SeedPostAsync(options, playerId: 7);
-        int albumId;
-
-        await using (VortexDbContext seed = new(options))
-        {
-            WebAlbumEntity album = new()
-            {
-                PlayerEntityId = 7,
-                Title = "Vacances",
-                Description = string.Empty,
-                FeedPostEntityId = postId,
-            };
-
-            seed.WebAlbums.Add(album);
-            await seed.SaveChangesAsync();
-
-            albumId = album.Id;
-        }
-
-        await new FeedAdminService(new TestDbContextFactory(options)).RemoveAsync(postId, default);
-
-        await using VortexDbContext db = new(options);
-
-        (await db.WebAlbums.IgnoreQueryFilters().SingleAsync(a => a.Id == albumId))
-            .DeletedAt.Should()
-            .NotBeNull();
-    }
-
-    [Fact]
     public async Task RemovingTwiceAnswersFalse()
     {
         DbContextOptions<VortexDbContext> options = NewOptions();

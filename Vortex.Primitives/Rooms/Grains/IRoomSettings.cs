@@ -83,16 +83,6 @@ public interface IRoomSettings : IGrainWithIntegerKey
     /// clears a slot.</summary>
     Task<bool> SetRoomTagsAsync(PlayerId actor, string? tag1, string? tag2, CancellationToken ct);
 
-    /// <summary>One vote per player per room, enforced via RoomRatingEntity. Owner cannot rate
-    /// their own room. Returns the room's new score, or null if the vote was rejected -- the caller
-    /// needs the score to answer the client, which never lowers its own like button and shows
-    /// whatever the last RoomRating told it.</summary>
-    Task<int?> RateRoomAsync(PlayerId actor, int points, CancellationToken ct);
-
-    /// <summary>Whether <paramref name="actor"/> may still rate this room: not its owner, and has
-    /// not voted before. Answers the <c>canRate</c> flag the client is sent on entry.</summary>
-    Task<bool> CanRateAsync(PlayerId actor, CancellationToken ct);
-
     /// <summary>
     /// Flips this room's staff pick and answers with the value it now holds.
     /// </summary>

@@ -37,7 +37,6 @@ using Vortex.Primitives.Rooms.Events;
 using Vortex.Primitives.Rooms.Grains;
 using Vortex.Primitives.Rooms.Providers;
 using Vortex.Primitives.Rooms.Snapshots;
-using Vortex.Primitives.Sound.Providers;
 using Vortex.Rooms.Configuration;
 using Vortex.Rooms.Games.Presentation;
 using Vortex.Rooms.Games.Progression;
@@ -76,7 +75,6 @@ public sealed partial class RoomGrain : Grain, IRoomGrain
     internal readonly IPetCommandProvider _petCommandProvider;
     internal readonly IPetVocalProvider _petVocalProvider;
     internal readonly RoomConfig _roomConfig;
-    internal readonly ISongProvider _songProvider;
     internal readonly IRoomModelProvider _roomModelProvider;
 
     internal readonly RoomLiveState _state;
@@ -115,11 +113,7 @@ public sealed partial class RoomGrain : Grain, IRoomGrain
     public readonly RoomSecurityModule SecurityModule;
     public readonly RoomModerationSystem ModerationSystem;
     public readonly RoomRaidProtectionSystem RaidProtectionSystem;
-    public readonly RoomMysteryBoxSystem MysteryBoxSystem;
-    public readonly RoomCrackableSystem CrackableSystem;
-    public readonly RoomRatingSystem RatingSystem;
     public readonly RoomTradingSystem TradingSystem;
-    public readonly RoomJukeboxSystem JukeboxSystem;
 
     internal IAsyncStream<RoomOutbound> _roomOutbound = default!;
 
@@ -143,7 +137,6 @@ public sealed partial class RoomGrain : Grain, IRoomGrain
         IPetLevelProvider petLevelProvider,
         IPetCommandProvider petCommandProvider,
         IPetVocalProvider petVocalProvider,
-        ISongProvider songProvider,
         IRoomGameProvider gameProvider,
         ICommerceJournal commerceJournal,
         // Last on purpose: GrainActivationContext.CreateWithIntegerKey takes params object[], so a
@@ -172,7 +165,6 @@ public sealed partial class RoomGrain : Grain, IRoomGrain
         _petLevelProvider = petLevelProvider;
         _petCommandProvider = petCommandProvider;
         _petVocalProvider = petVocalProvider;
-        _songProvider = songProvider;
         _commerceJournal = commerceJournal;
         _wordFilter = wordFilter;
 
@@ -197,11 +189,7 @@ public sealed partial class RoomGrain : Grain, IRoomGrain
         ScoreboardPresenter = new GameScoreboardPresenter(this);
         ModerationSystem = new RoomModerationSystem(this);
         RaidProtectionSystem = new RoomRaidProtectionSystem(this);
-        MysteryBoxSystem = new RoomMysteryBoxSystem(this);
-        CrackableSystem = new RoomCrackableSystem(this);
-        RatingSystem = new RoomRatingSystem(this);
         TradingSystem = new RoomTradingSystem(this);
-        JukeboxSystem = new RoomJukeboxSystem(this);
 
         // Every game the room hosts arrives from the provider, which holds whatever any scanned
         // assembly marked [RoomGame]. There is no list of games in this file and there must not be
@@ -386,7 +374,6 @@ public sealed partial class RoomGrain : Grain, IRoomGrain
         await RunTickStepAsync("bots", () => BotSystem.ProcessBotsAsync(now, ct));
         await RunTickStepAsync("rollers", () => RollerSystem.ProcessRollersAsync(now, ct));
         await RunTickStepAsync("game-timer", () => GameTimers.ProcessAsync(now, ct));
-        await RunTickStepAsync("jukebox", () => JukeboxSystem.ProcessAsync(now, ct));
         // One step for every game the room hosts. The runtime isolates each game's failure and skips
         // the ones with nothing to do, so a room with no match running does no per-game work at all.
         await RunTickStepAsync("games", () => GameRuntime.TickAsync(now, ct));
@@ -396,7 +383,6 @@ public sealed partial class RoomGrain : Grain, IRoomGrain
             "raid-protection",
             () => RaidProtectionSystem.TickAsync(DateTime.UtcNow, ct)
         );
-        await RunTickStepAsync("mystery-box", () => ProcessMysteryBoxTimeoutsAsync(now, ct));
         await RunTickStepAsync("flush-tiles", () => FlushDirtyTilesAsync(ct));
         await RunTickStepAsync("flush-items", () => FlushDirtyItemsAsync(ct));
 

@@ -250,7 +250,9 @@ internal sealed class AchievementReads(
                     .PlayerAchievements.AsNoTracking()
                     .Where(p => p.AchievementEntityId == achievementId)
                     .GroupBy(p => p.Level)
-                    // Ordered before the projection; see the note in MysteryBoxReads.
+                    // Ordered before the projection: a positional record is opaque to the query
+                    // translator, so ordering on one of its properties cannot be pushed down (see
+                    // GroupReads).
                     .OrderBy(g => g.Key)
                     .Select(g => new AchievementLevelCount(g.Key, g.Count()))
                     .ToListAsync(ct)

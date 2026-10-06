@@ -390,15 +390,11 @@ internal static class MessageEvent
     public const int UpdateForumReadMarkerMessageEvent = 429; // AS3-verified (direct search, exact semantic match): GroupForumController::markForumAsRead() -> _SafeCls_3696
     public const int UpdateForumSettingsMessageEvent = 2793; // shape+AS3-verified: GroupForumController::updateForumSettings() (_SafeCls_2662)
     public const int UpdateThreadMessageEvent = 3206;
-    public const int AddJukeboxDiskEvent = 1637; // AS3-verified (direct read, both revisions): PlayListEditorWidgetHandler::processWidgetMessage() RWPLAM_ADD_TO_PLAYLIST -> connection.send(new _SafeCls_3368(diskId,slotNumber)) registry@1637 (old _SafeCls_2450@3969 moved)
-    public const int GetJukeboxPlayListMessageEvent = 3707; // AS3-verified (direct read, both revisions): JukeboxPlayListController::requestPlayList() -> _SafeCls_2479
-    public const int GetNowPlayingMessageEvent = 1281; // AS3-verified (old-revision trace): _SafeCls_2533 -> onJukeboxInit() still exists in current revision at 1281
     public const int GetOfficialSongIdMessageEvent = 1723; // AS3-verified (old-revision trace): _SafeCls_2539 -> onSelectProduct() still exists in current revision at 1723
     public const int GetSongInfoMessageEvent = 3130; // AS3-verified (old-revision trace): _SafeCls_3422 -> sendNextSongRequestMessage() still exists in current revision at 3130
     public const int GetSoundMachinePlayListMessageEvent = 3633; // AS3-verified (direct read, both revisions): SoundMachinePlayListController::requestPlayList() -> _SafeCls_3689
     public const int GetSoundSettingsEvent = 541; // AS3-verified (direct read, both revisions): HabboSoundManagerFlash10::init() -> _SafeCls_1901
     public const int GetUserSongDisksMessageEvent = 1685; // AS3-verified (ghost fix): HabboMusicController::requestUserSongDisks()
-    public const int RemoveJukeboxDiskEvent = 2003; // AS3-verified (direct read, both revisions): PlayListEditorWidgetHandler RWPLAM_REMOVE_FROM_PLAYLIST -> _SafeCls_3444
     public const int ChangeUserNameMessageEvent = 1703; // AS3-verified (ghost fix): NameChangeController::changeName()
 
     // The onboarding name dialog claims a name with a DIFFERENT composer than the paid rename:
@@ -432,7 +428,6 @@ internal static class MessageEvent
 
     public const int GetRentOrBuyoutOfferMessageEvent = 1583;
     public const int GetYoutubeDisplayStatusMessageEvent = 273; // AS3-verified (direct read, both revisions): YoutubeDisplayWidget handler::processEvent() RETWE_OPEN_WIDGET -> connection.send(new _SafeCls_2883(objectId)) @273 (old _SafeCls_3162@3635)
-    public const int OpenMysteryTrophyMessageEvent = 2242; // AS3-verified (WIN63 registry _composers[2242] = _SafeCls_3679): MysteryTrophyOpenDialogView::onMouseClick() -> new _SafeCls_3679(objectId, inscription) -> (int objectId, string inscription)
     public const int OpenPetPackageMessageEvent = 1884;
     public const int PlacePostItMessageEvent = 1122; // AS3-verified (direct read, both revisions): room engine placeObject() furniture_is_stickie branch -> _SafeCls_3815 @1122 (old _SafeCls_3355@174; slot freed by correcting PlaceObjectMessageEvent above)
     public const int PresentOpenMessageEvent = 2485;
@@ -497,7 +492,6 @@ internal static class MessageEvent
     public const int MyRoomRightsSearchMessageEvent = 1091;
     public const int MyRoomsSearchMessageEvent = 361;
     public const int PopularRoomsSearchMessageEvent = 2857;
-    public const int RateFlatMessageEvent = 407;
     public const int RemoveOwnRoomRightsRoomMessageEvent = 260;
     public const int RoomAdEventTabAdClickedEvent = 759;
     public const int RoomAdEventTabViewedEvent = 3729;
@@ -524,7 +518,6 @@ internal static class MessageEvent
     public const int PurchaseMintTokenMessageEvent = 67; // AS3-verified (old-revision trace): _SafeCls_2316 -> purchaseMintTokens() still exists in current revision at 67
     public const int PeerUsersClassificationMessageEvent = 628; // AS3-verified (ghost fix): RoomSession::sendPeerUsersClassificationMessage()
     public const int RoomUsersClassificationMessageEvent = 157; // AS3-verified (ghost fix): RoomSession::sendRoomUsersClassificationMessage()
-    public const int MysteryBoxWaitingCanceledMessageEvent = 1063; // AS3-verified (direct read, both revisions): MysteryBoxOpenDialogView cancel_button -> connection.send(new _SafeCls_2598(ownerId)) @1063 (old _SafeCls_3318@3661)
     public const int AmbassadorAlertMessageEvent = 3361;
     public const int AssignRightsMessageEvent = 373;
     public const int BanUserWithDurationMessageEvent = 120;
@@ -589,12 +582,6 @@ internal static class MessageEvent
     public const int Game2GameChatMessageEvent = 3083;
     public const int Game2LoadStageReadyMessageEvent = 1320;
     public const int Game2PlayAgainMessageEvent = 855;
-    public const int PhotoCompetitionMessageEvent = 2707; // AS3-verified (old-revision trace): _SafeCls_3696 -> confirmPhotoCompetitionSubmit() still exists in current revision at 2707
-    public const int PublishPhotoMessageEvent = 375; // shape+AS3-verified: CameraWidgetHandler::confirmPhotoPublish() (_SafeCls_3566)
-    public const int PurchasePhotoMessageEvent = 753; // shape+AS3-verified: CameraWidgetHandler::confirmPhotoPurchase() (_SafeCls_3166)
-    public const int RenderRoomMessageEvent = 3332; // AS3-verified (direct read, both revisions): RoomEngine::getRenderRoomMessage() param3=false branch -> _SafeCls_2050
-    public const int RenderRoomThumbnailMessageEvent = 1985; // AS3-verified (direct read): _composers[1985] = _SafeCls_2272 @ habbo/communication/_SafeCls_2046.as:743 -- extends _SafeCls_2050 and packs in its own constructor, which is the getRenderRoomMessage() param3=true branch
-    public const int RequestCameraConfigurationMessageEvent = 3010; // AS3-verified (old-revision trace): _SafeCls_3606 -> sendInitCameraMessage() still exists in current revision at 3010
     public const int GetPromoArticlesMessageEvent = 3152;
     #endregion
 
@@ -732,9 +719,6 @@ internal static class MessageComposer
     public const int NewUserExperienceGiftOfferComposer = 3307; // AS3-verified (ghost fix): onNewUserExperienceGiftOfferMessage @ HabboNuxDialogs
     public const int NewUserExperienceNotCompleteComposer = 752; // AS3-verified (ghost fix): onNewUserExperienceNotCompleteMessage @ HabboNuxDialogs
     public const int SelectInitialRoomComposer = 3624; // AS3-verified (ghost fix): onSelectInitialRoomResponse @ RoomPicker
-    public const int JukeboxPlayListFullMessageComposer = 949; // AS3-verified (ghost fix): onJukeboxPlayListFullMessage @ JukeboxPlayListController
-    public const int JukeboxSongDisksMessageComposer = 2257; // AS3-verified (ghost fix): onJukeboxSongDisksMessage @ JukeboxPlayListController
-    public const int NowPlayingMessageComposer = 398; // AS3-verified (ghost fix): onNowPlayingMessage @ JukeboxPlayListController
 
     // AS3-verified (direct read of the 2026 registry): _events[3050] = _SafeCls_3346, the event
     // SongDiskProductViewCatalogWidget::onOfficialSongIdMessageEvent() subscribes to. NOT 2264:
@@ -744,7 +728,6 @@ internal static class MessageComposer
     // 3050 all along (HabboMessages.ts, "=== SOUND (Trax) ===").
     public const int OfficialSongIdMessageComposer = 3050;
     public const int PlayListMessageComposer = 1242;
-    public const int PlayListSongAddedMessageComposer = 2785; // AS3-verified (ghost fix): onPlayListSongAddedMessage @ SoundMachinePlayListController
     public const int TraxSongInfoMessageComposer = 2278;
 
     // AS3-verified (direct read of the 2026 registry): _SafeStr_4546[1930] = _SafeCls_3625, the
@@ -851,7 +834,7 @@ internal static class MessageComposer
     public const int TradingItemListComposer = 2275;
     public const int TradingNotOpenComposer = 3556;
     public const int TradingOpenComposer = 953;
-    public const int TradingOtherNotAllowedComposer = 814; // AS3-verified (direct read, both revisions): inventory handler::onTradingOtherNotAllowed() -> _SafeCls_3845 @814 (old _SafeCls_2657@949 moved; 949 now JukeboxPlayListFull)
+    public const int TradingOtherNotAllowedComposer = 814; // AS3-verified (direct read, both revisions): inventory handler::onTradingOtherNotAllowed() -> _SafeCls_3845 @814 (old _SafeCls_2657@949 moved; 949 now the client's jukebox playlist-full message)
     public const int TradingYouAreNotAllowedComposer = 2294; // AS3-verified (direct read, both revisions): inventory handler::onTradingYouAreNotAllowed() -> _SafeCls_3671 @2294 (old _SafeCls_2803@1116)
     public const int MarketplaceBuyOfferResultComposer = 2249;
     public const int MarketplaceCancelOfferResultComposer = 2448;
@@ -924,7 +907,7 @@ internal static class MessageComposer
     // _SafeStr_4546[3707] = _SafeCls_2256, whose parser _SafeCls_1878 reads a count and then
     // _SafeCls_1782(wrapper) per entry -- two ints, senderId and errorCode -- which is exactly
     // what AcceptFriendResultMessageSerializer writes. HabboFriendList.onAcceptFriendResult is
-    // the listener. 3707 is also GetJukeboxPlayList client->server; the two directions are
+    // the listener. 3707 is also the jukebox playlist request client->server; the two directions are
     // separate tables and do not collide.
     public const int AcceptFriendResultComposer = 3707;
     public const int ConsoleMessageHistoryComposer = 933;
@@ -1051,16 +1034,6 @@ internal static class MessageComposer
     public const int PetInventoryComposer = 1200;
     public const int PetReceivedMessageComposer = 1692;
     public const int PetRemovedFromInventoryComposer = 3013; // AS3-verified (old-revision trace): _SafeCls_3331 -> onPetRemoved() still exists in current revision at 3013
-    public const int CameraPublishStatusMessageComposer = 203; // AS3-verified (ghost fix): onPublishStatus @ CameraWidgetHandler
-    public const int CameraPurchaseOKMessageComposer = 3907; // AS3-verified (old-revision trace): CameraWidgetHandler::onPurchaseOK() still exists in current revision at 3907
-    public const int CameraStorageUrlMessageComposer = 2176; // AS3-verified (ghost fix): onCameraStorageUrlEvent @ CameraWidgetHandler
-    public const int CompetitionStatusMessageComposer = 2622; // AS3-verified (ghost fix): onCompetitionStatus @ CameraWidgetHandler
-    public const int InitCameraMessageComposer = 2768; // AS3-verified (ghost fix): onInitCameraEvent @ CameraWidgetHandler
-    public const int ThumbnailStatusMessageComposer = 1325; // AS3-verified (name-only): onThumbnailStatus @ RoomThumbnailCameraWidgetHandler
-    public const int CancelMysteryBoxWaitMessageComposer = 3840; // AS3-verified (WIN63 registry [3840] = _SafeCls_3997 -> onCancelMysteryBoxWait @ MysteryBoxOpenDialogView): empty payload
-    public const int GotMysteryBoxPrizeMessageComposer = 353; // AS3-verified (WIN63 registry [353] = _SafeCls_3978, parser _SafeCls_4210): (string contentType, int classId)
-    public const int MysteryBoxKeysMessageComposer = 1389; // AS3-verified (WIN63 registry [1389] = _SafeCls_2221, parser _SafeCls_1736): (string boxColor, string keyColor)
-    public const int ShowMysteryBoxWaitMessageComposer = 691; // AS3-verified (WIN63 registry [691] = _SafeCls_3631 -> onShowMysteryBoxWait @ MysteryBoxOpenDialogView): empty payload
     public const int AuthenticationOKMessageComposer = 230;
     public const int CompleteDiffieHandshakeComposer = 3401;
     public const int DisconnectReasonComposer = 4000;

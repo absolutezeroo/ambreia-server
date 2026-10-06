@@ -32,7 +32,7 @@ public sealed class FurnitureLogicStuffDataTypeTests
         System.Type expected
     )
     {
-        FurnitureCrackableLogic logic = new(new StuffDataFactory(), StubContext(definitionType));
+        FurnitureFloorLogic logic = new(new StuffDataFactory(), StubContext(definitionType));
 
         logic.StuffData.Should().BeAssignableTo(expected);
     }

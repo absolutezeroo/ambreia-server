@@ -10,7 +10,6 @@ using Vortex.Primitives.Authentication;
 using Vortex.Primitives.Fishing;
 using Vortex.Primitives.Inventory.Snapshots;
 using Vortex.Primitives.Moderation;
-using Vortex.Primitives.MysteryBox.Snapshots;
 using Vortex.Primitives.Navigator;
 using Vortex.Primitives.Networking;
 using Vortex.Primitives.Orleans;
@@ -33,7 +32,6 @@ using Vortex.Protocol.Messages.Outgoing.Inventory.Avatareffect;
 using Vortex.Protocol.Messages.Outgoing.Inventory.Clothing;
 using Vortex.Protocol.Messages.Outgoing.Inventory.Purse;
 using Vortex.Protocol.Messages.Outgoing.Moderation;
-using Vortex.Protocol.Messages.Outgoing.Mysterybox;
 using Vortex.Protocol.Messages.Outgoing.Navigator;
 using Vortex.Protocol.Messages.Outgoing.Notifications;
 using Vortex.Protocol.Messages.Outgoing.Perk;
@@ -181,9 +179,6 @@ public class SSOTicketMessageHandler(
                 new CurrencyKind { CurrencyType = CurrencyType.Emeralds },
                 ct
             );
-            Task<MysteryBoxTrackerSnapshot> mysteryBoxTask = _grainFactory
-                .GetPlayerMysteryBoxGrain(playerId)
-                .GetTrackerAsync(ct);
             Task<BuildersClubSubscriptionSnapshot> buildersClubTask =
                 _buildersClubService.GetSubscriptionAsync(playerId, ct);
 
@@ -201,7 +196,6 @@ public class SSOTicketMessageHandler(
                     activityPointsTask,
                     silverTask,
                     emeraldsTask,
-                    mysteryBoxTask,
                     buildersClubTask
                 )
                 .ConfigureAwait(false);
@@ -425,21 +419,6 @@ public class SSOTicketMessageHandler(
                     ct
                 )
                 .ConfigureAwait(false);
-            // Drives the mystery box toolbar tracker. Sent inline rather than pushed by the grain so
-            // it keeps its place in the login sequence; the grain owns every later refresh.
-            MysteryBoxTrackerSnapshot mysteryBoxTracker = await mysteryBoxTask.ConfigureAwait(
-                false
-            );
-
-            await ctx.SendComposerAsync(
-                    new MysteryBoxKeysMessageComposer
-                    {
-                        BoxColor = mysteryBoxTracker.BoxColor,
-                        KeyColor = mysteryBoxTracker.KeyColor,
-                    },
-                    ct
-                )
-                .ConfigureAwait(false);
             BuildersClubSubscriptionSnapshot buildersClub = await buildersClubTask.ConfigureAwait(
                 false
             );
@@ -526,7 +505,7 @@ public class SSOTicketMessageHandler(
                 "NAVIGATOR_ROOM_THUMBNAIL_CAMERA",
                 PlayerPerkFlags.NavigatorRoomThumbnailCamera,
                 "",
-                true
+                false
             ),
             (
                 "JUDGE_CHAT_REVIEWS",
@@ -537,7 +516,7 @@ public class SSOTicketMessageHandler(
             ("MOUSE_ZOOM", PlayerPerkFlags.MouseZoom, "", true),
             ("HABBO_CLUB_OFFER_BETA", PlayerPerkFlags.HabboClubOfferBeta, "", true),
             ("TRADE", PlayerPerkFlags.Trade, "requirement.unfulfilled.citizenship_level_3", true),
-            ("CAMERA", PlayerPerkFlags.Camera, "", true),
+            ("CAMERA", PlayerPerkFlags.Camera, "", false),
             ("NAVIGATOR_PHASE_TWO_2014", PlayerPerkFlags.NavigatorPhaseTwo2014, "", true),
             (
                 "BUILDER_AT_WORK",
@@ -561,6 +540,12 @@ public class SSOTicketMessageHandler(
             ),
         ];
 
+        // The camera and the room-thumbnail camera were removed by this fork (M0). Still listed, so
+        // the client's perk list keeps its shape, but never allowed -- not even by a grant -- since
+        // nothing on the server answers what they unlock.
+        const PlayerPerkFlags removedPerks =
+            PlayerPerkFlags.Camera | PlayerPerkFlags.NavigatorRoomThumbnailCamera;
+
         ImmutableArray<PerkAllowanceItem>.Builder builder =
             ImmutableArray.CreateBuilder<PerkAllowanceItem>(defaults.Length);
 
@@ -568,7 +553,7 @@ public class SSOTicketMessageHandler(
             (string code, PlayerPerkFlags flag, string error, bool allowedByDefault) in defaults
         )
         {
-            bool allowed = allowedByDefault || perks.HasFlag(flag);
+            bool allowed = (allowedByDefault || perks.HasFlag(flag)) && (flag & removedPerks) == 0;
 
             builder.Add(
                 new PerkAllowanceItem

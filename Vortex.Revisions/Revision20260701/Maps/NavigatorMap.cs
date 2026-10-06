@@ -91,7 +91,6 @@ internal sealed class NavigatorMap : IRevisionMap
             MessageEvent.PopularRoomsSearchMessageEvent,
             new PopularRoomsSearchMessageParser()
         );
-        builder.MapParser(MessageEvent.RateFlatMessageEvent, new RateFlatMessageParser());
         builder.MapParser(
             MessageEvent.RemoveOwnRoomRightsRoomMessageEvent,
             new RemoveOwnRoomRightsRoomMessageParser()

@@ -46,7 +46,6 @@ using Vortex.Primitives.Furniture.Providers;
 using Vortex.Primitives.Hosting;
 using Vortex.Primitives.Moderation;
 using Vortex.Primitives.Moderation.WordFilter;
-using Vortex.Primitives.MysteryBox;
 using Vortex.Primitives.Navigator;
 using Vortex.Primitives.Networking;
 using Vortex.Primitives.Observability;
@@ -172,8 +171,6 @@ public sealed class DashboardPlugin : IVortexPlugin
         services.TryAddSingleton<TargetedOfferOperations>();
         services.TryAddSingleton<PrizePoolReads>();
         services.TryAddSingleton<PrizePoolOperations>();
-        services.TryAddSingleton<MysteryBoxReads>();
-        services.TryAddSingleton<MysteryBoxOperations>();
         services.TryAddSingleton<StaffReads>();
         services.TryAddSingleton<StaffOperations>();
         services.TryAddSingleton<ContentOperations>();
@@ -222,7 +219,6 @@ public sealed class DashboardPlugin : IVortexPlugin
         services.TryAddSingleton<IGiftWrappingAdminService, GiftWrappingAdminService>();
         services.TryAddSingleton<INavigatorAdminService, NavigatorAdminService>();
         services.TryAddSingleton<IContentAdminService, ContentAdminService>();
-        services.TryAddSingleton<IMysteryBoxAdminService, MysteryBoxAdminService>();
         services.TryAddSingleton<IPollAdminService, PollAdminService>();
         services.TryAddSingleton<IPrizePoolAdminService, PrizePoolAdminService>();
         services.TryAddSingleton<IQuestAdminService, QuestAdminService>();

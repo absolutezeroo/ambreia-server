@@ -88,7 +88,7 @@ public enum NotificationKind
     NameChanged = 62,
 
     // ---- My room ---------------------------------------------------------------------------
-    RoomRated = 70,
+    // 70 was the room-rated notification, removed with room rating (M0). Not renumbered.
     RoomRightsGranted = 71,
     RoomRaidDetected = 72,
 }

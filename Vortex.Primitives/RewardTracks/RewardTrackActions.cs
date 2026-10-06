@@ -127,13 +127,6 @@ public static class RewardTrackActions
     /// </summary>
     public const string Wired = "wired";
 
-    /// <summary>
-    /// Rated a room, up or down. No Habbo artwork exists for it, like the codes above it: this
-    /// hotel's own signal, and a task defined on it shows an empty icon rather than a borrowed one
-    /// that would lie about what it is.
-    /// </summary>
-    public const string RateRoom = "rate_room";
-
     /// <summary>Left a room, with how long the stay lasted. (no Habbo artwork: this hotel's own signal)</summary>
     public const string LeaveRoom = "leave_room";
 
@@ -223,12 +216,6 @@ public static class RewardTrackActions
 
     /// <summary>Unwrapped a present. (no Habbo artwork: this hotel's own signal)</summary>
     public const string OpenPresent = "open_present";
-
-    /// <summary>Opened a mystery box. (no Habbo artwork: this hotel's own signal)</summary>
-    public const string OpenMysteryBox = "open_mystery_box";
-
-    /// <summary>Opened a mystery trophy. (no Habbo artwork: this hotel's own signal)</summary>
-    public const string OpenMysteryTrophy = "open_mystery_trophy";
 
     /// <summary>Bought something for somebody else. (no Habbo artwork: this hotel's own signal)</summary>
     public const string BuyGift = "buy_gift";

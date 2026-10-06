@@ -29,30 +29,12 @@ public sealed class RoomObjectLogicKeyTests
     }
 
     [Fact]
-    public void TheRewardBoxesShareOneLogicAcrossTheirClientNames()
-    {
-        KeysOf<FurnitureRewardBoxLogic>()
-            .Should()
-            .BeEquivalentTo(
-                "furniture_ecotron_box",
-                "furniture_nft_reward_box",
-                "furniture_effectbox"
-            );
-    }
-
-    [Fact]
     public void TheLogicAttributeIsRepeatable_SoOneClassCanCoverSeveralClientNames()
     {
         AttributeUsageAttribute usage =
             typeof(RoomObjectLogicAttribute).GetCustomAttribute<AttributeUsageAttribute>()!;
 
         usage.AllowMultiple.Should().BeTrue();
-    }
-
-    [Fact]
-    public void TheCrackableKeepsItsOwnKey()
-    {
-        KeysOf<FurnitureCrackableLogic>().Should().Equal("furniture_crackable");
     }
 
     [Fact]

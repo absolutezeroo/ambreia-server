@@ -22,7 +22,6 @@ using Vortex.Primitives.Groups.Grains;
 using Vortex.Primitives.Groups.Snapshots;
 using Vortex.Primitives.Inventory.Factories;
 using Vortex.Primitives.Inventory.Furniture;
-using Vortex.Primitives.MysteryBox.Grains;
 using Vortex.Primitives.Players;
 using Vortex.Primitives.Players.Grains;
 using Vortex.Primitives.Rooms;
@@ -227,14 +226,6 @@ internal sealed class InventoryGrainFixture : IDisposable
                 Type t when t == typeof(IGroupDirectoryGrain) =>
                     FakeProxy.Create<IGroupDirectoryGrain>(_ =>
                         Task.FromResult<GuildFurniIdentitySnapshot?>(null)
-                    ),
-                Type t when t == typeof(IPlayerMysteryBoxGrain) =>
-                    FakeProxy.Create<IPlayerMysteryBoxGrain>(_ => Task.CompletedTask),
-                Type t when t == typeof(IMysteryBoxManagerGrain) =>
-                    FakeProxy.Create<IMysteryBoxManagerGrain>(c =>
-                        c.Method.Name == nameof(IMysteryBoxManagerGrain.IsBoxDefinitionAsync)
-                            ? Task.FromResult(false)
-                            : null
                     ),
                 _ => null,
             };

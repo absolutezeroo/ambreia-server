@@ -287,9 +287,6 @@
           >
             <span class="pool-tile-name">{pool.name}</span>
             <span class="pool-tile-badges">
-              {#if pool.isBuiltIn}
-                <span class="status-badge status-badge--ok">{$t('prizePools.builtIn')}</span>
-              {/if}
               {#if !pool.enabled}
                 <span class="status-badge status-badge--warn">{$t('prizePools.enabled')}</span>
               {/if}

@@ -36,7 +36,7 @@ public sealed class ItemDeletedEventTests
             .Grain.ConsumeItemAsync(
                 harness.ContextFor(RoomHarness.Stranger),
                 FakeItem(),
-                ItemDeletionReason.Cracked,
+                ItemDeletionReason.PresentOpened,
                 CancellationToken.None
             )
             .ConfigureAwait(true);
@@ -52,7 +52,7 @@ public sealed class ItemDeletedEventTests
         deleted.ItemId.Should().Be(ITEM_ID);
         deleted.OwnerId.Should().Be(RoomHarness.Owner.Value);
         deleted.ActorPlayerId.Should().Be(RoomHarness.Stranger.Value);
-        deleted.Reason.Should().Be(ItemDeletionReason.Cracked);
+        deleted.Reason.Should().Be(ItemDeletionReason.PresentOpened);
     }
 
     [Fact]
@@ -67,7 +67,7 @@ public sealed class ItemDeletedEventTests
             .Grain.ConsumeItemAsync(
                 harness.ContextFor(RoomHarness.Stranger),
                 FakeItem(),
-                ItemDeletionReason.Cracked,
+                ItemDeletionReason.PresentOpened,
                 CancellationToken.None
             )
             .ConfigureAwait(true);
@@ -99,7 +99,7 @@ public sealed class ItemDeletedEventTests
         harness.Grain.ConsumeItemAsync(
             harness.ContextFor(RoomHarness.Stranger),
             FakeItem(),
-            ItemDeletionReason.Cracked,
+            ItemDeletionReason.PresentOpened,
             CancellationToken.None
         );
 

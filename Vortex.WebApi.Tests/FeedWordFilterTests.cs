@@ -35,7 +35,7 @@ public sealed class FeedWordFilterTests
         (FeedRefusal refusal, FeedPost? post) = await Service(factory)
             .PublishAsync(
                 SignedInPlayerId,
-                new FeedPublishRequest(FeedPostKind.Status, "con", null, null, null, null),
+                new FeedPublishRequest(FeedPostKind.Status, "con", null, null, null),
                 default
             );
 
@@ -64,7 +64,7 @@ public sealed class FeedWordFilterTests
         (FeedRefusal refusal, FeedPost? post) = await Service(factory)
             .PublishAsync(
                 SignedInPlayerId,
-                new FeedPublishRequest(FeedPostKind.Status, "t'es con", null, null, null, null),
+                new FeedPublishRequest(FeedPostKind.Status, "t'es con", null, null, null),
                 default
             );
 
@@ -82,14 +82,7 @@ public sealed class FeedWordFilterTests
         (FeedRefusal refusal, _) = await Service(factory)
             .PublishAsync(
                 SignedInPlayerId,
-                new FeedPublishRequest(
-                    FeedPostKind.Poll,
-                    "Qui ?",
-                    null,
-                    ["toi", "con"],
-                    null,
-                    null
-                ),
+                new FeedPublishRequest(FeedPostKind.Poll, "Qui ?", ["toi", "con"], null, null),
                 default
             );
 
@@ -110,14 +103,7 @@ public sealed class FeedWordFilterTests
         (FeedRefusal refusal, _) = await Service(factory)
             .PublishAsync(
                 SignedInPlayerId,
-                new FeedPublishRequest(
-                    FeedPostKind.Status,
-                    new string('a', 500),
-                    null,
-                    null,
-                    null,
-                    null
-                ),
+                new FeedPublishRequest(FeedPostKind.Status, new string('a', 500), null, null, null),
                 default
             );
 

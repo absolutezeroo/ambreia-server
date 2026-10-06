@@ -12,7 +12,4 @@ namespace Vortex.Primitives.Sound;
 public static class SoundLogicNames
 {
     public const string SongDisk = "furniture_song_disk";
-
-    /// <summary>The room's jukebox. Its furniture id is what a playlist hangs from.</summary>
-    public const string Jukebox = "furniture_jukebox";
 }

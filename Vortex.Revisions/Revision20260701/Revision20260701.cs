@@ -11,7 +11,6 @@ public sealed class Revision20260701(IOptions<ProtocolLimitsConfig> protocolLimi
         {
             new AdvertisementMap(),
             new AvatarMap(),
-            new CameraMap(),
             new CampaignMap(),
             new CatalogMap(),
             new CollectiblesMap(),
@@ -29,7 +28,6 @@ public sealed class Revision20260701(IOptions<ProtocolLimitsConfig> protocolLimi
             new LandingViewMap(),
             new MarketplaceMap(protocolLimits.Value),
             new ModeratorMap(),
-            new MysteryBoxMap(),
             new NavigatorMap(),
             new NewNavigatorMap(),
             new NftMap(),

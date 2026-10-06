@@ -3,7 +3,6 @@ using System.Linq;
 using System.Threading.Tasks;
 using FluentAssertions;
 using Vortex.Database.Context;
-using Vortex.Database.Entities.Camera;
 using Vortex.Database.Entities.Feed;
 using Vortex.Database.Entities.Players;
 using Vortex.Primitives.Feed;
@@ -22,9 +21,7 @@ namespace Vortex.WebApi.Tests;
 /// twice — that is the one rule not obvious from the route. A post by a player who has hidden their
 /// profile is NOT excluded: publishing to the public feed is a different act from letting someone
 /// browse the profile, and <c>ProfileVisible</c> only governs the second (see
-/// <see cref="WebApiFeedService.Readable"/> for why). A photo attached to a post is still re-checked
-/// for published/not-deleted, because the owner can take it back after posting; only the
-/// <c>ProfileVisible</c> half of that re-check is gone, for the same publishing-is-consent reason.
+/// <see cref="WebApiFeedService.Readable"/> for why).
 /// </remarks>
 public sealed class FeedReadTests
 {
@@ -98,26 +95,6 @@ public sealed class FeedReadTests
     }
 
     [Fact]
-    public async Task Post_DropsAPhotoTheOwnerUnpublished()
-    {
-        await using WebApiTestFactory factory = new();
-        int id = await SeedPhotoPostAsync(
-            factory,
-            playerId: 1,
-            name: "Prodiigy",
-            key: "abc",
-            published: false
-        );
-
-        FeedPost? post = await Service(factory).GetPostAsync(id, null, default);
-
-        post.Should().NotBeNull();
-        post!
-            .Photos.Should()
-            .BeEmpty("a photo taken back must leave the post, not stay in it as a hole");
-    }
-
-    [Fact]
     public async Task Post_ReportsMyOwnVote()
     {
         await using WebApiTestFactory factory = new();
@@ -146,9 +123,9 @@ public sealed class FeedReadTests
     /// <summary>
     /// <see cref="WebApiFeedService"/> answers a page by fetching each supporting table ONCE for
     /// every post on the page, rather than once per post — see the class's own remarks. Batching by
-    /// id set is exactly how one post could end up carrying another's photos, poll or counters if the
+    /// id set is exactly how one post could end up carrying another's poll or counters if the
     /// grouping were wrong; a single-post fixture cannot catch that, because there is nothing to leak
-    /// from. Two roots by two different players, each with its own distinct photo, poll, tag,
+    /// from. Two roots by two different players, each with its own distinct poll, tag,
     /// reaction and comment count, read in the SAME <see cref="IWebApiFeedService.GetFeedAsync"/>
     /// call, is the smallest fixture that can.
     /// </summary>
@@ -157,15 +134,15 @@ public sealed class FeedReadTests
     {
         await using WebApiTestFactory factory = new();
 
-        int photoPostId = await SeedPhotoPostAsync(
+        int statusPostId = await SeedPostAsync(
             factory,
             playerId: 1,
             name: "Alpha",
-            key: "alpha-key",
-            published: true
+            visible: true,
+            body: "alpha"
         );
-        await SeedTagAsync(factory, photoPostId, "alpha");
-        await SeedCommentAsync(factory, playerId: 1, parentId: photoPostId, body: "a1");
+        await SeedTagAsync(factory, statusPostId, "alpha");
+        await SeedCommentAsync(factory, playerId: 1, parentId: statusPostId, body: "a1");
 
         (int pollPostId, int choiceId) = await SeedPollAsync(factory, playerId: 2, name: "Beta");
         await SeedTagAsync(factory, pollPostId, "beta");
@@ -177,7 +154,7 @@ public sealed class FeedReadTests
             db.WebFeedReactions.Add(
                 new WebFeedReactionEntity
                 {
-                    WebFeedPostEntityId = photoPostId,
+                    WebFeedPostEntityId = statusPostId,
                     PlayerEntityId = 2,
                     Kind = FeedReactionKind.Favorite,
                 }
@@ -197,17 +174,15 @@ public sealed class FeedReadTests
 
         page.Items.Should().HaveCount(2);
 
-        FeedPost photoPost = page.Items.Single(p => p.Id == photoPostId);
+        FeedPost statusPost = page.Items.Single(p => p.Id == statusPostId);
         FeedPost pollPost = page.Items.Single(p => p.Id == pollPostId);
 
-        photoPost.Photos.Should().ContainSingle(p => p.Key == "alpha-key");
-        photoPost.Poll.Should().BeNull();
-        photoPost.Tags.Should().Equal("alpha");
-        photoPost.CommentCount.Should().Be(1);
-        photoPost.FavoriteCount.Should().Be(1);
-        photoPost.RepostCount.Should().Be(0);
+        statusPost.Poll.Should().BeNull();
+        statusPost.Tags.Should().Equal("alpha");
+        statusPost.CommentCount.Should().Be(1);
+        statusPost.FavoriteCount.Should().Be(1);
+        statusPost.RepostCount.Should().Be(0);
 
-        pollPost.Photos.Should().BeEmpty();
         pollPost.Poll.Should().NotBeNull();
         pollPost.Poll!.Choices.Single(c => c.Id == choiceId).Votes.Should().Be(1);
         pollPost.Poll.TotalVotes.Should().Be(1);
@@ -390,52 +365,6 @@ public sealed class FeedReadTests
         );
 
         await db.SaveChangesAsync();
-    }
-
-    private static async Task<int> SeedPhotoPostAsync(
-        WebApiTestFactory factory,
-        int playerId,
-        string name,
-        string key,
-        bool published
-    )
-    {
-        await EnsurePlayerAsync(factory, playerId, name, visible: true);
-
-        await using VortexDbContext db = await factory.DbContexts.CreateDbContextAsync();
-
-        CameraPhotoEntity photo = new()
-        {
-            PhotoKey = key,
-            PlayerEntityId = playerId,
-            SceneBytes = 1024,
-            RejectedExternalSprites = 0,
-            PublishedAt = published ? DateTime.UtcNow : null,
-        };
-
-        WebFeedPostEntity post = new()
-        {
-            PlayerEntityId = playerId,
-            Kind = FeedPostKind.Photo,
-            Body = "",
-        };
-
-        db.CameraPhotos.Add(photo);
-        db.WebFeedPosts.Add(post);
-        await db.SaveChangesAsync();
-
-        db.WebFeedPostPhotos.Add(
-            new WebFeedPostPhotoEntity
-            {
-                WebFeedPostEntityId = post.Id,
-                CameraPhotoEntityId = photo.Id,
-                Ordinal = 0,
-            }
-        );
-
-        await db.SaveChangesAsync();
-
-        return post.Id;
     }
 
     private static async Task<(int PostId, int ChoiceId)> SeedPollAsync(

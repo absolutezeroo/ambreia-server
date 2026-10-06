@@ -76,9 +76,6 @@ GET /api/v1/monitoring/inventory -> dashboard.overview.read
 GET /api/v1/monitoring/overview -> dashboard.overview.read
 GET /api/v1/monitoring/packet-stats -> dashboard.overview.read
 GET /api/v1/monitoring/room-performance -> dashboard.performance.read
-GET /api/v1/mystery-box -> dashboard.mystery_box.read
-GET /api/v1/mystery-box/colors -> dashboard.mystery_box.read
-GET /api/v1/mystery-box/stats -> dashboard.mystery_box.read
 GET /api/v1/navigator/config -> dashboard.navigator.read
 GET /api/v1/operations/cfh/appeals -> dashboard.ops.cfh.manage
 GET /api/v1/operations/cfh/queue -> dashboard.ops.cfh.manage
@@ -205,12 +202,6 @@ POST /api/v1/operations/items/pickup -> dashboard.ops.item.grant
 POST /api/v1/operations/items/refund -> dashboard.ops.currency.grant
 POST /api/v1/operations/items/revoke -> dashboard.ops.item.grant
 POST /api/v1/operations/items/transfer -> dashboard.ops.item.grant
-POST /api/v1/operations/mystery-box/boxes -> dashboard.ops.mystery_box.manage
-POST /api/v1/operations/mystery-box/keys -> dashboard.ops.mystery_box.manage
-POST /api/v1/operations/mystery-box/prizes -> dashboard.ops.mystery_box.manage
-POST /api/v1/operations/mystery-box/prizes/delete -> dashboard.ops.mystery_box.manage
-POST /api/v1/operations/mystery-box/prizes/update -> dashboard.ops.mystery_box.manage
-POST /api/v1/operations/mystery-box/reload -> dashboard.ops.mystery_box.manage
 POST /api/v1/operations/navigator/categories -> dashboard.ops.navigator.manage
 POST /api/v1/operations/navigator/categories/delete -> dashboard.ops.navigator.manage
 POST /api/v1/operations/navigator/categories/update -> dashboard.ops.navigator.manage

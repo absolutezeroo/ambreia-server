@@ -50,9 +50,6 @@ public sealed record RoomRightsChangedEvent(
     string Change
 ) : IEvent;
 
-/// <summary>A player rated a room up or down.</summary>
-public sealed record RoomRatedEvent(PlayerId ActorId, int RoomId, int Points) : IEvent;
-
 /// <summary>
 /// Somebody rang a locked room's doorbell and a rights holder answered. Recorded because a doorbell
 /// is the one place a player who was never in the room still interacts with the people inside, and

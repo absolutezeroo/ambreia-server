@@ -84,19 +84,6 @@ public sealed class ConsoleCommandDispatcherTests
             .OnlyContain(capability => Capabilities.Dashboard.All.Contains(capability));
     }
 
-    /// <summary>
-    /// Console access is not permission to hand out inventory: the grant commands carry the same
-    /// capability their dashboard page does, so one grant means one thing on both routes.
-    /// </summary>
-    [Theory]
-    [InlineData("mystery-key")]
-    [InlineData("mystery-box")]
-    public void TheMysteryBoxCommands_RequireTheMysteryBoxCapability(string command) =>
-        Dispatcher()
-            .Dispatcher.Find(command)!
-            ?.RequiredCapability.Should()
-            .Be(Capabilities.Dashboard.OpsMysteryBoxManage);
-
     [Fact]
     public void Quit_RequiresTheServerControlCapability() =>
         Dispatcher()

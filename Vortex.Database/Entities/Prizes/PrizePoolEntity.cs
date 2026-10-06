@@ -6,17 +6,15 @@ using Microsoft.EntityFrameworkCore;
 namespace Vortex.Database.Entities.Prizes;
 
 /// <summary>
-/// A named set of weighted rewards. Every furniture that hands something out at random draws from
-/// one of these — the mystery box and the mystery trophy today, crackables and reward boxes next —
+/// A named set of weighted rewards. Whatever hands something out at random draws from one of these,
 /// so a new seasonal pool is an operator insert rather than a code change.
 /// </summary>
 [Table("prize_pools")]
 [Index(nameof(Code), IsUnique = true)]
 public class PrizePoolEntity : VortexEntity
 {
-    /// <summary>Stable identifier the server draws by (see <c>PrizePoolCodes</c> for the built-in
-    /// ones). Renaming a pool must not break the code that draws from it, which is why the draw key
-    /// is this and not <see cref="Name"/>.</summary>
+    /// <summary>Stable identifier the server draws by. Renaming a pool must not break the code that
+    /// draws from it, which is why the draw key is this and not <see cref="Name"/>.</summary>
     [Column("code")]
     [MaxLength(64)]
     public required string Code { get; set; }

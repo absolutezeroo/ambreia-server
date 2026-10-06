@@ -29,7 +29,4 @@ public interface IRoomGrain
         IRoomModeration,
         IRoomRaidProtection,
         IRoomTrading,
-        IRoomMysteryBox,
-        IRoomDoorbell,
-        IRoomCrackable,
-        IRoomJukebox { }
+        IRoomDoorbell { }

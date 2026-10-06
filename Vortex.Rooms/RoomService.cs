@@ -267,7 +267,6 @@ internal sealed partial class RoomService(
             .ConfigureAwait(false);
 
         RoomMapSnapshot mapSnapshot = await room.GetMapSnapshotAsync(ct).ConfigureAwait(false);
-        bool canRate = await room.CanRateAsync(playerId, ct).ConfigureAwait(false);
 
         ImmutableArray<KeyValuePair<string, string>> roomProperties =
             await room.GetRoomPropertiesAsync().ConfigureAwait(false);
@@ -481,13 +480,12 @@ internal sealed partial class RoomService(
                 .ConfigureAwait(false);
         }
 
-        // After the rights, not before the map. The score rides along on the snapshot already in
-        // hand; only "may this player still vote" costs a lookup. The client shows the like button
-        // off canRate alone and never withdraws it by itself, so a blanket false hid the button in
-        // every room and a blanket true offered a vote the grain would refuse.
+        // After the rights, not before the map. Room rating was removed (M0), but the official entry
+        // still carries this packet: the score rides along on the snapshot already in hand, and
+        // CanRate is pinned to false so the client never offers a like button nothing answers.
         await playerPresence
             .SendComposerAsync(
-                new RoomRatingMessageComposer { Rating = snapshot.Score, CanRate = canRate }
+                new RoomRatingMessageComposer { Rating = snapshot.Score, CanRate = false }
             )
             .ConfigureAwait(false);
 

@@ -18,7 +18,6 @@ using Vortex.Primitives.Players.Grains;
 using Vortex.Primitives.Rooms;
 using Vortex.Primitives.Rooms.Grains;
 using Vortex.Primitives.Rooms.Providers;
-using Vortex.Primitives.Sound.Providers;
 using Vortex.Protocol.Messages.Outgoing.Notifications;
 using Vortex.Rooms.Configuration;
 using Vortex.Rooms.Grains;
@@ -126,7 +125,6 @@ public sealed class HotelWordFilterTests
             FakeProxy.Create<IPetLevelProvider>(_ => null),
             FakeProxy.Create<IPetCommandProvider>(_ => null),
             FakeProxy.Create<IPetVocalProvider>(_ => null),
-            FakeProxy.Create<ISongProvider>(_ => null),
             TestRoomGames.Provider(),
             FakeProxy.Create<ICommerceJournal>(_ => Task.CompletedTask),
             filter

@@ -119,7 +119,6 @@ export const NAV = [
   { path: '/achievement-resolutions', labelKey: 'nav.achievementResolutions', shortKey: 'nav.achievementResolutionsShort', group: 'Progression', keywords: 'resolution statue defi challenge nouvel an new year succes', caps: ROUTE_PERMISSIONS.achievements, load: () => import('../pages/AchievementResolutionsPage.svelte') },
   { path: '/player-rewards', labelKey: 'nav.playerRewards', shortKey: 'nav.playerRewardsShort', group: 'Progression', keywords: 'badge effet effect recompense reward accorder grant donner give retirer', caps: ROUTE_PERMISSIONS.playerRewards, load: () => import('../pages/PlayerRewardsPage.svelte'), writes: true },
 
-  { path: '/mystery-box', labelKey: 'nav.mysteryBox', shortKey: 'nav.mysteryBoxShort', group: 'Prizes', keywords: 'coffre mystere mystery box cle key lot prize loot ouverture', caps: ROUTE_PERMISSIONS.mysteryBox, load: () => import('../pages/MysteryBoxPage.svelte'), writes: true },
   { path: '/prize-pools', labelKey: 'nav.prizePools', shortKey: 'nav.prizePoolsShort', group: 'Prizes', keywords: 'pool lot prize gain chance odds probabilite tirage roll rattachement', caps: ROUTE_PERMISSIONS.prizePools, load: () => import('../pages/PrizePoolsPage.svelte'), writes: true },
   { path: '/vouchers', labelKey: 'nav.vouchers', shortKey: 'nav.vouchersShort', group: 'Prizes', keywords: 'bon voucher code promo echangeable redeem cadeau gift coupon', caps: ROUTE_PERMISSIONS.vouchers, load: () => import('../pages/VouchersPage.svelte'), writes: true },
 

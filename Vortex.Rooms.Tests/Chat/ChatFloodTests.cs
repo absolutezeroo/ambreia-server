@@ -22,7 +22,6 @@ using Vortex.Primitives.Rooms.Grains;
 using Vortex.Primitives.Rooms.Object;
 using Vortex.Primitives.Rooms.Object.Avatars;
 using Vortex.Primitives.Rooms.Providers;
-using Vortex.Primitives.Sound.Providers;
 using Vortex.Rooms.Configuration;
 using Vortex.Rooms.Grains;
 using Vortex.Rooms.Grains.Systems;
@@ -142,7 +141,6 @@ public sealed class ChatFloodTests
             FakeProxy.Create<IPetLevelProvider>(_ => null),
             FakeProxy.Create<IPetCommandProvider>(_ => null),
             FakeProxy.Create<IPetVocalProvider>(_ => null),
-            FakeProxy.Create<ISongProvider>(_ => null),
             TestRoomGames.Provider(),
             FakeProxy.Create<ICommerceJournal>(_ => Task.CompletedTask),
             RoomGrainStubs.PassThroughWordFilter()

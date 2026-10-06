@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Immutable;
 using System.Linq;
-using Vortex.Primitives.MysteryBox;
 using Vortex.Primitives.RewardTracks;
 using Vortex.Primitives.Rooms.Enums;
 
@@ -157,14 +156,6 @@ public static class Facts
         "What was said"
     );
 
-    /// <summary>Which way a room rating went: <c>1</c> for a like, <c>-1</c> for a dislike.</summary>
-    public static readonly FactKey RatingPoints = new(
-        RewardTrackFacts.RatingPoints,
-        FactKind.Number,
-        "rewardTracks.fact_points",
-        "Rating"
-    );
-
     /// <summary>A guild id.</summary>
     public static readonly FactKey Group = new(
         RewardTrackFacts.Group,
@@ -299,22 +290,6 @@ public static class Facts
         FactKind.Number,
         "rewardTracks.fact_seconds",
         "Duration (s)"
-    );
-
-    /// <summary>
-    /// A mystery-box colour.
-    /// </summary>
-    /// <remarks>
-    /// Closed, and taken from <see cref="MysteryBoxColors"/> rather than restated: that list is
-    /// client truth — the toolbar tints its artwork through a hardcoded dictionary keyed by exactly
-    /// these eight names — so a colour typed by hand would be a filter that can never match.
-    /// </remarks>
-    public static readonly FactKey Colour = new(
-        RewardTrackFacts.Colour,
-        FactKind.Enum,
-        "rewardTracks.fact_colour",
-        "Colour",
-        [.. MysteryBoxColors.All.Select(c => new EnumValue(c, $"mysteryBox.colour_{c}", c))]
     );
 
     /// <summary>How many months.</summary>
@@ -480,7 +455,6 @@ public static class Facts
         Pet,
         Badge,
         ChatMessage,
-        RatingPoints,
         Group,
         Thread,
         Price,
@@ -497,7 +471,6 @@ public static class Facts
         GivenName,
         Effect,
         DurationSeconds,
-        Colour,
         Months,
         Serial,
         Figure,

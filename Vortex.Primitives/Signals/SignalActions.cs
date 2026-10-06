@@ -107,9 +107,6 @@ public static class SignalActions
     /// <inheritdoc cref="RewardTrackActions.Wired"/>
     public const string Wired = RewardTrackActions.Wired;
 
-    /// <inheritdoc cref="RewardTrackActions.RateRoom"/>
-    public const string RateRoom = RewardTrackActions.RateRoom;
-
     /// <inheritdoc cref="RewardTrackActions.LeaveRoom"/>
     public const string LeaveRoom = RewardTrackActions.LeaveRoom;
 
@@ -200,12 +197,6 @@ public static class SignalActions
     /// <inheritdoc cref="RewardTrackActions.OpenPresent"/>
     public const string OpenPresent = RewardTrackActions.OpenPresent;
 
-    /// <inheritdoc cref="RewardTrackActions.OpenMysteryBox"/>
-    public const string OpenMysteryBox = RewardTrackActions.OpenMysteryBox;
-
-    /// <inheritdoc cref="RewardTrackActions.OpenMysteryTrophy"/>
-    public const string OpenMysteryTrophy = RewardTrackActions.OpenMysteryTrophy;
-
     /// <inheritdoc cref="RewardTrackActions.BuyGift"/>
     public const string BuyGift = RewardTrackActions.BuyGift;
 
@@ -273,7 +264,6 @@ public static class SignalActions
         CompleteQuest,
         AchievementLevel,
         Wired,
-        RateRoom,
         LeaveRoom,
         UpdateRoomSettings,
         AnswerDoorbell,
@@ -304,8 +294,6 @@ public static class SignalActions
         BuyClub,
         ClaimClubGift,
         OpenPresent,
-        OpenMysteryBox,
-        OpenMysteryTrophy,
         BuyGift,
         BuyTargetedOffer,
         EnterRaffle,

@@ -114,7 +114,6 @@ public sealed partial class RoomGrain
         try
         {
             await CloseTradeForLeavingPlayerAsync(playerId, ct);
-            await CancelMysteryBoxSessionsForLeavingPlayerAsync(playerId);
 
             await AvatarModule.RemoveAvatarFromPlayerAsync(ctx, playerId, ct);
 

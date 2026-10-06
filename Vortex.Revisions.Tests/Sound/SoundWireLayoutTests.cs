@@ -23,8 +23,6 @@ public sealed class SoundWireLayoutTests
 {
     private const int GetSongInfoEvent = 3130;
     private const int GetOfficialSongIdEvent = 1723;
-    private const int AddJukeboxDiskEvent = 1637;
-    private const int RemoveJukeboxDiskEvent = 2003;
 
     private static readonly Rev Revision = new(Options.Create(new ProtocolLimitsConfig()));
 
@@ -159,107 +157,6 @@ public sealed class SoundWireLayoutTests
         body.PopInt().Should().Be(1);
         body.PopInt().Should().Be(9001);
         body.PopInt().Should().Be(274);
-        body.Remaining.Should().Be(0);
-    }
-
-    [Fact]
-    public void AddJukeboxDiskParser_ReadsTheDiskThenTheSlot()
-    {
-        ClientPacket packet = BuildClientPacket(
-            AddJukeboxDiskEvent,
-            sp =>
-            {
-                sp.WriteInteger(9001);
-                sp.WriteInteger(3);
-            }
-        );
-
-        AddJukeboxDiskMessage message = Revision
-            .Parsers[AddJukeboxDiskEvent]
-            .Parse(packet)
-            .Should()
-            .BeOfType<AddJukeboxDiskMessage>()
-            .Subject;
-
-        message.DiskItemId.Should().Be(9001);
-        message.SlotNumber.Should().Be(3);
-    }
-
-    [Fact]
-    public void RemoveJukeboxDiskParser_ReadsThePlaylistIndex()
-    {
-        ClientPacket packet = BuildClientPacket(RemoveJukeboxDiskEvent, sp => sp.WriteInteger(2));
-
-        RemoveJukeboxDiskMessage message = Revision
-            .Parsers[RemoveJukeboxDiskEvent]
-            .Parse(packet)
-            .Should()
-            .BeOfType<RemoveJukeboxDiskMessage>()
-            .Subject;
-
-        message.Index.Should().Be(2);
-    }
-
-    [Fact]
-    public void JukeboxSongDisksSerializer_WritesTheCapacityBeforeTheCount()
-    {
-        // _SafeCls_4232.parse() reads maxLength first. Swapping the two draws an empty jukebox with
-        // one slot, which looks like a broken playlist rather than a wrong packet.
-        ClientPacket body = SerializeAndReadBody(
-            typeof(JukeboxSongDisksMessageComposer),
-            new JukeboxSongDisksMessageComposer
-            {
-                Disks =
-                [
-                    new SongDiskSnapshot { DiskId = 9001, SongId = 274 },
-                    new SongDiskSnapshot { DiskId = 9002, SongId = 275 },
-                ],
-                Capacity = 20,
-            }
-        );
-
-        body.PopInt().Should().Be(20);
-        body.PopInt().Should().Be(2);
-        body.PopInt().Should().Be(9001);
-        body.PopInt().Should().Be(274);
-        body.PopInt().Should().Be(9002);
-        body.PopInt().Should().Be(275);
-        body.Remaining.Should().Be(0);
-    }
-
-    [Fact]
-    public void NowPlayingSerializer_WritesFiveIntsWithTheSyncCountLast()
-    {
-        ClientPacket body = SerializeAndReadBody(
-            typeof(NowPlayingMessageComposer),
-            new NowPlayingMessageComposer
-            {
-                CurrentSongId = 274,
-                CurrentIndex = 0,
-                NextSongId = 275,
-                NextIndex = 1,
-                SyncCountMs = 12_500,
-            }
-        );
-
-        body.PopInt().Should().Be(274);
-        body.PopInt().Should().Be(0);
-        body.PopInt().Should().Be(275);
-        body.PopInt().Should().Be(1);
-        body.PopInt().Should().Be(12_500);
-        body.Remaining.Should().Be(0);
-    }
-
-    [Fact]
-    public void JukeboxPlayListFullSerializer_WritesNothing()
-    {
-        // Body-less on purpose: the client's handler reads no fields. Anything written here would be
-        // read as the next message's header.
-        ClientPacket body = SerializeAndReadBody(
-            typeof(JukeboxPlayListFullMessageComposer),
-            new JukeboxPlayListFullMessageComposer()
-        );
-
         body.Remaining.Should().Be(0);
     }
 
