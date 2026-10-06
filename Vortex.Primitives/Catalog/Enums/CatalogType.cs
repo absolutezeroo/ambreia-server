@@ -17,10 +17,10 @@ public static class CatalogTypeExtensions
             _ => throw new ArgumentOutOfRangeException(nameof(catalogType), catalogType, null),
         };
 
-    public static CatalogType FromLegacyString(this string catalogType) =>
-        catalogType switch
-        {
-            "NORMAL" => CatalogType.Normal,
-            _ => throw new ArgumentOutOfRangeException(nameof(catalogType), catalogType, null),
-        };
+    /// <summary>
+    /// Every string reads as <see cref="CatalogType.Normal"/>, the only catalogue left. A stock
+    /// client still asks for <c>BUILDERS_CLUB</c> (removed in M0); throwing there counted as a parse
+    /// failure, and enough of those disconnect the client.
+    /// </summary>
+    public static CatalogType FromLegacyString(this string catalogType) => CatalogType.Normal;
 }
