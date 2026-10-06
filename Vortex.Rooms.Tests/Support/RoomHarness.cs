@@ -177,7 +177,6 @@ internal sealed class RoomHarness
             PaintWall = string.Empty,
             PaintFloor = string.Empty,
             PaintLandscape = string.Empty,
-            StaffPick = false,
             Password = string.Empty,
             ModSettings = new ModSettingsSnapshot
             {

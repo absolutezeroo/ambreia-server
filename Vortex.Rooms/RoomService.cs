@@ -43,12 +43,10 @@ internal sealed partial class RoomService(
     IGrainFactory grainFactory,
     IDbContextFactory<VortexDbContext> dbContextFactory,
     IRoomModerationStore roomModerationStore,
-    IRoomAdvertisementService roomAdvertisements,
     IEventPublisher events,
     ICancellableEventPublisher cancellableEvents
 ) : IRoomService
 {
-    private readonly IRoomAdvertisementService _roomAdvertisements = roomAdvertisements;
     private readonly IDbContextFactory<VortexDbContext> _dbContextFactory = dbContextFactory;
     private readonly IGrainFactory _grainFactory = grainFactory;
     private readonly ILogger<IRoomService> _logger = logger;
@@ -381,14 +379,6 @@ internal sealed partial class RoomService(
                 ),
         ];
 
-        // The room's advertisement, if it is being advertised right now. There is no "no event"
-        // form to send: this client assigns whatever arrives to roomEventData without testing it,
-        // so an empty one would leave it holding a blank advertisement rather than none. Absence is
-        // how the client is told there is nothing, and RoomEventCancel is how a live one is cleared.
-        RoomAdvertisementSnapshot? advertisement = await _roomAdvertisements
-            .GetActiveAdvertisementAsync(roomId.Value, ct)
-            .ConfigureAwait(false);
-
         // Who is here, then what is here, then whose room it is -- Sulake's order. Neither list
         // carries the arriving player: their avatar is created by SetActiveRoomAsync at the end of
         // this method and broadcast to the whole room, which is the second Users an official capture
@@ -407,34 +397,6 @@ internal sealed partial class RoomService(
                 new RoomEntryInfoMessageComposer { RoomId = roomId, IsOwner = isOwner }
             )
             .ConfigureAwait(false);
-
-        if (advertisement is not null)
-        {
-            DateTime now = DateTime.UtcNow;
-
-            await playerPresence
-                .SendComposerAsync(
-                    new RoomEventMessageComposer
-                    {
-                        AdvertisementId = advertisement.AdvertisementId,
-                        OwnerPlayerId = advertisement.OwnerPlayerId,
-                        OwnerName = advertisement.OwnerName,
-                        RoomId = advertisement.RoomId,
-                        Name = advertisement.Name,
-                        Description = advertisement.Description,
-                        MinutesSinceCreation = Math.Max(
-                            0,
-                            (int)(now - advertisement.CreatedAt).TotalMinutes
-                        ),
-                        MinutesRemaining = Math.Max(
-                            0,
-                            (int)(advertisement.ExpiresAt - now).TotalMinutes
-                        ),
-                        CategoryId = advertisement.CategoryId,
-                    }
-                )
-                .ConfigureAwait(false);
-        }
 
         await playerPresence
             .SendComposerAsync(

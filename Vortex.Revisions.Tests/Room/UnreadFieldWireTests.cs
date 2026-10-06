@@ -26,7 +26,6 @@ public sealed class UnreadFieldWireTests
 {
     private const int GetMarketplaceOwnOffersEvent = 2086; // _composers[2086] = _SafeCls_1881
     private const int RemoveOwnRoomRightsRoomEvent = 260; // _composers[260]  = _SafeCls_2158
-    private const int RoomAdSearchEvent = 1971; // _composers[1971] = _SafeCls_3386
     private const int GetCommunityGoalHallOfFameEvent = 2252; // _composers[2252] = _SafeCls_3450
     private const int GetDailyQuestEvent = 397; // _composers[397]  = _SafeCls_3520
 
@@ -58,19 +57,6 @@ public sealed class UnreadFieldWireTests
         );
 
         message.RoomId.Should().Be(4271);
-    }
-
-    /// <summary>Both fields were declared on the record and never filled.</summary>
-    [Fact]
-    public void RoomAdSearchParser_ReadsTheAdIndexAndTab()
-    {
-        RoomAdSearchMessage message = Parse<RoomAdSearchMessage>(
-            RoomAdSearchEvent,
-            sp => sp.WriteInteger(3).WriteInteger(17)
-        );
-
-        message.AdIndex.Should().Be(3);
-        message.TabId.Should().Be(17);
     }
 
     [Fact]

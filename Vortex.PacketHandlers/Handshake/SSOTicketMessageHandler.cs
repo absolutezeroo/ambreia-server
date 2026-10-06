@@ -119,7 +119,7 @@ public class SSOTicketMessageHandler(
 
             // Everything the rest of this handler needs, asked for at once.
             //
-            // These fifteen reads have no dependency on each other -- effects do not need favourites,
+            // These reads have no dependency on each other -- effects do not need the home room,
             // the wallet does not need the mystery box -- and each is a grain call that activates a
             // grain and reads the database. Awaited one after another they stacked into a login
             // slow enough that a hundred arrivals over ten seconds produced ten-second round trips
@@ -145,15 +145,6 @@ public class SSOTicketMessageHandler(
             Task<int> homeRoomTask = _grainFactory
                 .GetPlayerNavigatorGrain(playerId)
                 .GetHomeRoomIdAsync(ct);
-            Task<ImmutableArray<int>> favouritesTask = _grainFactory
-                .GetPlayerNavigatorGrain(playerId)
-                .GetFavouriteRoomIdsAsync(ct);
-            Task<int> favouriteLimitTask = _grainFactory
-                .GetServerConfigGrain()
-                .GetIntAsync(
-                    NavigatorConfig.FavouriteLimitKey,
-                    NavigatorConfig.FavouriteLimitDefault
-                );
             Task<ImmutableArray<AvatarEffectSnapshot>> effectsTask = _grainFactory
                 .GetPlayerEffectGrain(playerId)
                 .GetEffectsAsync(ct);
@@ -184,8 +175,6 @@ public class SSOTicketMessageHandler(
                     nuxTask,
                     summaryTask,
                     homeRoomTask,
-                    favouritesTask,
-                    favouriteLimitTask,
                     effectsTask,
                     clothingTask,
                     creditsTask,
@@ -249,21 +238,11 @@ public class SSOTicketMessageHandler(
                     ct
                 )
                 .ConfigureAwait(false);
-            // The client keeps both of these for the whole session and never asks again: it draws the
-            // star from the id list and refuses to add past the limit on its own
-            // (NavigatorData.isFavouritesFull, RoomInfoViewCtrl.onAddFavouriteClick). A limit of 0
-            // therefore made `count >= limit` true on an empty list, so "Favourites full" was shown
-            // and the add packet never left the client -- the handler, the grain and the table were
-            // all built and unreachable.
-            ImmutableArray<int> favouriteRoomIds = await favouritesTask.ConfigureAwait(false);
-            int favouriteLimit = await favouriteLimitTask.ConfigureAwait(false);
-
+            // Favourites are gone, but the client still reads this message at login: an empty list and
+            // a limit of 0 (frozen), so it shows "favourites full" instead of offering an add that no
+            // handler answers.
             await ctx.SendComposerAsync(
-                    new FavouritesMessageComposer
-                    {
-                        Limit = favouriteLimit,
-                        FavoriteRoomIds = favouriteRoomIds,
-                    },
+                    new FavouritesMessageComposer { Limit = 0, FavoriteRoomIds = [] },
                     ct
                 )
                 .ConfigureAwait(false);

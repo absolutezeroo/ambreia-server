@@ -67,7 +67,7 @@ public sealed class NavigatorAdminServiceTests
     }
 
     private static NavigatorContextSpec Context(string code, int order = 0) =>
-        new(code, true, NavigatorQueryType.Popular, order);
+        new(code, true, NavigatorQueryType.MyRooms, order);
 
     [Fact]
     public async Task SeedDefaults_CreatesEveryTabTheClientAsksFor()
@@ -217,10 +217,10 @@ public sealed class NavigatorAdminServiceTests
         NavigatorAdminResult result = await service.CreateQuickLinkAsync(
             new NavigatorQuickLinkSpec(
                 404,
-                NavigatorSearchCodes.Popular,
+                NavigatorSearchCodes.MyRooms,
                 string.Empty,
                 string.Empty,
-                NavigatorQueryType.Popular,
+                NavigatorQueryType.MyRooms,
                 0,
                 false
             ),
@@ -270,19 +270,19 @@ public sealed class NavigatorAdminServiceTests
         NavigatorAdminService service = NewService(options, out List<string> reloads);
 
         NavigatorAdminResult context = await service.CreateContextAsync(
-            Context(NavigatorSearchCodes.OfficialView),
+            Context(NavigatorSearchCodes.HotelView),
             CancellationToken.None
         );
         await service.UpdateContextAsync(
             context.Id!.Value,
-            Context(NavigatorSearchCodes.OfficialView, order: 3),
+            Context(NavigatorSearchCodes.HotelView, order: 3),
             CancellationToken.None
         );
-        NavigatorAdminResult category = await service.CreateEventCategoryAsync(
-            new NavigatorEventCategorySpec("Party", true),
+        NavigatorAdminResult category = await service.CreateFlatCategoryAsync(
+            new NavigatorFlatCategorySpec("Party", true, false, null, null, false, 1, 0),
             CancellationToken.None
         );
-        await service.DeleteEventCategoryAsync(category.Id!.Value, CancellationToken.None);
+        await service.DeleteFlatCategoryAsync(category.Id!.Value, CancellationToken.None);
 
         // Create, update, create, delete: four accepted writes, four reloads. A missed one leaves
         // the live navigator serving the previous snapshot until a restart.
@@ -323,7 +323,6 @@ public sealed class NavigatorAdminServiceTests
             RoomModelEntityId = model.Id,
             RoomModelEntity = model,
             Score = 0,
-            IsStaffPick = false,
             UsersNow = 0,
             PlayersMax = 25,
             PaintWall = string.Empty,

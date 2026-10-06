@@ -1,16 +1,13 @@
 using System.Threading;
 using System.Threading.Tasks;
-using Orleans;
 using Vortex.Messages.Registry;
 using Vortex.Primitives.Navigator;
 using Vortex.Protocol.Messages.Incoming.Navigator;
 
 namespace Vortex.PacketHandlers.Navigator;
 
-public class GuildBaseSearchMessageHandler(
-    INavigatorService navigatorService,
-    IGrainFactory grainFactory
-) : IMessageHandler<GuildBaseSearchMessage>
+public class GuildBaseSearchMessageHandler(INavigatorService navigatorService)
+    : IMessageHandler<GuildBaseSearchMessage>
 {
     private const string SearchCode = NavigatorSearchCodes.GuildBases;
 
@@ -21,7 +18,6 @@ public class GuildBaseSearchMessageHandler(
     ) =>
         NavigatorSearchHandlerHelper.SendSimpleSearchResultsAsync(
             navigatorService,
-            grainFactory,
             SearchCode,
             ctx,
             ct

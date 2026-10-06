@@ -87,10 +87,6 @@ internal sealed class CatalogPurchaseHarness
     /// <summary>Room advertisements the purchase created: (roomId, name, expiry). The duration a
     /// room ad buys is encoded in the product rather than configured, so what lands here is the
     /// only place that arithmetic is observable.</summary>
-    public List<(int RoomId, string Name, DateTime ExpiresAt)> AdvertisementsCreated { get; } = [];
-
-    public bool AdvertisementThrows { get; set; }
-
     /// <summary>Stands in for the behaviours a plugin would register on
     /// <see cref="Vortex.Primitives.Events.CatalogPurchasingEvent" />: set before buying and the
     /// grain sees its pre-purchase publish come back cancelled.</summary>
@@ -113,24 +109,6 @@ internal sealed class CatalogPurchaseHarness
                 return Task.FromResult(
                     new EventContext { CorrelationId = string.Empty, Cancel = CancelPurchase }
                 );
-            }),
-            FakeProxy.Create<IRoomAdvertisementService>(call =>
-            {
-                if (call.Method.Name != nameof(IRoomAdvertisementService.CreateAsync))
-                {
-                    return null;
-                }
-
-                if (AdvertisementThrows)
-                {
-                    throw new InvalidOperationException("advertisement service unreachable");
-                }
-
-                AdvertisementsCreated.Add(
-                    ((int)call.Args![0]!, (string)call.Args![1]!, (DateTime)call.Args![5]!)
-                );
-
-                return Task.CompletedTask;
             }),
             Journal,
             NullLogger<CatalogPurchaseGrain>.Instance

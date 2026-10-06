@@ -105,7 +105,8 @@ public enum CommerceOperationKind
 
     // 9 was the LTD raffle entry, removed in M0. Persisted: never reuse it.
 
-    RoomAdPurchase = 10,
+    // 10 was RoomAdPurchase, removed in M0 with room advertisements. Persisted: never reuse it.
+
     DailyTaskReward = 11,
 
     // 12 was MintTokenPurchase, removed with collectibles in the RPG fork (M0). Never reuse it.

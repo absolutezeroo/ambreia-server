@@ -487,18 +487,6 @@ public sealed partial class RoomGrain : Grain, IRoomGrain
 
             _state.Model = _roomModelProvider.GetModelById(entity.RoomModelEntityId);
 
-            DateTime now = DateTime.UtcNow;
-
-            // The room-ads table is a purchase log, so the live ad is the running row that lasts
-            // longest. Without it the in-room info panel and the navigator's event view had no name
-            // to show for an ad this hotel had already been paid for.
-            RoomAdvertisementEntity? advertisement = await dbCtx
-                .RoomAdvertisements.AsNoTracking()
-                .Where(a => a.RoomEntityId == entity.Id && a.DeletedAt == null && a.ExpiresAt > now)
-                .OrderByDescending(a => a.ExpiresAt)
-                .FirstOrDefaultAsync(ct)
-                .ConfigureAwait(true);
-
             _state.RoomSnapshot = new RoomSnapshot
             {
                 RoomId = entity.Id,
@@ -519,12 +507,8 @@ public sealed partial class RoomGrain : Grain, IRoomGrain
                 TradeType = entity.TradeType,
                 Score = entity.Score,
                 Ranking = entity.Ranking,
-                AdName = advertisement?.Name ?? string.Empty,
-                AdDescription = advertisement?.Description ?? string.Empty,
-                AdExpiresAt = advertisement?.ExpiresAt,
                 CategoryId = entity.NavigatorCategoryEntityId ?? -1,
                 Tags = RoomTagMapper.ToTags(entity.Tag1, entity.Tag2),
-                StaffPick = entity.IsStaffPick,
                 AllowBlocking = entity.AllowBlocking,
                 AllowPets = entity.AllowPets,
                 AllowPetsEat = entity.AllowPetsEat,

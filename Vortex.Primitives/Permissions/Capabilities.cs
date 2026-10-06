@@ -67,12 +67,6 @@ public static class Capabilities
         public const string GrantItem = "economy.item.grant";
     }
 
-    public static class Navigator
-    {
-        /// <summary>Toggle a room's "staff pick" flag in the navigator/guest-room card.</summary>
-        public const string StaffPick = "navigator.staffpick.manage";
-    }
-
     public static class Dashboard
     {
         public const string OverviewRead = "dashboard.overview.read";
@@ -334,7 +328,6 @@ public static class Capabilities
         Moderation.TradingLock,
         Moderation.Chatlogs,
         Moderation.Cfh,
-        Navigator.StaffPick,
         Economy.GrantCredits,
         Economy.GrantActivityPoints,
         Economy.GrantItem,

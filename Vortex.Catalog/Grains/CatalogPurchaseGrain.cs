@@ -29,7 +29,6 @@ public sealed partial class CatalogPurchaseGrain(
     ICatalogService catalogService,
     IEventPublisher events,
     ICancellableEventPublisher cancellableEvents,
-    IRoomAdvertisementService roomAdvertisements,
     ICommerceJournal journal,
     ILogger<CatalogPurchaseGrain> logger
 ) : Grain, ICatalogPurchaseGrain
@@ -38,7 +37,6 @@ public sealed partial class CatalogPurchaseGrain(
     private readonly ICatalogService _catalogService = catalogService;
     private readonly IEventPublisher _events = events;
     private readonly ICancellableEventPublisher _cancellableEvents = cancellableEvents;
-    private readonly IRoomAdvertisementService _roomAdvertisements = roomAdvertisements;
     private readonly ICommerceJournal _journal = journal;
     private readonly ILogger<CatalogPurchaseGrain> _logger = logger;
 

@@ -13,7 +13,6 @@ public sealed record NavigatorHealth(
     int ContextCount,
     int QuickLinkCount,
     int FlatCategoryCount,
-    int EventCategoryCount,
     IReadOnlyList<string> MissingTabs,
     IReadOnlyList<NavigatorEmptyTab> EmptyTabs,
     bool Seeded

@@ -73,7 +73,6 @@ public sealed class NavigatorGuildBadgeWireTests
             Ranking = 0,
             CategoryId = -1,
             Tags = [],
-            StaffPick = false,
             AllowBlocking = false,
             AllowPets = false,
             AllowPetsEat = false,

@@ -130,44 +130,6 @@ internal sealed class RoomOperations(
         );
 
     /// <summary>
-    /// Adds a room to the hotel's staff picks, or removes it.
-    /// </summary>
-    /// <remarks>
-    /// Through the room grain rather than the table, so the live room's own snapshot moves with the
-    /// row -- the badge a player already in the room is looking at comes from that snapshot, not
-    /// from a query.
-    /// </remarks>
-    public Task<OperationResult> SetRoomStaffPickAsync(
-        SetRoomStaffPickRequest request,
-        string actor,
-        CancellationToken ct
-    ) =>
-        _runner.ExecuteAsync(
-            "ops.room.staff_pick",
-            actor,
-            request.Reason,
-            targetPlayerId: null,
-            roomId: request.RoomId,
-            detail: new { request.StaffPick },
-            work: async c =>
-            {
-                PlayerId staffActor = await _staffActor.PlayerIdAsync(c).ConfigureAwait(false);
-
-                bool ok = await _grainFactory
-                    .GetRoomSettings(new RoomId(request.RoomId))
-                    .SetStaffPickAsync(staffActor, request.StaffPick, c)
-                    .ConfigureAwait(false);
-
-                if (!ok)
-                {
-                    throw new InvalidOperationException("staff_pick_rejected");
-                }
-            },
-            ct,
-            AuditCategory.Moderation
-        );
-
-    /// <summary>
     /// Sends a placed item back to its owner's hand.
     /// </summary>
     /// <remarks>

@@ -20,8 +20,8 @@ public class NavigatorQuickLinkEntity : VortexEntity
     public string Localization { get; set; } = string.Empty;
 
     [Column("query_type")]
-    [DefaultValue(NavigatorQueryType.AllRooms)]
-    public NavigatorQueryType QueryType { get; set; } = NavigatorQueryType.AllRooms;
+    [DefaultValue(NavigatorQueryType.None)]
+    public NavigatorQueryType QueryType { get; set; } = NavigatorQueryType.None;
 
     /// <summary>
     /// Whether the block starts collapsed. The official hotel closes the long tail of a tab this

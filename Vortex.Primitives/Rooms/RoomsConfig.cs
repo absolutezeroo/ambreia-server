@@ -54,9 +54,8 @@ public static class RoomsConfig
     /// <c>longtext</c> in MySQL: a room name could be as long as a packet body allows, 64 KB, and
     /// was stored as sent. Nothing in the client, the dashboard or the seeds states an intended
     /// limit, so these numbers are NOT derived from one -- they are taken from the nearest thing
-    /// this repository already decided, <c>RoomAdvertisementService</c>, which caps an ad's name at
-    /// 100 and its description at 255. Matching a sibling is worth more than a third invented
-    /// number, and an operator who disagrees has one place to change.
+    /// this repository already decided (100 and 255, the caps room advertisements used before they
+    /// were retired). An operator who disagrees has one place to change.
     /// </para>
     /// <para>
     /// Truncation rather than refusal, deliberately: refusing would make a too-long rename fail the

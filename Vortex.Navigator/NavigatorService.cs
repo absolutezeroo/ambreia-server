@@ -1,13 +1,11 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
-using System.Globalization;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Orleans;
-using Vortex.Primitives.FriendList.Grains;
 using Vortex.Primitives.Navigator;
 using Vortex.Primitives.Navigator.Enums;
 using Vortex.Primitives.Observability;
@@ -15,12 +13,9 @@ using Vortex.Primitives.Orleans;
 using Vortex.Primitives.Orleans.Snapshots.Navigator;
 using Vortex.Primitives.Orleans.Snapshots.Room;
 using Vortex.Primitives.Players;
-using Vortex.Primitives.Players.Grains;
 using Vortex.Primitives.Rooms;
 using Vortex.Primitives.Rooms.Grains;
 using Vortex.Primitives.Server.Grains;
-using Vortex.Primitives.Snapshots.FriendList;
-using Vortex.Primitives.Snapshots.Navigator;
 
 namespace Vortex.Navigator;
 
@@ -44,61 +39,6 @@ public sealed class NavigatorService(
     public ImmutableArray<NavigatorFlatCategorySnapshot> GetFlatCategories() =>
         _navigatorProvider.GetFlatCategories();
 
-    public async Task<ImmutableArray<NavigatorSearchResultBlockSnapshot>> GetCategoryBlocksAsync(
-        CancellationToken ct
-    ) =>
-        await GetCategoryBlocksAsync(await GetLimitsAsync().ConfigureAwait(false), ct)
-            .ConfigureAwait(false);
-
-    private async Task<ImmutableArray<NavigatorSearchResultBlockSnapshot>> GetCategoryBlocksAsync(
-        NavigatorLimits limits,
-        CancellationToken ct
-    )
-    {
-        ImmutableArray<NavigatorFlatCategorySnapshot> categories =
-            _navigatorProvider.GetFlatCategories();
-
-        if (categories.Length == 0)
-        {
-            return [];
-        }
-
-        // The per-category queries are independent, so issue them together rather than walking the
-        // category list one round trip at a time.
-        List<RoomInfoSnapshot>[] roomsPerCategory = await Task.WhenAll(
-                categories.Select(cat =>
-                    _navigatorProvider.GetRoomsByCategoryAsync(cat.Id, limits.Category, ct)
-                )
-            )
-            .ConfigureAwait(false);
-
-        Dictionary<RoomId, RoomSummarySnapshot> activeById = await GetActiveRoomsByIdAsync()
-            .ConfigureAwait(false);
-
-        List<NavigatorSearchResultBlockSnapshot> blocks = new(categories.Length);
-
-        for (int i = 0; i < categories.Length; i++)
-        {
-            blocks.Add(
-                new NavigatorSearchResultBlockSnapshot
-                {
-                    // Each category gets its own code so the client can collapse them
-                    // independently and so "show more" drills into that one category. A shared
-                    // "categories" code made collapsing one collapse the lot.
-                    SearchCode = NavigatorSearchCodes.FlatCategoryCode(categories[i].Id),
-                    Text = ToCategoryHeader(categories[i]),
-                    ActionAllowed = NavigatorActionAllowedType.None,
-                    Localization = string.Empty,
-                    ForceClosed = false,
-                    ViewMode = NavigatorViewModeType.Rows,
-                    Results = ToSearchResults(roomsPerCategory[i], activeById),
-                }
-            );
-        }
-
-        return [.. blocks];
-    }
-
     public async Task<ImmutableArray<RoomInfoSnapshot>> GetSearchResultsAsync(
         string searchCode,
         NavigatorSearchFilterType filterType,
@@ -112,7 +52,7 @@ public sealed class NavigatorService(
                 filterType,
                 filterValue,
                 playerId,
-                await GetLimitsAsync().ConfigureAwait(false),
+                await GetLimitAsync().ConfigureAwait(false),
                 ct
             )
             .ConfigureAwait(false);
@@ -127,17 +67,6 @@ public sealed class NavigatorService(
 
         return ToSearchResults(rooms, activeById);
     }
-
-    /// <summary>
-    /// A block's header is whatever the server puts in <c>Text</c>, verbatim. The client's own flat
-    /// category widget renders a category as <c>${navigator.flatcategory.global.&lt;KEY&gt;}</c>
-    /// when it has a global key, so mirror that here instead of pushing the operator-facing English
-    /// name at every locale.
-    /// </summary>
-    private static string ToCategoryHeader(NavigatorFlatCategorySnapshot category) =>
-        string.IsNullOrWhiteSpace(category.GlobalCategory)
-            ? category.Name
-            : $"${{navigator.flatcategory.global.{category.GlobalCategory}}}";
 
     private async Task<Dictionary<RoomId, RoomSummarySnapshot>> GetActiveRoomsByIdAsync()
     {
@@ -161,8 +90,7 @@ public sealed class NavigatorService(
     /// <remarks>
     /// A <c>with</c>, deliberately: this used to rebuild the result field by field into an empty
     /// subclass, and every field the room gained afterwards was dropped here without a compiler
-    /// error. That cost the guild badge once and would have cost the room ad next. Name only what
-    /// the live grain actually overrides.
+    /// error. That cost the guild badge once. Name only what the live grain actually overrides.
     /// </remarks>
     private static ImmutableArray<RoomInfoSnapshot> ToSearchResults(
         List<RoomInfoSnapshot> rooms,
@@ -188,181 +116,6 @@ public sealed class NavigatorService(
             ),
         ];
 
-    public async Task<ImmutableArray<OfficialRoomEntrySnapshot>> GetOfficialRoomEntriesAsync(
-        CancellationToken ct
-    )
-    {
-        int limit = await _grainFactory
-            .GetServerConfigGrain()
-            .GetIntAsync(
-                NavigatorConfig.SearchResultLimitKey,
-                NavigatorConfig.SearchResultLimitDefault
-            )
-            .ConfigureAwait(false);
-
-        List<RoomInfoSnapshot> rooms = await _navigatorProvider
-            .GetStaffPickedRoomsAsync(limit, ct)
-            .ConfigureAwait(false);
-
-        if (rooms.Count == 0)
-        {
-            return [];
-        }
-
-        Dictionary<RoomId, RoomSummarySnapshot> activeById = await GetActiveRoomsByIdAsync()
-            .ConfigureAwait(false);
-
-        // The hotel has no separate "official rooms tree" model, so the staff-pick flag is what
-        // marks a room as public. Each one is emitted as a Room entry carrying its own room data,
-        // which is what the client needs to open it directly from this view.
-        List<OfficialRoomEntrySnapshot> entries = new(rooms.Count);
-
-        for (int i = 0; i < rooms.Count; i++)
-        {
-            RoomInfoSnapshot room = rooms[i];
-            RoomSummarySnapshot? active = activeById.GetValueOrDefault(room.RoomId);
-
-            RoomInfoSnapshot live = room with
-            {
-                Name = active?.Name ?? room.Name,
-                Description = active?.Description ?? room.Description,
-                OwnerName = active?.OwnerName ?? room.OwnerName,
-                Population = active?.Population ?? 0,
-            };
-
-            entries.Add(
-                new OfficialRoomEntrySnapshot
-                {
-                    Index = i,
-                    PopupCaption = live.Name,
-                    PopupDescription = live.Description,
-                    ShowDetails = true,
-                    PictureText = string.Empty,
-                    // No official-room artwork exists to point at; an empty ref makes the client
-                    // skip the image rather than request a missing asset.
-                    PictureRef = string.Empty,
-                    FolderId = -1,
-                    UserCount = live.Population,
-                    Type = OfficialRoomEntryType.Room,
-                    Room = live,
-                }
-            );
-        }
-
-        return [.. entries];
-    }
-
-    /// <summary>
-    /// The promoted-rooms strip above the official list: one group per configured row, each filled
-    /// by running its search code.
-    /// </summary>
-    /// <remarks>
-    /// <para>
-    /// <b>A group with no rooms must never be emitted.</b> The client's parser reads the group's
-    /// headline room <em>before</em> its loop and outside the count, so a zero-room group leaves it
-    /// decoding a block that was never written and desynchronizes the rest of the packet -- every
-    /// group after it, and the official entries with them.
-    /// </para>
-    /// <para>
-    /// The leader avatar is the headline room's owner, looked up here rather than stored: the
-    /// client draws it from a figure string, and a figure an operator typed once would be wrong the
-    /// first time that player changed clothes.
-    /// </para>
-    /// </remarks>
-    public async Task<ImmutableArray<PromotedRoomCategorySnapshot>> GetPromotedRoomsAsync(
-        PlayerId playerId,
-        CancellationToken ct
-    )
-    {
-        ImmutableArray<NavigatorPromotedCategorySnapshot> configured =
-            _navigatorProvider.GetPromotedCategories();
-
-        if (configured.Length == 0)
-        {
-            return [];
-        }
-
-        NavigatorLimits limits = await GetLimitsAsync().ConfigureAwait(false);
-
-        // The searches are independent, so run them together rather than one round trip per group.
-        List<RoomInfoSnapshot>[] roomsPerGroup = await Task.WhenAll(
-                configured.Select(category =>
-                    FetchRoomsAsync(
-                        category.SearchCode,
-                        NavigatorSearchFilterType.Anything,
-                        category.Filter,
-                        playerId,
-                        limits,
-                        ct
-                    )
-                )
-            )
-            .ConfigureAwait(false);
-
-        Dictionary<RoomId, RoomSummarySnapshot> activeById = await GetActiveRoomsByIdAsync()
-            .ConfigureAwait(false);
-
-        List<(
-            NavigatorPromotedCategorySnapshot Category,
-            ImmutableArray<RoomInfoSnapshot> Rooms
-        )> filled = [];
-
-        for (int i = 0; i < configured.Length; i++)
-        {
-            ImmutableArray<RoomInfoSnapshot> rooms =
-            [
-                .. ToSearchResults(roomsPerGroup[i], activeById)
-                    .Take(NavigatorPromotedCategoryCodes.GroupSize),
-            ];
-
-            if (rooms.Length > 0)
-            {
-                filled.Add((configured[i], rooms));
-            }
-        }
-
-        if (filled.Count == 0)
-        {
-            return [];
-        }
-
-        ImmutableDictionary<int, string> figures = await _navigatorProvider
-            .GetPlayerFiguresAsync([.. filled.Select(x => x.Rooms[0].OwnerId.Value).Distinct()], ct)
-            .ConfigureAwait(false);
-
-        return
-        [
-            .. filled.Select(x => new PromotedRoomCategorySnapshot
-            {
-                Code = x.Category.Code,
-                LeaderFigure = figures.GetValueOrDefault(x.Rooms[0].OwnerId.Value, string.Empty),
-                Rooms = x.Rooms,
-            }),
-        ];
-    }
-
-    public async Task<CategoriesWithVisitorCountSnapshot> GetCategoryVisitorCountsAsync(
-        CancellationToken ct
-    )
-    {
-        ImmutableDictionary<int, NavigatorCategoryVisitorCount> counts = await _navigatorProvider
-            .GetCategoryVisitorCountsAsync(ct)
-            .ConfigureAwait(false);
-
-        Dictionary<int, List<int>> byCategory = [];
-
-        // Every visible category is reported, including the empty ones: a category the client never
-        // hears about renders without a population instead of with a zero.
-        foreach (NavigatorFlatCategorySnapshot category in _navigatorProvider.GetFlatCategories())
-        {
-            NavigatorCategoryVisitorCount count = counts.GetValueOrDefault(category.Id);
-
-            byCategory[category.Id] = [count.CurrentUserCount, count.MaxUserCount];
-        }
-
-        return new CategoriesWithVisitorCountSnapshot(byCategory);
-    }
-
     public async Task<ImmutableArray<NavigatorSearchResultBlockSnapshot>> GetSearchBlocksAsync(
         string searchCode,
         NavigatorSearchFilterType filterType,
@@ -371,17 +124,12 @@ public sealed class NavigatorService(
         CancellationToken ct
     )
     {
-        NavigatorLimits limits = await GetLimitsAsync().ConfigureAwait(false);
+        int limit = await GetLimitAsync().ConfigureAwait(false);
 
         // A filter turns any view into one flat list of matches -- the player asked a question, not
         // for the tab's overview.
         if (string.IsNullOrWhiteSpace(filterValue))
         {
-            if (searchCode == NavigatorSearchCodes.Categories)
-            {
-                return await GetCategoryBlocksAsync(limits, ct).ConfigureAwait(false);
-            }
-
             ImmutableArray<NavigatorQuickLinkSnapshot> quickLinks = await ResolveQuickLinksAsync(
                     searchCode
                 )
@@ -389,7 +137,7 @@ public sealed class NavigatorService(
 
             if (quickLinks.Length > 0)
             {
-                return await BuildOverviewBlocksAsync(quickLinks, playerId, limits, ct)
+                return await BuildOverviewBlocksAsync(quickLinks, playerId, limit, ct)
                     .ConfigureAwait(false);
             }
         }
@@ -398,14 +146,13 @@ public sealed class NavigatorService(
         [
             await BuildBlockAsync(
                     searchCode,
-                    searchCode,
                     filterType,
                     filterValue,
                     // A single block is the end of a drill-down, so the client offers "back" rather
                     // than "show more".
                     NavigatorActionAllowedType.Back,
                     playerId,
-                    limits,
+                    limit,
                     ct
                 )
                 .ConfigureAwait(false),
@@ -446,7 +193,7 @@ public sealed class NavigatorService(
     private async Task<ImmutableArray<NavigatorSearchResultBlockSnapshot>> BuildOverviewBlocksAsync(
         ImmutableArray<NavigatorQuickLinkSnapshot> quickLinks,
         PlayerId playerId,
-        NavigatorLimits limits,
+        int limit,
         CancellationToken ct
     )
     {
@@ -454,19 +201,7 @@ public sealed class NavigatorService(
 
         foreach (NavigatorQuickLinkSnapshot quickLink in quickLinks)
         {
-            // "All categories" is itself a set of blocks, so it expands in place instead of
-            // collapsing into one nameless list.
-            if (
-                quickLink.SearchCode == NavigatorSearchCodes.Categories
-                && string.IsNullOrWhiteSpace(quickLink.Filter)
-            )
-            {
-                blocks.AddRange(await GetCategoryBlocksAsync(limits, ct).ConfigureAwait(false));
-                continue;
-            }
-
             NavigatorSearchResultBlockSnapshot block = await BuildBlockAsync(
-                    quickLink.SearchCode,
                     quickLink.SearchCode,
                     NavigatorSearchFilterType.Anything,
                     quickLink.Filter,
@@ -475,7 +210,7 @@ public sealed class NavigatorService(
                     // with a different list than the one the player is looking at.
                     NavigatorActionAllowedType.None,
                     playerId,
-                    limits,
+                    limit,
                     ct
                 )
                 .ConfigureAwait(false);
@@ -497,12 +232,11 @@ public sealed class NavigatorService(
 
     private async Task<NavigatorSearchResultBlockSnapshot> BuildBlockAsync(
         string searchCode,
-        string viewModeKey,
         NavigatorSearchFilterType filterType,
         string filterValue,
         NavigatorActionAllowedType actionAllowed,
         PlayerId playerId,
-        NavigatorLimits limits,
+        int limit,
         CancellationToken ct
     )
     {
@@ -511,14 +245,9 @@ public sealed class NavigatorService(
                 filterType,
                 filterValue,
                 playerId,
-                limits,
+                limit,
                 ct
             )
-            .ConfigureAwait(false);
-
-        int viewMode = await _grainFactory
-            .GetPlayerNavigatorGrain(playerId)
-            .GetViewModeAsync(viewModeKey, ct)
             .ConfigureAwait(false);
 
         Dictionary<RoomId, RoomSummarySnapshot> activeById =
@@ -532,48 +261,45 @@ public sealed class NavigatorService(
             ActionAllowed = actionAllowed,
             Localization = string.Empty,
             ForceClosed = false,
-            ViewMode = (NavigatorViewModeType)viewMode,
+            // Frozen: view modes are no longer remembered per player, so every block is rows.
+            ViewMode = NavigatorViewModeType.Rows,
             Results = ToSearchResults(rooms, activeById),
         };
     }
 
-    private async Task<NavigatorLimits> GetLimitsAsync()
-    {
-        IServerConfigGrain config = _grainFactory.GetServerConfigGrain();
-
-        // Read once per request rather than once per block: an overview builds up to a dozen blocks
-        // and each was re-asking the config grain for the same three numbers.
-        return new NavigatorLimits(
-            await config
-                .GetIntAsync(
-                    NavigatorConfig.SearchResultLimitKey,
-                    NavigatorConfig.SearchResultLimitDefault
-                )
-                .ConfigureAwait(false),
-            await config
-                .GetIntAsync(
-                    NavigatorConfig.CategoryResultLimitKey,
-                    NavigatorConfig.CategoryResultLimitDefault
-                )
-                .ConfigureAwait(false),
-            await config
-                .GetIntAsync(NavigatorConfig.HistoryLimitKey, NavigatorConfig.HistoryLimitDefault)
-                .ConfigureAwait(false)
-        );
-    }
+    private async Task<int> GetLimitAsync() =>
+        await _grainFactory
+            .GetServerConfigGrain()
+            .GetIntAsync(
+                NavigatorConfig.SearchResultLimitKey,
+                NavigatorConfig.SearchResultLimitDefault
+            )
+            .ConfigureAwait(false);
 
     private async Task<List<RoomInfoSnapshot>> FetchRoomsAsync(
         string searchCode,
         NavigatorSearchFilterType filterType,
         string filterValue,
         PlayerId playerId,
-        NavigatorLimits limits,
+        int limit,
         CancellationToken ct
     )
     {
-        int limit = limits.Search;
+        NavigatorQueryType? queryType = _navigatorProvider.ResolveQueryType(searchCode);
 
-        // Explicit filter overrides searchCode routing
+        // A code the navigator does not serve (removed in M0, or never known) answers nothing,
+        // whatever was typed into the search box. It must not fall through to listing the hotel.
+        if (queryType is null)
+        {
+            _logger.LogDebug(
+                "Navigator search code is not served: SearchCode={SearchCode}",
+                searchCode
+            );
+
+            return [];
+        }
+
+        // Explicit filter overrides the code's own query
         if (
             !string.IsNullOrWhiteSpace(filterValue)
             && filterType != NavigatorSearchFilterType.Anything
@@ -599,14 +325,9 @@ public sealed class NavigatorService(
             };
         }
 
-        NavigatorQueryType queryType = _navigatorProvider.ResolveQueryType(searchCode);
-
         // An unprefixed search box entry arrives as Anything + a value: it is a free-text search
-        // whatever tab it was typed on.
-        if (
-            !string.IsNullOrWhiteSpace(filterValue)
-            && queryType != NavigatorQueryType.ByFlatCategory
-        )
+        // whatever served tab it was typed on.
+        if (!string.IsNullOrWhiteSpace(filterValue))
         {
             return await _navigatorProvider
                 .SearchRoomsAsync(filterValue, limit, ct)
@@ -618,254 +339,18 @@ public sealed class NavigatorService(
             NavigatorQueryType.MyRooms => await _navigatorProvider
                 .GetRoomsByOwnerAsync(playerId, limit, ct)
                 .ConfigureAwait(false),
-            NavigatorQueryType.MyFavorites => await _navigatorProvider
-                .GetFavoriteRoomsAsync(playerId, limit, ct)
-                .ConfigureAwait(false),
             NavigatorQueryType.FriendsRooms => await _navigatorProvider
                 .GetFriendsRoomsAsync(playerId, limit, ct)
                 .ConfigureAwait(false),
-            NavigatorQueryType.WithFriends => await GetRoomsWithFriendsAsync(playerId, ct)
-                .ConfigureAwait(false),
-            NavigatorQueryType.History => await _navigatorProvider
-                .GetVisitedRoomsAsync(playerId, false, limits.History, ct)
-                .ConfigureAwait(false),
-            NavigatorQueryType.FrequentHistory => await _navigatorProvider
-                .GetVisitedRoomsAsync(playerId, true, limits.History, ct)
-                .ConfigureAwait(false),
-            NavigatorQueryType.WithRights => await _navigatorProvider
-                .GetRoomsWithRightsAsync(playerId, limit, ct)
-                .ConfigureAwait(false),
-            NavigatorQueryType.RoomAds => await _navigatorProvider
-                .GetAdvertisedRoomsAsync(limit, ct)
-                .ConfigureAwait(false),
-            NavigatorQueryType.ByFlatCategory => await GetCategoryRoomsAsync(
-                    searchCode,
-                    filterValue,
-                    limit,
-                    ct
-                )
-                .ConfigureAwait(false),
-            NavigatorQueryType.EventCategory => await GetEventCategoryRoomsAsync(
-                    searchCode,
-                    limit,
-                    ct
-                )
-                .ConfigureAwait(false),
-            // "Popular" is the busiest-first ordering the default query already applies.
-            NavigatorQueryType.Popular => await _navigatorProvider
-                .GetAllRoomsAsync(limit, ct)
-                .ConfigureAwait(false),
-            NavigatorQueryType.HighestScore => await _navigatorProvider
-                .GetHighestScoreRoomsAsync(limit, ct)
-                .ConfigureAwait(false),
-            NavigatorQueryType.Recommended => await _navigatorProvider
-                .GetRecommendedRoomsAsync(playerId, limit, ct)
-                .ConfigureAwait(false),
-            NavigatorQueryType.StaffPicks => await _navigatorProvider
-                .GetStaffPickedRoomsAsync(limit, ct)
-                .ConfigureAwait(false),
-            NavigatorQueryType.TextSearch => string.IsNullOrWhiteSpace(filterValue)
-                ? []
-                : await _navigatorProvider
-                    .SearchRoomsAsync(filterValue, limit, ct)
-                    .ConfigureAwait(false),
             NavigatorQueryType.MyGroups => await _navigatorProvider
                 .GetMyGuildBaseRoomsAsync(playerId, limit, ct)
                 .ConfigureAwait(false),
             NavigatorQueryType.GuildBases => await _navigatorProvider
                 .GetGuildBaseRoomsAsync(limit, ct)
                 .ConfigureAwait(false),
-            // No competition subsystem exists. Empty is the honest answer; the fallback below would
-            // present the entire hotel as competition entrants.
-            NavigatorQueryType.Competition => [],
-            _ => await _navigatorProvider.GetAllRoomsAsync(limit, ct).ConfigureAwait(false),
+            // A text search with nothing typed is not "every room", and a query type this build no
+            // longer knows (a stale stored row) lists nothing either.
+            _ => [],
         };
     }
-
-    /// <summary>
-    /// "Rooms where my friends are" is live state, not a query: the only place a player's current
-    /// room is recorded is their presence grain. Ask every online friend's presence grain at once
-    /// and turn the distinct room ids into room rows.
-    /// </summary>
-    private async Task<List<RoomInfoSnapshot>> GetRoomsWithFriendsAsync(
-        PlayerId playerId,
-        CancellationToken ct
-    )
-    {
-        List<MessengerFriendSnapshot> friends = await _grainFactory
-            .GetMessengerGrain(playerId)
-            .GetFriendsAsync(ct)
-            .ConfigureAwait(false);
-
-        List<PlayerId> onlineFriendIds = [.. friends.Where(f => f.Online).Select(f => f.PlayerId)];
-
-        if (onlineFriendIds.Count == 0)
-        {
-            return [];
-        }
-
-        RoomPointerSnapshot[] activeRooms = await Task.WhenAll(
-                onlineFriendIds.Select(id =>
-                    _grainFactory.GetPlayerPresenceGrain(id).GetActiveRoomAsync()
-                )
-            )
-            .ConfigureAwait(false);
-
-        HashSet<int> roomIds =
-        [
-            .. activeRooms.Where(r => r.RoomId > 0).Select(r => r.RoomId.Value),
-        ];
-
-        if (roomIds.Count == 0)
-        {
-            return [];
-        }
-
-        return await _navigatorProvider.GetRoomsByIdsAsync(roomIds, ct).ConfigureAwait(false);
-    }
-
-    /// <summary>
-    /// <c>eventcategory__3</c> means "rooms currently advertised under event category 3" -- the id
-    /// travels in the search code itself, so there is one code per <c>navigator_eventcats</c> row.
-    /// </summary>
-    private async Task<List<RoomInfoSnapshot>> GetEventCategoryRoomsAsync(
-        string searchCode,
-        int limit,
-        CancellationToken ct
-    )
-    {
-        // Normally "eventcategory__3", but an operator can point any code at this query type, so
-        // fall back to "whatever follows the last separator".
-        string idPart = searchCode.StartsWith(
-            NavigatorSearchCodes.EventCategoryPrefix,
-            StringComparison.Ordinal
-        )
-            ? searchCode[NavigatorSearchCodes.EventCategoryPrefix.Length..]
-            : searchCode[(searchCode.LastIndexOfAny(['_', ':']) + 1)..];
-
-        if (
-            !int.TryParse(
-                idPart,
-                NumberStyles.Integer,
-                CultureInfo.InvariantCulture,
-                out int eventCategoryId
-            )
-        )
-        {
-            _logger.LogDebug(
-                "Navigator event-category search carried no usable id: SearchCode={SearchCode}",
-                searchCode
-            );
-
-            return [];
-        }
-
-        return await _navigatorProvider
-            .GetRoomsByEventCategoryAsync(eventCategoryId, limit, ct)
-            .ConfigureAwait(false);
-    }
-
-    /// <summary>
-    /// Resolves which flat category a category search means. This used to be hardcoded to id 0, so
-    /// every category quick link returned the same (usually empty) block regardless of which
-    /// category the player clicked.
-    /// </summary>
-    private async Task<List<RoomInfoSnapshot>> GetCategoryRoomsAsync(
-        string searchCode,
-        string filterValue,
-        int limit,
-        CancellationToken ct
-    )
-    {
-        int? categoryId = ResolveFlatCategoryId(searchCode, filterValue);
-
-        if (categoryId is null)
-        {
-            _logger.LogDebug(
-                "Navigator category search resolved no category: SearchCode={SearchCode}, Filter={Filter}",
-                searchCode,
-                filterValue
-            );
-
-            return [];
-        }
-
-        return await _navigatorProvider
-            .GetRoomsByCategoryAsync(categoryId.Value, limit, ct)
-            .ConfigureAwait(false);
-    }
-
-    /// <summary>
-    /// A category is addressed either by id or by name, and it can arrive in the filtering data
-    /// (<c>category:3</c>) or baked into the search code of a configured quick link
-    /// (<c>category_3</c>, or simply the category's own name).
-    /// </summary>
-    private int? ResolveFlatCategoryId(string searchCode, string filterValue)
-    {
-        ImmutableArray<NavigatorFlatCategorySnapshot> categories =
-            _navigatorProvider.GetFlatCategories();
-
-        if (categories.Length == 0)
-        {
-            return null;
-        }
-
-        foreach (string candidate in EnumerateCategoryTokens(searchCode, filterValue))
-        {
-            if (
-                int.TryParse(
-                    candidate,
-                    NumberStyles.Integer,
-                    CultureInfo.InvariantCulture,
-                    out int id
-                )
-            )
-            {
-                if (categories.Any(c => c.Id == id))
-                {
-                    return id;
-                }
-
-                continue;
-            }
-
-            foreach (NavigatorFlatCategorySnapshot category in categories)
-            {
-                if (string.Equals(category.Name, candidate, StringComparison.OrdinalIgnoreCase))
-                {
-                    return category.Id;
-                }
-            }
-        }
-
-        return null;
-    }
-
-    private static IEnumerable<string> EnumerateCategoryTokens(
-        string searchCode,
-        string filterValue
-    )
-    {
-        if (!string.IsNullOrWhiteSpace(filterValue))
-        {
-            yield return filterValue.Trim();
-        }
-
-        if (string.IsNullOrWhiteSpace(searchCode))
-        {
-            yield break;
-        }
-
-        yield return searchCode.Trim();
-
-        int separator = searchCode.LastIndexOfAny(['_', ':']);
-
-        if (separator >= 0 && separator < searchCode.Length - 1)
-        {
-            yield return searchCode[(separator + 1)..];
-        }
-    }
-
-    /// <summary>The three result caps, resolved once per request instead of once per block.</summary>
-    private sealed record NavigatorLimits(int Search, int Category, int History);
 }

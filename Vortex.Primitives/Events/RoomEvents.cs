@@ -61,15 +61,3 @@ public sealed record RoomDoorbellAnsweredEvent(
     int RoomId,
     bool Admitted
 ) : IEvent;
-
-/// <summary>
-/// A room advertisement was edited or pulled. Creating one is not here on purpose: an ad is bought
-/// from the catalogue, so the purchase already records it, and a second line for the same act would
-/// double-count the promotion. Editing and cancelling have no purchase behind them and left nothing.
-/// </summary>
-public sealed record RoomAdvertisementChangedEvent(
-    PlayerId ActorId,
-    int AdvertisementId,
-    int RoomId,
-    string Change
-) : IEvent;

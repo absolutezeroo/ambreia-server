@@ -16,9 +16,10 @@ internal class GetGuestRoomResultMessageComposerSerializer(int header)
 
         RoomSettingsSerializer.Serialize(packet, message.RoomInfo);
 
+        // The staff-pick flag is frozen at false: staff picks are gone but the client still reads it.
         packet
             .WriteBoolean(message.RoomForward)
-            .WriteBoolean(message.StaffPick)
+            .WriteBoolean(false)
             .WriteBoolean(message.IsGroupMember)
             .WriteBoolean(message.AllInRoomMuted);
 

@@ -107,7 +107,6 @@
     "grain:Rooms/IRoomSettings.cs::RemoveOwnRightsAsync": "security-module+owner-compare+explicit-rights",
     "grain:Rooms/IRoomSettings.cs::RemoveRightsAsync": "security-module+room-owner+explicit-rights",
     "grain:Rooms/IRoomSettings.cs::SetRoomTagsAsync": "room-owner",
-    "grain:Rooms/IRoomSettings.cs::SetStaffPickAsync": "security-module+capability",
     "grain:Rooms/IRoomSettings.cs::UpdateCategoryAndTradeAsync": "room-owner",
     "grain:Rooms/IRoomSettings.cs::UpdateFloorPlanAsync": "room-owner",
     "grain:Rooms/IRoomSettings.cs::UpdateRoomSettingsAsync": "room-owner",

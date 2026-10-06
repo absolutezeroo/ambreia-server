@@ -1813,13 +1813,6 @@ export interface NavigatorEmptyTab {
   searchCode: string;
 }
 
-export interface NavigatorEventCategoryRow {
-  id: number;
-  name: string;
-  visible: boolean;
-  activeAdCount: number;
-}
-
 export interface NavigatorFlatCategoryRow {
   id: number;
   name: string;
@@ -1837,27 +1830,9 @@ export interface NavigatorHealth {
   contextCount: number;
   quickLinkCount: number;
   flatCategoryCount: number;
-  eventCategoryCount: number;
   missingTabs: string[];
   emptyTabs: NavigatorEmptyTab[];
   seeded: boolean;
-}
-
-export interface NavigatorPromotedCategoryRow {
-  id: number;
-  code: string;
-  clientText: string;
-  searchCode: string;
-  filter: string;
-  orderNum: number;
-  visible: boolean;
-  roomCount: number;
-}
-
-export interface NavigatorPromotedCodeOption {
-  code: string;
-  clientText: string;
-  taken: boolean;
 }
 
 export interface NavigatorQueryTypeOption {
@@ -1888,11 +1863,8 @@ export interface NavigatorSetup {
   health: NavigatorHealth;
   contexts: NavigatorContextRow[];
   flatCategories: NavigatorFlatCategoryRow[];
-  eventCategories: NavigatorEventCategoryRow[];
-  promotedCategories: NavigatorPromotedCategoryRow[];
   searchCodes: NavigatorSearchCodeOption[];
   queryTypes: NavigatorQueryTypeOption[];
-  promotedCodes: NavigatorPromotedCodeOption[];
 }
 
 export interface OrleansClusterSnapshot {
@@ -2530,7 +2502,6 @@ export interface RoomTimelineHeader {
   playersMax: number;
   lastActive: string;
   modelName: string;
-  staffPick: boolean;
 }
 
 export interface RoomTimelineRow {

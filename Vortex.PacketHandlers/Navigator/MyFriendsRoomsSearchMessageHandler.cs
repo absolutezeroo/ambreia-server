@@ -1,16 +1,13 @@
 using System.Threading;
 using System.Threading.Tasks;
-using Orleans;
 using Vortex.Messages.Registry;
 using Vortex.Primitives.Navigator;
 using Vortex.Protocol.Messages.Incoming.Navigator;
 
 namespace Vortex.PacketHandlers.Navigator;
 
-public class MyFriendsRoomsSearchMessageHandler(
-    INavigatorService navigatorService,
-    IGrainFactory grainFactory
-) : IMessageHandler<MyFriendsRoomsSearchMessage>
+public class MyFriendsRoomsSearchMessageHandler(INavigatorService navigatorService)
+    : IMessageHandler<MyFriendsRoomsSearchMessage>
 {
     private const string SearchCode = NavigatorSearchCodes.FriendsRooms;
 
@@ -21,7 +18,6 @@ public class MyFriendsRoomsSearchMessageHandler(
     ) =>
         NavigatorSearchHandlerHelper.SendSimpleSearchResultsAsync(
             navigatorService,
-            grainFactory,
             SearchCode,
             ctx,
             ct

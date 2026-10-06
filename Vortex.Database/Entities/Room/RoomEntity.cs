@@ -193,10 +193,6 @@ public class RoomEntity : VortexEntity
     [DefaultValue(0)]
     public int Ranking { get; set; }
 
-    [Column("staff_pick")]
-    [DefaultValue(false)]
-    public required bool IsStaffPick { get; set; }
-
     [ForeignKey(nameof(PlayerEntityId))]
     public required PlayerEntity PlayerEntity { get; set; }
 
@@ -219,10 +215,4 @@ public class RoomEntity : VortexEntity
 
     [InverseProperty("RoomEntity")]
     public List<RoomChatlogEntity>? RoomChats { get; set; }
-
-    /// <summary>Every ad ever bought for this room, not just the live one -- the table is a purchase
-    /// log. Exists so a room projection can pick the running ad without the query needing the
-    /// context in hand.</summary>
-    [InverseProperty("RoomEntity")]
-    public List<RoomAdvertisementEntity>? Advertisements { get; set; }
 }

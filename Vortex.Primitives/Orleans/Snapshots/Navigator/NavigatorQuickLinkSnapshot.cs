@@ -19,7 +19,7 @@ public record NavigatorQuickLinkSnapshot
     public required string Localization { get; init; }
 
     [Id(4)]
-    public NavigatorQueryType QueryType { get; init; } = NavigatorQueryType.AllRooms;
+    public NavigatorQueryType QueryType { get; init; } = NavigatorQueryType.None;
 
     [Id(5)]
     public bool ForceClosed { get; init; }

@@ -356,27 +356,6 @@ public static class ConfigKeyCatalog
             "Rooms returned by one navigator search",
             "Navigator"
         ),
-        new(
-            "navigator.category_result_limit",
-            "20",
-            ConfigValueKind.Int,
-            "Rooms returned per category block",
-            "Navigator"
-        ),
-        new(
-            "navigator.history_limit",
-            "25",
-            ConfigValueKind.Int,
-            "Rooms kept in the visited/most-visited lists",
-            "Navigator"
-        ),
-        new(
-            "navigator.favourite_limit",
-            "30",
-            ConfigValueKind.Int,
-            "Rooms a player may favourite (the client refuses to add past this, so 0 disables favourites entirely)",
-            "Navigator"
-        ),
     ];
 
     /// <summary>The descriptor for <paramref name="key"/>, or null if the key is not a known config key.</summary>

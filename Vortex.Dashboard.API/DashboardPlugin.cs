@@ -286,10 +286,6 @@ public sealed class DashboardPlugin : IVortexPlugin
         services.UseHostService<ICatalogSnapshotProvider<NormalCatalog>>();
         services.UseHostService<IFurnitureDefinitionProvider>();
         services.UseHostService<INavigatorProvider>();
-        // NavigatorReads resolves a promoted group's rooms through the live search, and was added
-        // without this line — which fails the whole dashboard at startup, not just its page.
-        // DashboardPluginContainerTests is what catches that now.
-        services.UseHostService<INavigatorService>();
         services.UseHostService<ISongProvider>();
         services.UseHostService<IGiftWrappingProvider>();
         services.UseHostService<ICurrencyTypeProvider>();

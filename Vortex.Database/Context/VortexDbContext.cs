@@ -101,8 +101,6 @@ public class VortexDbContext(DbContextOptions<VortexDbContext> options)
 
     public DbSet<RoomEntryLogEntity> RoomEntryLogs { get; init; } = null!;
 
-    public DbSet<RoomAdvertisementEntity> RoomAdvertisements { get; init; } = null!;
-
     public DbSet<RoomChatlogEntity> Chatlogs { get; init; } = null!;
 
     public DbSet<SecurityTicketEntity> SecurityTickets { get; init; } = null!;
@@ -147,29 +145,14 @@ public class VortexDbContext(DbContextOptions<VortexDbContext> options)
 
     public DbSet<NavigatorFlatCategoryEntity> NavigatorFlatCategories { get; init; } = null!;
 
-    public DbSet<NavigatorEventCategoryEntity> NavigatorEventCategories { get; init; } = null!;
-
     public DbSet<NavigatorQuickLinkEntity> NavigatorQuickLinks { get; init; } = null!;
-
-    public DbSet<NavigatorPromotedCategoryEntity> NavigatorPromotedCategories { get; init; } =
-        null!;
 
     public DbSet<PlayerChatStyleEntity> PlayerChatStyles { get; init; } = null!;
 
     public DbSet<PlayerChatStyleOwnedEntity> PlayerOwnedChatStyles { get; init; } = null!;
 
-    public DbSet<PlayerFavoriteRoomsEntity> PlayerFavouriteRooms { get; init; } = null!;
-
     public DbSet<PlayerNavigatorPreferencesEntity> PlayerNavigatorPreferences { get; init; } =
         null!;
-
-    public DbSet<PlayerNavigatorSavedSearchEntity> PlayerNavigatorSavedSearches { get; init; } =
-        null!;
-
-    public DbSet<PlayerNavigatorCollapsedCategoryEntity> PlayerNavigatorCollapsedCategories { get; init; } =
-        null!;
-
-    public DbSet<PlayerNavigatorViewModeEntity> PlayerNavigatorViewModes { get; init; } = null!;
 
     public DbSet<PlayerSubscriptionEntity> PlayerSubscriptions { get; init; } = null!;
 

@@ -126,7 +126,6 @@ internal sealed partial class RoomService
             ChatFloodType = ChatFloodSensitivityType.Minimal,
             ChatDistance = 50,
             Score = 0,
-            IsStaffPick = false,
         };
 
         dbCtx.Rooms.Add(room);

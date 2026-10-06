@@ -183,7 +183,6 @@ public sealed class GroupDirectoryGrainCreationTests
             ChatFloodType = ChatFloodSensitivityType.Minimal,
             ChatDistance = 50,
             Score = 0,
-            IsStaffPick = false,
             PlayerEntity = owner,
             RoomModelEntity = model,
         };

@@ -56,7 +56,6 @@ internal static class RoomForwardHelper
                     EnterRoom = enterRoom,
                     RoomInfo = snapshot,
                     RoomForward = roomForward,
-                    StaffPick = snapshot.StaffPick,
                     IsGroupMember = isGroupMember,
                     AllInRoomMuted = muteState.AllInRoomMuted,
                     CanMute = muteState.CanMute,

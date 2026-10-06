@@ -916,7 +916,6 @@ internal sealed class DirectoryReads(
                         r.PlayersMax,
                         LastActive = r.LastActive,
                         ModelName = r.RoomModelEntity.Name,
-                        r.IsStaffPick,
                     })
                     .FirstOrDefaultAsync(ct)
                     .ConfigureAwait(false);
@@ -1051,8 +1050,7 @@ internal sealed class DirectoryReads(
                         room.UsersNow,
                         room.PlayersMax,
                         room.LastActive,
-                        room.ModelName,
-                        room.IsStaffPick
+                        room.ModelName
                     ),
                     page,
                     limit,

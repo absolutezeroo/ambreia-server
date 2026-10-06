@@ -159,7 +159,6 @@ public sealed class RoomEndpointTests
                 ChatFloodType = ChatFloodSensitivityType.Minimal,
                 ChatDistance = 50,
                 Score = 0,
-                IsStaffPick = false,
                 Tag1 = "cafe",
                 PlayerEntity = owner,
                 RoomModelEntity = model,

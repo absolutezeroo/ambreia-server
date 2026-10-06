@@ -80,7 +80,6 @@ public sealed class GetGuestRoomResultTailWireTests
         {
             EnterRoom = true,
             RoomForward = false,
-            StaffPick = false,
             IsGroupMember = false,
             AllInRoomMuted = false,
             CanMute = true,
@@ -100,7 +99,6 @@ public sealed class GetGuestRoomResultTailWireTests
                 Ranking = 0,
                 CategoryId = -1,
                 Tags = [],
-                StaffPick = true,
                 AllowBlocking = false,
                 AllowPets = false,
                 AllowPetsEat = false,

@@ -32,7 +32,7 @@ const list = process.argv.includes('--list');
 const KNOWN_INDIRECT = new Set(['ErrorGroups', 'ErrorOccurrences']);
 
 /**
- * Per-player interface state. Nobody administers which navigator categories someone collapsed, and
+ * Per-player interface state. Nobody administers a player's navigator window placement, and
  * counting these as gaps would pad the number with rows nobody wants.
  */
 const UI_STATE = new Set([
@@ -40,10 +40,7 @@ const UI_STATE = new Set([
   'MessengerCategories',
   'PlayerAccountPreferences',
   'PlayerModToolPreferences',
-  'PlayerNavigatorCollapsedCategories',
   'PlayerNavigatorPreferences',
-  'PlayerNavigatorSavedSearches',
-  'PlayerNavigatorViewModes',
   'PlayerWiredPreferences',
 ]);
 

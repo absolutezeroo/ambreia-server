@@ -14,5 +14,5 @@ public record NavigatorTopLevelContextSnapshot
     public required ImmutableArray<NavigatorQuickLinkSnapshot> QuickLinks { get; init; }
 
     [Id(2)]
-    public NavigatorQueryType QueryType { get; init; } = NavigatorQueryType.AllRooms;
+    public NavigatorQueryType QueryType { get; init; } = NavigatorQueryType.None;
 }

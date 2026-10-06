@@ -11,9 +11,9 @@ namespace Vortex.Navigator.Tests;
 
 /// <summary>
 /// Every navigator tab sends a search code the client hardcodes. Nothing seeded
-/// <c>navigator_top_level_contexts</c>, so on a fresh hotel the lookup found no row for any of them
-/// and only <c>groups</c>/<c>my_groups</c> had a built-in fallback — every other tab resolved to
-/// <see cref="NavigatorQueryType.AllRooms"/> and answered with the whole room table.
+/// <c>navigator_top_level_contexts</c>, so on a fresh hotel the lookup finds no row for any of them
+/// and the built-in table has to answer. The navigator serves five queries; every other code
+/// resolves to <c>null</c> -- "not served" -- and answers nothing, rather than the whole room table.
 /// </summary>
 public sealed class NavigatorQueryTypeResolutionTests
 {
@@ -26,46 +26,62 @@ public sealed class NavigatorQueryTypeResolutionTests
 
     [Theory]
     [InlineData(NavigatorSearchCodes.MyRooms, NavigatorQueryType.MyRooms)]
-    [InlineData(NavigatorSearchCodes.Favourites, NavigatorQueryType.MyFavorites)]
     [InlineData(NavigatorSearchCodes.FriendsRooms, NavigatorQueryType.FriendsRooms)]
-    [InlineData(NavigatorSearchCodes.WithFriends, NavigatorQueryType.WithFriends)]
-    [InlineData(NavigatorSearchCodes.History, NavigatorQueryType.History)]
-    [InlineData(NavigatorSearchCodes.HistoryFrequent, NavigatorQueryType.FrequentHistory)]
-    [InlineData(NavigatorSearchCodes.WithRights, NavigatorQueryType.WithRights)]
-    [InlineData(NavigatorSearchCodes.RoomAds, NavigatorQueryType.RoomAds)]
-    [InlineData(NavigatorSearchCodes.TopPromotions, NavigatorQueryType.RoomAds)]
-    [InlineData(NavigatorSearchCodes.Categories, NavigatorQueryType.ByFlatCategory)]
-    [InlineData(NavigatorSearchCodes.Popular, NavigatorQueryType.Popular)]
-    [InlineData(NavigatorSearchCodes.HighestScore, NavigatorQueryType.HighestScore)]
-    [InlineData(NavigatorSearchCodes.Recommended, NavigatorQueryType.Recommended)]
-    [InlineData(NavigatorSearchCodes.StaffPicks, NavigatorQueryType.StaffPicks)]
-    [InlineData(NavigatorSearchCodes.Official, NavigatorQueryType.StaffPicks)]
-    [InlineData(NavigatorSearchCodes.OfficialView, NavigatorQueryType.StaffPicks)]
-    [InlineData(NavigatorSearchCodes.RoomAdsView, NavigatorQueryType.RoomAds)]
-    [InlineData("category__3", NavigatorQueryType.ByFlatCategory)]
-    [InlineData(NavigatorSearchCodes.TextSearch, NavigatorQueryType.TextSearch)]
-    [InlineData(NavigatorSearchCodes.GuildBases, NavigatorQueryType.GuildBases)]
     [InlineData(NavigatorSearchCodes.MyGuildBases, NavigatorQueryType.MyGroups)]
-    [InlineData(NavigatorSearchCodes.Competition, NavigatorQueryType.Competition)]
-    [InlineData(NavigatorSearchCodes.HotelView, NavigatorQueryType.Popular)]
+    [InlineData(NavigatorSearchCodes.GuildBases, NavigatorQueryType.GuildBases)]
+    [InlineData(NavigatorSearchCodes.TextSearch, NavigatorQueryType.TextSearch)]
     [InlineData(NavigatorSearchCodes.MyWorldView, NavigatorQueryType.MyRooms)]
+    [InlineData(NavigatorSearchCodes.HotelView, NavigatorQueryType.TextSearch)]
     public void KnownSearchCode_ResolvesWithoutAnyDatabaseConfiguration(
         string searchCode,
         NavigatorQueryType expected
     ) => Provider.ResolveQueryType(searchCode).Should().Be(expected);
 
+    /// <summary>Everything the old navigator served beyond the five queries, plus codes nobody
+    /// ever taught the server about: not served, so not "every room".</summary>
     [Theory]
+    [InlineData("popular")]
+    [InlineData("official")]
+    [InlineData("official_view")]
+    [InlineData("roomads_view")]
+    [InlineData("history")]
+    [InlineData("history_freq")]
+    [InlineData("highest_score")]
+    [InlineData("recommended")]
+    [InlineData("favorites")]
+    [InlineData("with_rights")]
+    [InlineData("with_friends")]
+    [InlineData("staffpicks")]
+    [InlineData("new_ads")]
+    [InlineData("top_promotions")]
+    [InlineData("competition")]
+    [InlineData("categories")]
+    [InlineData("category__3")]
     [InlineData("eventcategory__1")]
-    [InlineData("eventcategory__11")]
-    public void EventCategoryCode_ResolvesByItsPrefix(string searchCode) =>
-        Provider.ResolveQueryType(searchCode).Should().Be(NavigatorQueryType.EventCategory);
+    [InlineData("something_nobody_implemented")]
+    public void RemovedOrUnknownSearchCode_ResolvesToNothing(string searchCode) =>
+        Provider.ResolveQueryType(searchCode).Should().BeNull();
 
-    /// <summary>The catch-all is still there for codes nobody has taught the server about; it just
-    /// no longer catches the ones the client sends on every tab.</summary>
+    /// <summary>The stored numbers outlive the removed queries: a row still carrying 10 (popular)
+    /// must not be mistaken for a defined value.</summary>
+    [Theory]
+    [InlineData(2)]
+    [InlineData(10)]
+    [InlineData(13)]
+    [InlineData(17)]
+    [InlineData(18)]
+    public void ARemovedQueryTypeNumber_IsNotADefinedValue(int stored) =>
+        System.Enum.IsDefined((NavigatorQueryType)stored).Should().BeFalse();
+
+    /// <summary>The surviving numbers keep the values they were persisted with.</summary>
     [Fact]
-    public void UnknownSearchCode_FallsBackToAllRooms() =>
-        Provider
-            .ResolveQueryType("something_nobody_implemented")
-            .Should()
-            .Be(NavigatorQueryType.AllRooms);
+    public void TheSurvivingQueryTypes_KeepTheirStoredNumbers()
+    {
+        ((int)NavigatorQueryType.None).Should().Be(0);
+        ((int)NavigatorQueryType.MyRooms).Should().Be(1);
+        ((int)NavigatorQueryType.FriendsRooms).Should().Be(3);
+        ((int)NavigatorQueryType.TextSearch).Should().Be(14);
+        ((int)NavigatorQueryType.MyGroups).Should().Be(15);
+        ((int)NavigatorQueryType.GuildBases).Should().Be(16);
+    }
 }

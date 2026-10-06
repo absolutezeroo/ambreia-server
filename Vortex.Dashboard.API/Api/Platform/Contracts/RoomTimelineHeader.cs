@@ -18,6 +18,5 @@ public sealed record RoomTimelineHeader(
     int UsersNow,
     int PlayersMax,
     DateTime LastActive,
-    string ModelName,
-    bool StaffPick
+    string ModelName
 );

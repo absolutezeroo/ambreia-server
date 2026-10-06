@@ -35,10 +35,7 @@ internal sealed class CatalogMap : IRevisionMap
             new GetIsOfferGiftableMessageParser()
         );
         builder.MapParser(MessageEvent.GetProductOfferEvent, new GetProductOfferMessageParser());
-        builder.MapParser(
-            MessageEvent.GetRoomAdPurchaseInfoEvent,
-            new GetRoomAdPurchaseInfoMessageParser()
-        );
+
         builder.MapParser(
             MessageEvent.GetSeasonalCalendarDailyEvent,
             new GetSeasonalCalendarDailyOfferMessageParser()
@@ -64,16 +61,8 @@ internal sealed class CatalogMap : IRevisionMap
             new PurchaseFromCatalogMessageParser()
         );
         builder.MapParser(
-            MessageEvent.PurchaseRoomAdMessageEvent,
-            new PurchaseRoomAdMessageParser()
-        );
-        builder.MapParser(
             MessageEvent.PurchaseVipMembershipExtensionEvent,
             new PurchaseVipMembershipExtensionMessageParser()
-        );
-        builder.MapParser(
-            MessageEvent.RoomAdPurchaseInitiatedEvent,
-            new RoomAdPurchaseInitiatedMessageParser()
         );
         builder.MapParser(MessageEvent.SelectClubGiftEvent, new SelectClubGiftMessageParser());
 
@@ -170,12 +159,6 @@ internal sealed class CatalogMap : IRevisionMap
         builder.MapSerializer(
             typeof(PurchaseOKMessageComposer),
             new PurchaseOKMessageComposerSerializer(MessageComposer.PurchaseOKMessageComposer)
-        );
-        builder.MapSerializer(
-            typeof(RoomAdPurchaseInfoEventMessageComposer),
-            new RoomAdPurchaseInfoEventMessageComposerSerializer(
-                MessageComposer.RoomAdPurchaseInfoComposer
-            )
         );
         builder.MapSerializer(
             typeof(SeasonalCalendarDailyOfferMessageComposer),

@@ -51,19 +51,3 @@ public sealed record NavigatorFlatCategorySpec(
     int MinRank,
     int OrderNum
 );
-
-/// <summary>An event category, which room advertisements are filed under.</summary>
-public sealed record NavigatorEventCategorySpec(string Name, bool Visible);
-
-/// <summary>
-/// One promoted-rooms group in the official view. <paramref name="Code"/> must be one the client
-/// can name — it localizes <c>promotedroomcategory.&lt;code&gt;</c> with no fallback, so anything
-/// else renders as the raw key. <paramref name="SearchCode"/> decides which rooms fill it.
-/// </summary>
-public sealed record NavigatorPromotedCategorySpec(
-    string Code,
-    string SearchCode,
-    string Filter,
-    int OrderNum,
-    bool Visible
-);

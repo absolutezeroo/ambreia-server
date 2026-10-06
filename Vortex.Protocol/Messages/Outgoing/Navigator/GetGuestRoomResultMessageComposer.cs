@@ -16,8 +16,7 @@ public sealed record GetGuestRoomResultMessageComposer : IComposer
     [Id(2)]
     public required bool RoomForward { get; init; }
 
-    [Id(3)]
-    public required bool StaffPick { get; init; }
+    // Id 3 was StaffPick; the wire field is now always false (see the serializer).
 
     [Id(4)]
     public required bool IsGroupMember { get; init; }

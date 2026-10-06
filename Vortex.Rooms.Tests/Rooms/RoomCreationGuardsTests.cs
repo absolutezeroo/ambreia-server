@@ -139,7 +139,6 @@ public sealed class RoomCreationGuardsTests : IDisposable
             ChatFloodType = ChatFloodSensitivityType.Minimal,
             ChatDistance = 50,
             Score = 0,
-            IsStaffPick = false,
         };
 
     private Task<(RoomId RoomId, string Name)> CreateAsync(
@@ -251,7 +250,6 @@ public sealed class RoomCreationGuardsTests : IDisposable
             BuildGrainFactory(),
             new TestDbContextFactory(_options),
             FakeProxy.Create<IRoomModerationStore>(_ => null),
-            FakeProxy.Create<IRoomAdvertisementService>(_ => null),
             FakeProxy.Create<IEventPublisher>(_ => Task.CompletedTask),
             FakeProxy.Create<ICancellableEventPublisher>(_ =>
                 Task.FromResult(new EventContext { CorrelationId = string.Empty, Cancel = false })

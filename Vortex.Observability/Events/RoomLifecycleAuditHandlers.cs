@@ -103,36 +103,6 @@ public sealed class RoomRightsChangedAuditHandler(IAuditSink audit)
     }
 }
 
-/// <summary>
-/// A paid room promotion was edited or pulled. Creating one is recorded by the catalogue purchase
-/// it goes through, so only the two acts with nothing behind them are filed here.
-/// </summary>
-public sealed class RoomAdvertisementChangedAuditHandler(IAuditSink audit)
-    : IEventHandler<RoomAdvertisementChangedEvent>
-{
-    public ValueTask HandleAsync(
-        RoomAdvertisementChangedEvent e,
-        EventContext ctx,
-        CancellationToken ct
-    )
-    {
-        audit.Emit(
-            new AuditEvent
-            {
-                Category = AuditCategory.Room,
-                Action = $"room.advertisement_{e.Change}",
-                Severity = AuditSeverity.Info,
-                Result = AuditResult.Success,
-                ActorPlayerId = e.ActorId,
-                RoomId = e.RoomId,
-                Data = JsonSerializer.Serialize(new { e.AdvertisementId }),
-            }
-        );
-
-        return ValueTask.CompletedTask;
-    }
-}
-
 public sealed class RoomDoorbellAnsweredAuditHandler(IAuditSink audit)
     : IEventHandler<RoomDoorbellAnsweredEvent>
 {

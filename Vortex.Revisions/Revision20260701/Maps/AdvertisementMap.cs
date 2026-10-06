@@ -22,9 +22,5 @@ internal sealed class AdvertisementMap : IRevisionMap
             typeof(InterstitialMessageComposer),
             new InterstitialMessageComposerSerializer(MessageComposer.InterstitialMessageComposer)
         );
-        builder.MapSerializer(
-            typeof(RoomAdErrorEventMessageComposer),
-            new RoomAdErrorEventMessageComposerSerializer(MessageComposer.RoomAdErrorComposer)
-        );
     }
 }

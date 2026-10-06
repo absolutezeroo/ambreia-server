@@ -115,67 +115,6 @@ public sealed class WordFilterRoomHandlerTests : WordFilterHandlerFixture
         GrainCall("SetRoomTagsAsync")[1].Should().Be("fun");
     }
 
-    /// <summary>Before the purchase: an event costs credits, and a refused one must not.</summary>
-    [Fact]
-    public async Task ARefusedRoomAd_IsNeverBought()
-    {
-        await new PurchaseRoomAdMessageMessageHandler(
-            Grains(),
-            FakeProxy.Create<INavigatorProvider>(_ => null),
-            RefusingOnly("con")
-        ).HandleAsync(
-            new PurchaseRoomAdMessageMessage
-            {
-                FlatId = 4,
-                Name = "con",
-                Description = "ok",
-            },
-            Context(),
-            CancellationToken.None
-        );
-
-        GrainCalls.Should().NotContain(c => c.Method.Name == "PurchaseRoomAdAsync");
-        Sent.Should().ContainSingle(s => s is NotificationDialogMessageComposer);
-        Sent.Should().ContainSingle(s => s is PurchaseErrorMessageComposer);
-    }
-
-    [Fact]
-    public async Task ARefusedEventEdit_IsNeverSaved()
-    {
-        await new EditEventMessageHandler(AdService(), RefusingOnly("con")).HandleAsync(
-            new EditEventMessage
-            {
-                Id = 9,
-                Name = "ok",
-                Description = "con",
-            },
-            Context(),
-            CancellationToken.None
-        );
-
-        _serviceCalls.Should().NotContain(c => c.Method.Name == "EditAsync");
-        AppliedSources.Should().OnlyContain(s => s == WordFilterSource.RoomEvent);
-    }
-
-    [Fact]
-    public async Task AReplacedEventEdit_IsSavedReplaced()
-    {
-        await new EditEventMessageHandler(AdService(), Replacing("bobba")).HandleAsync(
-            new EditEventMessage
-            {
-                Id = 9,
-                Name = "con",
-                Description = "con",
-            },
-            Context(),
-            CancellationToken.None
-        );
-
-        object?[] args = _serviceCalls.Should().ContainSingle().Which.Args!;
-        args[2].Should().Be("bobba");
-        args[3].Should().Be("bobba");
-    }
-
     private static CreateFlatMessage Flat(string name, string description) =>
         new()
         {
@@ -186,14 +125,6 @@ public sealed class WordFilterRoomHandlerTests : WordFilterHandlerFixture
 
     private IRoomService RoomService() =>
         FakeProxy.Create<IRoomService>(call =>
-        {
-            _serviceCalls.Add(call);
-
-            return null;
-        });
-
-    private IRoomAdvertisementService AdService() =>
-        FakeProxy.Create<IRoomAdvertisementService>(call =>
         {
             _serviceCalls.Add(call);
 

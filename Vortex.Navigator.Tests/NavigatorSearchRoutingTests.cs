@@ -5,31 +5,29 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using FluentAssertions;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging.Abstractions;
 using Orleans;
-using Vortex.Primitives.FriendList.Grains;
+using Vortex.Database.Context;
 using Vortex.Primitives.Navigator;
 using Vortex.Primitives.Navigator.Enums;
 using Vortex.Primitives.Observability;
 using Vortex.Primitives.Orleans.Snapshots.Navigator;
 using Vortex.Primitives.Orleans.Snapshots.Room;
 using Vortex.Primitives.Players;
-using Vortex.Primitives.Players.Grains;
 using Vortex.Primitives.Rooms;
-using Vortex.Primitives.Rooms.Enums;
 using Vortex.Primitives.Rooms.Grains;
 using Vortex.Primitives.Server.Grains;
-using Vortex.Primitives.Snapshots.FriendList;
 using Vortex.Tests.Support;
 using Xunit;
 
 namespace Vortex.Navigator.Tests;
 
 /// <summary>
-/// <c>NavigatorService</c> only ever switched on six of the query types. Everything else — history,
-/// rooms with rights, friends' rooms, top rated, recommended, staff picks, text search — fell into
-/// the default branch and came back as "every room in the hotel", ordered by population. Each case
-/// here pins one tab to the query it is supposed to run.
+/// The navigator answers a handful of things: my rooms, my friends' rooms, my groups' bases, every
+/// guild base, a text search, and the tab overviews built from those. Anything else a client or an
+/// old configuration row still sends (popular, official, history, ...) answers nothing at all --
+/// not the whole hotel, which is what the old fall-through did.
 /// </summary>
 public sealed class NavigatorSearchRoutingTests
 {
@@ -37,87 +35,41 @@ public sealed class NavigatorSearchRoutingTests
 
     [Theory]
     [InlineData(NavigatorSearchCodes.MyRooms, nameof(INavigatorProvider.GetRoomsByOwnerAsync))]
-    [InlineData(NavigatorSearchCodes.Favourites, nameof(INavigatorProvider.GetFavoriteRoomsAsync))]
     [InlineData(NavigatorSearchCodes.FriendsRooms, nameof(INavigatorProvider.GetFriendsRoomsAsync))]
-    [InlineData(NavigatorSearchCodes.History, nameof(INavigatorProvider.GetVisitedRoomsAsync))]
-    [InlineData(
-        NavigatorSearchCodes.HistoryFrequent,
-        nameof(INavigatorProvider.GetVisitedRoomsAsync)
-    )]
-    [InlineData(
-        NavigatorSearchCodes.WithRights,
-        nameof(INavigatorProvider.GetRoomsWithRightsAsync)
-    )]
-    [InlineData(NavigatorSearchCodes.RoomAds, nameof(INavigatorProvider.GetAdvertisedRoomsAsync))]
-    [InlineData(
-        NavigatorSearchCodes.HighestScore,
-        nameof(INavigatorProvider.GetHighestScoreRoomsAsync)
-    )]
-    [InlineData(
-        NavigatorSearchCodes.Recommended,
-        nameof(INavigatorProvider.GetRecommendedRoomsAsync)
-    )]
-    [InlineData(
-        NavigatorSearchCodes.StaffPicks,
-        nameof(INavigatorProvider.GetStaffPickedRoomsAsync)
-    )]
-    [InlineData(NavigatorSearchCodes.Official, nameof(INavigatorProvider.GetStaffPickedRoomsAsync))]
-    [InlineData(NavigatorSearchCodes.GuildBases, nameof(INavigatorProvider.GetGuildBaseRoomsAsync))]
     [InlineData(
         NavigatorSearchCodes.MyGuildBases,
         nameof(INavigatorProvider.GetMyGuildBaseRoomsAsync)
     )]
-    [InlineData("eventcategory__4", nameof(INavigatorProvider.GetRoomsByEventCategoryAsync))]
+    [InlineData(NavigatorSearchCodes.GuildBases, nameof(INavigatorProvider.GetGuildBaseRoomsAsync))]
     public async Task SearchCode_RunsItsOwnQuery(string searchCode, string expectedProviderCall)
     {
         Recorder recorder = new();
 
         await SearchAsync(recorder, searchCode).ConfigureAwait(true);
 
-        recorder.Calls.Should().Contain(expectedProviderCall);
-        recorder
-            .Calls.Should()
-            .NotContain(
-                nameof(INavigatorProvider.GetAllRoomsAsync),
-                "falling through to every room in the hotel is the bug this guards"
-            );
+        recorder.Calls.Should().Equal(expectedProviderCall);
     }
 
-    /// <summary>"Popular" genuinely is the whole hotel ordered by population, so it is the one tab
-    /// that may use the unfiltered query.</summary>
     [Fact]
-    public async Task PopularSearch_UsesTheUnfilteredPopularityQuery()
+    public async Task TextSearch_RunsTheFreeTextQuery()
     {
         Recorder recorder = new();
 
-        await SearchAsync(recorder, NavigatorSearchCodes.Popular).ConfigureAwait(true);
+        await SearchAsync(recorder, NavigatorSearchCodes.TextSearch, filterValue: "lounge")
+            .ConfigureAwait(true);
 
-        recorder.Calls.Should().Contain(nameof(INavigatorProvider.GetAllRoomsAsync));
+        recorder.Calls.Should().Equal(nameof(INavigatorProvider.SearchRoomsAsync));
     }
 
+    /// <summary>A text search with nothing typed is not "every room".</summary>
     [Fact]
-    public async Task HistoryAndFrequentHistory_DifferOnlyByTheirOrderingFlag()
-    {
-        Recorder recent = new();
-        Recorder frequent = new();
-
-        await SearchAsync(recent, NavigatorSearchCodes.History).ConfigureAwait(true);
-        await SearchAsync(frequent, NavigatorSearchCodes.HistoryFrequent).ConfigureAwait(true);
-
-        recent.VisitedByFrequency.Should().BeFalse();
-        frequent.VisitedByFrequency.Should().BeTrue();
-    }
-
-    /// <summary>A competition tab with no competition subsystem must answer "nothing", not
-    /// "everything".</summary>
-    [Fact]
-    public async Task CompetitionSearch_ReturnsNothingRatherThanTheWholeHotel()
+    public async Task TextSearch_WithNoText_ReturnsNothing()
     {
         Recorder recorder = new();
 
         ImmutableArray<RoomInfoSnapshot> results = await SearchAsync(
                 recorder,
-                NavigatorSearchCodes.Competition
+                NavigatorSearchCodes.TextSearch
             )
             .ConfigureAwait(true);
 
@@ -125,43 +77,17 @@ public sealed class NavigatorSearchRoutingTests
         recorder.Calls.Should().BeEmpty();
     }
 
-    /// <summary>A category quick link carries the category it means; the router used to ignore it
-    /// and ask for category 0 every time.</summary>
-    [Fact]
-    public async Task CategorySearch_AsksForTheCategoryTheCodeNames()
-    {
-        Recorder recorder = new();
-
-        await SearchAsync(recorder, "categories", filterValue: "3").ConfigureAwait(true);
-
-        recorder.Calls.Should().Contain(nameof(INavigatorProvider.GetRoomsByCategoryAsync));
-        recorder.CategoryId.Should().Be(3);
-    }
-
-    [Fact]
-    public async Task CategorySearch_WithNoResolvableCategory_ReturnsNothing()
-    {
-        Recorder recorder = new();
-
-        ImmutableArray<RoomInfoSnapshot> results = await SearchAsync(recorder, "categories")
-            .ConfigureAwait(true);
-
-        results.Should().BeEmpty();
-        recorder.Calls.Should().NotContain(nameof(INavigatorProvider.GetRoomsByCategoryAsync));
-    }
-
     /// <summary>Typing in the search box sends a value with no prefix; it is a text search whatever
-    /// tab it was typed on, not a reason to list the hotel.</summary>
+    /// tab it was typed on.</summary>
     [Fact]
     public async Task UnprefixedFilterValue_BecomesATextSearch()
     {
         Recorder recorder = new();
 
-        await SearchAsync(recorder, NavigatorSearchCodes.Popular, filterValue: "lounge")
+        await SearchAsync(recorder, NavigatorSearchCodes.MyRooms, filterValue: "lounge")
             .ConfigureAwait(true);
 
-        recorder.Calls.Should().Contain(nameof(INavigatorProvider.SearchRoomsAsync));
-        recorder.Calls.Should().NotContain(nameof(INavigatorProvider.GetAllRoomsAsync));
+        recorder.Calls.Should().Equal(nameof(INavigatorProvider.SearchRoomsAsync));
     }
 
     [Fact]
@@ -171,53 +97,66 @@ public sealed class NavigatorSearchRoutingTests
 
         await SearchAsync(
                 recorder,
-                NavigatorSearchCodes.Popular,
+                NavigatorSearchCodes.MyRooms,
                 NavigatorSearchFilterType.Group,
                 "pixel"
             )
             .ConfigureAwait(true);
 
-        recorder.Calls.Should().Contain(nameof(INavigatorProvider.GetRoomsByGroupNameAsync));
+        recorder.Calls.Should().Equal(nameof(INavigatorProvider.GetRoomsByGroupNameAsync));
     }
 
-    /// <summary>Nobody online, nobody to follow: the tab must not fall back to a room list.</summary>
-    [Fact]
-    public async Task RoomsWithFriends_WithNoOnlineFriends_ReturnsNothing()
+    /// <summary>A code the navigator no longer serves, or never did, answers nothing without
+    /// throwing -- and above all does not fall back to listing the hotel.</summary>
+    [Theory]
+    [InlineData("popular")]
+    [InlineData("official")]
+    [InlineData("history")]
+    [InlineData("history_freq")]
+    [InlineData("highest_score")]
+    [InlineData("recommended")]
+    [InlineData("favorites")]
+    [InlineData("with_rights")]
+    [InlineData("with_friends")]
+    [InlineData("staffpicks")]
+    [InlineData("new_ads")]
+    [InlineData("categories")]
+    [InlineData("category__3")]
+    [InlineData("eventcategory__4")]
+    [InlineData("competition")]
+    [InlineData("something_nobody_implemented")]
+    public async Task RemovedOrUnknownCode_ReturnsNothing_AndRunsNoQuery(string searchCode)
     {
         Recorder recorder = new();
 
-        ImmutableArray<RoomInfoSnapshot> results = await SearchAsync(
-                recorder,
-                NavigatorSearchCodes.WithFriends
-            )
+        ImmutableArray<RoomInfoSnapshot> results = await SearchAsync(recorder, searchCode)
             .ConfigureAwait(true);
 
         results.Should().BeEmpty();
-        recorder.Calls.Should().NotContain(nameof(INavigatorProvider.GetAllRoomsAsync));
+        recorder.Calls.Should().BeEmpty();
     }
 
+    /// <summary>The same holds one level up, where a tab's overview is assembled from quick links:
+    /// a quick link on a removed code is an empty block, not a hotel listing.</summary>
     [Fact]
-    public async Task RoomsWithFriends_LooksUpTheRoomsOnlineFriendsAreIn()
+    public async Task OverviewQuickLinkOnARemovedCode_IsAnEmptyBlock()
     {
-        Recorder recorder = new();
+        Recorder recorder = new() { QuickLinks = [NavigatorSearchCodes.MyRooms, "popular"] };
 
-        await SearchAsync(
+        ImmutableArray<NavigatorSearchResultBlockSnapshot> blocks = await BlocksAsync(
                 recorder,
-                NavigatorSearchCodes.WithFriends,
-                onlineFriendIds: [11, 12, 13],
-                friendRoomIds: [55, 55, 66]
+                NavigatorSearchCodes.MyWorldView
             )
             .ConfigureAwait(true);
 
-        recorder.Calls.Should().Contain(nameof(INavigatorProvider.GetRoomsByIdsAsync));
-        // Two friends in the same room is one room to show, not two.
-        recorder.RequestedRoomIds.Should().BeEquivalentTo([55, 66]);
+        blocks.Select(b => b.SearchCode).Should().Equal(NavigatorSearchCodes.MyRooms, "popular");
+        blocks.SelectMany(b => b.Results).Should().BeEmpty();
+        recorder.Calls.Should().Equal(nameof(INavigatorProvider.GetRoomsByOwnerAsync));
     }
 
     /// <summary>
-    /// A tab is an overview. "My World" is my rooms AND my favourites AND my history AND the rooms I
-    /// hold rights in AND my guild bases -- one collapsible block each. Answering it with a single
-    /// block is what made every tab show one list.
+    /// A tab is an overview. "My World" is my rooms AND my friends' rooms AND my guild bases -- one
+    /// collapsible block each. Answering it with a single block is what made every tab show one list.
     /// </summary>
     [Fact]
     public async Task TopLevelView_ReturnsOneBlockPerQuickLink()
@@ -227,9 +166,7 @@ public sealed class NavigatorSearchRoutingTests
             QuickLinks =
             [
                 NavigatorSearchCodes.MyRooms,
-                NavigatorSearchCodes.Favourites,
-                NavigatorSearchCodes.History,
-                NavigatorSearchCodes.WithRights,
+                NavigatorSearchCodes.FriendsRooms,
                 NavigatorSearchCodes.MyGuildBases,
             ],
         };
@@ -245,28 +182,22 @@ public sealed class NavigatorSearchRoutingTests
             .Should()
             .Equal(
                 NavigatorSearchCodes.MyRooms,
-                NavigatorSearchCodes.Favourites,
-                NavigatorSearchCodes.History,
-                NavigatorSearchCodes.WithRights,
+                NavigatorSearchCodes.FriendsRooms,
                 NavigatorSearchCodes.MyGuildBases
             );
 
-        // Each block ran its own query rather than five copies of one.
+        // Each block ran its own query rather than three copies of one.
         recorder
             .Calls.Should()
-            .Contain([
+            .Equal(
                 nameof(INavigatorProvider.GetRoomsByOwnerAsync),
-                nameof(INavigatorProvider.GetFavoriteRoomsAsync),
-                nameof(INavigatorProvider.GetVisitedRoomsAsync),
-                nameof(INavigatorProvider.GetRoomsWithRightsAsync),
-                nameof(INavigatorProvider.GetMyGuildBaseRoomsAsync),
-            ]);
+                nameof(INavigatorProvider.GetFriendsRoomsAsync),
+                nameof(INavigatorProvider.GetMyGuildBaseRoomsAsync)
+            );
     }
 
     /// <summary>The official hotel sends <c>0</c> on every block of a tab overview -- the collapse
-    /// arrow is the only affordance there -- and reserves "back" for a drill-down. "Show more" on an
-    /// overview block re-searches that code with no filter, so it answers with a different list than
-    /// the one on screen.</summary>
+    /// arrow is the only affordance there -- and reserves "back" for a drill-down.</summary>
     [Fact]
     public async Task OverviewBlocksOfferNoAction_AndADrillDownOffersBack()
     {
@@ -293,15 +224,14 @@ public sealed class NavigatorSearchRoutingTests
 
     /// <summary>The client shows a block header as <c>text</c> when it is non-empty and otherwise
     /// localizes the search code, and starts the block closed on <c>forceClosed</c>. Both live on the
-    /// quick link row, so an operator who fills them gets nothing unless they travel onto the block.
-    /// </summary>
+    /// quick link row, so they have to travel onto the block.</summary>
     [Fact]
     public async Task OverviewBlock_CarriesTheQuickLinksLabelAndCollapsedDefault()
     {
         Recorder recorder = new()
         {
             QuickLinks = [NavigatorSearchCodes.MyRooms],
-            QuickLinkLocalization = "Staff picks",
+            QuickLinkLocalization = "My houses",
             QuickLinkForceClosed = true,
         };
 
@@ -312,7 +242,7 @@ public sealed class NavigatorSearchRoutingTests
             .ConfigureAwait(true);
 
         overview.Should().ContainSingle();
-        overview[0].Text.Should().Be("Staff picks");
+        overview[0].Text.Should().Be("My houses");
         overview[0].ForceClosed.Should().BeTrue();
     }
 
@@ -323,7 +253,7 @@ public sealed class NavigatorSearchRoutingTests
     {
         Recorder recorder = new()
         {
-            QuickLinks = [NavigatorSearchCodes.MyRooms, NavigatorSearchCodes.Favourites],
+            QuickLinks = [NavigatorSearchCodes.MyRooms, NavigatorSearchCodes.FriendsRooms],
         };
 
         ImmutableArray<NavigatorSearchResultBlockSnapshot> blocks = await BlocksAsync(
@@ -334,33 +264,7 @@ public sealed class NavigatorSearchRoutingTests
             .ConfigureAwait(true);
 
         blocks.Should().ContainSingle();
-        recorder.Calls.Should().Contain(nameof(INavigatorProvider.SearchRoomsAsync));
-    }
-
-    /// <summary>"All categories" is itself a set of blocks, so it expands in place instead of
-    /// collapsing into one nameless list.</summary>
-    [Fact]
-    public async Task CategoriesQuickLink_ExpandsIntoOneBlockPerCategory()
-    {
-        Recorder recorder = new()
-        {
-            QuickLinks = [NavigatorSearchCodes.Popular, NavigatorSearchCodes.Categories],
-        };
-
-        ImmutableArray<NavigatorSearchResultBlockSnapshot> blocks = await BlocksAsync(
-                recorder,
-                NavigatorSearchCodes.HotelView
-            )
-            .ConfigureAwait(true);
-
-        blocks
-            .Select(b => b.SearchCode)
-            .Should()
-            .Equal(NavigatorSearchCodes.Popular, NavigatorSearchCodes.FlatCategoryCode(3));
-
-        // A category block carries its own header text, and a per-category code so collapsing one
-        // does not collapse them all.
-        blocks[1].Text.Should().Be("${navigator.flatcategory.global.PARTY}");
+        recorder.Calls.Should().Equal(nameof(INavigatorProvider.SearchRoomsAsync));
     }
 
     private static Task<ImmutableArray<NavigatorSearchResultBlockSnapshot>> BlocksAsync(
@@ -368,7 +272,7 @@ public sealed class NavigatorSearchRoutingTests
         string searchCode,
         string filterValue = ""
     ) =>
-        BuildService(recorder, [], [])
+        BuildService(recorder)
             .GetSearchBlocksAsync(
                 searchCode,
                 NavigatorSearchFilterType.Anything,
@@ -381,11 +285,9 @@ public sealed class NavigatorSearchRoutingTests
         Recorder recorder,
         string searchCode,
         NavigatorSearchFilterType filterType = NavigatorSearchFilterType.Anything,
-        string filterValue = "",
-        IReadOnlyList<int>? onlineFriendIds = null,
-        IReadOnlyList<int>? friendRoomIds = null
+        string filterValue = ""
     ) =>
-        BuildService(recorder, onlineFriendIds ?? [], friendRoomIds ?? [])
+        BuildService(recorder)
             .GetSearchResultsAsync(
                 searchCode,
                 filterType,
@@ -394,29 +296,17 @@ public sealed class NavigatorSearchRoutingTests
                 CancellationToken.None
             );
 
-    private static NavigatorService BuildService(
-        Recorder recorder,
-        IReadOnlyList<int> onlineFriendIds,
-        IReadOnlyList<int> friendRoomIds
-    ) =>
+    private static NavigatorService BuildService(Recorder recorder) =>
         new(
             NullLogger<INavigatorService>.Instance,
             recorder.AsProvider(),
             FakeProxy.Create<IRoomService>(_ => null),
-            BuildGrainFactory(onlineFriendIds, friendRoomIds),
+            BuildGrainFactory(),
             FakeProxy.Create<IVortexMetrics>(_ => null)
         );
 
-    private static IGrainFactory BuildGrainFactory(
-        IReadOnlyList<int> onlineFriendIds,
-        IReadOnlyList<int> friendRoomIds
-    )
-    {
-        // Presence grains are keyed per player, so hand each requested key its own room from the
-        // scripted list rather than answering every friend with the same one.
-        int presenceIndex = 0;
-
-        return FakeProxy.Create<IGrainFactory>(call =>
+    private static IGrainFactory BuildGrainFactory() =>
+        FakeProxy.Create<IGrainFactory>(call =>
         {
             if (call.Method.Name != nameof(IGrainFactory.GetGrain))
             {
@@ -445,69 +335,24 @@ public sealed class NavigatorSearchRoutingTests
                 );
             }
 
-            if (grainType == typeof(IMessengerGrain))
-            {
-                return FakeProxy.Create<IMessengerGrain>(messenger =>
-                    messenger.Method.Name == nameof(IMessengerGrain.GetFriendsAsync)
-                        ? Task.FromResult(onlineFriendIds.Select(BuildOnlineFriend).ToList())
-                        : null
-                );
-            }
-
-            if (grainType == typeof(IPlayerPresenceGrain))
-            {
-                int roomId = presenceIndex < friendRoomIds.Count ? friendRoomIds[presenceIndex] : 0;
-
-                presenceIndex++;
-
-                return FakeProxy.Create<IPlayerPresenceGrain>(presence =>
-                    presence.Method.Name == nameof(IPlayerPresenceGrain.GetActiveRoomAsync)
-                        ? Task.FromResult(
-                            new RoomPointerSnapshot
-                            {
-                                RoomId = (RoomId)roomId,
-                                ActiveSinceUtc = DateTime.UnixEpoch,
-                            }
-                        )
-                        : null
-                );
-            }
-
-            // Anything else (the per-player navigator grain and its view modes) answers with its
-            // type's default, which is what an untouched preference is anyway.
             return FakeProxy.CreateFor(grainType, _ => null);
         });
-    }
-
-    private static MessengerFriendSnapshot BuildOnlineFriend(int playerId) =>
-        new()
-        {
-            PlayerId = (PlayerId)playerId,
-            Name = $"friend{playerId}",
-            Gender = AvatarGenderType.Male,
-            Online = true,
-            FollowingAllowed = true,
-            Figure = string.Empty,
-            CategoryId = 0,
-            Motto = string.Empty,
-            RealName = string.Empty,
-            FacebookId = string.Empty,
-            PersistedMessageUser = false,
-            VipMember = false,
-            PocketHabboUser = false,
-            RelationshipStatus = 0,
-        };
 
     /// <summary>
     /// Records which provider query the router picked. Every room-returning method answers with an
-    /// empty list, so a test only ever asserts on the routing decision.
+    /// empty list, so a test only ever asserts on the routing decision. Query-type resolution is the
+    /// real provider's, so what is routed is what an unconfigured hotel actually resolves.
     /// </summary>
     private sealed class Recorder
     {
+        // ResolveQueryType reads cached reference data, never the database, so the factory is never
+        // touched -- but the constructor still wants one.
+        private static readonly NavigatorProvider RealProvider = new(
+            FakeProxy.Create<IDbContextFactory<VortexDbContext>>(_ => null),
+            NullLogger<NavigatorProvider>.Instance
+        );
+
         public List<string> Calls { get; } = [];
-        public bool? VisitedByFrequency { get; private set; }
-        public int? CategoryId { get; private set; }
-        public IReadOnlyCollection<int>? RequestedRoomIds { get; private set; }
 
         /// <summary>Quick links configured under every top-level context this fake knows about.
         /// Empty means "no navigator configuration", the unseeded-hotel case.</summary>
@@ -525,31 +370,13 @@ public sealed class NavigatorSearchRoutingTests
                 switch (call.Method.Name)
                 {
                     case nameof(INavigatorProvider.ResolveQueryType):
-                        return Resolve((string)call.Args![0]!);
-
-                    case nameof(INavigatorProvider.GetFlatCategories):
-                        return CategoryReferenceData;
+                        return RealProvider.ResolveQueryType((string)call.Args![0]!);
 
                     case nameof(INavigatorProvider.GetTopLevelContextsAsync):
                         return Task.FromResult(BuildContexts());
                 }
 
                 Calls.Add(call.Method.Name);
-
-                switch (call.Method.Name)
-                {
-                    case nameof(INavigatorProvider.GetVisitedRoomsAsync):
-                        VisitedByFrequency = (bool)call.Args![1]!;
-                        break;
-
-                    case nameof(INavigatorProvider.GetRoomsByCategoryAsync):
-                        CategoryId = (int)call.Args![0]!;
-                        break;
-
-                    case nameof(INavigatorProvider.GetRoomsByIdsAsync):
-                        RequestedRoomIds = (IReadOnlyCollection<int>)call.Args![0]!;
-                        break;
-                }
 
                 return call.Method.ReturnType == typeof(Task<List<RoomInfoSnapshot>>)
                     ? Task.FromResult(new List<RoomInfoSnapshot>())
@@ -565,7 +392,6 @@ public sealed class NavigatorSearchRoutingTests
                         view => new NavigatorTopLevelContextSnapshot
                         {
                             SearchCode = view,
-                            QueryType = Resolve(view),
                             QuickLinks =
                             [
                                 .. QuickLinks.Select(
@@ -576,7 +402,6 @@ public sealed class NavigatorSearchRoutingTests
                                             SearchCode = code,
                                             Filter = string.Empty,
                                             Localization = QuickLinkLocalization,
-                                            QueryType = Resolve(code),
                                             ForceClosed = QuickLinkForceClosed,
                                         }
                                 ),
@@ -584,40 +409,5 @@ public sealed class NavigatorSearchRoutingTests
                         }
                     ),
                 ];
-
-        /// <summary>Mirrors the provider's own fallback so the routing under test is exercised with
-        /// the resolution an unconfigured hotel actually gets.</summary>
-        private static NavigatorQueryType Resolve(string searchCode) =>
-            NavigatorSearchCodes.QueryTypeBySearchCode.TryGetValue(
-                searchCode,
-                out NavigatorQueryType queryType
-            )
-                ? queryType
-            : searchCode.StartsWith(
-                NavigatorSearchCodes.EventCategoryPrefix,
-                StringComparison.Ordinal
-            )
-                ? NavigatorQueryType.EventCategory
-            : searchCode.StartsWith(
-                NavigatorSearchCodes.FlatCategoryPrefix,
-                StringComparison.Ordinal
-            )
-                ? NavigatorQueryType.ByFlatCategory
-            : NavigatorQueryType.AllRooms;
-
-        private static readonly ImmutableArray<NavigatorFlatCategorySnapshot> CategoryReferenceData =
-        [
-            new()
-            {
-                Id = 3,
-                Name = "Party",
-                MinRank = 1,
-                Visible = true,
-                Automatic = false,
-                AutomaticCategory = string.Empty,
-                GlobalCategory = "PARTY",
-                StaffOnly = false,
-            },
-        ];
     }
 }

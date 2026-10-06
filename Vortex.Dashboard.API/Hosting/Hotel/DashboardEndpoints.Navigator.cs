@@ -12,8 +12,8 @@ using Vortex.Primitives.Permissions;
 namespace Vortex.Dashboard.API.Hosting;
 
 /// <summary>
-/// Navigator configuration: one read returning the whole configuration (tabs, their blocks, both
-/// category tables and the client's known search codes), and the CRUD that edits it. Every write
+/// Navigator configuration: one read returning the whole configuration (tabs, their blocks, the
+/// room categories and the known search codes), and the CRUD that edits it. Every write
 /// reloads the live navigator snapshot — see <c>INavigatorAdminService</c>.
 /// </summary>
 internal static partial class DashboardEndpoints
@@ -194,116 +194,6 @@ internal static partial class DashboardEndpoints
                     ? Results.BadRequest(new { error = "invalid_request" })
                     : Results.Ok(
                         await ops.DeleteNavigatorFlatCategoryAsync(body, ctx.ActorEmail(), ct)
-                            .ConfigureAwait(false)
-                    ),
-            Capabilities.Dashboard.OpsNavigatorManage,
-            TagNavigator
-        );
-        MapPost(
-            app,
-            OpsNavigator + "/event-categories",
-            async (
-                HttpContext ctx,
-                CreateNavigatorEventCategoryRequest body,
-                NavigatorOperations ops,
-                CancellationToken ct
-            ) =>
-                string.IsNullOrWhiteSpace(body.Name)
-                    ? Results.BadRequest(new { error = "invalid_request" })
-                    : Results.Ok(
-                        await ops.CreateNavigatorEventCategoryAsync(body, ctx.ActorEmail(), ct)
-                            .ConfigureAwait(false)
-                    ),
-            Capabilities.Dashboard.OpsNavigatorManage,
-            TagNavigator
-        );
-        MapPost(
-            app,
-            OpsNavigator + "/event-categories/update",
-            async (
-                HttpContext ctx,
-                UpdateNavigatorEventCategoryRequest body,
-                NavigatorOperations ops,
-                CancellationToken ct
-            ) =>
-                body.CategoryId <= 0 || string.IsNullOrWhiteSpace(body.Name)
-                    ? Results.BadRequest(new { error = "invalid_request" })
-                    : Results.Ok(
-                        await ops.UpdateNavigatorEventCategoryAsync(body, ctx.ActorEmail(), ct)
-                            .ConfigureAwait(false)
-                    ),
-            Capabilities.Dashboard.OpsNavigatorManage,
-            TagNavigator
-        );
-        MapPost(
-            app,
-            OpsNavigator + "/event-categories/delete",
-            async (
-                HttpContext ctx,
-                DeleteNavigatorEventCategoryRequest body,
-                NavigatorOperations ops,
-                CancellationToken ct
-            ) =>
-                body.CategoryId <= 0
-                    ? Results.BadRequest(new { error = "invalid_request" })
-                    : Results.Ok(
-                        await ops.DeleteNavigatorEventCategoryAsync(body, ctx.ActorEmail(), ct)
-                            .ConfigureAwait(false)
-                    ),
-            Capabilities.Dashboard.OpsNavigatorManage,
-            TagNavigator
-        );
-        MapPost(
-            app,
-            OpsNavigator + "/promoted-categories",
-            async (
-                HttpContext ctx,
-                CreateNavigatorPromotedCategoryRequest body,
-                NavigatorOperations ops,
-                CancellationToken ct
-            ) =>
-                string.IsNullOrWhiteSpace(body.Code) || string.IsNullOrWhiteSpace(body.SearchCode)
-                    ? Results.BadRequest(new { error = "invalid_request" })
-                    : Results.Ok(
-                        await ops.CreateNavigatorPromotedCategoryAsync(body, ctx.ActorEmail(), ct)
-                            .ConfigureAwait(false)
-                    ),
-            Capabilities.Dashboard.OpsNavigatorManage,
-            TagNavigator
-        );
-        MapPost(
-            app,
-            OpsNavigator + "/promoted-categories/update",
-            async (
-                HttpContext ctx,
-                UpdateNavigatorPromotedCategoryRequest body,
-                NavigatorOperations ops,
-                CancellationToken ct
-            ) =>
-                body.PromotedCategoryId <= 0
-                || string.IsNullOrWhiteSpace(body.Code)
-                || string.IsNullOrWhiteSpace(body.SearchCode)
-                    ? Results.BadRequest(new { error = "invalid_request" })
-                    : Results.Ok(
-                        await ops.UpdateNavigatorPromotedCategoryAsync(body, ctx.ActorEmail(), ct)
-                            .ConfigureAwait(false)
-                    ),
-            Capabilities.Dashboard.OpsNavigatorManage,
-            TagNavigator
-        );
-        MapPost(
-            app,
-            OpsNavigator + "/promoted-categories/delete",
-            async (
-                HttpContext ctx,
-                DeleteNavigatorPromotedCategoryRequest body,
-                NavigatorOperations ops,
-                CancellationToken ct
-            ) =>
-                body.PromotedCategoryId <= 0
-                    ? Results.BadRequest(new { error = "invalid_request" })
-                    : Results.Ok(
-                        await ops.DeleteNavigatorPromotedCategoryAsync(body, ctx.ActorEmail(), ct)
                             .ConfigureAwait(false)
                     ),
             Capabilities.Dashboard.OpsNavigatorManage,

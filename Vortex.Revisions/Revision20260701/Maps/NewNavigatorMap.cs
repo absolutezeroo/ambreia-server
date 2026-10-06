@@ -9,26 +9,6 @@ internal sealed class NewNavigatorMap : IRevisionMap
 {
     public void RegisterInto(IRevisionMapBuilder builder)
     {
-        builder.MapParser(
-            MessageEvent.NavigatorAddCollapsedCategoryMessageEvent,
-            new NavigatorAddCollapsedCategoryMessageParser()
-        );
-        builder.MapParser(
-            MessageEvent.NavigatorAddSavedSearchEvent,
-            new NavigatorAddSavedSearchMessageParser()
-        );
-        builder.MapParser(
-            MessageEvent.NavigatorDeleteSavedSearchEvent,
-            new NavigatorDeleteSavedSearchMessageParser()
-        );
-        builder.MapParser(
-            MessageEvent.NavigatorRemoveCollapsedCategoryMessageEvent,
-            new NavigatorRemoveCollapsedCategoryMessageParser()
-        );
-        builder.MapParser(
-            MessageEvent.NavigatorSetSearchCodeViewModeMessageEvent,
-            new NavigatorSetSearchCodeViewModeMessageParser()
-        );
         builder.MapParser(MessageEvent.NewNavigatorInitEvent, new NewNavigatorInitMessageParser());
         builder.MapParser(
             MessageEvent.NewNavigatorSearchEvent,

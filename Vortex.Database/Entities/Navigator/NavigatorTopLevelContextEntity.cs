@@ -18,8 +18,8 @@ public class NavigatorTopLevelContextEntity : VortexEntity
     public required bool Visible { get; set; }
 
     [Column("query_type")]
-    [DefaultValue(NavigatorQueryType.AllRooms)]
-    public NavigatorQueryType QueryType { get; set; } = NavigatorQueryType.AllRooms;
+    [DefaultValue(NavigatorQueryType.None)]
+    public NavigatorQueryType QueryType { get; set; } = NavigatorQueryType.None;
 
     [Column("order_num")]
     [DefaultValue(0)]

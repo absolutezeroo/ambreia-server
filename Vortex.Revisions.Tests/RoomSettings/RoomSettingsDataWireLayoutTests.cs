@@ -142,7 +142,6 @@ public sealed class RoomSettingsDataWireLayoutTests
             Ranking = 0,
             CategoryId = 3,
             Tags = ImmutableArray.Create("build", "chat"),
-            StaffPick = false,
             AllowBlocking = true,
             AllowPets = true,
             AllowPetsEat = false,

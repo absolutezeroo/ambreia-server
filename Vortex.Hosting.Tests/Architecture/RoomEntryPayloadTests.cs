@@ -43,9 +43,6 @@ public sealed class RoomEntryPayloadTests
         // Pins chooserDisabled, freeFurniMovementsEnabled and invisibleFurni on the client's room
         // object instead of leaving them to whatever the client defaults to.
         "HanditemConfigurationMessageComposer",
-        // The room's advertisement, when it has one. Sent only then: this client assigns whatever
-        // arrives to roomEventData without testing it, so an empty one reads as a blank event.
-        "RoomEventMessageComposer",
     ];
 
     /// <summary>
@@ -54,7 +51,7 @@ public sealed class RoomEntryPayloadTests
     /// <remarks>
     /// The chat styles go first, immediately after OpenConnection. Then the room's shell: ready, the
     /// door tile, the paint, the geometry, the visualisation settings. Then who is here, then what is
-    /// here, then whose room it is. Then the advertisement, the furniture configuration and the
+    /// here, then whose room it is. Then the furniture configuration and the
     /// rights. The rating comes last of the room's own state, after the client
     /// has been told whether the player owns the place.
     /// </remarks>
@@ -71,7 +68,6 @@ public sealed class RoomEntryPayloadTests
         "ObjectsMessageComposer",
         "ItemsMessageComposer",
         "RoomEntryInfoMessageComposer",
-        "RoomEventMessageComposer",
         "HanditemConfigurationMessageComposer",
         "YouAreControllerMessageComposer",
         "YouAreOwnerMessageComposer",

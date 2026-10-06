@@ -8,9 +8,7 @@ using Vortex.Primitives.Navigator;
 using Vortex.Primitives.Orleans;
 using Vortex.Primitives.Orleans.Snapshots.Navigator;
 using Vortex.Primitives.Players.Grains;
-using Vortex.Primitives.Snapshots.Navigator;
 using Vortex.Protocol.Messages.Incoming.NewNavigator;
-using Vortex.Protocol.Messages.Outgoing.Navigator;
 using Vortex.Protocol.Messages.Outgoing.NewNavigator;
 
 namespace Vortex.PacketHandlers.NewNavigator;
@@ -35,20 +33,8 @@ public class NewNavigatorInitMessageHandler(
             .GetTopLevelContextAsync()
             .ConfigureAwait(false);
 
-        List<NavigatorQuickLinkSnapshot> savedSearches = await navigatorGrain
-            .GetSavedSearchesAsync(ct)
-            .ConfigureAwait(false);
-
-        List<string> collapsedCategories = await navigatorGrain
-            .GetCollapsedCategoriesAsync(ct)
-            .ConfigureAwait(false);
-
         NavigatorWindowPreferencesSnapshot prefs = await navigatorGrain
             .GetWindowPreferencesAsync(ct)
-            .ConfigureAwait(false);
-
-        CategoriesWithVisitorCountSnapshot categoryCounts = await _navigatorService
-            .GetCategoryVisitorCountsAsync(ct)
             .ConfigureAwait(false);
 
         await ctx.SendComposerAsync(
@@ -57,30 +43,18 @@ public class NewNavigatorInitMessageHandler(
             )
             .ConfigureAwait(false);
 
-        // The client caches this on init and reads it when rendering the category list; nothing ever
-        // sent it before, so every category showed as empty.
-        await ctx.SendComposerAsync(
-                new CategoriesWithVisitorCountMessageComposer { Categories = categoryCounts },
-                ct
-            )
-            .ConfigureAwait(false);
-
         await ctx.SendComposerAsync(new NavigatorLiftedRoomsMessage { LiftedRooms = [] }, ct)
             .ConfigureAwait(false);
 
+        // The client expects both of these on init, but collapsed categories and saved searches are
+        // no longer kept per player: they go out empty (frozen).
         await ctx.SendComposerAsync(
-                new NavigatorCollapsedCategoriesMessage
-                {
-                    CollapsedCategoryIds = collapsedCategories,
-                },
+                new NavigatorCollapsedCategoriesMessage { CollapsedCategoryIds = [] },
                 ct
             )
             .ConfigureAwait(false);
 
-        await ctx.SendComposerAsync(
-                new NavigatorSavedSearchesMessage { SavedSearches = savedSearches },
-                ct
-            )
+        await ctx.SendComposerAsync(new NavigatorSavedSearchesMessage { SavedSearches = [] }, ct)
             .ConfigureAwait(false);
 
         await ctx.SendComposerAsync(

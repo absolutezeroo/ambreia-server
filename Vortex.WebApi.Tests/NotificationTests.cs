@@ -534,7 +534,6 @@ public sealed class NotificationTests
                 ChatFloodType = ChatFloodSensitivityType.Minimal,
                 ChatDistance = 50,
                 Score = 0,
-                IsStaffPick = false,
             }
         );
 

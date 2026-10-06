@@ -1,4 +1,3 @@
-using System;
 using Vortex.Primitives.Orleans.Snapshots.Room;
 using Vortex.Primitives.Packets;
 using Vortex.Primitives.Rooms.Enums;
@@ -48,14 +47,9 @@ internal class RoomSettingsSerializer
             bitmask |= RoomBitmaskFlags.GroupData;
         }
 
-        if (!string.IsNullOrEmpty(message.AdName))
-        {
-            bitmask |= RoomBitmaskFlags.RoomAd;
-        }
-
-        // DisplayRoomAd (bit 32) stays clear on purpose. It is not "this room is advertised" -- the
-        // client answers it with requestRoomEnterAd(), a call out to Habbo's web ad slot, so setting
-        // it asks every entering player's client to fetch an interstitial this hotel does not serve.
+        // The RoomAd bit (4) and DisplayRoomAd (32) stay clear on purpose: room advertisements are
+        // gone, so the ad name/description/countdown trio behind bit 4 is never written, and bit 32
+        // would make every entering client fetch an interstitial this hotel does not serve.
 
         packet.WriteInteger((int)bitmask);
 
@@ -71,28 +65,5 @@ internal class RoomSettingsSerializer
                 .WriteString(message.GroupName!)
                 .WriteString(message.GroupBadge!);
         }
-
-        if (bitmask.HasFlag(RoomBitmaskFlags.RoomAd))
-        {
-            packet
-                .WriteString(message.AdName)
-                .WriteString(message.AdDescription)
-                .WriteInteger(MinutesUntil(message.AdExpiresAt));
-        }
-    }
-
-    /// <summary>Minutes the client should count down from, floored at 0. It renders the value as a
-    /// friendly duration and treats a non-positive one as "no ad running", so an expired snapshot
-    /// degrades to silence rather than to a negative timer.</summary>
-    private static int MinutesUntil(DateTime? expiresAt)
-    {
-        if (expiresAt is null)
-        {
-            return 0;
-        }
-
-        double minutes = (expiresAt.Value - DateTime.UtcNow).TotalMinutes;
-
-        return minutes <= 0 ? 0 : (int)Math.Ceiling(minutes);
     }
 }

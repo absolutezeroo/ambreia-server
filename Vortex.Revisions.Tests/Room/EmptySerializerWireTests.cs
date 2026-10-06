@@ -32,22 +32,6 @@ public sealed class EmptySerializerWireTests
     }
 
     /// <summary>
-    ///     WIN63 unknowns/_SafePkg_1719/_SafeCls_2955.as: an int then a string. The client puts the
-    ///     filtered text back into whichever input the code names, so both fields matter.
-    /// </summary>
-    [Fact]
-    public void RoomAdError_WritesErrorCodeThenFilteredText()
-    {
-        ClientPacket packet = SerializeAndReadBody(
-            typeof(RoomAdErrorEventMessageComposer),
-            new RoomAdErrorEventMessageComposer { ErrorCode = 1, FilteredText = "my ev*nt" }
-        );
-
-        packet.PopInt().Should().Be(1);
-        packet.PopString().Should().Be("my ev*nt");
-    }
-
-    /// <summary>
     ///     WIN63 unknowns/.../_SafeCls_3699.as: two ints and two strings. The first int is a flag —
     ///     the client maps 1 to wall-item and everything else to floor-item — so it is not a
     ///     category id and must not be sent as one.

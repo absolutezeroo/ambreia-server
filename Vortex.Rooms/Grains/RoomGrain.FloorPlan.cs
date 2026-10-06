@@ -361,7 +361,6 @@ public sealed partial class RoomGrain
                 EnterRoom = true,
                 RoomInfo = _state.RoomSnapshot,
                 RoomForward = false,
-                StaffPick = _state.RoomSnapshot.StaffPick,
                 IsGroupMember = false,
                 // Not a per-player field like the two around it: the switch is the room's, and a
                 // card that says "not muted" would un-draw the button for everyone who can press it.
