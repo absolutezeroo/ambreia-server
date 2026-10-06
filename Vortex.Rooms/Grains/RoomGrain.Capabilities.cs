@@ -6,16 +6,10 @@ using Vortex.Primitives.Action;
 using Vortex.Primitives.Players;
 using Vortex.Primitives.Rooms.Enums;
 using Vortex.Primitives.Rooms.Enums.Games;
-using Vortex.Primitives.Rooms.Enums.Wired;
 using Vortex.Primitives.Rooms.Games;
 using Vortex.Primitives.Rooms.Object;
 using Vortex.Primitives.Rooms.Object.Avatars;
 using Vortex.Primitives.Rooms.Object.Furniture;
-using Vortex.Primitives.Rooms.Snapshots.Wired;
-using Vortex.Primitives.Rooms.Wired;
-using Vortex.Primitives.Rooms.Wired.Variable;
-using Vortex.Protocol.Messages.Outgoing.Userdefinedroomevents.Wiredtrading;
-using Vortex.Rooms.Grains.Storage;
 
 namespace Vortex.Rooms.Grains;
 
@@ -31,13 +25,7 @@ namespace Vortex.Rooms.Grains;
 /// and a call through one stays an ordinary method call on this activation.
 /// </para>
 /// </summary>
-public sealed partial class RoomGrain
-    : IRoomLookup,
-        IRoomMapAccess,
-        IRoomGameAccess,
-        IRoomChestAccess,
-        IRoomTransactionAccess,
-        IRoomFurniAccess
+public sealed partial class RoomGrain : IRoomLookup, IRoomMapAccess, IRoomGameAccess
 {
     private static readonly IReadOnlySet<RoomObjectId> EmptyStack = new HashSet<RoomObjectId>();
 
@@ -176,116 +164,4 @@ public sealed partial class RoomGrain
 
     void IRoomGameAccess.UnlockMovement(PlayerId playerId) =>
         GameRuntime.Chrome.UnlockMovement(playerId);
-
-    Task<bool> IRoomTransactionAccess.OfferTransactionAsync(
-        int contractId,
-        PlayerId playerId,
-        int chestId,
-        TradeContract? contract,
-        int mode,
-        int multiplier,
-        int timeoutSeconds,
-        CancellationToken ct
-    ) =>
-        OfferTransactionAsync(
-            contractId,
-            playerId,
-            chestId,
-            contract,
-            mode,
-            multiplier,
-            timeoutSeconds,
-            ct
-        );
-
-    Task<int> IRoomTransactionAccess.CancelTransactionAsync(
-        int contractId,
-        PlayerId playerId,
-        CancellationToken ct
-    ) => CancelTransactionAsync(contractId, playerId, ct);
-
-    Task<int> IRoomChestAccess.PayOutChestCreditsAsync(
-        int chestId,
-        PlayerId playerId,
-        int amount,
-        bool everything,
-        CancellationToken ct
-    ) => PayOutWiredChestCreditsAsync(chestId, playerId, amount, everything, ct);
-
-    Task<int> IRoomChestAccess.PayOutChestItemsAsync(
-        int chestId,
-        PlayerId playerId,
-        int count,
-        CancellationToken ct
-    ) => PayOutWiredChestItemsAsync(chestId, playerId, count, ct);
-
-    Task<int> IRoomChestAccess.CountChestItemsAsync(
-        IReadOnlyList<int> chestIds,
-        IReadOnlyList<int> kindExampleItemIds,
-        CancellationToken ct
-    ) => WiredTradingSystem.CountChestItemsAsync(chestIds, kindExampleItemIds, ct);
-
-    Task<bool> IRoomFurniAccess.ValidateFloorItemPlacementAsync(
-        ActionContext ctx,
-        RoomObjectId itemId,
-        int x,
-        int y,
-        Rotation rot
-    ) => FurniModule.ValidateFloorItemPlacementAsync(ctx, itemId, x, y, rot);
-
-    IWiredVariable? IRoomFurniAccess.GetVariableById(WiredVariableId id) =>
-        WiredSystem.GetVariableById(id);
-
-    void IRoomFurniAccess.ScheduleFlashRevert(RoomObjectId objectId) =>
-        WiredSystem.ScheduleFlashRevert(objectId);
-
-    void IRoomFurniAccess.ResetTimers() => WiredSystem.ResetTimers();
-
-    WiredVariableHash IRoomFurniAccess.AllVariablesHash => _state.AllVariablesHash;
-
-    bool IRoomFurniAccess.TryGetVariableStore(WiredVariableKey key, out IWiredKeyValueStore? store)
-    {
-        bool found = WiredSystem.TryGetStoreForKey(key, out KeyValueStore? concrete);
-        store = concrete;
-
-        return found;
-    }
-
-    void IRoomFurniAccess.WriteWiredRoomLog(WiredLogLevel level, string message) =>
-        WiredSystem.WriteWiredRoomLog(level, WiredLogSource.Action, message);
-
-    Task<bool> IRoomFurniAccess.RemoveFurniFromWiredAsync(
-        RoomObjectId itemId,
-        CancellationToken ct
-    ) => RemoveItemByIdAsync(ActionContext.Wired, itemId, ct, fromWired: true);
-
-    Task<bool> IRoomFurniAccess.KickUserFromWiredAsync(
-        PlayerId targetPlayerId,
-        CancellationToken ct
-    ) => KickUserFromWiredAsync(targetPlayerId, ct);
-
-    Task<bool> IRoomFurniAccess.MuteUserFromWiredAsync(
-        PlayerId targetPlayerId,
-        int durationSeconds,
-        CancellationToken ct
-    ) => MuteUserFromWiredAsync(targetPlayerId, durationSeconds, ct);
-
-    Task IRoomFurniAccess.EnsureGuildRosterAsync(int groupId, CancellationToken ct) =>
-        EnsureGuildRosterAsync(groupId, ct);
-
-    bool IRoomFurniAccess.IsGuildMember(int groupId, PlayerId player) =>
-        IsGuildMember(groupId, player);
-
-    Task IRoomFurniAccess.EnsureWornBadgesAsync(PlayerId player, CancellationToken ct) =>
-        EnsureWornBadgesAsync(player, ct);
-
-    bool IRoomFurniAccess.IsWearingBadge(PlayerId player, string badgeCode) =>
-        IsWearingBadge(player, badgeCode);
-
-    Task<int> IRoomFurniAccess.ExecuteWiredStacksAtAsync(
-        int callerTileIdx,
-        IReadOnlyCollection<int> targetFurniIds,
-        IWiredSelectionSet inheritedSelection,
-        CancellationToken ct
-    ) => WiredSystem.ExecuteStacksAtAsync(callerTileIdx, targetFurniIds, inheritedSelection, ct);
 }

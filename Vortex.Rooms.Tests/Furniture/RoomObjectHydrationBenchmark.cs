@@ -5,11 +5,19 @@ using System.Globalization;
 using System.IO;
 using System.Text;
 using Microsoft.Extensions.DependencyInjection;
+using Vortex.Furniture;
 using Vortex.Furniture.Providers;
+using Vortex.Primitives.Furniture;
+using Vortex.Primitives.Furniture.Enums;
 using Vortex.Primitives.Furniture.Providers;
+using Vortex.Primitives.Furniture.Snapshots;
+using Vortex.Primitives.Furniture.StuffData;
+using Vortex.Primitives.Rooms.Enums;
+using Vortex.Primitives.Rooms.Object;
+using Vortex.Primitives.Rooms.Object.Furniture;
 using Vortex.Primitives.Rooms.Object.Furniture.Floor;
 using Vortex.Rooms.Object.Logic.Furniture.Floor;
-using Vortex.Rooms.Tests.Wired;
+using Vortex.Tests.Support;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -29,7 +37,7 @@ namespace Vortex.Rooms.Tests.Furniture;
 /// delegate — so the only question ever worth asking was how much it buys.
 /// </para>
 /// <para>
-/// Off unless <c>VORTEX_BENCH=1</c>, for the same reason as the wired baseline: a wall-clock
+/// Off unless <c>VORTEX_BENCH=1</c>: a wall-clock
 /// assertion in the gate is a flake with a schedule.
 /// </para>
 /// <para>
@@ -57,7 +65,7 @@ public sealed class RoomObjectHydrationBenchmark(ITestOutputHelper output)
             .AddSingleton<IStuffDataFactory, StuffDataFactory>()
             .BuildServiceProvider();
 
-        IRoomFloorItemContext ctx = WiredTestBoxes.Context();
+        IRoomFloorItemContext ctx = Context();
 
         // Discarded: whichever path runs first pays the JIT for both.
         Reflection(services, ctx, 50);
@@ -73,6 +81,49 @@ public sealed class RoomObjectHydrationBenchmark(ITestOutputHelper output)
         Write(report);
 
         services.Dispose();
+    }
+
+    /// <summary>The bare context a logic's base class reads while it is built: the definition's
+    /// stuff-data type and the object's extra data.</summary>
+    private static IRoomFloorItemContext Context()
+    {
+        FurnitureDefinitionSnapshot definition = new()
+        {
+            Id = 1,
+            SpriteId = 1,
+            Name = "bench_dice",
+            ProductType = ProductType.Floor,
+            FurniCategory = FurnitureCategory.Default,
+            LogicName = "default_floor",
+            TotalStates = 1,
+            Width = 1,
+            Length = 1,
+            StackHeight = Altitude.FromInt(100),
+            CanStack = true,
+            CanWalk = false,
+            CanSit = false,
+            CanLay = false,
+            CanRecycle = false,
+            CanTrade = true,
+            CanGroup = false,
+            CanSell = true,
+            UsagePolicy = FurnitureUsageType.Nobody,
+            ExtraData = null,
+            StuffDataType = StuffDataType.LegacyKey,
+        };
+        IExtraData extraData = new ExtraData(null);
+        IRoomFloorItem item = FakeProxy.Create<IRoomFloorItem>(call =>
+            call.Method.Name == "get_ExtraData" ? extraData : null
+        );
+
+        return FakeProxy.Create<IRoomFloorItemContext>(call =>
+            call.Method.Name switch
+            {
+                "get_Definition" => definition,
+                "get_RoomObject" => item,
+                _ => null,
+            }
+        );
     }
 
     /// <summary>What the emulator does today: reflect over the constructor on every object.</summary>

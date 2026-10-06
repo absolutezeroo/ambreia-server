@@ -40,19 +40,12 @@ public abstract class RoomObjectContext<TObject, TLogic, TSelf>(
     public IRoomLookup Lookup => _roomGrain;
     public IRoomMapAccess Map => _roomGrain;
     public IRoomGameAccess Game => _roomGrain;
-    public IRoomChestAccess Chests => _roomGrain;
-    public IRoomTransactionAccess Transactions => _roomGrain;
-    public IRoomFurniAccess Furni => _roomGrain;
 
     public long NowMs() => _roomGrain.NowMs();
 
     public long EpochMs => _roomGrain._state.EpochMs;
 
     public PlayerId OwnerId => _roomGrain._state.RoomSnapshot.OwnerId;
-
-    public int? GroupId => _roomGrain._state.RoomSnapshot.GroupId;
-
-    public IWiredLimits WiredLimits => _roomGrain._roomConfig;
 
     public RoomObjectId ObjectId => _roomObject.ObjectId;
     public TObject RoomObject => _roomObject;

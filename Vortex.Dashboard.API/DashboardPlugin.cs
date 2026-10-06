@@ -198,7 +198,6 @@ public sealed class DashboardPlugin : IVortexPlugin
         services.TryAddSingleton<GuildOperations>();
         services.TryAddSingleton<PetReads>();
         services.TryAddSingleton<SocialReads>();
-        services.TryAddSingleton<WiredReads>();
         services.TryAddSingleton<AuditReads>();
         services.TryAddSingleton<ItemAnomalyReads>();
         services.TryAddSingleton<CfhReads>();

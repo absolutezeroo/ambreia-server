@@ -70,27 +70,6 @@ public interface IVortexMetrics
     void FurnitureLogicFallback(string logicName, string family);
 
     /// <summary>
-    /// A wired chain stopped short of running everything it could have.
-    /// <paramref name="reason"/> is one of <see cref="WiredStopReason"/> — a closed set, so it is
-    /// safe as a tag. Nothing before this could answer how often a room actually hits its depth
-    /// limit, which is the only evidence that settles what the limit should be.
-    /// </summary>
-    void WiredChainStopped(string reason);
-
-    /// <summary>
-    /// A room event reached the end of its life in the wired engine. <paramref name="outcome"/> is
-    /// one of <see cref="WiredEventOutcome"/>.
-    /// </summary>
-    void WiredEventOutcome(string outcome);
-
-    /// <summary>
-    /// A room rebuilt its wired trigger index. Rebuilds are driven by furniture moving, so a room
-    /// under construction rebuilds often and that is correct; a hotel-wide rate that tracks the tick
-    /// rate means an index that is never clean, which is a cost nothing else reports.
-    /// </summary>
-    void WiredIndexRebuilt();
-
-    /// <summary>
     /// A call to the (single, global) room directory grain returned. <paramref name="method"/> is the
     /// grain method name, which is bounded by the interface.
     /// </summary>

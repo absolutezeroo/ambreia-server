@@ -25,7 +25,6 @@ using Vortex.Primitives.Rooms.RaidProtection;
 using Vortex.Primitives.Rooms.Snapshots.Avatars;
 using Vortex.Primitives.Rooms.Snapshots.Furniture;
 using Vortex.Primitives.Rooms.Snapshots.Mapping;
-using Vortex.Primitives.Rooms.Snapshots.Wired;
 using Vortex.Protocol.Messages.Outgoing.Navigator;
 using Vortex.Protocol.Messages.Outgoing.Room.Action;
 using Vortex.Protocol.Messages.Outgoing.Room.Engine;
@@ -33,8 +32,6 @@ using Vortex.Protocol.Messages.Outgoing.Room.Layout;
 using Vortex.Protocol.Messages.Outgoing.Room.Permissions;
 using Vortex.Protocol.Messages.Outgoing.Room.RaidProtection;
 using Vortex.Protocol.Messages.Outgoing.Room.Session;
-using Vortex.Protocol.Messages.Outgoing.Userdefinedroomevents;
-using Vortex.Protocol.Messages.Outgoing.Userdefinedroomevents.Wiredmenu;
 using Vortex.Rooms.Configuration;
 
 namespace Vortex.Rooms;
@@ -361,16 +358,6 @@ internal sealed partial class RoomService(
                 ct
             )
             .ConfigureAwait(false);
-        bool hasRights = controllerLevel >= RoomControllerType.Rights;
-
-        // Until this is sent the client assumes no click-user box exists: it opens the context menu
-        // itself and never sends WiredClickUser. An official capture of a room entry shows the
-        // server pushing this as part of the entry burst -- after OpenConnection the client asks
-        // for nothing at all, so there is no later request to hang it on.
-        WiredClickUserSnapshot clickUser = await room.GetClickUserStateAsync(ct)
-            .ConfigureAwait(false);
-        IReadOnlyList<string> enabledAchievements = await room.GetEnabledAchievementsAsync(ct)
-            .ConfigureAwait(false);
 
         // None of a dance, a worn effect or a hand item is part of the Users payload, so each one
         // has to be replayed for the player walking in. Bots dance too, and their dance is as
@@ -479,20 +466,10 @@ internal sealed partial class RoomService(
                 // setting here, so this pins them to their defaults rather than leaving the client's
                 // own defaults to decide. The official server sends it on every entry.
                 new HanditemConfigurationMessageComposer { IsHanditemControlBlocked = false },
-                new WiredEnvironmentMessageComposer
-                {
-                    HasClickUserWired = clickUser.Present,
-                    EnabledAchievements = enabledAchievements,
-                },
                 new YouAreControllerMessageComposer
                 {
                     RoomId = roomId,
                     ControllerLevel = controllerLevel,
-                },
-                new WiredPermissionsEventMessageComposer
-                {
-                    CanModify = hasRights,
-                    CanRead = hasRights,
                 }
             )
             .ConfigureAwait(false);

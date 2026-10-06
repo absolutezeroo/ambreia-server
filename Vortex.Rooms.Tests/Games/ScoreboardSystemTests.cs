@@ -59,7 +59,7 @@ public sealed class ScoreboardSystemTests
     }
 
     [Fact]
-    public async Task AWiredGiveScore_OutsideAnyRound_StillPaintsTheBoards()
+    public async Task AGiveScore_OutsideAnyRound_StillPaintsTheBoards()
     {
         RoomHarness harness = await RoomHarness.CreateAsync().ConfigureAwait(true);
         FurnitureScoreboardLogic red = AttachScoreboard(

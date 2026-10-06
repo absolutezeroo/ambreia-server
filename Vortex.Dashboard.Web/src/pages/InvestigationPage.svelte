@@ -23,7 +23,6 @@
   import { readParam, readNumberParam, writeParams } from '../lib/urlState';
   import { t, translate } from '../lib/i18n';
   import type {
-    ChestMoveRow,
     DirectorySearch,
     IdSearch,
     PlayerProfile,
@@ -31,13 +30,13 @@
   import type { PickerRow } from '../lib/pickers/directories';
 
   /** Which journal a timeline line came from. The filter above the table offers exactly these. */
-  type TimelineKind = 'audit' | 'ledger' | 'item' | 'chat' | 'chest';
+  type TimelineKind = 'audit' | 'ledger' | 'item' | 'chat';
 
   /**
    * One line of the merged timeline.
    *
-   * Five different server rows flattened into one bag, plus what push() adds. Written as one shape
-   * with optional fields rather than a union of the five, because the table reads across them --
+   * Four different server rows flattened into one bag, plus what push() adds. Written as one shape
+   * with optional fields rather than a union of the four, because the table reads across them --
    * `row.action || row.eventType || row.category` is one column, not three -- and a union would
    * have to be narrowed in every cell to say the same thing.
    */
@@ -232,25 +231,6 @@
     rows.push({ ...row, time: at, sortTime: Date.parse(at || '') || 0 });
   }
 
-  // A contract trade can deposit and withdraw in the same movement; the direction is the headline and
-  // the detail line below spells out both halves, so a two-way row is not mislabelled into one word.
-  function chestAction(row: ChestMoveRow) {
-    return row.depositFurniCount + row.depositCoinsCount > 0 ? 'chest.deposit' : 'chest.withdraw';
-  }
-
-  function chestDetail(row: ChestMoveRow) {
-    return [
-      row.depositFurniCount ? `+${row.depositFurniCount} furni` : '',
-      row.withdrawFurniCount ? `-${row.withdrawFurniCount} furni` : '',
-      row.depositCoinsCount ? `+${row.depositCoinsCount} coins` : '',
-      row.withdrawCoinsCount ? `-${row.withdrawCoinsCount} coins` : '',
-      row.definitionInfo,
-      row.roomName ? `@ ${row.roomName}` : '',
-    ]
-      .filter(Boolean)
-      .join(' ');
-  }
-
   // One account's rows, tagged with whose they are. Split out of search() so the comparison run can
   // feed the same list a second time instead of duplicating every mapping.
   function collectPlayerRows(
@@ -272,16 +252,6 @@
         ...row,
       }),
     );
-    data.chestMoves.forEach((row) =>
-      push(into, {
-        kind: 'chest',
-        playerId: term,
-        action: chestAction(row),
-        data: chestDetail(row),
-        account,
-        ...row,
-      }),
-    );
   }
 
   async function search() {
@@ -296,8 +266,8 @@
     comparePlayer = null;
     try {
       // limit applies per source, and the noisy ones (room entries, sessions) would otherwise fill
-      // the default 50 on their own and push everything rarer -- a badge, an achievement, a chest
-      // movement -- off a timeline that pages client-side and so never asks for a second window.
+      // the default 50 on their own and push everything rarer -- a badge, an achievement --
+      // off a timeline that pages client-side and so never asks for a second window.
       const data = await apiGet<DirectorySearch>(
         `/api/v1/directory/search?q=${encodeURIComponent(term)}&limit=200`,
       );
@@ -448,7 +418,6 @@
           <option value="ledger">{$t('investigation.kindLedger')}</option>
           <option value="item">{$t('investigation.kindItem')}</option>
           <option value="chat">{$t('investigation.kindChat')}</option>
-          <option value="chest">{$t('investigation.kindChest')}</option>
         </select>
       </label>
       <!-- Only the audit rows carry a category, so the control stays out of the way until the

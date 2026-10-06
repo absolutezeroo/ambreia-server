@@ -26,5 +26,4 @@ public sealed partial class RoomGrain
         IRoomTrading,
         IRoomMysteryBox,
         IRoomDoorbell,
-        IRoomCrackable,
-        IRoomWired { }
+        IRoomCrackable { }

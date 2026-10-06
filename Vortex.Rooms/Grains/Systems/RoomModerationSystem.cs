@@ -152,16 +152,6 @@ public sealed class RoomModerationSystem(RoomGrain roomGrain)
         return false;
     }
 
-    /// <summary>Kicks a user without a human actor — for wired / system-driven kicks (the
-    /// <c>wf_act_kick_user</c> action). Called directly on the grain from inside its own turn, so it is
-    /// not a re-entrant grain-reference call.</summary>
-    public Task<bool> KickUserFromWiredAsync(PlayerId targetPlayerId, CancellationToken ct) =>
-        KickUserInternalAsync(
-            ActionContext.CreateForWired(_roomGrain._state.RoomId),
-            targetPlayerId,
-            ct
-        );
-
     private async Task<bool> KickUserInternalAsync(
         ActionContext ctx,
         PlayerId targetPlayerId,
@@ -243,19 +233,6 @@ public sealed class RoomModerationSystem(RoomGrain roomGrain)
         return await MuteUserInternalAsync(actorCtx.PlayerId, targetPlayerId, durationSeconds, ct)
             .ConfigureAwait(true);
     }
-
-    /// <summary>
-    /// Mutes on a wired action's behalf. Like the wired kick there is no actor to authorize: the
-    /// room's own wiring is doing it, so the who-can-mute setting has nobody to check against.
-    /// </summary>
-    public Task<bool> MuteUserFromWiredAsync(
-        PlayerId targetPlayerId,
-        int durationSeconds,
-        CancellationToken ct
-    ) =>
-        targetPlayerId <= 0 || durationSeconds <= 0
-            ? Task.FromResult(false)
-            : MuteUserInternalAsync(PlayerId.Invalid, targetPlayerId, durationSeconds, ct);
 
     private async Task<bool> MuteUserInternalAsync(
         PlayerId actorPlayerId,

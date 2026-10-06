@@ -23,8 +23,6 @@ using Vortex.Rooms.Events;
 using Vortex.Rooms.Games;
 using Vortex.Rooms.Object.Logic;
 using Vortex.Rooms.Providers;
-using Vortex.Rooms.Wired.Logs;
-using Vortex.Rooms.Wired.Variables;
 using Vortex.Runtime.AssemblyProcessing;
 
 namespace Vortex.Rooms;
@@ -44,12 +42,10 @@ public sealed class RoomModule : IHostPluginModule
             (IReferenceDataProvider)sp.GetRequiredService<IRoomModelProvider>()
         );
         services.AddSingleton<IRoomObjectLogicProvider, RoomObjectLogicProvider>();
-        services.AddSingleton<IRoomWiredVariablesProvider, RoomWiredVariablesProvider>();
         services.AddSingleton<IRoomEventListenerProvider, RoomEventListenerProvider>();
         services.AddSingleton<IRoomGameProvider, RoomGameProvider>();
 
         services.AddSingleton<IAssemblyFeatureProcessor, RoomObjectLogicFeatureProcessor>();
-        services.AddSingleton<IAssemblyFeatureProcessor, WiredVariableFeatureProcessor>();
         services.AddSingleton<IAssemblyFeatureProcessor, RoomEventListenerFeatureProcessor>();
         services.AddSingleton<IAssemblyFeatureProcessor, RoomGameFeatureProcessor>();
 
@@ -63,11 +59,6 @@ public sealed class RoomModule : IHostPluginModule
         services.AddSingleton<ICameraSpriteSource>(CameraSprites);
         services.AddSingleton<IRoomPhotoRenderer, RoomPhotoRenderer>();
         services.AddSingleton<IRoomAdvertisementService, RoomAdvertisementService>();
-
-        // Wired room-logs pipeline: one bounded channel -> single background writer (no DB on
-        // the wired-execution hot path). Mirrors Vortex.Observability's audit pipeline.
-        services.AddSingleton<RoomWiredLogChannel>();
-        services.AddHostedService<RoomWiredLogWriterService>();
     }
 
     /// <summary>

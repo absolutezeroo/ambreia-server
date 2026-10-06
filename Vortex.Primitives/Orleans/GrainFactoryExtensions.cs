@@ -78,9 +78,6 @@ public static class GrainFactoryExtensions
     public static IRoomCrackable GetRoomCrackable(this IGrainFactory factory, RoomId roomId) =>
         factory.GetGrain<IRoomCrackable>((long)roomId.Value);
 
-    public static IRoomWired GetRoomWired(this IGrainFactory factory, RoomId roomId) =>
-        factory.GetGrain<IRoomWired>((long)roomId.Value);
-
     public static IRoomJukebox GetRoomJukebox(this IGrainFactory factory, RoomId roomId) =>
         factory.GetGrain<IRoomJukebox>((long)roomId.Value);
 

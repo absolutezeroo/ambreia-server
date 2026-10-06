@@ -10,7 +10,6 @@ using Vortex.Database.Entities.Room;
 using Vortex.Primitives.Bots;
 using Vortex.Primitives.Orleans;
 using Vortex.Primitives.Players;
-using Vortex.Primitives.Rooms.Enums.Wired;
 using Vortex.Primitives.Rooms.Object;
 using Vortex.Primitives.Rooms.Snapshots.Avatars;
 using Vortex.Protocol.Messages.Outgoing.Room.Chat;
@@ -151,41 +150,10 @@ public sealed partial class RoomBotSystem
     }
 
     /// <summary>
-    /// The placed bot going by this name, or null. Wired addresses bots by name rather than by id —
-    /// the setup form has the builder type one in — so this is how a stack finds the bot it means.
-    /// <para>
-    /// Names are not unique, so the lowest id wins: a room with two "Frank"s has to pick one, and
-    /// picking the same one every time is what makes a wired stack behave the same way twice.
-    /// </para>
+    /// Makes a bot say a line to the room on somebody else's account rather than its own chatter
+    /// clock.
     /// </summary>
-    public async Task<BotSnapshot?> FindBotByNameAsync(string name, CancellationToken ct)
-    {
-        if (string.IsNullOrWhiteSpace(name))
-        {
-            return null;
-        }
-
-        await EnsureBotsLoadedAsync(ct).ConfigureAwait(true);
-
-        string wanted = name.Trim();
-
-        return _botsById
-            .Values.OrderBy(bot => bot.BotId)
-            .FirstOrDefault(bot => bot.Name.Equals(wanted, StringComparison.OrdinalIgnoreCase));
-    }
-
-    /// <summary>
-    /// Makes a bot speak on somebody else's account — a wired stack rather than its own chatter
-    /// clock. Whispering needs a listener; without one there is nobody to whisper to and the line
-    /// is dropped rather than said aloud to the room.
-    /// </summary>
-    public async Task SayAsync(
-        int botId,
-        string text,
-        WiredBotChatType chatType,
-        PlayerId? whisperTo,
-        CancellationToken ct
-    )
+    public async Task SayAsync(int botId, string text, CancellationToken ct)
     {
         if (string.IsNullOrWhiteSpace(text))
         {
@@ -199,62 +167,19 @@ public sealed partial class RoomBotSystem
             return;
         }
 
-        RoomObjectId objectId = ToRoomObjectId(botId);
-
-        switch (chatType)
-        {
-            case WiredBotChatType.Whisper when whisperTo is { } listener:
-                await _roomGrain
-                    ._grainFactory.GetPlayerPresenceGrain(listener)
-                    .SendComposerAsync(
-                        new WhisperMessageComposer
-                        {
-                            ObjectId = objectId,
-                            Text = text,
-                            Gesture = default,
-                            StyleId = 0,
-                            Links = [],
-                            TrackingId = 0,
-                        }
-                    )
-                    .ConfigureAwait(true);
-                break;
-
-            case WiredBotChatType.Whisper:
-                break;
-
-            case WiredBotChatType.Shout:
-                await _roomGrain
-                    .SendComposerToRoomAsync(
-                        new ShoutMessageComposer
-                        {
-                            ObjectId = objectId,
-                            Text = text,
-                            Gesture = default,
-                            StyleId = 0,
-                            Links = [],
-                            TrackingId = 0,
-                        }
-                    )
-                    .ConfigureAwait(true);
-                break;
-
-            default:
-                await _roomGrain
-                    .SendComposerToRoomAsync(
-                        new ChatMessageComposer
-                        {
-                            ObjectId = objectId,
-                            Text = text,
-                            Gesture = default,
-                            StyleId = 0,
-                            Links = [],
-                            TrackingId = 0,
-                        }
-                    )
-                    .ConfigureAwait(true);
-                break;
-        }
+        await _roomGrain
+            .SendComposerToRoomAsync(
+                new ChatMessageComposer
+                {
+                    ObjectId = ToRoomObjectId(botId),
+                    Text = text,
+                    Gesture = default,
+                    StyleId = 0,
+                    Links = [],
+                    TrackingId = 0,
+                }
+            )
+            .ConfigureAwait(true);
     }
 
     /// <summary>Drops a bot's cached chatter, flags and plan so the next tick reloads them.</summary>

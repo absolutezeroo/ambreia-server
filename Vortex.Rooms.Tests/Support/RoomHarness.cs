@@ -46,7 +46,6 @@ using Vortex.Rooms.Configuration;
 using Vortex.Rooms.Grains;
 using Vortex.Rooms.Grains.Systems;
 using Vortex.Rooms.Object.Avatars.Player;
-using Vortex.Rooms.Wired.Logs;
 using Vortex.Tests.Support;
 
 namespace Vortex.Rooms.Tests.Support;
@@ -104,7 +103,6 @@ internal sealed class RoomHarness
                     : null
             ),
             FakeProxy.Create<IRoomAvatarProvider>(_ => null),
-            FakeProxy.Create<IRoomWiredVariablesProvider>(_ => null),
             FakeProxy.Create<IRoomEventListenerProvider>(_ => Array.Empty<IRoomEventListener>()),
             BuildGrainFactory(),
             FakeProxy.Create<IEventPublisher>(call =>
@@ -147,7 +145,6 @@ internal sealed class RoomHarness
             BuildPetLevelProvider(),
             FakeProxy.Create<IPetCommandProvider>(_ => null),
             FakeProxy.Create<IPetVocalProvider>(_ => null),
-            new RoomWiredLogChannel(),
             FakeProxy.Create<ISongProvider>(_ => null),
             TestRoomGames.Provider(),
             BuildCommerceJournal(),
@@ -281,8 +278,7 @@ internal sealed class RoomHarness
     public List<IComposer> BroadcastToRoom { get; } = [];
 
     /// <summary>
-    /// Room events as they were published. Wired triggers read these, so this is where a test can
-    /// see that something fired without standing the whole wired engine up.
+    /// Room events as they were published, so a test can see that something fired.
     /// </summary>
     public List<RoomEvent> RoomEvents { get; } = [];
 
@@ -675,7 +671,7 @@ internal sealed class RoomHarness
         public VortexDbContext CreateDbContext() => new(options);
     }
 
-    /// <summary>Stands in for the wired system, which is the real listener in a live room.</summary>
+    /// <summary>Records every room event, standing in for a listener a plugin would register.</summary>
     private sealed class EventRecorder(List<RoomEvent> events) : IRoomEventListener
     {
         public Task OnRoomEventAsync(RoomEvent evt, CancellationToken ct)

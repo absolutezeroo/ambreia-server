@@ -21,7 +21,6 @@ using Vortex.Rooms.Configuration;
 using Vortex.Rooms.Grains;
 using Vortex.Rooms.Grains.Systems;
 using Vortex.Rooms.Tests.Support;
-using Vortex.Rooms.Wired.Logs;
 using Vortex.Tests.Support;
 using Xunit;
 
@@ -124,7 +123,6 @@ public sealed class HotelMuteEnforcementTests
             FakeProxy.Create<IRoomItemsProvider>(_ => null),
             FakeProxy.Create<IRoomObjectLogicProvider>(_ => null),
             FakeProxy.Create<IRoomAvatarProvider>(_ => null),
-            FakeProxy.Create<IRoomWiredVariablesProvider>(_ => null),
             RoomGrainStubs.NoListeners(),
             FakeProxy.Create<IGrainFactory>(_ => null),
             FakeProxy.Create<IEventPublisher>(_ => null),
@@ -135,7 +133,6 @@ public sealed class HotelMuteEnforcementTests
             FakeProxy.Create<IPetLevelProvider>(_ => null),
             FakeProxy.Create<IPetCommandProvider>(_ => null),
             FakeProxy.Create<IPetVocalProvider>(_ => null),
-            new RoomWiredLogChannel(),
             FakeProxy.Create<ISongProvider>(_ => null),
             TestRoomGames.Provider(),
             FakeProxy.Create<ICommerceJournal>(_ => Task.CompletedTask),

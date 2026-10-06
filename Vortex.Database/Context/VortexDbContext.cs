@@ -27,7 +27,6 @@ using Vortex.Database.Entities.Security;
 using Vortex.Database.Entities.Server;
 using Vortex.Database.Entities.Shop;
 using Vortex.Database.Entities.Web;
-using Vortex.Database.Entities.Wired;
 using Vortex.Primitives.Catalog;
 
 namespace Vortex.Database.Context;
@@ -112,8 +111,6 @@ public class VortexDbContext(DbContextOptions<VortexDbContext> options)
     public DbSet<RoomRaidProtectionEntity> RoomRaidProtection { get; init; } = null!;
 
     public DbSet<RoomRightEntity> RoomRights { get; init; } = null!;
-
-    public DbSet<WiredSharedVariableEntity> WiredSharedVariables { get; init; } = null!;
 
     public DbSet<RoomEntryLogEntity> RoomEntryLogs { get; init; } = null!;
 
@@ -306,18 +303,6 @@ public class VortexDbContext(DbContextOptions<VortexDbContext> options)
     public DbSet<PetPaletteEntity> PetPalettes { get; init; } = null!;
 
     public DbSet<PetVocalEntity> PetVocals { get; init; } = null!;
-
-    public DbSet<WiredPermanentVariableEntity> WiredPermanentVariables { get; init; } = null!;
-
-    public DbSet<WiredChestEntity> WiredChests { get; init; } = null!;
-
-    public DbSet<WiredChestTransactionEntity> WiredChestTransactions { get; init; } = null!;
-
-    public DbSet<WiredContractEntity> WiredContracts { get; init; } = null!;
-
-    public DbSet<RoomWiredLogEntity> RoomWiredLogs { get; init; } = null!;
-
-    public DbSet<PlayerWiredPreferencesEntity> PlayerWiredPreferences { get; init; } = null!;
 
     public DbSet<PlayerAccountPreferencesEntity> PlayerAccountPreferences { get; init; } = null!;
 

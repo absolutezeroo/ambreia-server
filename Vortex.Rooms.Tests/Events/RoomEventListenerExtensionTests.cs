@@ -49,9 +49,9 @@ public sealed class RoomEventListenerExtensionTests
     [Fact]
     public async Task AnUnmarkedListener_IsIgnored()
     {
-        // RoomRollerSystem, RoomWiredSystem and GameScoreboardPresenter all implement the interface
+        // RoomRollerSystem and GameScoreboardPresenter both implement the interface
         // and are attached by the grain in a fixed order it depends on. Scanning the interface alone
-        // would build a second copy of each of them into every room.
+        // would build a second copy of each into every room.
         RoomEventListenerProvider provider = NewProvider();
 
         await ProcessAsync(provider).ConfigureAwait(true);

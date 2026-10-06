@@ -19,6 +19,5 @@ public sealed record IdSearch(
     PlayerProfile? PlayerProfile,
     IReadOnlyList<PlayerLedgerRow> Ledger,
     IReadOnlyList<PlayerItemRow> ItemHistory,
-    IReadOnlyList<PlayerChatRow> Chats,
-    IReadOnlyList<ChestMoveRow> ChestMoves
+    IReadOnlyList<PlayerChatRow> Chats
 ) : DirectorySearch;

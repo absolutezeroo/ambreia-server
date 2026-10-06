@@ -20,19 +20,11 @@ public sealed partial class RoomGrain
         ActionContext ctx,
         RoomObjectId itemId,
         CancellationToken ct
-    ) => await RemoveItemByIdAsync(ctx, itemId, ct, fromWired: false);
-
-    /// <inheritdoc cref="Modules.RoomActionModule.RemoveItemByIdAsync"/>
-    internal async Task<bool> RemoveItemByIdAsync(
-        ActionContext ctx,
-        RoomObjectId itemId,
-        CancellationToken ct,
-        bool fromWired
     )
     {
         try
         {
-            if (!await ActionModule.RemoveItemByIdAsync(ctx, itemId, ct, fromWired))
+            if (!await ActionModule.RemoveItemByIdAsync(ctx, itemId, ct))
             {
                 return false;
             }

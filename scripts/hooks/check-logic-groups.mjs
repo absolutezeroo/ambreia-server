@@ -6,7 +6,7 @@
 // nothing and silently falls back to default_floor.
 //
 // It was hand-maintained, and drifted to 109 of 236 keys -- every game built since (Battle Banzai,
-// Freeze), every wired piece added, and the whole furniture_* family were unpickable.
+// Freeze) and the whole furniture_* family were unpickable.
 //
 //   node scripts/hooks/check-logic-groups.mjs           compare, exit 2 on drift
 //   node scripts/hooks/check-logic-groups.mjs --write   regenerate the block
@@ -22,26 +22,18 @@ const enumsPath = join(root, 'Vortex.Dashboard.Web/src/lib/furnitureEnums.ts');
 
 // Groups are derived from the key prefix, which is how the server names them in the first place --
 // no second list to keep in step. Order is the order an operator thinks in: the plain furniture
-// behaviours first, the wired construction kit after.
+// behaviours first, the games after.
 const GROUPS = [
-  ['Basic', (k) => !/^(wf_|furniture_|freeze_|battlebanzai_|football_|pet_|monsterplant_|game_)/.test(k)],
+  ['Basic', (k) => !/^(furniture_|freeze_|battlebanzai_|football_|pet_|monsterplant_|game_)/.test(k)],
   ['Furniture', (k) => k.startsWith('furniture_')],
   ['Pets', (k) => k.startsWith('pet_') || k.startsWith('monsterplant_')],
   ['Games: Battle Banzai', (k) => k.startsWith('battlebanzai_')],
   ['Games: Freeze', (k) => k.startsWith('freeze_')],
   ['Games: Football', (k) => k.startsWith('football_')],
   ['Games: other', (k) => k.startsWith('game_')],
-  ['Wired: Triggers', (k) => k.startsWith('wf_trg_')],
-  ['Wired: Conditions', (k) => k.startsWith('wf_cnd_')],
-  ['Wired: Actions', (k) => k.startsWith('wf_act_')],
-  ['Wired: Selectors', (k) => k.startsWith('wf_slc_')],
-  ['Wired: Extras', (k) => k.startsWith('wf_xtra_')],
-  ['Wired: Variables', (k) => k.startsWith('wf_var_')],
-  ['Wired: other', (k) => k.startsWith('wf_')],
 ];
 
-// Hand-written descriptions worth keeping: the plain behaviours are not self-describing the way
-// wf_trg_walks_on_furni is. Anything absent here shows its raw key, which is what every other
+// Hand-written descriptions worth keeping: the plain behaviours are not self-describing. Anything absent here shows its raw key, which is what every other
 // catalogue tool calls it by anyway.
 const LABELS = {
   default_floor: 'Default (floor item)',

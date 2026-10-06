@@ -13,7 +13,7 @@ using Vortex.Primitives.Permissions;
 namespace Vortex.Dashboard.API.Hosting;
 
 /// <summary>Read-only analytics endpoints for domains that previously had zero dashboard visibility
-/// (guilds, pets, CFH, catalog purchases, wired furniture) — see the individual
+/// (guilds, pets, CFH, catalog purchases) — see the individual
 /// each subject's <c>*Reads</c> class for what it aggregates and why.</summary>
 internal static partial class DashboardEndpoints
 {
@@ -21,7 +21,6 @@ internal static partial class DashboardEndpoints
     private const string ApiGroups = ApiV1 + "/groups";
     private const string ApiPets = ApiV1 + "/pets";
     private const string ApiCfh = ApiV1 + "/cfh";
-    private const string ApiWired = ApiV1 + "/wired";
 
     public static void MapStatsReads(WebApplication app)
     {
@@ -55,14 +54,6 @@ internal static partial class DashboardEndpoints
             (HttpContext ctx, CatalogPurchaseReads catalogPurchase, CancellationToken ct) =>
                 OkAsync(catalogPurchase.CatalogPurchasesStatsAsync(ctx.QueryAsNameValues(), ct)),
             Capabilities.Dashboard.CatalogPurchasesRead,
-            TagStats
-        );
-        MapReadGet<WiredStats>(
-            app,
-            ApiWired + "/stats",
-            (HttpContext ctx, WiredReads wired, CancellationToken ct) =>
-                OkAsync(wired.WiredStatsAsync(ctx.QueryAsNameValues(), ct)),
-            Capabilities.Dashboard.WiredRead,
             TagStats
         );
     }

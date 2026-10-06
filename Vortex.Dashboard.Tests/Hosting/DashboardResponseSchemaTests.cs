@@ -57,7 +57,6 @@ public sealed class DashboardResponseSchemaTests
         ("/api/v1/articles/meta", typeof(ArticleFormMeta)),
         ("/api/v1/articles/images", typeof(ArticleImageBrowse)),
         ("/api/v1/articles/{articleId:int}", typeof(ArticleDetail)),
-        ("/api/v1/wired/stats", typeof(WiredStats)),
         ("/api/v1/pets/stats", typeof(PetStats)),
         ("/api/v1/cfh/stats", typeof(CfhStats)),
         ("/api/v1/chatlogs", typeof(ChatlogPage)),

@@ -27,7 +27,6 @@ using Vortex.Primitives.Sound.Providers;
 using Vortex.Rooms.Configuration;
 using Vortex.Rooms.Grains;
 using Vortex.Rooms.Tests.Support;
-using Vortex.Rooms.Wired.Logs;
 using Vortex.Tests.Support;
 using Xunit;
 
@@ -190,7 +189,6 @@ public sealed class RoomGrainMysteryBoxAbandonTests
                 FakeProxy.Create<IRoomItemsProvider>(_ => null),
                 FakeProxy.Create<IRoomObjectLogicProvider>(_ => null),
                 FakeProxy.Create<IRoomAvatarProvider>(_ => null),
-                FakeProxy.Create<IRoomWiredVariablesProvider>(_ => null),
                 RoomGrainStubs.NoListeners(),
                 BuildGrainFactory(),
                 FakeProxy.Create<IEventPublisher>(_ => null),
@@ -203,7 +201,6 @@ public sealed class RoomGrainMysteryBoxAbandonTests
                 FakeProxy.Create<IPetLevelProvider>(_ => null),
                 FakeProxy.Create<IPetCommandProvider>(_ => null),
                 FakeProxy.Create<IPetVocalProvider>(_ => null),
-                new RoomWiredLogChannel(),
                 FakeProxy.Create<ISongProvider>(_ => null),
                 TestRoomGames.Provider(),
                 FakeProxy.Create<ICommerceJournal>(_ => Task.CompletedTask),

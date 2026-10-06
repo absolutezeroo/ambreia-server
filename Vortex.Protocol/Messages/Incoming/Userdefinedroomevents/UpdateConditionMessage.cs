@@ -1,7 +1,0 @@
-using Orleans;
-using Vortex.Primitives.Networking;
-
-namespace Vortex.Protocol.Messages.Incoming.Userdefinedroomevents;
-
-[GenerateSerializer, Immutable]
-public record UpdateConditionMessage : UpdateWiredMessage, IMessageEvent { }

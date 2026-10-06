@@ -593,19 +593,6 @@ public sealed class GroupDirectoryGrainCreationTests
             throw new NotSupportedException();
         }
 
-        public Task<PlayerWiredPreferencesSnapshot> GetWiredPreferencesAsync(CancellationToken ct)
-        {
-            throw new NotSupportedException();
-        }
-
-        public Task SetWiredPreferencesAsync(
-            PlayerWiredPreferencesSnapshot preferences,
-            CancellationToken ct
-        )
-        {
-            throw new NotSupportedException();
-        }
-
         public Task<PlayerAccountPreferencesSnapshot> GetAccountPreferencesAsync(
             CancellationToken ct
         )

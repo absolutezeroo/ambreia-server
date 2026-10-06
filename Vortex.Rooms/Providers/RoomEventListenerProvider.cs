@@ -8,9 +8,8 @@ using Vortex.Runtime;
 namespace Vortex.Rooms.Providers;
 
 /// <summary>
-/// Holds the room-event listeners contributed by scanned assemblies and builds a fresh set per room,
-/// the same shape as <see cref="RoomWiredVariablesProvider" />: a listener is per-room state, so one
-/// instance can never be shared across rooms.
+/// Holds the room-event listeners contributed by scanned assemblies and builds a fresh set per room:
+/// a listener is per-room state, so one instance can never be shared across rooms.
 /// </summary>
 public sealed class RoomEventListenerProvider(IServiceProvider host) : IRoomEventListenerProvider
 {

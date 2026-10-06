@@ -14,53 +14,7 @@ internal static class MessageEvent
     public const int AddToCustomFilterMessageEvent = 2656; // AS3-verified (direct read): WIN63 registry _SafeCls_2046.as _composers[2656] = _SafeCls_2763(String word); WordFilterSettingsView is the only consumer. The previous value was a placeholder with no handler behind it
     public const int GetCustomFilterMessageEvent = 801; // AS3-verified (direct read): WIN63 registry _SafeCls_2046.as _composers[801] = _SafeCls_2412 (no payload); WordFilterSettingsView is the only consumer. The previous value was a placeholder with no handler behind it
     public const int RemoveFromCustomFilterMessageEvent = 2209; // AS3-verified (direct read): WIN63 registry _SafeCls_2046.as _composers[2209] = _SafeCls_2506(String word); WordFilterSettingsView is the only consumer. The previous value was a placeholder with no handler behind it
-    public const int WiredGetRoomLogsEvent = 706;
 
-    // Wired chests. Both ids read straight from the client's own composer registry
-    // (_SafeCls_2046: _composers[806] = _SafeCls_2597, _composers[2935] = _SafeCls_3068), which is
-    // where WiredChestController.open/setClosedStatus send.
-    public const int OpenWiredChestEvent = 806;
-    public const int CloseWiredChestEvent = 2935;
-
-    // _composers[2843] = _SafeCls_3395, sent by CoinChestSubController.onWithdrawClick with the
-    // typed amount; _composers[3611] = _SafeCls_3968, the wrapper view's "withdraw all".
-    public const int WithdrawWiredChestCreditsEvent = 2843;
-    public const int WithdrawAllFromWiredChestEvent = 3611;
-
-    // The furni half of the same chest UI. FurniChestSubController::withdrawItemsWithType sends
-    // _composers[873] = _SafeCls_2416 as (chestId, ChestItemType, count), and DepositClick sends
-    // _composers[3514] = _SafeCls_3757 with the chest id alone.
-    public const int WithdrawWiredChestItemsEvent = 873;
-    public const int DepositToWiredChestEvent = 3514;
-
-    // The wired trade the deposit opens, all three sent by WiredTradingModel: _composers[3111] =
-    // _SafeCls_3043 (remove flag + item ids), _composers[2818] = _SafeCls_3485 (the two-step
-    // accept, false then true), _composers[2646] = _SafeCls_3348 (cancel, no payload).
-    public const int WiredTradeUpdateItemsEvent = 3111;
-    public const int WiredTradeAcceptEvent = 2818;
-    public const int WiredTradeCancelEvent = 2646;
-
-    // The chest's three settings dialogs, all send-only: _composers[3830] = _SafeCls_3186 from
-    // ChestSettingsUI, _composers[2905] = _SafeCls_2819 from ChestNotificationSettingsUI, and
-    // _composers[2907] = _SafeCls_3366 from the wrapper view's lock row.
-    public const int SaveWiredChestSettingsEvent = 3830;
-    public const int SaveWiredChestNotificationSettingsEvent = 2905;
-    public const int SetWiredChestLockEvent = 2907;
-
-    // The transaction log, asked for two ways and answered with one message: _composers[1999] =
-    // _SafeCls_3170(chestId, pageSize, page) from a chest's own history, and _composers[2016] =
-    // _SafeCls_2406(pageSize, page) from the wired menu's chests tab, which asks for the room.
-    public const int GetWiredTransactionDetailsEvent = 475;
-    public const int GetWiredContractContentsEvent = 1594;
-    public const int SaveWiredContractEvent = 1908;
-    public const int UpgradeWiredChestEvent = 3407;
-    public const int GetWiredChestTransactionsEvent = 1999;
-    public const int GetWiredRoomTransactionsEvent = 2016;
-
-    // _composers[1630] = _SafeCls_3599(locked, all) from the wired menu's chests tab: its lock and
-    // unlock buttons send (true,false) and (false,false), and the confirmed lock-them-all sends
-    // (true,true). No ids travel with it, so the scope is the room either way.
-    public const int SetAllWiredChestLocksEvent = 1630;
     public const int BlockListInitEvent = 798; // AS3-verified (direct read): BlockedUsersManager.as:54 -> send(new _SafeCls_3511()) (no args) @798; was 2610, which has no entry in the WIN63 registry at all
     public const int BlockUserMessageEvent = 483; // AS3-verified (direct read): BlockedUsersManager.as:94 -> send(new _SafeCls_2856(userId)) @483; was 2371, which has no entry in the WIN63 registry at all
     public const int ReplenishRespectMessageEvent = 426; // AS3-verified (direct read): SessionDataManager.as:889 -> send(new _SafeCls_1865()) (no args) @426; was 3323, which has no entry in the WIN63 registry at all
@@ -80,8 +34,6 @@ internal static class MessageEvent
     // composer anywhere in the 701 client" for it -- turning "I could not find it" into "it does not
     // exist". It is at 521, restored above, and until 2026-08-27 an offered Relic could not be taken
     // back off the trade table.
-    public const int WiredGetUserPermanentVariablesEvent = 3777; // AS3-verified (direct read): VariableManagementDetailView fetch call -> connection.send(new _SafeCls_2724(entityType,entityId)) @3777; corrects a wrong guess (was 2127, no AS3 backing)
-    public const int WiredGetVariableOwnersPageEvent = 2221;
     public const int ClaimDailyTaskEvent = 4101;
     public const int GetDailyTasksEvent = 4100;
 
@@ -609,19 +561,6 @@ internal static class MessageEvent
     public const int ShoutMessageEvent = 1763;
     public const int StartTypingMessageEvent = 2106;
     public const int WhisperMessageEvent = 1697;
-    public const int WiredClickUserMessageEvent = 1953; // AS3-verified (registry + sender): _composers[1953] = _SafeCls_2111(int objectId), sent by HabboUserDefinedRoomEvents::userSelected() and only while hasClickUserWired() is true -- i.e. only once WiredEnvironmentMessageComposer has said the room has a click-user box.
-    public const int WiredClearErrorLogsMessageEvent = 2386; // AS3-verified (old-revision trace): _SafeCls_2945 -> onClearButtonClicked() still exists in current revision at 2386
-    public const int WiredGetAllVariableHoldersMessageEvent = 113; // AS3-verified (old-revision trace): _SafeCls_3771 -> selectedVariableId() still exists in current revision at 113
-    public const int WiredGetAllVariablesDiffsMessageEvent = 797; // AS3-verified (direct read, both revisions): WiredVariablesSynchronizer::onAllVariablesHash() hash-mismatch branch -> connection.send(new _SafeCls_2882(variableIdToHash)) @797 (old _SafeCls_3609@1509; slot freed by correcting WiredGetAllVariablesHashMessageEvent above)
-    public const int WiredGetAllVariablesHashMessageEvent = 984; // AS3-verified (direct read, both revisions): WiredVariablesSynchronizer::getAllVariables() no-hash-yet branch -> connection.send(new _SafeCls_3463()) @984 (old _SafeCls_3011@3882); corrects a 'name-only' mismatch that swapped this with the diffs request below
-    public const int WiredGetErrorLogsMessageEvent = 452; // AS3-verified (direct read, both revisions): WiredMenuMonitorTab::requestData() -> connection.send(new _SafeCls_2630()) @452 (old _SafeCls_2700@1825)
-    public const int WiredGetRoomSettingsMessageEvent = 1862; // AS3-verified (direct read, both revisions): WiredMenuSettingsTab::requestData() -> _SafeCls_3420
-    public const int WiredGetRoomStatsMessageEvent = 427; // AS3-verified (direct read, both revisions): WiredMenuMonitorTab::requestData() -> connection.send(new _SafeCls_3423()) @427 (old _SafeCls_3425@3031)
-    public const int WiredGetVariablesForObjectMessageEvent = 3466; // AS3-verified (ghost fix): WiredMenuInspectionTab::requestVariablesForObject()
-    public const int WiredSetObjectVariableValueMessageEvent = 625; // AS3-verified (direct read, both revisions): VariableManagementDetailView set/create/delete variable calls -> connection.send(new _SafeCls_2426(entityType,entityId,variableId,value,mode)) @625 (old _SafeCls_2572@2981)
-    public const int WiredSetObjectVariableValueFromInspectorMessageEvent = 689; // AS3-verified (registry + sender): _composers[689] = _SafeCls_3855(entityType,entityId,variableId,value,mode) -- byte-for-byte the same message as 625, sent from WiredMenuInspectionTab::onCellEdit (mode 0) and ::onDeleteVariableClicked (mode 2). A second surface on its own id, not a duplicate constant: binding only 625 leaves the Inspection tab's edits falling on the floor.
-    public const int WiredSetPreferencesMessageEvent = 3124; // AS3-verified (old-revision trace): _SafeCls_3307 -> sendPreferences() still exists in current revision at 3124
-    public const int WiredSetRoomSettingsMessageEvent = 2553; // AS3-verified (old-revision trace): still exists in current revision at 2553
     public const int AcceptFriendMessageEvent = 1772;
     public const int DeclineFriendMessageEvent = 2778;
     public const int FindNewFriendsMessageEvent = 546;
@@ -657,14 +596,6 @@ internal static class MessageEvent
     public const int RenderRoomThumbnailMessageEvent = 1985; // AS3-verified (direct read): _composers[1985] = _SafeCls_2272 @ habbo/communication/_SafeCls_2046.as:743 -- extends _SafeCls_2050 and packs in its own constructor, which is the getRenderRoomMessage() param3=true branch
     public const int RequestCameraConfigurationMessageEvent = 3010; // AS3-verified (old-revision trace): _SafeCls_3606 -> sendInitCameraMessage() still exists in current revision at 3010
     public const int GetPromoArticlesMessageEvent = 3152;
-    public const int ApplySnapshotMessageEvent = 2790; // AS3-verified (ghost fix): UserDefinedRoomEventsCtrl::applySnapshot()
-    public const int OpenMessageEvent = 1869; // AS3-verified (old-revision trace): _SafeCls_3500 -> onOpen() still exists in current revision at 1869
-    public const int UpdateActionMessageEvent = 2197; // AS3-verified (direct read, both revisions): UserDefinedRoomEventsCtrl::update() ActionDefinition branch (getActionDelay) -> _SafeCls_2689 @2197 (old _SafeCls_2959@148)
-    public const int UpdateAddonMessageEvent = 1138; // AS3-verified (direct read, both revisions): UserDefinedRoomEventsCtrl::update() AddonDefinition branch -> _SafeCls_3344 @1138 (old _SafeCls_2832@2797)
-    public const int UpdateConditionMessageEvent = 767; // AS3-verified (direct read, both revisions): UserDefinedRoomEventsCtrl::update() ConditionDefinition branch (resolveQuantifier) -> _SafeCls_3197 @767 (old _SafeCls_3840@988)
-    public const int UpdateSelectorMessageEvent = 510;
-    public const int UpdateTriggerMessageEvent = 3953; // AS3-verified (direct read, both revisions): UserDefinedRoomEventsCtrl::update() TriggerDefinition branch -> _SafeCls_2484 @3953 (old _SafeCls_2594@2669)
-    public const int UpdateVariableMessageEvent = 2475; // AS3-verified (direct read, both revisions): UserDefinedRoomEventsCtrl::update() VariableDefinition branch -> _SafeCls_3053 @2475 (old _SafeCls_3715@1160)
     #endregion
 
     #region Habbicons
@@ -729,48 +660,18 @@ internal static class MessageEvent
     // When this revision moves to an AIR-era client, those constants change and nothing else does.
     public const int GetRaidProtectionSettingsMessageEvent = 206;
     public const int SaveRaidProtectionSettingsMessageEvent = 2687;
-
-    // Wired web API (AIR 1.0.31 only). AIR's own _composers[2819], kept: 2819 is unused in BOTH
-    // tables of the WIN63-202607011411 registry and in both tables here. Asks for one wired
-    // furni's read or write API key; answered by WiredApiKeyResultMessageComposer below.
-    // NO HANDLER YET -- the client half ships ahead of the server's key storage.
-    public const int GenerateWiredApiKeyMessageEvent = 2819;
     #endregion
 }
 
 internal static class MessageComposer
 {
     // NEW since last revision
-
-    // Variable FX. Read straight from the AIR 1.0.31 client's own registry (_SafeCls_2127:
-    // _SafeStr_4678[267] = the config update, [3889] = the status update, [3388] = the status
-    // remove). WIN63-202607011411 carries none of the three -- the feature is newer than it -- so
-    // these are the one place in this file whose authority is a later build than the revision's own
-    // target.
-    //
-    // 3889 and 3388 are free in WIN63 and keep AIR's number. **267 could not**: WIN63 spends it on
-    // FriendFurniCancelLock, which the client registers (`_events.set(267, FriendFurniCancelLockEvent)`),
-    // so every config push this server sent on 267 was parsed by the client as a friend-furni
-    // cancel -- wrong parser, wrong handler, and the bar never appeared. The client assigns 3390,
-    // unused in both tables on both sides; matched here 2026-09-19.
-    public const int VariableFxConfigUpdateMessageComposer = 3390;
-    public const int VariableFxStatusUpdateMessageComposer = 3889;
-    public const int VariableFxStatusRemoveMessageComposer = 3388;
-
-    // Wired web API (AIR 1.0.31 only). The key the server minted, echoing the read/write flag the
-    // request carried. AIR's own _SafeStr_4678[59], kept: 59 is unused in both tables on both
-    // sides (WIN63 stops at 58, RewardTrackPremiumPurchaseResult).
-    // NOT SENT YET -- no handler mints a key; see GenerateWiredApiKeyMessageEvent.
-    public const int WiredApiKeyResultMessageComposer = 59;
     public const int IncomeRewardNotificationMessageComposer = 1914;
     public const int GetCustomFilterResultMessageComposer = 2231; // AS3-verified (direct read): WIN63 registry _SafeCls_2046.as _SafeStr_4546[2231] = _SafeCls_3579; WordFilterSettingsView is the only consumer. The previous value was a placeholder with no handler behind it
     public const int ModifyCustomFilterResultMessageComposer = 3622; // AS3-verified (direct read): WIN63 registry _SafeCls_2046.as _SafeStr_4546[3622] = _SafeCls_3793; WordFilterSettingsView is the only consumer. The previous value was a placeholder with no handler behind it
     public const int FurniListRemoveMultipleComposer = 1268; // AS3-verified (direct read): _SafeStr_4546[1268] = _SafeCls_3469 (parser _SafeCls_3854: `stripIds:Vector.<int>`), consumed by the inventory controller; was 149, which has no entry in the WIN63 registry at all
     public const int LtdRaffleEnteredMessageComposer = 2901; // AS3-verified 2026-08-22 (WIN63 registry + sender): _events[2901] = _SafeCls_1861, HabboCatalog::onLtdRaffleEntered. 1221 was in no registry table.
     public const int LtdRaffleResultMessageComposer = 3526;
-    public const int WiredSetUserPermanentVariableResultComposer = 1643; // AS3-verified (direct read): _SafeCls_2757 (parser _SafeCls_4203) -> success:Boolean; corrects a collision (was 3354, a Game2/Snowwar PlayerData broadcast)
-    public const int WiredUserPermanentVariablesComposer = 1557; // AS3-verified (direct read): _SafeCls_3146 (parser _SafeCls_4091) -> WiredUserPermanentVariablesList; corrects a collision (was 2883, an empty no-arg composer unrelated to variables)
-    public const int WiredUserVariablesListComposer = 749; // AS3-verified (direct read): _SafeCls_2492 -> WiredUserVariablesPage; corrects a collision (was 3041)
     public const int NftClaimResultMessageComposer = 3601; // AS3-verified (direct read): RewardClaimsTab::onNftClaimResultMessage(_SafeCls_2853) -> _SafeStr_4546[3601]; was 1780, which has no entry in the WIN63 registry at all
     public const int NftClaimsMessageComposer = 108; // AS3-verified (direct read): RewardClaimsTab::onNftClaimsMessage(_SafeCls_3876) -> _SafeStr_4546[108]; was 2053, which has no entry in the WIN63 registry at all
     public const int NftStoreOffersMessageComposer = 3272; // AS3-verified (direct read): ShopTab::onNftStoreOffers(_SafeCls_3611) -> _SafeStr_4546[3272]; corrects a collision (was 3585 = IssueInfoMessageComposer, declared further down)
@@ -796,49 +697,15 @@ internal static class MessageComposer
     public const int UserPurchasableChatStylesMessageComposer = 3774; // AS3-verified (direct read): _SafeStr_4546[3774] = _SafeCls_2023, consumed by SessionDataManager.as; was 2255, which has no entry in the WIN63 registry at all
     public const int BanInfoMessageComposer = 2557;
     public const int MyCfhReportStatusMessageComposer = 3809; // AS3-verified 2026-08-22 (WIN63 registry + sender): _events[3809] = _SafeCls_1752, HabboHelp::onMyCfhReportStatusMessageEvent. 2474 was in no registry table.
-    public const int WiredRoomLogsComposer = 1910; // AS3-verified (direct read): _SafeCls_3729 -> WiredLogPage; corrects a collision (was 3761)
-
-    // Wired chests, from the incoming registry (_SafeStr_4546): 1174 -> _SafeCls_3156 (the parser
-    // reads a lone chest id, and WiredChestController.onOpenChest opens on it), 1022 ->
-    // _SafeCls_3882 (chest id, coins, isUpdate), read by CoinChestSubController.
-    public const int WiredChestOpenComposer = 1174;
-    public const int WiredChestCoinsComposer = 1022;
-
-    // The furni half's two reads, both consumed by FurniChestSubController: _events[2323] =
-    // _SafeCls_2672 is the paged listing (chestId, totalFragments, fragmentNo, items) that the view
-    // assembles until fragmentNo == totalFragments - 1, and _events[2738] = _SafeCls_3379 is the
-    // delta afterwards (chestId, removed ids, added items).
-    public const int WiredChestItemsComposer = 2323;
-    public const int WiredChestItemsUpdateComposer = 2738;
-
-    // The other half of the deposit: the four the inventory's wired-trade screen listens for.
-    // _events[3650] opens it with the contract (requirement, presentation flags, timeout),
-    // _events[2488] is the table state (the ordinary two-sided item list plus canAccept and
-    // extra), _events[2137] closes it as done and _events[1481] as cancelled with a failure id.
-    // All four are consumed by inventory/_SafeCls_1951.
-    public const int WiredTradeInitiateComposer = 3650;
-    public const int WiredTradeItemsUpdateComposer = 2488;
-    public const int WiredTradeCompletedComposer = 2137;
-    public const int WiredTradeCancelledComposer = 1481;
 
     // _events[2910] = _SafeCls_3439 answers both log requests. It says which list it is: type 0 is
     // a chest and the id is the chest, type 1 is a room and the id is the room.
-    public const int WiredOpenContractComposer = 1479;
-    public const int WiredChestUpdateSuccessComposer = 1957;
-    public const int WiredTransactionSuccessComposer = 2677;
-    public const int WiredChestUpgradeResultComposer = 2721;
-    public const int WiredContractUpdateResultComposer = 3720;
-    public const int WiredContractContentsComposer = 2976;
-    public const int WiredTransactionDetailsComposer = 1306;
-    public const int WiredTransactionsComposer = 2910;
     public const int TreasureHuntFailMessageComposer = 3790; // AS3-verified 2026-08-22 (WIN63 registry + sender): _events[3790] = _SafeCls_3474, notifications::onTreasureHuntFail. 3822 was in no registry table.
     public const int TreasureHuntFirstWinnerMessageComposer = 3257; // AS3-verified 2026-08-22 (WIN63 registry + sender): _events[3257] = _SafeCls_3856, notifications::onTreasureHuntFirstWinner. 1232 was in no registry table.
     public const int TreasureHuntUpdateMessageComposer = 377;
     public const int RecyclerFinishedMessageComposer = 3617; // AS3-verified (registry): _SafeCls_2046[3617] = _SafeCls_2078 (parser _SafeCls_2299 -> recyclerFinishedStatus:int, prizeId:int). Was 281, an id with no registry entry at all.
     public const int RecyclerPrizesMessageComposer = 3367; // AS3-verified (registry): _SafeCls_2046[3367] = _SafeCls_2027 (parser _SafeCls_2243 -> prizeLevels:Vector.<PrizeLevelMessageData>). Was 3783, an id with no registry entry at all.
     public const int RecyclerStatusMessageComposer = 2166; // AS3-verified (registry): _SafeCls_2046[2166] = _SafeCls_2004 (parser _SafeCls_2165 -> recyclerStatus:int, recyclerTimeoutSeconds:int). Was 1919, an id with no registry entry at all.
-    public const int WiredEnvironmentMessageComposer = 2827; // AS3-verified (direct read): _SafeCls_3319 (parser _SafeCls_3496) -> hasClickUserWired:bool, then optionally count:int + count x String enabledAchievements; room-wide push, sent here on room entry. Corrects a collision (was 1186).
-    public const int WiredClickUserResponseMessageComposer = 309; // AS3-verified (registry + parser): _SafeCls_2046 events[309] = _SafeCls_3728 (parser _SafeCls_3523) -> index:int, openMenu:bool. Answers WiredClickUserMessageEvent; index is the object id the client sent, echoed so AvatarInfoWidget.setupMenuView matches its pending click.
     #region Outgoing
 
     public const int CantConnectMessageComposer = 2430;
@@ -1194,15 +1061,6 @@ internal static class MessageComposer
     public const int GotMysteryBoxPrizeMessageComposer = 353; // AS3-verified (WIN63 registry [353] = _SafeCls_3978, parser _SafeCls_4210): (string contentType, int classId)
     public const int MysteryBoxKeysMessageComposer = 1389; // AS3-verified (WIN63 registry [1389] = _SafeCls_2221, parser _SafeCls_1736): (string boxColor, string keyColor)
     public const int ShowMysteryBoxWaitMessageComposer = 691; // AS3-verified (WIN63 registry [691] = _SafeCls_3631 -> onShowMysteryBoxWait @ MysteryBoxOpenDialogView): empty payload
-    public const int WiredAllVariableHoldersComposer = 3506; // AS3-verified (ghost fix): onAllVariableHolders @ WiredMenuOverviewTab
-    public const int WiredAllVariablesDiffsComposer = 2733;
-    public const int WiredAllVariablesHashComposer = 3287; // AS3-verified (ghost fix): onAllVariablesHashEvent @ WiredVariablesSynchronizer
-    public const int WiredErrorLogsComposer = 3419; // AS3-verified (direct read, both revisions): WiredMenuMonitorTab::onErrorLogsEvent() -> _SafeCls_2891 @3419 (old _SafeCls_3594@2032)
-    public const int WiredMenuErrorComposer = 1230; // AS3-verified (name-only): onWiredMenuError @ WiredMenuInspectionTab
-    public const int WiredPermissionsComposer = 3483; // AS3-verified (ghost fix): onWiredPermissions @ WiredMenuInspectionTab
-    public const int WiredRoomSettingsComposer = 491; // AS3-verified (direct read, both revisions): WiredMenuSettingsTab::onWiredSettings() -> _SafeCls_3408 @491 (old _SafeCls_2770@1376 moved; 1376 now Game2GameRejoin)
-    public const int WiredRoomStatsComposer = 1964; // AS3-verified (ghost fix): onRoomStatsEvent @ WiredMenuMonitorTab
-    public const int WiredVariablesForObjectComposer = 2179; // AS3-verified (ghost fix): onWiredVariablesForObject @ WiredMenuInspectionTab
     public const int AuthenticationOKMessageComposer = 230;
     public const int CompleteDiffieHandshakeComposer = 3401;
     public const int DisconnectReasonComposer = 4000;
@@ -1364,7 +1222,6 @@ internal static class MessageComposer
     public const int UserRemoveMessageComposer = 3693;
     public const int UsersMessageComposer = 996;
     public const int UserUpdateMessageComposer = 2613;
-    public const int WiredMovementsMessageComposer = 325; // AS3-verified (ghost fix): onWiredMovements
     public const int CanCreateRoomComposer = 2831; // AS3-verified (old-revision trace): _SafeCls_3693 -> onCanCreateRoom() still exists in current revision at 2831
     public const int CanCreateRoomEventComposer = 853; // AS3-verified (old-revision trace): _SafeCls_3340 -> onCanCreateRoomEventEvent() still exists in current revision at 853
     public const int CategoriesWithVisitorCountComposer = 704;
@@ -1392,17 +1249,6 @@ internal static class MessageComposer
     public const int FurniListRemoveComposer = 1156;
 
     public const int PostItPlacedComposer = 2145; // AS3-verified: onPostItPlaced
-
-    public const int OpenComposer = 2635; // AS3-verified (ghost fix): onOpen
-    public const int WiredFurniActionComposer = 2552;
-    public const int WiredFurniAddonComposer = 2574; // AS3-verified (old-revision trace): _SafeCls_3380 -> onAddon() still exists in current revision at 2574
-    public const int WiredFurniConditionComposer = 2250; // AS3-verified (old-revision trace): _SafeCls_3766 -> onCondition() still exists in current revision at 2250
-    public const int WiredFurniSelectorComposer = 722; // AS3-verified (direct read, both revisions): roomevents handler::onSelector() -> _SafeCls_2636 @722 (old _SafeCls_3032@108; sibling of WiredFurniTrigger/Condition/Addon/Variable)
-    public const int WiredFurniTriggerComposer = 1265; // AS3-verified (old-revision trace): _SafeCls_2827 -> onTrigger() still exists in current revision at 1265
-    public const int WiredFurniVariableComposer = 1501; // AS3-verified (old-revision trace): _SafeCls_3527 -> onVariable() still exists in current revision at 1501
-    public const int WiredRewardResultMessageComposer = 2997; // AS3-verified (old-revision trace): _SafeCls_3012 -> onReward() still exists in current revision at 2997
-    public const int WiredSaveSuccessComposer = 1192; // AS3-verified (direct read, both revisions): roomevents handler::onSaveSuccess() -> _SafeCls_2958 @1192 (old _SafeCls_3773@1875)
-    public const int WiredValidationErrorComposer = 3201; // AS3-verified (direct read, both revisions): roomevents handler::onValidationError() -> _SafeCls_2398 @3201 (old _SafeCls_3434@367)
     #endregion
 
     #region Habbicons

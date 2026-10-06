@@ -567,12 +567,6 @@ internal sealed class RoomMap : IRevisionMap
             typeof(UserUpdateMessageComposer),
             new UserUpdateMessageComposerSerializer(MessageComposer.UserUpdateMessageComposer)
         );
-        builder.MapSerializer(
-            typeof(WiredMovementsMessageComposer),
-            new WiredMovementsMessageComposerSerializer(
-                MessageComposer.WiredMovementsMessageComposer
-            )
-        );
 
         // Room Furniture
         builder.MapSerializer(

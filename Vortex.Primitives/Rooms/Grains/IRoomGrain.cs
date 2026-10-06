@@ -32,5 +32,4 @@ public interface IRoomGrain
         IRoomMysteryBox,
         IRoomDoorbell,
         IRoomCrackable,
-        IRoomJukebox,
-        IRoomWired { }
+        IRoomJukebox { }

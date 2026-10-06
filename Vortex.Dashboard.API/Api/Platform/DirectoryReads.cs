@@ -17,7 +17,6 @@ using Vortex.Database.Entities.Furniture;
 using Vortex.Database.Entities.Marketplace;
 using Vortex.Database.Entities.Players;
 using Vortex.Database.Entities.Room;
-using Vortex.Database.Entities.Wired;
 using Vortex.Observability.Configuration;
 using Vortex.Observability.Metrics;
 using Vortex.Observability.Runtime;
@@ -720,10 +719,9 @@ internal sealed class DirectoryReads(
             itemHistory = itemHistory.Where(i => i.OccurredAt <= until.Value);
         }
 
-        // Chat and wired-chest movements complete the timeline. An investigation that
-        // sees a furni leave the room but not the sentence that preceded it, nor the
-        // chest it went into, stops one step short of the answer. Both stay under
-        // AuditRead: these are in-context reads on a player already being investigated,
+        // Chat completes the timeline. An investigation that sees a furni leave the room
+        // but not the sentence that preceded it stops one step short of the answer. It
+        // stays under AuditRead: an in-context read on a player already being investigated,
         // which is exactly the line ChatlogsRead draws (it guards "who said this word,
         // anywhere" -- the one chat read that starts from no incident at all).
         IQueryable<RoomChatlogEntity> chat = db
@@ -738,20 +736,6 @@ internal sealed class DirectoryReads(
         if (until is not null)
         {
             chat = chat.Where(c => c.CreatedAt <= until.Value);
-        }
-
-        IQueryable<WiredChestTransactionEntity> chestMoves = db
-            .WiredChestTransactions.AsNoTracking()
-            .Where(t => t.PlayerEntityId == id);
-
-        if (since is not null)
-        {
-            chestMoves = chestMoves.Where(t => t.CreatedAt >= since.Value);
-        }
-
-        if (until is not null)
-        {
-            chestMoves = chestMoves.Where(t => t.CreatedAt <= until.Value);
         }
 
         var asActorRows = await audit
@@ -896,25 +880,6 @@ internal sealed class DirectoryReads(
             .ToListAsync(ct)
             .ConfigureAwait(false);
 
-        List<ChestMoveRow> chestMoveRows = await chestMoves
-            .OrderByDescending(t => t.CreatedAt)
-            .Skip(offset)
-            .Take(limit)
-            .Select(t => new ChestMoveRow(
-                t.CreatedAt,
-                t.WiredChestEntityId,
-                t.RoomEntityId,
-                t.Room != null ? t.Room.Name : null,
-                t.TransactionType,
-                t.DefinitionInfo,
-                t.WithdrawFurniCount,
-                t.DepositFurniCount,
-                t.WithdrawCoinsCount,
-                t.DepositCoinsCount
-            ))
-            .ToListAsync(ct)
-            .ConfigureAwait(false);
-
         return new IdSearch(
             term,
             page,
@@ -924,8 +889,7 @@ internal sealed class DirectoryReads(
             playerProfile,
             ledgerRows,
             itemHistoryWithNames,
-            chatRows,
-            chestMoveRows
+            chatRows
         );
     }
 

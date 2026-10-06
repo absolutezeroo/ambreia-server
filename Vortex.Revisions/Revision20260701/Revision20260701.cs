@@ -47,7 +47,6 @@ public sealed class Revision20260701(IOptions<ProtocolLimitsConfig> protocolLimi
             new TalentMap(),
             new TrackingMap(),
             new UserClassificationMap(),
-            new UserDefinedRoomEventsMap(),
             new UsersMap(),
             new VaultMap(),
             new AvailabilityMap(),

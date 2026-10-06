@@ -108,7 +108,6 @@ GET /api/v1/targeted-offers/form-meta -> dashboard.targeted_offers.read
 GET /api/v1/targeted-offers/images -> dashboard.targeted_offers.read
 GET /api/v1/targeted-offers/stats -> dashboard.targeted_offers.read
 GET /api/v1/targeted-offers/{offerId:int} -> dashboard.targeted_offers.read
-GET /api/v1/wired/stats -> dashboard.wired.read
 GET /api/v1/wordfilter/hits -> dashboard.ops.wordfilter.manage
 GET /api/v1/wordfilter/test -> dashboard.ops.wordfilter.manage
 GET /api/v1/wordfilter/words -> dashboard.ops.wordfilter.manage

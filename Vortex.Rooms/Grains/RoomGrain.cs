@@ -44,9 +44,7 @@ using Vortex.Rooms.Games.Progression;
 using Vortex.Rooms.Games.Runtime;
 using Vortex.Rooms.Grains.Modules;
 using Vortex.Rooms.Grains.Systems;
-using Vortex.Rooms.Grains.Systems.WiredTrading;
 using Vortex.Rooms.Providers;
-using Vortex.Rooms.Wired.Logs;
 
 namespace Vortex.Rooms.Grains;
 
@@ -84,18 +82,14 @@ public sealed partial class RoomGrain : Grain, IRoomGrain
     internal readonly RoomLiveState _state;
 
     /// <summary>
-    /// Where a room's value-moving operations are recorded. One flow uses it — the wired chest
-    /// contract settlement, which debits a wallet, moves furniture between an inventory and a chest
-    /// and adjusts the chest's credits, and until now did all three with no operation an operator
-    /// could find afterwards (ECON-CHEST-015).
+    /// Where a room's value-moving operations are recorded — today, the prize a consumed furni owes
+    /// (<see cref="GrantConsumedPrizeAsync"/>).
     /// </summary>
     internal readonly ICommerceJournal _commerceJournal;
 
     /// <summary>The hotel-wide word filter, asked before the room's own on every player chat line.</summary>
     internal readonly IWordFilter _wordFilter;
 
-    internal readonly RoomWiredLogChannel _wiredLogChannel;
-    internal readonly IRoomWiredVariablesProvider _wiredVariablesProvider;
     internal readonly IRoomEventListenerProvider _eventListenerProvider;
     public readonly RoomActionModule ActionModule;
     public readonly RoomAvatarModule AvatarModule;
@@ -119,14 +113,12 @@ public sealed partial class RoomGrain : Grain, IRoomGrain
     public readonly RoomBotSystem BotSystem;
     public readonly RoomRollerSystem RollerSystem;
     public readonly RoomSecurityModule SecurityModule;
-    public readonly RoomWiredSystem WiredSystem;
     public readonly RoomModerationSystem ModerationSystem;
     public readonly RoomRaidProtectionSystem RaidProtectionSystem;
     public readonly RoomMysteryBoxSystem MysteryBoxSystem;
     public readonly RoomCrackableSystem CrackableSystem;
     public readonly RoomRatingSystem RatingSystem;
     public readonly RoomTradingSystem TradingSystem;
-    public readonly RoomWiredTradingSystem WiredTradingSystem;
     public readonly RoomJukeboxSystem JukeboxSystem;
 
     internal IAsyncStream<RoomOutbound> _roomOutbound = default!;
@@ -141,7 +133,6 @@ public sealed partial class RoomGrain : Grain, IRoomGrain
         IRoomItemsProvider itemsLoader,
         IRoomObjectLogicProvider logicProvider,
         IRoomAvatarProvider avatarProvider,
-        IRoomWiredVariablesProvider wiredVariablesProvider,
         IRoomEventListenerProvider eventListenerProvider,
         IGrainFactory grainFactory,
         IEventPublisher events,
@@ -152,7 +143,6 @@ public sealed partial class RoomGrain : Grain, IRoomGrain
         IPetLevelProvider petLevelProvider,
         IPetCommandProvider petCommandProvider,
         IPetVocalProvider petVocalProvider,
-        RoomWiredLogChannel wiredLogChannel,
         ISongProvider songProvider,
         IRoomGameProvider gameProvider,
         ICommerceJournal commerceJournal,
@@ -172,7 +162,6 @@ public sealed partial class RoomGrain : Grain, IRoomGrain
         _itemsLoader = itemsLoader;
         _logicProvider = logicProvider;
         _avatarProvider = avatarProvider;
-        _wiredVariablesProvider = wiredVariablesProvider;
         _eventListenerProvider = eventListenerProvider;
         _grainFactory = grainFactory;
         _events = events;
@@ -183,7 +172,6 @@ public sealed partial class RoomGrain : Grain, IRoomGrain
         _petLevelProvider = petLevelProvider;
         _petCommandProvider = petCommandProvider;
         _petVocalProvider = petVocalProvider;
-        _wiredLogChannel = wiredLogChannel;
         _songProvider = songProvider;
         _commerceJournal = commerceJournal;
         _wordFilter = wordFilter;
@@ -203,7 +191,6 @@ public sealed partial class RoomGrain : Grain, IRoomGrain
         PetSystem = new RoomPetSystem(this);
         BotSystem = new RoomBotSystem(this);
         RollerSystem = new RoomRollerSystem(this);
-        WiredSystem = new RoomWiredSystem(this);
         ChatSystem = new RoomChatSystem(this);
         GameRuntime = new RoomGameRuntime(this);
         GameTimers = new GameTimerSystem(this);
@@ -214,22 +201,20 @@ public sealed partial class RoomGrain : Grain, IRoomGrain
         CrackableSystem = new RoomCrackableSystem(this);
         RatingSystem = new RoomRatingSystem(this);
         TradingSystem = new RoomTradingSystem(this);
-        WiredTradingSystem = new RoomWiredTradingSystem(this);
         JukeboxSystem = new RoomJukeboxSystem(this);
 
         // Every game the room hosts arrives from the provider, which holds whatever any scanned
         // assembly marked [RoomGame]. There is no list of games in this file and there must not be
         // one: that is the property that makes adding a game a new folder rather than an edit here,
-        // in the timer furni, in the wired control-clock action and in the tick loop.
+        // in the timer furni and in the tick loop.
         gameProvider.AttachGamesTo(GameRuntime);
         GameRuntime.AddSink(new GameDiagnosticsSink(_logger));
         // One sink for every game's scoring, rather than progression plumbing inside each game.
         GameRuntime.AddSink(new GameProgressSink(RoomId.Value, PublishDetached));
 
         EventModule.Register(RollerSystem);
-        EventModule.Register(WiredSystem);
-        // The scoreboard adapter paints every game's score displays from the same events the wired
-        // boxes read, so no game refreshes a board by hand.
+        // The scoreboard adapter paints every game's score displays from the game events, so no game
+        // refreshes a board by hand.
         EventModule.Register(ScoreboardPresenter);
     }
 
@@ -318,7 +303,6 @@ public sealed partial class RoomGrain : Grain, IRoomGrain
             _state.NextPetBoundaryMs = AlignToNextBoundary(now, _roomConfig.Pet.TickMs);
             _state.NextBotBoundaryMs = now;
             _state.NextRollerBoundaryMs = AlignToNextBoundary(now, _roomConfig.RollerTickMs);
-            _state.NextWiredBoundaryMs = AlignToNextBoundary(now, _roomConfig.WiredTickMs);
         }
 
         await HydrateRoomStateAsync(ct);
@@ -326,7 +310,7 @@ public sealed partial class RoomGrain : Grain, IRoomGrain
 
         // Contributed listeners are attached here rather than in the constructor: they come from
         // scanned assemblies, and handing a half-built grain to outside code is how a plugin ends up
-        // reading state that does not exist yet. They go after the roller/wired/scoreboard systems,
+        // reading state that does not exist yet. They go after the roller/scoreboard systems,
         // so an outside listener can slow a room down but never pre-empt what the room does with its
         // own events.
         foreach (IRoomEventListener listener in _eventListenerProvider.BuildListenersForRoom(this))
@@ -353,7 +337,7 @@ public sealed partial class RoomGrain : Grain, IRoomGrain
         // One-shot, re-armed at the end of every tick to the next epoch-aligned RoomTickMs
         // boundary. A *periodic* grain timer measures its period from the end of the previous
         // callback, so the phase drifted by the tick body's own duration each cycle and the
-        // avatar/wired/roller boundaries -- all multiples of RoomTickMs from EpochMs -- were
+        // avatar/roller boundaries -- all multiples of RoomTickMs from EpochMs -- were
         // crossed late by a varying amount. What a client sees of that is choppy walking.
         _roomTimer = this.RegisterGrainTimer<object?>(
             async (state, ct) =>
@@ -393,14 +377,13 @@ public sealed partial class RoomGrain : Grain, IRoomGrain
 
         long now = NowMs();
 
-        // Each step is isolated. Run bare, one throw -- a single malformed wired item, one
+        // Each step is isolated. Run bare, one throw -- a single malformed item, one
         // pet with a broken path -- aborted the whole tick, and since the two flushes are
         // last, the room also stopped persisting furniture and tile changes for as long as
         // the fault lasted.
         await RunTickStepAsync("avatars", () => AvatarTickSystem.ProcessAvatarsAsync(now, ct));
         await RunTickStepAsync("pets", () => PetSystem.ProcessPetsAsync(now, ct));
         await RunTickStepAsync("bots", () => BotSystem.ProcessBotsAsync(now, ct));
-        await RunTickStepAsync("wired", () => WiredSystem.ProcessWiredAsync(now, ct));
         await RunTickStepAsync("rollers", () => RollerSystem.ProcessRollersAsync(now, ct));
         await RunTickStepAsync("game-timer", () => GameTimers.ProcessAsync(now, ct));
         await RunTickStepAsync("jukebox", () => JukeboxSystem.ProcessAsync(now, ct));

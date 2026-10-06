@@ -84,7 +84,7 @@ public sealed partial class RoomGrain
             return;
         }
 
-        // Only clicks on another player's avatar drive the wired trigger — not bots or pets.
+        // Only clicks on another player's avatar are announced — not bots or pets.
         if (
             !_state.AvatarsByObjectId.TryGetValue(targetObjectId, out IRoomAvatar? avatar)
             || avatar is not IRoomPlayer target
@@ -115,7 +115,6 @@ public sealed partial class RoomGrain
         {
             await CloseTradeForLeavingPlayerAsync(playerId, ct);
             await CancelMysteryBoxSessionsForLeavingPlayerAsync(playerId);
-            await CloseChestScreensForLeavingPlayerAsync(playerId);
 
             await AvatarModule.RemoveAvatarFromPlayerAsync(ctx, playerId, ct);
 
@@ -185,15 +184,15 @@ public sealed partial class RoomGrain
         }
     }
 
-    /// <summary>The client's <c>WiredUserAction</c> codes for the two actions that carry an index.</summary>
+    /// <summary>The client's user-action codes for the two actions that carry an index.</summary>
     private const int SignActionCode = 10;
 
     private const int DanceActionCode = 11;
 
     /// <summary>
-    /// Announces an action a wired box can watch for. Published from here rather than from the
-    /// handlers because a dance also arrives from a wired variable and from a bot command, and a
-    /// trigger that fired only for the ones that came in on a packet would be a lie.
+    /// Announces an action a room listener can watch for. Published from here rather than from the
+    /// handlers because a dance also arrives from a bot command, and a listener that heard only the
+    /// ones that came in on a packet would be told a lie.
     /// </summary>
     private Task PublishPerformedActionAsync(
         ActionContext ctx,
@@ -214,11 +213,11 @@ public sealed partial class RoomGrain
         );
 
     /// <summary>
-    /// The client's <c>WiredUserAction</c> code for one of our expressions, or <c>-1</c> for an
-    /// expression its action catalogue has no name for — no box can ask for those, so nothing is
-    /// lost by staying quiet.
+    /// The client's user-action code for one of our expressions, or <c>-1</c> for an expression its
+    /// action catalogue has no name for — nothing can ask for those, so nothing is lost by staying
+    /// quiet.
     /// </summary>
-    private static int WiredActionCodeFor(AvatarExpressionType expression) =>
+    private static int ActionCodeFor(AvatarExpressionType expression) =>
         expression switch
         {
             AvatarExpressionType.Wave => 0,
@@ -348,7 +347,7 @@ public sealed partial class RoomGrain
                     .ConfigureAwait(true);
             }
 
-            int actionCode = WiredActionCodeFor(expressionType);
+            int actionCode = ActionCodeFor(expressionType);
 
             if (actionCode >= 0)
             {

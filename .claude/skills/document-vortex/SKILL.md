@@ -124,7 +124,7 @@ Recommended agents:
 - `vortex-runtime-network-researcher`
 - `vortex-protocol-researcher`
 - `vortex-orleans-researcher`
-- `vortex-rooms-wireds-researcher`
+- `vortex-rooms-researcher`
 - `vortex-gameplay-economy-researcher`
 - `vortex-database-researcher`
 - `vortex-dashboard-api-researcher`

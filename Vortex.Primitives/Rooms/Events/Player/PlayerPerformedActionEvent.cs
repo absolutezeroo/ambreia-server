@@ -2,7 +2,7 @@ namespace Vortex.Primitives.Rooms.Events.Player;
 
 /// <summary>
 /// Raised when a player deliberately performs one of the actions the client's
-/// <c>WiredUserAction</c> catalogue names — an expression, a sign, a dance.
+/// user-action catalogue names — an expression, a sign, a dance.
 /// </summary>
 /// <remarks>
 /// The codes are the client's, not ours: 0 wave, 1 blow, 2 laugh, 3 respect, 5 sleep, 10 sign,

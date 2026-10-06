@@ -13,7 +13,6 @@ public enum VortexErrorCodeEnum
     WallItemNotFound,
     FurnitureDefinitionNotFound,
     InvalidLogic,
-    InvalidWired,
     InvalidFurnitureProductType,
     InvalidSession,
     InvalidMoveTarget,
@@ -42,7 +41,6 @@ public static class ErrorCodeExtensions
             VortexErrorCodeEnum.FurnitureDefinitionNotFound =>
                 "The specified furniture definition could not be found.",
             VortexErrorCodeEnum.InvalidLogic => "The logic is not valid.",
-            VortexErrorCodeEnum.InvalidWired => "The wired definition is not valid.",
             VortexErrorCodeEnum.InvalidFurnitureProductType =>
                 "The furniture product type is invalid.",
             VortexErrorCodeEnum.InvalidSession => "The session is invalid.",

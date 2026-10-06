@@ -18,11 +18,8 @@ using Vortex.Primitives.Rooms.Enums;
 using Vortex.Primitives.Rooms.Object;
 using Vortex.Primitives.Rooms.Object.Furniture;
 using Vortex.Primitives.Rooms.Object.Furniture.Floor;
-using Vortex.Primitives.Rooms.Snapshots.Wired;
-using Vortex.Protocol.Messages.Incoming.Userdefinedroomevents;
 using Vortex.Protocol.Messages.Outgoing.Notifications;
 using Vortex.Rooms.Grains.Systems;
-using Vortex.Rooms.Object.Logic.Furniture.Floor.Wired;
 
 namespace Vortex.Rooms.Grains.Modules;
 
@@ -268,79 +265,6 @@ public sealed partial class RoomActionModule
                 rotatedInPlace
             )
         );
-
-        return true;
-    }
-
-    public async Task<bool> ApplyWiredUpdateAsync(
-        ActionContext ctx,
-        RoomObjectId itemId,
-        WiredUpdateRequest update,
-        CancellationToken ct
-    )
-    {
-        // Every wired save the client can send -- action, addon, condition, selector, trigger,
-        // variable -- lands here, and none of them checked anything but "the item exists and it is
-        // wired". Any visitor standing in a room could rewrite its owner's wired configuration.
-        //
-        // Rights is the same floor the place and move paths use, and the same one Arcturus applies
-        // to this packet (evidence, not authority). A refusal stays silent: what the official server
-        // answers to a refused wired save is unknown, so this returns false through the same
-        // path as the six guards already here rather than inventing a validation-error packet.
-        if (!await _roomGrain.SecurityModule.CanManipulateFurniAsync(ctx))
-        {
-            return false;
-        }
-
-        if (!_roomGrain._state.ItemsById.TryGetValue(itemId, out IRoomItem? item))
-        {
-            throw new VortexException(VortexErrorCodeEnum.FloorItemNotFound);
-        }
-
-        if (item.Logic is not FurnitureWiredLogic wiredLogic)
-        {
-            throw new VortexException(VortexErrorCodeEnum.FloorItemNotFound);
-        }
-
-        // The hotel-wide word filter, on the part of the string players read — which only the box
-        // knows: a message, a line a bot says. A bot's name, a trigger's keyword and the like are
-        // keys and are not the filter's business (FurnitureWiredLogic.ProseInStringParam).
-        if (wiredLogic.ProseInStringParam(update.StringParam) is { Length: > 0 } prose)
-        {
-            string stringParam = update.StringParam;
-            (int start, int length) = prose;
-            WordFilterResult filtered = _roomGrain._wordFilter.Apply(
-                stringParam.Substring(start, length),
-                WordFilterSource.Wired,
-                ctx.PlayerId
-            );
-
-            if (filtered.Refused)
-            {
-                await _roomGrain
-                    ._grainFactory.GetPlayerPresenceGrain(ctx.PlayerId)
-                    .SendComposerAsync(
-                        WordFilterNotice.Create(_roomGrain._wordFilter.RefusedMessage)
-                    )
-                    .ConfigureAwait(true);
-
-                return false;
-            }
-
-            if (filtered.Changed)
-            {
-                update = update with
-                {
-                    StringParam =
-                        stringParam[..start] + filtered.Text + stringParam[(start + length)..],
-                };
-            }
-        }
-
-        if (!await wiredLogic.ApplyWiredUpdateAsync(ctx, update, ct))
-        {
-            return false;
-        }
 
         return true;
     }

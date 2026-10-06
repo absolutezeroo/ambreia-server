@@ -61,7 +61,6 @@ public sealed class ApiTypeScriptContractTests
         typeof(ArticleDetail),
         typeof(ArticleFormMeta),
         typeof(ArticleImageBrowse),
-        typeof(WiredStats),
         typeof(PetStats),
         typeof(CfhStats),
         typeof(ChatlogPage),

@@ -47,7 +47,7 @@ public sealed class RotateInPlaceRestackTests
     }
 
     [Fact]
-    public async Task AWiredTurn_KeepsTheItemsHeight()
+    public async Task ATurnNotMadeByAPlayer_KeepsTheItemsHeight()
     {
         (RoomHarness harness, IRoomFloorItem bottom) = await StackAsync().ConfigureAwait(true);
 

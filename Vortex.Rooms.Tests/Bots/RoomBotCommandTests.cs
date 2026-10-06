@@ -195,7 +195,7 @@ public sealed class RoomBotCommandTests
     }
 
     [Fact]
-    public async Task AWiredLookChange_IsWrittenDownAndRedrawn()
+    public async Task ABotLookChange_IsWrittenDownAndRedrawn()
     {
         RoomHarness harness = await RoomHarness.CreateAsync().ConfigureAwait(true);
 

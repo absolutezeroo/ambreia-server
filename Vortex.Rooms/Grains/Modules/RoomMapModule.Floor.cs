@@ -84,7 +84,7 @@ public sealed partial class RoomMapModule
 
     /// <param name="restackInPlace">
     /// True for a player turning an item where it stands: it is measured once it is off its own
-    /// tiles, so an item turned under a stack lands on top of it, as the hotel does. Wired turns keep
+    /// tiles, so an item turned under a stack lands on top of it, as the hotel does. Other turns keep
     /// the height — a rotating piece at the foot of a build would otherwise climb it every tick.
     /// </param>
     public bool MoveFloorItem(

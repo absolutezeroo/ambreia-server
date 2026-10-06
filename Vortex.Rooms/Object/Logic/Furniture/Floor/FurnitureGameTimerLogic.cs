@@ -12,8 +12,7 @@ using Vortex.Primitives.Rooms.Events;
 using Vortex.Primitives.Rooms.Games;
 using Vortex.Primitives.Rooms.Object.Furniture.Floor;
 using Vortex.Primitives.Rooms.Object.Logic;
-using Vortex.Rooms.Object.Logic.Furniture.Floor.Wired.Triggers;
-using Vortex.Rooms.Wired;
+using Vortex.Rooms.Games.Runtime;
 
 namespace Vortex.Rooms.Object.Logic.Furniture.Floor;
 
@@ -33,7 +32,7 @@ namespace Vortex.Rooms.Object.Logic.Furniture.Floor;
 [RoomObjectLogic("game_timer")]
 public class FurnitureGameTimerLogic(IStuffDataFactory stuffDataFactory, IRoomFloorItemContext ctx)
     : FurnitureFloorLogic(stuffDataFactory, ctx),
-        IWiredCounter
+        IGameCounter
 {
     private const int ActionStartStop = 1;
     private const int ActionIncreaseTime = 2;
@@ -46,15 +45,11 @@ public class FurnitureGameTimerLogic(IStuffDataFactory stuffDataFactory, IRoomFl
     protected override StuffPersistanceType _stuffPersistanceType =>
         StuffPersistanceType.RoomActive;
 
-    private readonly WiredCountdownClock _clock = new();
+    private readonly GameCountdownClock _clock = new();
     private int[] _steps = DefaultSteps;
     private int _baseTime;
     private bool _gameActive; // Arcturus isRunning: a game has been started (it may be paused)
     private bool _initialized;
-
-    /// <summary>The timer's current displayed value in whole seconds — read by the wired
-    /// CLOCK_TIME_MATCHES condition.</summary>
-    public int RemainingSeconds => _clock.RemainingSeconds;
 
     /// <summary>Only room controllers/owners may operate the timer (Arcturus room.hasRights).</summary>
     public override FurnitureUsageType GetUsagePolicy() => FurnitureUsageType.Controller;
@@ -96,7 +91,6 @@ public class FurnitureGameTimerLogic(IStuffDataFactory stuffDataFactory, IRoomFl
         {
             ApplyDisplay();
 
-            // Let the wired CLOCK_REACH_TIME trigger react to the new remaining time.
             await _ctx.PublishRoomEventAsync(
                 new GameTimerTimeReachedEvent
                 {
@@ -150,11 +144,9 @@ public class FurnitureGameTimerLogic(IStuffDataFactory stuffDataFactory, IRoomFl
         ApplyDisplay();
     }
 
-    // --- IWiredCounter: the wired control_clock / adjust_clock actions drive the timer through these.
-    // GAME_STARTS / GAME_ENDS are raised by the control_clock action itself, so these only touch the
-    // clock/game state. ---
+    // --- IGameCounter: these only touch the clock/game state. ---
 
-    void IWiredCounter.StartClock()
+    void IGameCounter.StartClock()
     {
         EnsureInitialized();
 
@@ -164,11 +156,11 @@ public class FurnitureGameTimerLogic(IStuffDataFactory stuffDataFactory, IRoomFl
         }
     }
 
-    void IWiredCounter.HaltClock() => _clock.Halt();
+    void IGameCounter.HaltClock() => _clock.Halt();
 
-    void IWiredCounter.ResumeClock() => _clock.Resume();
+    void IGameCounter.ResumeClock() => _clock.Resume();
 
-    void IWiredCounter.ResetClock()
+    void IGameCounter.ResetClock()
     {
         EnsureInitialized();
 
@@ -179,14 +171,14 @@ public class FurnitureGameTimerLogic(IStuffDataFactory stuffDataFactory, IRoomFl
         ApplyDisplay();
     }
 
-    void IWiredCounter.SetClockSeconds(int seconds)
+    void IGameCounter.SetClockSeconds(int seconds)
     {
         _clock.SetSeconds(seconds);
 
         ApplyDisplay();
     }
 
-    void IWiredCounter.AddClockSeconds(int seconds)
+    void IGameCounter.AddClockSeconds(int seconds)
     {
         _clock.AddSeconds(seconds);
 

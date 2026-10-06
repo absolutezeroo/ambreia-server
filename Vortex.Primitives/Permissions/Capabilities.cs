@@ -153,7 +153,6 @@ public static class Capabilities
         /// </summary>
         public const string ChatlogsRead = "dashboard.chatlogs.read";
         public const string CatalogPurchasesRead = "dashboard.catalog.purchases.read";
-        public const string WiredRead = "dashboard.wired.read";
         public const string TargetedOffersRead = "dashboard.targeted_offers.read";
         public const string OpsTargetedOffersManage = "dashboard.ops.targeted_offers.manage";
         public const string QuestsRead = "dashboard.quests.read";
@@ -299,7 +298,6 @@ public static class Capabilities
             CfhRead,
             ChatlogsRead,
             CatalogPurchasesRead,
-            WiredRead,
             TargetedOffersRead,
             OpsTargetedOffersManage,
             QuestsRead,

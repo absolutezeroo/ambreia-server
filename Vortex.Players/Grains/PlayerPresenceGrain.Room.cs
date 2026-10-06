@@ -18,7 +18,6 @@ using Vortex.Primitives.Rooms.Enums;
 using Vortex.Primitives.Rooms.Grains;
 using Vortex.Primitives.Rooms.Snapshots;
 using Vortex.Protocol.Messages.Outgoing.Room.Permissions;
-using Vortex.Protocol.Messages.Outgoing.Userdefinedroomevents.Wiredmenu;
 
 namespace Vortex.Players.Grains;
 
@@ -208,8 +207,7 @@ internal sealed partial class PlayerPresenceGrain
                 {
                     RoomId = roomId,
                     ControllerLevel = controllerType,
-                },
-                new WiredPermissionsEventMessageComposer { CanModify = true, CanRead = true }
+                }
             );
 
             if (controllerType >= RoomControllerType.Owner)

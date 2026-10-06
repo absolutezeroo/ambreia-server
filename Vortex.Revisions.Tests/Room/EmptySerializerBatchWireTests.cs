@@ -17,8 +17,6 @@ using Vortex.Protocol.Messages.Outgoing.Room.Chat;
 using Vortex.Protocol.Messages.Outgoing.Room.Engine;
 using Vortex.Protocol.Messages.Outgoing.Room.Furniture;
 using Vortex.Protocol.Messages.Outgoing.Room.Session;
-using Vortex.Protocol.Messages.Outgoing.Userdefinedroomevents;
-using Vortex.Protocol.Messages.Outgoing.Userdefinedroomevents.Wiredmenu;
 using Vortex.Protocol.Messages.Outgoing.Users;
 using Vortex.Revisions.Configuration;
 using Xunit;
@@ -352,37 +350,6 @@ public sealed class EmptySerializerBatchWireTests
         packet.PopString().Should().Be("player@example.com");
         packet.PopBoolean().Should().BeTrue();
         packet.PopBoolean().Should().BeFalse();
-    }
-
-    /// <summary>
-    ///     WIN63 com/sulake/.../userdefinedroomevents/_SafeCls_3242.as (header 2997) - an int, next
-    ///     to a wired-menu error that is a short. The two are easy to confuse.
-    /// </summary>
-    [Fact]
-    public void WiredRewardResult_WritesReasonAsInt()
-    {
-        ClientPacket packet = Body(
-            typeof(WiredRewardResultMessageComposer),
-            new WiredRewardResultMessageComposer { Reason = 2 }
-        );
-
-        packet.PopInt().Should().Be(2);
-    }
-
-    /// <summary>
-    ///     WIN63 com/sulake/.../wiredmenu/_SafeCls_4262.as (header 1230). Two bytes, not four - the
-    ///     client reads a short here and everything after it would shift if this were widened.
-    /// </summary>
-    [Fact]
-    public void WiredMenuError_WritesShortNotInt()
-    {
-        ClientPacket packet = Body(
-            typeof(WiredMenuErrorEventMessageComposer),
-            new WiredMenuErrorEventMessageComposer { ErrorCode = 3 }
-        );
-
-        packet.Remaining.Should().Be(2);
-        packet.PopShort().Should().Be(3);
     }
 
     /// <summary>WIN63 unknowns/_SafePkg_1820/_SafeCls_4080.as (header 1973).</summary>

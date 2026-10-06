@@ -193,9 +193,9 @@ public sealed class RoomActivityFlushTests : IDisposable
         db.Database.ExecuteSqlRaw(
             """
             INSERT INTO rooms (id, name, player_id, model_id, users_now, score, ranking,
-                               wired_timezone, last_active, created_at, updated_at)
+                               last_active, created_at, updated_at)
             VALUES ({0}, {1}, 1, 1, {2}, {3}, {4},
-                    '', '2020-01-01 00:00:00', '2020-01-01 00:00:00', '2020-01-01 00:00:00')
+                    '2020-01-01 00:00:00', '2020-01-01 00:00:00', '2020-01-01 00:00:00')
             """,
             id,
             $"room-{id}",

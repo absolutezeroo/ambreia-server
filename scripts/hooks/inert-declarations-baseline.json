@@ -52,9 +52,7 @@
     "inbound-chain/class_200Message",
     "inbound-chain/GetTargetedOfferMessage",
     "inbound-chain/GiveStarGemToUserMessage",
-    "inbound-chain/SetRelationshipStatusMessage",
-    "wired-inert-behaviour/wf_slc_furni_with_var",
-    "wired-inert-behaviour/wf_xtra_mov_carry_users"
+    "inbound-chain/SetRelationshipStatusMessage"
   ],
   "notes": {
     "config-catalog/*": "50 runtime keys read from IServerConfigGrain that ConfigKeyCatalog does not list, so the dashboard's config editor cannot show them. Pet tuning (22) and fishing (16) say in their own doc comments that they exist to be retuned from the dashboard. Fix by adding the descriptors, not by keeping the baseline.",
@@ -63,8 +61,6 @@
     "inbound-chain/SetRelationshipStatusMessage": "A real gap: the header id (1773) and the parser both exist, only the MapParser line in UsersMap.cs is missing, so a player can read relationship statuses and never set one.",
     "inbound-chain/ChargeFireworkMessage": "A real gap: handler and parser written, no header id and no mapping, so charging a firework never reaches the server.",
     "inbound-chain/class_165Message": "Unidentified client class, never mapped. Either name it from the client or delete the triplet.",
-    "inbound-chain/class_200Message": "Unidentified client class, never mapped. Either name it from the client or delete the triplet.",
-    "wired-inert-behaviour/wf_slc_furni_with_var": "OPEN BUG, not accepted debt. 'Select furni with variable': the dialog, the five param rules, the sources and the variable-picker context are all there, SelectAsync is an 85-line commented-out block that never compiled (`if(_wiredData.Vari)`), and GetMaxVariableIds() is the inherited 0, so no variable id would survive the save either. Every chain using this selector selects nothing.",
-    "wired-inert-behaviour/wf_xtra_mov_carry_users": "OPEN BUG, not accepted debt. The carry-users add-on parses its param into _carryUserType and nothing ever reads it; MutatePolicyAsync returns true. Avatars standing on a moving furni are not carried."
+    "inbound-chain/class_200Message": "Unidentified client class, never mapped. Either name it from the client or delete the triplet."
   }
 }

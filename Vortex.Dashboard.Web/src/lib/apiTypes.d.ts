@@ -669,19 +669,6 @@ export interface ChatlogWindow {
   until: string;
 }
 
-export interface ChestMoveRow {
-  createdAt: string;
-  chestId: number;
-  roomId: number;
-  roomName: string | null;
-  transactionType: number;
-  definitionInfo: string;
-  withdrawFurniCount: number;
-  depositFurniCount: number;
-  withdrawCoinsCount: number;
-  depositCoinsCount: number;
-}
-
 export interface ClubExpiringSubscription {
   playerId: number;
   playerName: string | null;
@@ -1579,7 +1566,6 @@ export interface IdSearch {
   ledger: PlayerLedgerRow[];
   itemHistory: PlayerItemRow[];
   chats: PlayerChatRow[];
-  chestMoves: ChestMoveRow[];
 }
 
 export interface IncidentDetectionSnapshot {
@@ -3120,35 +3106,6 @@ export interface VoucherSnapshot {
   maxRedemptions: number | null;
   redemptionCount: number;
   expiresAt: string | null;
-}
-
-export interface WiredCategoryCount {
-  category: string;
-  count: number;
-}
-
-export interface WiredLogicCount {
-  logic: string;
-  count: number;
-  furniIconUrl: string | null;
-}
-
-export interface WiredRoomCount {
-  roomId: number;
-  roomName: string;
-  wiredCount: number;
-}
-
-export interface WiredStats {
-  totals: WiredTotals;
-  byCategory: WiredCategoryCount[];
-  byLogic: WiredLogicCount[];
-  topRooms: WiredRoomCount[];
-}
-
-export interface WiredTotals {
-  totalWiredPlaced: number;
-  roomsWithWired: number;
 }
 
 export interface WordFilterAction {

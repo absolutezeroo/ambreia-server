@@ -41,10 +41,6 @@
       Command="node scripts/hooks/check-logic-groups.mjs"
       WorkingDirectory="$(MSBuildThisFileDirectory)"
     />
-    <Exec
-      Command="node scripts/hooks/check-variable-capabilities.mjs"
-      WorkingDirectory="$(MSBuildThisFileDirectory)"
-    />
     <!--
       Sixth: a [FromServices] type the web API's own container was never told about. The route builds,
       so the host starts clean and says nothing, and that one endpoint answers 500 to every caller.

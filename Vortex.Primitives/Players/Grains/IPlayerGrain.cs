@@ -243,13 +243,6 @@ public interface IPlayerGrain : IGrainWithIntegerKey
         CancellationToken ct
     );
 
-    public Task<PlayerWiredPreferencesSnapshot> GetWiredPreferencesAsync(CancellationToken ct);
-
-    public Task SetWiredPreferencesAsync(
-        PlayerWiredPreferencesSnapshot preferences,
-        CancellationToken ct
-    );
-
     /// <summary>The player's persisted account preferences (volumes, chat/camera/invite toggles, UI
     /// flags) surfaced back to the client in the account-preferences packet on login so the settings
     /// dialog shows the saved selection.</summary>

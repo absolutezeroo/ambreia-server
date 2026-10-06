@@ -220,12 +220,6 @@ public sealed class DashboardControlPlaneMetricsTests
 
         public void FurnitureLogicFallback(string logicName, string family) { }
 
-        public void WiredChainStopped(string reason) { }
-
-        public void WiredEventOutcome(string outcome) { }
-
-        public void WiredIndexRebuilt() { }
-
         public void RoomDirectoryCallCompleted(string method, double elapsedMilliseconds) { }
 
         public void DashboardAuthAttempt(string outcome) { }

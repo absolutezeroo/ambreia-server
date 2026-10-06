@@ -197,22 +197,6 @@ public class RoomEntity : VortexEntity
     [DefaultValue(false)]
     public required bool IsStaffPick { get; set; }
 
-    /// <summary>Wired-menu room-settings tab (modify/read permission masks, timezone). Bit
-    /// meanings are unverified against a real WIN63 client capture — persisted and returned
-    /// faithfully, not enforced against the existing wired-editing handlers. See the wired-domain
-    /// completion plan's residual-risk notes.</summary>
-    [Column("wired_modify_permission_mask")]
-    [DefaultValue(0)]
-    public int WiredModifyPermissionMask { get; set; }
-
-    [Column("wired_read_permission_mask")]
-    [DefaultValue(0)]
-    public int WiredReadPermissionMask { get; set; }
-
-    [Column("wired_timezone")]
-    [MaxLength(64)]
-    public string WiredTimezone { get; set; } = string.Empty;
-
     [ForeignKey(nameof(PlayerEntityId))]
     public required PlayerEntity PlayerEntity { get; set; }
 

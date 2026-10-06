@@ -51,15 +51,6 @@ public interface IRoomObjectContext
     /// a component says what happened to it and the runtime routes it.</summary>
     public IRoomGameAccess Game { get; }
 
-    /// <summary>Placement validation and the wired engine's room-level knobs.</summary>
-    /// <summary>Contracts waiting on players in this room.</summary>
-    public IRoomTransactionAccess Transactions { get; }
-
-    /// <summary>Chests standing in this room, for the wired boxes that pay out of them.</summary>
-    public IRoomChestAccess Chests { get; }
-
-    public IRoomFurniAccess Furni { get; }
-
     /// <summary>The room clock, in milliseconds. Monotonic within an activation.</summary>
     public long NowMs();
 
@@ -68,14 +59,6 @@ public interface IRoomObjectContext
 
     /// <summary>The room's owner.</summary>
     public PlayerId OwnerId { get; }
-
-    /// <summary>The guild this room belongs to, or null when it is not a guild base. This is the
-    /// "current group" the group-aware wired boxes resolve to when their form is left on its first
-    /// option.</summary>
-    public int? GroupId { get; }
-
-    /// <summary>The wired tuning knobs from the room's configuration.</summary>
-    public IWiredLimits WiredLimits { get; }
 
     public RoomObjectId ObjectId { get; }
     public IRoomObject RoomObject { get; }

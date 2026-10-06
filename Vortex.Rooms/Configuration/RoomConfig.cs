@@ -3,7 +3,7 @@ using Vortex.Primitives.Rooms.Object;
 
 namespace Vortex.Rooms.Configuration;
 
-public class RoomConfig : IWiredLimits
+public class RoomConfig
 {
     public const string SECTION_NAME = "Vortex:Rooms";
 
@@ -45,8 +45,7 @@ public class RoomConfig : IWiredLimits
     /// It costs nothing in pacing. Every system that cares about timing keeps its own wall-clock
     /// boundary — avatars move on <see cref="AvatarTickMs"/>, rollers on <see cref="RollerTickMs"/>,
     /// items flush on <see cref="DirtyItemsTickMs"/> — and this only decides how promptly a boundary
-    /// that has come due gets noticed, so the error is bounded by one tick. The single exception is
-    /// <see cref="WiredTickMs"/>, which is as fine as this one and is therefore capped by it.
+    /// that has come due gets noticed, so the error is bounded by one tick.
     /// </para>
     /// </summary>
     public int RoomTickMs { get; init; } = 50;
@@ -60,7 +59,6 @@ public class RoomConfig : IWiredLimits
     public int HandItemDurationMs { get; init; } = 30_000;
     public PetConfig Pet { get; init; } = new();
     public int RollerTickMs { get; init; } = 2000;
-    public int WiredTickMs { get; init; } = 50;
     public int DirtyItemsTickMs { get; init; } = 2000;
     public int MaxDirtyItemsPerFlush { get; init; } = 100;
     public int MaxTileHeightsPerFlush { get; init; } = 200;
@@ -70,57 +68,6 @@ public class RoomConfig : IWiredLimits
     /// tool. Kept configurable so a hotel can localise it; the description is blanked outright.</summary>
     public string ModeratedRoomNamePlaceholder { get; init; } = "Inappropriate room name";
 
-    /// <summary>
-    /// How deep one "execute stacks" chain may go before the wired engine stops entering piles.
-    /// <para>
-    /// The default is 8 because 8 is what rooms have actually been enforcing: this property read 20
-    /// and nothing read this property — <c>RoomWiredSystem</c> enforced a private const of 8
-    /// (RFW-101). Wiring the knob up without lowering the default would have been a silent
-    /// behaviour change dressed as a refactor. Habbo's own limit is <c>UNKNOWN</c>; raise this
-    /// deliberately, watching <c>Vortex.wired.chain.stopped{reason=depth}</c>.
-    /// </para>
-    /// </summary>
-    public int WiredMaxDepth { get; init; } = 8;
-    public int WiredMaxScheduledPerTick { get; init; } = 64;
-    public int WiredMaxEventsPerTick { get; init; } = 64;
-    public int WiredSelectorMaxAreaSize { get; init; } = 100;
-    public int WiredSelectedItemsLimit { get; init; } = 20;
-
-    /// <summary>
-    /// How many players one wired action may act on in a single execution. The furni side of a
-    /// selection has been bounded since the beginning — <see cref="WiredSelectorMaxAreaSize"/> and
-    /// <see cref="WiredSelectedItemsLimit"/> — and the player side never was, so "give furni to
-    /// everyone" ran one write, one full inventory reload and one client push per selected player,
-    /// sequentially, inside the room's turn. That is the only fan-out in the engine a player builds
-    /// rather than an operator configures.
-    /// <para>
-    /// Twice <see cref="MaxVisitorsLimit"/>, so no room a hotel actually runs reaches it and it only
-    /// bites the room built to hurt. Trims are counted as <c>selection-limit</c> on
-    /// <c>Vortex.wired.chain.stopped</c>.
-    /// </para>
-    /// </summary>
-    public int WiredSelectedPlayersLimit { get; init; } = 100;
-    public bool WiredAllowWallFurni { get; init; } = true;
-    public int WiredMaxIntParams { get; init; } = 16;
-    public int WiredNeighborhoodRadius { get; init; } = 5;
-
-    /// <summary>Hard cap on the wired event queue. WiredMaxEventsPerTick bounds the tick's work;
-    /// this bounds memory under a sustained event storm — events past the cap are dropped and
-    /// reported once per tick in the room's wired log.</summary>
-    public int WiredMaxQueuedEvents { get; init; } = 512;
-
-    /// <summary>Hard cap on the pending scheduled executions a room may hold. The same bound as
-    /// <see cref="WiredMaxQueuedEvents"/>, one layer further on: WiredMaxScheduledPerTick bounds
-    /// what a tick <em>runs</em>, and bounded no better than the event queue does what accumulates
-    /// when a room schedules faster than it drains. A pending execution is much heavier than an
-    /// event — it holds the pile, its actions, the selection and the processing context — so this
-    /// was the cheapest room in the hotel to exhaust memory from.</summary>
-    public int WiredMaxPendingExecutions { get; init; } = 512;
-
-    /// <summary>How long a wired box stays lit after firing before the wired system reverts its
-    /// visual state.</summary>
-    public int WiredFlashDurationMs { get; init; } = 500;
-
     public int MaxVisitorsLimit { get; init; } = 50;
 
     public int DoorbellTimeoutMs { get; init; } = 20000;
@@ -129,18 +76,6 @@ public class RoomConfig : IWiredLimits
     /// parser also bounds a single batch (<c>ProtocolLimitsConfig.MaxTradeItems</c>) for wire safety;
     /// this is the per-side offer ceiling enforced by the trade session.</summary>
     public int MaxTradeItemsPerSide { get; init; } = 1500;
-
-    /// <summary>
-    /// How many items one wired chest may hold. There was no ceiling at all, and every chest
-    /// operation loads the whole content into the room's turn — listing it, settling a contract
-    /// against it, paying out of it — so the cost of touching a chest was whatever a player had
-    /// chosen to put in it.
-    /// <para>
-    /// Also the ceiling on one deposit screen, which is the same bound arriving earlier: the staged
-    /// list is held in the room's memory and turns into an <c>IN</c> clause of its own size.
-    /// </para>
-    /// </summary>
-    public int WiredChestCapacity { get; init; } = 1000;
 
     /// <summary>
     /// How many song disks one jukebox holds. The client is told this number and draws that many

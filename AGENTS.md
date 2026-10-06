@@ -384,7 +384,7 @@ nothing that starts or stops a round learns the game's name.
     constructed (which book depends on the teams the module declares), so read `_context.Teams`
     where you need it. `ArenaHost.Teams` throws rather than hand out a null
   - no per-game teams or scores kept privately alongside the book; a second store is invisible to
-    every wired team leaf
+    the scoreboards and every other reader of the book
   - no direct `TeamBook` score write; go through `_context.ScoreAsync` or `SCORE_ACHIEVED`
     never fires
   - no clearing scores in `OnPreparingAsync`; the runtime already did it before GAME_STARTS was
@@ -397,7 +397,6 @@ nothing that starts or stops a round learns the game's name.
   - no ending your own match; call `_context.RequestMatchEndAsync`, which ends the room's round,
     fires GAME_ENDS and resets the timer furni
   - no registration line in `RoomGrain`, and no new hardcoded game call in `FurnitureGameTimerLogic`
-    or `WiredActionControlClock`
   - no deferred work without `_context.Match` on it; that stamp is what stops a callback from match
     N mutating match N+1
 

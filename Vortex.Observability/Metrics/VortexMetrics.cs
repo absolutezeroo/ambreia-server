@@ -26,9 +26,6 @@ public sealed class VortexMetrics : IVortexMetrics, IDisposable
     private readonly Histogram<double> _roomTickStepDuration;
     private readonly Histogram<double> _roomTickDuration;
     private readonly Histogram<double> _roomDirectoryCallDuration;
-    private readonly Counter<long> _wiredChainStopped;
-    private readonly Counter<long> _wiredEvent;
-    private readonly Counter<long> _wiredIndexRebuilt;
     private readonly Counter<long> _commerceOperation;
     private readonly Counter<long> _commerceStepReplayed;
     private readonly Counter<long> _furnitureLogicFallback;
@@ -88,24 +85,6 @@ public sealed class VortexMetrics : IVortexMetrics, IDisposable
             unit: "ms",
             description: "Round-trip time of a call to the room directory grain, by method, "
                 + "measured at the call site."
-        );
-        _wiredChainStopped = _meter.CreateCounter<long>(
-            "Vortex.wired.chain.stopped",
-            unit: "{chain}",
-            description: "Wired chains that stopped short of running everything they could have, "
-                + "by reason (depth, cycle, queue-drop, execution-limit)."
-        );
-        _wiredEvent = _meter.CreateCounter<long>(
-            "Vortex.wired.event",
-            unit: "{event}",
-            description: "Room events the wired engine finished with, by outcome (ignored: nothing "
-                + "listens; processed: offered to the triggers that do)."
-        );
-        _wiredIndexRebuilt = _meter.CreateCounter<long>(
-            "Vortex.wired.index.rebuilt",
-            unit: "{rebuild}",
-            description: "Rooms rebuilding their wired trigger index, which happens when furniture "
-                + "moves. Untagged: the room id is not safe to tag by."
         );
         _commerceOperation = _meter.CreateCounter<long>(
             "Vortex.commerce.operation",
@@ -204,30 +183,6 @@ public sealed class VortexMetrics : IVortexMetrics, IDisposable
         if (_enabled)
         {
             _packetDropped.Add(1, new KeyValuePair<string, object?>("reason", reason));
-        }
-    }
-
-    public void WiredChainStopped(string reason)
-    {
-        if (_enabled)
-        {
-            _wiredChainStopped.Add(1, new KeyValuePair<string, object?>("reason", reason));
-        }
-    }
-
-    public void WiredEventOutcome(string outcome)
-    {
-        if (_enabled)
-        {
-            _wiredEvent.Add(1, new KeyValuePair<string, object?>("outcome", outcome));
-        }
-    }
-
-    public void WiredIndexRebuilt()
-    {
-        if (_enabled)
-        {
-            _wiredIndexRebuilt.Add(1);
         }
     }
 

@@ -7,9 +7,9 @@ using Vortex.Primitives.Rooms.Object;
 using Vortex.Primitives.Rooms.Object.Avatars;
 using Vortex.Protocol.Messages.Outgoing.Room.Action;
 using Vortex.Protocol.Messages.Outgoing.Room.Session;
+using Vortex.Rooms.Games.Runtime;
 using Vortex.Rooms.Grains;
 using Vortex.Rooms.Object.Logic.Furniture.Floor;
-using Vortex.Rooms.Object.Logic.Furniture.Floor.Wired.Triggers;
 
 namespace Vortex.Rooms.Games.Presentation;
 
@@ -106,7 +106,7 @@ public sealed class RoomGameChrome(RoomGrain roomGrain) : IGameChrome
             FurnitureGameTimerLogic timer in _roomGrain._state.ItemIndex.LogicsOf<FurnitureGameTimerLogic>()
         )
         {
-            ((IWiredCounter)timer).ResetClock();
+            ((IGameCounter)timer).ResetClock();
         }
     }
 

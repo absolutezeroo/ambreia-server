@@ -19,7 +19,7 @@ namespace Vortex.Hosting.Tests.Architecture;
 /// </para>
 /// <para>
 /// Half of the payload nevertheless lived in a handler for a client message that does not exist in
-/// any known client, so it never ran: the click-user environment, the replayed avatar effects, the
+/// any known client, so it never ran: the replayed avatar effects, the
 /// replayed hand items and the bots' dances were built, tested and never sent. The handler is gone
 /// and its payload moved into the entry push; this test is what stops the split from reappearing,
 /// since nothing else notices — each of these composers still compiles, still has unit tests, and is
@@ -34,9 +34,6 @@ public sealed class RoomEntryPayloadTests
     /// </summary>
     private static readonly string[] RequiredOnEntry =
     [
-        // Without it the client assumes no click-user box exists, opens its own context menu and
-        // never sends WiredClickUser -- the trigger becomes unreachable.
-        "WiredEnvironmentMessageComposer",
         // Occupants' worn effects.
         "AvatarEffectMessageComposer",
         // Occupants' hand items.
@@ -57,8 +54,8 @@ public sealed class RoomEntryPayloadTests
     /// <remarks>
     /// The chat styles go first, immediately after OpenConnection. Then the room's shell: ready, the
     /// door tile, the paint, the geometry, the visualisation settings. Then who is here, then what is
-    /// here, then whose room it is. Then the advertisement, the furniture configuration, the wired
-    /// environment and the rights. The rating comes last of the room's own state, after the client
+    /// here, then whose room it is. Then the advertisement, the furniture configuration and the
+    /// rights. The rating comes last of the room's own state, after the client
     /// has been told whether the player owns the place.
     /// </remarks>
     private static readonly string[] CapturedOrder =
@@ -76,9 +73,7 @@ public sealed class RoomEntryPayloadTests
         "RoomEntryInfoMessageComposer",
         "RoomEventMessageComposer",
         "HanditemConfigurationMessageComposer",
-        "WiredEnvironmentMessageComposer",
         "YouAreControllerMessageComposer",
-        "WiredPermissionsEventMessageComposer",
         "YouAreOwnerMessageComposer",
         "RoomRatingMessageComposer",
         "RaidProtectionCapabilityMessageComposer",
