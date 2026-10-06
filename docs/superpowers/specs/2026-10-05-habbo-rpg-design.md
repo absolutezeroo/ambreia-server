@@ -1,5 +1,7 @@
 # Habbo RPG — design d'ensemble
 
+> **Remplacée** par `2026-10-06-vortex-rpg-design.md` (spec unifiée). Ce document reste comme source ; en cas de conflit, la spec unifiée prévaut.
+
 - **Date :** 2026-10-05
 - **Statut :** vision validée section par section ; chaque jalon (M0–M7) aura sa propre spec et son propre plan.
 - **Repos :** `vortex-rpg-emulator` (fork de `vortex-cloud`, remote `upstream`) et `vortex-rpg-client`
