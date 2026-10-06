@@ -22,8 +22,6 @@ public sealed class CatalogModule : IHostPluginModule
     {
         services.AddSingleton<ICatalogService, CatalogService>();
 
-        // Singleton because the counts must outlive a packet: the handler is built fresh per
-        // invocation, so anything it held would reset on every attempt and count nothing (SEC-11).
         services.AddSingleton<ICatalogClubOfferProvider, CatalogClubOfferProvider>();
         services.AddSingleton<IReferenceDataProvider>(sp =>
             (IReferenceDataProvider)sp.GetRequiredService<ICatalogClubOfferProvider>()
