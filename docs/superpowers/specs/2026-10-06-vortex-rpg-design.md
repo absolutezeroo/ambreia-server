@@ -165,6 +165,20 @@ fait avec les specs filles Monde et éditeur de cartes et Groupe et donjons, coo
 (qui envoie encore des messages de navigator à la connexion). Le navigator réduit du M0 est une étape
 intermédiaire.
 
+### 3.2 quater Éditeur de cartes : nouveau projet — APPROUVÉ
+
+- **Où :** `vortex-rpg-client/packages/vortex-map-editor`, package du monorepo client, à côté de
+  `vortex-engine` et de Glaze ; application de bureau (coquille Tauri), pas un site web.
+- **Priorité :** l’éditeur et un projet propre passent avant les fonctionnalités de jeu. Ordre :
+  M0 (ménage) → M0 bis (couches serveur, retraits de l’audit) → **fondations de l’éditeur** → M1.
+- **Fondations de l’éditeur :** démarrage du moteur isométrique sans session de jeu (prouvé côté
+  serveur par `vortex-imager`, pour les fenêtres par Glaze) ; format de zone versionné (plan,
+  meubles, calques RPG) validé par le serveur ; répertoire de meubles comme palette ; publication
+  d’une zone vers le serveur.
+- **Systèmes déplacés vers l’éditeur :** ce qui ne sert qu’à construire des cartes quitte le client
+  du joueur, par exemple l’éditeur de plan de sol (`habbo/window/utils/floorplaneditor`) si seules
+  les maisons restent personnalisables (spec fille Monde et éditeur de cartes).
+
 ### 3.3 Runtime de zone (la couture) — APPROUVÉ
 
 Combat, monstres et compagnons NE DOIVENT PAS dépendre de `Vortex.Rooms`. Ils travaillent contre une
