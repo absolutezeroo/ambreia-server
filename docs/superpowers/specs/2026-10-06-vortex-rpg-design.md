@@ -125,7 +125,7 @@ entre la destruction de la room (`REE_DISPOSED`) et l'initialisation de la suiva
 précharger le contenu des meubles de la zone voisine (le cache de contenu survit déjà au changement
 de room, `RoomEngine.ts:3956-3975`). Objectif : passage perçu < 1 s sur la machine de référence.
 
-**Construction des maps.** Les zones se construisent avec de vrais meubles. Le propriétaire envisage un **éditeur de cartes** dédié (OUVERT, §22) : une zone y devient un document de données (plan de sol et hauteurs ≤ 64 × 64, meubles, points d'apparition, nœuds de récolte, PNJ, passages, zones de sécurité), qui s'appuie sur le même moteur de placement. Le
+**Construction des maps.** Les zones se construisent avec de vrais meubles. Elles se construisent dans un **éditeur de cartes** : une **application de bureau**, pas un site web (APPROUVÉ ; technologie OUVERTE, §22) : une zone y devient un document de données (plan de sol et hauteurs ≤ 64 × 64, meubles, points d'apparition, nœuds de récolte, PNJ, passages, zones de sécurité), qui s'appuie sur le même moteur de placement. Le
 placement, l'empilement, la rotation, les meubles muraux et la persistance des positions NE DOIVENT
 PAS régresser ; les tests de `Vortex.Rooms.Tests/Furniture/` et `Mapping/` en sont le filet.
 
@@ -717,7 +717,7 @@ V1 de §21.1.
 | 20 | Budgets chiffrés (tick, messages par zone) | Combat (mesure M1) |
 | 21 | Vitesse de déplacement en combat (les avatars avancent d'une case par 500 ms, `RoomConfig.cs:52`) | Combat |
 | 22 | Monde continu streamé | Étude après V1 |
-| 23 | Forme de l'éditeur de cartes : mode éditeur dans le client, page du dashboard, ou outil externe (type Tiled) + import | Monde et éditeur de cartes |
+| 23 | Technologie de l'éditeur de cartes (application de bureau, APPROUVÉ) : coquille native réutilisant le rendu isométrique de `vortex-engine` (Tauri ou Electron), ou application .NET native (Avalonia) partageant les modèles de contenu du serveur avec un rendu isométrique à écrire | Monde et éditeur de cartes |
 
 ---
 
