@@ -125,7 +125,7 @@ entre la destruction de la room (`REE_DISPOSED`) et l'initialisation de la suiva
 précharger le contenu des meubles de la zone voisine (le cache de contenu survit déjà au changement
 de room, `RoomEngine.ts:3956-3975`). Objectif : passage perçu < 1 s sur la machine de référence.
 
-**Construction des maps.** Les zones se construisent avec de vrais meubles, comme aujourd'hui. Le
+**Construction des maps.** Les zones se construisent avec de vrais meubles. Le propriétaire envisage un **éditeur de cartes** dédié (OUVERT, §22) : une zone y devient un document de données (plan de sol et hauteurs ≤ 64 × 64, meubles, points d'apparition, nœuds de récolte, PNJ, passages, zones de sécurité), qui s'appuie sur le même moteur de placement. Le
 placement, l'empilement, la rotation, les meubles muraux et la persistance des positions NE DOIVENT
 PAS régresser ; les tests de `Vortex.Rooms.Tests/Furniture/` et `Mapping/` en sont le filet.
 
@@ -651,7 +651,7 @@ compagnon de combat ; transition fondue entre zones.
 | Jalon | Contenu | Spec fille |
 |---|---|---|
 | M0 | Ménage serveur et client, puis passe protocole | plans existants |
-| M1 | Noyau, runtime de zone, personnage, combat, monstres dans une zone ; regroupement réseau ; HUD de base ; budgets mesurés | Personnage, Combat, Monstres |
+| M1 | Éditeur de cartes (version minimale) ; noyau, runtime de zone, personnage, combat, monstres dans une zone ; regroupement réseau ; HUD de base ; budgets mesurés | Monde et éditeur de cartes, Personnage, Combat, Monstres |
 | M2 | Objets, sac, équipement, loot | Objets |
 | M3 | Quêtes, PNJ, dialogue, marchand | Quêtes, Économie (marchand) |
 | M4 | Groupe, recherche de groupe, donjon instancié, transition fondue | Groupe, Donjons, Monde |
@@ -717,6 +717,7 @@ V1 de §21.1.
 | 20 | Budgets chiffrés (tick, messages par zone) | Combat (mesure M1) |
 | 21 | Vitesse de déplacement en combat (les avatars avancent d'une case par 500 ms, `RoomConfig.cs:52`) | Combat |
 | 22 | Monde continu streamé | Étude après V1 |
+| 23 | Forme de l'éditeur de cartes : mode éditeur dans le client, page du dashboard, ou outil externe (type Tiled) + import | Monde et éditeur de cartes |
 
 ---
 
@@ -724,6 +725,7 @@ V1 de §21.1.
 
 Ordre de rédaction, chacune avant le plan de son jalon :
 
+0. `…-rpg-world-map-editor-design.md` — zones comme documents de données, éditeur de cartes, passages et transition fondue (avant M1 : M1 a besoin d'une zone avec des monstres placés)
 1. `…-rpg-character-design.md` — personnage, classes, stats, spécialisations, reconnexion (M1)
 2. `…-rpg-combat-design.md` — runtime de zone, compétences, incantations, statuts, menace, budgets (M1)
 3. `…-rpg-monsters-design.md` — définitions, IA, apparitions, laisse, boss, pathfinding (M1)
