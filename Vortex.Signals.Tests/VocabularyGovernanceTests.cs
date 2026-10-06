@@ -61,7 +61,7 @@ public sealed class VocabularyGovernanceTests
         // the actions that carried it were added in the same unreleased change and no content can
         // name them yet. The seven keys below replace it, and none of them may ever be removed.
         // "poll" was here, removed with polls (M0).
-        "quiz",
+        // "quiz" was here, removed with quizzes (M0 bis).
         "campaign",
         // "voucher" was here, removed with vouchers (M0).
         "club_gift",
@@ -126,7 +126,7 @@ public sealed class VocabularyGovernanceTests
         "accept_quest",
         "activate_effect",
         // "complete_poll" was here, removed with polls (M0).
-        "submit_quiz",
+        // "submit_quiz" was here, removed with quizzes (M0 bis).
         "claim_daily_task",
         "save_outfit",
         "redeem_clothing",

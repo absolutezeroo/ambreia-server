@@ -240,27 +240,6 @@ public sealed class AccountPreferenceChangedAuditHandler(IAuditSink audit)
     }
 }
 
-/// <summary>A player answered a quiz.</summary>
-public sealed class QuizSubmittedAuditHandler(IAuditSink audit) : IEventHandler<QuizSubmittedEvent>
-{
-    public ValueTask HandleAsync(QuizSubmittedEvent e, EventContext ctx, CancellationToken ct)
-    {
-        audit.Emit(
-            new AuditEvent
-            {
-                Category = AuditCategory.Progression,
-                Action = "quiz.submitted",
-                Severity = AuditSeverity.Info,
-                Result = AuditResult.Success,
-                ActorPlayerId = e.PlayerId,
-                Data = JsonSerializer.Serialize(new { quiz = e.QuizCode }),
-            }
-        );
-
-        return ValueTask.CompletedTask;
-    }
-}
-
 /// <summary>
 /// A clothing item was redeemed. Filed under Item rather than the profile: a piece of furniture was
 /// destroyed to produce it, and that is the half worth being able to follow.
@@ -279,28 +258,6 @@ public sealed class ClothingRedeemedAuditHandler(IAuditSink audit)
                 Result = AuditResult.Success,
                 ActorPlayerId = e.PlayerId,
                 Data = JsonSerializer.Serialize(new { definitionId = e.ItemId }),
-            }
-        );
-
-        return ValueTask.CompletedTask;
-    }
-}
-
-/// <summary>A guide session was rated by the player who asked for help.</summary>
-public sealed class GuideSessionRatedAuditHandler(IAuditSink audit)
-    : IEventHandler<GuideSessionRatedEvent>
-{
-    public ValueTask HandleAsync(GuideSessionRatedEvent e, EventContext ctx, CancellationToken ct)
-    {
-        audit.Emit(
-            new AuditEvent
-            {
-                Category = AuditCategory.Social,
-                Action = "social.guide_session_rated",
-                Severity = AuditSeverity.Info,
-                Result = AuditResult.Success,
-                ActorPlayerId = e.PlayerId,
-                Data = JsonSerializer.Serialize(new { helpful = e.WasHelpful }),
             }
         );
 

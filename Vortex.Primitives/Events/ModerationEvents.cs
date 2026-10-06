@@ -87,13 +87,6 @@ public sealed record PlayerTradingLockedEvent(
 ) : IEvent;
 
 /// <summary>
-/// A player rated the guide session they had just been through. Arrives after the session is over —
-/// the client only shows the form once it has been told the session ended — so there is no session
-/// left to attach it to, and the rating stands on its own.
-/// </summary>
-public sealed record GuideSessionRatedEvent(int PlayerId, bool WasHelpful) : IEvent;
-
-/// <summary>
 /// A player filed a report. Only the moderator half of a ticket's life was audited -- picked,
 /// released, closed -- so the moment somebody actually asked for help left no trace, and neither did
 /// an account filing reports as harassment.
@@ -105,19 +98,6 @@ public sealed record CfhTicketOpenedEvent(
     int? RoomId,
     int TopicId
 ) : IEvent;
-
-/// <summary>
-/// A player asked the guide system for help. The guide pipeline lives entirely in the directory
-/// grain's memory, so before this nothing survived a restart -- and it is the one feature that puts
-/// two strangers into a private conversation on the hotel's own initiative.
-/// </summary>
-public sealed record GuideRequestCreatedEvent(int RequesterPlayerId, int HelpRequestType) : IEvent;
-
-/// <summary>A guide accepted, and the two are now paired.</summary>
-public sealed record GuideSessionStartedEvent(int GuidePlayerId, int RequesterPlayerId) : IEvent;
-
-/// <summary>One side closed the session. The other is named because both were in it.</summary>
-public sealed record GuideSessionEndedEvent(int ActorPlayerId, int PartnerPlayerId) : IEvent;
 
 /// <summary>
 /// A moderator claimed CFH tickets. Audited because a claim is the moment a report becomes one

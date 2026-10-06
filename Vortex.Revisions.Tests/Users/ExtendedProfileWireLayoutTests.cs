@@ -55,7 +55,6 @@ public sealed class ExtendedProfileWireLayoutTests
             LastAccessSinceInSeconds = 60,
             OpenProfileWindow = true,
             IsHidden = onlineStatus == OnlineStatusCodes.Hidden,
-            AccountLevel = 5,
             IntegerField24 = 0,
             StarGemCount = 7,
             BooleanField26 = false,
@@ -98,7 +97,7 @@ public sealed class ExtendedProfileWireLayoutTests
         packet.PopInt().Should().Be(60);
         packet.PopBoolean().Should().BeTrue();
         packet.PopBoolean().Should().BeFalse(); // isHidden
-        packet.PopInt().Should().Be(5);
+        packet.PopInt().Should().Be(0); // accountLevel, frozen
         packet.PopInt().Should().Be(0);
         packet.PopInt().Should().Be(7);
         packet.PopBoolean().Should().BeFalse();

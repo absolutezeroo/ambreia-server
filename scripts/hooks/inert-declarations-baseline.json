@@ -1,6 +1,5 @@
 {
   "known": [
-    "config-catalog/achievements.resolution.duration_seconds",
     "config-catalog/clothing.enforce_ownership",
     "config-catalog/fishing.daily_currency_cap",
     "config-catalog/fishing.derby_leaderboard_size",
@@ -19,7 +18,6 @@
     "config-catalog/fishing.sighting_duration_ms",
     "config-catalog/fishing.trophy_furni_class",
     "config-catalog/moderation.room_visit_limit",
-    "config-catalog/moderation.selfie_report_topic_id",
     "config-catalog/pets.bored_happiness_threshold",
     "config-catalog/pets.command_happiness_reward",
     "config-catalog/pets.happiness_decay_per_minute",

@@ -149,10 +149,6 @@ public static class Capabilities
         public const string QuestsRead = "dashboard.quests.read";
         public const string OpsQuestsManage = "dashboard.ops.quests.manage";
 
-        /// <summary>The Trax song catalogue a jukebox plays out of.</summary>
-        public const string SongsRead = "dashboard.songs.read";
-        public const string OpsSongsManage = "dashboard.ops.songs.manage";
-
         /// <summary>The gift dialog's parcels, boxes and ribbons.</summary>
         public const string GiftWrappingsRead = "dashboard.gift_wrappings.read";
         public const string OpsGiftWrappingsManage = "dashboard.ops.gift_wrappings.manage";
@@ -284,8 +280,6 @@ public static class Capabilities
             CatalogPurchasesRead,
             QuestsRead,
             OpsQuestsManage,
-            SongsRead,
-            OpsSongsManage,
             GiftWrappingsRead,
             OpsGiftWrappingsManage,
             FishingRead,

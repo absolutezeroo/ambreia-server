@@ -203,68 +203,6 @@ public sealed class AvatarEffectActivatedAuditHandler(IAuditSink audit)
     }
 }
 
-/// <summary>
-/// A resolution challenge was won on a statue. The item id matters as much as the player: the
-/// statue is furniture, and the badge it produced outlives whoever owns it next.
-/// </summary>
-public sealed class AchievementResolutionWonAuditHandler(IAuditSink audit)
-    : IEventHandler<AchievementResolutionWonEvent>
-{
-    public ValueTask HandleAsync(
-        AchievementResolutionWonEvent e,
-        EventContext ctx,
-        CancellationToken ct
-    )
-    {
-        audit.Emit(
-            new AuditEvent
-            {
-                Category = AuditCategory.Progression,
-                Action = "achievement.resolution_won",
-                Severity = AuditSeverity.Info,
-                Result = AuditResult.Success,
-                ActorPlayerId = e.PlayerId,
-                ItemId = e.ItemId,
-                Data = JsonSerializer.Serialize(
-                    new
-                    {
-                        e.AchievementId,
-                        e.TargetLevel,
-                        badge = e.BadgeCode,
-                    }
-                ),
-            }
-        );
-
-        return ValueTask.CompletedTask;
-    }
-}
-
-public sealed class AchievementResolutionResetAuditHandler(IAuditSink audit)
-    : IEventHandler<AchievementResolutionResetEvent>
-{
-    public ValueTask HandleAsync(
-        AchievementResolutionResetEvent e,
-        EventContext ctx,
-        CancellationToken ct
-    )
-    {
-        audit.Emit(
-            new AuditEvent
-            {
-                Category = AuditCategory.Progression,
-                Action = "achievement.resolution_reset",
-                Severity = AuditSeverity.Info,
-                Result = AuditResult.Success,
-                ActorPlayerId = e.PlayerId,
-                ItemId = e.ItemId,
-            }
-        );
-
-        return ValueTask.CompletedTask;
-    }
-}
-
 public sealed class DailyTaskClaimedAuditHandler(IAuditSink audit)
     : IEventHandler<DailyTaskClaimedEvent>
 {

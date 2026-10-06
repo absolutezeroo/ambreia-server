@@ -377,7 +377,6 @@ public sealed class ChatStyleUnlockTests
                 FakeProxy.Create<IEventPublisher>(_ => null),
                 NullLogger<PlayerGrain>.Instance,
                 Options.Create(new ClubConfig()),
-                FakeProxy.Create<IAccountLevelProvider>(_ => AccountLevelLadder.FloorLevel),
                 FakeProxy.Create<ICommerceJournal>(_ => Task.CompletedTask),
                 // No roles: the grain resolves staff-ness once at load and nothing here cares what
                 // the answer is.

@@ -30,9 +30,4 @@ public static class ModerationConfig
     /// date column, so a window much wider than a session is not useful to a moderator anyway.</summary>
     public const string RoomVisitLimitKey = "moderation.room_visit_limit";
     public const int RoomVisitLimitDefault = 50;
-
-    /// <summary>CFH topic used for selfie reports. The client shows no topic picker for those — it
-    /// sends a single "report this selfie" — so the categorisation is a server-side choice.</summary>
-    public const string SelfieReportTopicKey = "moderation.selfie_report_topic_id";
-    public const int SelfieReportTopicDefault = 1;
 }

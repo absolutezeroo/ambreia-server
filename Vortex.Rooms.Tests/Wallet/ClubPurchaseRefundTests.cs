@@ -122,9 +122,6 @@ public sealed class ClubPurchaseRefundTests
                 FakeProxy.Create<IEventPublisher>(_ => null),
                 NullLogger<PlayerGrain>.Instance,
                 Options.Create(new ClubConfig()),
-                // The ladder is irrelevant to a club purchase; the floor level keeps the grain
-                // constructible without dragging reference data into this test.
-                FakeProxy.Create<IAccountLevelProvider>(_ => AccountLevelLadder.FloorLevel),
                 // A real journal over the same database: whether the months were paid for is the
                 // question here, and that is now recorded rather than merely returned.
                 Journal = new CommerceJournal(

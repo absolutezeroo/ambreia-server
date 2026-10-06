@@ -53,9 +53,6 @@ public sealed record ExtendedProfileMessageComposer : IComposer
     [Id(13)]
     public required bool IsHidden { get; init; }
 
-    [Id(14)]
-    public required int AccountLevel { get; init; }
-
     [Id(15)]
     public required int IntegerField24 { get; init; }
 

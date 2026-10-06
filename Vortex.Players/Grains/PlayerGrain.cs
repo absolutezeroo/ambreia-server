@@ -27,7 +27,6 @@ using Vortex.Primitives.Players;
 using Vortex.Primitives.Players.Enums;
 using Vortex.Primitives.Players.Enums.Wallet;
 using Vortex.Primitives.Players.Grains;
-using Vortex.Primitives.Players.Providers;
 using Vortex.Primitives.Players.Wallet;
 using Vortex.Primitives.Rooms.Enums;
 using Vortex.Primitives.Server.Grains;
@@ -42,7 +41,6 @@ internal sealed partial class PlayerGrain : Grain, IPlayerGrain
     private readonly IEventPublisher _events;
     private readonly IGrainFactory _grainFactory;
     private readonly ILogger<PlayerGrain> _logger;
-    private readonly IAccountLevelProvider _accountLevels;
     private readonly ICommerceJournal _journal;
     private readonly IPermissionService _permissions;
 
@@ -54,7 +52,6 @@ internal sealed partial class PlayerGrain : Grain, IPlayerGrain
         IEventPublisher events,
         ILogger<PlayerGrain> logger,
         IOptions<ClubConfig> clubConfig,
-        IAccountLevelProvider accountLevels,
         ICommerceJournal journal,
         IPermissionService permissions
     )
@@ -64,7 +61,6 @@ internal sealed partial class PlayerGrain : Grain, IPlayerGrain
         _events = events;
         _logger = logger;
         _clubConfig = clubConfig.Value;
-        _accountLevels = accountLevels;
         _journal = journal;
         _permissions = permissions;
 
@@ -565,10 +561,6 @@ internal sealed partial class PlayerGrain : Grain, IPlayerGrain
             LastAccessSinceInSeconds = SecondsSince(lastLoginAt),
             OpenProfileWindow = true,
             IsHidden = false,
-            // Resolved from the achievement score against the configured ladder. This was the
-            // constant 1, which is why every profile in the hotel read "Level 1" no matter what
-            // the player had done.
-            AccountLevel = _accountLevels.ResolveLevel(_state.AchievementScore),
             IntegerField24 = 0,
             StarGemCount = 0,
             BooleanField26 = false,

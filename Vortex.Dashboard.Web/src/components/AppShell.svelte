@@ -43,12 +43,10 @@
     Gauge,
     PencilLine,
     MessageSquareText,
-    Music,
     Fish,
     Newspaper,
     FileCode,
     SquareTerminal,
-    Medal,
   } from '@lucide/svelte';
   import { identity } from '../lib/session';
   import MfaModal from './MfaModal.svelte';
@@ -117,12 +115,10 @@
     // Every entry below used to fall through to the generic Activity icon, which made a dozen rows
     // look identical in a sidebar you scan rather than read.
     '/chatlogs': MessageSquareText,
-    '/songs': Music,
     '/fishing': Fish,
     '/articles': Newspaper,
     '/gamedata': FileCode,
     '/console': SquareTerminal,
-    '/achievement-resolutions': Medal,
   };
 
   let query = $state('');

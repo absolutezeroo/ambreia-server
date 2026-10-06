@@ -1,6 +1,5 @@
 using System.Collections.Immutable;
 using Vortex.Primitives.Events;
-using Vortex.Primitives.RewardTracks;
 using Vortex.Primitives.Signals;
 
 namespace Vortex.Signals.Translators;

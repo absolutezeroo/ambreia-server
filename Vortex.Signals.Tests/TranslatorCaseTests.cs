@@ -4,7 +4,6 @@ using System.Collections.Immutable;
 using System.Linq;
 using FluentAssertions;
 using Vortex.Primitives.Events;
-using Vortex.Primitives.RewardTracks;
 using Vortex.Primitives.Rooms.Enums;
 using Vortex.Primitives.Signals;
 using Vortex.Signals.Translators;
@@ -68,7 +67,7 @@ public sealed class TranslatorCaseTests
             .Should()
             .ContainSingle()
             .Which.Facts.Should()
-            .ContainSingle(f => f.Key == RewardTrackFacts.Dance && f.Value == style);
+            .ContainSingle(f => f.Key == Facts.Dance.Key && f.Value == style);
     }
 
     [Theory]
@@ -84,8 +83,8 @@ public sealed class TranslatorCaseTests
             .ContainSingle()
             .Which.Should()
             .Match<ProgressSignal>(s =>
-                s.Action == RewardTrackActions.ShowSign
-                && s.Facts.Any(f => f.Key == RewardTrackFacts.Sign && f.Value == signId)
+                s.Action == SignalActions.ShowSign
+                && s.Facts.Any(f => f.Key == Facts.Sign.Key && f.Value == signId)
             );
     }
 
@@ -102,7 +101,7 @@ public sealed class TranslatorCaseTests
             .Should()
             .ContainSingle()
             .Which.Facts.Should()
-            .ContainSingle(f => f.Key == RewardTrackFacts.Posture && f.Value == posture);
+            .ContainSingle(f => f.Key == Facts.Posture.Key && f.Value == posture);
     }
 
     [Fact]
@@ -116,7 +115,7 @@ public sealed class TranslatorCaseTests
             .Should()
             .ContainSingle()
             .Which.Facts.Should()
-            .NotContain(f => f.Key == RewardTrackFacts.Posture);
+            .NotContain(f => f.Key == Facts.Posture.Key);
     }
 
     [Fact]
@@ -129,7 +128,7 @@ public sealed class TranslatorCaseTests
             .Should()
             .ContainSingle()
             .Which.Facts.Should()
-            .NotContain(f => f.Key == RewardTrackFacts.Dance);
+            .NotContain(f => f.Key == Facts.Dance.Key);
     }
 
     [Fact]

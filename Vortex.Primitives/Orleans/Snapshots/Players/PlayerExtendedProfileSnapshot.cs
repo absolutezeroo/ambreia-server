@@ -50,9 +50,6 @@ public sealed record PlayerExtendedProfileSnapshot
     [Id(13)]
     public required bool IsHidden { get; init; }
 
-    [Id(14)]
-    public required int AccountLevel { get; init; }
-
     [Id(15)]
     public required int IntegerField24 { get; init; }
 
@@ -71,7 +68,7 @@ public sealed record PlayerExtendedProfileSnapshot
 
     /// <summary>
     /// How many achievement levels the player has cleared — the number the client shows beside the
-    /// score, distinct from <see cref="AccountLevel"/>, which is the profile's own ladder.
+    /// score.
     /// </summary>
     [Id(24)]
     public int AchievementLevel { get; init; }

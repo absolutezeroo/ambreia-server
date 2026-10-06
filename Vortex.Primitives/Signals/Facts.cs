@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Immutable;
 using System.Linq;
-using Vortex.Primitives.RewardTracks;
 using Vortex.Primitives.Rooms.Enums;
 
 namespace Vortex.Primitives.Signals;
@@ -11,17 +10,16 @@ namespace Vortex.Primitives.Signals;
 /// </summary>
 /// <remarks>
 /// <para>
-/// Every key forwards to <see cref="RewardTrackFacts"/> for the same reason
-/// <see cref="SignalActions"/> forwards to <c>RewardTrackActions</c>: the strings are in the
-/// database, and a second hand-written copy is a drift waiting to happen. What is new here is the
-/// <see cref="FactKind"/> beside each one — the thing the dashboard used to hardcode per page.
+/// The keys are persisted vocabulary, like <see cref="SignalActions"/>: the strings are in the
+/// database, so a value never changes. They were the reward tracks' fact names (removed in M0).
+/// Beside each one is its <see cref="FactKind"/> — the thing the dashboard used to hardcode per
+/// page.
 /// </para>
 /// <para>
-/// <see cref="RoomOwner"/> is deliberately absent from the list an editor sees. Nothing emits it:
+/// <c>RoomOwner</c> is deliberately absent from the list an editor sees. Nothing emits it:
 /// <c>PlayerEnteredRoomEvent</c> does not carry the owner, and reading it per entry would be a grain
-/// call on an arrival path that has been slow before. It stays declared in
-/// <see cref="RewardTrackFacts"/> so the shape is obvious to whoever plumbs it, and out of here so
-/// nobody can pick a filter that never matches.
+/// call on an arrival path that has been slow before. Its key would be <c>room_owner</c>; it stays out
+/// of here until something emits it, so nobody can pick a filter that never matches.
 /// </para>
 /// </remarks>
 public static class Facts
@@ -31,7 +29,7 @@ public static class Facts
     /// <see cref="ProgressSignal.Target"/> under this key, and a shape says what it means for that
     /// action through <see cref="SignalShape.TargetKind"/>.
     /// </summary>
-    public const string TargetKey = RewardTrackFacts.Target;
+    public const string TargetKey = "target";
 
     /// <summary>
     /// The room object id of a piece of furniture: the identity that survives a move.
@@ -43,7 +41,7 @@ public static class Facts
     /// about one piece in one room; its real use is as the thing a later step points back at.
     /// </remarks>
     public static readonly FactKey Item = new(
-        RewardTrackFacts.Item,
+        "item",
         FactKind.OpaqueId,
         "rewardTracks.fact_item",
         "This one placed piece"
@@ -51,27 +49,33 @@ public static class Facts
 
     /// <summary>A furniture definition id — the kind of thing, not the thing.</summary>
     public static readonly FactKey Definition = new(
-        RewardTrackFacts.Definition,
+        "def",
         FactKind.FurnitureId,
         "rewardTracks.fact_def",
         "Any furniture of this kind"
     );
 
+    /// <summary>Value of <see cref="Placement"/> for a floor item.</summary>
+    public const string PlacementFloor = "floor";
+
+    /// <summary>Value of <see cref="Placement"/> for a wall item.</summary>
+    public const string PlacementWall = "wall";
+
     /// <summary>Floor or wall: the coarse type no definition id can express on its own.</summary>
     public static readonly FactKey Placement = new(
-        RewardTrackFacts.Placement,
+        "kind",
         FactKind.Enum,
         "rewardTracks.fact_kind",
         "Floor or wall",
         [
-            new(RewardTrackFacts.PlacementFloor, "rewardTracks.placement_floor", "Floor item"),
-            new(RewardTrackFacts.PlacementWall, "rewardTracks.placement_wall", "Wall item"),
+            new(PlacementFloor, "rewardTracks.placement_floor", "Floor item"),
+            new(PlacementWall, "rewardTracks.placement_wall", "Wall item"),
         ]
     );
 
     /// <summary>A room id.</summary>
     public static readonly FactKey Room = new(
-        RewardTrackFacts.Room,
+        "room",
         FactKind.RoomId,
         "rewardTracks.fact_room",
         "Room"
@@ -79,7 +83,7 @@ public static class Facts
 
     /// <summary>A room's name. Worth filtering only with <c>Contains</c>.</summary>
     public static readonly FactKey RoomName = new(
-        RewardTrackFacts.RoomName,
+        "name",
         FactKind.Text,
         "rewardTracks.fact_name",
         "Room name"
@@ -87,7 +91,7 @@ public static class Facts
 
     /// <summary>A room's description.</summary>
     public static readonly FactKey RoomDescription = new(
-        RewardTrackFacts.RoomDescription,
+        "desc",
         FactKind.Text,
         "rewardTracks.fact_desc",
         "Room description"
@@ -95,7 +99,7 @@ public static class Facts
 
     /// <summary>A navigator flat-category id.</summary>
     public static readonly FactKey Category = new(
-        RewardTrackFacts.Category,
+        "category",
         FactKind.CategoryId,
         "rewardTracks.fact_category",
         "Category"
@@ -103,7 +107,7 @@ public static class Facts
 
     /// <summary>A room model name — the layout.</summary>
     public static readonly FactKey Model = new(
-        RewardTrackFacts.Model,
+        "model",
         FactKind.Text,
         "rewardTracks.fact_model",
         "Room model"
@@ -111,7 +115,7 @@ public static class Facts
 
     /// <summary>Another player's id: the one respected, befriended, traded with.</summary>
     public static readonly FactKey Player = new(
-        RewardTrackFacts.Player,
+        "player",
         FactKind.PlayerId,
         "rewardTracks.fact_player",
         "The other player"
@@ -119,7 +123,7 @@ public static class Facts
 
     /// <summary>A catalogue offer id.</summary>
     public static readonly FactKey Offer = new(
-        RewardTrackFacts.Offer,
+        "offer",
         FactKind.OfferId,
         "rewardTracks.fact_offer",
         "Catalogue offer"
@@ -127,7 +131,7 @@ public static class Facts
 
     /// <summary>A pet id.</summary>
     public static readonly FactKey Pet = new(
-        RewardTrackFacts.Pet,
+        "pet",
         FactKind.OpaqueId,
         "rewardTracks.fact_pet",
         "Pet"
@@ -135,7 +139,7 @@ public static class Facts
 
     /// <summary>A badge code.</summary>
     public static readonly FactKey Badge = new(
-        RewardTrackFacts.Badge,
+        "badge",
         FactKind.BadgeCode,
         "rewardTracks.fact_badge",
         "Badge"
@@ -150,7 +154,7 @@ public static class Facts
     /// use it.
     /// </remarks>
     public static readonly FactKey ChatMessage = new(
-        RewardTrackFacts.ChatMessage,
+        "message",
         FactKind.Text,
         "rewardTracks.fact_message",
         "What was said"
@@ -158,7 +162,7 @@ public static class Facts
 
     /// <summary>A guild id.</summary>
     public static readonly FactKey Group = new(
-        RewardTrackFacts.Group,
+        "group",
         FactKind.OpaqueId,
         "rewardTracks.fact_group",
         "Guild"
@@ -166,7 +170,7 @@ public static class Facts
 
     /// <summary>A forum thread id.</summary>
     public static readonly FactKey Thread = new(
-        RewardTrackFacts.Thread,
+        "thread",
         FactKind.OpaqueId,
         "rewardTracks.fact_thread",
         "Forum thread"
@@ -174,7 +178,7 @@ public static class Facts
 
     /// <summary>What it cost.</summary>
     public static readonly FactKey Price = new(
-        RewardTrackFacts.Price,
+        "price",
         FactKind.Number,
         "rewardTracks.fact_price",
         "Price"
@@ -182,23 +186,15 @@ public static class Facts
 
     /// <summary>How many.</summary>
     public static readonly FactKey Quantity = new(
-        RewardTrackFacts.Quantity,
+        "quantity",
         FactKind.Number,
         "rewardTracks.fact_quantity",
         "Quantity"
     );
 
-    /// <summary>A quiz's code.</summary>
-    public static readonly FactKey Quiz = new(
-        RewardTrackFacts.Quiz,
-        FactKind.Text,
-        "rewardTracks.fact_quiz",
-        "Quiz"
-    );
-
     /// <summary>A quest campaign's code.</summary>
     public static readonly FactKey Campaign = new(
-        RewardTrackFacts.Campaign,
+        "campaign",
         FactKind.Text,
         "rewardTracks.fact_campaign",
         "Campaign"
@@ -206,7 +202,7 @@ public static class Facts
 
     /// <summary>A club gift's product code.</summary>
     public static readonly FactKey ClubGift = new(
-        RewardTrackFacts.ClubGift,
+        "club_gift",
         FactKind.Text,
         "rewardTracks.fact_club_gift",
         "Club gift"
@@ -214,7 +210,7 @@ public static class Facts
 
     /// <summary>A vault income category.</summary>
     public static readonly FactKey VaultCategory = new(
-        RewardTrackFacts.VaultCategory,
+        "vault_category",
         FactKind.Text,
         "rewardTracks.fact_vault_category",
         "Vault category"
@@ -222,7 +218,7 @@ public static class Facts
 
     /// <summary>A pet's species.</summary>
     public static readonly FactKey PetType = new(
-        RewardTrackFacts.PetType,
+        "pet_type",
         FactKind.Number,
         "rewardTracks.fact_pet_type",
         "Pet species"
@@ -238,7 +234,7 @@ public static class Facts
     /// prevent. The editor offers the directory instead.
     /// </remarks>
     public static readonly FactKey PetCommand = new(
-        RewardTrackFacts.PetCommand,
+        "pet_command",
         FactKind.OpaqueId,
         "rewardTracks.fact_pet_command",
         "Pet command"
@@ -246,7 +242,7 @@ public static class Facts
 
     /// <summary>A name the player typed.</summary>
     public static readonly FactKey GivenName = new(
-        RewardTrackFacts.GivenName,
+        "given_name",
         FactKind.Text,
         "rewardTracks.fact_given_name",
         "Given name"
@@ -254,7 +250,7 @@ public static class Facts
 
     /// <summary>An avatar effect.</summary>
     public static readonly FactKey Effect = new(
-        RewardTrackFacts.Effect,
+        "effect",
         FactKind.OpaqueId,
         "rewardTracks.fact_effect",
         "Avatar effect"
@@ -262,7 +258,7 @@ public static class Facts
 
     /// <summary>How long, in seconds.</summary>
     public static readonly FactKey DurationSeconds = new(
-        RewardTrackFacts.DurationSeconds,
+        "seconds",
         FactKind.Number,
         "rewardTracks.fact_seconds",
         "Duration (s)"
@@ -270,7 +266,7 @@ public static class Facts
 
     /// <summary>How many months.</summary>
     public static readonly FactKey Months = new(
-        RewardTrackFacts.Months,
+        "months",
         FactKind.Number,
         "rewardTracks.fact_months",
         "Months"
@@ -278,7 +274,7 @@ public static class Facts
 
     /// <summary>An avatar figure string.</summary>
     public static readonly FactKey Figure = new(
-        RewardTrackFacts.Figure,
+        "figure",
         FactKind.Text,
         "rewardTracks.fact_figure",
         "Figure"
@@ -294,7 +290,7 @@ public static class Facts
     /// garment, and <c>hr-1</c> is a substring of <c>hr-115</c>.
     /// </remarks>
     public static readonly FactKey FigureSet = new(
-        RewardTrackFacts.FigureSet,
+        "figure_set",
         FactKind.FigureSetId,
         "rewardTracks.fact_figure_set",
         "Garment worn"
@@ -310,7 +306,7 @@ public static class Facts
     /// front of a chair is wherever the chair is pointing.
     /// </remarks>
     public static readonly FactKey Relation = new(
-        RewardTrackFacts.Relation,
+        "relation",
         FactKind.Enum,
         "rewardTracks.fact_relation",
         "Where they stood",
@@ -334,7 +330,7 @@ public static class Facts
     /// raises no gesture for it.
     /// </remarks>
     public static readonly FactKey Dance = new(
-        RewardTrackFacts.Dance,
+        "dance",
         FactKind.Enum,
         "rewardTracks.fact_dance",
         "Which dance",
@@ -359,7 +355,7 @@ public static class Facts
     /// sits down, stands up, walks over, and satisfies every one of them.
     /// </remarks>
     public static readonly FactKey Posture = new(
-        RewardTrackFacts.Posture,
+        "posture",
         FactKind.Enum,
         "rewardTracks.fact_posture",
         "How they were",
@@ -382,7 +378,7 @@ public static class Facts
     /// stored task changes.
     /// </remarks>
     public static readonly FactKey Sign = new(
-        RewardTrackFacts.Sign,
+        "sign",
         FactKind.Number,
         "rewardTracks.fact_sign",
         "Which sign"
@@ -396,7 +392,7 @@ public static class Facts
     /// category" are two tasks an operator picks rather than two strings they spell.
     /// </remarks>
     public static readonly FactKey Section = new(
-        RewardTrackFacts.Section,
+        "section",
         FactKind.Enum,
         "rewardTracks.fact_section",
         "Section",
@@ -427,7 +423,6 @@ public static class Facts
         Thread,
         Price,
         Quantity,
-        Quiz,
         Campaign,
         ClubGift,
         VaultCategory,

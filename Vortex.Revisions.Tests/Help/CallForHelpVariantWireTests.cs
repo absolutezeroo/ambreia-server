@@ -10,24 +10,19 @@ using Rev = Vortex.Revisions.Revision20260701.Revision20260701;
 namespace Vortex.Revisions.Tests.Help;
 
 /// <summary>
-///     Only the room-based report was ever parsed; the other five entry points produced empty
-///     messages, so reporting from an IM, a photo, a selfie or a guild forum reached the server as
-///     nothing at all. Two of the five reorder their arguments on the way out — reportPhoto and
-///     reportSelfie both put the topic and the message somewhere other than where their own method
-///     signature suggests — which is exactly the kind of thing a round-trip test pins down.
+///     Only the room-based report was ever parsed; the other entry points produced empty messages,
+///     so reporting from an IM or a guild forum reached the server as nothing at all. (The photo and
+///     selfie variants were removed in M0 bis.)
 ///
-///     Four of the five also end with the reporter's own name and email (`help_message_name` /
+///     These also end with the reporter's own name and email (`help_message_name` /
 ///     `help_message_email`, TopicsFlowHelpController.as:478-483), filled only for the client's
 ///     unlawful report categories. Those two were dropped until 2026-09-15: the AS3 composers build
 ///     their payload with an array literal (`= [p1..p7]`) rather than pushes, so the spec scanner
-///     recorded "0 fields, partial" and the field-count gate skipped them. The selfie variant is the
-///     one that genuinely ends at five.
+///     recorded "0 fields, partial" and the field-count gate skipped them.
 /// </summary>
 public sealed class CallForHelpVariantWireTests
 {
     private const int CallForHelpFromIMMessageEvent = 838;
-    private const int CallForHelpFromPhotoMessageEvent = 1964;
-    private const int CallForHelpFromSelfieMessageEvent = 201;
     private const int CallForHelpFromForumThreadMessageEvent = 380;
     private const int CallForHelpFromForumMessageMessageEvent = 2991;
 
@@ -93,54 +88,6 @@ public sealed class CallForHelpVariantWireTests
         );
 
         message.Evidence.Should().BeEmpty();
-    }
-
-    [Fact]
-    public void FromPhotoParser_ReadsTheTopicFourthNotSecond()
-    {
-        // reportPhoto(photoId, topicId, roomId, authorId, furniId) sends them as
-        // (photoId, roomId, authorId, topicId, furniId).
-        CallForHelpFromPhotoMessage message = Parse<CallForHelpFromPhotoMessage>(
-            CallForHelpFromPhotoMessageEvent,
-            sp =>
-                sp.WriteString("photo-123")
-                    .WriteInteger(512)
-                    .WriteInteger(77)
-                    .WriteInteger(9)
-                    .WriteInteger(4711)
-                    .WriteString("Ada")
-                    .WriteString("ada@example.test")
-        );
-
-        message.PhotoId.Should().Be("photo-123");
-        message.RoomId.Should().Be(512);
-        message.PhotoAuthorId.Should().Be(77);
-        message.TopicId.Should().Be(9);
-        message.FurniId.Should().Be(4711);
-        message.ReporterName.Should().Be("Ada");
-        message.ReporterEmail.Should().Be("ada@example.test");
-    }
-
-    [Fact]
-    public void FromSelfieParser_ReadsTheMessageFourthNotSecond()
-    {
-        // reportSelfie(url, message, roomId, authorId, furniId) sends them as
-        // (url, roomId, authorId, message, furniId).
-        CallForHelpFromSelfieMessage message = Parse<CallForHelpFromSelfieMessage>(
-            CallForHelpFromSelfieMessageEvent,
-            sp =>
-                sp.WriteString("https://example.test/s/1")
-                    .WriteInteger(512)
-                    .WriteInteger(77)
-                    .WriteString("this is not ok")
-                    .WriteInteger(4711)
-        );
-
-        message.Url.Should().Be("https://example.test/s/1");
-        message.RoomId.Should().Be(512);
-        message.PhotoAuthorId.Should().Be(77);
-        message.Message.Should().Be("this is not ok");
-        message.FurniId.Should().Be(4711);
     }
 
     [Fact]

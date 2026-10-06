@@ -44,8 +44,6 @@ using Vortex.Primitives.Players.Grains;
 using Vortex.Primitives.Rooms.Enums;
 using Vortex.Primitives.Rooms.Object;
 using Vortex.Primitives.Rooms.Snapshots.Furniture;
-using Vortex.Primitives.Sound;
-using Vortex.Primitives.Sound.Snapshots;
 using Vortex.Protocol.Messages.Outgoing.Inventory.Bots;
 
 namespace Vortex.Inventory.Grains;
@@ -712,41 +710,6 @@ public sealed partial class InventoryGrain
     )
     {
         return _furniModule.GetAllItemSnapshotsAsync(ct);
-    }
-
-    public async Task<ImmutableArray<SongDiskSnapshot>> GetSongDisksAsync(CancellationToken ct)
-    {
-        ImmutableArray<FurnitureItemSnapshot> items = await _furniModule
-            .GetAllItemSnapshotsAsync(ct)
-            .ConfigureAwait(true);
-
-        ImmutableArray<SongDiskSnapshot>.Builder disks =
-            ImmutableArray.CreateBuilder<SongDiskSnapshot>();
-
-        foreach (FurnitureItemSnapshot item in items)
-        {
-            // The song id is the disk's legacy stuff data — the same string the client reads back as
-            // `furniture_extras` and parses as a number. A disk carrying anything else is a disk of
-            // nothing: it is skipped rather than reported as song 0, which the client would ask
-            // about, never get an answer for, and keep as a nameless entry all session.
-            if (item.Definition.LogicName != SoundLogicNames.SongDisk)
-            {
-                continue;
-            }
-
-            int songId = SongDiskExtraData.ReadSongId(
-                (item.StuffData as LegacyStuffSnapshot)?.Data
-            );
-
-            if (songId <= 0)
-            {
-                continue;
-            }
-
-            disks.Add(new SongDiskSnapshot { DiskId = item.ItemId.Value, SongId = songId });
-        }
-
-        return disks.ToImmutable();
     }
 
     public Task EnsureFurnitureReadyAsync(CancellationToken ct)

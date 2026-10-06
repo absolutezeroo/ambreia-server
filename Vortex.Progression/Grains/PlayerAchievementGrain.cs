@@ -271,13 +271,6 @@ internal sealed class PlayerAchievementGrain(
         {
             await ApplyLevelUpsAsync(definition, previousCompleted, result, presence, ct)
                 .ConfigureAwait(true);
-
-            // A resolution statue can only be waiting on a level, so this is the one moment a
-            // challenge can be won. One-way on purpose: progression must not wait on it.
-            await _grainFactory
-                .GetPlayerAchievementResolutionGrain((long)PlayerId)
-                .OnAchievementLevelUpAsync(definition.Id, result.NewCompletedLevels, ct)
-                .ConfigureAwait(true);
         }
 
         // Always refresh this achievement's row so an open achievements window updates live.

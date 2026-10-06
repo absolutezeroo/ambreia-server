@@ -199,21 +199,6 @@ public sealed record WardrobeOutfitSavedEvent(PlayerId PlayerId, int SlotId, str
     : IEvent;
 
 /// <summary>
-/// A resolution challenge on a statue was won and its badge handed out. The statue is named because
-/// the challenge lives on a piece of furniture that can be traded away afterwards.
-/// </summary>
-public sealed record AchievementResolutionWonEvent(
-    PlayerId PlayerId,
-    int ItemId,
-    int AchievementId,
-    int TargetLevel,
-    string BadgeCode
-) : IEvent;
-
-/// <summary>A resolution challenge still in progress was cleared off its statue.</summary>
-public sealed record AchievementResolutionResetEvent(PlayerId PlayerId, int ItemId) : IEvent;
-
-/// <summary>
 /// A client preference was saved. <paramref name="Setting"/> names the pane -- sound, chat, room
 /// invites, camera, UI flags -- because turning a setting off is sometimes the first move of an
 /// incident, and one undifferentiated "preferences changed" line cannot show which.
@@ -222,6 +207,3 @@ public sealed record AccountPreferenceChangedEvent(PlayerId PlayerId, string Set
 
 /// <summary>A clothing item was redeemed off a furni and unlocked permanently on the account.</summary>
 public sealed record ClothingRedeemedEvent(PlayerId PlayerId, int ItemId) : IEvent;
-
-/// <summary>A player answered a quiz.</summary>
-public sealed record QuizSubmittedEvent(PlayerId PlayerId, string QuizCode) : IEvent;

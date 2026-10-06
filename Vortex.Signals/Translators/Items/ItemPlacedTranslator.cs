@@ -1,6 +1,5 @@
 using System.Collections.Immutable;
 using Vortex.Primitives.Events;
-using Vortex.Primitives.RewardTracks;
 using Vortex.Primitives.Signals;
 
 namespace Vortex.Signals.Translators;
@@ -30,9 +29,7 @@ public sealed class ItemPlacedTranslator : ISignalTranslator<ItemPlacedEvent>
                     .Id(Facts.Definition, e.DefinitionId)
                     .Enum(
                         Facts.Placement,
-                        e.IsWallItem
-                            ? RewardTrackFacts.PlacementWall
-                            : RewardTrackFacts.PlacementFloor
+                        e.IsWallItem ? Facts.PlacementWall : Facts.PlacementFloor
                     )
                     .Id(Facts.Room, e.RoomId)
             ),

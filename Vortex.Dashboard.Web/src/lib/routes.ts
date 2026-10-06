@@ -59,7 +59,7 @@ export const foldSearch = (value: string | null | undefined): string =>
 //
 // `keywords` is free text matched by the sidebar filter and by the command palette on top of the
 // label and the short. It is what an operator TYPES, not what the page is called: "ban" must find
-// moderation, "ducats" the wallet ledger, "jukebox" the song catalogue. Both languages go in the
+// moderation, "ducats" the wallet ledger. Both languages go in the
 // same string -- the search is not locale-aware and an English operator on a French dashboard is
 // the normal case here. Accents are folded, so writing them here is optional.
 //
@@ -114,13 +114,11 @@ export const NAV = [
   { path: '/achievements', labelKey: 'nav.achievements', shortKey: 'nav.achievementsShort', group: 'Progression', keywords: 'succes achievement badge palier ladder niveau level progression trophee', caps: ROUTE_PERMISSIONS.achievements, load: () => import('../pages/AchievementsPage.svelte'), writes: true },
   // Same capability as /achievements: the statue is a view onto achievement progress, so a new one
   // would only mean granting it to every role before anyone could open the page.
-  { path: '/achievement-resolutions', labelKey: 'nav.achievementResolutions', shortKey: 'nav.achievementResolutionsShort', group: 'Progression', keywords: 'resolution statue defi challenge nouvel an new year succes', caps: ROUTE_PERMISSIONS.achievements, load: () => import('../pages/AchievementResolutionsPage.svelte') },
   { path: '/player-rewards', labelKey: 'nav.playerRewards', shortKey: 'nav.playerRewardsShort', group: 'Progression', keywords: 'badge effet effect recompense reward accorder grant donner give retirer', caps: ROUTE_PERMISSIONS.playerRewards, load: () => import('../pages/PlayerRewardsPage.svelte'), writes: true },
 
   { path: '/prize-pools', labelKey: 'nav.prizePools', shortKey: 'nav.prizePoolsShort', group: 'Prizes', keywords: 'pool lot prize gain chance odds probabilite tirage roll rattachement', caps: ROUTE_PERMISSIONS.prizePools, load: () => import('../pages/PrizePoolsPage.svelte'), writes: true },
 
   { path: '/furniture-definitions', labelKey: 'nav.furnitureDefinitions', shortKey: 'nav.furnitureDefinitionsShort', group: 'Content', keywords: 'mobilier furni furniture meuble definition sprite logic logique physique classname interaction', caps: ROUTE_PERMISSIONS.furnitureDefinitions, load: () => import('../pages/FurnitureDefinitionsPage.svelte'), writes: true },
-  { path: '/songs', labelKey: 'nav.songs', shortKey: 'nav.songsShort', group: 'Content', keywords: 'chanson song trax musique music jukebox disque disc audio piste', caps: ROUTE_PERMISSIONS.songs, load: () => import('../pages/SongsPage.svelte'), writes: true },
   { path: '/gift-wrappings', labelKey: 'nav.giftWrappings', shortKey: 'nav.giftWrappingsShort', group: 'Content', keywords: 'cadeau gift emballage wrapping paquet parcel boite box ruban ribbon present', caps: ROUTE_PERMISSIONS.giftWrappings, load: () => import('../pages/GiftWrappingsPage.svelte'), writes: true },
   { path: '/fishing', labelKey: 'nav.fishing', shortKey: 'nav.fishingShort', group: 'Content', keywords: 'peche fishing poisson fish zone espece species canne rod niveau appat', caps: ROUTE_PERMISSIONS.fishing, load: () => import('../pages/FishingPage.svelte'), writes: true },
   { path: '/articles', labelKey: 'nav.articles', shortKey: 'nav.articlesShort', group: 'Content', keywords: 'actualite news article site web presse billet post editeur redaction', caps: ROUTE_PERMISSIONS.articles, load: () => import('../pages/ArticlesPage.svelte'), writes: true },

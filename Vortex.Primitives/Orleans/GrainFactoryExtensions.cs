@@ -4,7 +4,6 @@ using Vortex.Primitives.Catalog.Grains;
 using Vortex.Primitives.Fishing.Grains;
 using Vortex.Primitives.FriendList.Grains;
 using Vortex.Primitives.Groups.Grains;
-using Vortex.Primitives.Help.Grains;
 using Vortex.Primitives.Inventory.Grains;
 using Vortex.Primitives.Marketplace.Grains;
 using Vortex.Primitives.Moderation.Grains;
@@ -219,21 +218,6 @@ public static class GrainFactoryExtensions
         long playerId
     ) => factory.GetGrain<IPlayerAchievementGrain>(playerId);
 
-    public static IPlayerQuizGrain GetPlayerQuizGrain(
-        this IGrainFactory factory,
-        PlayerId playerId
-    ) => factory.GetGrain<IPlayerQuizGrain>(playerId.Value);
-
-    public static IPlayerAchievementResolutionGrain GetPlayerAchievementResolutionGrain(
-        this IGrainFactory factory,
-        PlayerId playerId
-    ) => factory.GetGrain<IPlayerAchievementResolutionGrain>(playerId.Value);
-
-    public static IPlayerAchievementResolutionGrain GetPlayerAchievementResolutionGrain(
-        this IGrainFactory factory,
-        long playerId
-    ) => factory.GetGrain<IPlayerAchievementResolutionGrain>(playerId);
-
     public static IQuestManagerGrain GetQuestManagerGrain(this IGrainFactory factory) =>
         factory.GetGrain<IQuestManagerGrain>(SingletonGrainId.GLOBAL);
 
@@ -257,9 +241,6 @@ public static class GrainFactoryExtensions
 
     public static IPrizePoolManagerGrain GetPrizePoolManagerGrain(this IGrainFactory factory) =>
         factory.GetGrain<IPrizePoolManagerGrain>(SingletonGrainId.GLOBAL);
-
-    public static IGuideDirectoryGrain GetGuideDirectoryGrain(this IGrainFactory factory) =>
-        factory.GetGrain<IGuideDirectoryGrain>(SingletonGrainId.GLOBAL);
 
     public static IPlayerPrizeGrain GetPlayerPrizeGrain(
         this IGrainFactory factory,

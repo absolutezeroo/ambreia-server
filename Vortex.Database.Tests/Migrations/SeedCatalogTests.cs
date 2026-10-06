@@ -34,7 +34,8 @@ public sealed class SeedCatalogTests
 {
     private const string ResourcePrefix = "Vortex.Database.Seeds.";
 
-    /// <summary>The tables of the features removed in M0. A seed naming one targets nothing.</summary>
+    /// <summary>The tables of the features removed in M0 and M0 bis. A seed naming one targets
+    /// nothing.</summary>
     private static readonly string[] RemovedTables =
     [
         "habbicon",
@@ -47,6 +48,11 @@ public sealed class SeedCatalogTests
         "voucher",
         "targeted_offer",
         "ltd",
+        "songs",
+        "achievement_resolution",
+        "account_level",
+        "quiz",
+        "furniture_teleport_link",
     ];
 
     private static readonly Assembly DatabaseAssembly = typeof(SeedScripts).Assembly;

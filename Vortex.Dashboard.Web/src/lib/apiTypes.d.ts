@@ -75,13 +75,6 @@ export interface AchievementListResponse {
   items: AchievementListItem[];
 }
 
-export interface AchievementResolutions {
-  offers: ResolutionOffer[];
-  challenges: ResolutionChallenge[];
-  totals: ResolutionTotals;
-  truncated: boolean;
-}
-
 export interface AchievementScorePlayer {
   playerId: number;
   playerName: string | null;
@@ -2385,52 +2378,6 @@ export interface ReportWindow {
   granularity: string;
 }
 
-export interface ResolutionChallenge {
-  id: number;
-  playerId: number;
-  playerName: string | null;
-  itemId: number;
-  achievementId: number;
-  achievementName: string | null;
-  targetLevel: number;
-  reachedLevel: number;
-  startedAt: string;
-  endsAt: string;
-  completedAt: string | null;
-  badgeCode: string | null;
-  badgeUrl: string | null;
-  state: string;
-}
-
-export interface ResolutionOffer {
-  id: number;
-  achievementId: number;
-  achievementName: string | null;
-  category: string | null;
-  orphaned: boolean;
-  levelCount: number;
-  targetLevelOffset: number;
-  sortOrder: number;
-  enabled: boolean;
-  taken: number;
-  completed: number;
-  live: number;
-  expired: number;
-  completionRate: number;
-}
-
-export interface ResolutionTotals {
-  offers: number;
-  enabledOffers: number;
-  orphanedOffers: number;
-  taken: number;
-  completed: number;
-  live: number;
-  expired: number;
-  completionRate: number;
-  players: number;
-}
-
 export interface RoomDirectoryPage {
   count: number;
   total: number;
@@ -2603,25 +2550,6 @@ export interface SocialTotals {
   windowMessages: number;
   threads: number;
   posts: number;
-}
-
-export interface SongListItem {
-  id: number;
-  name: string;
-  creator: string;
-  lengthMs: number;
-  lengthSeconds: number;
-  officialSongId: string;
-  data: string;
-  diskCount: number;
-  loadedInJukeboxes: number;
-}
-
-export interface SongListResponse {
-  total: number;
-  page: number;
-  pageSize: number;
-  items: SongListItem[];
 }
 
 export interface StaffAccountMatch {

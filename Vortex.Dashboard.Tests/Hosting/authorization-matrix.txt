@@ -1,6 +1,5 @@
 GET /api/me -> AUTHENTICATED
 GET /api/v1/achievements -> dashboard.achievements.read
-GET /api/v1/achievements/resolutions -> dashboard.achievements.read
 GET /api/v1/achievements/stats -> dashboard.achievements.read
 GET /api/v1/achievements/{achievementId:int} -> dashboard.achievements.read
 GET /api/v1/articles -> dashboard.articles.read
@@ -39,7 +38,6 @@ GET /api/v1/directory/placed-furniture -> dashboard.furniture.read
 GET /api/v1/directory/players -> dashboard.players.read
 GET /api/v1/directory/players/{playerId:int}/profile -> dashboard.audit.read
 GET /api/v1/directory/quest-campaigns -> dashboard.quests.read
-GET /api/v1/directory/quizzes -> dashboard.quests.read
 GET /api/v1/directory/rooms -> dashboard.audit.read
 GET /api/v1/directory/rooms/active -> dashboard.ops.rooms.manage
 GET /api/v1/directory/rooms/{roomId:int} -> dashboard.audit.read
@@ -89,7 +87,6 @@ GET /api/v1/quests/types -> dashboard.quests.read
 GET /api/v1/quests/{questId:int} -> dashboard.quests.read
 GET /api/v1/rentable-spaces/activity -> dashboard.economy.read
 GET /api/v1/social/stats -> dashboard.social.read
-GET /api/v1/songs -> dashboard.songs.read
 GET /api/v1/staff -> dashboard.staff.read
 GET /api/v1/staff/accounts -> dashboard.staff.read
 GET /api/v1/wordfilter/hits -> dashboard.ops.wordfilter.manage
@@ -219,10 +216,6 @@ POST /api/v1/operations/quests/delete -> dashboard.ops.quests.manage
 POST /api/v1/operations/quests/update -> dashboard.ops.quests.manage
 POST /api/v1/operations/rooms/close -> dashboard.ops.rooms.manage
 POST /api/v1/operations/rooms/kick -> dashboard.ops.rooms.manage
-POST /api/v1/operations/songs -> dashboard.ops.songs.manage
-POST /api/v1/operations/songs/delete -> dashboard.ops.songs.manage
-POST /api/v1/operations/songs/reload -> dashboard.ops.songs.manage
-POST /api/v1/operations/songs/update -> dashboard.ops.songs.manage
 POST /api/v1/operations/staff/assignments -> dashboard.ops.staff.manage
 POST /api/v1/operations/staff/assignments/delete -> dashboard.ops.staff.manage
 POST /api/v1/operations/staff/presets -> dashboard.ops.staff.manage

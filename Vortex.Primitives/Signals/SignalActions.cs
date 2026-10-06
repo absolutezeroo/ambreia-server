@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Immutable;
-using Vortex.Primitives.RewardTracks;
 
 namespace Vortex.Primitives.Signals;
 
@@ -9,19 +8,16 @@ namespace Vortex.Primitives.Signals;
 /// </summary>
 /// <remarks>
 /// <para>
-/// Every constant here <em>forwards</em> to <see cref="RewardTrackActions"/> rather than repeating
-/// its string. That is deliberate and it is the whole lesson of this subsystem: the last time this
-/// vocabulary was written down in two places — the handlers and <c>RewardTrackActionFacts</c> — the
-/// two drifted on nine actions and nobody noticed, because nothing compares two hand-kept lists. A
-/// forwarding constant cannot drift; the compiler is the check.
+/// This is the one place the strings are written. The last time this vocabulary was written down in
+/// two places — the handlers and <c>RewardTrackActionFacts</c> — the two drifted on nine actions and
+/// nobody noticed, because nothing compares two hand-kept lists.
 /// </para>
 /// <para>
-/// The strings stay where their reason lives. They are the target client's artwork keys —
-/// <c>RewardTrackTaskRowView</c> builds an icon name as
-/// <c>"reward_track_tasks_" + actionType.toLowerCase()</c> — and <see cref="RewardTrackActions"/>
-/// carries the full account of why inventing one leaves a blank square. This class exists so a
-/// consumer that is not reward tracks does not have to name a reward-track type to say "a player
-/// entered a room".
+/// The strings are persisted vocabulary: content in the database names them, so a value never
+/// changes. They were the reward tracks' action codes (removed in M0), which were the target
+/// client's artwork keys — <c>RewardTrackTaskRowView</c> built an icon name as
+/// <c>"reward_track_tasks_" + actionType.toLowerCase()</c>; that is why most of them are spelled the
+/// way they are.
 /// </para>
 /// <para>
 /// The list is <em>declared</em>, not derived from the translators that exist. Two of these actions
@@ -32,188 +28,204 @@ namespace Vortex.Primitives.Signals;
 /// </remarks>
 public static class SignalActions
 {
-    /// <inheritdoc cref="RewardTrackActions.EnterOtherUsersRoom"/>
-    public const string EnterOtherUsersRoom = RewardTrackActions.EnterOtherUsersRoom;
+    /// <summary>Entered another player's room. Distinct-mode tasks count distinct rooms. (Introduction Track)</summary>
+    public const string EnterOtherUsersRoom = "enter_other_users_room";
 
-    /// <inheritdoc cref="RewardTrackActions.CreateRoom"/>
-    public const string CreateRoom = RewardTrackActions.CreateRoom;
+    /// <summary>Created a room. (Introduction Track)</summary>
+    public const string CreateRoom = "create_room";
 
-    /// <inheritdoc cref="RewardTrackActions.PlaceItem"/>
-    public const string PlaceItem = RewardTrackActions.PlaceItem;
+    /// <summary>Placed furniture in a room. (Introduction Track)</summary>
+    public const string PlaceItem = "place_item";
 
-    /// <inheritdoc cref="RewardTrackActions.MoveItem"/>
-    public const string MoveItem = RewardTrackActions.MoveItem;
+    /// <summary>Moved furniture already in a room. (Introduction Track)</summary>
+    public const string MoveItem = "move_item";
 
-    /// <inheritdoc cref="RewardTrackActions.RotateItem"/>
-    public const string RotateItem = RewardTrackActions.RotateItem;
+    /// <summary>Rotated furniture already in a room. (Introduction Track)</summary>
+    public const string RotateItem = "rotate_item";
 
-    /// <inheritdoc cref="RewardTrackActions.PickUpItem"/>
-    public const string PickUpItem = RewardTrackActions.PickUpItem;
+    /// <summary>
+    /// Took a placed piece of furniture back into the inventory. No client artwork -- there is no
+    /// <c>reward_track_tasks_pick_up_item</c> embed -- so this is usable as a later step of a
+    /// sequence, where nothing is drawn, but makes a poor step 0.
+    /// </summary>
+    public const string PickUpItem = "pick_up_item";
 
-    /// <inheritdoc cref="RewardTrackActions.WalkOnFurni"/>
-    public const string WalkOnFurni = RewardTrackActions.WalkOnFurni;
+    /// <summary>
+    /// Stepped onto a piece of floor furniture. No client artwork, same caveat as
+    /// <see cref="PickUpItem"/>. Fires often, which is why nothing is published unless some
+    /// content is actually listening for it.
+    /// </summary>
+    public const string WalkOnFurni = "walk_on_furni";
 
-    /// <inheritdoc cref="RewardTrackActions.Teleport"/>
-    public const string Teleport = RewardTrackActions.Teleport;
+    /// <summary>Arrived somewhere through a teleport. (Introduction Track)</summary>
+    public const string Teleport = "teleport";
 
-    /// <inheritdoc cref="RewardTrackActions.ChatWithSomeone"/>
-    public const string ChatWithSomeone = RewardTrackActions.ChatWithSomeone;
+    /// <summary>Said something a room accepted. (Introduction Track)</summary>
+    public const string ChatWithSomeone = "chat_with_someone";
 
-    /// <inheritdoc cref="RewardTrackActions.RequestFriend"/>
-    public const string RequestFriend = RewardTrackActions.RequestFriend;
+    /// <summary>Sent a friend request. (Introduction Track)</summary>
+    public const string RequestFriend = "request_friend";
 
-    /// <inheritdoc cref="RewardTrackActions.GiveRespect"/>
-    public const string GiveRespect = RewardTrackActions.GiveRespect;
+    /// <summary>Gave respect to another player. (Introduction Track)</summary>
+    public const string GiveRespect = "give_respect";
 
-    /// <inheritdoc cref="RewardTrackActions.SendMessengerMessage"/>
-    public const string SendMessengerMessage = RewardTrackActions.SendMessengerMessage;
+    /// <summary>Sent a private message. (Introduction Track)</summary>
+    public const string SendMessengerMessage = "send_messenger_message";
 
-    /// <inheritdoc cref="RewardTrackActions.Dance"/>
-    public const string Dance = RewardTrackActions.Dance;
+    /// <summary>Danced in a room. (Introduction Track)</summary>
+    public const string Dance = "dance";
 
-    /// <inheritdoc cref="RewardTrackActions.Wave"/>
-    public const string Wave = RewardTrackActions.Wave;
+    /// <summary>Waved in a room. (Introduction Track)</summary>
+    public const string Wave = "wave";
 
-    /// <inheritdoc cref="RewardTrackActions.ShowSign"/>
-    public const string ShowSign = RewardTrackActions.ShowSign;
+    /// <summary>Held up a sign.</summary>
+    public const string ShowSign = "show_sign";
 
-    /// <inheritdoc cref="RewardTrackActions.ChangeFigure"/>
-    public const string ChangeFigure = RewardTrackActions.ChangeFigure;
+    /// <summary>Changed the avatar's figure. (Introduction Track)</summary>
+    public const string ChangeFigure = "change_figure";
 
-    /// <inheritdoc cref="RewardTrackActions.ChangeMotto"/>
-    public const string ChangeMotto = RewardTrackActions.ChangeMotto;
+    /// <summary>Changed the profile motto. (Introduction Track)</summary>
+    public const string ChangeMotto = "change_motto";
 
-    /// <inheritdoc cref="RewardTrackActions.WearBadge"/>
-    public const string WearBadge = RewardTrackActions.WearBadge;
+    /// <summary>Equipped a badge. (Introduction Track)</summary>
+    public const string WearBadge = "wear_badge";
 
-    /// <inheritdoc cref="RewardTrackActions.BuyFromCatalogue"/>
-    public const string BuyFromCatalogue = RewardTrackActions.BuyFromCatalogue;
+    /// <summary>Bought from the catalog. (Introduction Track)</summary>
+    public const string BuyFromCatalogue = "buy_from_catalogue";
 
-    /// <inheritdoc cref="RewardTrackActions.PetLevel"/>
-    public const string PetLevel = RewardTrackActions.PetLevel;
+    /// <summary>A pet gained a level. (Introduction Track)</summary>
+    public const string PetLevel = "pet_level";
 
-    /// <inheritdoc cref="RewardTrackActions.CompleteTrade"/>
-    public const string CompleteTrade = RewardTrackActions.CompleteTrade;
+    /// <summary>Completed a trade. No client artwork.</summary>
+    public const string CompleteTrade = "complete_trade";
 
-    /// <inheritdoc cref="RewardTrackActions.SpendCredits"/>
-    public const string SpendCredits = RewardTrackActions.SpendCredits;
+    /// <summary>
+    /// Spent currency. The amount is the signal's amount, so a task can require a total. No client
+    /// artwork.
+    /// </summary>
+    public const string SpendCredits = "spend_credits";
 
-    /// <inheritdoc cref="RewardTrackActions.CompleteQuest"/>
-    public const string CompleteQuest = RewardTrackActions.CompleteQuest;
+    /// <summary>Completed a quest. No client artwork.</summary>
+    public const string CompleteQuest = "complete_quest";
 
-    /// <inheritdoc cref="RewardTrackActions.AchievementLevel"/>
-    public const string AchievementLevel = RewardTrackActions.AchievementLevel;
+    /// <summary>Levelled up an achievement. No client artwork.</summary>
+    public const string AchievementLevel = "achievement_level";
 
-    /// <inheritdoc cref="RewardTrackActions.Wired"/>
-    public const string Wired = RewardTrackActions.Wired;
+    /// <summary>
+    /// Raised by the wired <c>PROGRESS_REWARD_TRACK</c> action, which names its track and task
+    /// directly rather than going through an action code. Present so content and the dashboard can
+    /// describe such a task; the engine routes wired progress by id, not by this code. No client
+    /// artwork.
+    /// </summary>
+    public const string Wired = "wired";
 
-    /// <inheritdoc cref="RewardTrackActions.LeaveRoom"/>
-    public const string LeaveRoom = RewardTrackActions.LeaveRoom;
+    /// <summary>Left a room, with how long the stay lasted. (no Habbo artwork: this hotel's own signal)</summary>
+    public const string LeaveRoom = "leave_room";
 
-    /// <inheritdoc cref="RewardTrackActions.UpdateRoomSettings"/>
-    public const string UpdateRoomSettings = RewardTrackActions.UpdateRoomSettings;
+    /// <summary>Saved a room's settings, tags or category. (no Habbo artwork: this hotel's own signal)</summary>
+    public const string UpdateRoomSettings = "update_room_settings";
 
-    /// <inheritdoc cref="RewardTrackActions.AnswerDoorbell"/>
-    public const string AnswerDoorbell = RewardTrackActions.AnswerDoorbell;
+    /// <summary>Answered the doorbell for someone. (no Habbo artwork: this hotel's own signal)</summary>
+    public const string AnswerDoorbell = "answer_doorbell";
 
-    /// <inheritdoc cref="RewardTrackActions.AcceptFriend"/>
-    public const string AcceptFriend = RewardTrackActions.AcceptFriend;
+    /// <summary>Accepted a friend request. The other half of request_friend. (no Habbo artwork: this hotel's own signal)</summary>
+    public const string AcceptFriend = "accept_friend";
 
-    /// <inheritdoc cref="RewardTrackActions.ReceiveRespect"/>
-    public const string ReceiveRespect = RewardTrackActions.ReceiveRespect;
+    /// <summary>Was given respect by somebody else. (no Habbo artwork: this hotel's own signal)</summary>
+    public const string ReceiveRespect = "receive_respect";
 
-    /// <inheritdoc cref="RewardTrackActions.Login"/>
-    public const string Login = RewardTrackActions.Login;
+    /// <summary>Logged in. (no Habbo artwork: this hotel's own signal)</summary>
+    public const string Login = "login";
 
-    /// <inheritdoc cref="RewardTrackActions.ChangeName"/>
-    public const string ChangeName = RewardTrackActions.ChangeName;
+    /// <summary>Changed name. (no Habbo artwork: this hotel's own signal)</summary>
+    public const string ChangeName = "change_name";
 
-    /// <inheritdoc cref="RewardTrackActions.EarnBadge"/>
-    public const string EarnBadge = RewardTrackActions.EarnBadge;
+    /// <summary>Was granted a badge, however it arrived. (no Habbo artwork: this hotel's own signal)</summary>
+    public const string EarnBadge = "earn_badge";
 
-    /// <inheritdoc cref="RewardTrackActions.AcceptQuest"/>
-    public const string AcceptQuest = RewardTrackActions.AcceptQuest;
+    /// <summary>Accepted a quest. (no Habbo artwork: this hotel's own signal)</summary>
+    public const string AcceptQuest = "accept_quest";
 
-    /// <inheritdoc cref="RewardTrackActions.ActivateEffect"/>
-    public const string ActivateEffect = RewardTrackActions.ActivateEffect;
+    /// <summary>Activated an avatar effect. (no Habbo artwork: this hotel's own signal)</summary>
+    public const string ActivateEffect = "activate_effect";
 
-    /// <inheritdoc cref="RewardTrackActions.SubmitQuiz"/>
-    public const string SubmitQuiz = RewardTrackActions.SubmitQuiz;
+    /// <summary>Claimed a finished daily task. (no Habbo artwork: this hotel's own signal)</summary>
+    public const string ClaimDailyTask = "claim_daily_task";
 
-    /// <inheritdoc cref="RewardTrackActions.ClaimDailyTask"/>
-    public const string ClaimDailyTask = RewardTrackActions.ClaimDailyTask;
+    /// <summary>Saved an outfit to the wardrobe. (no Habbo artwork: this hotel's own signal)</summary>
+    public const string SaveOutfit = "save_outfit";
 
-    /// <inheritdoc cref="RewardTrackActions.SaveOutfit"/>
-    public const string SaveOutfit = RewardTrackActions.SaveOutfit;
+    /// <summary>Redeemed a clothing item. (no Habbo artwork: this hotel's own signal)</summary>
+    public const string RedeemClothing = "redeem_clothing";
 
-    /// <inheritdoc cref="RewardTrackActions.RedeemClothing"/>
-    public const string RedeemClothing = RewardTrackActions.RedeemClothing;
+    /// <summary>Changed an account preference. (no Habbo artwork: this hotel's own signal)</summary>
+    public const string ChangePreference = "change_preference";
 
-    /// <inheritdoc cref="RewardTrackActions.ChangePreference"/>
-    public const string ChangePreference = RewardTrackActions.ChangePreference;
+    /// <summary>Founded a guild. (no Habbo artwork: this hotel's own signal)</summary>
+    public const string CreateGroup = "create_group";
 
-    /// <inheritdoc cref="RewardTrackActions.CreateGroup"/>
-    public const string CreateGroup = RewardTrackActions.CreateGroup;
+    /// <summary>Joined a guild. (no Habbo artwork: this hotel's own signal)</summary>
+    public const string JoinGroup = "join_group";
 
-    /// <inheritdoc cref="RewardTrackActions.JoinGroup"/>
-    public const string JoinGroup = RewardTrackActions.JoinGroup;
+    /// <summary>Made a guild the favourite one. (no Habbo artwork: this hotel's own signal)</summary>
+    public const string FavouriteGroup = "favourite_group";
 
-    /// <inheritdoc cref="RewardTrackActions.FavouriteGroup"/>
-    public const string FavouriteGroup = RewardTrackActions.FavouriteGroup;
+    /// <summary>Started a forum thread. (no Habbo artwork: this hotel's own signal)</summary>
+    public const string CreateForumThread = "create_forum_thread";
 
-    /// <inheritdoc cref="RewardTrackActions.CreateForumThread"/>
-    public const string CreateForumThread = RewardTrackActions.CreateForumThread;
+    /// <summary>Posted on a forum thread. (no Habbo artwork: this hotel's own signal)</summary>
+    public const string CreateForumPost = "create_forum_post";
 
-    /// <inheritdoc cref="RewardTrackActions.CreateForumPost"/>
-    public const string CreateForumPost = RewardTrackActions.CreateForumPost;
+    /// <summary>Adopted a pet. (no Habbo artwork: this hotel's own signal)</summary>
+    public const string AdoptPet = "adopt_pet";
 
-    /// <inheritdoc cref="RewardTrackActions.AdoptPet"/>
-    public const string AdoptPet = RewardTrackActions.AdoptPet;
+    /// <summary>Put a pet down in a room. (no Habbo artwork: this hotel's own signal)</summary>
+    public const string PlacePet = "place_pet";
 
-    /// <inheritdoc cref="RewardTrackActions.PlacePet"/>
-    public const string PlacePet = RewardTrackActions.PlacePet;
+    /// <summary>Took a pet back out of a room. (no Habbo artwork: this hotel's own signal)</summary>
+    public const string PickUpPet = "pick_up_pet";
 
-    /// <inheritdoc cref="RewardTrackActions.PickUpPet"/>
-    public const string PickUpPet = RewardTrackActions.PickUpPet;
+    /// <summary>Put an item up for sale. (no Habbo artwork: this hotel's own signal)</summary>
+    public const string ListOnMarketplace = "list_on_marketplace";
 
-    /// <inheritdoc cref="RewardTrackActions.ListOnMarketplace"/>
-    public const string ListOnMarketplace = RewardTrackActions.ListOnMarketplace;
+    /// <summary>Bought an item from the marketplace. (no Habbo artwork: this hotel's own signal)</summary>
+    public const string BuyOnMarketplace = "buy_on_marketplace";
 
-    /// <inheritdoc cref="RewardTrackActions.BuyOnMarketplace"/>
-    public const string BuyOnMarketplace = RewardTrackActions.BuyOnMarketplace;
+    /// <summary>Collected what the marketplace owed. (no Habbo artwork: this hotel's own signal)</summary>
+    public const string RedeemMarketplaceCredits = "redeem_marketplace_credits";
 
-    /// <inheritdoc cref="RewardTrackActions.RedeemMarketplaceCredits"/>
-    public const string RedeemMarketplaceCredits = RewardTrackActions.RedeemMarketplaceCredits;
+    /// <summary>Bought or renewed a club membership. (no Habbo artwork: this hotel's own signal)</summary>
+    public const string BuyClub = "buy_club";
 
-    /// <inheritdoc cref="RewardTrackActions.BuyClub"/>
-    public const string BuyClub = RewardTrackActions.BuyClub;
+    /// <summary>Claimed a club gift. (no Habbo artwork: this hotel's own signal)</summary>
+    public const string ClaimClubGift = "claim_club_gift";
 
-    /// <inheritdoc cref="RewardTrackActions.ClaimClubGift"/>
-    public const string ClaimClubGift = RewardTrackActions.ClaimClubGift;
+    /// <summary>Unwrapped a present. (no Habbo artwork: this hotel's own signal)</summary>
+    public const string OpenPresent = "open_present";
 
-    /// <inheritdoc cref="RewardTrackActions.OpenPresent"/>
-    public const string OpenPresent = RewardTrackActions.OpenPresent;
+    /// <summary>Bought something for somebody else. (no Habbo artwork: this hotel's own signal)</summary>
+    public const string BuyGift = "buy_gift";
 
-    /// <inheritdoc cref="RewardTrackActions.BuyGift"/>
-    public const string BuyGift = RewardTrackActions.BuyGift;
+    /// <summary>Claimed vault income. (no Habbo artwork: this hotel's own signal)</summary>
+    public const string ClaimVaultIncome = "claim_vault_income";
 
-    /// <inheritdoc cref="RewardTrackActions.ClaimVaultIncome"/>
-    public const string ClaimVaultIncome = RewardTrackActions.ClaimVaultIncome;
+    /// <summary>Scratched somebody's pet.</summary>
+    public const string RespectPet = "respect_pet";
 
-    /// <inheritdoc cref="RewardTrackActions.RespectPet"/>
-    public const string RespectPet = RewardTrackActions.RespectPet;
+    /// <summary>Had one of your own pets scratched. The other half of respect_pet.</summary>
+    public const string PetRespected = "pet_respected";
 
-    /// <inheritdoc cref="RewardTrackActions.PetRespected"/>
-    public const string PetRespected = RewardTrackActions.PetRespected;
+    /// <summary>A pet obeyed an order. Raised where it obeys, never where the words were typed.</summary>
+    public const string CommandPet = "command_pet";
 
-    /// <inheritdoc cref="RewardTrackActions.CommandPet"/>
-    public const string CommandPet = RewardTrackActions.CommandPet;
+    /// <summary>
+    /// Stood on a tile beside a piece of furniture, or on it. Carries which side, measured from the
+    /// furniture, so "in front of the television" survives the television being turned round.
+    /// </summary>
+    public const string StandNearFurni = "stand_near_furni";
 
-    /// <inheritdoc cref="RewardTrackActions.StandNearFurni"/>
-    public const string StandNearFurni = RewardTrackActions.StandNearFurni;
-
-    /// <inheritdoc cref="RewardTrackActions.ReceiveGift"/>
-    public const string ReceiveGift = RewardTrackActions.ReceiveGift;
+    /// <summary>Was given something bought from the catalogue. The other half of buy_gift.</summary>
+    public const string ReceiveGift = "receive_gift";
 
     /// <summary>
     /// Every core action. The governance test freezes this list, and the translator processor uses
@@ -256,7 +268,6 @@ public static class SignalActions
         EarnBadge,
         AcceptQuest,
         ActivateEffect,
-        SubmitQuiz,
         ClaimDailyTask,
         SaveOutfit,
         RedeemClothing,

@@ -32,7 +32,9 @@ internal class ExtendedProfileMessageComposerSerializer(int header)
             .WriteInteger(message.LastAccessSinceInSeconds)
             .WriteBoolean(message.OpenProfileWindow)
             .WriteBoolean(message.IsHidden)
-            .WriteInteger(message.AccountLevel)
+            // accountLevel: frozen at 0 since account levels were removed (M0 bis). The client
+            // still reads it; the field goes when the client drops it.
+            .WriteInteger(0)
             .WriteInteger(message.IntegerField24)
             .WriteInteger(message.StarGemCount)
             .WriteBoolean(message.BooleanField26)

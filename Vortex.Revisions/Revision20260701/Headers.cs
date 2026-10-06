@@ -50,21 +50,13 @@ internal static class MessageEvent
     public const int RespectPetMessageEvent = 576;
 
     public const int GetCurrentTimingCodeMessageEvent = 1503;
-    public const int GetNftCreditsMessageEvent = 2069;
 
-    public const int GetSilverMessageEvent = 394;
     public const int GetBotInventoryEvent = 3148;
     public const int GetCreditsInfoEvent = 540;
     public const int CallForHelpFromForumMessageMessageEvent = 2991;
     public const int CallForHelpFromForumThreadMessageEvent = 380;
     public const int CallForHelpFromIMMessageEvent = 838;
-    public const int CallForHelpFromPhotoMessageEvent = 1964;
-    public const int CallForHelpFromSelfieMessageEvent = 201;
     public const int CallForHelpMessageEvent = 732;
-    public const int ChatReviewGuideDecidesOnOfferMessageEvent = 2545; // AS3-verified (direct read, both revisions): GuideSessionController skip_link/accept_button -> _SafeCls_2508
-    public const int ChatReviewGuideDetachedMessageEvent = 349; // AS3-verified (old-revision trace): _SafeCls_3740 -> onGuardianChatReviewWaitForOtherVotersEvent() still exists in current revision at 349
-    public const int ChatReviewGuideVoteMessageEvent = 1801; // AS3-verified (ghost fix): GuideSessionController::onGuardianChatReviewVoteEvent()
-    public const int ChatReviewSessionCreateMessageEvent = 3970; // AS3-verified (direct read, both revisions): GuideSessionController::onReportWindowEvent() submit_button -> sendMessage(new _SafeCls_2981(message)) registry@3970 (old _SafeCls_2760@296)
     public const int DeletePendingCallsForHelpMessageEvent = 3423; // AS3-verified (old-revision trace): _SafeCls_2943 -> deletePendingCallsForHelp() still exists in current revision at 3423
     public const int GetCfhStatusMessageEvent = 3458; // AS3-verified (old-revision trace): _SafeCls_1917 -> requestSanctionInfo() still exists in current revision at 3458
     public const int GetMyCfhReportStatusMessageEvent = 1834; // AS3-verified (direct read): _composers[1834] = _SafeCls_2121 in WIN63 habbo/communication/_SafeCls_2046.as, sent payload-free by HabboHelp::requestReportsStatus(). The reply (MyCfhReportStatusComposer) was already defined here; only the request header was missing, so the feature was half-built on this side
@@ -72,24 +64,6 @@ internal static class MessageEvent
 
     public const int GetPendingCallsForHelpMessageEvent = 92; // AS3-verified: HabboHelp::queryForPendingCallsForHelp()
 
-    public const int GetQuizQuestionsEvent = 1982; // AS3-verified (old-revision trace): _SafeCls_3778 -> showHabboWayQuiz() still exists in current revision at 1982
-    public const int GuideSessionCreateMessageEvent = 2181; // AS3-verified (direct read, both revisions): GuideSessionController::createHelpRequest() -> _habboHelp.sendMessage(new _SafeCls_3461(...)) @2181 (old _SafeCls_3193@3662, stale - never updated for this revision)
-    public const int GuideSessionFeedbackMessageEvent = 150; // AS3-verified (direct read, both revisions): GuideSessionController lines 812/969/982/1017/1022 -> _SafeCls_3165
-    public const int GuideSessionGetRequesterRoomMessageEvent = 3914; // AS3-verified (direct read, both revisions): GuideSessionController::onGuideOngoingEvent() visit_button -> _SafeCls_3794 (earlier shape-match guess of the same header was actually right, just mislabeled)
-    public const int GuideSessionGuideDecidesMessageEvent = 300; // AS3-verified (direct read, both revisions): GuideSessionController lines 710/715 -> _SafeCls_3277
-    public const int GuideSessionInviteRequesterMessageEvent = 3336; // AS3-verified (direct read, both revisions): GuideSessionController::onGuideOngoingEvent() invite_button -> _SafeCls_3297
-    public const int GuideSessionIsTypingMessageEvent = 296; // AS3-verified (old-revision trace): GuideSessionController::onTypingTimer() still exists in current revision at 296
-    public const int GuideSessionMessageMessageEvent = 1561; // AS3-verified (direct read, both revisions): GuideSessionController::onInput() -> _SafeCls_2721
-    public const int GuideSessionOnDutyUpdateMessageEvent = 958; // AS3-verified 2026-08-07: _composers[958] -> _SafeCls_3169, sent by GuideSessionController::showGuideTool() as (onDuty, tour_requests, help_requests, chat_reviews)
-
-    // GuideSessionReportMessageEvent is gone, not renumbered. WIN63 has no such message: the guide
-    // subsystem composes eighteen messages, every one of them already has a header here, and none
-    // of them is a report. The id it carried (9106) is not in the client's registry either, whose
-    // highest entry is 4101 -- so it was never a collision to resolve, it was a message that does
-    // not exist. Re-derived 2026-08-13.
-    public const int GuideSessionRequesterCancelsMessageEvent = 2847; // AS3-verified (old-revision trace): onUserPendingEvent() still exists in current revision at 2847
-    public const int GuideSessionResolvedMessageEvent = 3831; // AS3-verified (direct read, both revisions): GuideSessionController::onGuideOngoingEvent() close_link -> _SafeCls_3979
-    public const int PostQuizAnswersEvent = 1387;
     public const int OpenFlatConnectionMessageEvent = 3234;
     public const int QuitMessageEvent = 3061;
     public const int GetBonusRareInfoMessageEvent = 251;
@@ -302,11 +276,7 @@ internal static class MessageEvent
     public const int UpdateForumReadMarkerMessageEvent = 429; // AS3-verified (direct search, exact semantic match): GroupForumController::markForumAsRead() -> _SafeCls_3696
     public const int UpdateForumSettingsMessageEvent = 2793; // shape+AS3-verified: GroupForumController::updateForumSettings() (_SafeCls_2662)
     public const int UpdateThreadMessageEvent = 3206;
-    public const int GetOfficialSongIdMessageEvent = 1723; // AS3-verified (old-revision trace): _SafeCls_2539 -> onSelectProduct() still exists in current revision at 1723
-    public const int GetSongInfoMessageEvent = 3130; // AS3-verified (old-revision trace): _SafeCls_3422 -> sendNextSongRequestMessage() still exists in current revision at 3130
-    public const int GetSoundMachinePlayListMessageEvent = 3633; // AS3-verified (direct read, both revisions): SoundMachinePlayListController::requestPlayList() -> _SafeCls_3689
     public const int GetSoundSettingsEvent = 541; // AS3-verified (direct read, both revisions): HabboSoundManagerFlash10::init() -> _SafeCls_1901
-    public const int GetUserSongDisksMessageEvent = 1685; // AS3-verified (ghost fix): HabboMusicController::requestUserSongDisks()
     public const int ChangeUserNameMessageEvent = 1703; // AS3-verified (ghost fix): NameChangeController::changeName()
 
     // The onboarding name dialog claims a name with a DIFFERENT composer than the paid rename:
@@ -352,8 +322,6 @@ internal static class MessageEvent
     public const int SetRoomBackgroundColorDataEvent = 1647; // AS3-verified 2026-08-07: _composers[1647] in the WIN63-202607011411 registry, sent by BackgroundColorFurniWidget's apply button as (objectId, hue, saturation, lightness). The earlier search missed it because the widget sends it directly rather than through RoomSession, so it sits with no send* method near the other room-engine composers
     public const int SpinWheelOfFortuneMessageEvent = 3625; // AS3-verified (direct read, both revisions): useObject() ROFCAE_USE_HABBOWHEEL -> _SafeCls_3425
     public const int ThrowDiceMessageEvent = 1673; // AS3-verified (direct read, both revisions): useObject() ROFCAE_DICE_ACTIVATE -> _SafeCls_3154
-    public const int GetResolutionAchievementsMessageEvent = 1760; // AS3-verified 2026-08-13 (re-derived): _composers[1760] = _SafeCls_2562, sent by AchievementsResolutionController and by the room engine on ROWRE_ACHIEVEMENT_RESOLUTION_OPEN. Two ints (stuffId, achievementId), not an empty body
-    public const int ResetResolutionAchievementMessageEvent = 916; // AS3-verified 2026-08-13: _composers[916] = _SafeCls_3330, sent by AchievementsResolutionController::resetResolution. One int (stuffId). Had no header at all
     public const int GetPetInventoryEvent = 3891;
     public const int EventLogMessageEvent = 3809; // AS3-verified (shape-only): ClubExtendController::onOffer()
     public const int LagWarningReportMessageEvent = 481;
@@ -519,20 +487,6 @@ internal static class MessageComposer
     public const int MaintenanceStatusMessageComposer = 1737;
     public const int SelectInitialRoomComposer = 3624; // AS3-verified (ghost fix): onSelectInitialRoomResponse @ RoomPicker
 
-    // AS3-verified (direct read of the 2026 registry): _events[3050] = _SafeCls_3346, the event
-    // SongDiskProductViewCatalogWidget::onOfficialSongIdMessageEvent() subscribes to. NOT 2264:
-    // that was win63_version's id, and the 2026 registry reassigned 2264 to
-    // WeeklyCompetitiveFriendsLeaderboardEvent (_SafeCls_2046.as:1373 vs :1502), so the old value
-    // made this answer arrive at the client as a leaderboard. The client has been registered at
-    // 3050 all along (HabboMessages.ts, "=== SOUND (Trax) ===").
-    public const int OfficialSongIdMessageComposer = 3050;
-    public const int PlayListMessageComposer = 1242;
-    public const int TraxSongInfoMessageComposer = 2278;
-
-    // AS3-verified (direct read of the 2026 registry): _SafeStr_4546[1930] = _SafeCls_3625, the
-    // event HabboMusicController::onSongDiskInventoryMessage() subscribes to. Its parser reads a
-    // count then that many (diskId, songId) pairs.
-    public const int UserSongDisksInventoryMessageComposer = 1930;
     public const int AchievementComposer = 3981; // AS3-verified (ghost fix): onAchievement
     public const int AchievementsComposer = 1969; // AS3-verified (ghost fix): onAchievements
     public const int AchievementsScoreComposer = 3070;
@@ -559,23 +513,8 @@ internal static class MessageComposer
     public const int CallForHelpPendingCallsMessageComposer = 2987; // AS3-verified 2026-08-07: _SafeStr_4546[2987] -> the event class HabboHelp binds to onPendingCallsForHelp. Was 678, which the client maps to a class referenced nowhere else in the SWF -- so the packet was going out on a header nothing listens to
     public const int CallForHelpPendingCallsDeletedMessageComposer = 2440; // AS3-verified 2026-08-07: _SafeStr_4546[2440] -> onPendingCallsForHelpDeleted @ HabboHelp. Had no header at all; the composer existed and could never be registered
     public const int CallForHelpReplyMessageComposer = 2807; // AS3-verified (ghost fix): onCallForHelpReply @ CallForHelpManager
-    public const int ChatReviewSessionOfferedToGuideMessageComposer = 734; // AS3-verified (ghost fix): onChatReviewSessionOfferedToGuide @ GuideSessionController
-    public const int ChatReviewSessionResultsMessageComposer = 508; // AS3-verified (ghost fix): onChatReviewSessionResults @ GuideSessionController
-    public const int ChatReviewSessionStartedMessageComposer = 286; // AS3-verified (ghost fix): onChatReviewSessionStarted @ GuideSessionController
-    public const int ChatReviewSessionVotingStatusMessageComposer = 1881; // AS3-verified (ghost fix): onChatReviewSessionVotingStatus @ GuideSessionController
-    public const int GuideOnDutyStatusMessageComposer = 1923;
     public const int GuideReportingStatusMessageComposer = 3725; // AS3-verified (ghost fix): onGuideReportingStatus @ HabboHelp
-    public const int GuideSessionAttachedMessageComposer = 3274; // AS3-verified 2026-08-07: _SafeStr_4546[3274] -> _SafeCls_2443, bound to onGuideSessionAttached @ GuideSessionController. Payload is asGuide:bool, helpRequestType:int, helpRequestDescription:string, roleSpecificWaitTime:int
-    public const int GuideSessionEndedMessageComposer = 2126; // AS3-verified (ghost fix): onGuideSessionEnded @ GuideSessionController
-    public const int GuideSessionErrorMessageComposer = 2377; // AS3-verified (ghost fix): onGuideSessionError @ GuideSessionController
-    public const int GuideSessionInvitedToGuideRoomMessageComposer = 776; // AS3-verified (ghost fix): onGuideSessionInvitedToGuideRoom @ GuideSessionController
-    public const int GuideSessionMessageMessageComposer = 485; // AS3-verified (ghost fix): onGuideSessionMessage @ GuideSessionController
-    public const int GuideSessionPartnerIsTypingMessageComposer = 3656; // AS3-verified (ghost fix): onGuideSessionPartnerIsTyping @ GuideSessionController
-    public const int GuideSessionRequesterRoomMessageComposer = 2022; // AS3-verified (ghost fix): onGuideSessionRequesterRoom @ GuideSessionController
-    public const int GuideSessionStartedMessageComposer = 3649; // AS3-verified 2026-08-07: _SafeStr_4546[3649] -> _SafeCls_3061, bound to onGuideSessionStarted @ GuideSessionController
     public const int IssueCloseNotificationMessageComposer = 3943; // AS3-verified (ghost fix): onIssueClose @ CallForHelpManager
-    public const int QuizDataMessageComposer = 3999; // AS3-verified (ghost fix): onQuizData @ HabboWayQuizController
-    public const int QuizResultsMessageComposer = 548; // AS3-verified (ghost fix): onQuizResults @ HabboWayQuizController
 
     public const int GuildFurniContextMenuInfoMessageComposer = 3220;
     public const int OneWayDoorStatusMessageComposer = 1778; // AS3-verified (ghost fix): onOneWayDoorStatus
@@ -759,9 +698,6 @@ internal static class MessageComposer
     public const int PetPlacingErrorComposer = 3195; // AS3-verified (ghost fix): onPetPlacingError @ RoomUsersHandler
     public const int PetRespectFailedComposer = 31;
     public const int PetStatusUpdateComposer = 2753;
-    public const int AchievementResolutionCompletedMessageComposer = 1166; // AS3-verified (ghost fix): onAchievementResolutionCompleted
-    public const int AchievementResolutionProgressMessageComposer = 1844;
-    public const int AchievementResolutionsMessageComposer = 3143; // AS3-verified (ghost fix): onAchievementResolutions
 
     public const int FigureSetIdsComposer = 1231;
     public const int AccountPreferencesComposer = 724;

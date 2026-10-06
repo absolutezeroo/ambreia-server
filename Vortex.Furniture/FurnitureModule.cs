@@ -6,8 +6,6 @@ using Vortex.Primitives.Furniture;
 using Vortex.Primitives.Furniture.Providers;
 using Vortex.Primitives.Hosting;
 using Vortex.Primitives.Plugins;
-using Vortex.Primitives.Sound;
-using Vortex.Primitives.Sound.Providers;
 
 namespace Vortex.Furniture;
 
@@ -24,10 +22,6 @@ public sealed class FurnitureModule : IHostPluginModule
         services.AddSingleton<IFurnitureDefinitionProvider, FurnitureDefinitionProvider>();
         services.AddSingleton<IReferenceDataProvider>(sp =>
             (IReferenceDataProvider)sp.GetRequiredService<IFurnitureDefinitionProvider>()
-        );
-        services.AddSingleton<ISongProvider, SongProvider>();
-        services.AddSingleton<IReferenceDataProvider>(sp =>
-            (IReferenceDataProvider)sp.GetRequiredService<ISongProvider>()
         );
         services.AddSingleton<IStuffDataFactory, StuffDataFactory>();
         // The admin services moved to the dashboard: authoring content is its job, not the

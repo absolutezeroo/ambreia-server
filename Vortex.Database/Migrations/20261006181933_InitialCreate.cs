@@ -8615,15 +8615,12 @@ namespace Vortex.Database.Migrations
             migrationBuilder.Sql(SeedScripts.Read("highscore_families.sql"));
             migrationBuilder.Sql(SeedScripts.Read("navigator_configuration.sql"));
             migrationBuilder.Sql(SeedScripts.Read("hand_items.sql"));
-            migrationBuilder.Sql(SeedScripts.Read("account_levels.sql"));
-            migrationBuilder.Sql(SeedScripts.Read("quizzes.sql"));
             migrationBuilder.Sql(SeedScripts.Read("currencies.sql"));
             migrationBuilder.Sql(SeedScripts.Read("purchasable_clothing.sql"));
             migrationBuilder.Sql(SeedScripts.Read("fishing.sql"));
             migrationBuilder.Sql(SeedScripts.Read("add_shop.sql"));
             migrationBuilder.Sql(SeedScripts.Read("furni_logic_self_named_rebind.sql"));
             migrationBuilder.Sql(SeedScripts.Read("achievement_client_level_caps.sql"));
-            migrationBuilder.Sql(SeedScripts.Read("achievement_resolutions.sql"));
             migrationBuilder.Sql(SeedScripts.Read("achievement_catalogue.sql"));
             migrationBuilder.Sql(SeedScripts.Read("pet_levels.sql"));
             migrationBuilder.Sql(SeedScripts.Read("pet_palettes.sql"));

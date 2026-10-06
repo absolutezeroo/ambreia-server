@@ -7,9 +7,7 @@ using Vortex.Database.Entities.Errors;
 using Vortex.Database.Entities.Feed;
 using Vortex.Database.Entities.Fishing;
 using Vortex.Database.Entities.Furniture;
-using Vortex.Database.Entities.Gamedata;
 using Vortex.Database.Entities.Groups;
-using Vortex.Database.Entities.Help;
 using Vortex.Database.Entities.Marketplace;
 using Vortex.Database.Entities.Messenger;
 using Vortex.Database.Entities.Moderation;
@@ -74,8 +72,6 @@ public class VortexDbContext(DbContextOptions<VortexDbContext> options)
     public DbSet<FurnitureDefinitionEntity> FurnitureDefinitions { get; init; } = null!;
 
     public DbSet<FurnitureEntity> Furnitures { get; init; } = null!;
-
-    public DbSet<FurnitureTeleportLinkEntity> FurnitureTeleportLinks { get; init; } = null!;
 
     public DbSet<PlayerBadgeEntity> PlayerBadges { get; init; } = null!;
 
@@ -246,8 +242,6 @@ public class VortexDbContext(DbContextOptions<VortexDbContext> options)
 
     public DbSet<FigureSellableSetEntity> FigureSellableSets { get; init; } = null!;
 
-    public DbSet<SongEntity> Songs { get; init; } = null!;
-
     public DbSet<PlayerClothingEntity> PlayerClothing { get; init; } = null!;
 
     public DbSet<PetPaletteEntity> PetPalettes { get; init; } = null!;
@@ -276,22 +270,9 @@ public class VortexDbContext(DbContextOptions<VortexDbContext> options)
 
     public DbSet<PlayerAchievementEntity> PlayerAchievements { get; init; } = null!;
 
-    public DbSet<QuizEntity> Quizzes { get; init; } = null!;
-
-    public DbSet<QuizQuestionEntity> QuizQuestions { get; init; } = null!;
-
-    public DbSet<PlayerQuizEntity> PlayerQuizzes { get; init; } = null!;
-
-    public DbSet<AchievementResolutionEntity> AchievementResolutions { get; init; } = null!;
-
-    public DbSet<PlayerAchievementResolutionEntity> PlayerAchievementResolutions { get; init; } =
-        null!;
-
     public DbSet<QuestEntity> Quests { get; init; } = null!;
 
     public DbSet<PlayerQuestEntity> PlayerQuests { get; init; } = null!;
-
-    public DbSet<AccountLevelEntity> AccountLevels { get; init; } = null!;
 
     public DbSet<DailyTaskEntity> DailyTasks { get; init; } = null!;
 

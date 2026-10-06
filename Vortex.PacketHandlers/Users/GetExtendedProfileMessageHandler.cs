@@ -76,7 +76,6 @@ public class GetExtendedProfileMessageHandler : IMessageHandler<GetExtendedProfi
                     LastAccessSinceInSeconds = snapshot.LastAccessSinceInSeconds,
                     OpenProfileWindow = snapshot.OpenProfileWindow,
                     IsHidden = snapshot.IsHidden,
-                    AccountLevel = snapshot.AccountLevel,
                     IntegerField24 = snapshot.IntegerField24,
                     StarGemCount = snapshot.StarGemCount,
                     BooleanField26 = snapshot.BooleanField26,

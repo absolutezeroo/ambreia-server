@@ -36,23 +36,6 @@ internal static partial class DashboardEndpoints
             Capabilities.Dashboard.AchievementsRead,
             TagAchievements
         );
-        // Under the same capability as the rest of achievements rather than its own: the resolution
-        // statue is a view onto achievement progress, and an operator allowed to read one has no
-        // reason to be kept out of the other.
-        MapReadGet<AchievementResolutions>(
-            app,
-            ApiAchievements + "/resolutions",
-            (
-                HttpContext ctx,
-                AchievementResolutionReads achievementResolution,
-                CancellationToken ct
-            ) =>
-                OkAsync(
-                    achievementResolution.AchievementResolutionsAsync(ctx.QueryAsNameValues(), ct)
-                ),
-            Capabilities.Dashboard.AchievementsRead,
-            TagAchievements
-        );
         MapReadGetNullable<AchievementDetail>(
             app,
             ApiAchievements + "/{achievementId:int}",

@@ -287,21 +287,6 @@ internal sealed class SignalDirectoryReads(
             ct
         );
 
-    /// <summary>Quizzes, by code.</summary>
-    public Task<DirectoryPage> QuizzesDirectoryAsync(
-        NameValueCollection query,
-        CancellationToken ct
-    ) =>
-        PickerPageAsync(
-            query,
-            db => db.Quizzes.AsNoTracking(),
-            (quizzes, term, id) =>
-                quizzes.Where(q => q.Code.Contains(term) || (id != null && q.Id == id)),
-            quizzes => quizzes.OrderBy(q => q.Code),
-            q => new PickerRow(q.Id, q.Code, null) { Value = q.Code },
-            ct
-        );
-
     /// <summary>
     /// Quest campaigns, by code.
     /// </summary>

@@ -7,7 +7,6 @@ using Vortex.Primitives.Inventory.Furniture;
 using Vortex.Primitives.Inventory.Snapshots;
 using Vortex.Primitives.Rooms.Object;
 using Vortex.Primitives.Rooms.Snapshots.Furniture;
-using Vortex.Primitives.Sound.Snapshots;
 
 namespace Vortex.Primitives.Inventory.Grains;
 
@@ -61,16 +60,6 @@ public partial interface IInventoryGrain
     public Task<ImmutableArray<FurnitureItemSnapshot>> GetAllItemSnapshotsAsync(
         CancellationToken ct
     );
-
-    /// <summary>
-    /// The song disks the player is holding, each with the song pressed on it.
-    /// </summary>
-    /// <remarks>
-    /// The filtering belongs here rather than in the caller: what makes an item a song disk is its
-    /// definition's logic name, and the song it carries is its extra data read as a number. Both are
-    /// facts about the item, and the handler that asks this question has no business knowing either.
-    /// </remarks>
-    public Task<ImmutableArray<SongDiskSnapshot>> GetSongDisksAsync(CancellationToken ct);
 
     public Task GrantBadgeAsync(string badgeCode, CancellationToken ct);
 

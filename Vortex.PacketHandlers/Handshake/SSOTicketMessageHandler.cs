@@ -455,8 +455,7 @@ public class SSOTicketMessageHandler(
     /// The defaults are what every account gets without earning anything, and they are unchanged
     /// from when this list was written out by hand. What is new is the second half: a perk the
     /// player holds on their account is allowed even when the default says no, which is what makes
-    /// <see cref="PlayerPerkFlags"/> an entitlement rather than a column nobody reads. A reward
-    /// track handing out <c>USE_GUIDE_TOOL</c> now unlocks the guide tool.
+    /// <see cref="PlayerPerkFlags"/> an entitlement rather than a column nobody reads.
     /// </para>
     /// <para>
     /// A granted perk never turns one off — the flags are additive by construction, so an operator
@@ -506,11 +505,16 @@ public class SSOTicketMessageHandler(
             ),
         ];
 
-        // The camera and the room-thumbnail camera were removed by this fork (M0). Still listed, so
-        // the client's perk list keeps its shape, but never allowed -- not even by a grant -- since
+        // The camera and the room-thumbnail camera were removed by this fork (M0), the guide tool,
+        // the call on helpers and the chat reviews with the guides (M0 bis). Still listed, so the
+        // client's perk list keeps its shape, but never allowed -- not even by a grant -- since
         // nothing on the server answers what they unlock.
         const PlayerPerkFlags removedPerks =
-            PlayerPerkFlags.Camera | PlayerPerkFlags.NavigatorRoomThumbnailCamera;
+            PlayerPerkFlags.Camera
+            | PlayerPerkFlags.NavigatorRoomThumbnailCamera
+            | PlayerPerkFlags.UseGuideTool
+            | PlayerPerkFlags.CallOnHelpers
+            | PlayerPerkFlags.JudgeChatReviews;
 
         ImmutableArray<PerkAllowanceItem>.Builder builder =
             ImmutableArray.CreateBuilder<PerkAllowanceItem>(defaults.Length);

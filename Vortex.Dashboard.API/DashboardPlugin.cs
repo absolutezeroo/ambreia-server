@@ -55,8 +55,6 @@ using Vortex.Primitives.Plugins;
 using Vortex.Primitives.Plugins.Exports;
 using Vortex.Primitives.Prizes;
 using Vortex.Primitives.Quests;
-using Vortex.Primitives.Sound;
-using Vortex.Primitives.Sound.Providers;
 
 namespace Vortex.Dashboard.API;
 
@@ -151,8 +149,6 @@ public sealed class DashboardPlugin : IVortexPlugin
         services.TryAddSingleton<QuestContentOperations>();
         services.TryAddSingleton<ArticleReads>();
         services.TryAddSingleton<ArticleOperations>();
-        services.TryAddSingleton<SongReads>();
-        services.TryAddSingleton<SongOperations>();
         services.TryAddSingleton<GiftWrappingReads>();
         services.TryAddSingleton<GiftWrappingOperations>();
         services.TryAddSingleton<FishingReads>();
@@ -197,7 +193,6 @@ public sealed class DashboardPlugin : IVortexPlugin
         services.TryAddSingleton<CatalogPurchaseReads>();
         services.TryAddSingleton<EconomyReads>();
         services.TryAddSingleton<AchievementReads>();
-        services.TryAddSingleton<AchievementResolutionReads>();
         services.TryAddSingleton<SignalDirectoryReads>();
         services.TryAddSingleton<DirectoryReads>();
         // Authoring content is the dashboard's job, not the emulator's: the admin services live here
@@ -207,7 +202,6 @@ public sealed class DashboardPlugin : IVortexPlugin
         services.TryAddSingleton<ICatalogAdminService, CatalogAdminService>();
         services.TryAddSingleton<IFishingAdminService, FishingAdminService>();
         services.TryAddSingleton<IFurnitureAdminService, FurnitureAdminService>();
-        services.TryAddSingleton<ISongAdminService, SongAdminService>();
         services.TryAddSingleton<IGiftWrappingAdminService, GiftWrappingAdminService>();
         services.TryAddSingleton<INavigatorAdminService, NavigatorAdminService>();
         services.TryAddSingleton<IContentAdminService, ContentAdminService>();
@@ -286,7 +280,6 @@ public sealed class DashboardPlugin : IVortexPlugin
         services.UseHostService<ICatalogSnapshotProvider<NormalCatalog>>();
         services.UseHostService<IFurnitureDefinitionProvider>();
         services.UseHostService<INavigatorProvider>();
-        services.UseHostService<ISongProvider>();
         services.UseHostService<IGiftWrappingProvider>();
         services.UseHostService<ICurrencyTypeProvider>();
 
