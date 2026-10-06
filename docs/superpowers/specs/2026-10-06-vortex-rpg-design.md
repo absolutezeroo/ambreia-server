@@ -179,6 +179,23 @@ intermédiaire.
   du joueur, par exemple l’éditeur de plan de sol (`habbo/window/utils/floorplaneditor`) si seules
   les maisons restent personnalisables (spec fille Monde et éditeur de cartes).
 
+### 3.2 quinquies Placement libre et collisions vraies — APPROUVÉ
+
+- **Dans l’éditeur :** les meubles restent ancrés sur les cases, mais hauteur, rotation, état et
+  superposition sont **libres**, sans les règles d’empilement Habbo. Un outil modifie la hauteur et
+  l’état des objets et du sol.
+- **En jeu :** les collisions sont **vraies**. Elles viennent de la géométrie réelle des objets posés
+  (emprise, hauteur, surface marchable ou non, bloquant la vue ou non), jamais de meubles invisibles
+  qui bloquent des cases.
+- **Carte de navigation :** à la publication d’une zone, une carte de navigation est calculée à
+  partir de cette géométrie (marchable, hauteur de marche, bloquant, ligne de vue) et validée par le
+  serveur. Le serveur s’en sert pour les déplacements, le pathfinding, la ligne de vue et les portées
+  de combat ; elle remplace, pour les zones éditées, le calcul de hauteur par empilement de
+  `RoomLiveState`. Les maisons et halls de guilde gardent l’empilement actuel (pose par le joueur).
+- **Chantier :** format des propriétés de collision par définition de meuble (avec surcharge par
+  objet dans l’éditeur), calcul de la carte de navigation, son chargement par le runtime de zone.
+  Spec fille Monde et éditeur de cartes.
+
 ### 3.3 Runtime de zone (la couture) — APPROUVÉ
 
 Combat, monstres et compagnons NE DOIVENT PAS dépendre de `Vortex.Rooms`. Ils travaillent contre une
