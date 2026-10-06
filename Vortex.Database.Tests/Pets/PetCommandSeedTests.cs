@@ -106,7 +106,7 @@ public sealed class PetCommandSeedTests
     public void TheNestAndEatErrandsAreSeeded()
     {
         Commands.Should().Contain(c => c.Id == 13, "Nest walks the pet to its nest");
-        Commands.Should().Contain(c => c.Id == 43, "Eat walks the pet to a bowl");
+        Commands.Should().Contain(c => c.Id == 43, "Eat stays a posture command");
     }
 
     [Fact]

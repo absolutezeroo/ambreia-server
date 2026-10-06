@@ -285,8 +285,10 @@ internal sealed class PlayerRewardReads(
                     .Where(o => o.PlayerEntityId == playerId && o.DeletedAt == null)
                     // The catalogue's client id, not the foreign key: the number an operator can act
                     // on is the one the client uses, and the two are not the same.
+                    // Ordered before the projection: EF cannot translate an OrderBy on a record built
+                    // by Select, and the player-rewards page answered 500 for every player.
+                    .OrderBy(o => o.ChatStyle.ClientStyleId)
                     .Select(o => new PlayerChatStyleRow(o.Id, o.ChatStyle.ClientStyleId))
-                    .OrderBy(o => o.ClientStyleId)
                     .ToListAsync(ct)
                     .ConfigureAwait(false);
 

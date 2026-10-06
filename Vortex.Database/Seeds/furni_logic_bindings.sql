@@ -32,11 +32,8 @@
 --
 -- Statements are name-scoped and idempotent; a trimmed furnidata just matches fewer rows.
 --
--- ONE HAND EDIT, and it has to survive a regenerate: 'wf_xtra_var_lvlup_system' was in the
--- 'furniture_multistate' list, because when this was generated no Vortex logic was registered under
--- that name and the asset's own value won. WiredAddonVariableLevelUp now registers it, so rule 1
--- applies and the name was removed from that list. If scan_asset_logic.py puts it back, the scan is
--- reading a registration list that predates the add-on -- re-run it, do not re-add the name.
+-- Logic names of features M0 removed (wired, game tiles, crackables...) are still written: they are
+-- no longer registered, so they resolve to the family default like any other unregistered name.
 
 -- 31967 definitions
 UPDATE `furniture_definitions`

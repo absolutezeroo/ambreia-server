@@ -55,10 +55,11 @@ public sealed class GuildFurniStuffDataTests
     }
 
     /// <summary>
-    /// Locks the exact blob the backfill in <c>SeedGuildFurniLogicAndStuffData</c> writes in raw SQL
-    /// against the reader that has to parse it. The migration cannot call
-    /// <c>InventoryGrain.BuildGuildExtraData</c>, so the shape is duplicated there by hand — a
-    /// literal is the only thing that catches the two drifting apart.
+    /// Locks the exact blob a raw-SQL backfill writes (the former
+    /// <c>SeedGuildFurniLogicAndStuffData</c> migration did, before M0 squashed it) against the
+    /// reader that has to parse it. SQL cannot call <c>InventoryGrain.BuildGuildExtraData</c>, so
+    /// the shape is duplicated by hand — a literal is the only thing that catches the two drifting
+    /// apart.
     /// </summary>
     [Fact]
     public void TheBackfilledBlobDeserializesIntoTheGuildLayout()

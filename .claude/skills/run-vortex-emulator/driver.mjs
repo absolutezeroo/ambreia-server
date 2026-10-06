@@ -24,8 +24,12 @@ const PID_FILE = path.join(STATE, 'vortex-main.pid');
 const LOG_FILE = path.join(STATE, 'vortex-main.log');
 const COOKIE_FILE = path.join(STATE, 'dash-cookie.txt');
 
-// appsettings.Development.json moves the game sockets off the 30000/30001 of appsettings.json.
-const GAME_TCP = 40000;
+// appsettings.Development.json, when present, moves the game sockets off the 30000/30001 of
+// appsettings.json. VORTEX_GAME_PORT names the port when it was moved another way (the unprefixed
+// serverOptions__TcpServer__listeners__0__port variable).
+const GAME_TCP =
+  Number(process.env.VORTEX_GAME_PORT) ||
+  (fs.existsSync(path.join(REPO, 'appsettings.Development.json')) ? 40000 : 30000);
 const WEBAPI = 8080;
 // :9000 serves the copy of the SPA embedded in the assembly at its last build. While iterating on
 // the front end the live page is Vite's on :9001, and a cookie ignores the port, so the session
@@ -107,11 +111,27 @@ function mysqlExe() {
   return null;
 }
 
+// The database the emulator itself uses: Vortex.Main's user-secrets connection string when it has
+// one (the fork runs on its own DB, never on `turbo`), else the old turbo/admin default.
+let dbConn;
+function db() {
+  if (dbConn) return dbConn;
+  const out = spawnSync('dotnet', ['user-secrets', 'list', '--project', path.join(REPO, 'Vortex.Main')], {
+    encoding: 'utf8',
+  });
+  const cs = (out.stdout || '').match(/Vortex:Database:ConnectionString = (.*)/)?.[1] ?? '';
+  const part = (k) => cs.match(new RegExp(`(?:^|;)\\s*${k}=([^;]*)`, 'i'))?.[1];
+  dbConn = { name: part('Database') ?? 'turbo', password: part('Password') ?? 'admin' };
+  return dbConn;
+}
+
 function sql(query) {
   const exe = mysqlExe();
   if (!exe) die('No mysql client found. Set VORTEX_MYSQL to its full path.');
-  const out = spawnSync(exe, ['-h127.0.0.1', '-uroot', '-padmin', 'turbo', '-N', '-B', '-e', query], {
+  const { name, password } = db();
+  const out = spawnSync(exe, ['-h127.0.0.1', '-uroot', name, '-N', '-B', '-e', query], {
     encoding: 'utf8',
+    env: { ...process.env, MYSQL_PWD: password },
   });
   if (out.status !== 0) die(`mysql failed: ${out.stderr.trim()}`);
   return out.stdout.trim();

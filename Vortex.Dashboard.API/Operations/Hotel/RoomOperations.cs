@@ -178,7 +178,7 @@ internal sealed class RoomOperations(
     /// <summary>
     /// Resolves (and caches for the process lifetime) the reserved dashboard staff actor's player
     /// id by name via the player directory — see <see cref="StaffActorName"/>. Throws if the
-    /// <c>SeedDashboardStaffActor</c> migration has not run.
+    /// <c>seed_dashboard_staff_actor.sql</c> seed has not run.
     /// </summary>
 }
 

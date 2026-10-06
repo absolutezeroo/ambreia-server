@@ -17,7 +17,6 @@ using Vortex.Primitives.Groups.Enums;
 using Vortex.Primitives.Groups.Grains;
 using Vortex.Primitives.Groups.Providers;
 using Vortex.Primitives.Groups.Snapshots;
-using Vortex.Primitives.Groups.Snapshots;
 using Vortex.Primitives.Orleans;
 using Vortex.Primitives.Players;
 using Vortex.Primitives.Players.Enums.Wallet;

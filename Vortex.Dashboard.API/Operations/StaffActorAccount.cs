@@ -15,8 +15,9 @@ namespace Vortex.Dashboard.API.Operations;
 /// <para>
 /// Room-scoped moderation grain methods (<c>MuteUserAsync</c>, <c>KickUserAsync</c>) require a real
 /// <see cref="PlayerId"/> as the acting player and reject <see cref="ActionContext.System"/>, but a
-/// web session has no in-game player of its own. The <c>SeedDashboardStaffActor</c> migration seeds
-/// a reserved, account-less player row for exactly this, and this resolves its id.
+/// web session has no in-game player of its own. The <c>seed_dashboard_staff_actor.sql</c> seed
+/// (applied by <c>InitialCreate</c>) inserts a reserved, account-less player row for exactly this,
+/// and this resolves its id.
 /// </para>
 /// <para>
 /// A singleton with a cache and a lock, because it is one directory lookup whose answer never
@@ -28,7 +29,7 @@ namespace Vortex.Dashboard.API.Operations;
 /// </remarks>
 internal sealed class StaffActorAccount(IGrainFactory grainFactory)
 {
-    /// <summary>Name of the reserved player row seeded by the <c>SeedDashboardStaffActor</c> migration.</summary>
+    /// <summary>Name of the reserved player row inserted by <c>seed_dashboard_staff_actor.sql</c>.</summary>
     private const string StaffActorName = "__dashboard_staff__";
 
     private readonly IGrainFactory _grainFactory = grainFactory;

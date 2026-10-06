@@ -25,8 +25,11 @@ Already installed and verified on this machine — nothing to `install`:
 | MySQL | Laragon, `C:\laragon\bin\mysql\mysql-8.4.3-winx64\` — the version directory changes, the driver globs it |
 | Edge | `C:\Program Files (x86)\Microsoft\Edge\Application\msedge.exe`, for screenshots |
 
-Database is `turbo` on `127.0.0.1:3306`, `root`/`admin`, 159 tables — the connection string is in
-the gitignored `appsettings.Development.json`. Laragon does not start with Windows:
+The database is the one in Vortex.Main's user-secrets (`Vortex:Database:ConnectionString`, e.g.
+`vortex_m0_check` on `127.0.0.1:3306`, `root`); the driver's `login`/`cleanup` SQL reads the same
+secret, and only falls back to the old `turbo`/`admin` when there is none. A fresh fork database
+needs `scripts/import-reference-data.ps1` before rooms can be built. Laragon does not start with
+Windows:
 
 ```powershell
 node .claude/skills/run-vortex-emulator/driver.mjs mysql
@@ -141,8 +144,19 @@ this session**: an emulator was already up, and a second instance collides on :9
 
 ## Gotchas
 
-- **The dev game ports are 40000/40001, not 30000/30001.** `appsettings.json`, the README and
-  `docker-compose.yml` all say 30000; `appsettings.Development.json` overrides `serverOptions`.
+- **The dev game ports are 40000/40001 when `appsettings.Development.json` exists** (it overrides
+  `serverOptions`), 30000/30001 otherwise; the driver picks by the file's presence, or by
+  `VORTEX_GAME_PORT`. WebStorm holds 30000/30001 on this machine.
+- **Without `appsettings.Development.json`** (the fork's checkout has none) three things are missing,
+  each passed as an environment variable before `start`: the RSA keypair
+  (`VORTEX__Vortex__Crypto__PublicKey`/`PrivateKey`/`KeySize` — the host refuses the placeholders),
+  the game ports (`serverOptions__TcpServer__listeners__0__port`, `serverOptions__WebSocketServer__listeners__0__port`,
+  unprefixed) and the plugins (`VORTEX__Vortex__Plugin__DevPluginPaths__0`/`__1`). Point the plugin
+  paths at `dotnet publish` outputs of `Vortex.Dashboard.API` and `Vortex.WebApi`, not at their
+  `bin`: a library build does not copy Swashbuckle, and both plugins then die at start-up with
+  `Could not load Swashbuckle.AspNetCore.SwaggerGen` while the host reports "Loaded 2 plugins".
+- **Republishing the dashboard into a running host breaks it**: the hot reload fails with
+  `ObjectDisposedException: DefaultMeterFactory` and :9000 goes away. `stop`, then `start`.
   Those two listeners are configured through *unprefixed* env vars because SuperSocket builds its
   own generic host, outside the `VORTEX__` prefix.
 - **Never stop the running emulator to unblock a build.** It is the live-verification hotel;

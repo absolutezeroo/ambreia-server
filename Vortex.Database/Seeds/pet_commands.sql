@@ -42,7 +42,7 @@ FROM (
     -- values, which the bound and the ordering both agree with.
     SELECT  0 AS command, 1 AS level_required, ''    AS posture,  0 AS energy_cost,  5 AS xp_reward UNION ALL -- Free
     SELECT  1, 1, 'sit', 10, 10 UNION ALL -- Sit
-    SELECT 43, 1, 'eat',  0,  5 UNION ALL -- Eat: the room walks it to a bowl
+    SELECT 43, 1, 'eat',  0,  5 UNION ALL -- Eat: posture only since M0 removed pet food
     SELECT  2, 2, 'lay', 10, 10 UNION ALL -- Down
     SELECT  4, 2, 'beg', 10, 10 UNION ALL -- Beg
     SELECT  5, 3, 'ded', 28, 20 UNION ALL -- Play dead

@@ -19,7 +19,11 @@ public sealed class ItemPlacedAchievementHandlerTests
     [Fact]
     public async Task A_hole_raises_both_bars_to_what_the_room_holds()
     {
-        List<(string, int)> raised = await Place("furniture_floor_hole", kinds: 12, sameLogic: 3);
+        List<(string, int)> raised = await PlaceAsync(
+            "furniture_floor_hole",
+            kinds: 12,
+            sameLogic: 3
+        );
 
         raised
             .Should()
@@ -32,12 +36,20 @@ public sealed class ItemPlacedAchievementHandlerTests
     [Fact]
     public async Task Any_other_furni_raises_only_the_variety_bar()
     {
-        List<(string, int)> raised = await Place("furniture_multistate", kinds: 4, sameLogic: 9);
+        List<(string, int)> raised = await PlaceAsync(
+            "furniture_multistate",
+            kinds: 4,
+            sameLogic: 9
+        );
 
         raised.Should().Equal((AchievementNames.RoomDecoFurniTypeCount, 4));
     }
 
-    private static async Task<List<(string, int)>> Place(string logic, int kinds, int sameLogic)
+    private static async Task<List<(string, int)>> PlaceAsync(
+        string logic,
+        int kinds,
+        int sameLogic
+    )
     {
         List<(string, int)> raised = [];
 
