@@ -11,7 +11,6 @@ using Orleans;
 using Vortex.Database.Context;
 using Vortex.Primitives.Authentication;
 using Vortex.Primitives.Camera;
-using Vortex.Primitives.Chain;
 using Vortex.Primitives.Crypto;
 using Vortex.Primitives.Events;
 using Vortex.Primitives.Hosting;
@@ -142,14 +141,9 @@ public sealed class WebApiPlugin : IVortexPlugin
         services.UseHostService<IAccountSafetyQuestionsService>();
         services.UseHostService<IAccountTrustedLocationService>();
 
-        // The shop, the chain and the wallets: modules this assembly does not reference, reached
-        // through the interfaces in Vortex.Primitives. The leaderboard's snapshot is refreshed by a
-        // hosted service on the host — a second instance here would sit empty forever.
+        // The shop: a module this assembly does not reference, reached through the interface in
+        // Vortex.Primitives.
         services.UseHostService<IShopService>();
-        services.UseHostService<IChainService>();
-        services.UseHostService<IChainLeaderboard>();
-        services.UseHostService<IHotelWalletService>();
-        services.UseHostService<IWalletProof>();
     }
 
     /// <summary>

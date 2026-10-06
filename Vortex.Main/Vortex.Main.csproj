@@ -106,6 +106,5 @@
          a loadable plugin, and a reference would make it impossible to unload.
          DashboardUnloadabilityTests measures both plugins and notices if this comes back. -->
     <ProjectReference Include="..\Vortex.Runtime\Vortex.Runtime.csproj" />
-    <ProjectReference Include="..\Vortex.Chain\Vortex.Chain.csproj" />
   </ItemGroup>
 </Project>

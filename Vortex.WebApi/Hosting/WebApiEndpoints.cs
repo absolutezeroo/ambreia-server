@@ -36,7 +36,6 @@ internal static partial class WebApiEndpoints
     public const string SsoTokenRateLimitPolicy = "webapi-ssotoken";
     public const string ReportRateLimitPolicy = "webapi-report";
     public const string ShopOrderRateLimitPolicy = "webapi-shop-order";
-    public const string ChainRpcRateLimitPolicy = "webapi-chain-rpc";
     public const string FeedPostRateLimitPolicy = "webapi-feed-post";
 
     private const string TagPublic = "Public";
@@ -45,7 +44,6 @@ internal static partial class WebApiEndpoints
     private const string TagNewUser = "NewUser";
     private const string TagContent = "Content";
     private const string TagShop = "Shop";
-    private const string TagChain = "Chain";
 
     public static void Map(WebApplication app)
     {
@@ -61,22 +59,10 @@ internal static partial class WebApiEndpoints
         MapContent(app);
         MapShop(app);
 
-        // Where a self-custody wallet is proved and linked. Not in the game client, which has no
-        // interface for it — see WebApiEndpoints.Wallet.cs.
-        MapWallet(app);
-
-        // The only route to the chain node, whose own port is deliberately unpublished — see
-        // WebApiEndpoints.Chain.cs.
-        WebApiEndpointsChain.MapChain(app, TagChain, ChainRpcRateLimitPolicy);
-
-        // What VortexCollectible's tokenURI points at. Tagged Public rather than Chain because it
+        // What VortexCollectible's tokenURI points at. Tagged Public because it
         // answers with or without a chain: it describes a Relic, and a Relic exists in the hotel
         // whether or not anybody ever moved it.
         WebApiEndpointsCollectibles.MapCollectibles(app, TagPublic);
-
-        // The coin contest. Public for the same reason the chain routes are: every balance in it is
-        // readable off the chain by anyone who has the addresses, and the addresses are public.
-        WebApiEndpointsLeaderboard.MapLeaderboard(app, TagPublic);
 
         WebApiEndpointsCamera.MapCamera(app);
 

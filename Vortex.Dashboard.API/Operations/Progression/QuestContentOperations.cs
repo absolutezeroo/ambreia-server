@@ -244,8 +244,7 @@ internal sealed class QuestContentOperations(
                 .. levels.Select(l => new CommunityGoalLevelSpec(
                     LevelNumber: 0,
                     l.ScoreThreshold,
-                    l.RewardUserLimit,
-                    l.RewardCoins
+                    l.RewardUserLimit
                 )),
             ];
 

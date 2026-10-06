@@ -11,13 +11,9 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
-using Vortex.Crypto.Configuration;
-using Vortex.Crypto.Ethereum;
 using Vortex.Database.Context;
 using Vortex.Primitives.Authentication;
 using Vortex.Primitives.Camera;
-using Vortex.Primitives.Chain;
-using Vortex.Primitives.Crypto;
 using Vortex.Primitives.Hosting;
 using Vortex.Primitives.Moderation.WordFilter;
 using Vortex.Primitives.Observability;
@@ -91,34 +87,6 @@ internal sealed class WebApiTestFactory : IAsyncDisposable
         builder.Services.AddSingleton<IAccountTrustedLocationService>(TrustedLocations);
         builder.Services.AddSingleton<IShopService>(Shop);
 
-        // A hotel with no chain, which is what every hotel runs by default — and the state the two
-        // chain routes have to answer politely in rather than throw. Its absence here is what the
-        // production 500 looked like from the inside: an unregistered service, read by a minimal
-        // API as the request body, failing the whole endpoint.
-        builder.Services.AddSingleton<IChainService>(new FakeChainService());
-
-        // The REAL implementations, not fakes. Both are pure and deterministic — one derives an
-        // address from a seed, the other recovers one from a signature — so a fake would only be a
-        // second, weaker copy of arithmetic that is already pinned against ethers, and the wallet
-        // tests would stop proving the thing they exist for.
-        builder.Services.AddSingleton<IWalletProof>(new WalletProof());
-        builder.Services.AddSingleton<IHotelWalletService>(
-            new HotelWalletService(
-                Options.Create(
-                    new CryptoConfig
-                    {
-                        KeySize = "3",
-                        PublicKey = "00",
-                        PrivateKey = "00",
-                        EnableServerToClientEncryption = false,
-                        WalletMasterSeed =
-                            "6f1a2b3c4d5e6f708192a3b4c5d6e7f8091a2b3c4d5e6f708192a3b4c5d6e7f8",
-                    }
-                ),
-                NullLogger<HotelWalletService>.Instance
-            )
-        );
-        builder.Services.AddSingleton<WalletLinkChallenges>();
         builder.Services.AddSingleton<RequiredServiceGuard>();
 
         // Mirrors WebApiWebHost.ForwardSingletons. Leaving a service out of that list is not a
@@ -131,7 +99,6 @@ internal sealed class WebApiTestFactory : IAsyncDisposable
         // the comment above does not cover: a [FromServices] parameter is NOT read as the body, so
         // the route builds, no test can reach it, and it answers 500 to everyone else. Found by
         // scripts/hooks/check-webapi-forwarding.mjs, which now compares the three lists.
-        builder.Services.AddSingleton<IChainLeaderboard>(new FakeChainLeaderboard());
         builder.Services.AddSingleton<ICameraPhotoStore>(Photos);
 
         DbContexts = new TestDbContextFactory(

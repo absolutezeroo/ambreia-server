@@ -4,7 +4,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Orleans;
-using Vortex.Primitives.Chain;
 using Vortex.Primitives.Commerce;
 using Vortex.Primitives.Habbicons;
 using Vortex.Primitives.Habbicons.Snapshots;
@@ -328,60 +327,6 @@ internal sealed class EntitlementRewardGranter(
             .GetPlayerGrain(PlayerId.Parse(playerId))
             .GrantPerkAsync(perk.Value, ct)
             .ConfigureAwait(false);
-
-        return true;
-    }
-}
-
-/// <summary>VortexCoin, minted to the player's custodial address.</summary>
-/// <remarks>
-/// <para>
-/// <c>Amount</c> is whole coins and <c>RewardTypeId</c> is unused: there is one coin. The eighteen
-/// decimals and the address both belong to <see cref="IChainRewardService" />, which is the only
-/// place in the hotel that knows either.
-/// </para>
-/// <para>
-/// <b>The two failure modes are told apart deliberately, and it matters more here than for any
-/// other kind.</b> A hotel with no chain returns false — content asked for something this build
-/// cannot hand over, and no retry changes that. A chain that refused or could not be reached
-/// THROWS, which the pipeline records as owed at its step rather than as refused: minting fails for
-/// reasons that pass, and a transient RPC error must not be written down as "the player was not
-/// entitled to this".
-/// </para>
-/// </remarks>
-internal sealed class CoinRewardGranter(
-    IChainRewardService coins,
-    ILogger<CoinRewardGranter> logger
-) : IRewardGranter
-{
-    public RewardKind Kind => RewardKind.Coin;
-
-    public async Task<bool> GrantAsync(
-        int playerId,
-        RewardGrantSnapshot reward,
-        CommerceOperationId operation,
-        string stepKey,
-        CancellationToken ct
-    )
-    {
-        if (reward.Amount <= 0)
-        {
-            return false;
-        }
-
-        if (!coins.Enabled)
-        {
-            logger.LogWarning(
-                "A reward offers {Amount} VTX, but this hotel has no chain or holds no wallet keys; "
-                    + "player {PlayerId} was granted nothing.",
-                reward.Amount,
-                playerId
-            );
-
-            return false;
-        }
-
-        await coins.PayAsync(playerId, reward.Amount, ct).ConfigureAwait(false);
 
         return true;
     }

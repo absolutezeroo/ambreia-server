@@ -40,9 +40,6 @@
   let activity = $state({ type: 0, amount: '', reason: '' });
   // Silver and emeralds share one form: same grant, different currency.
   let collectibles = $state({ currency: 'silver', amount: '', reason: '' });
-  // VortexCoin, and its own form rather than a third option above: it is not a currency_types row
-  // but a transaction sent to a chain, so it fails for reasons the others cannot have.
-  let chainCoin = $state({ amount: '', reason: '' });
   let item = $state({ definitionId: '', defName: '', defSprite: '', defIcon: '', extraData: '', reason: '' });
   let kick = $state({ reason: '' });
   let ban = $state({ permanent: false, durationSeconds: '', reason: '' });
@@ -67,7 +64,6 @@
   let canCredits = $derived(hasDashboardCapability($identity, OPERATION_CAPABILITIES.credits));
   let canActivity = $derived(hasDashboardCapability($identity, OPERATION_CAPABILITIES.activity));
   let canCollectibles = $derived(hasDashboardCapability($identity, OPERATION_CAPABILITIES.collectibles));
-  let canChainCoin = $derived(hasDashboardCapability($identity, OPERATION_CAPABILITIES.chainCoin));
   let canItem = $derived(hasDashboardCapability($identity, OPERATION_CAPABILITIES.item));
   let canKick = $derived(hasDashboardCapability($identity, OPERATION_CAPABILITIES.kick));
   let canBan = $derived(hasDashboardCapability($identity, MODERATION_OPERATION_CAPABILITIES.ban));
@@ -83,7 +79,6 @@
     { key: 'credits', label: $t('operations.giveCredits'), hint: $t('operations.giveCreditsHint'), allowed: canCredits },
     { key: 'activity', label: $t('operations.giveActivityPoints'), hint: $t('operations.giveActivityPointsHint'), allowed: canActivity },
     { key: 'collectibles', label: $t('operations.giveCollectiblesCurrency'), hint: $t('operations.giveCollectiblesHint'), allowed: canCollectibles },
-    { key: 'chainCoin', label: $t('operations.giveChainCoin'), hint: $t('operations.giveChainCoinHint'), allowed: canChainCoin },
     { key: 'item', label: $t('operations.giveFurniture'), hint: $t('operations.giveFurnitureHint'), allowed: canItem },
     {
       key: 'kick',
@@ -178,30 +173,6 @@
             ? 'operations.currencyEmeralds'
             : 'operations.currencySilver',
         ),
-        name: who,
-        id: playerId,
-      }),
-    );
-  }
-
-  function stageChainCoin() {
-    if (!canChainCoin) {
-      return void ops.fail('chainCoin', translate('operations.chainCoinAccessDenied'));
-    }
-
-    stage(
-      'chainCoin',
-      translate('operations.giveChainCoin'),
-      '/api/v1/operations/currency/chain',
-      positive(chainCoin.amount),
-      {
-        amount: Number(chainCoin.amount),
-        reason: chainCoin.reason.trim(),
-      },
-      // Whole coins. The server multiplies by the contract's decimals, so what is typed here is
-      // what the player sees in their wallet.
-      translate('operations.chainCoinSummary', {
-        amount: chainCoin.amount,
         name: who,
         id: playerId,
       }),
@@ -484,48 +455,6 @@
       {/if}
       {#if $ops.results.collectibles}
         <OpResult result={$ops.results.collectibles} onCopy={copy} copyLabel={$t('common.copy')} />
-      {/if}
-    {/if}
-{/snippet}
-
-{#snippet chainCoinForm()}
-    {#if !canChainCoin}
-      <AccessDeniedNotice message={$t('operations.chainCoinAccessDenied')} />
-    {:else}
-      <p class="empty-state">{$t('operations.chainCoinNote')}</p>
-      <div class="op-field">
-        <label for="chain-coin-amount">{$t('operations.amount')}</label>
-        <input
-          id="chain-coin-amount"
-          type="number"
-          min="1"
-          autocomplete="off"
-          spellcheck="false"
-          bind:value={chainCoin.amount}
-          placeholder="100"
-        />
-      </div>
-      <div class="op-field">
-        <label for="chain-coin-reason">{$t('common.reasonOptional')}</label>
-        <input
-          id="chain-coin-reason"
-          autocomplete="off"
-          spellcheck="false"
-          bind:value={chainCoin.reason}
-          placeholder={$t('common.reasonPlaceholder')}
-          list="reason-history"
-        />
-      </div>
-      <div class="op-actions">
-        <button type="button" onclick={stageChainCoin} disabled={$ops.busyKeys.chainCoin}>
-          {$t('common.run')}
-        </button>
-      </div>
-      {#if $ops.errors.chainCoin}
-        <p class="empty-state danger" role="alert">{$ops.errors.chainCoin}</p>
-      {/if}
-      {#if $ops.results.chainCoin}
-        <OpResult result={$ops.results.chainCoin} onCopy={copy} copyLabel={$t('common.copy')} />
       {/if}
     {/if}
 {/snippet}
@@ -882,7 +811,6 @@
     {#if openAction === 'credits'}{@render creditsForm()}
     {:else if openAction === 'activity'}{@render activityForm()}
     {:else if openAction === 'collectibles'}{@render collectiblesForm()}
-    {:else if openAction === 'chainCoin'}{@render chainCoinForm()}
     {:else if openAction === 'item'}{@render itemForm()}
     {:else if openAction === 'kick'}{@render kickForm()}
     {:else if openAction === 'ban'}{@render banForm()}

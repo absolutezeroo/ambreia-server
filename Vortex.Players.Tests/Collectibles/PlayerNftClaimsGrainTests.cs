@@ -13,7 +13,6 @@ using Vortex.Database.Context;
 using Vortex.Database.Entities.Collectibles;
 using Vortex.Database.Entities.Furniture;
 using Vortex.Players.Grains;
-using Vortex.Primitives.Chain;
 using Vortex.Primitives.Collectibles;
 using Vortex.Primitives.Collectibles.Grains;
 using Vortex.Primitives.Commerce;
@@ -202,75 +201,6 @@ public sealed class PlayerNftClaimsGrainTests
         harness.CollectorScoreReads.Should().Be(0);
     }
 
-    /// <summary>
-    ///     The other door. A Relic that left through the Transfer tab comes home when the hotel's
-    ///     treasury holds its token on the chain — and claiming it destroys the token, because one
-    ///     Relic owned in two places is exactly what the wallet column exists to prevent.
-    /// </summary>
-    [Fact]
-    public async Task AReturnedRelic_IsListedForTheWalletItLeftFromAndClaimingItBurnsTheToken()
-    {
-        FakeChain chain = new();
-        Harness harness = await Harness
-            .CreateAsync(chain: chain, sentOutTo: Wallet)
-            .ConfigureAwait(true);
-
-        chain.Give(FakeChain.Treasury, RelicAssetId);
-
-        ImmutableArray<NftClaimSnapshot> claims = await harness
-            .Grain.GetClaimsAsync(Wallet, CancellationToken.None)
-            .ConfigureAwait(true);
-
-        claims
-            .Select(claim => claim.ClaimId)
-            .Should()
-            .Contain($"relic:{RelicAssetId}", "the treasury is holding it");
-
-        (
-            await harness
-                .Grain.GetClaimsAsync("0xsomewhereelse", CancellationToken.None)
-                .ConfigureAwait(true)
-        )
-            .Select(claim => claim.ClaimId)
-            .Should()
-            .NotContain($"relic:{RelicAssetId}", "it is listed under the wallet it left from");
-
-        await harness.Grain.ClaimAllAsync(CancellationToken.None).ConfigureAwait(true);
-
-        chain.Burned.Should().ContainSingle().Which.Should().Be(RelicAssetId);
-
-        await using VortexDbContext db = harness.Db.CreateDbContext();
-
-        db.NftAssets.Single(asset => asset.Id == RelicAssetId)
-            .WalletAddress.Should()
-            .BeNull("it is back in the hotel");
-    }
-
-    /// <summary>
-    ///     The chain decides, not the database. A row saying a Relic left is not evidence it came
-    ///     back, and offering it as a claim would hand the player a second copy of something they
-    ///     still own in their own wallet.
-    /// </summary>
-    [Fact]
-    public async Task ARelicStillOutOnTheChain_IsNotClaimable()
-    {
-        FakeChain chain = new();
-        Harness harness = await Harness
-            .CreateAsync(chain: chain, sentOutTo: Wallet)
-            .ConfigureAwait(true);
-
-        chain.Give(Wallet, RelicAssetId);
-
-        (await harness.Grain.GetClaimsAsync(Wallet, CancellationToken.None).ConfigureAwait(true))
-            .Select(claim => claim.ClaimId)
-            .Should()
-            .NotContain($"relic:{RelicAssetId}");
-
-        await harness.Grain.ClaimAllAsync(CancellationToken.None).ConfigureAwait(true);
-
-        chain.Burned.Should().BeEmpty("the hotel does not hold it");
-    }
-
     private sealed class Harness
     {
         private readonly Counter _collectorScoreReads;
@@ -302,7 +232,6 @@ public sealed class PlayerNftClaimsGrainTests
             string productCode = Lamp,
             int claimLimit = 1,
             DateTime? validTo = null,
-            IChainService? chain = null,
             string? sentOutTo = null,
             int minCollectorLevel = 0,
             int collectorLevel = 0
@@ -434,10 +363,7 @@ public sealed class PlayerNftClaimsGrainTests
                     db,
                     grainFactory,
                     FakeProxy.Create<IEventPublisher>(_ => Task.CompletedTask),
-                    NullLogger<PlayerNftClaimsGrain>.Instance,
-                    // Off unless a test says otherwise: a hotel with no chain is the default, and
-                    // none of the claims above should ever reach one.
-                    chain ?? new FakeChain { Enabled = false, TreasuryAddress = null }
+                    NullLogger<PlayerNftClaimsGrain>.Instance
                 );
 
             return new Harness(grain, db, grants, collectorScoreReads);

@@ -13,7 +13,6 @@
     <PackageReference Include="Microsoft.Orleans.Persistence.Memory" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Vortex.Crypto\Vortex.Crypto.csproj" />
     <ProjectReference Include="..\Vortex.Database\Vortex.Database.csproj" />
     <ProjectReference Include="..\Vortex.Events\Vortex.Events.csproj" />
     <ProjectReference Include="..\Vortex.Logging\Vortex.Logging.csproj" />

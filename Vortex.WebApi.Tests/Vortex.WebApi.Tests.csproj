@@ -25,6 +25,5 @@
       it" would assert the plumbing and nothing about the one rule that matters, which is that an
       address nobody proved is refused.
     -->
-    <ProjectReference Include="..\Vortex.Crypto\Vortex.Crypto.csproj" />
   </ItemGroup>
 </Project>

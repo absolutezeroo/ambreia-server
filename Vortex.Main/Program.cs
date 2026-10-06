@@ -14,7 +14,6 @@ using Orleans;
 using Vortex.Authentication;
 using Vortex.Benchmark;
 using Vortex.Catalog;
-using Vortex.Chain.Extensions;
 using Vortex.Collectibles;
 using Vortex.Crypto.Extensions;
 using Vortex.Database.Extensions;
@@ -132,10 +131,6 @@ internal class Program
         builder.Services.AddVortexEventSystem();
         builder.Services.AddVortexMessageSystem(builder);
         builder.Services.AddVortexCrypto(builder);
-        // Straight after the crypto, because it derives the treasury's address with the same
-        // primitives. With no Vortex:Chain:RpcUrl configured — the default — this costs one log line
-        // and nothing else.
-        builder.Services.AddVortexChain(builder);
         builder.Services.AddVortexRevisions(builder);
 
         builder.Services.AddHostPlugin<ObservabilityModule>(builder);

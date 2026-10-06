@@ -27,16 +27,10 @@ public sealed record CommunityGoalSpec(
 );
 
 /// <summary>One rung: the total that unlocks it and how many contributors it rewards.</summary>
-/// <param name="RewardCoins">
-/// Whole VortexCoin paid to each of those contributors when the rung falls; 0 for a rung that
-/// rewards nothing on the chain. Defaulted, so authoring a ladder that is not a coin campaign reads
-/// exactly as it did before there was one.
-/// </param>
 public sealed record CommunityGoalLevelSpec(
     int LevelNumber,
     int ScoreThreshold,
-    int RewardUserLimit,
-    int RewardCoins = 0
+    int RewardUserLimit
 );
 
 /// <summary>

@@ -14,7 +14,6 @@ using Microsoft.Extensions.Options;
 using Vortex.Database.Context;
 using Vortex.Primitives.Authentication;
 using Vortex.Primitives.Camera;
-using Vortex.Primitives.Chain;
 using Vortex.Primitives.Crypto;
 using Vortex.Primitives.Hosting;
 using Vortex.Primitives.Moderation.WordFilter;
@@ -297,24 +296,6 @@ internal sealed class WebApiWebHost(
         // not reference and does not need to: the endpoints know only IShopService, and which payment
         // providers exist behind it is settled where the module is registered.
         services.AddSingleton(rootServices.GetRequiredService<IShopService>());
-
-        // The chain, for the same reason and with the same shape. Forgetting it did not look like a
-        // missing registration: the startup probe resolved it happily on the ROOT host and said the
-        // chain was ready, while both /api/public/chain routes answered 500 from this one. Two
-        // containers, one of them told about the service.
-        services.AddSingleton(rootServices.GetRequiredService<IChainService>());
-
-        // The coin standings. The snapshot is refreshed by a hosted service on the root host; this
-        // container only reads it, and reads the very same instance — a second one would sit empty
-        // forever and the leaderboard would render as "nobody holds anything".
-        services.AddSingleton(rootServices.GetRequiredService<IChainLeaderboard>());
-
-        // Linking a wallet: the address a player's Stardust wallet is at, and the check that turns
-        // "this address is mine" from a claim into a proof. Both live in Vortex.Crypto, which this
-        // project does not reference — same arrangement as the shop and the chain above.
-        services.AddSingleton(rootServices.GetRequiredService<IHotelWalletService>());
-        services.AddSingleton(rootServices.GetRequiredService<IWalletProof>());
-        services.AddSingleton<Services.WalletLinkChallenges>();
 
         // POST /api/user/reports emits an audit record. A service missing from this list is not a
         // resolution failure at call time — minimal APIs read an unregistered parameter as the

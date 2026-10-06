@@ -143,11 +143,6 @@ internal static class WebApiAppConfigurator
             );
             AddFixedWindowPolicy(
                 options,
-                WebApiEndpoints.ChainRpcRateLimitPolicy,
-                config.ChainRpcRateLimit
-            );
-            AddFixedWindowPolicy(
-                options,
                 WebApiEndpoints.FeedPostRateLimitPolicy,
                 config.FeedPostRateLimit
             );

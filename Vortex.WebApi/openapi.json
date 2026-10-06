@@ -342,49 +342,6 @@
         }
       }
     },
-    "/api/public/chain": {
-      "get": {
-        "tags": [
-          "Chain"
-        ],
-        "summary": "What a wallet needs to add the hotel\u0027s network.",
-        "operationId": "ChainDescriptor",
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ChainDescriptor"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/api/public/chain/rpc": {
-      "post": {
-        "tags": [
-          "Chain"
-        ],
-        "summary": "Forwards an allowlisted JSON-RPC call, or a batch of them, to the node.",
-        "operationId": "ChainRpc",
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {}
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "200": {
-            "description": "OK"
-          }
-        }
-      }
-    },
     "/api/public/languages": {
       "get": {
         "tags": [
@@ -1013,27 +970,6 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ApiErrorResponse"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/api/public/leaderboard/coins": {
-      "get": {
-        "tags": [
-          "Public"
-        ],
-        "summary": "Who holds the most VortexCoin, as of the last snapshot.",
-        "operationId": "CoinLeaderboard",
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/LeaderboardResponse"
                 }
               }
             }
@@ -2716,197 +2652,6 @@
         }
       }
     },
-    "/api/user/wallets": {
-      "get": {
-        "tags": [
-          "User"
-        ],
-        "summary": "The player\u0027s hotel wallet and any self-custody wallets they linked.",
-        "operationId": "UserWallets",
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/WalletsResponse"
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "Unauthorized",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiErrorResponse"
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "Not Found",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiErrorResponse"
-                }
-              }
-            }
-          }
-        }
-      },
-      "post": {
-        "tags": [
-          "User"
-        ],
-        "summary": "Links a wallet by the signature it gave for the issued challenge.",
-        "operationId": "LinkWallet",
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/WalletLinkRequest"
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/WalletsResponse"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Bad Request",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiErrorResponse"
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "Unauthorized",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiErrorResponse"
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "Not Found",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiErrorResponse"
-                }
-              }
-            }
-          },
-          "409": {
-            "description": "Conflict",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiErrorResponse"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/api/user/wallets/challenge": {
-      "post": {
-        "tags": [
-          "User"
-        ],
-        "summary": "A nonce to sign, and the exact message to sign it in.",
-        "operationId": "WalletChallenge",
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/WalletChallengeResponse"
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "Unauthorized",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiErrorResponse"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/api/user/wallets/{address}": {
-      "delete": {
-        "tags": [
-          "User"
-        ],
-        "summary": "Unlinks a wallet the player had proved.",
-        "operationId": "UnlinkWallet",
-        "parameters": [
-          {
-            "name": "address",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/WalletsResponse"
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "Unauthorized",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiErrorResponse"
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "Not Found",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiErrorResponse"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
     "/api/user/feed": {
       "post": {
         "tags": [
@@ -3880,56 +3625,6 @@
         },
         "additionalProperties": false
       },
-      "ChainDescriptor": {
-        "required": [
-          "chainId",
-          "chainIdHex",
-          "currencyDecimals",
-          "currencyName",
-          "currencySymbol",
-          "enabled",
-          "rpcUrl"
-        ],
-        "type": "object",
-        "properties": {
-          "enabled": {
-            "type": "boolean"
-          },
-          "chainId": {
-            "type": "integer",
-            "format": "int64"
-          },
-          "chainIdHex": {
-            "type": "string"
-          },
-          "rpcUrl": {
-            "type": "string"
-          },
-          "currencyName": {
-            "type": "string"
-          },
-          "currencySymbol": {
-            "type": "string"
-          },
-          "currencyDecimals": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "coinAddress": {
-            "type": "string",
-            "nullable": true
-          },
-          "collectibleAddress": {
-            "type": "string",
-            "nullable": true
-          },
-          "treasuryAddress": {
-            "type": "string",
-            "nullable": true
-          }
-        },
-        "additionalProperties": false
-      },
       "ChangeEmailRequest": {
         "required": [
           "isValid"
@@ -4425,64 +4120,6 @@
         "properties": {
           "propertyNameCaseInsensitive": {
             "type": "boolean"
-          }
-        },
-        "additionalProperties": false
-      },
-      "LeaderboardEntryResponse": {
-        "required": [
-          "address",
-          "balance",
-          "balanceWei",
-          "playerId",
-          "playerName",
-          "rank"
-        ],
-        "type": "object",
-        "properties": {
-          "rank": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "playerId": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "playerName": {
-            "type": "string"
-          },
-          "address": {
-            "type": "string"
-          },
-          "balance": {
-            "type": "string"
-          },
-          "balanceWei": {
-            "type": "string"
-          }
-        },
-        "additionalProperties": false
-      },
-      "LeaderboardResponse": {
-        "required": [
-          "enabled",
-          "standings"
-        ],
-        "type": "object",
-        "properties": {
-          "enabled": {
-            "type": "boolean"
-          },
-          "takenAtUtc": {
-            "type": "string",
-            "format": "date-time",
-            "nullable": true
-          },
-          "standings": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/LeaderboardEntryResponse"
-            }
           }
         },
         "additionalProperties": false
@@ -5863,62 +5500,6 @@
           }
         },
         "additionalProperties": false
-      },
-      "WalletChallengeResponse": {
-        "required": [
-          "message",
-          "nonce"
-        ],
-        "type": "object",
-        "properties": {
-          "nonce": {
-            "type": "string"
-          },
-          "message": {
-            "type": "string"
-          }
-        },
-        "additionalProperties": false
-      },
-      "WalletLinkRequest": {
-        "type": "object",
-        "properties": {
-          "address": {
-            "type": "string",
-            "nullable": true
-          },
-          "signature": {
-            "type": "string",
-            "nullable": true
-          }
-        },
-        "additionalProperties": false
-      },
-      "WalletsResponse": {
-        "required": [
-          "linkedAddresses",
-          "relicHolders"
-        ],
-        "type": "object",
-        "properties": {
-          "stardustAddress": {
-            "type": "string",
-            "nullable": true
-          },
-          "linkedAddresses": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
-          },
-          "relicHolders": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
-          }
-        },
-        "additionalProperties": false
       }
     }
   },
@@ -5928,9 +5509,6 @@
     },
     {
       "name": "Camera"
-    },
-    {
-      "name": "Chain"
     },
     {
       "name": "Content"

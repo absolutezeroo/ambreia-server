@@ -1,9 +1,9 @@
 using System.Collections.Immutable;
+using System.Globalization;
 using System.Threading;
 using System.Threading.Tasks;
 using Orleans;
 using Vortex.Messages.Registry;
-using Vortex.Primitives.Crypto;
 using Vortex.Primitives.Orleans;
 using Vortex.Primitives.Players;
 using Vortex.Protocol.Messages.Incoming.Collectibles;
@@ -14,11 +14,8 @@ namespace Vortex.PacketHandlers.Collectibles;
 /// <summary>
 /// Which wallets the player has.
 ///
-/// The Stardust one is the hotel's own, held on the player's behalf, and
-/// <see cref="IHotelWalletService" /> derives it from the hotel's master seed — a real secp256k1
-/// key, so the address is one a chain can actually be asked about. With no seed configured that
-/// same service answers the keyless placeholder this handler used to build itself, which is what
-/// keeps a hotel that wants no chain running unchanged.
+/// The Stardust one is a keyless placeholder (<c>0x</c> plus the player id in hex): there is no
+/// chain, and the client only needs a non-empty opaque value.
 ///
 /// <para>
 /// The address has to be non-empty either way. The client pushes the Stardust address into its
@@ -36,12 +33,9 @@ namespace Vortex.PacketHandlers.Collectibles;
 /// signed to prove it, which is what lets the Transfer tab offer it as a destination at all.
 /// </para>
 /// </summary>
-public class GetCollectibleWalletAddressesMessageHandler(
-    IHotelWalletService wallets,
-    IGrainFactory grainFactory
-) : IMessageHandler<GetCollectibleWalletAddressesMessage>
+public class GetCollectibleWalletAddressesMessageHandler(IGrainFactory grainFactory)
+    : IMessageHandler<GetCollectibleWalletAddressesMessage>
 {
-    private readonly IHotelWalletService _wallets = wallets;
     private readonly IGrainFactory _grainFactory = grainFactory;
 
     public async ValueTask HandleAsync(
@@ -63,7 +57,10 @@ public class GetCollectibleWalletAddressesMessageHandler(
         await ctx.SendComposerAsync(
                 new CollectibleWalletAddressesMessageComposer
                 {
-                    StardustWalletAddress = _wallets.GetAddress(ctx.PlayerId),
+                    StardustWalletAddress =
+                        "0x"
+                        + ctx.PlayerId.Value.ToString("x", CultureInfo.InvariantCulture)
+                            .PadLeft(40, '0'),
                     WalletAddresses = linked,
                 },
                 ct

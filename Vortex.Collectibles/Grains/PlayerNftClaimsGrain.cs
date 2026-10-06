@@ -11,7 +11,6 @@ using Microsoft.Extensions.Logging;
 using Orleans;
 using Vortex.Database.Context;
 using Vortex.Database.Entities.Collectibles;
-using Vortex.Primitives.Chain;
 using Vortex.Primitives.Collectibles;
 using Vortex.Primitives.Collectibles.Grains;
 using Vortex.Primitives.Commerce;
@@ -50,15 +49,13 @@ internal sealed class PlayerNftClaimsGrain(
     IDbContextFactory<VortexDbContext> dbCtxFactory,
     IGrainFactory grainFactory,
     IEventPublisher events,
-    ILogger<PlayerNftClaimsGrain> logger,
-    IChainService chain
+    ILogger<PlayerNftClaimsGrain> logger
 ) : Grain, IPlayerNftClaimsGrain
 {
     private readonly IDbContextFactory<VortexDbContext> _dbCtxFactory = dbCtxFactory;
     private readonly IGrainFactory _grainFactory = grainFactory;
     private readonly IEventPublisher _events = events;
     private readonly ILogger<PlayerNftClaimsGrain> _logger = logger;
-    private readonly IChainService _chain = chain;
 
     /// <summary>
     /// What a returned Relic's claim id is built from. The client only echoes the id back, and the
@@ -203,138 +200,17 @@ internal sealed class PlayerNftClaimsGrain(
         return granted + returned;
     }
 
-    /// <summary>
-    /// The Relics this player sent out from <paramref name="wallet" /> that the hotel's treasury now
-    /// holds on the chain — the ones waiting to come home.
-    /// </summary>
-    /// <remarks>
-    /// The database is asked first and the chain second, so a hotel where nobody has ever
-    /// transferred anything out costs no RPC call at all. The chain is what decides: a row saying a
-    /// Relic left is not evidence it came back.
-    /// </remarks>
-    private async Task<List<NftAssetEntity>> ReturnedRelicsAsync(
+    // The chain is gone: no Relic ever comes home from a treasury.
+    private static Task<List<NftAssetEntity>> ReturnedRelicsAsync(
         VortexDbContext dbCtx,
         string wallet,
         CancellationToken ct
-    )
-    {
-        if (!_chain.Enabled || _chain.TreasuryAddress is null || string.IsNullOrWhiteSpace(wallet))
-        {
-            return [];
-        }
+    ) => Task.FromResult<List<NftAssetEntity>>([]);
 
-        List<NftAssetEntity> sentOut = await dbCtx
-            .NftAssets.Where(asset =>
-                asset.PlayerEntityId == PlayerId.Value
-                && asset.DeletedAt == null
-                && asset.WalletAddress == wallet
-            )
-            .OrderBy(asset => asset.Id)
-            .ToListAsync(ct)
-            .ConfigureAwait(true);
-
-        return sentOut.Count == 0
-            ? []
-            : [.. sentOut.Where(await TreasuryHoldsAsync(ct).ConfigureAwait(true))];
-    }
-
-    /// <summary>
-    /// Burns every returned Relic back into the hotel and answers how many came home.
-    /// </summary>
-    /// <remarks>
-    /// Burned rather than kept, and in that order: the token is destroyed first and the row cleared
-    /// only for the ids the chain then agrees are gone. Clearing first would leave the hotel and the
-    /// chain both claiming the same Relic, and the next transfer out would revert on an id that
-    /// already exists.
-    /// </remarks>
-    private async Task<int> ClaimReturnedRelicsAsync(VortexDbContext dbCtx, CancellationToken ct)
-    {
-        if (!_chain.Enabled || _chain.TreasuryAddress is null)
-        {
-            return 0;
-        }
-
-        List<NftAssetEntity> sentOut = await dbCtx
-            .NftAssets.Where(asset =>
-                asset.PlayerEntityId == PlayerId.Value
-                && asset.DeletedAt == null
-                && asset.WalletAddress != null
-            )
-            .OrderBy(asset => asset.Id)
-            .ToListAsync(ct)
-            .ConfigureAwait(true);
-
-        if (sentOut.Count == 0)
-        {
-            return 0;
-        }
-
-        NftAssetEntity[] home;
-
-        try
-        {
-            home = [.. sentOut.Where(await TreasuryHoldsAsync(ct).ConfigureAwait(true))];
-
-            foreach (NftAssetEntity asset in home)
-            {
-                await _chain.BurnRelicAsync(asset.Id, ct).ConfigureAwait(true);
-            }
-
-            // Read back, because a transaction hash is a receipt that the node accepted the burn and
-            // not that it succeeded. A Relic handed back while its token still exists is one the
-            // player could transfer out again onto an id the contract already has.
-            Func<NftAssetEntity, bool> stillHeld = await TreasuryHoldsAsync(ct)
-                .ConfigureAwait(true);
-
-            home = [.. home.Where(asset => !stillHeld(asset))];
-        }
-        catch (Exception failure)
-        {
-            // Nothing has been written at this point, so the claim simply stays outstanding and the
-            // player can press the button again once the node is answering.
-            _logger.LogError(
-                failure,
-                "Bringing player {PlayerId}'s Relics back from the treasury failed.",
-                PlayerId
-            );
-
-            return 0;
-        }
-
-        if (home.Length == 0)
-        {
-            return 0;
-        }
-
-        foreach (NftAssetEntity asset in home)
-        {
-            asset.WalletAddress = null;
-        }
-
-        await dbCtx.SaveChangesAsync(ct).ConfigureAwait(true);
-
-        _logger.LogInformation(
-            "Player {PlayerId} brought {Count} Relic(s) home from the chain.",
-            PlayerId,
-            home.Length
-        );
-
-        return home.Length;
-    }
-
-    /// <summary>
-    /// Reads the treasury's Relics once and answers a predicate over them. A test per asset would
-    /// otherwise be a JSON-RPC call per asset, where the contract answers the whole wallet in one.
-    /// </summary>
-    private async Task<Func<NftAssetEntity, bool>> TreasuryHoldsAsync(CancellationToken ct)
-    {
-        HashSet<BigInteger> held =
-        [
-            .. await _chain.GetRelicsAsync(_chain.TreasuryAddress!, ct).ConfigureAwait(true),
-        ];
-
-        return asset => held.Contains(asset.Id);
-    }
+    private static Task<int> ClaimReturnedRelicsAsync(
+        VortexDbContext dbCtx,
+        CancellationToken ct
+    ) => Task.FromResult(0);
 
     /// <summary>
     /// A returned Relic as the Rewards tab lists it: one item, claimable once, no expiry.

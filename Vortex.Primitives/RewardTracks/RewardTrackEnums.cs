@@ -123,20 +123,6 @@ public enum RewardKind
     /// tile, and the reward is still granted. Use it for anything that is a permission, not a thing.
     /// </summary>
     Entitlement = 100,
-
-    /// <summary>
-    /// VortexCoin, minted to the player's custodial address. <c>Amount</c> is WHOLE coins — the
-    /// contract's eighteen decimals are applied by <c>IChainRewardService</c> and appear nowhere in
-    /// content. <c>RewardTypeId</c> is unused.
-    /// </summary>
-    /// <remarks>
-    /// Outside the client's numbering for the same reason <see cref="Entitlement" /> is: it has no
-    /// product type for a coin that lives on a chain, so it draws the unknown tile and the reward
-    /// is still granted. Unlike every other kind, this one costs an Ethereum transaction to hand
-    /// over — seconds, and fallible for reasons that pass — so whatever grants it must be somewhere
-    /// that can wait, and must treat a failure as owed rather than refused.
-    /// </remarks>
-    Coin = 101,
 }
 
 /// <summary>

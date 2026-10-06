@@ -37,7 +37,6 @@ using Vortex.Primitives.Benchmark;
 using Vortex.Primitives.Catalog;
 using Vortex.Primitives.Catalog.Providers;
 using Vortex.Primitives.Catalog.Tags;
-using Vortex.Primitives.Chain;
 using Vortex.Primitives.Console;
 using Vortex.Primitives.Content;
 using Vortex.Primitives.Crypto;
@@ -334,13 +333,6 @@ public sealed class DashboardPlugin : IVortexPlugin
         services.UseHostService<ServerConsoleFeed>();
         services.UseHostService<IConsoleCommandDispatcher>();
         services.UseHostService<IBenchmarkService>();
-
-        // The chain, for the operator actions that mint. The reward service is what the grant
-        // actually goes through — the other two are still borrowed because the Relic and wallet
-        // reads use them directly.
-        services.UseHostService<IChainRewardService>();
-        services.UseHostService<IChainService>();
-        services.UseHostService<IHotelWalletService>();
     }
 
     /// <summary>

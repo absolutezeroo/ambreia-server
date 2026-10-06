@@ -123,10 +123,6 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Vortex.Shop.Tests", "Vortex
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Vortex.PacketHandlers.Tests", "Vortex.PacketHandlers.Tests\Vortex.PacketHandlers.Tests.csproj", "{9C5B46E1-5AB4-49D3-931D-29EF76FA8806}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Vortex.Chain", "Vortex.Chain\Vortex.Chain.csproj", "{357A99E2-040D-4397-A94F-7CD0F1D854CF}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Vortex.Chain.Tests", "Vortex.Chain.Tests\Vortex.Chain.Tests.csproj", "{861237A4-71E1-442F-884C-C123836731C4}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -773,30 +769,6 @@ Global
 		{9C5B46E1-5AB4-49D3-931D-29EF76FA8806}.Release|x64.Build.0 = Release|Any CPU
 		{9C5B46E1-5AB4-49D3-931D-29EF76FA8806}.Release|x86.ActiveCfg = Release|Any CPU
 		{9C5B46E1-5AB4-49D3-931D-29EF76FA8806}.Release|x86.Build.0 = Release|Any CPU
-		{357A99E2-040D-4397-A94F-7CD0F1D854CF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{357A99E2-040D-4397-A94F-7CD0F1D854CF}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{357A99E2-040D-4397-A94F-7CD0F1D854CF}.Debug|x64.ActiveCfg = Debug|Any CPU
-		{357A99E2-040D-4397-A94F-7CD0F1D854CF}.Debug|x64.Build.0 = Debug|Any CPU
-		{357A99E2-040D-4397-A94F-7CD0F1D854CF}.Debug|x86.ActiveCfg = Debug|Any CPU
-		{357A99E2-040D-4397-A94F-7CD0F1D854CF}.Debug|x86.Build.0 = Debug|Any CPU
-		{357A99E2-040D-4397-A94F-7CD0F1D854CF}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{357A99E2-040D-4397-A94F-7CD0F1D854CF}.Release|Any CPU.Build.0 = Release|Any CPU
-		{357A99E2-040D-4397-A94F-7CD0F1D854CF}.Release|x64.ActiveCfg = Release|Any CPU
-		{357A99E2-040D-4397-A94F-7CD0F1D854CF}.Release|x64.Build.0 = Release|Any CPU
-		{357A99E2-040D-4397-A94F-7CD0F1D854CF}.Release|x86.ActiveCfg = Release|Any CPU
-		{357A99E2-040D-4397-A94F-7CD0F1D854CF}.Release|x86.Build.0 = Release|Any CPU
-		{861237A4-71E1-442F-884C-C123836731C4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{861237A4-71E1-442F-884C-C123836731C4}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{861237A4-71E1-442F-884C-C123836731C4}.Debug|x64.ActiveCfg = Debug|Any CPU
-		{861237A4-71E1-442F-884C-C123836731C4}.Debug|x64.Build.0 = Debug|Any CPU
-		{861237A4-71E1-442F-884C-C123836731C4}.Debug|x86.ActiveCfg = Debug|Any CPU
-		{861237A4-71E1-442F-884C-C123836731C4}.Debug|x86.Build.0 = Debug|Any CPU
-		{861237A4-71E1-442F-884C-C123836731C4}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{861237A4-71E1-442F-884C-C123836731C4}.Release|Any CPU.Build.0 = Release|Any CPU
-		{861237A4-71E1-442F-884C-C123836731C4}.Release|x64.ActiveCfg = Release|Any CPU
-		{861237A4-71E1-442F-884C-C123836731C4}.Release|x64.Build.0 = Release|Any CPU
-		{861237A4-71E1-442F-884C-C123836731C4}.Release|x86.ActiveCfg = Release|Any CPU
-		{861237A4-71E1-442F-884C-C123836731C4}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

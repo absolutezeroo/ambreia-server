@@ -10,8 +10,6 @@ using Vortex.Dashboard.API.Operations.Catalogue.Contracts;
 using Vortex.Observability.Diagnostics;
 using Vortex.Primitives.Action;
 using Vortex.Primitives.Catalog.Snapshots;
-using Vortex.Primitives.Chain;
-using Vortex.Primitives.Crypto;
 using Vortex.Primitives.Moderation;
 using Vortex.Primitives.Networking;
 using Vortex.Primitives.Observability;
@@ -25,23 +23,10 @@ using Vortex.Primitives.Rooms.Snapshots.Avatars;
 
 namespace Vortex.Dashboard.API.Operations.Catalogue;
 
-internal sealed class CurrencyOperations(
-    OperationRunner runner,
-    IGrainFactory grainFactory,
-    IChainRewardService coins
-)
+internal sealed class CurrencyOperations(OperationRunner runner, IGrainFactory grainFactory)
 {
     private readonly OperationRunner _runner = runner;
     private readonly IGrainFactory _grainFactory = grainFactory;
-
-    /// <summary>
-    /// Where the decimals live now. This class used to carry its own <c>COIN_DECIMALS = 18</c> and
-    /// resolve the address itself; so did two other files, and eighteen is the kind of number that
-    /// is right in three places and wrong in the fourth for a year. Skipping the conversion mints
-    /// 100 wei where 100 VTX was meant — a figure so small it reads as zero everywhere it is shown,
-    /// and a mistake nothing would report.
-    /// </summary>
-    private readonly IChainRewardService _coins = coins;
 
     public Task<OperationResult> GiveCreditsAsync(
         GiveCreditsRequest request,
@@ -126,47 +111,6 @@ internal sealed class CurrencyOperations(
                         $"currency_not_configured: {currency} has no enabled currency_types row"
                     );
                 }
-            },
-            ct
-        );
-
-    /// <summary>
-    /// Mints VortexCoin to the player's own on-chain wallet.
-    /// </summary>
-    /// <remarks>
-    /// <para>
-    /// Not a currency grant like the ones above, despite sitting beside them. Those credit a row in
-    /// <c>player_currencies</c> and are done when the transaction commits; this one sends a
-    /// transaction to a chain and is done when a node accepts it. The answer is a transaction hash,
-    /// which is a receipt that it was ACCEPTED — a mint that reverts is mined with a failed status,
-    /// and an operator who needs certainty reads the receipt.
-    /// </para>
-    /// <para>
-    /// It goes to the player's Stardust address, the one the hotel derives and holds for them, and
-    /// never to a wallet they linked themselves: those come and go, a player may have none, and
-    /// choosing between several is not a decision an operator should be making from this form.
-    /// </para>
-    /// </remarks>
-    public Task<OperationResult> GiveChainCoinAsync(
-        GiveChainCoinRequest request,
-        string actor,
-        CancellationToken ct
-    ) =>
-        _runner.ExecuteAsync(
-            "ops.currency.chain.grant",
-            actor,
-            request.Reason,
-            targetPlayerId: request.PlayerId,
-            roomId: null,
-            detail: new { currency = "vortexcoin", request.Amount },
-            work: async c =>
-            {
-                // Through the same service the GAME pays coin with, so an operator's grant and a
-                // community goal's reward cannot land at two different addresses or apply two
-                // different decimal counts. It throws when there is no chain, which this runner
-                // reports as a refusal — and a refusal is right: with nowhere for the coins to go, a
-                // green result is how a grant that minted nothing looks like one that worked.
-                await _coins.PayAsync(request.PlayerId, request.Amount, c).ConfigureAwait(false);
             },
             ct
         );
