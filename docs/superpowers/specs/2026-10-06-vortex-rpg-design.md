@@ -832,6 +832,25 @@ boss lié ; métiers cibles 4 récolte + 3 artisanat (V1 : 1 + 1) ; taxe d'hôte
 progression de guilde par part d'XP ; tick de 50 ms ; premium cosmétique ; onglets de §16.2 ; tranche
 V1 de §21.1.
 
+### 22.1 bis Décisions issues de l’audit (2026-10-06) — APPROUVÉ
+
+Source : `docs/superpowers/audits/2026-10-06-audit-mmorpg.md`.
+
+| # | Sujet | Décision |
+|---|---|---|
+| 1 | Personnages | Le modèle actuel est gardé : un compte possède plusieurs avatars (`/api/user/avatars`) ; chaque avatar est un personnage. |
+| 2 | Quêtes | Le moteur de quêtes existant est gardé et refait pour le RPG ; il passe par **davantage** de Signals (vocabulaire `rpg.*`) ; les objectifs Habbo partent. |
+| 3 | Habbo Club | Gardé et **renommé** pour le RPG (abonnement premium, avantages cosmétiques et de confort, sans stats ni XP) ; la paie passe par le coffre, lui aussi renommé. |
+| 4 | Monnaies | **Or** (gagné en jeu) et **diamants** (premium). Crédits et duckets retirés. |
+| 5 | Prize pools | Réutilisés comme **tables de loot**, renommés. |
+| 6 | Rollers | **Retirés** (logique `roller`, système de tick, messages). |
+| 7 | Cadeaux entre joueurs | Gardés (pas de réécriture). |
+| 8 | Maisons | Modèle de maison **fixe**, agrandissable contre de l’or (améliorations de place) ; pas d’édition du plan par le joueur ; l’éditeur de plan part dans le MapEditor. |
+| 9 | Respects, statut relationnel | Respects quotidiens (joueurs et pets) **retirés** ; statut relationnel gardé. |
+| 10 | Site et accueil | Articles gardés ; fil social du site et vue d’hôtel **retirés** ; à la connexion : choix du personnage puis dernière zone. |
+| 11 | Extras | Objectifs communautaires, derby de pêche, espaces à louer, protection anti-raid, bots possédés par les joueurs : **retirés**. |
+| 12 | Apparence des pets | `pet_palettes` devient **`pets_skin`** : un système de skins de compagnons ; pas de races, chaque pet est unique. |
+
 ### 22.2 OUVERTES
 
 | # | Décision | Spec fille |
