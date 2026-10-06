@@ -29,12 +29,6 @@
     <!-- The admin services write through EF, so their tests build a real context. -->
     <ProjectReference Include="..\Vortex.Database\Vortex.Database.csproj" />
     <ProjectReference Include="..\Vortex.Primitives\Vortex.Primitives.csproj" />
-    <!--
-      The real signal vocabulary. The editor's rules decide which filters an operator may write, and
-      checking them against a hand-written vocabulary would only prove the test agrees with itself —
-      SignalVocabularyFixture builds it from the translators that are actually loaded.
-    -->
-    <ProjectReference Include="..\Vortex.Signals\Vortex.Signals.csproj" />
     <ProjectReference Include="..\Vortex.Tests.Support\Vortex.Tests.Support.csproj" />
   </ItemGroup>
 </Project>

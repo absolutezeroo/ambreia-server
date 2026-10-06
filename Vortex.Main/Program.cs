@@ -12,16 +12,13 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Orleans;
 using Vortex.Authentication;
-using Vortex.Benchmark;
 using Vortex.Catalog;
-using Vortex.Collectibles;
 using Vortex.Crypto.Extensions;
 using Vortex.Database.Extensions;
 using Vortex.Database.Migrations;
 using Vortex.Events.Extensions;
 using Vortex.Fishing;
 using Vortex.Furniture;
-using Vortex.Habbicons;
 using Vortex.Inventory;
 using Vortex.Logging.Extensions;
 using Vortex.Main.Configuration;
@@ -41,7 +38,6 @@ using Vortex.Primitives.Hosting;
 using Vortex.Primitives.Orleans;
 using Vortex.Progression;
 using Vortex.Revisions.Extensions;
-using Vortex.RewardTracks;
 using Vortex.Rooms;
 using Vortex.Runtime.AssemblyProcessing;
 using Vortex.Shop;
@@ -141,9 +137,6 @@ internal class Program
         builder.Services.AddHostPlugin<SocialModule>(builder);
         builder.Services.AddHostPlugin<SignalsModule>(builder);
         builder.Services.AddHostPlugin<ProgressionModule>(builder);
-        builder.Services.AddHostPlugin<HabbiconsModule>(builder);
-        builder.Services.AddHostPlugin<RewardTracksModule>(builder);
-        builder.Services.AddHostPlugin<CollectiblesModule>(builder);
         builder.Services.AddHostPlugin<InventoryModule>(builder);
         builder.Services.AddHostPlugin<MarketplaceModule>(builder);
         builder.Services.AddHostPlugin<FishingModule>(builder);
@@ -152,7 +145,6 @@ internal class Program
         // folders by PluginManager rather than compiled into this host — registering either here
         // would mean referencing its assembly, which is exactly what makes a plugin impossible to
         // unload.
-        builder.Services.AddHostPlugin<BenchmarkModule>(builder);
         builder.Services.AddHostPlugin<NavigatorModule>(builder);
         builder.Services.AddHostPlugin<RoomModule>(builder);
         builder.Services.AddHostPlugin<PacketHandlersModule>(builder);

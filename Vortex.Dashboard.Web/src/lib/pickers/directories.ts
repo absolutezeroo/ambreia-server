@@ -30,8 +30,6 @@ export const DIRECTORIES: Record<string, Directory> = {
   // Everything a filter value could otherwise be typed from memory. Each replaces a code or an id
   // that saves cleanly when misspelled and then never matches anything.
   group: { endpoint: '/api/v1/directory/groups', row: 'plain' },
-  habbicon: { endpoint: '/api/v1/directory/habbicons', row: 'plain' },
-  collection: { endpoint: '/api/v1/directory/habbicon-collections', row: 'plain' },
   offer: { endpoint: '/api/v1/directory/catalog-offers', row: 'plain' },
   category: { endpoint: '/api/v1/directory/navigator-categories', row: 'plain' },
   badge: { endpoint: '/api/v1/directory/badges', row: 'plain' },
@@ -44,7 +42,6 @@ export const DIRECTORIES: Record<string, Directory> = {
   campaign: { endpoint: '/api/v1/directory/quest-campaigns', row: 'plain' },
   voucher: { endpoint: '/api/v1/directory/vouchers', row: 'plain' },
   clubGift: { endpoint: '/api/v1/directory/club-gifts', row: 'plain' },
-  nftProduct: { endpoint: '/api/v1/directory/nft-store', row: 'plain' },
   targetedOffer: { endpoint: '/api/v1/directory/targeted-offers', row: 'plain' },
   thread: { endpoint: '/api/v1/directory/forum-threads', row: 'plain' },
   effect: { endpoint: '/api/v1/directory/avatar-effects', row: 'plain' },

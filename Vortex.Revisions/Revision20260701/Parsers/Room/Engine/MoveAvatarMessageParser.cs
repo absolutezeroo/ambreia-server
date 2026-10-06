@@ -11,8 +11,8 @@ internal class MoveAvatarMessageParser : IParser
         int x = packet.PopInt();
         int y = packet.PopInt();
 
-        // Optional third field, so a sender that predates it still parses: Vortex.LoadGen's
-        // SyntheticClient sends the two-int form, and so does any older client build.
+        // Optional third field, so a sender that predates it still parses: any older client build
+        // sends the two-int form.
         //
         // It is also why incoming/MoveAvatar sits in scripts/hooks/wire-conflicts-baseline.json.
         // Every client the analyzer knows -- the WIN63 AS3, Nitro, Arcturus -- sends two ints, so

@@ -60,17 +60,6 @@ public interface IRoomAvatars : IGrainWithIntegerKey
     public Task<bool> DropCarryItemAsync(ActionContext ctx, CancellationToken ct);
 
     /// <summary>
-    /// Shows a Habbicon over the player's avatar for everyone in the room. Subject to the same mute
-    /// and flood gate as chat — it is a way of saying something, so it is refused wherever speaking
-    /// is. Returns false when the room refused it.
-    /// </summary>
-    /// <remarks>
-    /// The room does not check ownership: it knows who is standing in it and nothing about what
-    /// anyone owns. <c>IPlayerHabbiconGrain.UseInRoomAsync</c> establishes that first.
-    /// </remarks>
-    public Task<bool> UseHabbiconAsync(PlayerId playerId, int habbiconId);
-
-    /// <summary>
     /// Hands what the acting player is holding to somebody standing beside them. Refused across a
     /// room, and refused when their hand is empty.
     /// </summary>

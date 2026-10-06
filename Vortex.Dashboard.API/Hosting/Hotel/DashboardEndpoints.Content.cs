@@ -75,92 +75,6 @@ internal static partial class DashboardEndpoints
             (ops, body, actor, ct) => ops.DeleteBotAsync(body, actor, ct),
             body => body.BotId > 0
         );
-        Map<CollectionRequest>(
-            app,
-            "/collections",
-            (ops, body, actor, ct) => ops.SaveCollectionAsync(body, actor, ct),
-            body =>
-                !string.IsNullOrWhiteSpace(body.CollectionCode)
-                && !string.IsNullOrWhiteSpace(body.Name)
-        );
-        Map<DeleteCollectionRequest>(
-            app,
-            "/collections/delete",
-            (ops, body, actor, ct) => ops.DeleteCollectionAsync(body, actor, ct),
-            body => body.CollectionId > 0
-        );
-        Map<CollectionItemRequest>(
-            app,
-            "/collections/items",
-            (ops, body, actor, ct) => ops.SaveCollectionItemAsync(body, actor, ct),
-            body =>
-                !string.IsNullOrWhiteSpace(body.ProductCode)
-                && (body.ItemId > 0 || body.CollectionId > 0)
-        );
-        Map<DeleteCollectionItemRequest>(
-            app,
-            "/collections/items/delete",
-            (ops, body, actor, ct) => ops.DeleteCollectionItemAsync(body, actor, ct),
-            body => body.ItemId > 0
-        );
-        Map<StoreOfferRequest>(
-            app,
-            "/store-offers",
-            (ops, body, actor, ct) => ops.SaveStoreOfferAsync(body, actor, ct),
-            body => !string.IsNullOrWhiteSpace(body.ProductCode) && body.EmeraldPrice >= 0
-        );
-        Map<DeleteStoreOfferRequest>(
-            app,
-            "/store-offers/delete",
-            (ops, body, actor, ct) => ops.DeleteStoreOfferAsync(body, actor, ct),
-            body => body.OfferId > 0
-        );
-        Map<MintableItemTypeRequest>(
-            app,
-            "/mintable-types",
-            (ops, body, actor, ct) => ops.SaveMintableItemTypeAsync(body, actor, ct),
-            body =>
-                !string.IsNullOrWhiteSpace(body.ProductCode)
-                && body.StampPrice >= 0
-                && body.EditionSize >= 0
-                && body.EndsAt > body.StartsAt
-        );
-        Map<DeleteMintableItemTypeRequest>(
-            app,
-            "/mintable-types/delete",
-            (ops, body, actor, ct) => ops.DeleteMintableItemTypeAsync(body, actor, ct),
-            body => body.TypeId > 0
-        );
-        Map<MintTokenOfferRequest>(
-            app,
-            "/mint-token-offers",
-            (ops, body, actor, ct) => ops.SaveMintTokenOfferAsync(body, actor, ct),
-            body =>
-                !string.IsNullOrWhiteSpace(body.ProductCode)
-                && body.SilverPrice >= 0
-                && body.AmountTokens > 0
-        );
-        Map<DeleteMintTokenOfferRequest>(
-            app,
-            "/mint-token-offers/delete",
-            (ops, body, actor, ct) => ops.DeleteMintTokenOfferAsync(body, actor, ct),
-            body => body.OfferId > 0
-        );
-        Map<ClaimRequest>(
-            app,
-            "/claims",
-            (ops, body, actor, ct) => ops.SaveClaimAsync(body, actor, ct),
-            body =>
-                body.PlayerId > 0
-                && !string.IsNullOrWhiteSpace(body.ProductCode)
-                && body.ClaimLimit > 0
-        );
-        Map<DeleteClaimRequest>(
-            app,
-            "/claims/delete",
-            (ops, body, actor, ct) => ops.DeleteClaimAsync(body, actor, ct),
-            body => body.ClaimId > 0
-        );
         Map<CurrencyRequest>(
             app,
             "/currencies",
@@ -190,43 +104,6 @@ internal static partial class DashboardEndpoints
             "/rentable-terms/delete",
             (ops, body, actor, ct) => ops.DeleteRentableTermsAsync(body, actor, ct),
             body => body.TermsId > 0
-        );
-        Map<NftAvatarRequest>(
-            app,
-            "/nft-avatars",
-            (ops, body, actor, ct) => ops.CreateNftAvatarAsync(body, actor, ct),
-            body =>
-                !string.IsNullOrWhiteSpace(body.AvatarCode)
-                && !string.IsNullOrWhiteSpace(body.Figure)
-                && body.EditionSize >= 0
-        );
-        Map<UpdateNftAvatarRequest>(
-            app,
-            "/nft-avatars/update",
-            (ops, body, actor, ct) => ops.UpdateNftAvatarAsync(body, actor, ct),
-            body =>
-                body.AvatarId > 0
-                && !string.IsNullOrWhiteSpace(body.AvatarCode)
-                && !string.IsNullOrWhiteSpace(body.Figure)
-                && body.EditionSize >= 0
-        );
-        Map<DeleteNftAvatarRequest>(
-            app,
-            "/nft-avatars/delete",
-            (ops, body, actor, ct) => ops.DeleteNftAvatarAsync(body, actor, ct),
-            body => body.AvatarId > 0
-        );
-        Map<NftAvatarGrantRequest>(
-            app,
-            "/nft-avatars/grant",
-            (ops, body, actor, ct) => ops.GrantNftAvatarAsync(body, actor, ct),
-            body => body.AvatarId > 0 && body.PlayerId > 0
-        );
-        Map<NftAvatarRevokeRequest>(
-            app,
-            "/nft-avatars/revoke",
-            (ops, body, actor, ct) => ops.RevokeNftAvatarAsync(body, actor, ct),
-            body => body.CopyId > 0
         );
         Map<BadgeGrantRequest>(
             app,

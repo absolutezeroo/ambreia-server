@@ -33,14 +33,6 @@ internal sealed class RoomTradeSession
     public List<int> UserOneItemIds { get; } = [];
     public List<int> UserTwoItemIds { get; } = [];
 
-    /// <summary>
-    /// The Relics on each side. Kept apart from the furniture ids because they are a different
-    /// table, travel on their own message, and — unlike furniture — cannot be taken back out once
-    /// offered: this client has no message for that.
-    /// </summary>
-    public List<int> UserOneAssetIds { get; } = [];
-    public List<int> UserTwoAssetIds { get; } = [];
-
     public bool UserOneAccepted { get; set; }
     public bool UserTwoAccepted { get; set; }
     public bool UserOneConfirmed { get; set; }
@@ -58,8 +50,6 @@ internal sealed class RoomTradeSession
         IsUserOne(id) ? UserOneObjectId : UserTwoObjectId;
 
     public List<int> ItemsOf(PlayerId id) => IsUserOne(id) ? UserOneItemIds : UserTwoItemIds;
-
-    public List<int> AssetsOf(PlayerId id) => IsUserOne(id) ? UserOneAssetIds : UserTwoAssetIds;
 
     public bool AcceptedOf(PlayerId id) => IsUserOne(id) ? UserOneAccepted : UserTwoAccepted;
 

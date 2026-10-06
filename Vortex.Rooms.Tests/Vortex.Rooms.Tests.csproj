@@ -18,8 +18,6 @@
     <PackageReference Include="Microsoft.Orleans.TestingHost" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Vortex.Benchmark\Vortex.Benchmark.csproj" />
-    <ProjectReference Include="..\Vortex.LoadGen\Vortex.LoadGen.csproj" />
     <ProjectReference Include="..\Vortex.Database\Vortex.Database.csproj" />
     <ProjectReference Include="..\Vortex.Events\Vortex.Events.csproj" />
     <ProjectReference Include="..\Vortex.Furniture\Vortex.Furniture.csproj" />
@@ -27,7 +25,6 @@
     <ProjectReference Include="..\Vortex.Players\Vortex.Players.csproj" />
     <ProjectReference Include="..\Vortex.Progression\Vortex.Progression.csproj" />
     <ProjectReference Include="..\Vortex.Social\Vortex.Social.csproj" />
-    <ProjectReference Include="..\Vortex.Collectibles\Vortex.Collectibles.csproj" />
     <ProjectReference Include="..\Vortex.Primitives\Vortex.Primitives.csproj" />
     <ProjectReference Include="..\Vortex.Protocol\Vortex.Protocol.csproj" />
     <ProjectReference Include="..\Vortex.Rooms\Vortex.Rooms.csproj" />

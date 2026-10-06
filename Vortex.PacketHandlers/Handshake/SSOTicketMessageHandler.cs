@@ -460,15 +460,6 @@ public class SSOTicketMessageHandler(
                 .ConfigureAwait(false);
 
             await SendFishingBootstrapAsync(ctx, playerId, ct).ConfigureAwait(false);
-
-            // Habbicons and reward tracks are both push-only: neither client controller ever asks
-            // for its state, they build their whole model from what arrives. The two are
-            // independent, so they go out together rather than one waiting on the other.
-            await Task.WhenAll(
-                    _grainFactory.GetPlayerHabbiconGrain(playerId).PushInventoryAsync(ct),
-                    _grainFactory.GetPlayerRewardTrackGrain(playerId).PushTracksAsync(false, ct)
-                )
-                .ConfigureAwait(false);
         }
         catch (OperationCanceledException) when (ct.IsCancellationRequested)
         {

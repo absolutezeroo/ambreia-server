@@ -289,83 +289,6 @@ export interface BadgeHolderCount {
   equipped: number;
 }
 
-export interface BenchmarkPlanView {
-  players: number;
-  furniture: number;
-  durationSeconds: number;
-  rampSeconds: number;
-  walkIntervalMs: number;
-  chatIntervalMs: number;
-  label: string;
-}
-
-export interface BenchmarkRunView {
-  fileName: string;
-  path: string;
-  sizeBytes: number;
-  writtenAtUtc: string;
-  players: number;
-  furniture: number;
-  durationSeconds: number;
-  label: string;
-  phase: string;
-  roomId: number;
-  borrowedRoom: boolean;
-  peakClients: number;
-  worstRttMs: number;
-  failures: number;
-  grade: string;
-  headline: string;
-}
-
-export interface BenchmarkSampleView {
-  at: string;
-  connectedClients: number;
-  rttMedianMs: number;
-  rttP95Ms: number;
-  packetsReceived: number;
-  bytesReceived: number;
-  failures: number;
-}
-
-export interface BenchmarkState {
-  phase: string;
-  running: boolean;
-  plan: BenchmarkPlanView | null;
-  startedAt: string | null;
-  endedAt: string | null;
-  connectedClients: number;
-  placedFurniture: number;
-  roomId: number;
-  enabled: boolean;
-  borrowedRoom: boolean;
-  error: string | null;
-  residue: string | null;
-  reportPath: string | null;
-  samples: BenchmarkSampleView[];
-  verdict: BenchmarkVerdictView;
-  runs: BenchmarkRunView[];
-  summary: BenchmarkSummaryView | null;
-}
-
-export interface BenchmarkSummaryView {
-  peakClients: number;
-  worstRttMs: number;
-  medianRttMs: number;
-  totalPackets: number;
-  totalBytes: number;
-  failures: number;
-}
-
-export interface BenchmarkVerdictView {
-  grade: string;
-  headline: string;
-  findings: string[];
-  medianRttMs: number;
-  stalls: number;
-  tickBudgetPercent: number;
-}
-
 export interface BotDetail {
   id: number;
   name: string;
@@ -852,69 +775,6 @@ export interface CodeDirectoryRow {
   description: string | null;
 }
 
-export interface CollectiblesOverview {
-  totals: CollectiblesTotals;
-  collections: CollectionRow[];
-  nftAvatars: NftAvatarRow[];
-  storeOffers: NftStoreOfferRow[];
-  mintableTypes: MintableTypeRow[];
-  tokenOffers: MintTokenOfferRow[];
-  assets: NftAssetRow[];
-  claims: NftClaimRow[];
-  topCollectors: CollectorScore[];
-}
-
-export interface CollectiblesTotals {
-  collections: number;
-  items: number;
-  unresolvedItems: number;
-  completableCollections: number;
-  trackedPlayers: number;
-  storeOffers: number;
-  storeOffersOnSale: number;
-  mintableTypes: number;
-  mintableTypesOpen: number;
-  mintedRelics: number;
-  stampsHeld: number;
-  nftAvatars: number;
-  nftAvatarsGranted: number;
-}
-
-export interface CollectionItemRow {
-  id: number;
-  productCode: string;
-  itemTypeId: string;
-  productTypeId: number;
-  score: number;
-  rarity: string;
-  sortOrder: number;
-  resolved: boolean;
-  iconUrl: string | null;
-}
-
-export interface CollectionRow {
-  id: number;
-  collectionCode: string;
-  name: string;
-  boostScore: number;
-  releasedAt: string | null;
-  snapshotAt: string | null;
-  status: number;
-  rewardProductCode: string | null;
-  bonusProductCode: string | null;
-  itemCount: number;
-  totalScore: number;
-  unresolvedItems: number;
-  completable: boolean;
-  items: CollectionItemRow[];
-}
-
-export interface CollectorScore {
-  playerId: number;
-  playerName: string | null;
-  score: number;
-}
-
 export interface CommunityGoalLevelRow {
   id: number;
   levelNumber: number;
@@ -1163,21 +1023,6 @@ export interface EffectOwnerCount {
   owners: number;
   activated: number;
   selected: number;
-}
-
-export interface FactOption {
-  key: string;
-  kind: string;
-  labelKey: string;
-  fallbackLabel: string;
-  operators: number[];
-  values: FactOptionValue[];
-}
-
-export interface FactOptionValue {
-  value: string;
-  labelKey: string;
-  fallbackLabel: string;
 }
 
 export interface FishingActivity {
@@ -1577,72 +1422,6 @@ export interface GuildThreadRow {
   lastPostAt: string | null;
 }
 
-export interface HabbiconCollectionList {
-  count: number;
-  items: HabbiconCollectionRow[];
-  artwork: HabbiconSheets | null;
-}
-
-export interface HabbiconCollectionRow {
-  id: number;
-  code: string;
-  localizationKey: string;
-  sortOrder: number;
-  enabled: boolean;
-  hidden: boolean;
-  availableFrom: string | null;
-  availableUntil: string | null;
-  priceCredits: number;
-  priceActivityPoints: number;
-  activityPointType: number;
-  campaignCode: string;
-  entryCount: number;
-  rewardHabbiconId: number;
-  rewardCode: string;
-  completedBy: number;
-  sprite: HabbiconSprite | null;
-  habbicons: HabbiconRow[];
-}
-
-export interface HabbiconRow {
-  sprite: HabbiconSprite | null;
-  id: number;
-  code: string;
-  localizationKey: string;
-  collectionId: number;
-  sortOrder: number;
-  isCollectionReward: boolean;
-  priceCredits: number;
-  priceActivityPoints: number;
-  activityPointType: number;
-  enabled: boolean;
-  availableFrom: string | null;
-  availableUntil: string | null;
-  owners: number;
-}
-
-export interface HabbiconSheets {
-  spritesheetUrl: string;
-  collectionSpritesheetUrl: string | null;
-  frameSize: number;
-  collectionIconSize: number;
-}
-
-export interface HabbiconSourceOption {
-  name: string;
-  value: number;
-}
-
-export interface HabbiconSourceOptions {
-  count: number;
-  items: HabbiconSourceOption[];
-}
-
-export interface HabbiconSprite {
-  x: number;
-  y: number;
-}
-
 export interface HandItemList {
   count: number;
   consumableCount: number;
@@ -1973,35 +1752,6 @@ export interface MarketplaceTotals {
   averagePrice: number;
 }
 
-export interface MintTokenOfferRow {
-  id: number;
-  productCode: string;
-  silverPrice: number;
-  amountTokens: number;
-  enabled: boolean;
-  sortOrder: number;
-}
-
-export interface MintableTypeRow {
-  id: number;
-  productCode: string;
-  stampPrice: number;
-  startsAt: string;
-  endsAt: string;
-  regionLocked: boolean;
-  limitedEdition: boolean;
-  editionSize: number;
-  enabled: boolean;
-  sortOrder: number;
-  mintedCount: number;
-  exhausted: boolean;
-  resolved: boolean;
-  open: boolean;
-  expired: boolean;
-  isNft: boolean;
-  iconUrl: string | null;
-}
-
 export interface ModerationActionCount {
   action: string;
   count: number;
@@ -2259,91 +2009,6 @@ export interface NavigatorSetup {
   promotedCodes: NavigatorPromotedCodeOption[];
 }
 
-export interface NftAssetRow {
-  id: number;
-  playerId: number;
-  playerName: string | null;
-  productCode: string;
-  stampCost: number;
-  serialNumber: number;
-  editionSize: number;
-  mintedAt: string;
-  iconUrl: string | null;
-  history: NftAssetTransfer[];
-}
-
-export interface NftAssetTransfer {
-  id: number;
-  fromPlayer: string | null;
-  toPlayer: string | null;
-  reason: string;
-  at: string;
-}
-
-export interface NftAvatarHolder {
-  id: number;
-  playerId: number;
-  playerName: string | null;
-  serialNumber: number;
-  grantNote: string | null;
-  grantedAt: string;
-  worn: boolean;
-}
-
-export interface NftAvatarRow {
-  id: number;
-  avatarCode: string;
-  name: string;
-  figure: string;
-  gender: string;
-  contractKey: string;
-  editionSize: number;
-  enabled: boolean;
-  sortOrder: number;
-  grantedCount: number;
-  exhausted: boolean;
-  knownCollection: boolean;
-  avatarImageUrl: string | null;
-  holders: NftAvatarHolder[];
-}
-
-export interface NftClaimRow {
-  id: number;
-  playerId: number;
-  playerName: string | null;
-  productCode: string;
-  setId: string;
-  collection: string;
-  claimLimit: number;
-  claimedAmount: number;
-  remaining: number;
-  validFrom: string | null;
-  validTo: string | null;
-  minCollectorLevel: number;
-  isNft: boolean;
-  iconUrl: string | null;
-}
-
-export interface NftStoreOfferRow {
-  id: number;
-  productCode: string;
-  emeraldPrice: number;
-  isFeatured: boolean;
-  isLimited: boolean;
-  mintLimit: number;
-  soldCount: number;
-  itemTypeId: string;
-  productTypeId: number;
-  score: number;
-  rarity: string;
-  enabled: boolean;
-  sortOrder: number;
-  resolved: boolean;
-  soldOut: boolean;
-  isNft: boolean;
-  iconUrl: string | null;
-}
-
 export interface OrleansClusterSnapshot {
   status: string;
   detail: string;
@@ -2492,22 +2157,6 @@ export interface PlayerEffectRow {
   isSelected: boolean;
 }
 
-export interface PlayerHabbiconRow {
-  habbiconId: number;
-  code: string;
-  collectionId: number;
-  state: string;
-  source: string;
-  acquiredAt: string;
-  lastUsedAt: string | null;
-}
-
-export interface PlayerHabbicons {
-  playerId: number;
-  count: number;
-  items: PlayerHabbiconRow[];
-}
-
 export interface PlayerItemRow {
   occurredAt: string;
   eventType: string;
@@ -2590,45 +2239,6 @@ export interface PlayerRewardTotals {
   chatStyleCount: number;
   wardrobeOutfits: number;
   wardrobeUsers: number;
-}
-
-export interface PlayerRewardTrackCaptureRow {
-  step: number;
-  factKey: string;
-  value: string;
-}
-
-export interface PlayerRewardTrackClaimRow {
-  prizeId: string;
-  claimedAt: string;
-  pointsAtClaim: number;
-  granted: string;
-}
-
-export interface PlayerRewardTrackRow {
-  trackId: string;
-  points: number;
-  premiumUnlocked: boolean;
-  premiumUnlockedAt: string | null;
-  completedAt: string | null;
-  contentVersion: number;
-  tasks: PlayerRewardTrackTaskRow[];
-  claims: PlayerRewardTrackClaimRow[];
-}
-
-export interface PlayerRewardTrackTaskRow {
-  taskId: string;
-  progressCount: number;
-  highestPaidLevelIndex: number;
-  currentStep: number;
-  stepCount: number;
-  captures: PlayerRewardTrackCaptureRow[];
-}
-
-export interface PlayerRewardTracks {
-  playerId: number;
-  count: number;
-  items: PlayerRewardTrackRow[];
 }
 
 export interface PollChoiceDetail {
@@ -3103,137 +2713,6 @@ export interface ResolutionTotals {
   expired: number;
   completionRate: number;
   players: number;
-}
-
-export interface RewardKindOption {
-  name: string;
-  value: number;
-  target: string;
-}
-
-export interface RewardKindOptions {
-  count: number;
-  items: RewardKindOption[];
-}
-
-export interface RewardTrackActionOption {
-  name: string;
-  wired: boolean;
-  facts: FactOption[];
-}
-
-export interface RewardTrackActionOptions {
-  count: number;
-  items: RewardTrackActionOption[];
-}
-
-export interface RewardTrackFilterRow {
-  factKey: string;
-  op: number;
-  value: string;
-  left: RewardTrackValueRow;
-  right: RewardTrackValueRow;
-  iconUrl: string | null;
-  furniWidth: number;
-  furniLength: number;
-}
-
-export interface RewardTrackLevelRow {
-  levelIndex: number;
-  requiredCount: number;
-  pointsReward: number;
-  premium: boolean;
-}
-
-export interface RewardTrackList {
-  count: number;
-  items: RewardTrackRow[];
-}
-
-export interface RewardTrackNodeRow {
-  kind: number;
-  test: RewardTrackFilterRow | null;
-  children: RewardTrackNodeRow[];
-}
-
-export interface RewardTrackPrizeRow {
-  id: number;
-  prizeId: string;
-  requiredPoints: number;
-  premium: boolean;
-  sortOrder: number;
-  reachable: boolean;
-  rewards: RewardTrackRewardRow[];
-}
-
-export interface RewardTrackRewardRow {
-  id: number;
-  kind: string;
-  kindValue: number;
-  rewardTypeId: string;
-  amount: number;
-  extraParams: string;
-  sortOrder: number;
-}
-
-export interface RewardTrackRow {
-  id: number;
-  trackId: string;
-  localizationKey: string;
-  theme: string;
-  status: string;
-  sortOrder: number;
-  startsAt: string | null;
-  progressEndsAt: string | null;
-  claimEndsAt: string | null;
-  unlockKind: string;
-  unlockValue: string;
-  completionPolicy: string;
-  premiumEnabled: boolean;
-  premiumBoostPerMille: number;
-  premiumInstantPoints: number;
-  premiumCostCredits: number;
-  premiumCostDiamonds: number;
-  contentVersion: number;
-  hidden: boolean;
-  campaignCode: string;
-  freePointCeiling: number;
-  premiumPointCeiling: number;
-  participants: number;
-  completions: number;
-  premiumHolders: number;
-  prizesClaimed: number;
-  tasks: RewardTrackTaskRow[];
-  prizes: RewardTrackPrizeRow[];
-}
-
-export interface RewardTrackStepRow {
-  stepIndex: number;
-  actionCode: string;
-  filters: RewardTrackFilterRow[];
-  tree: RewardTrackNodeRow[];
-}
-
-export interface RewardTrackTaskRow {
-  id: number;
-  taskId: string;
-  localizationKey: string;
-  actionCode: string;
-  wired: boolean;
-  parameter: string;
-  mode: string;
-  premium: boolean;
-  sortOrder: number;
-  players: number;
-  lastMatchedAt: string | null;
-  steps: RewardTrackStepRow[];
-  levels: RewardTrackLevelRow[];
-}
-
-export interface RewardTrackValueRow {
-  kind: number;
-  arg: string;
-  step: number;
 }
 
 export interface RoomDirectoryPage {

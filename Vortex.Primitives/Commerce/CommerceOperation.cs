@@ -103,7 +103,8 @@ public enum CommerceOperationKind
     LtdRaffleEntry = 9,
     RoomAdPurchase = 10,
     DailyTaskReward = 11,
-    MintTokenPurchase = 12,
+
+    // 12 was MintTokenPurchase, removed with collectibles in the RPG fork (M0). Never reuse it.
 
     /// <summary>A contract settled against a wired chest: coins and furniture, both directions.</summary>
     WiredChestContract = 13,
@@ -121,17 +122,8 @@ public enum CommerceOperationKind
     /// the level is persisted before any of it is handed over.</summary>
     AchievementReward = 16,
 
-    /// <summary>Buying a Habbicon, singly or as a whole collection.</summary>
-    HabbiconPurchase = 17,
-
-    /// <summary>Buying premium on one reward track. May cost credits and diamonds together.</summary>
-    RewardTrackPremium = 18,
-
-    /// <summary>
-    /// What a claimed reward-track prize hands over. The claim row is written first, so the bundle
-    /// is owed from before any of it is granted.
-    /// </summary>
-    RewardTrackPrize = 19,
+    // 17 (HabbiconPurchase), 18 (RewardTrackPremium) and 19 (RewardTrackPrize) were removed with
+    // their features in the RPG fork (M0). The numbers are persisted: never reuse them.
 
     /// <summary>
     /// What a paid shop order hands over: credits, duckets, diamonds or club months, bought with
@@ -141,12 +133,7 @@ public enum CommerceOperationKind
     /// </summary>
     ShopPurchase = 20,
 
-    /// <summary>
-    /// The furniture a collectible entitlement hands over. Its own kind rather than a borrowed one
-    /// because the id is derived from the claim row, and two flows sharing a kind would collide the
-    /// moment their entity ids met.
-    /// </summary>
-    NftClaim = 21,
+    // 21 was NftClaim, removed with collectibles in the RPG fork (M0). Never reuse it.
 
     /// <summary>
     /// Cashing one Earnings row. The id is derived from the row, so a claim retried after a crash
@@ -227,19 +214,6 @@ public static class CommerceStepKeys
     /// <summary>Paying the contract's reward coins out of the chest. Undoes itself into the chest
     /// when the wallet refuses, which is why the books are written after it and not before.</summary>
     public const string CHEST_PAYOUT = "chest-payout";
-
-    /// <summary>Writing the Habbicon ownership rows a purchase bought.</summary>
-    public const string HABBICON_GRANT = "habbicon-grant";
-
-    /// <summary>Turning premium on for one reward track, and crediting its instant points.</summary>
-    public const string REWARD_TRACK_PREMIUM = "reward-track-premium";
-
-    /// <summary>
-    /// One reward of a claimed prize's bundle, suffixed by index. Strictly after the pivot — the
-    /// claim row is written first, so a reward that fails here is owed rather than rolled back, and
-    /// an operator can see exactly which one.
-    /// </summary>
-    public const string REWARD_TRACK_GRANT = "reward-track-grant";
 
     /// <summary>
     /// What a paid shop order hands over. Strictly after the pivot — the money was captured by the

@@ -120,8 +120,8 @@ public sealed class ReferenceDataReloader(
     /// </summary>
     /// <remarks>
     /// Rather than a key property added to twenty-nine classes. The name is already what each one is
-    /// called in the logs and in the code, so an operator reading "Failed to reload the Habbicon
-    /// catalog" and an operator typing <c>HabbiconCatalog</c> are looking at one thing.
+    /// called in the logs and in the code, so an operator reading "Failed to reload the
+    /// RoomModelProvider" and an operator typing <c>RoomModelProvider</c> are looking at one thing.
     /// </remarks>
     private static ImmutableDictionary<string, Func<CancellationToken, Task>> Build(
         IEnumerable<IReferenceDataProvider> providers,

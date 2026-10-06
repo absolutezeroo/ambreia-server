@@ -15,8 +15,6 @@ using Vortex.Events.Registry;
 using Vortex.Primitives;
 using Vortex.Primitives.Action;
 using Vortex.Primitives.Bots;
-using Vortex.Primitives.Collectibles;
-using Vortex.Primitives.Collectibles.Grains;
 using Vortex.Primitives.Commerce;
 using Vortex.Primitives.Events;
 using Vortex.Primitives.Furniture.Providers;
@@ -302,31 +300,6 @@ internal sealed class RoomHarness
     /// attach rather than reaching the map.
     /// </summary>
     public Func<IRoomObjectLogic>? LogicFactory { get; set; }
-
-    /// <summary>
-    /// Which Relics each player holds. A test that wants one on the trade table puts it here first,
-    /// because the trade refuses ids the offerer does not own — which is the check that makes the
-    /// offer meaningful, so a test must not bypass it.
-    /// </summary>
-    public Dictionary<PlayerId, List<int>> OwnedAssets { get; } = [];
-
-    private ImmutableArray<CollectibleAssetSnapshot> AssetsHeldBy(PlayerId playerId) =>
-        OwnedAssets.TryGetValue(playerId, out List<int>? ids)
-            ?
-            [
-                .. ids.Select(id => new CollectibleAssetSnapshot
-                {
-                    AssetId = id,
-                    Product = new CollectibleProductItemSnapshot
-                    {
-                        ProductTypeId = 1,
-                        ItemTypeId = "s",
-                        Score = 0,
-                        ProductCode = $"relic_{id}",
-                    },
-                }),
-            ]
-            : [];
 
     /// <param name="capabilities">
     /// The hotel-wide capabilities the permission service answers with, for the grain methods that
@@ -631,19 +604,6 @@ internal sealed class RoomHarness
                         ),
                         _ => null,
                     }
-                );
-            }
-
-            // A player's Relics, for the trade path. Both putting one on the table and rendering the
-            // table back read the same grain, so one fake serves the whole journey.
-            if (call.Method.GetGenericArguments()[0] == typeof(IPlayerMintGrain))
-            {
-                PlayerId holder = new((int)(long)call.Args![0]!);
-
-                return FakeProxy.Create<IPlayerMintGrain>(inner =>
-                    inner.Method.Name == nameof(IPlayerMintGrain.GetAssetsAsync)
-                        ? Task.FromResult(AssetsHeldBy(holder))
-                        : null
                 );
             }
 

@@ -145,17 +145,13 @@ public sealed class WebApiConfig
     public string SiteName { get; set; } = string.Empty;
 
     /// <summary>
-    /// Absolute base URL of the website (e.g. <c>https://vortex-hotel.online</c>). Used for one
-    /// thing: the <c>external_url</c> in a Relic's ERC-721 metadata, which is the link a wallet or a
-    /// marketplace offers back to the hotel. Empty means the field is omitted, and a Relic then has
-    /// a name and a picture but nowhere to click through to.
+    /// Absolute base URL of the website (e.g. <c>https://vortex-hotel.online</c>). Used to build the
+    /// password-reset link mailed to a player. Empty means no reset mail is sent.
     /// </summary>
     /// <remarks>
     /// Configured rather than taken from the request, which is what <c>og:url</c> does one file
-    /// over. That works there because the share URL is served BY the site; this document is fetched
-    /// at whatever host the contract's base URI names, and a deployment that puts the API on its own
-    /// hostname — <c>webapi.</c>something — would otherwise publish that hostname as the hotel's
-    /// address in every wallet holding a Relic.
+    /// over: a deployment that puts the API on its own hostname — <c>webapi.</c>something — would
+    /// otherwise mail that hostname as the hotel's address.
     /// </remarks>
     public string PublicSiteUrl { get; set; } = string.Empty;
 

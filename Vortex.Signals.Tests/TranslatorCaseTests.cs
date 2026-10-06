@@ -271,26 +271,6 @@ public sealed class TranslatorCaseTests
     }
 
     [Fact]
-    public void A_habbicon_used_in_a_private_conversation_names_no_room()
-    {
-        // Emitting room 0 would make "any room but 12" match a conversation that happened in no
-        // room at all. A filter only fails closed when the fact is genuinely absent.
-        new HabbiconUsedTranslator()
-            .Translate(new HabbiconUsedEvent(4312, 5, 1, RoomId: 0, ConversationPlayerId: 99))
-            .Should()
-            .ContainSingle()
-            .Which.Facts.Should()
-            .NotContain(f => f.Key == Facts.Room.Key);
-
-        new HabbiconUsedTranslator()
-            .Translate(new HabbiconUsedEvent(4312, 5, 1, RoomId: 7, ConversationPlayerId: null))
-            .Should()
-            .ContainSingle()
-            .Which.Facts.Should()
-            .Contain(f => f.Key == Facts.Room.Key && f.Value == "7");
-    }
-
-    [Fact]
     public void A_pet_level_up_carries_the_level_and_credits_the_owner()
     {
         // The amount is the level, for Highest-mode tasks -- not one. And the credit goes to the
@@ -350,20 +330,6 @@ public sealed class TranslatorCaseTests
 
         new GroupFavouriteTranslator()
             .Translate(new GroupFavouriteChangedEvent(11, GroupId: null))
-            .Should()
-            .BeEmpty();
-    }
-
-    [Fact]
-    public void Taking_off_a_collectible_avatar_is_not_wearing_one()
-    {
-        new NftAvatarTranslator()
-            .Translate(new NftAvatarWornEvent(11, CopyId: 9))
-            .Should()
-            .ContainSingle();
-
-        new NftAvatarTranslator()
-            .Translate(new NftAvatarWornEvent(11, CopyId: null))
             .Should()
             .BeEmpty();
     }

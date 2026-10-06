@@ -23,11 +23,11 @@ public sealed class TranslatorInvariantTests
 {
     public static TheoryData<TranslatorUnderTest> Translators => TranslatorCatalog.AsTheoryData();
 
-    /// <summary>The 21 events that fed RewardTrackEventHandlers, named rather than counted.</summary>
+    /// <summary>The events that fed RewardTrackEventHandlers, named rather than counted.</summary>
     /// <remarks>
     /// A count would drift upwards with every new translator and stop meaning anything. These are
     /// the ones the port had to carry over; losing any of them silently stops content that already
-    /// depends on it.
+    /// depends on it. The two Habbicon events left this list with the feature (RPG fork, M0).
     /// </remarks>
     private static readonly string[] PortedFromHandlers =
     [
@@ -47,8 +47,6 @@ public sealed class TranslatorInvariantTests
         "BadgesEquippedEvent",
         "CatalogPurchasedEvent",
         "TradeCompletedEvent",
-        "HabbiconUsedEvent",
-        "HabbiconCollectionCompletedEvent",
         "PetLeveledUpEvent",
         "QuestCompletedEvent",
         "AchievementLevelUpEvent",

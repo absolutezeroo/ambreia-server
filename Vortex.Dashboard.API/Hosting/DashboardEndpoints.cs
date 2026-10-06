@@ -178,8 +178,6 @@ internal static partial class DashboardEndpoints
         MapStatsReads(app);
         MapTargetedOfferReads(app);
         MapQuestReads(app);
-        MapHabbiconReads(app);
-        MapRewardTrackReads(app);
         MapPollReads(app);
         MapQuestContentReads(app);
         MapMysteryBoxReads(app);
@@ -197,8 +195,6 @@ internal static partial class DashboardEndpoints
         MapGamedataReads(app);
         MapHotelViewReads(app);
         MapInsightReads(app);
-        MapBenchmarkReads(app);
-        MapBenchmarkRunReads(app);
         MapConsoleReads(app);
         MapWordFilterReads(app);
     }
@@ -213,8 +209,6 @@ internal static partial class DashboardEndpoints
         MapFurnitureOperations(app);
         MapTargetedOfferOperations(app);
         MapQuestOperations(app);
-        MapHabbiconOperations(app);
-        MapRewardTrackOperations(app);
         MapPollOperations(app);
         MapQuestContentOperations(app);
         MapMysteryBoxOperations(app);
@@ -224,7 +218,6 @@ internal static partial class DashboardEndpoints
         MapPrizePoolOperations(app);
         MapConfigOperations(app);
         MapBackupOperations(app);
-        MapBenchmarkOperations(app);
         MapNavigatorOperations(app);
         MapStaffOperations(app);
         MapGuildOperations(app);

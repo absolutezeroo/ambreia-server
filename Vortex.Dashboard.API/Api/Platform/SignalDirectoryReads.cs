@@ -13,7 +13,6 @@ using Vortex.Database.Context;
 using Vortex.Database.Entities.Catalog;
 using Vortex.Database.Entities.Furniture;
 using Vortex.Database.Entities.Groups;
-using Vortex.Database.Entities.Habbicons;
 using Vortex.Database.Entities.Navigator;
 using Vortex.Database.Entities.Pets;
 using Vortex.Database.Entities.Players;
@@ -26,7 +25,7 @@ namespace Vortex.Dashboard.API.Api.Platform;
 /// <remarks>
 /// <para>
 /// Every one of these is a value an operator was previously expected to type into a filter from
-/// memory: a guild id, a Habbicon id, a badge code, a catalogue offer, a navigator category, a pet
+/// memory: a guild id, a badge code, a catalogue offer, a navigator category, a pet
 /// species. A typo in any of them produces a filter that is valid, saveable, and silently never
 /// matches — the one failure this whole subsystem exists to make impossible, reappearing at the
 /// last step because the value was free text.
@@ -128,37 +127,6 @@ internal sealed class SignalDirectoryReads(
                 groups.Where(g => g.Name.Contains(term) || (id != null && g.Id == id)),
             groups => groups.OrderBy(g => g.Name),
             g => new PickerRow(g.Id, g.Name, g.Description),
-            ct
-        );
-
-    /// <summary>Habbicons, by code or id.</summary>
-    public Task<DirectoryPage> HabbiconsDirectoryAsync(
-        NameValueCollection query,
-        CancellationToken ct
-    ) =>
-        PickerPageAsync(
-            query,
-            db => db.Habbicons.AsNoTracking().Where(h => h.Enabled),
-            (icons, term, id) =>
-                icons.Where(h => h.Code.Contains(term) || (id != null && h.Id == id)),
-            icons => icons.OrderBy(h => h.SortOrder).ThenBy(h => h.Code),
-            h => new PickerRow(h.Id, h.Code, null),
-            ct
-        );
-
-    /// <summary>Habbicon collections. The value a filter stores is the code, not the id.</summary>
-    public Task<DirectoryPage> HabbiconCollectionsDirectoryAsync(
-        NameValueCollection query,
-        CancellationToken ct
-    ) =>
-        PickerPageAsync(
-            query,
-            db => db.HabbiconCollections.AsNoTracking().Where(c => c.Enabled),
-            (collections, term, id) =>
-                collections.Where(c => c.Code.Contains(term) || (id != null && c.Id == id)),
-            collections => collections.OrderBy(c => c.SortOrder).ThenBy(c => c.Code),
-            // The signal carries the code, so that is what the picker must hand back as the value.
-            c => new PickerRow(c.Id, c.Code, null) { Value = c.Code },
             ct
         );
 
@@ -388,21 +356,6 @@ internal sealed class SignalDirectoryReads(
                 gifts.Where(g => g.ProductCode.Contains(term) || (id != null && g.Id == id)),
             gifts => gifts.OrderBy(g => g.ProductCode),
             g => new PickerRow(g.Id, g.ProductCode, null) { Value = g.ProductCode },
-            ct
-        );
-
-    /// <summary>Collectibles-store offers, by product code.</summary>
-    public Task<DirectoryPage> NftStoreDirectoryAsync(
-        NameValueCollection query,
-        CancellationToken ct
-    ) =>
-        PickerPageAsync(
-            query,
-            db => db.NftStoreOffers.AsNoTracking(),
-            (offers, term, id) =>
-                offers.Where(o => o.ProductCode.Contains(term) || (id != null && o.Id == id)),
-            offers => offers.OrderBy(o => o.ProductCode),
-            o => new PickerRow(o.Id, o.ProductCode, null) { Value = o.ProductCode },
             ct
         );
 

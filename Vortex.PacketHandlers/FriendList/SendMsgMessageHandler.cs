@@ -30,8 +30,8 @@ public class SendMsgMessageHandler(IGrainFactory grainFactory, IWordFilter wordF
             return;
         }
 
-        // Here rather than in MessengerGrain.SendMessageAsync: a Habbicon reaches that method too,
-        // from PlayerHabbiconGrain, with an empty body and nothing to filter.
+        // Here rather than in MessengerGrain.SendMessageAsync: the filter is about what a player
+        // typed, and this handler is where typed text enters.
         WordFilterResult filtered = _wordFilter.Apply(
             message.Message,
             WordFilterSource.Messenger,

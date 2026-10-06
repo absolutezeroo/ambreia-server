@@ -159,18 +159,6 @@ public static class Capabilities
         public const string QuestsRead = "dashboard.quests.read";
         public const string OpsQuestsManage = "dashboard.ops.quests.manage";
 
-        /// <summary>Habbicon collections, their members, and who owns what.</summary>
-        public const string HabbiconsRead = "dashboard.habbicons.read";
-        public const string OpsHabbiconsManage = "dashboard.ops.habbicons.manage";
-
-        /// <summary>
-        /// Reward-track campaigns: the content, the lifecycle, and one player's progress. The manage
-        /// capability covers publishing, which is the write that puts a campaign in front of the
-        /// whole hotel.
-        /// </summary>
-        public const string RewardTracksRead = "dashboard.reward_tracks.read";
-        public const string OpsRewardTracksManage = "dashboard.ops.reward_tracks.manage";
-
         /// <summary>The Trax song catalogue a jukebox plays out of.</summary>
         public const string SongsRead = "dashboard.songs.read";
         public const string OpsSongsManage = "dashboard.ops.songs.manage";
@@ -223,16 +211,13 @@ public static class Capabilities
         /// them, and the sanction preset ladder.</summary>
         public const string StaffRead = "dashboard.staff.read";
 
-        /// <summary>NFT collections, mintable items and collector scores.</summary>
-        public const string CollectiblesRead = "dashboard.collectibles.read";
-
         /// <summary>Edit the staff roster itself: roles, what they grant, and who holds them. Held
         /// apart from every other ops capability because it is the one that can grant capabilities —
         /// including itself.</summary>
         public const string OpsStaffManage = "dashboard.ops.staff.manage";
 
         /// <summary>Author the content the other read surfaces describe: achievement ladders, bots
-        /// and hand items, player grants, the economy's smaller tables, and NFT collections.</summary>
+        /// and hand items, player grants and the economy's smaller tables.</summary>
         public const string OpsContentManage = "dashboard.ops.content.manage";
 
         /// <summary>Read the website's news: articles and their translations, the categories they are
@@ -254,18 +239,6 @@ public static class Capabilities
         /// it is a client that will not boot.
         /// </summary>
         public const string OpsGamedataManage = "dashboard.ops.gamedata.manage";
-
-        /// <summary>Read what a load run measured. Separate from running one: the numbers are worth
-        /// showing to anyone tuning the hotel, and reading them costs nothing.</summary>
-        public const string BenchmarkRead = "dashboard.benchmark.read";
-
-        /// <summary>
-        /// Start and stop a load run. The most physical capability on the dashboard: it opens
-        /// hundreds of real connections to this hotel, writes hundreds of rows, and competes with
-        /// live players for the same room ticks. Held apart from every other ops capability for that
-        /// reason, and it still refuses unless <c>benchmark.enabled</c> is set.
-        /// </summary>
-        public const string OpsBenchmarkRun = "dashboard.ops.benchmark.run";
 
         /// <summary>
         /// Follow the emulator's live console — the same lines the terminal shows. Read-only, but the
@@ -331,10 +304,6 @@ public static class Capabilities
             OpsTargetedOffersManage,
             QuestsRead,
             OpsQuestsManage,
-            HabbiconsRead,
-            OpsHabbiconsManage,
-            RewardTracksRead,
-            OpsRewardTracksManage,
             SongsRead,
             OpsSongsManage,
             GiftWrappingsRead,
@@ -357,14 +326,11 @@ public static class Capabilities
             OpsNavigatorManage,
             SocialRead,
             StaffRead,
-            CollectiblesRead,
             OpsStaffManage,
             OpsContentManage,
             ArticlesRead,
             OpsArticlesManage,
             OpsGamedataManage,
-            BenchmarkRead,
-            OpsBenchmarkRun,
             ServerConsoleRead,
             OpsServerConsole,
             OpsServerControl,

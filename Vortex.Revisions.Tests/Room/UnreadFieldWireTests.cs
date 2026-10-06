@@ -2,7 +2,6 @@ using System;
 using FluentAssertions;
 using Microsoft.Extensions.Options;
 using Vortex.Primitives.Packets;
-using Vortex.Protocol.Messages.Incoming.Collectibles;
 using Vortex.Protocol.Messages.Incoming.Marketplace;
 using Vortex.Protocol.Messages.Incoming.Navigator;
 using Vortex.Protocol.Messages.Incoming.Quest;
@@ -13,7 +12,7 @@ using Rev = Vortex.Revisions.Revision20260701.Revision20260701;
 namespace Vortex.Revisions.Tests.Room;
 
 /// <summary>
-///     Nine parsers that read nothing at all while their client composer pushes one or two values.
+///     Five parsers that read nothing at all while their client composer pushes one or two values.
 ///     Unread trailing bytes do not desynchronise a length-framed packet, so none of these was a
 ///     parsing crash — they were fields the server acted without. Two of them had already been
 ///     declared on the message record and were therefore structurally always default, which is the
@@ -25,10 +24,6 @@ namespace Vortex.Revisions.Tests.Room;
 /// </summary>
 public sealed class UnreadFieldWireTests
 {
-    private const int GetCollectorScoreEvent = 1614; // _composers[1614] = _SafeCls_2861
-    private const int GetNftCollectionsEvent = 708; // _composers[708]  = _SafeCls_3378
-    private const int ClaimBonusItemEvent = 1977; // _composers[1977] = _SafeCls_3818
-    private const int ClaimRewardItemEvent = 1166; // _composers[1166] = _SafeCls_3758
     private const int GetMarketplaceOwnOffersEvent = 2086; // _composers[2086] = _SafeCls_1881
     private const int RemoveOwnRoomRightsRoomEvent = 260; // _composers[260]  = _SafeCls_2158
     private const int RoomAdSearchEvent = 1971; // _composers[1971] = _SafeCls_3386
@@ -76,54 +71,6 @@ public sealed class UnreadFieldWireTests
 
         message.AdIndex.Should().Be(3);
         message.TabId.Should().Be(17);
-    }
-
-    [Fact]
-    public void GetCollectorScoreParser_ReadsTheActiveWallet()
-    {
-        GetCollectorScoreMessage message = Parse<GetCollectorScoreMessage>(
-            GetCollectorScoreEvent,
-            sp => sp.WriteString("0xfeed")
-        );
-
-        message.WalletAddress.Should().Be("0xfeed");
-    }
-
-    [Fact]
-    public void GetNftCollectionsParser_ReadsTheActiveWallet()
-    {
-        GetNftCollectionsMessage message = Parse<GetNftCollectionsMessage>(
-            GetNftCollectionsEvent,
-            sp => sp.WriteString("0xfeed")
-        );
-
-        message.WalletAddress.Should().Be("0xfeed");
-    }
-
-    /// <summary>A claim names what it is claiming and where to credit it; neither reached us.</summary>
-    [Fact]
-    public void ClaimBonusItemParser_ReadsTheCollectionAndWallet()
-    {
-        NftCollectiblesClaimBonusItemMessage message = Parse<NftCollectiblesClaimBonusItemMessage>(
-            ClaimBonusItemEvent,
-            sp => sp.WriteString("relics").WriteString("0xfeed")
-        );
-
-        message.CollectionId.Should().Be("relics");
-        message.WalletAddress.Should().Be("0xfeed");
-    }
-
-    [Fact]
-    public void ClaimRewardItemParser_ReadsTheCollectionAndWallet()
-    {
-        NftCollectiblesClaimRewardItemMessage message =
-            Parse<NftCollectiblesClaimRewardItemMessage>(
-                ClaimRewardItemEvent,
-                sp => sp.WriteString("relics").WriteString("0xfeed")
-            );
-
-        message.CollectionId.Should().Be("relics");
-        message.WalletAddress.Should().Be("0xfeed");
     }
 
     [Fact]

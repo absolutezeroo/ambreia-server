@@ -151,13 +151,6 @@ internal sealed class InventoryReads(IDbContextFactory<VortexDbContext> dbContex
                                     .ConfigureAwait(false),
                                 "/prize-pools"
                             ),
-                            Row(
-                                "nftCollections",
-                                await db
-                                    .NftCollections.CountAsync(c => c.DeletedAt == null, ct)
-                                    .ConfigureAwait(false),
-                                "/collectibles"
-                            ),
                         ]
                     ),
                     Group(

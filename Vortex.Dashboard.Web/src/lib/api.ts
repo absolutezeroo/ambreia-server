@@ -81,9 +81,8 @@ export function isAuthError(raw: unknown): boolean {
  * What each server error code says to somebody who did not write the server.
  *
  * A table rather than a chain of ifs, because the fallback is the error's own `code` and that is
- * what an operator was reading: a sequence refused for a reason the validator states precisely
- * put `filter_reference_must_be_earlier` on the screen, which says nothing to the person who has
- * to fix it. A missing entry here is now the only way that happens again.
+ * what an operator was reading, and a raw code says nothing to the person who has to fix it. A
+ * missing entry here is now the only way that happens again.
  */
 const ERROR_CODE_KEYS: Record<string, string> = {
   request_timeout: 'errors.requestTimeout',
@@ -94,25 +93,6 @@ const ERROR_CODE_KEYS: Record<string, string> = {
   invalid_code: 'errors.invalidCode',
   wrong_password: 'errors.wrongPassword',
   password_too_short: 'errors.passwordTooShort',
-
-  // What the reward-track editor refuses, and why. Every one of these is a filter or a step that
-  // would have saved cleanly and then never matched anything.
-  filter_incomplete: 'errors.filterIncomplete',
-  filter_operator_not_valid_for_fact: 'errors.filterOperatorNotValid',
-  filter_fact_not_emitted_by_action: 'errors.filterFactNotEmitted',
-  filter_one_of_needs_a_list: 'errors.filterNeedsList',
-  filter_needs_a_number: 'errors.filterNeedsNumber',
-  filter_reference_must_be_earlier: 'errors.filterReferenceOrder',
-  filter_reference_fact_not_captured: 'errors.filterReferenceNotCaptured',
-  step_action_required: 'errors.stepActionRequired',
-  sequence_needs_a_step: 'errors.sequenceNeedsStep',
-  predicate_group_needs_a_child: 'errors.predicateGroupNeedsChild',
-  predicate_not_needs_one_child: 'errors.predicateNotNeedsOneChild',
-  predicate_shape_mismatch: 'errors.predicateShapeMismatch',
-  filter_sides_do_not_compare: 'errors.filterSidesDoNotCompare',
-  filter_sides_are_the_same: 'errors.filterSidesAreTheSame',
-  filter_value_not_supported: 'errors.filterValueNotSupported',
-  task_id_and_action_required: 'errors.taskIdAndActionRequired',
 };
 
 export function describeApiError(raw: unknown): string {

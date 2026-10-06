@@ -14,7 +14,7 @@ namespace Vortex.PacketHandlers.Vault.Events;
 /// offline player simply sees it on their next window open.
 /// </summary>
 /// <remarks>
-/// Here rather than in the vault grain because <c>Vortex.Collectibles</c> is protocol-free.
+/// Here rather than in the vault grain, which is kept protocol-free.
 /// </remarks>
 public sealed class VaultIncomeDepositedNotifier(IGrainFactory grainFactory)
     : IEventHandler<VaultIncomeDepositedEvent>

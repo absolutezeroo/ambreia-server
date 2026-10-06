@@ -22,7 +22,7 @@ namespace Vortex.Fishing.Grains;
 /// </summary>
 /// <remarks>
 /// <para>
-/// Cached the way <c>NftCollectionsGrain</c> caches its collections: these change when an operator
+/// Cached once and held: these change when an operator
 /// edits them, not while anybody is playing. What differs is that an edit has to reach players
 /// <em>mid-session</em> — so <see cref="ReloadAsync"/> is a real operation rather than a restart,
 /// and the version it bumps is what lets a client tell a real change from a redundant push.

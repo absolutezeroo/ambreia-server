@@ -81,24 +81,6 @@ internal static partial class DashboardEndpoints
         );
         MapReadGet<DirectoryPage>(
             app,
-            ApiDirectory + "/habbicons",
-            (HttpContext ctx, SignalDirectoryReads signalDirectory, CancellationToken ct) =>
-                OkAsync(signalDirectory.HabbiconsDirectoryAsync(ctx.QueryAsNameValues(), ct)),
-            Capabilities.Dashboard.HabbiconsRead,
-            TagDirectory
-        );
-        MapReadGet<DirectoryPage>(
-            app,
-            ApiDirectory + "/habbicon-collections",
-            (HttpContext ctx, SignalDirectoryReads signalDirectory, CancellationToken ct) =>
-                OkAsync(
-                    signalDirectory.HabbiconCollectionsDirectoryAsync(ctx.QueryAsNameValues(), ct)
-                ),
-            Capabilities.Dashboard.HabbiconsRead,
-            TagDirectory
-        );
-        MapReadGet<DirectoryPage>(
-            app,
             ApiDirectory + "/catalog-offers",
             (HttpContext ctx, SignalDirectoryReads signalDirectory, CancellationToken ct) =>
                 OkAsync(signalDirectory.CatalogOffersDirectoryAsync(ctx.QueryAsNameValues(), ct)),
@@ -187,14 +169,6 @@ internal static partial class DashboardEndpoints
             (HttpContext ctx, SignalDirectoryReads signalDirectory, CancellationToken ct) =>
                 OkAsync(signalDirectory.ClubGiftsDirectoryAsync(ctx.QueryAsNameValues(), ct)),
             Capabilities.Dashboard.CatalogRead,
-            TagDirectory
-        );
-        MapReadGet<DirectoryPage>(
-            app,
-            ApiDirectory + "/nft-store",
-            (HttpContext ctx, SignalDirectoryReads signalDirectory, CancellationToken ct) =>
-                OkAsync(signalDirectory.NftStoreDirectoryAsync(ctx.QueryAsNameValues(), ct)),
-            Capabilities.Dashboard.CollectiblesRead,
             TagDirectory
         );
         MapReadGet<DirectoryPage>(

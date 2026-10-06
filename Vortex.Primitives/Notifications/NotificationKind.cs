@@ -28,7 +28,8 @@ public enum NotificationKind
     ClubExpired = 0,
     ClubPayday = 1,
     ClubGiftToken = 2,
-    RewardTrackCompleted = 3,
+
+    // 3 was RewardTrackCompleted, removed in the RPG fork (M0). Persisted: never reuse it.
     RaffleWon = 4,
     VoucherRedeemed = 5,
 
@@ -66,7 +67,8 @@ public enum NotificationKind
     AchievementLevelUp = 40,
     QuestCompleted = 41,
     BadgeGranted = 42,
-    HabbiconCollectionCompleted = 43,
+
+    // 43 was HabbiconCollectionCompleted, removed in the RPG fork (M0). Persisted: never reuse it.
     PrizeAwarded = 44,
 
     // ---- The website's feed ----------------------------------------------------------------

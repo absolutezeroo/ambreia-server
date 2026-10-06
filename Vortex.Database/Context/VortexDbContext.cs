@@ -3,7 +3,6 @@ using Vortex.Database.Entities.Achievements;
 using Vortex.Database.Entities.Audit;
 using Vortex.Database.Entities.Camera;
 using Vortex.Database.Entities.Catalog;
-using Vortex.Database.Entities.Collectibles;
 using Vortex.Database.Entities.Commerce;
 using Vortex.Database.Entities.Errors;
 using Vortex.Database.Entities.Feed;
@@ -11,7 +10,6 @@ using Vortex.Database.Entities.Fishing;
 using Vortex.Database.Entities.Furniture;
 using Vortex.Database.Entities.Gamedata;
 using Vortex.Database.Entities.Groups;
-using Vortex.Database.Entities.Habbicons;
 using Vortex.Database.Entities.Help;
 using Vortex.Database.Entities.Marketplace;
 using Vortex.Database.Entities.Messenger;
@@ -24,7 +22,6 @@ using Vortex.Database.Entities.Players;
 using Vortex.Database.Entities.Polls;
 using Vortex.Database.Entities.Prizes;
 using Vortex.Database.Entities.Quests;
-using Vortex.Database.Entities.RewardTracks;
 using Vortex.Database.Entities.Room;
 using Vortex.Database.Entities.Security;
 using Vortex.Database.Entities.Server;
@@ -272,22 +269,6 @@ public class VortexDbContext(DbContextOptions<VortexDbContext> options)
 
     public DbSet<HandItemEntity> HandItems { get; init; } = null!;
 
-    public DbSet<NftCollectionEntity> NftCollections { get; init; } = null!;
-
-    public DbSet<NftCollectionItemEntity> NftCollectionItems { get; init; } = null!;
-
-    public DbSet<NftStoreOfferEntity> NftStoreOffers { get; init; } = null!;
-
-    public DbSet<NftClaimEntity> NftClaims { get; init; } = null!;
-
-    public DbSet<PlayerCollectorStatsEntity> PlayerCollectorStats { get; init; } = null!;
-
-    public DbSet<NftMintableItemTypeEntity> NftMintableItemTypes { get; init; } = null!;
-
-    public DbSet<NftMintTokenOfferEntity> NftMintTokenOffers { get; init; } = null!;
-
-    public DbSet<PlayerMintTokensEntity> PlayerMintTokens { get; init; } = null!;
-
     // Fishing — reconstructed from Habbo Origins, which has no client dump. Every number in these
     // four tables is an operator-editable guess rather than a recovered value; see the client's
     // docs/vortex-original/fishing.md.
@@ -313,10 +294,6 @@ public class VortexDbContext(DbContextOptions<VortexDbContext> options)
 
     public DbSet<FishingDerbyEntryEntity> FishingDerbyEntries { get; init; } = null!;
 
-    public DbSet<NftAssetEntity> NftAssets { get; init; } = null!;
-
-    public DbSet<NftAssetLedgerEntity> NftAssetLedger { get; init; } = null!;
-
     public DbSet<FurniturePurchasableClothingEntity> FurniturePurchasableClothing { get; init; } =
         null!;
 
@@ -325,14 +302,6 @@ public class VortexDbContext(DbContextOptions<VortexDbContext> options)
     public DbSet<SongEntity> Songs { get; init; } = null!;
 
     public DbSet<PlayerClothingEntity> PlayerClothing { get; init; } = null!;
-
-    public DbSet<PlayerWalletEntity> PlayerWallets { get; init; } = null!;
-
-    public DbSet<NftAvatarEntity> NftAvatars { get; init; } = null!;
-
-    public DbSet<PlayerNftAvatarEntity> PlayerNftAvatars { get; init; } = null!;
-
-    public DbSet<PlayerNftOutfitEntity> PlayerNftOutfits { get; init; } = null!;
 
     public DbSet<PetPaletteEntity> PetPalettes { get; init; } = null!;
 
@@ -394,32 +363,6 @@ public class VortexDbContext(DbContextOptions<VortexDbContext> options)
     public DbSet<DailyTaskRewardEntity> DailyTaskRewards { get; init; } = null!;
 
     public DbSet<PlayerDailyTaskEntity> PlayerDailyTasks { get; init; } = null!;
-
-    public DbSet<HabbiconCollectionEntity> HabbiconCollections { get; init; } = null!;
-
-    public DbSet<HabbiconEntity> Habbicons { get; init; } = null!;
-
-    public DbSet<PlayerHabbiconEntity> PlayerHabbicons { get; init; } = null!;
-
-    public DbSet<RewardTrackEntity> RewardTracks { get; init; } = null!;
-
-    public DbSet<RewardTrackTaskEntity> RewardTrackTasks { get; init; } = null!;
-
-    public DbSet<RewardTrackTaskLevelEntity> RewardTrackTaskLevels { get; init; } = null!;
-
-    public DbSet<RewardTrackTaskStepEntity> RewardTrackTaskSteps { get; init; } = null!;
-
-    public DbSet<RewardTrackStepFilterEntity> RewardTrackStepFilters { get; init; } = null!;
-
-    public DbSet<RewardTrackPrizeEntity> RewardTrackPrizes { get; init; } = null!;
-
-    public DbSet<RewardTrackPrizeRewardEntity> RewardTrackPrizeRewards { get; init; } = null!;
-
-    public DbSet<PlayerRewardTrackEntity> PlayerRewardTracks { get; init; } = null!;
-
-    public DbSet<PlayerRewardTrackTaskEntity> PlayerRewardTrackTasks { get; init; } = null!;
-
-    public DbSet<PlayerRewardTrackClaimEntity> PlayerRewardTrackClaims { get; init; } = null!;
 
     public DbSet<CommunityGoalEntity> CommunityGoals { get; init; } = null!;
 

@@ -92,17 +92,11 @@ public static class SignalActions
     /// <inheritdoc cref="RewardTrackActions.PetLevel"/>
     public const string PetLevel = RewardTrackActions.PetLevel;
 
-    /// <inheritdoc cref="RewardTrackActions.UseHabbicon"/>
-    public const string UseHabbicon = RewardTrackActions.UseHabbicon;
-
     /// <inheritdoc cref="RewardTrackActions.CompleteTrade"/>
     public const string CompleteTrade = RewardTrackActions.CompleteTrade;
 
     /// <inheritdoc cref="RewardTrackActions.SpendCredits"/>
     public const string SpendCredits = RewardTrackActions.SpendCredits;
-
-    /// <inheritdoc cref="RewardTrackActions.CompleteHabbiconCollection"/>
-    public const string CompleteHabbiconCollection = RewardTrackActions.CompleteHabbiconCollection;
 
     /// <inheritdoc cref="RewardTrackActions.CompleteQuest"/>
     public const string CompleteQuest = RewardTrackActions.CompleteQuest;
@@ -227,29 +221,8 @@ public static class SignalActions
     /// <inheritdoc cref="RewardTrackActions.RedeemVoucher"/>
     public const string RedeemVoucher = RewardTrackActions.RedeemVoucher;
 
-    /// <inheritdoc cref="RewardTrackActions.MintRelic"/>
-    public const string MintRelic = RewardTrackActions.MintRelic;
-
-    /// <inheritdoc cref="RewardTrackActions.BuyMintTokens"/>
-    public const string BuyMintTokens = RewardTrackActions.BuyMintTokens;
-
-    /// <inheritdoc cref="RewardTrackActions.BuyFromNftStore"/>
-    public const string BuyFromNftStore = RewardTrackActions.BuyFromNftStore;
-
-    /// <inheritdoc cref="RewardTrackActions.CollectNftClaims"/>
-    public const string CollectNftClaims = RewardTrackActions.CollectNftClaims;
-
     /// <inheritdoc cref="RewardTrackActions.ClaimVaultIncome"/>
     public const string ClaimVaultIncome = RewardTrackActions.ClaimVaultIncome;
-
-    /// <inheritdoc cref="RewardTrackActions.WearNftAvatar"/>
-    public const string WearNftAvatar = RewardTrackActions.WearNftAvatar;
-
-    /// <inheritdoc cref="RewardTrackActions.EarnHabbicon"/>
-    public const string EarnHabbicon = RewardTrackActions.EarnHabbicon;
-
-    /// <inheritdoc cref="RewardTrackActions.ClaimHabbiconReward"/>
-    public const string ClaimHabbiconReward = RewardTrackActions.ClaimHabbiconReward;
 
     /// <inheritdoc cref="RewardTrackActions.FreezePlayerFrozen"/>
     public const string FreezePlayerFrozen = RewardTrackActions.FreezePlayerFrozen;
@@ -310,10 +283,8 @@ public static class SignalActions
         WearBadge,
         BuyFromCatalogue,
         PetLevel,
-        UseHabbicon,
         CompleteTrade,
         SpendCredits,
-        CompleteHabbiconCollection,
         CompleteQuest,
         AchievementLevel,
         Wired,
@@ -355,14 +326,7 @@ public static class SignalActions
         EnterRaffle,
         WinRaffle,
         RedeemVoucher,
-        MintRelic,
-        BuyMintTokens,
-        BuyFromNftStore,
-        CollectNftClaims,
         ClaimVaultIncome,
-        WearNftAvatar,
-        EarnHabbicon,
-        ClaimHabbiconReward,
         FreezePlayerFrozen,
         FreezePowerUpCollected,
         FreezePoints,

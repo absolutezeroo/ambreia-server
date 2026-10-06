@@ -10,8 +10,7 @@
       testable, which the previous shape — a translation welded to an Orleans handler — was not.
 
       Nobody references this project. Consumers, the content validator and the dashboard depend on
-      the interfaces in Vortex.Primitives.Signals and receive the implementations by injection;
-      referencing this project from Vortex.RewardTracks would run the dependency the wrong way.
+      the interfaces in Vortex.Primitives.Signals and receive the implementations by injection.
       Vortex.Main references it so the assembly scan can see it.
     -->
   </PropertyGroup>

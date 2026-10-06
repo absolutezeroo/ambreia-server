@@ -33,7 +33,6 @@ using Vortex.Observability.Configuration;
 using Vortex.Observability.Metrics;
 using Vortex.Observability.Runtime;
 using Vortex.Primitives.Authentication;
-using Vortex.Primitives.Benchmark;
 using Vortex.Primitives.Catalog;
 using Vortex.Primitives.Catalog.Providers;
 using Vortex.Primitives.Catalog.Tags;
@@ -44,7 +43,6 @@ using Vortex.Primitives.Feed;
 using Vortex.Primitives.Fishing;
 using Vortex.Primitives.Furniture;
 using Vortex.Primitives.Furniture.Providers;
-using Vortex.Primitives.Habbicons;
 using Vortex.Primitives.Hosting;
 using Vortex.Primitives.Moderation;
 using Vortex.Primitives.Moderation.WordFilter;
@@ -59,8 +57,6 @@ using Vortex.Primitives.Plugins.Exports;
 using Vortex.Primitives.Polls;
 using Vortex.Primitives.Prizes;
 using Vortex.Primitives.Quests;
-using Vortex.Primitives.RewardTracks;
-using Vortex.Primitives.Signals;
 using Vortex.Primitives.Sound;
 using Vortex.Primitives.Sound.Providers;
 
@@ -139,9 +135,6 @@ public sealed class DashboardPlugin : IVortexPlugin
         // again on every keystroke of a search.
         services.TryAddSingleton<GamedataDocumentStore>();
         services.TryAddSingleton<FiguredataIndex>();
-        // Reads the Habbicon spritesheet's metadata off the same asset pack, and caches it until the
-        // operator swaps the pack.
-        services.TryAddSingleton<HabbiconArtwork>();
         services.TryAddSingleton<DashboardAuditEmitter>();
         services.TryAddSingleton<DashboardMonitoringReads>();
         // What every dashboard write goes through. A collaborator, so a subject that becomes its
@@ -184,15 +177,10 @@ public sealed class DashboardPlugin : IVortexPlugin
         services.TryAddSingleton<StaffReads>();
         services.TryAddSingleton<StaffOperations>();
         services.TryAddSingleton<ContentOperations>();
-        services.TryAddSingleton<RewardOperations>();
-        services.TryAddSingleton<HabbiconReads>();
-        services.TryAddSingleton<RewardTrackReads>();
         services.TryAddSingleton<GamedataReads>();
         services.TryAddSingleton<GamedataOperations>();
         services.TryAddSingleton<HotelViewReads>();
         services.TryAddSingleton<HotelViewOperations>();
-        services.TryAddSingleton<BenchmarkReads>();
-        services.TryAddSingleton<BenchmarkOperations>();
         services.TryAddSingleton<BackupOperations>();
         services.TryAddSingleton<ConsoleOperations>();
         services.TryAddSingleton<PrivacyOperations>();
@@ -215,7 +203,6 @@ public sealed class DashboardPlugin : IVortexPlugin
         services.TryAddSingleton<ItemAnomalyReads>();
         services.TryAddSingleton<CfhReads>();
         services.TryAddSingleton<ChatlogReads>();
-        services.TryAddSingleton<CollectibleReads>();
         services.TryAddSingleton<PlayerRewardReads>();
         services.TryAddSingleton<InventoryReads>();
         services.TryAddSingleton<CatalogPurchaseReads>();
@@ -224,12 +211,9 @@ public sealed class DashboardPlugin : IVortexPlugin
         services.TryAddSingleton<AchievementResolutionReads>();
         services.TryAddSingleton<SignalDirectoryReads>();
         services.TryAddSingleton<DirectoryReads>();
-        // Authoring content is the dashboard's job, not the emulator's: the hotel runs campaigns,
-        // it does not write them. So the admin service lives here and is registered here, and a
-        // host that does not load this module has no content-authoring path at all -- which is what
-        // being an optional plugin means. It builds on what the domain publishes: the catalogue, the
-        // content rules in Vortex.Primitives.RewardTracks.Content, and IReferenceDataReloader.
-        services.TryAddSingleton<IRewardTrackAdminService, RewardTrackAdminService>();
+        // Authoring content is the dashboard's job, not the emulator's: the admin services live here
+        // and are registered here, and a host that does not load this module has no
+        // content-authoring path at all -- which is what being an optional plugin means.
         services.TryAddSingleton<IStaffAdminService, StaffAdminService>();
         services.TryAddSingleton<ICatalogAdminService, CatalogAdminService>();
         services.TryAddSingleton<ITargetedOfferAdminService, TargetedOfferAdminService>();
@@ -237,7 +221,6 @@ public sealed class DashboardPlugin : IVortexPlugin
         services.TryAddSingleton<IFurnitureAdminService, FurnitureAdminService>();
         services.TryAddSingleton<ISongAdminService, SongAdminService>();
         services.TryAddSingleton<IGiftWrappingAdminService, GiftWrappingAdminService>();
-        services.TryAddSingleton<IHabbiconAdminService, HabbiconAdminService>();
         services.TryAddSingleton<INavigatorAdminService, NavigatorAdminService>();
         services.TryAddSingleton<IContentAdminService, ContentAdminService>();
         services.TryAddSingleton<IMysteryBoxAdminService, MysteryBoxAdminService>();
@@ -325,14 +308,10 @@ public sealed class DashboardPlugin : IVortexPlugin
         services.UseHostService<ISongProvider>();
         services.UseHostService<IGiftWrappingProvider>();
         services.UseHostService<ICurrencyTypeProvider>();
-        services.UseHostService<IHabbiconCatalog>();
-        services.UseHostService<IRewardTrackCatalog>();
-        services.UseHostService<ISignalVocabulary>();
 
-        // The console page and the benchmark page, which drive the emulator rather than read it.
+        // The console page, which drives the emulator rather than read it.
         services.UseHostService<ServerConsoleFeed>();
         services.UseHostService<IConsoleCommandDispatcher>();
-        services.UseHostService<IBenchmarkService>();
     }
 
     /// <summary>

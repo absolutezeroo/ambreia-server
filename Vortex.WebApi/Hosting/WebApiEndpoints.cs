@@ -59,11 +59,6 @@ internal static partial class WebApiEndpoints
         MapContent(app);
         MapShop(app);
 
-        // What VortexCollectible's tokenURI points at. Tagged Public because it
-        // answers with or without a chain: it describes a Relic, and a Relic exists in the hotel
-        // whether or not anybody ever moved it.
-        WebApiEndpointsCollectibles.MapCollectibles(app, TagPublic);
-
         WebApiEndpointsCamera.MapCamera(app);
 
         // The website's social feed. The reads are anonymous, like the photo gallery beside it; the

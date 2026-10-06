@@ -72,12 +72,6 @@ public static class RewardTrackFacts
     /// <summary>A catalogue offer id.</summary>
     public const string Offer = "offer";
 
-    /// <summary>A Habbicon id.</summary>
-    public const string Habbicon = "habbicon";
-
-    /// <summary>A Habbicon collection code.</summary>
-    public const string Collection = "collection";
-
     /// <summary>A pet id.</summary>
     public const string Pet = "pet";
 
@@ -124,9 +118,6 @@ public static class RewardTrackFacts
 
     /// <summary>A club gift's product code.</summary>
     public const string ClubGift = "club_gift";
-
-    /// <summary>A collectibles-store product code.</summary>
-    public const string NftProduct = "nft_product";
 
     /// <summary>A vault income category.</summary>
     public const string VaultCategory = "vault_category";

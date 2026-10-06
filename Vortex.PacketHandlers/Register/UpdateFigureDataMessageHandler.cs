@@ -87,11 +87,6 @@ public class UpdateFigureDataMessageHandler(
                 ct
             )
             .ConfigureAwait(false);
-
-        await _grainFactory
-            .GetPlayerNftWardrobeGrain(new PlayerId(ctx.PlayerId))
-            .RemoveWornAsync(ct)
-            .ConfigureAwait(false);
     }
 
     private async Task<bool> MayWearAsync(string figure, int playerId, CancellationToken ct)

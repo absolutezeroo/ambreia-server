@@ -935,48 +935,6 @@
         }
       }
     },
-    "/api/public/collectibles/{assetId}": {
-      "get": {
-        "tags": [
-          "Public"
-        ],
-        "summary": "ERC-721 metadata for one Relic, by its hotel asset id.",
-        "operationId": "CollectibleMetadata",
-        "parameters": [
-          {
-            "name": "assetId",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "integer",
-              "format": "int32"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/TokenMetadata"
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "Not Found",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiErrorResponse"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
     "/api/public/feed": {
       "get": {
         "tags": [
@@ -4292,7 +4250,6 @@
           0,
           1,
           2,
-          3,
           4,
           5,
           10,
@@ -4313,7 +4270,6 @@
           40,
           41,
           42,
-          43,
           44,
           50,
           51,
@@ -5373,51 +5329,6 @@
           "isValid": {
             "type": "boolean",
             "readOnly": true
-          }
-        },
-        "additionalProperties": false
-      },
-      "TokenAttribute": {
-        "required": [
-          "trait_type",
-          "value"
-        ],
-        "type": "object",
-        "properties": {
-          "trait_type": {
-            "type": "string"
-          },
-          "value": {}
-        },
-        "additionalProperties": false
-      },
-      "TokenMetadata": {
-        "required": [
-          "attributes",
-          "description",
-          "name"
-        ],
-        "type": "object",
-        "properties": {
-          "name": {
-            "type": "string"
-          },
-          "description": {
-            "type": "string"
-          },
-          "image": {
-            "type": "string",
-            "nullable": true
-          },
-          "attributes": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/TokenAttribute"
-            }
-          },
-          "external_url": {
-            "type": "string",
-            "nullable": true
           }
         },
         "additionalProperties": false

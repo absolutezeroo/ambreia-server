@@ -51,10 +51,7 @@
   <ItemGroup>
     <ProjectReference Include="..\Vortex.Authentication\Vortex.Authentication.csproj" />
     <ProjectReference Include="..\Vortex.Catalog\Vortex.Catalog.csproj" />
-    <ProjectReference Include="..\Vortex.Collectibles\Vortex.Collectibles.csproj" />
     <ProjectReference Include="..\Vortex.Fishing\Vortex.Fishing.csproj" />
-    <ProjectReference Include="..\Vortex.Habbicons\Vortex.Habbicons.csproj" />
-    <ProjectReference Include="..\Vortex.RewardTracks\Vortex.RewardTracks.csproj" />
     <ProjectReference Include="..\Vortex.Shop\Vortex.Shop.csproj" />
     <!--
       Referenced for one reason: the assembly scan only sees assemblies the host has loaded, and a
@@ -70,19 +67,6 @@
     <ProjectReference Include="..\Vortex.Logging\Vortex.Logging.csproj" />
     <ProjectReference Include="..\Vortex.Marketplace\Vortex.Marketplace.csproj" />
     <ProjectReference Include="..\Vortex.Messages\Vortex.Messages.csproj" />
-    <!-- ARCH-MAIN-026 asks why a benchmark and a load generator are referenced by the production
-         host. Checked, and both are right as they stand. Benchmark is an operator feature, not a
-         harness: IBenchmarkService is a constructor dependency of two Dashboard API services, so
-         dropping it from a Release build takes the dashboard down at startup, and BenchmarkService
-         itself is inert behind the "benchmark.enabled" server-config key, false by default. LoadGen
-         is already not linked at all: ReferenceOutputAssembly is false and it is only copied beside
-         the host, because a load generator that shares the process it measures measures itself. -->
-    <ProjectReference Include="..\Vortex.Benchmark\Vortex.Benchmark.csproj" />
-    <ProjectReference Include="..\Vortex.LoadGen\Vortex.LoadGen.csproj">
-      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
-      <OutputItemType>Content</OutputItemType>
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </ProjectReference>
     <ProjectReference Include="..\Vortex.Navigator\Vortex.Navigator.csproj" />
     <ProjectReference Include="..\Vortex.Networking\Vortex.Networking.csproj" />
     <!-- Vortex.Dashboard.API is deliberately NOT referenced, and must not be. It is a loadable

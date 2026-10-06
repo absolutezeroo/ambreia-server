@@ -185,9 +185,6 @@ public sealed partial class RoomGrain
         }
     }
 
-    public Task<bool> UseHabbiconAsync(PlayerId playerId, int habbiconId) =>
-        ChatSystem.UseHabbiconAsync(playerId, habbiconId);
-
     /// <summary>The client's <c>WiredUserAction</c> codes for the two actions that carry an index.</summary>
     private const int SignActionCode = 10;
 

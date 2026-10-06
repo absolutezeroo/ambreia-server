@@ -8,27 +8,6 @@ using Vortex.WebApi.Services;
 
 namespace Vortex.WebApi.Notifications;
 
-/// <summary>Things that arrived for me.</summary>
-public sealed class RewardTrackNotificationHandler(INotificationSink notifications)
-    : IEventHandler<RewardTrackCompletedEvent>
-{
-    public async ValueTask HandleAsync(
-        RewardTrackCompletedEvent e,
-        EventContext ctx,
-        CancellationToken ct
-    )
-    {
-        await notifications
-            .NotifyAsync(
-                e.PlayerId,
-                NotificationKind.RewardTrackCompleted,
-                data: JsonSerializer.Serialize(new { track = e.TrackId }),
-                ct: ct
-            )
-            .ConfigureAwait(false);
-    }
-}
-
 /// <summary>
 /// An LTD raffle came out in my favour.
 /// </summary>

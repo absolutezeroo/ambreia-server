@@ -27,11 +27,9 @@ internal static partial class DashboardEndpoints
 {
     private const string TagSocial = "Social";
     private const string TagStaff = "Staff";
-    private const string TagCollectibles = "Collectibles";
     private const string ApiSocial = ApiV1 + "/social";
     private const string ApiStaff = ApiV1 + "/staff";
     private const string ApiPlayerRewards = ApiV1 + "/player-rewards";
-    private const string ApiCollectibles = ApiV1 + "/collectibles";
 
     public static void MapInsightReads(WebApplication app)
     {
@@ -88,14 +86,6 @@ internal static partial class DashboardEndpoints
                 OkAsync(inventory.InventoryAsync(ct)),
             Capabilities.Dashboard.OverviewRead,
             TagMonitoring
-        );
-        MapReadGet<CollectiblesOverview>(
-            app,
-            ApiCollectibles,
-            (CollectibleReads collectible, CancellationToken ct) =>
-                OkAsync(collectible.CollectiblesAsync(ct)),
-            Capabilities.Dashboard.CollectiblesRead,
-            TagCollectibles
         );
     }
 }

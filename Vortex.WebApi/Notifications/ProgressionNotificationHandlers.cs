@@ -96,30 +96,6 @@ public sealed class BadgeNotificationHandler(INotificationSink notifications)
     }
 }
 
-/// <summary>A Habbicon collection filled up, and there is a reward waiting for it.</summary>
-public sealed class HabbiconCollectionNotificationHandler(INotificationSink notifications)
-    : IEventHandler<HabbiconCollectionCompletedEvent>
-{
-    public async ValueTask HandleAsync(
-        HabbiconCollectionCompletedEvent e,
-        EventContext ctx,
-        CancellationToken ct
-    )
-    {
-        await notifications
-            .NotifyAsync(
-                e.PlayerId,
-                NotificationKind.HabbiconCollectionCompleted,
-                targetId: e.CollectionId,
-                data: JsonSerializer.Serialize(
-                    new { collection = e.CollectionCode, reward = e.RewardHabbiconId }
-                ),
-                ct: ct
-            )
-            .ConfigureAwait(false);
-    }
-}
-
 /// <summary>A prize pool paid out to me.</summary>
 public sealed class PrizeNotificationHandler(INotificationSink notifications)
     : IEventHandler<PrizeAwardedEvent>

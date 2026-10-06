@@ -39,8 +39,9 @@ public sealed class VocabularyGovernanceTests
         "model",
         "player",
         "offer",
-        "habbicon",
-        "collection",
+        // "habbicon" and "collection" were here, and "nft_product" further down: the RPG fork (M0)
+        // removed Habbicons, the collectibles store and reward tracks, so nothing emits them and the
+        // only content that named them -- reward-track step filters -- is gone with the feature.
         "pet",
         "badge",
         "message",
@@ -64,7 +65,6 @@ public sealed class VocabularyGovernanceTests
         "campaign",
         "voucher",
         "club_gift",
-        "nft_product",
         "vault_category",
         "targeted_offer",
         "pet_type",
@@ -107,10 +107,10 @@ public sealed class VocabularyGovernanceTests
         "wear_badge",
         "buy_from_catalogue",
         "pet_level",
-        "use_habbicon",
+        // The Habbicon, relic, minting, NFT-store and NFT-avatar codes were removed with their
+        // features in the RPG fork (M0); their only content was reward-track tasks, also removed.
         "complete_trade",
         "spend_credits",
-        "complete_habbicon_collection",
         "complete_quest",
         "achievement_level",
         "wired",
@@ -152,14 +152,7 @@ public sealed class VocabularyGovernanceTests
         "enter_raffle",
         "win_raffle",
         "redeem_voucher",
-        "mint_relic",
-        "buy_mint_tokens",
-        "buy_from_nft_store",
-        "collect_nft_claims",
         "claim_vault_income",
-        "wear_nft_avatar",
-        "earn_habbicon",
-        "claim_habbicon_reward",
         "freeze_player_frozen",
         "freeze_powerup_collected",
         "freeze_points",

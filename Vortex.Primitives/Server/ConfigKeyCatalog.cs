@@ -37,13 +37,6 @@ public static class ConfigKeyCatalog
     public static readonly ImmutableArray<ConfigKeyDescriptor> All =
     [
         new(
-            "benchmark.enabled",
-            "false",
-            ConfigValueKind.Bool,
-            "Allow the dashboard to run load tests against this hotel. Off by default: a run opens hundreds of real connections and competes with live players for the same room ticks.",
-            "Benchmark"
-        ),
-        new(
             "motd.lines",
             "[\"Welcome to Vortex! Have fun and be nice to each other.\"]",
             ConfigValueKind.Json,
@@ -581,27 +574,6 @@ public static class ConfigKeyCatalog
             ConfigValueKind.Int,
             "Football: how long the ball sits in the goal before returning to the kickoff spot (0 leaves it in the net)",
             "Football"
-        ),
-        new(
-            "habbicons.recent_limit",
-            "10",
-            ConfigValueKind.Int,
-            "How many recently-used Habbicons the client's quick row keeps. The client caps its own list at 10; sending more is harmless but never shown.",
-            "Habbicons"
-        ),
-        new(
-            "habbicons.use_cooldown_ms",
-            "500",
-            ConfigValueKind.Int,
-            "Minimum gap between one player's Habbicon uses. Separate from chat flood control, which already gates the room half — this also covers private conversations.",
-            "Habbicons"
-        ),
-        new(
-            "reward_tracks.enabled",
-            "true",
-            ConfigValueKind.Bool,
-            "Master switch. Off sends the client the feature's own disabled flag, which hides every track rather than showing an empty list.",
-            "Reward tracks"
         ),
         new(
             "camera.credit_price",

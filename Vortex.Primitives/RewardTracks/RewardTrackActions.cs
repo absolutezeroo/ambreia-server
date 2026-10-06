@@ -104,9 +104,6 @@ public static class RewardTrackActions
     /// <summary>A pet gained a level. (Introduction Track)</summary>
     public const string PetLevel = "pet_level";
 
-    /// <summary>Used a Habbicon. (Introduction Track)</summary>
-    public const string UseHabbicon = "use_habbicon";
-
     /// <summary>Completed a trade. No client artwork.</summary>
     public const string CompleteTrade = "complete_trade";
 
@@ -115,9 +112,6 @@ public static class RewardTrackActions
     /// artwork.
     /// </summary>
     public const string SpendCredits = "spend_credits";
-
-    /// <summary>Completed a Habbicon collection. No client artwork.</summary>
-    public const string CompleteHabbiconCollection = "complete_habbicon_collection";
 
     /// <summary>Completed a quest. No client artwork.</summary>
     public const string CompleteQuest = "complete_quest";
@@ -251,29 +245,8 @@ public static class RewardTrackActions
     /// <summary>Redeemed a voucher. (no Habbo artwork: this hotel's own signal)</summary>
     public const string RedeemVoucher = "redeem_voucher";
 
-    /// <summary>Minted a relic. (no Habbo artwork: this hotel's own signal)</summary>
-    public const string MintRelic = "mint_relic";
-
-    /// <summary>Bought minting tokens. (no Habbo artwork: this hotel's own signal)</summary>
-    public const string BuyMintTokens = "buy_mint_tokens";
-
-    /// <summary>Bought from the collectibles store. (no Habbo artwork: this hotel's own signal)</summary>
-    public const string BuyFromNftStore = "buy_from_nft_store";
-
-    /// <summary>Collected pending collectible claims. (no Habbo artwork: this hotel's own signal)</summary>
-    public const string CollectNftClaims = "collect_nft_claims";
-
     /// <summary>Claimed vault income. (no Habbo artwork: this hotel's own signal)</summary>
     public const string ClaimVaultIncome = "claim_vault_income";
-
-    /// <summary>Wore a collectible as an avatar. (no Habbo artwork: this hotel's own signal)</summary>
-    public const string WearNftAvatar = "wear_nft_avatar";
-
-    /// <summary>Was granted a Habbicon. (no Habbo artwork: this hotel's own signal)</summary>
-    public const string EarnHabbicon = "earn_habbicon";
-
-    /// <summary>Claimed a completed collection's bonus. (no Habbo artwork: this hotel's own signal)</summary>
-    public const string ClaimHabbiconReward = "claim_habbicon_reward";
 
     /// <summary>Froze another Habbo in Freeze. One per Habbo caught in the blast.</summary>
     public const string FreezePlayerFrozen = "freeze_player_frozen";

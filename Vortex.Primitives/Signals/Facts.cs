@@ -126,22 +126,6 @@ public static class Facts
         "Catalogue offer"
     );
 
-    /// <summary>A Habbicon id.</summary>
-    public static readonly FactKey Habbicon = new(
-        RewardTrackFacts.Habbicon,
-        FactKind.OpaqueId,
-        "rewardTracks.fact_habbicon",
-        "Habbicon"
-    );
-
-    /// <summary>A Habbicon collection code.</summary>
-    public static readonly FactKey Collection = new(
-        RewardTrackFacts.Collection,
-        FactKind.Text,
-        "rewardTracks.fact_collection",
-        "Collection"
-    );
-
     /// <summary>A pet id.</summary>
     public static readonly FactKey Pet = new(
         RewardTrackFacts.Pet,
@@ -251,14 +235,6 @@ public static class Facts
         FactKind.Text,
         "rewardTracks.fact_club_gift",
         "Club gift"
-    );
-
-    /// <summary>A collectibles-store product code.</summary>
-    public static readonly FactKey NftProduct = new(
-        RewardTrackFacts.NftProduct,
-        FactKind.Text,
-        "rewardTracks.fact_nft_product",
-        "Store product"
     );
 
     /// <summary>A targeted offer's identifier.</summary>
@@ -501,8 +477,6 @@ public static class Facts
         Model,
         Player,
         Offer,
-        Habbicon,
-        Collection,
         Pet,
         Badge,
         ChatMessage,
@@ -516,7 +490,6 @@ public static class Facts
         Campaign,
         Voucher,
         ClubGift,
-        NftProduct,
         VaultCategory,
         TargetedOffer,
         PetType,

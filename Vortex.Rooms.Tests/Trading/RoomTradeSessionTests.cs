@@ -52,29 +52,6 @@ public sealed class RoomTradeSessionTests
         session.ItemsOf(Two).Should().Equal(20);
     }
 
-    /// <summary>
-    ///     Relics are held apart from the furniture ids: they live in another table, travel on
-    ///     their own message, and the answer that carries them is written from the receiver's point
-    ///     of view — so which side a Relic is on has to be unambiguous here.
-    /// </summary>
-    [Fact]
-    public void RelicOffers_AreIsolatedPerSide_AndSeparateFromFurniture()
-    {
-        RoomTradeSession session = NewSession();
-
-        session.ItemsOf(One).Add(10);
-        session.AssetsOf(One).Add(500);
-        session.AssetsOf(Two).Add(600);
-
-        session.AssetsOf(One).Should().Equal(500);
-        session.AssetsOf(Two).Should().Equal(600);
-
-        // The same number can be a furniture id on one side and an asset id on the other: they
-        // are keys of two different tables and must never be pooled.
-        session.ItemsOf(One).Should().Equal(10);
-        session.ItemsOf(Two).Should().BeEmpty();
-    }
-
     [Fact]
     public void BothAccepted_OnlyWhenEachSideAccepts()
     {

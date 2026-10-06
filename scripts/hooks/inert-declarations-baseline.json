@@ -2,7 +2,6 @@
   "known": [
     "config-catalog/achievements.resolution.duration_seconds",
     "config-catalog/clothing.enforce_ownership",
-    "config-catalog/collectibles.minting.enabled",
     "config-catalog/fishing.daily_currency_cap",
     "config-catalog/fishing.derby_leaderboard_size",
     "config-catalog/fishing.frenzy_duration_minutes",

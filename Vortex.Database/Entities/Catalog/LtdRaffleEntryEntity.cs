@@ -13,9 +13,7 @@ namespace Vortex.Database.Entities.Catalog;
 // The rarity, made real by the database. A serial number is what an LTD *is*, and it was being
 // assigned by reading the highest one and adding one -- two winners drawn in the same moment read
 // the same total and both write the same number, and the hotel has two number sevens of a series
-// of a hundred forever. NftAssetEntity carries exactly this index for exactly this reason, and
-// PlayerMintGrain leans on it in so many words; it had not been carried across to the mechanism
-// that actually sells scarcity.
+// of a hundred forever. The unique index below is what makes the second write fail instead.
 //
 // SerialNumber is nullable and MySQL permits many NULLs under a unique index, so entries that have
 // not won anything yet do not collide with each other.
