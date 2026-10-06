@@ -129,6 +129,20 @@ de room, `RoomEngine.ts:3956-3975`). Objectif : passage perçu < 1 s sur la mach
 placement, l'empilement, la rotation, les meubles muraux et la persistance des positions NE DOIVENT
 PAS régresser ; les tests de `Vortex.Rooms.Tests/Furniture/` et `Mapping/` en sont le filet.
 
+### 3.2 bis Meubles : décor de zone et maisons — APPROUVÉ
+
+Le moteur de meubles reste la matière du monde : définitions, rendu, calcul des cases (hauteurs,
+empilement, collisions) et logiques des objets interactifs. Son modèle d’interaction change :
+
+- **Zones publiques et instances de contenu** : le décor est **figé**. Un joueur ne peut ni le cliquer
+  pour des infos, ni le ramasser, ni le déplacer, quels que soient ses droits ; seul l’éditeur de
+  cartes le manipule. Les objets interactifs (porte, téléporteur, nœud de récolte, atelier, coffre)
+  répondent au clic par leur action RPG, jamais par l’infobulle Habbo.
+- **Maisons** : instances privées que le joueur décore lui-même. Le sac de meubles, la pose, le
+  déplacement et le ramassage actuels y restent valables.
+- **Chantier serveur et client** : une notion de « décor de zone » non modifiable par le joueur et le
+  routage du clic vers l’action RPG (spec fille Monde et éditeur de cartes).
+
 ### 3.3 Runtime de zone (la couture) — APPROUVÉ
 
 Combat, monstres et compagnons NE DOIVENT PAS dépendre de `Vortex.Rooms`. Ils travaillent contre une
@@ -481,11 +495,20 @@ qu'afficher.
   réparations, achats PNJ, recettes et frais d'hôtel des ventes (**5 %**).
 - **Marchand** — APPROUVÉ (V1) : onglets Acheter / Vendre / Rachat ; catégories Équipement,
   Consommables, Matériaux, Divers ; rachat limité dans le temps et en nombre.
+- **Meubles** — APPROUVÉ : vendus contre de l’or par des **marchands PNJ** (un ébéniste par ville ou
+  région, des meubles rares débloqués par quêtes ou réputation) et fabriqués par la Menuiserie. Ils
+  servent à décorer les maisons.
+- **Catalogue Habbo** — APPROUVÉ : son interface et son modèle de pages sont **retirés** (tâche de la
+  spec fille Économie, M3) ; sa mécanique d’achat (journal des transactions, achat atomique et
+  idempotent, attribution) est **réutilisée** comme moteur d’achat des marchands PNJ. Les 2 168 pages
+  du catalogue Habbo ne sont pas reprises.
 - **Échange direct** — APPROUVÉ : `RoomTradingSystem` existant, étendu aux objets RPG ; tout
   changement du contenu remet les deux validations à zéro ; l'objet lié n'est pas échangeable.
 - **Hôtel des ventes** — après V1 : `Vortex.Marketplace` étendu aux objets RPG ; onglets Acheter /
   Vendre / Mes ventes / Historique ; durée et taxe exactes OUVERTES (spec fille Économie).
-- **Premium** — APPROUVÉ : crédits et diamants cosmétiques seulement, sans stats ni XP.
+- **Premium** — APPROUVÉ : crédits et diamants cosmétiques seulement, sans stats ni XP. Vendu par un
+  **marchand premium PNJ** en ville (tenues, montures, effets, meubles de maison), avec un raccourci
+  de l’interface qui ouvre la même boutique à distance.
 - **Banque, courrier** — après V1 (spec fille Économie).
 
 ---
