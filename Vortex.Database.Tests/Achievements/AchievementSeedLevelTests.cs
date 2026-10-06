@@ -91,8 +91,9 @@ public sealed class AchievementSeedLevelTests
     {
         // The badge code is matched against the family and level in the regex itself, so a row
         // whose code disagrees with its own columns does not parse and is missing from the count.
-        Catalogue.Should().HaveCountGreaterThan(1000);
-        ByFamily.Should().HaveCountGreaterThan(100);
+        // The counts are the seed header's, after the M0 cut of removed features' families.
+        Catalogue.Should().HaveCount(820);
+        ByFamily.Should().HaveCount(81);
     }
 
     [Fact]

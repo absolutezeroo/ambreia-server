@@ -14,8 +14,8 @@
 -- the generic model controller names no StuffData class, so it cannot be derived this way.
 -- furniture_crackable is exactly that case, and it is deliberately absent here for a second reason:
 -- a crackable also needs a prize_pool_bindings row for its hit count (furnidata does not carry it),
--- so flipping the format alone would leave 317 definitions as half-configured crackables. They are
--- handled by crackable.sql, five at a time, with their bindings.
+-- so flipping the format alone would leave 317 definitions as half-configured crackables. The
+-- crackables were removed in M0; those definitions stay on the legacy format and the default logic.
 --
 -- Keyed on logic, so this has to run after furni_logic_bindings.sql.
 
