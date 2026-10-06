@@ -1,4 +1,5 @@
 using System;
+using System.Reflection;
 using Microsoft.Extensions.Logging.Abstractions;
 using Vortex.Rooms.Games;
 using Vortex.Rooms.Grains;
@@ -27,10 +28,22 @@ internal static class TestRoomGames
         // The processor's own work is synchronous (a reflection sweep); the Task it returns is
         // already completed, so there is nothing here to block on.
 #pragma warning disable VSTHRD002
-        new RoomGameFeatureProcessor(provider, NullLogger<RoomGameFeatureProcessor>.Instance)
-            .ProcessAsync(typeof(RoomGrain).Assembly, services)
-            .GetAwaiter()
-            .GetResult();
+        RoomGameFeatureProcessor processor = new(
+            provider,
+            NullLogger<RoomGameFeatureProcessor>.Instance
+        );
+
+        // This assembly too: TestOnlyGame is the one game the tests host now no shipped game is left.
+        foreach (
+            Assembly assembly in new[]
+            {
+                typeof(RoomGrain).Assembly,
+                typeof(TestRoomGames).Assembly,
+            }
+        )
+        {
+            processor.ProcessAsync(assembly, services).GetAwaiter().GetResult();
+        }
 #pragma warning restore VSTHRD002
 
         return provider;

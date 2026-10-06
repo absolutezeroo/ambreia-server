@@ -224,21 +224,6 @@ public static class SignalActions
     /// <inheritdoc cref="RewardTrackActions.ClaimVaultIncome"/>
     public const string ClaimVaultIncome = RewardTrackActions.ClaimVaultIncome;
 
-    /// <inheritdoc cref="RewardTrackActions.FreezePlayerFrozen"/>
-    public const string FreezePlayerFrozen = RewardTrackActions.FreezePlayerFrozen;
-
-    /// <inheritdoc cref="RewardTrackActions.FreezePowerUpCollected"/>
-    public const string FreezePowerUpCollected = RewardTrackActions.FreezePowerUpCollected;
-
-    /// <inheritdoc cref="RewardTrackActions.FreezePoints"/>
-    public const string FreezePoints = RewardTrackActions.FreezePoints;
-
-    /// <inheritdoc cref="RewardTrackActions.BanzaiPoints"/>
-    public const string BanzaiPoints = RewardTrackActions.BanzaiPoints;
-
-    /// <inheritdoc cref="RewardTrackActions.FootballGoalScored"/>
-    public const string FootballGoalScored = RewardTrackActions.FootballGoalScored;
-
     /// <inheritdoc cref="RewardTrackActions.RespectPet"/>
     public const string RespectPet = RewardTrackActions.RespectPet;
 
@@ -327,11 +312,6 @@ public static class SignalActions
         WinRaffle,
         RedeemVoucher,
         ClaimVaultIncome,
-        FreezePlayerFrozen,
-        FreezePowerUpCollected,
-        FreezePoints,
-        BanzaiPoints,
-        FootballGoalScored,
         RespectPet,
         PetRespected,
         FeedPet,

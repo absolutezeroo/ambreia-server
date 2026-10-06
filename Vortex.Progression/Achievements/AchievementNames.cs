@@ -36,15 +36,6 @@ public static class AchievementNames
     public const string PetLevelUp = "PetLevelUp";
     public const string PetLover = "PetLover";
 
-    /// <summary>Freeze's participation points. The hotel's own name for it, not a typo.</summary>
-    public const string FreezePlayer = "FreezePlayer";
-    public const string BattleBallPlayer = "BattleBallPlayer";
-    public const string FreezePowerUp = "FreezePowerUp";
-
-    /// <summary>"For freezing %limit% Habbos in Freeze" — Sulake's code name for it is ACH_EsA.</summary>
-    public const string EsA = "EsA";
-    public const string FootballGoalScored = "FootballGoalScored";
-
     /// <summary>Colours of one baby pet type owned. See <see cref="BabyPetAchievements"/>.</summary>
     public const string BearBreeder = "BearBreeder";
     public const string TerrierBreeder = "TerrierBreeder";

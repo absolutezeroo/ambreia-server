@@ -10,9 +10,6 @@ using Vortex.Primitives.Rooms.Events;
 using Vortex.Primitives.Rooms.Games;
 using Vortex.Rooms.Games.Abstractions;
 using Vortex.Rooms.Games.Arena;
-using Vortex.Rooms.Games.BattleBanzai;
-using Vortex.Rooms.Games.Football;
-using Vortex.Rooms.Games.Freeze;
 using Vortex.Rooms.Games.Scoring;
 using Vortex.Rooms.Tests.Support;
 using Xunit;
@@ -46,7 +43,7 @@ public sealed class RoomGameRuntimeTests
         hosted
             .Should()
             .Contain(
-                [BanzaiConstants.Game, FreezeConstants.Game, FootballConstants.Game],
+                [TestOnlyGame.Id],
                 "adding a game is a [RoomGame] attribute, and every room hosts it from then on"
             );
     }
@@ -85,8 +82,8 @@ public sealed class RoomGameRuntimeTests
 
         bool started = await StartAsync(harness).ConfigureAwait(true);
 
-        // THE regression this whole change exists for: a hall with a Banzai board, a Freeze rink and
-        // a football pitch answered one press of one counter with three unrelated matches. An
+        // THE regression this whole change exists for: a hall with three different arenas answered one
+        // press of one counter with three unrelated matches. An
         // ambiguous room now starts NO match and logs which arenas were in contention.
         started.Should().BeFalse();
         first.Starts.Should().Be(0);
@@ -335,8 +332,8 @@ public sealed class RoomGameRuntimeTests
         harness.Grain.GameRuntime.Register(_ => broken);
         harness.Grain.GameRuntime.Register(_ => healthy);
 
-        // Arenas in a room are independent. A Freeze rink that cannot read its balance config must
-        // not stop the room's football match from kicking off, and must not throw the failure back
+        // Arenas in a room are independent. An arena that cannot read its balance config must
+        // not stop the room's other match from kicking off, and must not throw the failure back
         // at whoever pressed the timer.
         await StartAsync(harness, "broken").ConfigureAwait(true);
         await StartAsync(harness, "healthy").ConfigureAwait(true);

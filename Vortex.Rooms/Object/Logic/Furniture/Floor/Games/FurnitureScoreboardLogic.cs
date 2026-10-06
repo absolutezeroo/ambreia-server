@@ -13,8 +13,7 @@ namespace Vortex.Rooms.Object.Logic.Furniture.Floor.Games;
 /// <para>
 /// It is an <see cref="IScoreDisplayComponent"/> rather than a game component, because a board
 /// belongs to no game: <c>bb_score_*</c> binds to <c>furniture_score</c> and carries its colour in
-/// the classname, while <c>es_score_*</c> binds to the <c>freeze_counter_*</c> keys which carry it in
-/// the key, so the colour resolves from the logic key first and falls back to the classname.
+/// the classname, so the colour resolves from the logic key first and falls back to the classname.
 /// (<c>fball_score_*</c> is NOT here — the furnidata binds it to <c>furniture_hockey_score</c>, and
 /// <see cref="FurnitureHockeyScoreLogic"/> is the same kind of board on that key.) The number is
 /// pushed by the game
@@ -23,10 +22,6 @@ namespace Vortex.Rooms.Object.Logic.Furniture.Floor.Games;
 /// </para>
 /// </summary>
 [RoomObjectLogic("furniture_score")]
-[RoomObjectLogic("freeze_counter_red")]
-[RoomObjectLogic("freeze_counter_green")]
-[RoomObjectLogic("freeze_counter_blue")]
-[RoomObjectLogic("freeze_counter_yellow")]
 public sealed class FurnitureScoreboardLogic(
     IStuffDataFactory stuffDataFactory,
     IRoomFloorItemContext ctx

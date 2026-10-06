@@ -5,8 +5,7 @@
 // that is not in this list cannot be picked; a key in the list that no class claims resolves to
 // nothing and silently falls back to default_floor.
 //
-// It was hand-maintained, and drifted to 109 of 236 keys -- every game built since (Battle Banzai,
-// Freeze) and the whole furniture_* family were unpickable.
+// It was hand-maintained, and drifted to 109 of 236 keys -- every game built since and the whole furniture_* family were unpickable.
 //
 //   node scripts/hooks/check-logic-groups.mjs           compare, exit 2 on drift
 //   node scripts/hooks/check-logic-groups.mjs --write   regenerate the block
@@ -24,12 +23,9 @@ const enumsPath = join(root, 'Vortex.Dashboard.Web/src/lib/furnitureEnums.ts');
 // no second list to keep in step. Order is the order an operator thinks in: the plain furniture
 // behaviours first, the games after.
 const GROUPS = [
-  ['Basic', (k) => !/^(furniture_|freeze_|battlebanzai_|football_|pet_|monsterplant_|game_)/.test(k)],
+  ['Basic', (k) => !/^(furniture_|pet_|monsterplant_|game_)/.test(k)],
   ['Furniture', (k) => k.startsWith('furniture_')],
   ['Pets', (k) => k.startsWith('pet_') || k.startsWith('monsterplant_')],
-  ['Games: Battle Banzai', (k) => k.startsWith('battlebanzai_')],
-  ['Games: Freeze', (k) => k.startsWith('freeze_')],
-  ['Games: Football', (k) => k.startsWith('football_')],
   ['Games: other', (k) => k.startsWith('game_')],
 ];
 

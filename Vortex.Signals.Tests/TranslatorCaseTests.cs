@@ -24,56 +24,6 @@ namespace Vortex.Signals.Tests;
 public sealed class TranslatorCaseTests
 {
     [Fact]
-    public void Game_points_name_their_game_and_a_counted_act_rides_alongside()
-    {
-        GamePointsTranslator translator = new();
-
-        // The points, as an amount: "gaining %limit% participation points" is a sum. Plus the act,
-        // as one, because "freezing %limit% Habbos" is a tally — two achievements off one score.
-        ImmutableArray<ProgressSignal> frozen = translator.Translate(
-            new GamePointsScoredEvent(4312, 7, "freeze", "freeze.player_frozen", 5)
-        );
-
-        frozen
-            .Should()
-            .SatisfyRespectively(
-                points =>
-                {
-                    points.Action.Should().Be(SignalActions.FreezePoints);
-                    points.Amount.Should().Be(5);
-                },
-                act =>
-                {
-                    act.Action.Should().Be(SignalActions.FreezePlayerFrozen);
-                    act.Amount.Should().Be(1);
-                }
-            );
-
-        // Banzai has no counted act of its own: the points alone.
-        translator
-            .Translate(new GamePointsScoredEvent(4312, 7, "banzai", "banzai.tile_locked", 8))
-            .Should()
-            .ContainSingle()
-            .Which.Action.Should()
-            .Be(SignalActions.BanzaiPoints);
-
-        // Football is the other half alone: a counted act and no points action, because the
-        // hotel measures goals and never what a goal was worth.
-        ImmutableArray<ProgressSignal> goal = translator.Translate(
-            new GamePointsScoredEvent(4312, 7, "football", "football.goal", 3)
-        );
-
-        goal.Should().ContainSingle().Which.Action.Should().Be(SignalActions.FootballGoalScored);
-        goal[0].Amount.Should().Be(1);
-
-        // A game with no achievements raises nothing rather than an action nothing reads.
-        translator
-            .Translate(new GamePointsScoredEvent(4312, 7, "football", "football.own_goal", 1))
-            .Should()
-            .BeEmpty();
-    }
-
-    [Fact]
     public void A_normal_chat_line_counts_and_a_whisper_does_not()
     {
         ChatTranslator translator = new();
@@ -476,22 +426,6 @@ public sealed class TranslatorCaseTests
                 3,
                 "hd-180-1.ch-210-66.lg-270-82.sh-290-91"
             );
-        }
-
-        if (eventType == typeof(GamePointsScoredEvent))
-        {
-            // One per branch: the game decides which points action, the scoring act decides
-            // whether a second signal counts the act itself.
-            yield return new GamePointsScoredEvent(4312, 7, "freeze", "freeze.player_frozen", 5);
-            yield return new GamePointsScoredEvent(
-                4312,
-                7,
-                "freeze",
-                "freeze.powerup_collected",
-                3
-            );
-            yield return new GamePointsScoredEvent(4312, 7, "banzai", "banzai.tile_locked", 8);
-            yield return new GamePointsScoredEvent(4312, 7, "football", "football.goal", 3);
         }
     }
 }

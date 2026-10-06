@@ -35,7 +35,7 @@ namespace Vortex.Navigator.Tests;
 /// </remarks>
 public sealed class NavigatorPromotedRoomsTests
 {
-    private const string FilledCode = "freezeRoom";
+    private const string FilledCode = "friendlyRoom";
     private const string EmptyCode = "partyRoom";
 
     [Fact]

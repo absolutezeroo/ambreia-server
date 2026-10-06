@@ -76,17 +76,6 @@ public sealed class AchievementSignalConsumer(IGrainFactory grainFactory, IComme
         // not be expressed here anyway; releasing a pet does not take the badge back in the hotel
         // either.
         [SignalActions.AdoptPet] = new(AchievementNames.PetLover),
-        // The two games that have achievements. Their participation counts points, so these are the
-        // rules that read the signal's amount; the two Freeze acts below are tallies of one, which
-        // is why the translator emits them as their own actions rather than leaving this table to
-        // tell a blast from the points it scored.
-        [SignalActions.FreezePoints] = new(AchievementNames.FreezePlayer, CountsAmount: true),
-        [SignalActions.BanzaiPoints] = new(AchievementNames.BattleBallPlayer, CountsAmount: true),
-        [SignalActions.FreezePlayerFrozen] = new(AchievementNames.EsA),
-        [SignalActions.FreezePowerUpCollected] = new(AchievementNames.FreezePowerUp),
-        // Football scores through the same funnel; only its goals are worth counting, and its
-        // FootballGoalScoredInRoom sibling is not here because it credits the room owner.
-        [SignalActions.FootballGoalScored] = new(AchievementNames.FootballGoalScored),
         // Both sides of one scratch, and the amount of one meal: "giving pets %limit% points of
         // food" is a sum, so a bowl worth twenty counts twenty.
         [SignalActions.RespectPet] = new(AchievementNames.PetRespectGiver),

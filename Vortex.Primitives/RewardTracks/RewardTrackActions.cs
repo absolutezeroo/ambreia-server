@@ -248,24 +248,6 @@ public static class RewardTrackActions
     /// <summary>Claimed vault income. (no Habbo artwork: this hotel's own signal)</summary>
     public const string ClaimVaultIncome = "claim_vault_income";
 
-    /// <summary>Froze another Habbo in Freeze. One per Habbo caught in the blast.</summary>
-    public const string FreezePlayerFrozen = "freeze_player_frozen";
-
-    /// <summary>Picked up a Freeze power-up.</summary>
-    public const string FreezePowerUpCollected = "freeze_powerup_collected";
-
-    /// <summary>
-    /// Points scored in Freeze, whatever the act. Carries the points as its amount, unlike almost
-    /// everything else here — "gaining %limit% participation points" is a sum, not a tally of acts.
-    /// </summary>
-    public const string FreezePoints = "freeze_points";
-
-    /// <inheritdoc cref="FreezePoints"/>
-    public const string BanzaiPoints = "banzai_points";
-
-    /// <summary>Scored a goal in football. The hotel counts goals, never their points.</summary>
-    public const string FootballGoalScored = "football_goal_scored";
-
     /// <summary>Scratched somebody's pet.</summary>
     public const string RespectPet = "respect_pet";
 

@@ -32,8 +32,6 @@ public static class NavigatorPromotedCategoryCodes
         ("africaDesert", "Egyptian Temple Competition Winners"),
         ("africaJungle", "Tree-Fort Competition Winners"),
         ("africaSavannah", "Wildlife Reserve Competition Winners"),
-        ("battleBallRoom", "Play Battle Banzai"),
-        ("freezeRoom", "Play Freeze"),
         ("friendlyRoom", "Find friends"),
         ("majesty", "Her Majesty's Secret Service"),
         ("partyRoom", "Party hard"),
