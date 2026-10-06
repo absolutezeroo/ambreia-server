@@ -7,13 +7,6 @@ public class PetConfig
     public int WanderIdleMaxMs { get; init; } = 7000;
     public int WanderRadius { get; init; } = 5;
     public int WanderCandidateAttempts { get; init; } = 12;
-    public int NutritionCap { get; init; } = 100;
-    public int EnergyCap { get; init; } = 100;
-    public double NutritionDecayPerMinute { get; init; } = 1.0;
-    public double EnergyDecayPerMinute { get; init; } = 0.5;
-
-    /// <summary>Water drains on its own clock, a little slower than food.</summary>
-    public double ThirstDecayPerMinute { get; init; } = 0.75;
 
     /// <summary>
     /// Mood drains on its own clock while the pet is up, and comes back while it rests. Two a minute
@@ -26,37 +19,12 @@ public class PetConfig
     public int StatFlushIntervalMs { get; init; } = 60_000;
 
     /// <summary>
-    /// How long a monsterplant's well-being takes to drain from full to nothing without being
-    /// treated. 24 hours is not a guess: the client's own pet-info view counts down from
-    /// <c>MaxWellBeingSeconds</c>, and it is sent 86 400.
+    /// How long a pet sent to its nest (command 13) naps there before it gets back up. Pets have no
+    /// fatigue since M0, so the nap is a fixed length rather than "until rested".
     /// </summary>
-    public int PlantWellBeingSeconds { get; init; } = 86_400;
+    public int NestNapMs { get; init; } = 60_000;
 
-    /// <summary>
-    /// How long a watered plant takes to put on one growth stage. Nothing publishes Habbo's own
-    /// figure, so this is the knob an operator will want first -- seven stages at twelve hours is
-    /// three days from seed to full size.
-    /// </summary>
-    public int PlantGrowthSeconds { get; init; } = 43_200;
-
-    /// <summary>Growth stages a fertilizer skips at once.</summary>
-    public int PlantFertilizerLevels { get; init; } = 1;
-
-    /// <summary>Energy at which a sleeping pet has rested enough to get back up.</summary>
-    public int SleepWakeEnergyThreshold { get; init; } = 40;
-
-    /// <summary>
-    /// Energy at which a pet reads as tired: it stops wandering, heads for the nearest free nest and
-    /// naps there. Must stay below <see cref="SleepWakeEnergyThreshold" />, otherwise a pet would
-    /// wake on the same tick it fell asleep.
-    /// </summary>
-    public int TiredEnergyThreshold { get; init; } = 20;
-
-    public double NestEnergyMultiplier { get; init; } = 2.0;
-    public int HungerThreshold { get; init; } = 50;
-    public int ThirstThreshold { get; init; } = 50;
     public int VocalIntervalMs { get; init; } = 14_000;
-    public int MaxWellBeingSeconds { get; init; } = 86_400;
 
     /// <summary>
     /// How old an account must be, in days, before it may respect a pet. Habbo gates this; the
@@ -114,14 +82,9 @@ public class PetConfig
     /// </summary>
     public int ToyPlayCooldownMs { get; init; } = 60_000;
 
-    /// <summary>A pet below this has no energy to play. Habbo refuses at 35 or under.</summary>
-    public int PlayEnergyThreshold { get; init; } = 35;
-
     /// <summary>
     /// The chance, each time a pet decides what to do next, that it goes to play for no reason at
     /// all. Boredom is why it must; this is why it sometimes does anyway.
     /// </summary>
     public int ToyPlayChancePercent { get; init; } = 15;
-    public int SupplementEnergyBoost { get; init; } = 30;
-    public int SupplementXpReward { get; init; } = 5;
 }

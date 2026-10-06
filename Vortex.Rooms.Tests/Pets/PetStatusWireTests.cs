@@ -46,12 +46,6 @@ public sealed class PetStatusWireTests
     }
 
     [Fact]
-    public void EatStatus_CarriesTheHeight()
-    {
-        PetAnimation.EatStatus(0).Should().Be("/eat 0/");
-    }
-
-    [Fact]
     public void Heights_AreFormattedInvariantly()
     {
         PetAnimation
@@ -60,18 +54,9 @@ public sealed class PetStatusWireTests
             .Be("/lay 0.5/", "a comma would make the client's parseFloat stop at the whole part");
     }
 
-    [Fact]
-    public void DrinkingUsesTheEatingPosture()
-    {
-        PetAnimation
-            .EatPosture.Should()
-            .Be("eat", "no pet asset declares a drk posture -- the dog ships eat and not drk");
-    }
-
     [Theory]
     [InlineData(PetAnimation.StandPosture)]
     [InlineData(PetAnimation.LayPosture)]
-    [InlineData(PetAnimation.EatPosture)]
     public void EveryPostureWeSendIsOneTheAssetDeclares(string posture)
     {
         // From dog.nitro's visualization data, the id list the client resolves an animation from.

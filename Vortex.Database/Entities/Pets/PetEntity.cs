@@ -47,16 +47,16 @@ public class PetEntity : VortexEntity
     [DefaultValue(0)]
     public required int Experience { get; set; }
 
+    /// <summary>
+    /// Energy, nutrition and thirst stay at their maximum: a pet has no needs since M0. The columns
+    /// stay because they are sent to the client.
+    /// </summary>
     [Column("energy")]
-    public required int Energy { get; set; }
+    public int Energy { get; set; } = 100;
 
     [Column("nutrition")]
-    public required int Nutrition { get; set; }
+    public int Nutrition { get; set; } = 100;
 
-    /// <summary>
-    /// Water, 0-100. Its own need: Habbo counts hunger, thirst, energy and happiness separately,
-    /// and folding thirst into energy made drinking and sleeping the same bar.
-    /// </summary>
     [Column("thirst")]
     [DefaultValue(100)]
     public int Thirst { get; set; } = 100;
@@ -66,29 +66,12 @@ public class PetEntity : VortexEntity
     public required int Respect { get; set; }
 
     /// <summary>
-    /// Mood, 0-100. Distinct from nutrition and energy: it drains on its own clock, recovers while
-    /// the pet rests, and rises when the pet is played with or obeys a command.
+    /// Mood, 0-100: it drains on its own clock, recovers while the pet rests, and rises when the
+    /// pet is scratched or plays.
     /// </summary>
     [Column("happiness")]
     [DefaultValue(100)]
     public int Happiness { get; set; } = 100;
-
-    [Column("rarity_level")]
-    [DefaultValue(1)]
-    public int RarityLevel { get; set; } = 1;
-
-    [Column("last_watered_at")]
-    public DateTime? LastWateredAt { get; set; }
-
-    [Column("parent_one_id")]
-    public int? ParentOneId { get; set; }
-
-    [Column("parent_two_id")]
-    public int? ParentTwoId { get; set; }
-
-    [Column("can_breed")]
-    [DefaultValue(true)]
-    public bool CanBreed { get; set; } = true;
 
     /// <summary>A saddle has been fitted, so the pet can be ridden at all.</summary>
     [Column("has_saddle")]

@@ -248,8 +248,6 @@ public class VortexDbContext(DbContextOptions<VortexDbContext> options)
 
     public DbSet<PetLevelEntity> PetLevels { get; init; } = null!;
 
-    public DbSet<PetFoodEntity> PetFood { get; init; } = null!;
-
     public DbSet<HandItemEntity> HandItems { get; init; } = null!;
 
     // Fishing — reconstructed from Habbo Origins, which has no client dump. Every number in these

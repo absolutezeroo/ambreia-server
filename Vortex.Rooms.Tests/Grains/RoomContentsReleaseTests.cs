@@ -75,9 +75,9 @@ public sealed class RoomContentsReleaseTests : IAsyncLifetime
             """
             INSERT INTO pets (id, player_id, room_id, name, type, race, color, gender, level,
                               experience, energy, nutrition, thirst, respect, happiness,
-                              rarity_level, x, y, z, direction,
+                              x, y, z, direction,
                               created_at, updated_at)
-            VALUES (600, {0}, {1}, 'Rex', 0, 0, 'FFFFFF', 0, 1, 0, 100, 100, 100, 0, 100, 1,
+            VALUES (600, {0}, {1}, 'Rex', 0, 0, 'FFFFFF', 0, 1, 0, 100, 100, 100, 0, 100,
                     0, 0, 0, 0, datetime('now'), datetime('now'))
             """,
             GUEST,

@@ -13,7 +13,8 @@ internal static class PetDataSerializer
         PetFigureDataSerializer.Serialize(packet, pet);
 
         // The client reads the rarity tier unconditionally; in a list, omitting it shifted every pet
-        // after the first.
-        packet.WriteInteger(pet.Level).WriteInteger(pet.RarityLevel);
+        // after the first. Rarity was a monsterplant's, removed in M0: -1 is what the live hotel
+        // sends for an animal.
+        packet.WriteInteger(pet.Level).WriteInteger(-1);
     }
 }

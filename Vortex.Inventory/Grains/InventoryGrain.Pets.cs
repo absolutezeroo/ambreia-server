@@ -43,8 +43,6 @@ public sealed partial class InventoryGrain
             Gender = request.Gender,
             Level = 1,
             Experience = 0,
-            Energy = request.Energy,
-            Nutrition = request.Nutrition,
             Respect = 0,
             X = 0,
             Y = 0,

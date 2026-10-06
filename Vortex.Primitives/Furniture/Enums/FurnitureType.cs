@@ -20,9 +20,8 @@ public enum FurnitureCategory
     PetSaddle = 16,
     GuildFurni = 17,
     GameFurni = 18,
-    MonsterplantSeed = 19,
-    MonsterplantRevival = 20,
-    MonsterplantRebreed = 21,
-    MonsterplantFertilize = 22,
+
+    // 19 to 22 were the four monsterplant categories, removed in M0. Not renumbered: the values
+    // come from the client's furnidata.
     FigurePurchasableSet = 23,
 }

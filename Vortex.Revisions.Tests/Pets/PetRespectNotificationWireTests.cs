@@ -51,7 +51,6 @@ public sealed class PetRespectNotificationWireTests
                 Y = 10,
                 Z = 0,
                 Direction = Rotation.North,
-                RarityLevel = -1,
             },
         };
 

@@ -154,29 +154,6 @@ internal sealed class PlayerAchievementGrain(
     public Task ProgressToAsync(string achievementName, int total, CancellationToken ct) =>
         ProgressCoreAsync(achievementName, total, oncePerDay: false, absolute: true, ct);
 
-    public async Task ProgressBabyPetColoursAsync(int petType, CancellationToken ct)
-    {
-        if (!BabyPetAchievements.ByPetType.TryGetValue(petType, out string? achievementName))
-        {
-            return;
-        }
-
-        await using VortexDbContext dbCtx = await dbCtxFactory
-            .CreateDbContextAsync(ct)
-            .ConfigureAwait(true);
-
-        int colours = await dbCtx
-            .Pets.AsNoTracking()
-            .Where(p => p.OwnerPlayerEntityId == PlayerId && p.Type == petType)
-            .Select(p => p.Color)
-            .Distinct()
-            .CountAsync(ct)
-            .ConfigureAwait(true);
-
-        await ProgressCoreAsync(achievementName, colours, oncePerDay: false, absolute: true, ct)
-            .ConfigureAwait(true);
-    }
-
     /// <param name="amount">
     /// Points to add, or — when <paramref name="absolute"/> — the total the bar should stand at.
     /// </param>

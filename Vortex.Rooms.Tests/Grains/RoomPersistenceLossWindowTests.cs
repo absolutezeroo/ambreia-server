@@ -141,10 +141,10 @@ public sealed class RoomPersistenceLossWindowTests
     {
         using Harness h = new(maxPerFlush: 100);
 
-        await h.EnqueuePetAsync(petId: 1, nutrition: 42);
+        await h.EnqueuePetAsync(petId: 1, experience: 42);
         await h.DeactivateAsync();
 
-        h.PetNutrition(1).Should().Be(42);
+        h.PetExperience(1).Should().Be(42);
     }
 
     [Fact]
@@ -152,15 +152,15 @@ public sealed class RoomPersistenceLossWindowTests
     {
         using Harness h = new(maxPerFlush: 100) { Fail = true };
 
-        await h.EnqueuePetAsync(petId: 1, nutrition: 42);
+        await h.EnqueuePetAsync(petId: 1, experience: 42);
         await h.DeactivateAsync();
 
-        h.PetNutrition(1).Should().Be(0, "the save never happened");
+        h.PetExperience(1).Should().Be(0, "the save never happened");
 
         h.Fail = false;
         await h.DeactivateAsync();
 
-        h.PetNutrition(1).Should().Be(42, "and the queue still had it");
+        h.PetExperience(1).Should().Be(42, "and the queue still had it");
     }
 
     /// <remarks>
@@ -252,7 +252,7 @@ public sealed class RoomPersistenceLossWindowTests
         public Task DeactivateAsync() => _grain.OnDeactivateAsync(Reason(), CancellationToken.None);
 
         /// <summary>Seeds a pet row and hands the grain a snapshot of it with new stats.</summary>
-        public async Task EnqueuePetAsync(int petId, int nutrition)
+        public async Task EnqueuePetAsync(int petId, int experience)
         {
             using (VortexDbContext db = new(_options))
             {
@@ -262,13 +262,11 @@ public sealed class RoomPersistenceLossWindowTests
                     """
                     INSERT INTO pets (id, player_id, room_id, name, type, race, color, gender,
                                       level, experience, energy, nutrition, thirst, respect,
-                                      happiness, rarity_level, can_breed,
-                                      has_saddle, riding_permission, x, y, z, direction,
+                                      happiness, has_saddle, riding_permission, x, y, z, direction,
                                       created_at, updated_at)
                     VALUES ({0}, 1, NULL, 'pet', 0, 0, 'ffffff', 0,
                             1, 0, 0, 0, 100, 0,
-                            100, 1, 1,
-                            0, 0, 0, 0, 0, 0,
+                            100, 0, 0, 0, 0, 0, 0,
                             datetime('now'), datetime('now'))
                     """,
                     petId
@@ -277,16 +275,16 @@ public sealed class RoomPersistenceLossWindowTests
 
             await _grain.EnqueueDirtyPetsAsync(
                 new RoomId((int)ROOM),
-                [PetSnapshotWith(petId, nutrition)],
+                [PetSnapshotWith(petId, experience)],
                 CancellationToken.None
             );
         }
 
-        public int PetNutrition(int petId)
+        public int PetExperience(int petId)
         {
             using VortexDbContext db = new(_options);
 
-            return db.Pets.Single(pet => pet.Id == petId).Nutrition;
+            return db.Pets.Single(pet => pet.Id == petId).Experience;
         }
 
         /// <summary>
@@ -341,7 +339,7 @@ public sealed class RoomPersistenceLossWindowTests
             return db.Set<FurnitureEntity>().Count(f => f.X == f.Id);
         }
 
-        private static PetSnapshot PetSnapshotWith(int petId, int nutrition) =>
+        private static PetSnapshot PetSnapshotWith(int petId, int experience) =>
             new()
             {
                 PetId = petId,
@@ -353,9 +351,9 @@ public sealed class RoomPersistenceLossWindowTests
                 Color = "ffffff",
                 Gender = AvatarGenderType.Male,
                 Level = 1,
-                Experience = 0,
-                Energy = 0,
-                Nutrition = nutrition,
+                Experience = experience,
+                Energy = 100,
+                Nutrition = 100,
                 Respect = 0,
                 X = 0,
                 Y = 0,

@@ -101,10 +101,6 @@ internal sealed class RoomMap : IRevisionMap
             MessageEvent.GetPetCommandsMessageEvent,
             new GetPetCommandsMessageParser()
         );
-        builder.MapParser(
-            MessageEvent.GiveSupplementToPetMessageEvent,
-            new GiveSupplementToPetMessageParser()
-        );
         builder.MapParser(MessageEvent.MountPetMessageEvent, new MountPetMessageParser());
         builder.MapParser(MessageEvent.MoveAvatarMessageEvent, new MoveAvatarMessageParser());
         builder.MapParser(MessageEvent.MoveObjectMessageEvent, new MoveObjectMessageParser());
@@ -149,10 +145,6 @@ internal sealed class RoomMap : IRevisionMap
         );
         builder.MapParser(MessageEvent.SetItemDataMessageEvent, new SetItemDataMessageParser());
         builder.MapParser(MessageEvent.SetObjectDataMessageEvent, new SetObjectDataMessageParser());
-        builder.MapParser(
-            MessageEvent.TogglePetBreedingPermissionMessageEvent,
-            new TogglePetBreedingPermissionMessageParser()
-        );
         builder.MapParser(
             MessageEvent.TogglePetRidingPermissionMessageEvent,
             new TogglePetRidingPermissionMessageParser()
@@ -283,7 +275,6 @@ internal sealed class RoomMap : IRevisionMap
         );
 
         // Room Pets
-        builder.MapParser(MessageEvent.BreedPetsMessageEvent, new BreedPetsMessageParser());
         builder.MapParser(
             MessageEvent.CustomizePetWithFurniEvent,
             new CustomizePetWithFurniMessageParser()
@@ -291,8 +282,6 @@ internal sealed class RoomMap : IRevisionMap
         builder.MapParser(MessageEvent.GetPetInfoMessageEvent, new GetPetInfoMessageParser());
         builder.MapParser(MessageEvent.PetSelectedMessageEvent, new PetSelectedMessageParser());
         builder.MapParser(MessageEvent.RespectPetMessageEvent, new RespectPetMessageParser());
-        builder.MapParser(MessageEvent.HarvestPetMessageEvent, new HarvestPetMessageParser());
-        builder.MapParser(MessageEvent.CompostPlantMessageEvent, new CompostPlantMessageParser());
 
         // Room Session
         builder.MapParser(MessageEvent.ChangeQueueMessageEvent, new ChangeQueueMessageParser());
@@ -711,12 +700,6 @@ internal sealed class RoomMap : IRevisionMap
         );
 
         // Room Pets
-        builder.MapSerializer(
-            typeof(PetBreedingResultEventMessageComposer),
-            new PetBreedingResultEventMessageComposerSerializer(
-                MessageComposer.PetBreedingResultComposer
-            )
-        );
         builder.MapSerializer(
             typeof(PetCommandsMessageComposer),
             new PetCommandsMessageComposerSerializer(MessageComposer.PetCommandsMessageComposer)

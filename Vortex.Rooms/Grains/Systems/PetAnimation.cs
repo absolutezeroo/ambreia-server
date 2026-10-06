@@ -28,14 +28,6 @@ internal static class PetAnimation
     public const string PlayPosture = "pla";
 
     /// <summary>
-    /// The posture a pet takes at a bowl. Drinking uses it too: no pet asset declares a `drk`
-    /// posture -- the dog ships std, beg, bnd, ded, eat, jmp, lay, pla, rdy, scr, sit, snf, spk, mv
-    /// -- and an unknown posture silently resolves to the default, which is standing. Arcturus sends
-    /// EAT at the water bowl for the same reason.
-    /// </summary>
-    public const string EatPosture = "eat";
-
-    /// <summary>
     /// How a pet shows it liked being scratched: the gesture segment the official capture pushes
     /// right after the experience (room-scratch-pet-official-001, UserUpdate "gst joy").
     /// </summary>
@@ -59,8 +51,8 @@ internal static class PetAnimation
     /// <remarks>
     /// The client drops any segment that carries no value: it splits on a space and only records the
     /// action when there are two pieces (<c>if (pieces.length >= 2)</c> in the nitro parser, which is
-    /// what this revision speaks). So a bare <c>/lay/</c> or <c>/eat/</c> never becomes a posture at
-    /// all, and the pet stays standing -- no lying down, no Zzz, no eating. Arcturus never sends one
+    /// what this revision speaks). So a bare <c>/lay/</c> never becomes a posture at
+    /// all, and the pet stays standing -- no lying down, no Zzz. Arcturus never sends one
     /// either: it passes the tile's stack height. The height doubles as the value the client reads
     /// back for <c>lay</c> and <c>sit</c>, so it has to be the real one, formatted invariantly.
     /// </remarks>
@@ -68,8 +60,6 @@ internal static class PetAnimation
         $"/{posture} {height.ToString("0.##", CultureInfo.InvariantCulture)}/";
 
     public static string LayStatus(double height) => StatusWithHeight(LayPosture, height);
-
-    public static string EatStatus(double height) => StatusWithHeight(EatPosture, height);
 
     public static string PlayStatus(double height) => StatusWithHeight(PlayPosture, height);
 }

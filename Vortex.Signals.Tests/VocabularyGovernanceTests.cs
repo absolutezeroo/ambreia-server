@@ -154,7 +154,7 @@ public sealed class VocabularyGovernanceTests
         "claim_vault_income",
         "respect_pet",
         "pet_respected",
-        "feed_pet",
+        // "feed_pet" was here, removed with pet needs (M0).
         "command_pet",
         "stand_near_furni",
         "receive_gift",

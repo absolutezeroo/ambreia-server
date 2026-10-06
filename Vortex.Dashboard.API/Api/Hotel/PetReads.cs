@@ -13,9 +13,9 @@ namespace Vortex.Dashboard.API.Api.Hotel;
 internal sealed class PetReads(IDbContextFactory<VortexDbContext> dbContextFactory)
     : DashboardReads(dbContextFactory)
 {
-    /// <summary>Read-only overview of the pets domain: population, type/race/rarity distribution,
-    /// breeding activity, and average health (energy/nutrition). There is no dedicated pet audit
-    /// category today, so this reads straight off <c>PetEntity</c> rather than an audit trail.</summary>
+    /// <summary>Read-only overview of the pets domain: population, type/race distribution and
+    /// average level. There is no dedicated pet audit category today, so this reads straight off
+    /// <c>PetEntity</c> rather than an audit trail.</summary>
     public Task<PetStats> PetsStatsAsync(NameValueCollection query, CancellationToken ct) =>
         QueryAsync<PetStats>(
             async db =>
@@ -30,12 +30,6 @@ internal sealed class PetReads(IDbContextFactory<VortexDbContext> dbContextFacto
                         p.Type,
                         p.Race,
                         p.Level,
-                        p.Energy,
-                        p.Nutrition,
-                        p.RarityLevel,
-                        p.CanBreed,
-                        p.ParentOneId,
-                        p.ParentTwoId,
                         p.OwnerPlayerEntityId
                     ))
                     .ToListAsync(ct)
@@ -43,13 +37,6 @@ internal sealed class PetReads(IDbContextFactory<VortexDbContext> dbContextFacto
 
                 int totalPets = rows.Count;
                 double avgLevel = totalPets > 0 ? Math.Round(rows.Average(r => r.Level), 2) : 0d;
-                double avgEnergy = totalPets > 0 ? Math.Round(rows.Average(r => r.Energy), 2) : 0d;
-                double avgNutrition =
-                    totalPets > 0 ? Math.Round(rows.Average(r => r.Nutrition), 2) : 0d;
-                int breedablePets = rows.Count(r => r.CanBreed);
-                int bredPets = rows.Count(r =>
-                    r.ParentOneId is not null || r.ParentTwoId is not null
-                );
 
                 List<PetTypeCount> byType = rows.GroupBy(r => r.Type)
                     .Select(g => new PetTypeCount(g.Key, g.Count()))
@@ -60,11 +47,6 @@ internal sealed class PetReads(IDbContextFactory<VortexDbContext> dbContextFacto
                     .Select(g => new PetRaceCount(g.Key.Type, g.Key.Race, g.Count()))
                     .OrderByDescending(g => g.Count)
                     .Take(20)
-                    .ToList();
-
-                List<PetRarityCount> byRarity = rows.GroupBy(r => r.RarityLevel)
-                    .Select(g => new PetRarityCount(g.Key, g.Count()))
-                    .OrderBy(g => g.RarityLevel)
                     .ToList();
 
                 Dictionary<DateTime, int> bucketMap = new();
@@ -119,17 +101,9 @@ internal sealed class PetReads(IDbContextFactory<VortexDbContext> dbContextFacto
 
                 return new PetStats(
                     new ReportWindow(since, until, granularity),
-                    new PetTotals(
-                        totalPets,
-                        avgLevel,
-                        avgEnergy,
-                        avgNutrition,
-                        breedablePets,
-                        bredPets
-                    ),
+                    new PetTotals(totalPets, avgLevel),
                     byType,
                     byRace,
-                    byRarity,
                     growth,
                     topOwnersWithNames
                 );
@@ -142,12 +116,6 @@ internal sealed class PetReads(IDbContextFactory<VortexDbContext> dbContextFacto
         int Type,
         int Race,
         int Level,
-        int Energy,
-        int Nutrition,
-        int RarityLevel,
-        bool CanBreed,
-        int? ParentOneId,
-        int? ParentTwoId,
         int OwnerPlayerEntityId
     );
 }

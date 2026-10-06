@@ -241,9 +241,6 @@ public static class RewardTrackActions
     /// <summary>Had one of your own pets scratched. The other half of respect_pet.</summary>
     public const string PetRespected = "pet_respected";
 
-    /// <summary>Fed a pet by hand. Carries the food's nutrition as its amount.</summary>
-    public const string FeedPet = "feed_pet";
-
     /// <summary>A pet obeyed an order. Raised where it obeys, never where the words were typed.</summary>
     public const string CommandPet = "command_pet";
 

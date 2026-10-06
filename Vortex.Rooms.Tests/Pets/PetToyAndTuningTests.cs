@@ -18,8 +18,6 @@ namespace Vortex.Rooms.Tests.Pets;
 /// </summary>
 public sealed class PetToyAndTuningTests
 {
-    private const int Monsterplant = 16;
-
     [Theory]
     [InlineData(100, false)]
     [InlineData(51, false)]
@@ -31,15 +29,6 @@ public sealed class PetToyAndTuningTests
             .IsBored(PetWith(type: 0, happiness), boredHappinessThreshold: 50)
             .Should()
             .Be(expected);
-    }
-
-    [Fact]
-    public void IsBored_Monsterplant_NeverPlays()
-    {
-        RoomPetRuntime
-            .IsBored(PetWith(Monsterplant, happiness: 0), boredHappinessThreshold: 50)
-            .Should()
-            .BeFalse("a monsterplant is rooted");
     }
 
     [Fact]
@@ -86,23 +75,10 @@ public sealed class PetToyAndTuningTests
         config.ToyPlayCooldownMs.Should().BeGreaterThan(config.ToyPlayDurationMs);
     }
 
-    [Fact]
-    public void AnExhaustedPetHasNoEnergyToPlay()
-    {
-        PetConfig config = new();
-
-        config
-            .PlayEnergyThreshold.Should()
-            .BeGreaterThan(
-                config.TiredEnergyThreshold,
-                "a pet on its way to bed should not be diverted by a ball"
-            );
-    }
-
     /// <summary>
     /// The tunables fall back to the compiled defaults, so a hotel that has never touched the
     /// dashboard behaves exactly as it did before they became editable -- and a cleared key reads
-    /// the default rather than zero, which would freeze every need.
+    /// the default rather than zero, which would freeze the pet's mood.
     /// </summary>
     [Fact]
     public void Tuning_FallsBackToTheCompiledDefaults()
@@ -110,9 +86,7 @@ public sealed class PetToyAndTuningTests
         PetConfig defaults = new();
         PetTuning tuning = PetTuning.FromDefaults(defaults);
 
-        tuning.NutritionDecayPerMinute.Should().Be(defaults.NutritionDecayPerMinute);
         tuning.HappinessDecayPerMinute.Should().Be(defaults.HappinessDecayPerMinute);
-        tuning.TiredEnergyThreshold.Should().Be(defaults.TiredEnergyThreshold);
         tuning.ToyHappinessReward.Should().Be(defaults.ToyHappinessReward);
         tuning.BoredHappinessThreshold.Should().Be(defaults.BoredHappinessThreshold);
     }
@@ -122,14 +96,8 @@ public sealed class PetToyAndTuningTests
     {
         string[] keys =
         [
-            PetTuning.NutritionDecayPerMinuteKey,
-            PetTuning.EnergyDecayPerMinuteKey,
             PetTuning.HappinessDecayPerMinuteKey,
             PetTuning.HappinessRestGainPerMinuteKey,
-            PetTuning.TiredEnergyThresholdKey,
-            PetTuning.SleepWakeEnergyThresholdKey,
-            PetTuning.HungerThresholdKey,
-            PetTuning.ThirstThresholdKey,
             PetTuning.RespectHappinessRewardKey,
             PetTuning.CommandHappinessRewardKey,
             PetTuning.CommandObeyBaseChancePercentKey,
@@ -139,7 +107,6 @@ public sealed class PetToyAndTuningTests
             PetTuning.BoredHappinessThresholdKey,
             PetTuning.ToyPlayDurationMsKey,
             PetTuning.ToyPlayCooldownMsKey,
-            PetTuning.PlayEnergyThresholdKey,
             PetTuning.ToyPlayChancePercentKey,
             PetTuning.WanderIdleMinMsKey,
             PetTuning.WanderIdleMaxMsKey,

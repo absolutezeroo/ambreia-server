@@ -61,7 +61,6 @@ public sealed class ConsumerTableTests
             [SignalActions.AdoptPet] = (AchievementNames.PetLover, false),
             [SignalActions.RespectPet] = (AchievementNames.PetRespectGiver, false),
             [SignalActions.PetRespected] = (AchievementNames.PetRespectReceiver, false),
-            [SignalActions.FeedPet] = (AchievementNames.PetFeeding, false),
             [SignalActions.ReceiveGift] = (AchievementNames.GiftReceiver, false),
         };
 

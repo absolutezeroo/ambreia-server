@@ -9,7 +9,7 @@ using Vortex.Primitives.Rooms.Object;
 
 namespace Vortex.Primitives.Rooms.Grains;
 
-/// <summary>Pets placed in the room: placement, care, commands, riding and breeding.</summary>
+/// <summary>Pets placed in the room: placement, care, commands and riding.</summary>
 [Alias("Vortex.Primitives.Rooms.Grains.IRoomPets")]
 public interface IRoomPets : IGrainWithIntegerKey
 {
@@ -32,12 +32,6 @@ public interface IRoomPets : IGrainWithIntegerKey
     );
 
     public Task<PetSnapshot?> PickUpPetAsync(ActionContext ctx, int petId, CancellationToken ct);
-    public Task<PetFeedResult> FeedPetAsync(
-        ActionContext ctx,
-        int petId,
-        RoomObjectId foodItemId,
-        CancellationToken ct
-    );
     public Task<PetSnapshot?> GetPlacedPetSnapshotAsync(int petId, CancellationToken ct);
     public Task<ImmutableArray<PetSnapshot>> GetPlacedPetSnapshotsAsync(CancellationToken ct);
     public Task<PetSnapshot?> RespectPetAsync(ActionContext ctx, int petId, CancellationToken ct);
@@ -46,47 +40,24 @@ public interface IRoomPets : IGrainWithIntegerKey
         int petId,
         CancellationToken ct
     );
-    public Task<PetSnapshot?> GiveSupplementToPetAsync(
-        ActionContext ctx,
-        int petId,
-        CancellationToken ct
-    );
-
-    public Task TogglePetBreedingPermissionAsync(
-        ActionContext ctx,
-        int petId,
-        CancellationToken ct
-    );
 
     /// <summary>Gets a player on or off a pet; the client sends one message for both.</summary>
     public Task MountPetAsync(ActionContext ctx, int petId, bool mount, CancellationToken ct);
 
+    /// <summary>
+    /// Fits a saddle: the owner uses a <c>PetSaddle</c> furniture on their pet (header 2099,
+    /// <c>CustomizePetWithFurni</c>). The furniture is spent.
+    /// </summary>
+    public Task ApplySaddleToPetAsync(
+        ActionContext ctx,
+        int petId,
+        RoomObjectId saddleItemId,
+        CancellationToken ct
+    );
+
     public Task RemoveSaddleFromPetAsync(ActionContext ctx, int petId, CancellationToken ct);
 
     public Task TogglePetRidingPermissionAsync(ActionContext ctx, int petId, CancellationToken ct);
-
-    public Task<bool> BreedPetsAsync(
-        ActionContext ctx,
-        int petOneId,
-        int petTwoId,
-        CancellationToken ct
-    );
-
-    /// <summary>
-    /// Completes a pending breeding session. <paramref name="nestStuffId"/> is the nest the dialog
-    /// was opened from — the client keys its result event to it — and <paramref name="petName"/> is
-    /// the name the player chose for the offspring.
-    /// </summary>
-    public Task<bool> ConfirmPetBreedingAsync(
-        ActionContext ctx,
-        int nestStuffId,
-        string petName,
-        int petOneId,
-        int petTwoId,
-        CancellationToken ct
-    );
-
-    public Task CancelPetBreedingAsync(ActionContext ctx, int petId, CancellationToken ct);
 
     public Task<PetSnapshot?> IssueCommandAsync(
         ActionContext ctx,
@@ -94,35 +65,4 @@ public interface IRoomPets : IGrainWithIntegerKey
         int commandId,
         CancellationToken ct
     );
-
-    public Task<PetSnapshot?> PlantMonsterplantSeedAsync(
-        ActionContext ctx,
-        RoomObjectId seedItemId,
-        CancellationToken ct
-    );
-
-    /// <summary>
-    /// A furniture used on a pet (the client's "use product" flow). Food and the monsterplant
-    /// potions share one packet; the product's own category decides which it is.
-    /// </summary>
-    public Task<bool> UsePetProductAsync(
-        ActionContext ctx,
-        int petId,
-        RoomObjectId productItemId,
-        CancellationToken ct
-    );
-
-    /// <summary>
-    /// Waters a monsterplant: the client's "treat" button, which arrives on the same packet as
-    /// respect (576) and resets the well-being clock the client counts down from.
-    /// </summary>
-    public Task<PetSnapshot?> TreatPlantAsync(ActionContext ctx, int petId, CancellationToken ct);
-
-    /// <summary>Harvests a full-grown monsterplant, handing its owner a seed and spending the
-    /// plant's charge until a rebreed potion restores it.</summary>
-    public Task<bool> HarvestPlantAsync(ActionContext ctx, int petId, CancellationToken ct);
-
-    /// <summary>Composts a withered monsterplant. Destructive and irreversible, which is why the
-    /// client asks for confirmation first.</summary>
-    public Task<bool> CompostPlantAsync(ActionContext ctx, int petId, CancellationToken ct);
 }

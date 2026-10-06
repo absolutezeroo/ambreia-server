@@ -63,20 +63,8 @@ public sealed record PetSnapshot
     // own allowance alone, which is the only budget the client models; the ids stay retired rather
     // than reused, because an old serialised snapshot must not be read back as something else.
 
-    [Id(19)]
-    public int? ParentOneId { get; init; }
-
-    [Id(20)]
-    public int? ParentTwoId { get; init; }
-
-    [Id(21)]
-    public bool CanBreed { get; init; } = true;
-
-    [Id(22)]
-    public int RarityLevel { get; init; } = 1;
-
-    [Id(23)]
-    public DateTime? LastWateredAt { get; init; }
+    // 19 to 23 were the two parents, the breeding flag, the monsterplant rarity and its watering
+    // stamp, removed in M0 with breeding and monsterplants. Retired for the same reason.
 
     /// <summary>A saddle has been fitted; without one the pet cannot be ridden.</summary>
     [Id(24)]
@@ -103,8 +91,8 @@ public sealed record PetSnapshot
     public DateTime CreatedAt { get; init; }
 
     /// <summary>
-    /// Water, 0-100. Habbo counts hunger, thirst, energy and happiness separately; thirst used to be
-    /// read off energy, which made one bar mean both "wants a drink" and "wants a nap".
+    /// Water, 0-100. Pets have no needs since M0: this, <see cref="Nutrition"/> and
+    /// <see cref="Energy"/> are kept because they are stored and sent, and stay at their maximum.
     /// </summary>
     [Id(29)]
     public int Thirst { get; init; } = 100;

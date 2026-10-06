@@ -33,8 +33,8 @@ using Xunit;
 namespace Vortex.Rooms.Tests.Pets;
 
 /// <summary>
-/// Caring for a pet — respecting it, feeding it a supplement, giving it a command — all funnel into
-/// the same experience grant, and all three are reachable by any player standing in the room. The
+/// Caring for a pet — respecting it, giving it a command — both funnel into the same experience
+/// grant, and both are reachable by any player standing in the room. The
 /// rules that keep that from being farmable are the daily respect cap and the level caps; both live
 /// in config and neither is enforced by the client.
 /// </summary>
@@ -136,32 +136,6 @@ public sealed class PetCareTests
     }
 
     [Fact]
-    public async Task ASupplement_RestoresEnergyAndPaysExperience()
-    {
-        PetConfig config = new();
-        Harness harness = new(Pet(energy: 10));
-
-        PetSnapshot? updated = await harness
-            .System.GiveSupplementToPetAsync(harness.Context, PetId, CancellationToken.None)
-            .ConfigureAwait(true);
-
-        updated!.Energy.Should().Be(10 + config.SupplementEnergyBoost);
-        updated.Experience.Should().Be(config.SupplementXpReward);
-    }
-
-    [Fact]
-    public async Task ASupplement_CannotPushEnergyPastTheLevelCap()
-    {
-        Harness harness = new(Pet(energy: EnergyCap - 1));
-
-        PetSnapshot? updated = await harness
-            .System.GiveSupplementToPetAsync(harness.Context, PetId, CancellationToken.None)
-            .ConfigureAwait(true);
-
-        updated!.Energy.Should().Be(EnergyCap);
-    }
-
-    [Fact]
     public async Task ACommand_PaysItsOwnExperience()
     {
         Harness harness = new(Pet());
@@ -188,7 +162,7 @@ public sealed class PetCareTests
         updated.Level.Should().Be(2);
     }
 
-    private static PetSnapshot Pet(int energy = 100, int experience = 0, int respect = 0) =>
+    private static PetSnapshot Pet(int experience = 0, int respect = 0) =>
         new()
         {
             PetId = PetId,
@@ -201,7 +175,7 @@ public sealed class PetCareTests
             Gender = AvatarGenderType.Male,
             Level = 1,
             Experience = experience,
-            Energy = energy,
+            Energy = 100,
             Nutrition = 100,
             Respect = respect,
             X = 1,

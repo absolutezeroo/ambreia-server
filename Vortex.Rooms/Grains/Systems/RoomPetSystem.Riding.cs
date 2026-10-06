@@ -4,16 +4,18 @@ using Microsoft.EntityFrameworkCore;
 using Vortex.Database.Context;
 using Vortex.Database.Entities.Pets;
 using Vortex.Primitives.Action;
+using Vortex.Primitives.Events;
+using Vortex.Primitives.Furniture.Enums;
 using Vortex.Primitives.Pets.Snapshots;
 using Vortex.Primitives.Players;
+using Vortex.Primitives.Rooms.Object;
+using Vortex.Primitives.Rooms.Object.Furniture;
 using Vortex.Protocol.Messages.Outgoing.Room.Pets;
 
 namespace Vortex.Rooms.Grains.Systems;
 
 /// <summary>
-/// Saddles, riding and the status push that tells the client which pet actions to offer. Nothing
-/// used to send <c>PetStatusUpdate</c>, so the breed, harvest and revive buttons never appeared
-/// however the pet was doing.
+/// Saddles, riding and the status push that tells the client which pet actions to offer.
 /// </summary>
 public sealed partial class RoomPetSystem
 {
@@ -53,6 +55,47 @@ public sealed partial class RoomPetSystem
         }
 
         await ApplyRidingStateAsync(pet, pet.HasSaddle, rider: null, ct);
+    }
+
+    /// <summary>
+    /// Fits a saddle (header 2099, <c>CustomizePetWithFurni</c>). The client offers the furniture
+    /// from <c>FurniturePetCustomizationLogic</c> and recognises a saddle by its furniture category,
+    /// <c>PET_SADDLE</c>, and only for the furniture owner's own pets -- the same three rules are
+    /// checked here, because the packet carries nothing but the two ids. A pet already saddled is
+    /// refused rather than handed a second one it would not show.
+    /// </summary>
+    public async Task ApplySaddleToPetAsync(
+        ActionContext ctx,
+        int petId,
+        RoomObjectId saddleItemId,
+        CancellationToken ct
+    )
+    {
+        await EnsurePetsLoadedAsync(ct);
+
+        if (
+            !_roomGrain._state.PetsById.TryGetValue(petId, out PetSnapshot? pet)
+            || pet.OwnerId != ctx.PlayerId
+            || pet.HasSaddle
+            || !_roomGrain._state.ItemsById.TryGetValue(saddleItemId, out IRoomItem? saddle)
+            || saddle.Definition.FurniCategory != FurnitureCategory.PetSaddle
+            || saddle.OwnerId != ctx.PlayerId
+        )
+        {
+            return;
+        }
+
+        // Spent first: the other order lets a repeated click saddle for free.
+        if (!await _roomGrain.ConsumeItemAsync(ctx, saddle, ItemDeletionReason.PetSaddleFitted, ct))
+        {
+            return;
+        }
+
+        // Re-read: the pet kept ticking while the furniture row was written.
+        if (_roomGrain._state.PetsById.TryGetValue(petId, out PetSnapshot? current))
+        {
+            await ApplyRidingStateAsync(current, hasSaddle: true, current.RiderId, ct);
+        }
     }
 
     /// <summary>Takes the saddle off, which also throws whoever is riding.</summary>
@@ -97,7 +140,8 @@ public sealed partial class RoomPetSystem
 
     /// <summary>
     /// Tells the room which actions a pet currently offers. Sent whenever the answer can have
-    /// changed -- the client has no other way to learn it.
+    /// changed -- the client has no other way to learn it. Breeding and monsterplants were removed
+    /// in M0, so the four flags the message still carries are always false.
     /// </summary>
     internal Task SendPetStatusAsync(PetSnapshot pet) =>
         _roomGrain.SendComposerToRoomAsync(
@@ -105,10 +149,10 @@ public sealed partial class RoomPetSystem
             {
                 RoomIndex = RoomPetRuntime.ToRoomObjectId(pet.PetId).Value,
                 PetId = pet.PetId,
-                CanBreed = RoomPetRuntime.CanBreed(pet),
-                CanHarvest = RoomPetRuntime.CanHarvest(pet),
-                CanRevive = RoomPetRuntime.CanRevive(pet),
-                HasBreedingPermission = RoomPetRuntime.HasBreedingPermission(pet),
+                CanBreed = false,
+                CanHarvest = false,
+                CanRevive = false,
+                HasBreedingPermission = false,
             }
         );
 

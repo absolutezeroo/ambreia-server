@@ -8,7 +8,6 @@ public sealed record PetStats(
     PetTotals Totals,
     IReadOnlyList<PetTypeCount> ByType,
     IReadOnlyList<PetRaceCount> ByRace,
-    IReadOnlyList<PetRarityCount> ByRarity,
     IReadOnlyList<PetGrowthPoint> Growth,
     IReadOnlyList<PetOwnerCount> TopOwners
 );

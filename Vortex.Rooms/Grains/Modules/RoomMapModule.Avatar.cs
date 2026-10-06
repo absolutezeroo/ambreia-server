@@ -249,7 +249,7 @@ public sealed partial class RoomMapModule
     /// Whether a pet is standing on this tile.
     ///
     /// Scanned rather than indexed. A pet's position is written from a dozen places -- motion,
-    /// breeding, care -- each replacing an immutable snapshot in the dictionary, so a per-tile set
+    /// riding, care -- each replacing an immutable snapshot in the dictionary, so a per-tile set
     /// would have to be hooked at every one of them and would be wrong the first time somebody
     /// added a thirteenth. A room holds a handful of pets, so the scan is a handful of comparisons.
     ///

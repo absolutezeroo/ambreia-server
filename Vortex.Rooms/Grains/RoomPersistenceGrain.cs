@@ -276,15 +276,10 @@ public sealed class RoomPersistenceGrain(
                     continue;
                 }
 
-                entity.Nutrition = pet.Nutrition;
-                entity.Energy = pet.Energy;
                 entity.Experience = pet.Experience;
                 entity.Level = pet.Level;
                 entity.Respect = pet.Respect;
                 entity.Happiness = pet.Happiness;
-                entity.Thirst = pet.Thirst;
-                entity.CanBreed = pet.CanBreed;
-                entity.LastWateredAt = pet.LastWateredAt;
                 entity.X = pet.X;
                 entity.Y = pet.Y;
                 entity.Z = pet.Z;

@@ -56,7 +56,6 @@ internal static class MessageEvent
 
     #region Incoming
 
-    public const int BreedPetsMessageEvent = 1922; // AS3-verified (ghost fix): AvatarInfoWidget::cancelBreedPets()
     public const int CustomizePetWithFurniEvent = 2099; // AS3-verified (old-revision trace): _SafeCls_3494 -> useProductForPet() still exists in current revision at 2099
     public const int GetPetInfoMessageEvent = 3899; // AS3-verified (old-revision trace): _SafeCls_3258 -> requestPetInfo() still exists in current revision at 3899
     public const int PetSelectedMessageEvent = 2757; // AS3-verified (old-revision trace): _SafeCls_2740 -> handleGetPetInfoMessage() still exists in current revision at 2757
@@ -315,12 +314,9 @@ internal static class MessageEvent
     public const int StartCampaignMessageEvent = 3969; // AS3-verified 2026-08-12 (direct read): _composers[3969] = outgoing.quest._SafeCls_3041, a one-string composer sent by QuestTracker with getDefaultCampaign() and by CitizenshipVipQuestsPromoExtension with its own campaign name. The earlier "collided with MyFavouriteRoomsSearchMessageEvent" note was wrong: 3969 belongs to the quest package.
     public const int GetHotLooksMessageEvent = 3834; // AS3-verified (ghost fix): HotLooksModel::requestHotLooks()
     public const int ClickFurniMessageEvent = 443;
-    public const int CompostPlantMessageEvent = 1989;
     public const int GetFurnitureAliasesMessageEvent = 1901;
     public const int GetItemDataMessageEvent = 350;
     public const int GetPetCommandsMessageEvent = 2425;
-    public const int GiveSupplementToPetMessageEvent = 1694;
-    public const int HarvestPetMessageEvent = 1210;
     public const int MountPetMessageEvent = 1996;
     public const int MoveAvatarMessageEvent = 2364;
     public const int MoveObjectMessageEvent = 1482;
@@ -337,7 +333,6 @@ internal static class MessageEvent
     public const int SetClothingChangeDataMessageEvent = 1220;
     public const int SetItemDataMessageEvent = 3498;
     public const int SetObjectDataMessageEvent = 246; // AS3-verified (ghost fix): InfoStandWidgetHandler::setObjectData()
-    public const int TogglePetBreedingPermissionMessageEvent = 144;
     public const int TogglePetRidingPermissionMessageEvent = 3713;
     public const int UseFurnitureMessageEvent = 3353;
     public const int UseWallItemMessageEvent = 3590; // AS3-verified (direct read): RoomObjectEventHandler (_SafeCls_1821.as:2570) branches on the object category - category 10 (floor) sends _SafeCls_3952/_SafeCls_3726, category 20 (wall) sends _SafeCls_3754(objectId, param) @3590. Supersedes the earlier "no distinct AS3 backing" note, which had confused it with modifyWallItemData()/SetItemData @3498
@@ -451,8 +446,6 @@ internal static class MessageEvent
     public const int ThrowDiceMessageEvent = 1673; // AS3-verified (direct read, both revisions): useObject() ROFCAE_DICE_ACTIVATE -> _SafeCls_3154
     public const int GetResolutionAchievementsMessageEvent = 1760; // AS3-verified 2026-08-13 (re-derived): _composers[1760] = _SafeCls_2562, sent by AchievementsResolutionController and by the room engine on ROWRE_ACHIEVEMENT_RESOLUTION_OPEN. Two ints (stuffId, achievementId), not an empty body
     public const int ResetResolutionAchievementMessageEvent = 916; // AS3-verified 2026-08-13: _composers[916] = _SafeCls_3330, sent by AchievementsResolutionController::resetResolution. One int (stuffId). Had no header at all
-    public const int CancelPetBreedingEvent = 3367; // AS3-verified (ghost fix): AvatarInfoWidget::cancelPetBreeding()
-    public const int ConfirmPetBreedingEvent = 2872; // AS3-verified (ghost fix): AvatarInfoWidget::confirmPetBreeding()
     public const int GetPetInventoryEvent = 3891;
     public const int EventLogMessageEvent = 3809; // AS3-verified (shape-only): ClubExtendController::onOffer()
     public const int LagWarningReportMessageEvent = 481;
@@ -1023,14 +1016,8 @@ internal static class MessageComposer
     public const int ShoutMessageComposer = 1776;
     public const int UserTypingMessageComposer = 206;
     public const int WhisperMessageComposer = 3072;
-    public const int ConfirmBreedingRequestComposer = 1477; // AS3-verified (old-revision trace): still exists in current revision at 1477
-    public const int ConfirmBreedingResultComposer = 2068; // AS3-verified (old-revision trace): _SafeCls_2448 -> onConfirmPetBreedingResult() still exists in current revision at 2068
-    public const int GoToBreedingNestFailureComposer = 2441; // AS3-verified (ghost fix): onGoToBreedingNestFailure
-
-    public const int NestBreedingSuccessComposer = 40; // AS3-verified: onNestBreedingSuccess @ RoomUsersHandler
 
     public const int PetAddedToInventoryComposer = 3653; // AS3-verified (old-revision trace): still exists in current revision at 3653
-    public const int PetBreedingComposer = 939; // AS3-verified (ghost fix): onPetBreedingEvent @ RoomUsersHandler
     public const int PetInventoryComposer = 1200;
     public const int PetReceivedMessageComposer = 1692;
     public const int PetRemovedFromInventoryComposer = 3013; // AS3-verified (old-revision trace): _SafeCls_3331 -> onPetRemoved() still exists in current revision at 3013
@@ -1074,7 +1061,6 @@ internal static class MessageComposer
     public const int PetLevelNotificationComposer = 1702;
     public const int RestoreClientMessageComposer = 3345;
     public const int UnseenItemsComposer = 3059;
-    public const int PetBreedingResultComposer = 2940;
     public const int PetCommandsMessageComposer = 332; // AS3-verified (old-revision trace): _SafeCls_2541 -> onEnabledPetCommands() still exists in current revision at 332
     public const int PetExperienceComposer = 946; // AS3-verified (ghost fix): onPetExperience
     public const int PetFigureUpdateComposer = 3796;
@@ -1154,7 +1140,6 @@ internal static class MessageComposer
     public const int IgnoreResultMessageComposer = 253;
     public const int InClientLinkMessageComposer = 1554;
     public const int PetRespectNotificationComposer = 1784;
-    public const int PetSupplementedNotificationComposer = 3858; // AS3-verified (ghost fix): onPetSupplementedNotification @ RoomChatHandler
     public const int RelationshipStatusInfoComposer = 3360;
     public const int RespectNotificationMessageComposer = 2686;
     public const int ScrSendKickbackInfoMessageComposer = 3887;

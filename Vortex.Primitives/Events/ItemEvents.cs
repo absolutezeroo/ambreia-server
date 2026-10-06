@@ -180,10 +180,9 @@ public enum ItemDeletionReason
     CreditRedeemed = 1,
     PresentOpened = 2,
 
-    // 3, 4 and 5 were a crackable cracking and the mystery box and trophy opening, removed in M0.
-    // Not renumbered.
-    PetFoodUsedUp = 6,
-    MonsterplantSeedPlanted = 7,
+    // 3, 4 and 5 were a crackable cracking and the mystery box and trophy opening, 6 and 7 a pet
+    // bowl running empty and a monsterplant seed planted, all removed in M0. Not renumbered.
+    PetSaddleFitted = 8,
 }
 
 /// <summary>

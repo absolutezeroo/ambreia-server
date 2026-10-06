@@ -41,8 +41,6 @@ internal sealed class PetFulfillmentStrategy : IFulfillmentStrategy
                 Race = race,
                 Color = color,
                 Gender = AvatarGenderType.Male,
-                Energy = 100,
-                Nutrition = 100,
             }
         );
     }

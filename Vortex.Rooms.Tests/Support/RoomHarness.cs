@@ -443,13 +443,7 @@ internal sealed class RoomHarness
     /// A pet standing on a tile. Placed straight into the room's live state rather than through the
     /// pet system, because what is under test is what happens to it, not how it got there.
     /// </summary>
-    public async Task PutPetInRoomAsync(
-        int petId,
-        int x,
-        int y,
-        int thirst = 100,
-        int nutrition = 100
-    )
+    public async Task PutPetInRoomAsync(int petId, int x, int y)
     {
         // Load first, on an empty table: the pet system clears its cache the first time it is
         // asked, so a pet placed before that would be wiped by the very call under test.
@@ -468,13 +462,12 @@ internal sealed class RoomHarness
             Level = 1,
             Experience = 0,
             Energy = 100,
-            Nutrition = nutrition,
+            Nutrition = 100,
             Respect = 0,
             X = x,
             Y = y,
             Z = 0,
             Direction = Rotation.South,
-            Thirst = thirst,
         };
     }
 

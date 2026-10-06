@@ -32,16 +32,14 @@ namespace Vortex.Rooms.Grains.Systems;
 /// <summary>
 ///     Loading, the per-tick loop, dirty-stat flush, and shared helpers (avatar-snapshot
 ///     building, composer fan-out, motion-state bookkeeping). Placement/movement lives in
-///     <c>RoomPetSystem.Placement.cs</c>, wander/decay/feeding AI in
+///     <c>RoomPetSystem.Placement.cs</c>, wander/mood/nest/toy AI in
 ///     <c>RoomPetSystem.Motion.cs</c>, respect/commands/XP in <c>RoomPetSystem.Care.cs</c>,
-///     breeding and monsterplant in <c>RoomPetSystem.Breeding.cs</c>.
+///     saddles and riding in <c>RoomPetSystem.Riding.cs</c>.
 /// </summary>
 public sealed partial class RoomPetSystem(RoomGrain roomGrain)
 {
     private const int PetPlacementForbiddenInFlatError = 1;
     private const int PetPlacementSelectedTileNotFreeError = 4;
-    private const int MonsterplantPetType = 16;
-    private readonly Dictionary<int, PendingBreedingSession> _breedingByPetOneId = [];
     private readonly Dictionary<int, PetMotionState> _motionByPetId = [];
 
     private readonly RoomGrain _roomGrain = roomGrain;
@@ -51,7 +49,7 @@ public sealed partial class RoomPetSystem(RoomGrain roomGrain)
     private long _nextTuningRefreshAtMs = -1;
 
     /// <summary>
-    /// The live tunables. Read once per flush interval rather than per tick -- the decay maths runs
+    /// The live tunables. Read once per flush interval rather than per tick -- the mood maths runs
     /// twice a second per room and cannot afford a grain call -- and never null once the tick has
     /// started, because <see cref="RefreshTuningAsync" /> runs before the loop.
     /// </summary>
@@ -101,11 +99,8 @@ public sealed partial class RoomPetSystem(RoomGrain roomGrain)
 
         _roomGrain._state.PetsById.Clear();
 
-        long nowMs = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
-
         foreach (PetEntity pet in pets)
         {
-            ApplyOfflineDecay(pet, nowMs);
             _roomGrain._state.PetsById[pet.Id] = RoomPetRuntime.ToSnapshot(pet);
         }
 
@@ -144,27 +139,7 @@ public sealed partial class RoomPetSystem(RoomGrain roomGrain)
             {
                 PetMotionState motion = GetMotionState(pet, now);
                 PetSnapshot current = ApplyPendingPetStep(pet, motion);
-
-                if (pet.Type == MonsterplantPetType)
-                {
-                    // A plant does not walk, sleep, play or eat, but it does dry out and grow --
-                    // see RoomPetSystem.Plants.cs. Skipping it entirely is what left it an immortal
-                    // level-1 decoration.
-                    RoomPetAvatarSnapshot? plantUpdate = await ProcessPlantTickAsync(
-                        current,
-                        motion,
-                        ct
-                    );
-
-                    if (plantUpdate is not null)
-                    {
-                        dirtySnapshots.Add(plantUpdate);
-                    }
-
-                    continue;
-                }
-
-                current = ApplyNeedDecay(current, motion, now);
+                current = ApplyMoodAndRest(current, motion, now);
 
                 if (motion.PendingSleepVocal)
                 {
@@ -356,11 +331,7 @@ public sealed partial class RoomPetSystem(RoomGrain roomGrain)
         motion = new PetMotionState
         {
             NextWanderAtMs = ScheduleNextWanderAt(now),
-            LastNutritionDecayAtMs = now,
-            LastEnergyDecayAtMs = now,
-            LastThirstDecayAtMs = now,
             LastHappinessDecayAtMs = now,
-            IsSleeping = pet.Energy <= 0,
         };
         _motionByPetId[pet.PetId] = motion;
 
@@ -477,9 +448,7 @@ public sealed partial class RoomPetSystem(RoomGrain roomGrain)
         );
 
         // The avatar update redraws the pet but says nothing about what can be done with it. Every
-        // caller here has just changed a stat or a permission that the answer depends on -- a
-        // monsterplant hitting full growth becomes harvestable, one running out of energy becomes
-        // revivable -- so the status goes out alongside.
+        // caller here has just changed a stat or a permission, so the status goes out alongside.
         await SendPetStatusAsync(pet);
     }
 
@@ -607,31 +576,17 @@ public sealed partial class RoomPetSystem(RoomGrain roomGrain)
         }
     }
 
-    private sealed record PendingBreedingSession(
-        int PetOneId,
-        int PetTwoId,
-        PlayerId OwnerOneId,
-        PlayerId OwnerTwoId,
-        int ProposedRace,
-        string ProposedColor,
-        int ProposedGender
-    );
-
     private sealed class PetMotionState
     {
         public List<int> TilePath { get; } = [];
         public int NextTileId { get; set; } = -1;
         public long PendingStopAtMs { get; set; }
         public long NextWanderAtMs { get; set; }
-        public long LastNutritionDecayAtMs { get; set; } = -1;
-        public long LastEnergyDecayAtMs { get; set; } = -1;
-        public long LastThirstDecayAtMs { get; set; } = -1;
         public long LastHappinessDecayAtMs { get; set; } = -1;
-        public long LastPlantTickAtMs { get; set; } = -1;
         public bool IsStatsDirty { get; set; }
         public bool IsSleeping { get; set; }
+        public long WakeAtMs { get; set; }
         public bool SleepPostureSent { get; set; }
-        public RoomObjectId? FeedTargetId { get; set; }
         public bool IsHeadingToNest { get; set; }
         public bool IsHeadingToToy { get; set; }
         public RoomObjectId? PlayingWithToyId { get; set; }
@@ -646,7 +601,6 @@ public sealed partial class RoomPetSystem(RoomGrain roomGrain)
             TilePath.Clear();
             NextTileId = -1;
             PendingStopAtMs = 0;
-            FeedTargetId = null;
             IsHeadingToNest = false;
             IsHeadingToToy = false;
         }

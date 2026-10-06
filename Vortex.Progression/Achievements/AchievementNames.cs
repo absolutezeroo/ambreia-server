@@ -36,15 +36,7 @@ public static class AchievementNames
     public const string PetLevelUp = "PetLevelUp";
     public const string PetLover = "PetLover";
 
-    /// <summary>Colours of one baby pet type owned. See <see cref="BabyPetAchievements"/>.</summary>
-    public const string BearBreeder = "BearBreeder";
-    public const string TerrierBreeder = "TerrierBreeder";
-    public const string CatBreeder = "CatBreeder";
-    public const string DogBreeder = "DogBreeder";
-    public const string PigBreeder = "PigBreeder";
-
     public const string PetRespectGiver = "PetRespectGiver";
     public const string PetRespectReceiver = "PetRespectReceiver";
-    public const string PetFeeding = "PetFeeding";
     public const string GiftReceiver = "GiftReceiver";
 }

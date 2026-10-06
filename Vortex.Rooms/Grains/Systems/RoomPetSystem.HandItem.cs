@@ -1,20 +1,17 @@
-using System;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using Vortex.Database.Context;
 using Vortex.Database.Entities.Room;
 using Vortex.Primitives.Action;
-using Vortex.Primitives.Events;
 using Vortex.Primitives.Pets.Snapshots;
 using Vortex.Rooms.Grains.Modules;
 
 namespace Vortex.Rooms.Grains.Systems;
 
 /// <summary>
-/// Feeding a pet what you are holding. Kept apart from the bowl-feeding path because it is a
-/// different thing on both sides: the food is a hand item rather than a piece of furniture, it has
-/// no uses to count down, and it comes from a hand that has to be emptied.
+/// Giving a pet what you are holding. Pets have no needs since M0, so the treat changes no stat:
+/// the hand empties and the pet looks pleased.
 /// </summary>
 public sealed partial class RoomPetSystem
 {
@@ -45,46 +42,17 @@ public sealed partial class RoomPetSystem
             .HandItems.AsNoTracking()
             .SingleOrDefaultAsync(h => h.HandItemId == handItemId && h.DeletedAt == null, ct);
 
+        // The hand_items row still says which items a pet takes at all: one with neither food nor
+        // water value is nothing a pet wants, and stays in the hand rather than being swallowed
+        // silently.
         if (handItem is null || (handItem.Nutrition <= 0 && handItem.Thirst <= 0))
         {
-            // Nothing a pet wants. Leaving it in the hand is kinder than swallowing it silently.
             return false;
         }
 
-        int nutritionCap = _roomGrain._petLevelProvider.GetNutritionCapForLevel(
-            pet.Type,
-            pet.Level
-        );
-
-        PetSnapshot fed = pet with
-        {
-            Nutrition = Math.Min(pet.Nutrition + handItem.Nutrition, nutritionCap),
-            Thirst = Math.Min(pet.Thirst + handItem.Thirst, RoomPetRuntime.ThirstCap),
-        };
-
-        _roomGrain._state.PetsById[petId] = fed;
-
-        if (_motionByPetId.TryGetValue(petId, out PetMotionState? motion))
-        {
-            // The stats have to reach the database eventually, and this rides the same dirty-set
-            // the bowl path does rather than writing through.
-            motion.IsStatsDirty = true;
-        }
-
-        // The hand empties whether or not the pet needed it: it has been eaten either way.
         _ = _roomGrain.HandItemModule.Drop(ctx.PlayerId);
 
-        await SendPetUpdatedAsync(fed, ct);
-        await BroadcastPetVocalAsync(fed, "GENERIC_HAPPY");
-
-        // The nutrition the item was worth, not the one the pet could still take: a full pet is
-        // still being fed, and "giving pets %limit% points of food" counts what was given.
-        if (handItem.Nutrition > 0)
-        {
-            _roomGrain.PublishDetached(
-                new PetFedEvent(ctx.PlayerId, fed.OwnerId, petId, fed.Type, handItem.Nutrition)
-            );
-        }
+        await BroadcastPetVocalAsync(pet, "GENERIC_HAPPY");
 
         return true;
     }

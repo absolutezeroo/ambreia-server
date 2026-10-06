@@ -39,28 +39,6 @@ public sealed class PetModelTests
         pet.FindProperty(nameof(PetEntity.Respect))!.GetDefaultValue().Should().Be(0);
     }
 
-    [Fact]
-    public void PetFoodEntity_HasDefinitionUniquenessAndPetTypeIndex()
-    {
-        using VortexDbContext context = NewContext();
-
-        IEntityType petFood = context.Model.FindEntityType(typeof(PetFoodEntity))!;
-
-        petFood
-            .GetIndexes()
-            .Should()
-            .Contain(i =>
-                i.IsUnique
-                && i.Properties.Any(p =>
-                    p.Name == nameof(PetFoodEntity.FurnitureDefinitionEntityId)
-                )
-            );
-        petFood
-            .GetIndexes()
-            .Should()
-            .Contain(i => i.Properties.Any(p => p.Name == nameof(PetFoodEntity.PetType)));
-    }
-
     private static VortexDbContext NewContext() =>
         new(
             new DbContextOptionsBuilder<VortexDbContext>()

@@ -221,9 +221,6 @@ public static class SignalActions
     /// <inheritdoc cref="RewardTrackActions.PetRespected"/>
     public const string PetRespected = RewardTrackActions.PetRespected;
 
-    /// <inheritdoc cref="RewardTrackActions.FeedPet"/>
-    public const string FeedPet = RewardTrackActions.FeedPet;
-
     /// <inheritdoc cref="RewardTrackActions.CommandPet"/>
     public const string CommandPet = RewardTrackActions.CommandPet;
 
@@ -302,7 +299,6 @@ public static class SignalActions
         ClaimVaultIncome,
         RespectPet,
         PetRespected,
-        FeedPet,
         CommandPet,
         StandNearFurni,
         ReceiveGift

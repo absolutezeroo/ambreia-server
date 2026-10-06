@@ -19,7 +19,6 @@ public enum VortexErrorCodeEnum
     NoPermissionToPlaceFurni,
     NoPermissionToManipulateFurni,
     PetNotFound,
-    PetFoodNotFound,
     NoPermissionToManipulatePet,
     RoomLimitReached,
     NavigatorCategoryNotFound,
@@ -50,7 +49,6 @@ public static class ErrorCodeExtensions
             VortexErrorCodeEnum.NoPermissionToManipulateFurni =>
                 "You do not have permission to manipulate furniture.",
             VortexErrorCodeEnum.PetNotFound => "The specified pet could not be found.",
-            VortexErrorCodeEnum.PetFoodNotFound => "The specified pet food could not be found.",
             VortexErrorCodeEnum.NoPermissionToManipulatePet =>
                 "You do not have permission to manipulate this pet.",
             VortexErrorCodeEnum.RoomLimitReached => "You already own as many rooms as you may.",

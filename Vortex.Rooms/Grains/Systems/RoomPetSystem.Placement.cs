@@ -91,11 +91,6 @@ public sealed partial class RoomPetSystem
 
         bool wasInInventory = pet.RoomEntityId is null;
 
-        if (wasInInventory)
-        {
-            ApplyOfflineDecay(pet, DateTimeOffset.UtcNow.ToUnixTimeMilliseconds());
-        }
-
         pet.RoomEntityId = _roomGrain.RoomId.Value;
         pet.X = x;
         pet.Y = y;
@@ -161,8 +156,6 @@ public sealed partial class RoomPetSystem
         {
             snapshot = snapshot with
             {
-                Nutrition = prev.Nutrition,
-                Energy = prev.Energy,
                 Experience = prev.Experience,
                 Level = prev.Level,
                 Respect = prev.Respect,
@@ -198,8 +191,6 @@ public sealed partial class RoomPetSystem
         // Sync live in-memory stats so pickup persists the latest values
         if (_roomGrain._state.PetsById.TryGetValue(petId, out PetSnapshot? liveSnapshot))
         {
-            pet.Nutrition = liveSnapshot.Nutrition;
-            pet.Energy = liveSnapshot.Energy;
             pet.Experience = liveSnapshot.Experience;
             pet.Level = liveSnapshot.Level;
             pet.Respect = liveSnapshot.Respect;

@@ -14,26 +14,14 @@ public sealed record RoomPetAvatarSnapshot : RoomAvatarSnapshot
     [Id(14)]
     public required string OwnerName { get; init; }
 
-    [Id(16)]
-    public required int RarityLevel { get; init; }
+    // 16 and 19 to 22 were the monsterplant rarity and the breed, harvest and revive flags, removed
+    // in M0. The serializer still writes them, as constants.
 
     [Id(17)]
     public required bool HasSaddle { get; init; }
 
     [Id(18)]
     public required bool IsRiding { get; init; }
-
-    [Id(19)]
-    public required bool CanBreed { get; init; }
-
-    [Id(20)]
-    public required bool CanHarvest { get; init; }
-
-    [Id(21)]
-    public required bool CanRevive { get; init; }
-
-    [Id(22)]
-    public required bool HasBreedingPermission { get; init; }
 
     [Id(23)]
     public required int PetLevel { get; init; }

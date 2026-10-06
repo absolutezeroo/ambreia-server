@@ -138,9 +138,9 @@ public sealed partial class RoomObjectModule(RoomGrain roomGrain)
     /// dirty. The caller owns the spatial removal and the order it runs in.
     /// </summary>
     /// <remarks>
-    /// These three lines were written out by hand at each of the three places an item leaves a room
-    /// -- a pickup, a definition swap, a pet finishing its food -- in the same order every time,
-    /// which is three copies of one invariant and no way to notice when one drifts. Nothing here
+    /// These three lines were written out by hand at each place an item leaves a room -- a pickup,
+    /// a definition swap -- in the same order every time, which is copies of one invariant and no
+    /// way to notice when one drifts. Nothing here
     /// awaits, so no other turn can see the room holding an item in two of the three.
     ///
     /// The spatial removal is deliberately not folded in: each caller runs it at a different point

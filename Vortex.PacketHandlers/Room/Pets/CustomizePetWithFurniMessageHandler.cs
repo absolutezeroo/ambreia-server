@@ -25,12 +25,11 @@ public class CustomizePetWithFurniMessageHandler(IGrainFactory grainFactory)
             return;
         }
 
-        // Food and the three monsterplant potions all arrive here; the room reads the product's
-        // furniture category to tell them apart, because that is the field the client itself uses to
-        // decide which pets to offer the product for.
+        // Only the saddle is left on this packet: the room checks the furniture's category, the
+        // same field the client uses to offer it.
         await _grainFactory
             .GetRoomPets(ctx.RoomId)
-            .UsePetProductAsync(
+            .ApplySaddleToPetAsync(
                 ctx.AsActionContext(),
                 message.PetId,
                 new RoomObjectId(message.FurniItemId),

@@ -130,26 +130,6 @@
         <Hash size={15} strokeWidth={2} aria-hidden="true" />
       {/snippet}
     </StatCard>
-    <StatCard label={$t('petsStats.avgEnergy')} value={String(data.totals.avgEnergy)}>
-      {#snippet icon()}
-        <Hash size={15} strokeWidth={2} aria-hidden="true" />
-      {/snippet}
-    </StatCard>
-    <StatCard label={$t('petsStats.avgNutrition')} value={String(data.totals.avgNutrition)}>
-      {#snippet icon()}
-        <Hash size={15} strokeWidth={2} aria-hidden="true" />
-      {/snippet}
-    </StatCard>
-    <StatCard label={$t('petsStats.breedablePets')} value={formatNumber(data.totals.breedablePets)}>
-      {#snippet icon()}
-        <PawPrint size={15} strokeWidth={2} aria-hidden="true" />
-      {/snippet}
-    </StatCard>
-    <StatCard label={$t('petsStats.bredPets')} value={formatNumber(data.totals.bredPets)}>
-      {#snippet icon()}
-        <PawPrint size={15} strokeWidth={2} aria-hidden="true" />
-      {/snippet}
-    </StatCard>
   </div>
 
   <div class="panel" style="margin-top: 12px;">
@@ -165,22 +145,6 @@
         <tbody>
           {#each data.byType || [] as row}
             <tr><td>{row.type}</td><td>{formatNumber(row.count)}</td></tr>
-          {:else}
-            <tr><td colspan="2" class="muted">{$t('petsStats.noPets')}</td></tr>
-          {/each}
-        </tbody>
-      </table>
-    </div>
-  </div>
-
-  <div class="panel" style="margin-top: 12px;">
-    <div class="panel-head"><h2>{$t('petsStats.byRarityTitle')}</h2></div>
-    <div class="table-wrap">
-      <table>
-        <thead><tr><th>{$t('petsStats.colRarity')}</th><th>{$t('petsStats.colCount')}</th></tr></thead>
-        <tbody>
-          {#each data.byRarity || [] as row}
-            <tr><td>{row.rarityLevel}</td><td>{formatNumber(row.count)}</td></tr>
           {:else}
             <tr><td colspan="2" class="muted">{$t('petsStats.noPets')}</td></tr>
           {/each}

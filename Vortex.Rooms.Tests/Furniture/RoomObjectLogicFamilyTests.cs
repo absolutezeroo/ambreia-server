@@ -52,11 +52,6 @@ public sealed class RoomObjectLogicFamilyTests
     [Theory]
     [InlineData(typeof(FurnitureDiceLogic), "dice", "furniture_dice")]
     [InlineData(typeof(FurnitureFireworksLogic), "fireworks", "furniture_fireworks")]
-    [InlineData(
-        typeof(FurnitureMonsterplantSeedLogic),
-        "monsterplant_seed",
-        "furniture_monsterplant_seed"
-    )]
     public void LogicsCarryBothTheArcturusAndTheClientName(
         Type logic,
         string arcturusName,
@@ -73,11 +68,10 @@ public sealed class RoomObjectLogicFamilyTests
     }
 
     /// <summary>
-    /// The pet furni the room AI looks for. A pet only finds a bowl or a nest if the definition
-    /// resolved to the matching logic in the first place, and the shipped catalogue spells these
-    /// three the Arcturus way -- <c>nest</c>, not the <c>pet_nest</c> Vortex invented, and
-    /// <c>petdrink</c> alongside <c>pet_drink</c>. Every nest in the hotel used to fall back to
-    /// <c>default_floor</c>, so no pet ever slept on one.
+    /// The pet furni the room AI looks for. A pet only finds a nest if the definition resolved to
+    /// the matching logic in the first place, and the shipped catalogue spells it the Arcturus way
+    /// -- <c>nest</c>, not the <c>pet_nest</c> Vortex invented. Every nest in the hotel used to fall
+    /// back to <c>default_floor</c>, so no pet ever slept on one.
     /// </summary>
     /// <remarks>
     /// The assets are no help here: they call a nest <c>furniture_multistate</c>, which is the same
@@ -86,9 +80,6 @@ public sealed class RoomObjectLogicFamilyTests
     [Theory]
     [InlineData(typeof(FurniturePetNestLogic), "nest")]
     [InlineData(typeof(FurniturePetNestLogic), "pet_nest")]
-    [InlineData(typeof(FurniturePetDrinkLogic), "pet_drink")]
-    [InlineData(typeof(FurniturePetDrinkLogic), "petdrink")]
-    [InlineData(typeof(FurniturePetProductLogic), "pet_food")]
     public void ThePetFurniCarryEverySpellingTheCatalogueUses(Type logic, string logicName)
     {
         string[] keys =

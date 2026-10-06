@@ -1982,17 +1982,11 @@ export interface PetRaceCount {
   count: number;
 }
 
-export interface PetRarityCount {
-  rarityLevel: number;
-  count: number;
-}
-
 export interface PetStats {
   window: ReportWindow;
   totals: PetTotals;
   byType: PetTypeCount[];
   byRace: PetRaceCount[];
-  byRarity: PetRarityCount[];
   growth: PetGrowthPoint[];
   topOwners: PetOwnerCount[];
 }
@@ -2000,10 +1994,6 @@ export interface PetStats {
 export interface PetTotals {
   totalPets: number;
   avgLevel: number;
-  avgEnergy: number;
-  avgNutrition: number;
-  breedablePets: number;
-  bredPets: number;
 }
 
 export interface PetTypeCount {

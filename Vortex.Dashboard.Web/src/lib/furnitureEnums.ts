@@ -40,10 +40,6 @@ export const FURNITURE_CATEGORIES = [
   { value: 16, label: 'Pet saddle' },
   { value: 17, label: 'Guild furni' },
   { value: 18, label: 'Game furni' },
-  { value: 19, label: 'Monsterplant seed' },
-  { value: 20, label: 'Monsterplant revival' },
-  { value: 21, label: 'Monsterplant rebreed' },
-  { value: 22, label: 'Monsterplant fertilize' },
   { value: 23, label: 'Figure purchasable set' },
 ];
 
@@ -71,7 +67,6 @@ export const LOGIC_GROUPS = [
       { value: 'fireworks', label: 'fireworks - Fireworks' },
       { value: 'gate', label: 'gate - Gate (blocks/unblocks a tile)' },
       { value: 'nest', label: 'nest' },
-      { value: 'petdrink', label: 'petdrink' },
       { value: 'roller', label: 'roller - Roller (conveyor belt)' },
       { value: 'room_invisible_click_tile', label: 'room_invisible_click_tile - Invisible click tile' },
       { value: 'vending', label: 'vending' },
@@ -94,7 +89,6 @@ export const LOGIC_GROUPS = [
       { value: 'furniture_guild_gate', label: 'furniture_guild_gate' },
       { value: 'furniture_habbowheel', label: 'furniture_habbowheel' },
       { value: 'furniture_hockey_score', label: 'furniture_hockey_score' },
-      { value: 'furniture_monsterplant_seed', label: 'furniture_monsterplant_seed' },
       { value: 'furniture_muItistate', label: 'furniture_muItistate' },
       { value: 'furniture_multistate', label: 'furniture_multistate' },
       { value: 'furniture_one_way_door', label: 'furniture_one_way_door' },
@@ -109,9 +103,6 @@ export const LOGIC_GROUPS = [
   {
     label: 'Pets',
     options: [
-      { value: 'monsterplant_seed', label: 'monsterplant_seed - Monsterplant seed' },
-      { value: 'pet_drink', label: 'pet_drink - Pet drink bowl' },
-      { value: 'pet_food', label: 'pet_food - Pet food bowl' },
       { value: 'pet_nest', label: 'pet_nest - Pet nest' },
       { value: 'pet_toy', label: 'pet_toy' },
       { value: 'pet_trampoline', label: 'pet_trampoline' },

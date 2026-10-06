@@ -76,11 +76,9 @@ public sealed class AchievementSignalConsumer(IGrainFactory grainFactory, IComme
         // not be expressed here anyway; releasing a pet does not take the badge back in the hotel
         // either.
         [SignalActions.AdoptPet] = new(AchievementNames.PetLover),
-        // Both sides of one scratch, and the amount of one meal: "giving pets %limit% points of
-        // food" is a sum, so a bowl worth twenty counts twenty.
+        // Both sides of one scratch.
         [SignalActions.RespectPet] = new(AchievementNames.PetRespectGiver),
         [SignalActions.PetRespected] = new(AchievementNames.PetRespectReceiver),
-        [SignalActions.FeedPet] = new(AchievementNames.PetFeeding, CountsAmount: true),
         [SignalActions.ReceiveGift] = new(AchievementNames.GiftReceiver),
     }.ToFrozenDictionary();
 

@@ -20,9 +20,9 @@ namespace Vortex.Rooms.Grains;
 /// </para>
 /// <para>
 /// Invariant: an item is in the index if and only if it is in <see cref="RoomLiveState.ItemsById"/>
-/// with its logic attached. The three places an item leaves the live state (pickup/removal in
-/// <c>RoomObjectModule.RemoveObjectAsync</c>, the definition swap in <c>RoomGrain.Furni.Edit.cs</c>,
-/// pet food eaten in <c>RoomPetSystem.Motion</c>) and the one place logic attaches
+/// with its logic attached. The places an item leaves the live state (pickup/removal in
+/// <c>RoomObjectModule.RemoveObjectAsync</c>, the definition swap in <c>RoomGrain.Furni.Edit.cs</c>)
+/// and the one place logic attaches
 /// (<c>RoomObjectModule.AttatchLogicAsync</c>) all notify it — a new mutation path for
 /// <c>ItemsById</c> MUST do the same or the index silently goes stale.
 /// </para>

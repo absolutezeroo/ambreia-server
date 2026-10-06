@@ -156,14 +156,6 @@ public sealed partial class RoomPetSystem
             return null;
         }
 
-        // One packet, two buttons: the client sends the same composer for "respect" on an animal and
-        // "treat" on a monsterplant, so the pet's type is what tells them apart. A plant is watered,
-        // and none of the respect rules below (daily cap, account age) apply to it.
-        if (RoomPetRuntime.IsPlant(pet))
-        {
-            return await TreatPlantAsync(ctx, petId, ct);
-        }
-
         int minimumAgeDays = _roomGrain._roomConfig.Pet.RespectMinimumAccountAgeDays;
 
         if (minimumAgeDays > 0)
@@ -273,55 +265,6 @@ public sealed partial class RoomPetSystem
         return updated;
     }
 
-    public async Task<PetSnapshot?> GiveSupplementToPetAsync(
-        ActionContext ctx,
-        int petId,
-        CancellationToken ct
-    )
-    {
-        await EnsurePetsLoadedAsync(ct);
-
-        if (!_roomGrain._state.PetsById.TryGetValue(petId, out PetSnapshot? pet))
-        {
-            return null;
-        }
-
-        int energyCap = _roomGrain._petLevelProvider.GetEnergyCapForLevel(pet.Type, pet.Level);
-        int newEnergy = Math.Min(
-            pet.Energy + _roomGrain._roomConfig.Pet.SupplementEnergyBoost,
-            energyCap
-        );
-
-        int supplementXp = _roomGrain._roomConfig.Pet.SupplementXpReward;
-        PetSnapshot withEnergy = pet with { Energy = newEnergy };
-        _roomGrain._state.PetsById[petId] = withEnergy;
-
-        PetSnapshot updated = await GrantXpAndLevelUpAsync(withEnergy, supplementXp, ct);
-        _roomGrain._state.PetsById[petId] = updated;
-
-        bool petWokeUp = false;
-
-        if (_motionByPetId.TryGetValue(petId, out PetMotionState? motion))
-        {
-            motion.IsStatsDirty = true;
-            if (motion.IsSleeping && updated.Energy >= Tuning.SleepWakeEnergyThreshold)
-            {
-                motion.IsSleeping = false;
-                motion.SleepPostureSent = false;
-                petWokeUp = true;
-            }
-        }
-
-        await SendPetUpdatedAsync(updated, ct);
-
-        if (petWokeUp)
-        {
-            await BroadcastPetVocalAsync(updated, "GENERIC_HAPPY");
-        }
-
-        return updated;
-    }
-
     /// <summary>
     /// A pet says its piece. There is no pet-speech message on the wire: the client has no parser
     /// for one, and nothing in it resolves the <c>pet.vocals.*</c> keys the text bundle is written
@@ -385,25 +328,6 @@ public sealed partial class RoomPetSystem
             return "SLEEPING";
         }
 
-        bool isHungry = pet.Nutrition < Tuning.HungerThreshold;
-        bool isThirsty = pet.Thirst < Tuning.ThirstThreshold;
-        bool isTired = pet.Energy > 0 && pet.Energy <= Tuning.TiredEnergyThreshold;
-
-        if (isHungry)
-        {
-            return "HUNGRY";
-        }
-
-        if (isThirsty)
-        {
-            return "THIRSTY";
-        }
-
-        if (isTired)
-        {
-            return "TIRED";
-        }
-
         return Random.Shared.Next(0, 3) switch
         {
             0 => "GENERIC_NEUTRAL",
@@ -450,14 +374,8 @@ public sealed partial class RoomPetSystem
             return null;
         }
 
-        if (pet.Energy < cmd.EnergyCost)
-        {
-            await BroadcastPetVocalAsync(pet, "TIRED");
-            return null;
-        }
-
-        // A pet is allowed to say no. Refusing is free -- it costs no energy and pays no
-        // experience, which is what the capture shows: the order that was ignored moved neither.
+        // A pet is allowed to say no. Refusing is free -- it pays no experience, which is what the
+        // capture shows: the order that was ignored moved nothing.
         int obeyChance = RoomPetRuntime.ObeyChancePercent(
             pet.Level,
             cmd.LevelRequired,
@@ -472,8 +390,6 @@ public sealed partial class RoomPetSystem
             return null;
         }
 
-        int newEnergy = pet.Energy - cmd.EnergyCost;
-
         // Obeying pays nothing by default -- the capture caught a pet obeying three orders with
         // its happiness pinned. The knob stays for a hotel that wants it to.
         int newHappiness = Math.Clamp(
@@ -481,35 +397,20 @@ public sealed partial class RoomPetSystem
             0,
             _roomGrain._roomConfig.Pet.HappinessCap
         );
-        PetSnapshot withEnergy = pet with { Energy = newEnergy, Happiness = newHappiness };
-        _roomGrain._state.PetsById[petId] = withEnergy;
+        PetSnapshot withHappiness = pet with { Happiness = newHappiness };
+        _roomGrain._state.PetsById[petId] = withHappiness;
 
-        PetSnapshot updated = await GrantXpAndLevelUpAsync(withEnergy, cmd.XpReward, ct);
+        PetSnapshot updated = await GrantXpAndLevelUpAsync(withHappiness, cmd.XpReward, ct);
         _roomGrain._state.PetsById[petId] = updated;
 
         if (motion is not null)
         {
             motion.IsStatsDirty = true;
 
-            if (newEnergy == 0)
-            {
-                motion.IsSleeping = true;
-                motion.SleepPostureSent = false;
-            }
-        }
-
-        // Two commands are errands, not poses: the pet has to walk somewhere for them to mean
-        // anything. Ordered, so it goes whether or not it is tired or hungry enough to have gone on
-        // its own.
-        if (motion is not null)
-        {
+            // The nest is an errand, not a pose: the pet has to walk there for it to mean anything.
             if (commandId == RoomPetRuntime.NestCommandId)
             {
-                TryDirectPetToNest(updated, motion, _roomGrain.NowMs(), ordered: true);
-            }
-            else if (commandId == RoomPetRuntime.EatCommandId)
-            {
-                TryDirectPetToFood(updated, motion, _roomGrain.NowMs(), ordered: true);
+                TryDirectPetToNest(updated, motion, _roomGrain.NowMs());
             }
         }
 

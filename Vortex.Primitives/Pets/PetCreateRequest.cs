@@ -21,9 +21,6 @@ public sealed record PetCreateRequest
     [Id(4)]
     public required AvatarGenderType Gender { get; init; }
 
-    [Id(5)]
-    public required int Energy { get; init; }
-
-    [Id(6)]
-    public required int Nutrition { get; init; }
+    // 5 and 6 were the starting energy and nutrition. A pet has no needs since M0, so it starts
+    // at the entity's own maximum.
 }

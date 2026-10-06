@@ -91,31 +91,6 @@ public sealed partial class RoomGrain
         }
     }
 
-    public async Task<PetFeedResult> FeedPetAsync(
-        ActionContext ctx,
-        int petId,
-        RoomObjectId foodItemId,
-        CancellationToken ct
-    )
-    {
-        try
-        {
-            return await PetSystem.FeedPetAsync(ctx, petId, foodItemId, ct);
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(
-                ex,
-                "Failed to feed pet {PetId} with food {FoodItemId} in room {RoomId}",
-                petId,
-                foodItemId,
-                _state.RoomId
-            );
-
-            return PetFeedResult.Failed(foodItemId);
-        }
-    }
-
     public Task<PetSnapshot?> GetPlacedPetSnapshotAsync(int petId, CancellationToken ct) =>
         PetSystem.GetPlacedPetSnapshotAsync(petId, ct);
 
@@ -168,50 +143,6 @@ public sealed partial class RoomGrain
         }
     }
 
-    public async Task<PetSnapshot?> GiveSupplementToPetAsync(
-        ActionContext ctx,
-        int petId,
-        CancellationToken ct
-    )
-    {
-        try
-        {
-            return await PetSystem.GiveSupplementToPetAsync(ctx, petId, ct);
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(
-                ex,
-                "Failed to give supplement to pet {PetId} in room {RoomId}",
-                petId,
-                _state.RoomId
-            );
-
-            return null;
-        }
-    }
-
-    public async Task TogglePetBreedingPermissionAsync(
-        ActionContext ctx,
-        int petId,
-        CancellationToken ct
-    )
-    {
-        try
-        {
-            await PetSystem.TogglePetBreedingPermissionAsync(ctx, petId, ct);
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(
-                ex,
-                "Failed to toggle breeding permission for pet {PetId} in room {RoomId}",
-                petId,
-                _state.RoomId
-            );
-        }
-    }
-
     public async Task MountPetAsync(ActionContext ctx, int petId, bool mount, CancellationToken ct)
     {
         try
@@ -224,6 +155,29 @@ public sealed partial class RoomGrain
                 ex,
                 "Failed to {Action} pet {PetId} in room {RoomId}",
                 mount ? "mount" : "dismount",
+                petId,
+                _state.RoomId
+            );
+        }
+    }
+
+    public async Task ApplySaddleToPetAsync(
+        ActionContext ctx,
+        int petId,
+        RoomObjectId saddleItemId,
+        CancellationToken ct
+    )
+    {
+        try
+        {
+            await PetSystem.ApplySaddleToPetAsync(ctx, petId, saddleItemId, ct);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(
+                ex,
+                "Failed to fit saddle {ItemId} on pet {PetId} in room {RoomId}",
+                saddleItemId,
                 petId,
                 _state.RoomId
             );
@@ -268,82 +222,6 @@ public sealed partial class RoomGrain
         }
     }
 
-    public async Task<bool> BreedPetsAsync(
-        ActionContext ctx,
-        int petOneId,
-        int petTwoId,
-        CancellationToken ct
-    )
-    {
-        try
-        {
-            return await PetSystem.BreedPetsAsync(ctx, petOneId, petTwoId, ct);
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(
-                ex,
-                "Failed to breed pets {PetOneId}+{PetTwoId} in room {RoomId}",
-                petOneId,
-                petTwoId,
-                _state.RoomId
-            );
-
-            return false;
-        }
-    }
-
-    public async Task<bool> ConfirmPetBreedingAsync(
-        ActionContext ctx,
-        int nestStuffId,
-        string petName,
-        int petOneId,
-        int petTwoId,
-        CancellationToken ct
-    )
-    {
-        try
-        {
-            return await PetSystem.ConfirmPetBreedingAsync(
-                ctx,
-                nestStuffId,
-                petName,
-                petOneId,
-                petTwoId,
-                ct
-            );
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(
-                ex,
-                "Failed to confirm pet breeding for pets {PetOneId}/{PetTwoId} in room {RoomId}",
-                petOneId,
-                petTwoId,
-                _state.RoomId
-            );
-
-            return false;
-        }
-    }
-
-    public async Task CancelPetBreedingAsync(ActionContext ctx, int petId, CancellationToken ct)
-    {
-        try
-        {
-            await PetSystem.CancelPetBreedingAsync(ctx, petId, ct);
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(
-                ex,
-                "Failed to cancel pet breeding for pet {PetId} in room {RoomId}",
-                petId,
-                _state.RoomId
-            );
-        }
-    }
-
     public async Task<PetSnapshot?> IssueCommandAsync(
         ActionContext ctx,
         int petId,
@@ -366,115 +244,6 @@ public sealed partial class RoomGrain
             );
 
             return null;
-        }
-    }
-
-    public async Task<PetSnapshot?> PlantMonsterplantSeedAsync(
-        ActionContext ctx,
-        RoomObjectId seedItemId,
-        CancellationToken ct
-    )
-    {
-        try
-        {
-            return await PetSystem.PlantMonsterplantSeedAsync(ctx, seedItemId, ct);
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(
-                ex,
-                "Failed to plant monsterplant seed {SeedItemId} in room {RoomId}",
-                seedItemId,
-                _state.RoomId
-            );
-
-            return null;
-        }
-    }
-
-    public async Task<bool> UsePetProductAsync(
-        ActionContext ctx,
-        int petId,
-        RoomObjectId productItemId,
-        CancellationToken ct
-    )
-    {
-        try
-        {
-            return await PetSystem.UsePetProductAsync(ctx, petId, productItemId, ct);
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(
-                ex,
-                "Failed to use product {ItemId} on pet {PetId} in room {RoomId}",
-                productItemId,
-                petId,
-                _state.RoomId
-            );
-
-            return false;
-        }
-    }
-
-    public async Task<PetSnapshot?> TreatPlantAsync(
-        ActionContext ctx,
-        int petId,
-        CancellationToken ct
-    )
-    {
-        try
-        {
-            return await PetSystem.TreatPlantAsync(ctx, petId, ct);
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(
-                ex,
-                "Failed to treat monsterplant {PetId} in room {RoomId}",
-                petId,
-                _state.RoomId
-            );
-
-            return null;
-        }
-    }
-
-    public async Task<bool> HarvestPlantAsync(ActionContext ctx, int petId, CancellationToken ct)
-    {
-        try
-        {
-            return await PetSystem.HarvestPlantAsync(ctx, petId, ct);
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(
-                ex,
-                "Failed to harvest monsterplant {PetId} in room {RoomId}",
-                petId,
-                _state.RoomId
-            );
-
-            return false;
-        }
-    }
-
-    public async Task<bool> CompostPlantAsync(ActionContext ctx, int petId, CancellationToken ct)
-    {
-        try
-        {
-            return await PetSystem.CompostPlantAsync(ctx, petId, ct);
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(
-                ex,
-                "Failed to compost monsterplant {PetId} in room {RoomId}",
-                petId,
-                _state.RoomId
-            );
-
-            return false;
         }
     }
 }

@@ -91,14 +91,6 @@ internal sealed class InventoryMap : IRevisionMap
         );
 
         // Inventory Pets
-        builder.MapParser(
-            MessageEvent.CancelPetBreedingEvent,
-            new CancelPetBreedingMessageParser()
-        );
-        builder.MapParser(
-            MessageEvent.ConfirmPetBreedingEvent,
-            new ConfirmPetBreedingMessageParser()
-        );
         builder.MapParser(MessageEvent.GetPetInventoryEvent, new GetPetInventoryMessageParser());
 
         // Inventory Purse
@@ -266,38 +258,10 @@ internal sealed class InventoryMap : IRevisionMap
 
         // Inventory Pets
         builder.MapSerializer(
-            typeof(ConfirmBreedingRequestEventMessageComposer),
-            new ConfirmBreedingRequestEventMessageComposerSerializer(
-                MessageComposer.ConfirmBreedingRequestComposer
-            )
-        );
-        builder.MapSerializer(
-            typeof(ConfirmBreedingResultEventMessageComposer),
-            new ConfirmBreedingResultEventMessageComposerSerializer(
-                MessageComposer.ConfirmBreedingResultComposer
-            )
-        );
-        builder.MapSerializer(
-            typeof(GoToBreedingNestFailureEventMessageComposer),
-            new GoToBreedingNestFailureEventMessageComposerSerializer(
-                MessageComposer.GoToBreedingNestFailureComposer
-            )
-        );
-        builder.MapSerializer(
-            typeof(NestBreedingSuccessEventMessageComposer),
-            new NestBreedingSuccessEventMessageComposerSerializer(
-                MessageComposer.NestBreedingSuccessComposer
-            )
-        );
-        builder.MapSerializer(
             typeof(PetAddedToInventoryEventMessageComposer),
             new PetAddedToInventoryEventMessageComposerSerializer(
                 MessageComposer.PetAddedToInventoryComposer
             )
-        );
-        builder.MapSerializer(
-            typeof(PetBreedingEventMessageComposer),
-            new PetBreedingEventMessageComposerSerializer(MessageComposer.PetBreedingComposer)
         );
         builder.MapSerializer(
             typeof(PetInventoryEventMessageComposer),

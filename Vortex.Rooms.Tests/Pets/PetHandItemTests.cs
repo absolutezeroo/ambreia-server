@@ -15,8 +15,8 @@ namespace Vortex.Rooms.Tests.Pets;
 
 /// <summary>
 /// Giving a pet what you are holding. The point of the seeded table is that only some hand items
-/// are food: a pet takes the water and leaves the camera, and an item it will not take stays in the
-/// hand rather than vanishing.
+/// are treats: a pet takes the water and leaves the camera, and an item it will not take stays in
+/// the hand rather than vanishing. Pets have no needs since M0, so a treat changes no stat.
 /// </summary>
 public sealed class PetHandItemTests
 {
@@ -27,7 +27,7 @@ public sealed class PetHandItemTests
     private static readonly PlayerId Feeder = new(101);
 
     [Fact]
-    public async Task GivingAPetADrink_SlakesItsThirstAndEmptiesTheHand()
+    public async Task GivingAPetADrink_EmptiesTheHandAndChangesNoStat()
     {
         RoomHarness harness = await RoomHarness.CreateAsync().ConfigureAwait(true);
 
@@ -35,7 +35,7 @@ public sealed class PetHandItemTests
             .ConfigureAwait(true);
 
         RoomPlayerAvatar feeder = harness.PutRealPlayerInRoom(Feeder, 2, 2);
-        await harness.PutPetInRoomAsync(PetId, 2, 3, thirst: 40).ConfigureAwait(true);
+        await harness.PutPetInRoomAsync(PetId, 2, 3).ConfigureAwait(true);
 
         harness.Grain.HandItemModule.Give(Feeder, Water);
 
@@ -48,7 +48,7 @@ public sealed class PetHandItemTests
             .ConfigureAwait(true);
 
         fed.Should().BeTrue();
-        harness.Grain._state.PetsById[PetId].Thirst.Should().Be(55);
+        harness.Grain._state.PetsById[PetId].Thirst.Should().Be(100);
         feeder.CarryItemId.Should().Be(0, "the pet drank it");
     }
 
@@ -59,7 +59,7 @@ public sealed class PetHandItemTests
 
         // No row for a camera, which is the table's way of saying a pet has no use for one.
         RoomPlayerAvatar feeder = harness.PutRealPlayerInRoom(Feeder, 2, 2);
-        await harness.PutPetInRoomAsync(PetId, 2, 3, thirst: 40).ConfigureAwait(true);
+        await harness.PutPetInRoomAsync(PetId, 2, 3).ConfigureAwait(true);
 
         harness.Grain.HandItemModule.Give(Feeder, Camera);
 
@@ -86,7 +86,7 @@ public sealed class PetHandItemTests
             .ConfigureAwait(true);
 
         RoomPlayerAvatar feeder = harness.PutRealPlayerInRoom(Feeder, 2, 2);
-        await harness.PutPetInRoomAsync(PetId, 9, 9, thirst: 40).ConfigureAwait(true);
+        await harness.PutPetInRoomAsync(PetId, 9, 9).ConfigureAwait(true);
 
         harness.Grain.HandItemModule.Give(Feeder, Water);
 
@@ -100,7 +100,6 @@ public sealed class PetHandItemTests
 
         fed.Should().BeFalse();
         feeder.CarryItemId.Should().Be(Water);
-        harness.Grain._state.PetsById[PetId].Thirst.Should().Be(40);
     }
 
     [Fact]
@@ -109,7 +108,7 @@ public sealed class PetHandItemTests
         RoomHarness harness = await RoomHarness.CreateAsync().ConfigureAwait(true);
 
         harness.PutRealPlayerInRoom(Feeder, 2, 2);
-        await harness.PutPetInRoomAsync(PetId, 2, 3, thirst: 40).ConfigureAwait(true);
+        await harness.PutPetInRoomAsync(PetId, 2, 3).ConfigureAwait(true);
 
         bool fed = await harness
             .Grain.PetSystem.ConsumeHandItemAsync(
@@ -120,30 +119,6 @@ public sealed class PetHandItemTests
             .ConfigureAwait(true);
 
         fed.Should().BeFalse();
-    }
-
-    [Fact]
-    public async Task ADrinkCannotTakeAPetPastFull()
-    {
-        RoomHarness harness = await RoomHarness.CreateAsync().ConfigureAwait(true);
-
-        await SeedHandItemAsync(harness, Water, "Water", nutrition: 0, thirst: 15)
-            .ConfigureAwait(true);
-
-        harness.PutRealPlayerInRoom(Feeder, 2, 2);
-        await harness.PutPetInRoomAsync(PetId, 2, 3, thirst: 95).ConfigureAwait(true);
-
-        harness.Grain.HandItemModule.Give(Feeder, Water);
-
-        await harness
-            .Grain.PetSystem.ConsumeHandItemAsync(
-                harness.ContextFor(Feeder),
-                PetId,
-                CancellationToken.None
-            )
-            .ConfigureAwait(true);
-
-        harness.Grain._state.PetsById[PetId].Thirst.Should().Be(100);
     }
 
     private static async Task SeedHandItemAsync(

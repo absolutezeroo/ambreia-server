@@ -46,37 +46,24 @@ public class GetPetInfoMessageHandler(
             .GetPlayerNameAsync(pet.OwnerId, ct)
             .ConfigureAwait(false);
 
-        const int monsterplantPetType = 16;
-        const int monsterplantMaxWellBeingSeconds = 86_400;
-        const int monsterplantMaxLevel = 7;
-
-        bool isPlant = pet.Type == monsterplantPetType;
-
-        int remainingWellBeingSeconds = 0;
-        if (isPlant && pet.LastWateredAt.HasValue)
-        {
-            remainingWellBeingSeconds = Math.Max(
-                0,
-                (int)(
-                    monsterplantMaxWellBeingSeconds
-                    - (DateTime.UtcNow - pet.LastWateredAt.Value).TotalSeconds
-                )
-            );
-        }
-
         // The panel draws two bars out of these. None of them used to be sent: the composer's own
         // defaults (100 XP to the next level, 100 energy) were below what a grown pet already had,
         // and the serializer's Math.Max guard then quietly raised each ceiling to the current
         // value -- so every pet showed a full XP bar and a full energy bar whatever its level.
         int maxLevel = _petLevelProvider.GetMaxLevel(pet.Type);
         int nextLevelExperience = _petLevelProvider.GetExperienceForNextLevel(pet.Type, pet.Level);
+        int maxEnergy = _petLevelProvider.GetEnergyCapForLevel(pet.Type, pet.Level);
 
         IPlayerPresenceGrain presence = _grainFactory.GetPlayerPresenceGrain(ctx.PlayerId);
         await presence
             .SendComposerAsync(
                 new PetInfoMessageComposer
                 {
-                    Pet = pet,
+                    // A pet has no fatigue since M0: the energy bar is always full.
+                    Pet = pet with
+                    {
+                        Energy = maxEnergy,
+                    },
                     OwnerName = ownerName,
                     Age = pet.AgeInDays(DateTime.UtcNow),
                     MaxLevel = maxLevel,
@@ -84,26 +71,19 @@ public class GetPetInfoMessageHandler(
                     // full rather than int.MaxValue wide.
                     ExperienceRequiredToLevel =
                         pet.Level >= maxLevel ? pet.Experience : nextLevelExperience,
-                    MaxEnergy = _petLevelProvider.GetEnergyCapForLevel(pet.Type, pet.Level),
+                    MaxEnergy = maxEnergy,
                     MaxHappiness = _petLevelProvider.GetNutritionCapForLevel(pet.Type, pet.Level),
-                    // Plant-only: the live hotel sends false for an animal even when its owner has
-                    // breeding switched on. See RoomPetRuntime.CanBreed.
-                    CanBreed = isPlant && pet.Level >= monsterplantMaxLevel && pet.CanBreed,
-                    // Spent seed charge => no harvest button, see RoomPetRuntime.CanHarvest.
-                    CanHarvest =
-                        isPlant
-                        && pet.Level >= monsterplantMaxLevel
-                        && pet.Energy > 0
-                        && pet.CanBreed,
-                    CanRevive = isPlant && pet.Energy == 0,
-                    HasBreedingPermission = !isPlant && pet.CanBreed,
-                    // The client only reads a rarity at all for a monsterplant, and only when it is
-                    // not negative; the live hotel sends 0 for an animal.
-                    RarityLevel = isPlant ? pet.RarityLevel : 0,
-                    // -1, not 0, is what the live hotel sends an animal for the three plant timers:
-                    // the client's own "unset" value for them.
-                    MaxWellBeingSeconds = isPlant ? monsterplantMaxWellBeingSeconds : -1,
-                    RemainingWellBeingSeconds = isPlant ? remainingWellBeingSeconds : -1,
+                    // Breeding and monsterplants were removed in M0; the client still reads
+                    // every field, so they go out at the values the live hotel sends an animal:
+                    // no breed, harvest or revive button, rarity 0, and -1 -- the client's own
+                    // "unset" -- for the three plant timers.
+                    CanBreed = false,
+                    CanHarvest = false,
+                    CanRevive = false,
+                    HasBreedingPermission = false,
+                    RarityLevel = 0,
+                    MaxWellBeingSeconds = -1,
+                    RemainingWellBeingSeconds = -1,
                     RemainingGrowingSeconds = -1,
                 }
             )
