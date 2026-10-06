@@ -210,6 +210,28 @@ Retirer un domaine feuille du `.sln` DOIT laisser le reste compiler et tourner. 
 d'architecture DOIT échouer sur une référence interdite (base existante :
 `scripts/hooks/check-architecture-walls.mjs`). Chaque projet a son `<Projet>.Tests`.
 
+### 3.4 bis Couches de la solution (refonte « M0 bis ») — APPROUVÉ
+
+Après le M0, la solution est réorganisée en place, par couches ; une couche ne dépend que des couches
+en dessous d’elle (vérifié par `scripts/hooks/check-architecture-walls.mjs`).
+
+| Couche | Projets | Rôle |
+|---|---|---|
+| Cœur | Networking, Pipeline, Protocol, Messages, Revisions, PacketHandlers, Runtime, Crypto, Database, Events, Logging, Observability, Plugins, Primitives, Main (hôte) | Réseau et paquets, sessions, persistance, events |
+| Plateforme de jeu | Rooms, Players, Inventory, Furniture, Social, Marketplace, Signals, Progression, Fishing, Catalog (moteur d’achat des marchands), Permissions | Le monde et le joueur |
+| RPG | `Vortex.Rpg.*` (§3.4) | Le jeu |
+| Web | WebApi, WebApi.Authentication, WebApi.Shop | Le site et le compte |
+| Exploitation | Dashboard.API, Dashboard.Web | Administration |
+
+- `Vortex.Authentication` est coupé : la partie compte web (mot de passe, double authentification,
+  e-mail, questions de sécurité, lieux de confiance) devient `Vortex.WebApi.Authentication` ; les
+  permissions, rôles, sanctions et le catalogue de signalements deviennent `Vortex.Permissions`
+  (jeu et dashboard) ; la validation du ticket de connexion au jeu est placée par le plan du M0 bis.
+- `Vortex.Shop` devient `Vortex.WebApi.Shop`.
+- Le navigator et l’interface du catalogue ne sont pas réorganisés mais supprimés dans leur jalon
+  (§3.2 ter, §12).
+- Chaque déplacement est une tâche à part (`git mv`, tests verts avant chaque commit).
+
 ### 3.5 Propriété de l'état — APPROUVÉ
 
 Une ressource modifiable a **un seul propriétaire** à un instant donné.
