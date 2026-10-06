@@ -138,8 +138,9 @@ empilement, collisions) et logiques des objets interactifs. Son modèle d’inte
   pour des infos, ni le ramasser, ni le déplacer, quels que soient ses droits ; seul l’éditeur de
   cartes le manipule. Les objets interactifs (porte, téléporteur, nœud de récolte, atelier, coffre)
   répondent au clic par leur action RPG, jamais par l’infobulle Habbo.
-- **Maisons** : instances privées que le joueur décore lui-même. Le sac de meubles, la pose, le
-  déplacement et le ramassage actuels y restent valables.
+- **Maisons et halls de guilde** : instances que le joueur (ou la guilde, selon les rangs) décore
+  lui-même. Le sac de meubles, la pose, le déplacement et le ramassage actuels y restent valables ;
+  ce sont les seuls lieux où un joueur manipule des meubles.
 - **Chantier serveur et client** : une notion de « décor de zone » non modifiable par le joueur et le
   routage du clic vers l’action RPG (spec fille Monde et éditeur de cartes).
 
@@ -541,10 +542,14 @@ qu'afficher.
 - **Meubles** — APPROUVÉ : vendus contre de l’or par des **marchands PNJ** (un ébéniste par ville ou
   région, des meubles rares débloqués par quêtes ou réputation) et fabriqués par la Menuiserie. Ils
   servent à décorer les maisons.
-- **Catalogue Habbo** — APPROUVÉ : son interface et son modèle de pages sont **retirés** (tâche de la
-  spec fille Économie, M3) ; sa mécanique d’achat (journal des transactions, achat atomique et
-  idempotent, attribution) est **réutilisée** comme moteur d’achat des marchands PNJ. Les 2 168 pages
-  du catalogue Habbo ne sont pas reprises.
+- **Catalogue Habbo** — APPROUVÉ, scindé en deux (spec fille Économie, M3) :
+  1. **Répertoire de meubles** : les pages et catégories du catalogue deviennent le rangement de tous
+     les meubles, servi à l’**éditeur de cartes** comme palette. Rien n’y est vendu ; l’interface
+     catalogue des joueurs est retirée.
+  2. **Catalogues de marchands PNJ** : système de vente modulaire, un catalogue par marchand
+     (ingrédients, potions, armes, armures, montures, cosmétiques, vrais meubles pour la maison ou le
+     hall de guilde), payé en or ou en monnaie premium. Il réutilise la mécanique d’achat existante
+     (journal des transactions, achat atomique et idempotent, attribution).
 - **Échange direct** — APPROUVÉ : `RoomTradingSystem` existant, étendu aux objets RPG ; tout
   changement du contenu remet les deux validations à zéro ; l'objet lié n'est pas échangeable.
 - **Hôtel des ventes** — après V1 : `Vortex.Marketplace` étendu aux objets RPG ; onglets Acheter /
