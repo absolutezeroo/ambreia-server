@@ -792,7 +792,7 @@ compagnon de combat ; transition fondue entre zones.
 | F3 | Réseau RPG et interaction | Moteur de zone |
 | F4 | Éditeur de cartes (application de bureau) | Monde et éditeur de cartes |
 | F5 | Visuel des monstres, outils de vérification | Monstres |
-| M1 | Noyau RPG, personnage, combat, monstres dans une zone ; regroupement réseau ; HUD de base ; budgets mesurés | Monde et éditeur de cartes, Personnage, Combat, Monstres |
+| M1 | Gameplay de combat sur les fondations : compétences, combat, monstres dans une zone ; HUD de base | Combat, Monstres |
 | M2 | Objets, sac, équipement, loot | Objets |
 | M3 | Quêtes, PNJ, dialogue, marchand | Quêtes, Économie (marchand) |
 | M4 | Groupe, recherche de groupe, donjon instancié, transition fondue | Groupe, Donjons, Monde |
