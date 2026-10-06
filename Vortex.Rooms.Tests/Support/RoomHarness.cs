@@ -142,7 +142,11 @@ internal sealed class RoomHarness
                 NullLogger<RoomModerationStore>.Instance
             ),
             BuildPetLevelProvider(),
-            FakeProxy.Create<IPetCommandProvider>(_ => null),
+            FakeProxy.Create<IPetCommandProvider>(call =>
+                call.Method.Name == nameof(IPetCommandProvider.GetCommandConfig)
+                    ? PetCommands((int)call.Args![0]!, (int)call.Args![1]!)
+                    : null
+            ),
             FakeProxy.Create<IPetVocalProvider>(_ => null),
             TestRoomGames.Provider(),
             BuildCommerceJournal(),
@@ -294,6 +298,18 @@ internal sealed class RoomHarness
     /// attach rather than reaching the map.
     /// </summary>
     public Func<IRoomObjectLogic>? LogicFactory { get; set; }
+
+    /// <summary>
+    /// The pet commands the room knows, by pet type and command id. None by default, which is a
+    /// room whose pets refuse every order as unknown.
+    /// </summary>
+    public Func<int, int, PetCommandEntry?> PetCommands { get; set; } = (_, _) => null;
+
+    /// <summary>
+    /// Server-config integers that differ from the compiled default. Everything else reads its
+    /// default, which is what a hotel with no admin overrides runs on.
+    /// </summary>
+    public Dictionary<string, int> ConfigOverrides { get; } = [];
 
     /// <param name="capabilities">
     /// The hotel-wide capabilities the permission service answers with, for the grain methods that
@@ -584,7 +600,9 @@ internal sealed class RoomHarness
                     inner.Method.Name switch
                     {
                         nameof(IServerConfigGrain.GetIntAsync) => Task.FromResult(
-                            (int)inner.Args![1]!
+                            ConfigOverrides.TryGetValue((string)inner.Args![0]!, out int value)
+                                ? value
+                                : (int)inner.Args![1]!
                         ),
                         nameof(IServerConfigGrain.GetManyAsync) => Task.FromResult(
                             ImmutableDictionary<string, string>.Empty

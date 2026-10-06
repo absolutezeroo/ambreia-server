@@ -73,6 +73,14 @@ public class GetPetInfoMessageHandler(
                         pet.Level >= maxLevel ? pet.Experience : nextLevelExperience,
                     MaxEnergy = maxEnergy,
                     MaxHappiness = _petLevelProvider.GetNutritionCapForLevel(pet.Type, pet.Level),
+                    // The client builds the pet menu from these three alone (OwnPetMenuView,
+                    // PetMenuView): "saddled up" -- mount, saddle off, riding permission -- when
+                    // the saddle is free and the viewer is not riding; "riding" -- dismount -- when
+                    // the viewer is. So the saddle is free only while nobody is on it, riding is
+                    // the viewer's own, and the riding-permission checkbox reads accessRights == 1.
+                    HasFreeSaddle = pet.HasSaddle && pet.RiderId is null,
+                    IsRiding = pet.RiderId == ctx.PlayerId,
+                    AccessRights = pet.RidingPermission ? 1 : 0,
                     // Breeding and monsterplants were removed in M0; the client still reads
                     // every field, so they go out at the values the live hotel sends an animal:
                     // no breed, harvest or revive button, rarity 0, and -1 -- the client's own

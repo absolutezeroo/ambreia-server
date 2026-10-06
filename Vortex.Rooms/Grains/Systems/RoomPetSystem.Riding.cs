@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
@@ -19,6 +20,13 @@ namespace Vortex.Rooms.Grains.Systems;
 /// </summary>
 public sealed partial class RoomPetSystem
 {
+    /// <summary>
+    /// Pets with a saddle on its way: set before the furniture is spent and cleared once the pet
+    /// wears it, so a second saddle arriving while the first one's row is being written is refused
+    /// before its own furniture is touched.
+    /// </summary>
+    private readonly HashSet<int> _petsBeingSaddled = [];
+
     /// <summary>Gets on or off a pet. The client sends one message for both.</summary>
     public async Task MountPetAsync(ActionContext ctx, int petId, bool mount, CancellationToken ct)
     {
@@ -77,6 +85,7 @@ public sealed partial class RoomPetSystem
             !_roomGrain._state.PetsById.TryGetValue(petId, out PetSnapshot? pet)
             || pet.OwnerId != ctx.PlayerId
             || pet.HasSaddle
+            || _petsBeingSaddled.Contains(petId)
             || !_roomGrain._state.ItemsById.TryGetValue(saddleItemId, out IRoomItem? saddle)
             || saddle.Definition.FurniCategory != FurnitureCategory.PetSaddle
             || saddle.OwnerId != ctx.PlayerId
@@ -85,16 +94,32 @@ public sealed partial class RoomPetSystem
             return;
         }
 
-        // Spent first: the other order lets a repeated click saddle for free.
-        if (!await _roomGrain.ConsumeItemAsync(ctx, saddle, ItemDeletionReason.PetSaddleFitted, ct))
-        {
-            return;
-        }
+        _petsBeingSaddled.Add(petId);
 
-        // Re-read: the pet kept ticking while the furniture row was written.
-        if (_roomGrain._state.PetsById.TryGetValue(petId, out PetSnapshot? current))
+        try
         {
-            await ApplyRidingStateAsync(current, hasSaddle: true, current.RiderId, ct);
+            // Spent first: the other order lets a repeated click saddle for free.
+            if (
+                !await _roomGrain.ConsumeItemAsync(
+                    ctx,
+                    saddle,
+                    ItemDeletionReason.PetSaddleFitted,
+                    ct
+                )
+            )
+            {
+                return;
+            }
+
+            // Re-read: the pet kept ticking while the furniture row was written.
+            if (_roomGrain._state.PetsById.TryGetValue(petId, out PetSnapshot? current))
+            {
+                await ApplyRidingStateAsync(current, hasSaddle: true, current.RiderId, ct);
+            }
+        }
+        finally
+        {
+            _petsBeingSaddled.Remove(petId);
         }
     }
 

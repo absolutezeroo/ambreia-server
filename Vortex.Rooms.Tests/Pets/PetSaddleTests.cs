@@ -31,6 +31,7 @@ public sealed class PetSaddleTests
 {
     private const int PetId = 900;
     private const int SaddleItemId = 4321;
+    private const int SecondSaddleItemId = 4322;
     private const int HorseType = 15;
 
     [Fact]
@@ -87,6 +88,57 @@ public sealed class PetSaddleTests
         harness.PublishedEvents.OfType<ItemDeletedEvent>().Should().BeEmpty();
     }
 
+    /// <summary>
+    /// Two saddles for one pet, the second arriving while the first is still being spent -- held
+    /// open here on the deletion event, the last await before the pet wears it. The second is
+    /// refused before its own furniture is touched; otherwise it is spent for a saddle the pet
+    /// already has.
+    /// </summary>
+    [Fact]
+    public async Task ASecondSaddleArrivingMidway_IsRefusedAndNotSpent()
+    {
+        RoomHarness harness = await ArrangeAsync().ConfigureAwait(true);
+        TaskCompletionSource firstPublished = new(
+            TaskCreationOptions.RunContinuationsAsynchronously
+        );
+        harness.PublishResult = firstPublished.Task;
+
+        Task first = harness.Grain.ApplySaddleToPetAsync(
+            harness.ContextFor(RoomHarness.Owner),
+            PetId,
+            new RoomObjectId(SaddleItemId),
+            CancellationToken.None
+        );
+
+        first.IsCompleted.Should().BeFalse("the first saddle is held on its deletion event");
+
+        harness.PublishResult = null;
+
+        await harness
+            .Grain.ApplySaddleToPetAsync(
+                harness.ContextFor(RoomHarness.Owner),
+                PetId,
+                new RoomObjectId(SecondSaddleItemId),
+                CancellationToken.None
+            )
+            .ConfigureAwait(true);
+
+        firstPublished.SetResult();
+        await first.ConfigureAwait(true);
+
+        harness.Grain._state.PetsById[PetId].HasSaddle.Should().BeTrue();
+
+        await using VortexDbContext db = harness.NewDbContext();
+        db.Furnitures.IgnoreQueryFilters()
+            .Single(f => f.Id == SecondSaddleItemId)
+            .DeletedAt.Should()
+            .BeNull("the pet already had a saddle on its way");
+        harness
+            .PublishedEvents.OfType<ItemDeletedEvent>()
+            .Should()
+            .ContainSingle(e => e.ItemId == SaddleItemId);
+    }
+
     private static async Task<RoomHarness> ArrangeAsync()
     {
         RoomHarness harness = await RoomHarness.CreateAsync().ConfigureAwait(true);
@@ -116,14 +168,17 @@ public sealed class PetSaddleTests
                     Direction = 2,
                 }
             );
-            db.Furnitures.Add(
-                new FurnitureEntity
-                {
-                    Id = SaddleItemId,
-                    PlayerEntityId = RoomHarness.Owner.Value,
-                    RoomEntityId = RoomHarness.RoomIdValue,
-                }
-            );
+            foreach (int itemId in new[] { SaddleItemId, SecondSaddleItemId })
+            {
+                db.Furnitures.Add(
+                    new FurnitureEntity
+                    {
+                        Id = itemId,
+                        PlayerEntityId = RoomHarness.Owner.Value,
+                        RoomEntityId = RoomHarness.RoomIdValue,
+                    }
+                );
+            }
 
             await db.SaveChangesAsync().ConfigureAwait(true);
         }
@@ -132,7 +187,10 @@ public sealed class PetSaddleTests
             .Grain.PetSystem.EnsurePetsLoadedAsync(CancellationToken.None)
             .ConfigureAwait(true);
 
-        harness.Grain._state.ItemsById[new RoomObjectId(SaddleItemId)] = Saddle();
+        harness.Grain._state.ItemsById[new RoomObjectId(SaddleItemId)] = Saddle(SaddleItemId);
+        harness.Grain._state.ItemsById[new RoomObjectId(SecondSaddleItemId)] = Saddle(
+            SecondSaddleItemId
+        );
 
         return harness;
     }
@@ -141,7 +199,7 @@ public sealed class PetSaddleTests
     /// A saddle the room holds but has not put on its map: consuming it then stops short of the
     /// logic hooks, which keeps this test to the saddle itself.
     /// </summary>
-    private static IRoomItem Saddle()
+    private static IRoomItem Saddle(int itemId)
     {
         FurnitureDefinitionSnapshot definition = new()
         {
@@ -171,7 +229,7 @@ public sealed class PetSaddleTests
         return FakeProxy.Create<IRoomItem>(call =>
             call.Method.Name switch
             {
-                $"get_{nameof(IRoomItem.ObjectId)}" => new RoomObjectId(SaddleItemId),
+                $"get_{nameof(IRoomItem.ObjectId)}" => new RoomObjectId(itemId),
                 $"get_{nameof(IRoomItem.OwnerId)}" => RoomHarness.Owner,
                 $"get_{nameof(IRoomItem.Definition)}" => definition,
                 _ => null,
