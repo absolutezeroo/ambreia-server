@@ -2,6 +2,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Vortex.Players.Configuration;
 using Vortex.Players.Providers;
+using Vortex.Players.Vault;
 using Vortex.Primitives.Chain;
 using Vortex.Primitives.Content;
 using Vortex.Primitives.Hosting;
@@ -46,6 +47,8 @@ public sealed class PlayerModule : IHostPluginModule
         services.AddSingleton<IReferenceDataProvider>(sp =>
             (IReferenceDataProvider)sp.GetRequiredService<IPetVocalProvider>()
         );
+        services.AddSingleton<IVaultRewardSettler, CurrencyVaultRewardSettler>();
+        services.AddSingleton<VaultRewardSettlerMap>();
         services.AddSingleton<IBuildersClubService, BuildersClubService>();
         services.AddHostedService<BuildersClubTierSeederService>();
 

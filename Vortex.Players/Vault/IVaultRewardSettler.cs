@@ -3,12 +3,12 @@ using System.Threading;
 using System.Threading.Tasks;
 using Vortex.Primitives.Vault.Enums;
 
-namespace Vortex.Collectibles.Vault;
+namespace Vortex.Players.Vault;
 
 /// <summary>
 /// Turns a claimed Earnings row into what it is worth. One implementation per reward type, resolved
 /// from DI: the slice that first deposits products adds a product settler and one line in
-/// <c>CollectiblesModule</c>, and the vault grain does not change.
+/// <c>PlayerModule</c>, and the vault grain does not change.
 /// </summary>
 /// <remarks>
 /// Returning means the row is paid — now, or by an earlier claim that crashed before the row was

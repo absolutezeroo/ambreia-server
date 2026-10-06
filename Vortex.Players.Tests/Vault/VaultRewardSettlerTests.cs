@@ -3,7 +3,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using FluentAssertions;
 using Orleans;
-using Vortex.Collectibles.Vault;
+using Vortex.Players.Vault;
 using Vortex.Primitives.Commerce;
 using Vortex.Primitives.Players.Grains;
 using Vortex.Primitives.Players.Wallet;

@@ -1,7 +1,6 @@
 using System;
 using FluentAssertions;
-using Vortex.Collectibles.Configuration;
-using Vortex.Collectibles.Vault;
+using Vortex.Players.Vault;
 using Vortex.Primitives.Server;
 using Vortex.Primitives.Vault.Enums;
 using Xunit;

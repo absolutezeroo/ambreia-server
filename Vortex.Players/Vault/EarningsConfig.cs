@@ -1,4 +1,4 @@
-namespace Vortex.Collectibles.Configuration;
+namespace Vortex.Players.Vault;
 
 /// <summary>
 /// Operator switches for the Earnings window, served live from <c>IServerConfigGrain</c> and listed

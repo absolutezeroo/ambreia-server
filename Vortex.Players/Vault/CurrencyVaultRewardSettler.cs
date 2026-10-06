@@ -9,7 +9,7 @@ using Vortex.Primitives.Players.Wallet;
 using Vortex.Primitives.Vault;
 using Vortex.Primitives.Vault.Enums;
 
-namespace Vortex.Collectibles.Vault;
+namespace Vortex.Players.Vault;
 
 /// <summary>Credits and duckets: one wallet credit per row, under a receipt derived from the row.</summary>
 internal sealed class CurrencyVaultRewardSettler(IGrainFactory grainFactory) : IVaultRewardSettler

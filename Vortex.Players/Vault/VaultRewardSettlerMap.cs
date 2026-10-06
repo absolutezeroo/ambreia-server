@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using Vortex.Primitives.Vault.Enums;
 
-namespace Vortex.Collectibles.Vault;
+namespace Vortex.Players.Vault;
 
 /// <summary>
 /// The registered settlers, by the reward type each handles. Two settlers for one type is a wiring

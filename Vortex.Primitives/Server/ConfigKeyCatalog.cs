@@ -269,7 +269,7 @@ public static class ConfigKeyCatalog
             "Habbo Club"
         ),
         // Earnings window routing. One switch per category with a live source — mirrors
-        // Vortex.Collectibles EarningsConfig / EarningsRoutingPolicy (duplicated here because
+        // Vortex.Players EarningsConfig / EarningsRoutingPolicy (duplicated here because
         // Primitives can't reference that feature project).
         new(
             "earnings.achievements.to_vault",

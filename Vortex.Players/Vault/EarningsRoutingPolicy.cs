@@ -1,10 +1,9 @@
 using System;
 using System.Collections.Frozen;
 using System.Collections.Generic;
-using Vortex.Collectibles.Configuration;
 using Vortex.Primitives.Vault.Enums;
 
-namespace Vortex.Collectibles.Vault;
+namespace Vortex.Players.Vault;
 
 /// <summary>
 /// The operator switch behind each Earnings category. Wiring a new source is one entry here, one

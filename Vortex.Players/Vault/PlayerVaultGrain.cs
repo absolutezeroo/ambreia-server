@@ -6,8 +6,6 @@ using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Orleans;
-using Vortex.Collectibles.Configuration;
-using Vortex.Collectibles.Vault;
 using Vortex.Database.Commerce;
 using Vortex.Database.Context;
 using Vortex.Database.Entities.Players;
@@ -20,7 +18,7 @@ using Vortex.Primitives.Players.Wallet;
 using Vortex.Primitives.Vault;
 using Vortex.Primitives.Vault.Enums;
 
-namespace Vortex.Collectibles.Grains;
+namespace Vortex.Players.Vault;
 
 /// <summary>
 /// A player's Earnings window. Sources describe what was earned (<see cref="IncomeEarning"/>); this
