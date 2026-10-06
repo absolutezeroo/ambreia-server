@@ -198,6 +198,18 @@ Vortex__Database__ServerVersion="8.0-mysql" \
 dotnet ef database update
 ```
 
+### Importing reference data
+A freshly migrated database has no room model, furniture definition or catalogue. Copy them from an
+older Vortex/Turbo database (read only) with:
+
+```powershell
+scripts/import-reference-data.ps1 -Source turbo -Target vortex_m0_check
+```
+
+It copies the shared columns of the reference tables, then replays the seeds that only match once
+furniture definitions exist. Re-runnable; the header of `scripts/sql/import_reference_data.sql` says
+what a re-run replaces.
+
 ### Real secrets outside development
 Every credential in `docker-compose.yml` is a development value committed to the repository, so it
 is public: the MySQL passwords, the RSA handshake keypair and the IP-hash secret. The compose file

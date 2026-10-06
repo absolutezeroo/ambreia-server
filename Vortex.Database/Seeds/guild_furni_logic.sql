@@ -18,8 +18,8 @@
 --
 -- Flipping `stuff_data_type` rewrites how existing rows are parsed: a stored legacy `{"data":"5"}`
 -- cannot deserialize into a string array. That is safe here only because no furniture row of these
--- definitions carries stuff data yet -- verify with the guard query in the migration before
--- replaying this against a hotel that has been live longer.
+-- definitions carries stuff data yet -- check that before replaying this against a hotel that has
+-- been live longer (scripts/import-reference-data.ps1 replays it).
 --
 -- Statements are name-scoped and idempotent; a hotel shipping a trimmed furnidata just matches fewer
 -- rows.
