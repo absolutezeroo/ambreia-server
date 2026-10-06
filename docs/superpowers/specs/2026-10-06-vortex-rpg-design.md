@@ -285,7 +285,7 @@ Une ressource modifiable a **un seul propriétaire** à un instant donné.
 | État | Propriétaire |
 |---|---|
 | Classe, spécialisation, niveau, XP, stats de base, équipement, points de compétence, barre d'action | `PlayerCharacterGrain` (un par personnage) |
-| Sac (objets RPG) | `PlayerCharacterGrain` (spec fille Objets) |
+| Sac (objets de tous types, meubles compris) | Le personnage (spec fille Objets) |
 | Or | `PlayerWalletGrain` existant, nouvelle monnaie |
 | PV, mana, cooldowns, incantations, effets de statut, menace de tous les combattants d'une zone | Runtime de zone (V1 : `RoomGrain`), en mémoire |
 | Monstres, PNJ, nœuds de récolte, loot au sol | Runtime de zone |
@@ -350,6 +350,25 @@ coup porté.
 
 ---
 
+## 3 bis. Fondations du moteur — APPROUVÉ
+
+Le moteur passe avant le gameplay : le combat (M1) ne commence qu’une fois ces fondations posées, et
+n’écrit alors que du gameplay.
+
+| Fondation | Contenu |
+|---|---|
+| **Modèle de zone** | Zone = document de données versionné (plan, relief, meubles, calques RPG) ; runtime de zone (§3.3) ; graphe de zones et passages ; publication et rechargement à chaud (§3.2 sexies) ; instances (donjons, maisons, halls) créées depuis un modèle, sans ligne en base par copie. |
+| **Espace et navigation** | Carte de navigation (relief + géométrie des objets, §3.2 quinquies) ; **index spatial par zone** (qui est sur quelle case, qui est à portée) ; pathfinding avec budget et cache ; ligne de vue. |
+| **Entité de zone unique** | Joueurs, PNJ, monstres, compagnons, nœuds de récolte, loot au sol : une seule notion d’entité (position, état, capacités), au lieu des systèmes séparés actuels (avatars, bots aux ids décalés de 2 000 000, pets). |
+| **Horloge** | Fréquence par système (déplacement, combat, IA, apparitions), budget de temps par tick, mesures ; minuteur précis (le tick de 50 ms tourne vers 16 Hz sous Windows aujourd’hui). |
+| **Objet unique** | Un seul système d’objets avec des types : équipement, consommable, matériau, meuble, monture, cosmétique. Un meuble est un objet qui se pose en maison ou hall. Un seul sac, un seul échange, un seul hôtel des ventes, un seul moteur d’achat des marchands. |
+| **Compte et personnages** | Un compte (connexion, amis, premium) possède **plusieurs personnages** ; chaque personnage a sa classe, son sac, son or, ses quêtes, ses métiers. |
+| **Pipeline de contenu** | Ids stables, registre des définitions (`RpgContentGrain`), validation qui échoue tôt, clés de traduction, migrations de contenu, répertoire de meubles, format de zone (§17). |
+| **Réseau RPG** | Messages groupés par tick, snapshot puis deltas, ids ≥ 9000, limite de débit par intention, structure du protocole RPG côté client (§3.7). |
+| **Interaction** | Le clic est routé vers une action RPG, portée vérifiée par le serveur ; le décor figé ne répond pas (§3.2 bis). |
+| **Visuel des monstres** | OUVERT : sprites animés propres (nouveau type d’entité visuelle et pipeline d’assets) ou rendu d’avatars et de pets détourné. Tranché dans la spec fille Monstres. |
+| **Outils de vérification** | Harnais de simulation de zone sans client, générateur de charge récupéré (`Vortex.LoadGen` à `af91e325`), inspecteur de zone en direct au dashboard. |
+
 ## 4. Modularité — APPROUVÉ
 
 Le RPG réutilise les mécanismes existants : enregistrement par attribut (`[RoomGame]`,
@@ -392,7 +411,7 @@ réseau ; leurs handlers sont synchrones et rapides ; les I/O (base, webhook) se
 
 ## 5. Personnage, classes, stats
 
-### 5.1 Personnage — APPROUVÉ (V1), OUVERT (nombre par compte, spec fille Personnage)
+### 5.1 Personnage — APPROUVÉ (V1 ; plusieurs personnages par compte, nombre max OUVERT)
 
 `PlayerCharacterGrain` porte classe, spécialisation, niveau, XP, stats de base, équipement, points de
 compétence et barre d'action. Un personnage DOIT avoir un id stable distinct de son nom et un état
@@ -767,7 +786,13 @@ compagnon de combat ; transition fondue entre zones.
 | Jalon | Contenu | Spec fille |
 |---|---|---|
 | M0 | Ménage serveur et client, puis passe protocole | plans existants |
-| M1 | Éditeur de cartes (version minimale) ; noyau, runtime de zone, personnage, combat, monstres dans une zone ; regroupement réseau ; HUD de base ; budgets mesurés | Monde et éditeur de cartes, Personnage, Combat, Monstres |
+| F0 (M0 bis) | Couches de la solution, retraits issus des audits | plan M0 bis |
+| F1 | Modèle de zone, entité de zone unique, espace et navigation, horloge | Monde et éditeur de cartes, Moteur de zone |
+| F2 | Objet unique, compte et personnages, pipeline de contenu | Objets, Personnage, Contenu |
+| F3 | Réseau RPG et interaction | Moteur de zone |
+| F4 | Éditeur de cartes (application de bureau) | Monde et éditeur de cartes |
+| F5 | Visuel des monstres, outils de vérification | Monstres |
+| M1 | Noyau RPG, personnage, combat, monstres dans une zone ; regroupement réseau ; HUD de base ; budgets mesurés | Monde et éditeur de cartes, Personnage, Combat, Monstres |
 | M2 | Objets, sac, équipement, loot | Objets |
 | M3 | Quêtes, PNJ, dialogue, marchand | Quêtes, Économie (marchand) |
 | M4 | Groupe, recherche de groupe, donjon instancié, transition fondue | Groupe, Donjons, Monde |
@@ -826,7 +851,7 @@ V1 de §21.1.
 | 13 | Succès et collections : par personnage ou par compte | Progression |
 | 14 | Règles de voyage rapide | Monde |
 | 15 | Niveau max et progression après le niveau max | Personnage |
-| 16 | Nombre de personnages par compte | Personnage |
+| 16 | Nombre maximal de personnages par compte (plusieurs : APPROUVÉ) | Personnage |
 | 17 | Durée de grâce à la reconnexion | Personnage |
 | 18 | Coût et lieu du changement de spécialisation | Combat |
 | 19 | Provocation (taunt) | Combat |
