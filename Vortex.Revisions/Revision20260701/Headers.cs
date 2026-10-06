@@ -3,10 +3,6 @@ namespace Vortex.Revisions.Revision20260701;
 internal static class MessageEvent
 {
     // NEW since last revision
-    public const int ClaimNftClaimsMessageEvent = 2898; // AS3-verified (direct read): RewardClaimsTab::onClaimClicked() -> send(new _SafeCls_2878()) (no args) @2898; was 29, which has no entry in the WIN63 registry at all
-    public const int GetNftClaimsMessageEvent = 3153; // AS3-verified (direct read): RewardClaimsTab::processNextRequest() -> send(new _SafeCls_3644(walletAddress)) @3153, answered by onNftClaimsMessage; corrects a collision (was 3744 = GuildBaseSearch)
-    public const int GetNftStoreOffersMessageEvent = 1809; // AS3-verified (direct read): ShopTab::requestNftStoreOffers() -> send(new _SafeCls_3050()) (no args) @1809; was 3998, which has no entry in the WIN63 registry at all
-    public const int NftStorePurchaseMessageEvent = 3196; // AS3-verified (direct read): HabboCatalog sends _SafeCls_1740(offerId:String, wallet:String) @3196, the composer behind ShopTab::onClickBuy() -> showPurchaseConfirmation(NftStorePurchaseOffer); corrects a collision (was 306 = DeselectFavouriteHabboGroup)
     public const int GetRecyclerPrizesMessageEvent = 3669; // AS3-verified 2026-08-22 (WIN63 registry + sender): _composers[3669] = _SafeCls_1777, HabboCatalog::getRecyclerPrizes(). 2516 was in no registry table.
     public const int GetRecyclerStatusMessageEvent = 1730; // AS3-verified 2026-08-22 (WIN63 registry + sender): _composers[1730] = _SafeCls_2061, HabboCatalog::getRecyclerStatus(). 1246 was in no registry table.
     public const int RecycleItemsMessageEvent = 1796; // AS3-verified 2026-08-22 (WIN63 registry + sender): _composers[1796] = _SafeCls_2312, HabboCatalog::sendRecycleItems(Array). 2956 was in no registry table.
@@ -20,20 +16,7 @@ internal static class MessageEvent
     public const int ReplenishRespectMessageEvent = 426; // AS3-verified (direct read): SessionDataManager.as:889 -> send(new _SafeCls_1865()) (no args) @426; was 3323, which has no entry in the WIN63 registry at all
     public const int RespectUserMessageEvent = 3770; // AS3-verified (direct read): SessionDataManager.as:882 -> send(new _SafeCls_1969(userId)) @3770. Its old value 3377 is Game2GetAccountGameStatus, whose name survives unobfuscated in the WIN63 registry - see that constant below, restored to 3377
     public const int UnblockUserMessageEvent = 2512; // AS3-verified (direct read): BlockedUsersManager.as:99 -> send(new _SafeCls_2552(userId)) @2512; was 1231, which the WIN63 registry uses on the *incoming* side only (no composer at 1231)
-    public const int AddNftToTradeEvent = 2481; // AS3-verified (direct read): TradingModel::requestAddNftsToTrading() -> send(new _SafeCls_2741(Vector.<int>)) @2481; was 1543, which has no entry in the WIN63 registry at all
 
-    public const int RemoveNftFromTradeEvent = 521; // AS3-verified (registry + sender): _composers[521] = _SafeCls_3173(int) <- TradingModel::requestRemoveItemFromTrading(), the branch past ownUserItems.length. The int is an asset id, not a row: _SafeCls_1951::parseNftTradeMap groups Relics by productCode over a Vector.<Number> of assetId, and pop(1) returns one of those.
-
-    // GetNftTradeInventoryEvent used to sit here on an invented id (9015) above the client's highest
-    // real header, so nothing could ever reach it. It is gone rather than renumbered: it is this same
-    // request under another name -- the client's only NFT-inventory call is
-    // CollectiblesModel::requestNftAssets(), which is GetNftAssetInventoryMessageEvent@1646.
-    //
-    // RemoveNftFromTradeEvent was deleted in the same pass on the same evidence, and that second half
-    // was wrong. Its id (9014) was indeed fabricated, but the note went on to claim the client "has no
-    // composer anywhere in the 701 client" for it -- turning "I could not find it" into "it does not
-    // exist". It is at 521, restored above, and until 2026-08-27 an offered Relic could not be taken
-    // back off the trade table.
     public const int ClaimDailyTaskEvent = 4101;
     public const int GetDailyTasksEvent = 4100;
 
@@ -84,11 +67,7 @@ internal static class MessageEvent
     public const int CommunityGoalVoteMessageEvent = 2055;
     public const int GetNftCreditsMessageEvent = 2069;
 
-    public const int GetSelectedNftWardrobeOutfitMessageEvent = 3521; // AS3-verified: HabboAvatarEditor::sendGetSelectedNftWardrobeOutfitMessage()
-
     public const int GetSilverMessageEvent = 394;
-    public const int GetUserNftWardrobeMessageEvent = 2203;
-    public const int SaveUserNftWardrobeMessageEvent = 3428;
     public const int RoomNetworkOpenConnectionMessageEvent = 2045;
     public const int GetBotInventoryEvent = 3148;
     public const int GetCreditsInfoEvent = 540;
@@ -454,20 +433,6 @@ internal static class MessageEvent
     public const int RemoveOwnRoomRightsRoomMessageEvent = 260;
     public const int SetRoomSessionTagsMessageEvent = 3101;
     public const int UpdateHomeRoomMessageEvent = 1817;
-    public const int GetCollectibleMintableItemTypesMessageEvent = 3856; // AS3-verified (direct read, both revisions): MintInventoryListTab::initializeData() 1st send -> _SafeCls_3456
-    public const int GetCollectibleMintingEnabledMessageEvent = 813; // AS3-verified (direct read, both revisions): MintInventoryListTab::initializeData() -> connection.send(new _SafeCls_3590()) @813 (old _SafeCls_3351@2930; prior ghost-fix wrongly attributed the enclosing handler's name to the wallet-token-count composer instead)
-    public const int GetCollectibleMintTokensMessageEvent = 1554; // AS3-verified (direct read, both revisions): MintInventoryListTab::set activeWallet() -> _SafeCls_3908 @1554 (old _SafeCls_3116@2270; slot freed by correcting GetCollectibleMintingEnabledMessageEvent above)
-    public const int GetCollectibleWalletAddressesMessageEvent = 261; // AS3-verified (ghost fix): CollectiblesView::requestWalletAddresses()
-    public const int GetCollectorScoreMessageEvent = 1614; // AS3-verified (old-revision trace): _SafeCls_3231 -> setActiveWalletIndex() still exists in current revision at 1614
-    public const int GetMintTokenOffersMessageEvent = 3638; // AS3-verified (direct read, both revisions): MintInventoryListTab::initializeData() 3rd send -> _SafeCls_2815
-    public const int GetNftCollectionsMessageEvent = 708; // AS3-verified (old-revision trace): _SafeCls_3682 -> requestCollections() still exists in current revision at 708
-    public const int GetNftTransferFeeMessageEvent = 3484; // AS3-verified (direct read, both revisions): TransferNftsTab::initializeData() -> _SafeCls_3763
-    public const int MintItemMessageEvent = 2815; // AS3-verified (old-revision trace): _SafeCls_3208 -> onCollectConfirmDialogConfirm() still exists in current revision at 2815
-    public const int NftCollectiblesClaimBonusItemMessageEvent = 1977; // AS3-verified (direct read, both revisions): CollectionView::onClickClaim() PREVIEW_STATUS_BONUS -> _SafeCls_3818
-    public const int NftCollectiblesClaimRewardItemMessageEvent = 1166; // AS3-verified (direct read, both revisions): CollectionView::onClickClaim() PREVIEW_STATUS_REWARD -> _SafeCls_3758
-    public const int GetNftAssetInventoryMessageEvent = 1646; // AS3-verified: CollectiblesModel::requestNftAssets(), answered by TradeNftAssetInventoryMessageComposer. Was called NftTransferAssetsMessageEvent, a permutation of the header below that transfers nothing -- the two names were swapped often enough that the handler carried the wrong documentation
-    public const int TransferNftAssetsMessageEvent = 1749; // AS3-verified 2026-08-13: _composers[1749] = _SafeCls_2756, sent by TransferNftsTab with the selected wallet. Corroborated twice -- the modern client maps 1749 to NftTransferAssetsComposer, and the named win63_version tree's ctor takes one String. Had no header at all, so the confirm button did nothing
-    public const int PurchaseMintTokenMessageEvent = 67; // AS3-verified (old-revision trace): _SafeCls_2316 -> purchaseMintTokens() still exists in current revision at 67
     public const int AmbassadorAlertMessageEvent = 3361;
     public const int AssignRightsMessageEvent = 373;
     public const int BanUserWithDurationMessageEvent = 120;
@@ -532,28 +497,6 @@ internal static class MessageEvent
     public const int GetPromoArticlesMessageEvent = 3152;
     #endregion
 
-    #region Habbicons
-    // Every id read from the WIN63 registry (_SafeCls_2046.as, _composers[<id>]) and confirmed at
-    // its call site in com/sulake/habbo/catalog/habbicons/HabbiconController.as, the chat-input
-    // selector and the messenger. Nothing here is inferred from another emulator.
-    public const int GetHabbiconShopDataMessageEvent = 272; // _composers[272] = _SafeCls_2718(), HabbiconController::getShopData()
-    public const int GetHabbiconInfoMessageEvent = 1494; // _composers[1494] = _SafeCls_3805(int), HabbiconController::getHabbiconInfo(id)
-    public const int BuyHabbiconMessageEvent = 3980; // _composers[3980] = _SafeCls_3471(int), HabbiconController::buyHabbicon(id)
-    public const int BuyHabbiconCollectionMessageEvent = 3036; // _composers[3036] = _SafeCls_2394(int), HabbiconController::buyHabbiconCollection(id)
-    public const int ClaimHabbiconMessageEvent = 662; // _composers[662] = _SafeCls_2848(int), HabbiconController::claimHabbicon(id)
-    public const int FavouriteHabbiconMessageEvent = 1808; // _composers[1808] = _SafeCls_3482(int), HabbiconController::favoriteHabbicon(id)
-    public const int UnfavouriteHabbiconMessageEvent = 75; // _composers[75] = _SafeCls_3712(int), HabbiconController::unfavoriteHabbicon(id)
-    public const int TriggerHabbiconMessageEvent = 1176; // _composers[1176] = _SafeCls_3701(int), HabbiconSelector::sendTriggerHabbicon(id)
-    public const int SendHabbiconMessageEvent = 1163; // _composers[1163] = _SafeCls_2591(int,int,int), messenger/MainView::onHabbiconSelected -> (chatId, habbiconId, confirmationId)
-    #endregion
-
-    #region Reward tracks
-    // Only two: the client never asks for the track list, it is pushed. Both read from the WIN63
-    // registry and confirmed in quest/rewardtrack/RewardTrackController.as.
-    public const int ClaimRewardTrackPrizeMessageEvent = 1376; // _composers[1376] = _SafeCls_2794(String,String), RewardTrackController::claimPrize(trackId, rewardId)
-    public const int PurchaseRewardTrackPremiumMessageEvent = 1789; // _composers[1789] = _SafeCls_3341(String), RewardTrackController::purchasePremium(trackId)
-    #endregion
-
     #region Vortex-specific (no AS3 backing)
     // These headers do NOT exist in any Habbo client. They belong to the in-client furni editor, a
     // Vortex-only staff tool, and are matched by hand against vortex-modern-client's
@@ -604,15 +547,6 @@ internal static class MessageComposer
     public const int GetCustomFilterResultMessageComposer = 2231; // AS3-verified (direct read): WIN63 registry _SafeCls_2046.as _SafeStr_4546[2231] = _SafeCls_3579; WordFilterSettingsView is the only consumer. The previous value was a placeholder with no handler behind it
     public const int ModifyCustomFilterResultMessageComposer = 3622; // AS3-verified (direct read): WIN63 registry _SafeCls_2046.as _SafeStr_4546[3622] = _SafeCls_3793; WordFilterSettingsView is the only consumer. The previous value was a placeholder with no handler behind it
     public const int FurniListRemoveMultipleComposer = 1268; // AS3-verified (direct read): _SafeStr_4546[1268] = _SafeCls_3469 (parser _SafeCls_3854: `stripIds:Vector.<int>`), consumed by the inventory controller; was 149, which has no entry in the WIN63 registry at all
-    public const int NftClaimResultMessageComposer = 3601; // AS3-verified (direct read): RewardClaimsTab::onNftClaimResultMessage(_SafeCls_2853) -> _SafeStr_4546[3601]; was 1780, which has no entry in the WIN63 registry at all
-    public const int NftClaimsMessageComposer = 108; // AS3-verified (direct read): RewardClaimsTab::onNftClaimsMessage(_SafeCls_3876) -> _SafeStr_4546[108]; was 2053, which has no entry in the WIN63 registry at all
-    public const int NftStoreOffersMessageComposer = 3272; // AS3-verified (direct read): ShopTab::onNftStoreOffers(_SafeCls_3611) -> _SafeStr_4546[3272]; corrects a collision (was 3585 = IssueInfoMessageComposer, declared further down)
-    public const int NftStorePurchaseMessageComposer = 448; // AS3-verified (direct read): _SafeStr_4546[448] = _SafeCls_2220 (parser _SafeCls_2241 -> result:short), handled by HabboCatalog.as::onNftStorePurchase(); was 3171, which has no entry in the WIN63 registry at all
-    public const int RedeemNftLootBoxResultMessageComposer = 3332; // AS3-verified (direct read): _SafeStr_4546[3332] = _SafeCls_3299 (parser _SafeCls_3421 -> success/fail/notInStarDustWallet), handled by CollectiblesController.as::onRedeemLootBoxResultEvent(); was 2262, which has no entry in the WIN63 registry at all
-    public const int RedeemNftLootBoxStateMessageComposer = 3164; // AS3-verified (direct read): _SafeStr_4546[3164] = _SafeCls_3792 (parser _SafeCls_2605 -> state:short, openerAvatarId:int, reward), handled by CollectiblesController.as::onRedeemLootBoxStateEvent(); was 2857, which has no entry in the WIN63 registry at all
-    public const int NftEmeraldConvertResultMessageComposer = 3159;
-    public const int TradeNftAssetInventoryMessageComposer = 2247; // AS3-verified (direct read): _SafeStr_4546[2247] = _SafeCls_3840 (parser _SafeCls_3182 -> Vector.<CollectibleAsset> items), the answer to RequestNftAssets@1646, handled by inventory/_SafeCls_1951.as:166 onCollectibles(); was 3854, which has no entry in the WIN63 registry at all
-    public const int TradeNftAssetsMessageComposer = 850; // AS3-verified (direct read): _SafeStr_4546[850] = _SafeCls_2441 (parser _SafeCls_2725 -> myItems/theirItems), handled by inventory/_SafeCls_1951.as:204 onTradeNfts(); was 2159, which has no entry in the WIN63 registry at all
     public const int BlockListMessageComposer = 505; // AS3-verified (direct read): _SafeStr_4546[505] = _SafeCls_2982, whose only consumer is BlockedUsersManager.as; was 214, which has no entry in the WIN63 registry at all
     public const int BlockUserUpdateMessageComposer = 1825; // AS3-verified (direct read): _SafeStr_4546[1825] = _SafeCls_2460, consumed by BlockedUsersManager.as / RoomUsersHandler.as; was 219, which has no entry in the WIN63 registry at all
 
@@ -820,20 +754,7 @@ internal static class MessageComposer
     public const int FigureUpdateComposer = 132;
     public const int WardrobeMessageComposer = 1484; // AS3-verified (ghost fix): onWardrobe @ AvatarEditorMessageHandler
 
-    public const int CollectableMintableItemTypesMessageComposer = 1902; // AS3-verified: onCollectableMintableItemTypesMessage @ MintInventoryListTab
-
-    public const int CollectibleMintableItemResultMessageComposer = 19; // AS3-verified (old-revision trace): _SafeCls_2518 -> onMintItemResult() still exists in current revision at 19
-    public const int CollectibleMintingEnabledMessageComposer = 1091; // AS3-verified (ghost fix): onCollectibleMintingEnabledMessage @ MintInventoryListTab
-    public const int CollectibleMintTokenCountMessageComposer = 1770; // AS3-verified (direct search): onCollectibleMintTokensMessage @ MintInventoryListTab -> _SafeCls_3101
-    public const int CollectibleMintTokenOffersMessageComposer = 2462; // AS3-verified (ghost fix): onMintTokenOffersMessage @ MintInventoryListTab
-    public const int CollectibleWalletAddressesMessageComposer = 1741; // AS3-verified (old-revision trace): CollectiblesView wallet-address feature still exists in current revision at 1741
     public const int EmeraldBalanceMessageComposer = 583; // AS3-verified (ghost fix): onEmeraldBalance @ HabboCatalog
-    public const int NftBonusItemClaimResultMessageComposer = 3498; // AS3-verified (direct search): onBonusClaimResult @ CollectionsTab -> _SafeCls_3925
-    public const int NftCollectionsMessageComposer = 3942; // AS3-verified (ghost fix): onNftCollectionsMessage @ CollectionsTab
-    public const int NftCollectionsScoreMessageComposer = 1857; // AS3-verified (old-revision trace): _SafeCls_3820 -> onCollectionsScoreMessage() still exists in current revision at 1857
-    public const int NftRewardItemClaimResultMessageComposer = 233; // AS3-verified (old-revision trace): _SafeCls_3304 -> onRewardClaimResult() still exists in current revision at 233
-    public const int NftTransferAssetsResultMessageComposer = 2357; // AS3-verified (name-only): onNftTransferResultMessage @ TransferNftsTab
-    public const int NftTransferFeeMessageComposer = 3700; // AS3-verified (ghost fix): onNftTransferFeeMessage @ TransferNftsTab
     public const int SilverBalanceMessageComposer = 3727; // AS3-verified (ghost fix): onSilverBalance @ HabboCatalog
 
     // AS3-verified this session, by reading the registry rather than a name: WIN63 binds
@@ -965,8 +886,6 @@ internal static class MessageComposer
     public const int UserRightsMessageComposer = 3599;
     public const int CommunityVoteReceivedComposer = 2524;
     public const int UserNftChatStylesMessageComposer = 2996;
-    public const int UserNftWardrobeSelectionMessageComposer = 582;
-    public const int UserNftWardrobeMessageComposer = 2116; // AS3-verified (direct read): _SafeStr_4546[2116] = _SafeCls_2919 (parser reads int count then 5 strings per avatar), the answer to GetUserNftWardrobe@2203, handled by HabboAvatarEditor::onUserNftWardrobeMessage(). Had no header at all, so the editor's NFT tab could only ever be empty
     public const int LatencyPingResponseMessageComposer = 188;
     public const int CommunityGoalHallOfFameMessageComposer = 363;
     public const int CommunityGoalProgressMessageComposer = 283;
@@ -1126,27 +1045,6 @@ internal static class MessageComposer
     public const int FurniListRemoveComposer = 1156;
 
     public const int PostItPlacedComposer = 2145; // AS3-verified: onPostItPlaced
-    #endregion
-
-    #region Habbicons
-    // Read from the WIN63 registry's incoming table (_SafeCls_2046.as, _SafeStr_4546[<id>]) and
-    // confirmed at the handler HabbiconController registers for each.
-    public const int UserHabbiconsMessageComposer = 3728; // _SafeStr_4546[3728] = _SafeCls_3640 -> HabbiconController::onUserHabbicons
-    public const int UserHabbiconStatusChangedMessageComposer = 2019; // _SafeStr_4546[2019] = _SafeCls_3736 -> onUserHabbiconStatusChanged
-    public const int HabbiconShopDataMessageComposer = 3765; // _SafeStr_4546[3765] = _SafeCls_3936 -> onHabbiconShopData
-    public const int HabbiconInfoMessageComposer = 3714; // _SafeStr_4546[3714] = _SafeCls_3969 -> onHabbiconInfo
-    public const int RoomUseHabbiconMessageComposer = 1547; // _SafeStr_4546[1547] = _SafeCls_2836 -> onRoomUseHabbicon; payload is (roomIndex, habbiconId), in that order
-    // A Habbicon purchase is answered with the catalogue's own PurchaseOK / PurchaseError /
-    // PurchaseNotAllowed (1570 / 1029 / 2493), which HabbiconController subscribes to alongside
-    // them. There is no Habbicon-specific purchase result and inventing one would be answered by
-    // nothing.
-    #endregion
-
-    #region Reward tracks
-    public const int RewardTracksMessageComposer = 3794; // _SafeStr_4546[3794] = _SafeCls_2743 -> RewardTrackController::onRewardTracks
-    public const int RewardTrackProgressMessageComposer = 2017; // _SafeStr_4546[2017] = _SafeCls_3829 -> onRewardTrackProgress
-    public const int RewardTrackClaimResultMessageComposer = 522; // _SafeStr_4546[522] = _SafeCls_3381 -> onRewardTrackClaimResult
-    public const int RewardTrackPremiumPurchaseResultMessageComposer = 58; // _SafeStr_4546[58] = _SafeCls_3753 -> onRewardTrackPremiumPurchaseResult
     #endregion
 
     #region Vortex-specific (no AS3 backing)
