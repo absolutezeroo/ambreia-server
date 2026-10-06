@@ -196,6 +196,20 @@ intermédiaire.
   objet dans l’éditeur), calcul de la carte de navigation, son chargement par le runtime de zone.
   Spec fille Monde et éditeur de cartes.
 
+### 3.2 sexies Publication des cartes : jouable immédiatement — APPROUVÉ
+
+- **Enregistrer** dans l’éditeur écrit la zone sur le serveur, en base, dans une transaction, après
+  validation (géométrie, meubles, calques RPG, carte de navigation). Une zone invalide est refusée avec
+  un message exploitable.
+- **Rechargement à chaud :** le serveur prévient la zone. Vide, elle charge la nouvelle version à la
+  prochaine entrée. Occupée, elle se recharge : fondu côté client, chaque joueur replacé sur la case
+  marchable la plus proche, ou au point d’entrée si sa case est devenue bloquante.
+- **Versions :** chaque publication est numérotée ; retour à la version précédente possible.
+- **Réglage serveur :** en développement, chaque enregistrement est publié (jouable tout de suite) ;
+  sur un serveur public, « enregistrer un brouillon » et « publier » sont séparés.
+- Spec fille Monde et éditeur de cartes : API de publication, droits (capability dashboard), format de
+  version, comportement exact du rechargement d’une zone occupée.
+
 ### 3.3 Runtime de zone (la couture) — APPROUVÉ
 
 Combat, monstres et compagnons NE DOIVENT PAS dépendre de `Vortex.Rooms`. Ils travaillent contre une
