@@ -34,10 +34,6 @@ internal sealed class RoomMap : IRevisionMap
     public void RegisterInto(IRevisionMapBuilder builder)
     {
         // Room Action
-        builder.MapParser(
-            MessageEvent.AmbassadorAlertMessageEvent,
-            new AmbassadorAlertMessageParser()
-        );
         builder.MapParser(MessageEvent.AssignRightsMessageEvent, new AssignRightsMessageParser());
         builder.MapParser(
             MessageEvent.BanUserWithDurationMessageEvent,
@@ -158,10 +154,6 @@ internal sealed class RoomMap : IRevisionMap
             new AddSpamWallPostItMessageParser()
         );
         builder.MapParser(
-            MessageEvent.ControlYoutubeDisplayPlaybackMessageEvent,
-            new ControlYoutubeDisplayPlaybackMessageParser()
-        );
-        builder.MapParser(
             MessageEvent.CreditFurniRedeemMessageEvent,
             new CreditFurniRedeemMessageParser()
         );
@@ -171,28 +163,8 @@ internal sealed class RoomMap : IRevisionMap
             new EnterOneWayDoorMessageParser()
         );
         builder.MapParser(
-            MessageEvent.ExtendRentOrBuyoutFurniMessageEvent,
-            new ExtendRentOrBuyoutFurniMessageParser()
-        );
-        builder.MapParser(
-            MessageEvent.ExtendRentOrBuyoutStripItemMessageEvent,
-            new ExtendRentOrBuyoutStripItemMessageParser()
-        );
-        builder.MapParser(
             MessageEvent.GetGuildFurniContextMenuInfoMessageEvent,
             new GetGuildFurniContextMenuInfoMessageParser()
-        );
-        builder.MapParser(
-            MessageEvent.GetRentOrBuyoutOfferMessageEvent,
-            new GetRentOrBuyoutOfferMessageParser()
-        );
-        builder.MapParser(
-            MessageEvent.GetYoutubeDisplayStatusMessageEvent,
-            new GetYoutubeDisplayStatusMessageParser()
-        );
-        builder.MapParser(
-            MessageEvent.OpenPetPackageMessageEvent,
-            new OpenPetPackageMessageParser()
         );
         builder.MapParser(MessageEvent.PlacePostItMessageEvent, new PlacePostItMessageParser());
         builder.MapParser(MessageEvent.PresentOpenMessageEvent, new PresentOpenMessageParser());
@@ -228,7 +200,6 @@ internal sealed class RoomMap : IRevisionMap
             MessageEvent.RoomDimmerSavePresetMessageEvent,
             new RoomDimmerSavePresetMessageParser()
         );
-        builder.MapParser(MessageEvent.SetAreaHideDataEvent, new SetAreaHideDataMessageParser());
         builder.MapParser(
             MessageEvent.SetAdjacentCustomStackingHeightEvent,
             new SetAdjacentCustomStackingHeightMessageParser()
@@ -249,10 +220,6 @@ internal sealed class RoomMap : IRevisionMap
         builder.MapParser(
             MessageEvent.SetRoomBackgroundColorDataEvent,
             new SetRoomBackgroundColorDataMessageParser()
-        );
-        builder.MapParser(
-            MessageEvent.SetYoutubeDisplayPlaylistMessageEvent,
-            new SetYoutubeDisplayPlaylistMessageParser()
         );
         builder.MapParser(
             MessageEvent.SpinWheelOfFortuneMessageEvent,
@@ -284,7 +251,6 @@ internal sealed class RoomMap : IRevisionMap
         builder.MapParser(MessageEvent.RespectPetMessageEvent, new RespectPetMessageParser());
 
         // Room Session
-        builder.MapParser(MessageEvent.ChangeQueueMessageEvent, new ChangeQueueMessageParser());
         builder.MapParser(
             MessageEvent.OpenFlatConnectionMessageEvent,
             new OpenFlatConnectionMessageParser()
@@ -312,28 +278,12 @@ internal sealed class RoomMap : IRevisionMap
             typeof(SleepMessageComposer),
             new SleepMessageComposerSerializer(MessageComposer.SleepMessageComposer)
         );
-        builder.MapSerializer(
-            typeof(UseObjectMessageComposer),
-            new UseObjectMessageComposerSerializer(MessageComposer.UseObjectMessageComposer)
-        );
 
         // Room Bots
         builder.MapSerializer(
             typeof(BotCommandConfigurationMessageComposer),
             new BotCommandConfigurationMessageComposerSerializer(
                 MessageComposer.BotCommandConfigurationComposer
-            )
-        );
-        builder.MapSerializer(
-            typeof(BotErrorMessageComposer),
-            new BotErrorMessageComposerSerializer(MessageComposer.BotErrorComposer)
-        );
-        builder.MapSerializer(
-            // The composer, not its serializer: the map is keyed by what a caller sends, and keying
-            // it by the serializer left this one unreachable.
-            typeof(BotForceOpenContextMenuMessageComposer),
-            new BotForceOpenContextMenuMessageComposerSerializer(
-                MessageComposer.BotForceOpenContextMenuComposer
             )
         );
         builder.MapSerializer(
@@ -431,12 +381,6 @@ internal sealed class RoomMap : IRevisionMap
             new ItemsMessageComposerSerializer(MessageComposer.ItemsMessageComposer)
         );
         builder.MapSerializer(
-            typeof(ItemsStateUpdateMessageComposer),
-            new ItemsStateUpdateMessageComposerSerializer(
-                MessageComposer.ItemsStateUpdateMessageComposer
-            )
-        );
-        builder.MapSerializer(
             typeof(ItemStateUpdateMessageComposer),
             new ItemStateUpdateMessageComposerSerializer(
                 MessageComposer.ItemStateUpdateMessageComposer
@@ -457,26 +401,8 @@ internal sealed class RoomMap : IRevisionMap
             )
         );
         builder.MapSerializer(
-            typeof(ObjectRemoveConfirmMessageComposer),
-            new ObjectRemoveConfirmMessageComposerSerializer(
-                MessageComposer.ObjectRemoveConfirmMessageComposer
-            )
-        );
-        builder.MapSerializer(
             typeof(ObjectRemoveMessageComposer),
             new ObjectRemoveMessageComposerSerializer(MessageComposer.ObjectRemoveMessageComposer)
-        );
-        builder.MapSerializer(
-            typeof(ObjectRemoveMultipleMessageComposer),
-            new ObjectRemoveMultipleMessageComposerSerializer(
-                MessageComposer.ObjectRemoveMultipleMessageComposer
-            )
-        );
-        builder.MapSerializer(
-            typeof(ObjectsDataUpdateMessageComposer),
-            new ObjectsDataUpdateMessageComposerSerializer(
-                MessageComposer.ObjectsDataUpdateMessageComposer
-            )
         );
         builder.MapSerializer(
             typeof(ObjectsMessageComposer),
@@ -525,12 +451,6 @@ internal sealed class RoomMap : IRevisionMap
             )
         );
         builder.MapSerializer(
-            typeof(SpecialRoomEffectMessageComposer),
-            new SpecialRoomEffectMessageComposerSerializer(
-                MessageComposer.SpecialRoomEffectMessageComposer
-            )
-        );
-        builder.MapSerializer(
             typeof(UserChangeMessageComposer),
             new UserChangeMessageComposerSerializer(MessageComposer.UserChangeMessageComposer)
         );
@@ -549,32 +469,6 @@ internal sealed class RoomMap : IRevisionMap
 
         // Room Furniture
         builder.MapSerializer(
-            typeof(AreaHideMessageComposer),
-            new AreaHideMessageComposerSerializer(MessageComposer.AreaHideMessageComposer)
-        );
-        builder.MapSerializer(
-            typeof(CustomStackingHeightUpdateMessageComposer),
-            new CustomStackingHeightUpdateMessageComposerSerializer(
-                MessageComposer.CustomStackingHeightUpdateMessageComposer
-            )
-        );
-        builder.MapSerializer(
-            typeof(CustomUserNotificationMessageComposer),
-            new CustomUserNotificationMessageComposerSerializer(
-                MessageComposer.CustomUserNotificationMessageComposer
-            )
-        );
-        builder.MapSerializer(
-            typeof(DiceValueMessageComposer),
-            new DiceValueMessageComposerSerializer(MessageComposer.DiceValueMessageComposer)
-        );
-        builder.MapSerializer(
-            typeof(FurniRentOrBuyoutOfferMessageComposer),
-            new FurniRentOrBuyoutOfferMessageComposerSerializer(
-                MessageComposer.FurniRentOrBuyoutOfferMessageComposer
-            )
-        );
-        builder.MapSerializer(
             typeof(GuildFurniContextMenuInfoMessageComposer),
             new GuildFurniContextMenuInfoMessageComposerSerializer(
                 MessageComposer.GuildFurniContextMenuInfoMessageComposer
@@ -584,18 +478,6 @@ internal sealed class RoomMap : IRevisionMap
             typeof(OneWayDoorStatusMessageComposer),
             new OneWayDoorStatusMessageComposerSerializer(
                 MessageComposer.OneWayDoorStatusMessageComposer
-            )
-        );
-        builder.MapSerializer(
-            typeof(OpenPetPackageRequestedMessageComposer),
-            new OpenPetPackageRequestedMessageComposerSerializer(
-                MessageComposer.OpenPetPackageRequestedMessageComposer
-            )
-        );
-        builder.MapSerializer(
-            typeof(OpenPetPackageResultMessageComposer),
-            new OpenPetPackageResultMessageComposerSerializer(
-                MessageComposer.OpenPetPackageResultMessageComposer
             )
         );
         builder.MapSerializer(
@@ -615,51 +497,15 @@ internal sealed class RoomMap : IRevisionMap
             )
         );
         builder.MapSerializer(
-            typeof(RentableSpaceRentOkMessageComposer),
-            new RentableSpaceRentOkMessageComposerSerializer(
-                MessageComposer.RentableSpaceRentOkMessageComposer
-            )
-        );
-        builder.MapSerializer(
             typeof(RentableSpaceStatusMessageComposer),
             new RentableSpaceStatusMessageComposerSerializer(
                 MessageComposer.RentableSpaceStatusMessageComposer
             )
         );
         builder.MapSerializer(
-            typeof(RequestSpamWallPostItMessageComposer),
-            new RequestSpamWallPostItMessageComposerSerializer(
-                MessageComposer.RequestSpamWallPostItMessageComposer
-            )
-        );
-        builder.MapSerializer(
             typeof(RoomDimmerPresetsMessageComposer),
             new RoomDimmerPresetsMessageComposerSerializer(
                 MessageComposer.RoomDimmerPresetsMessageComposer
-            )
-        );
-        builder.MapSerializer(
-            typeof(RoomMessageNotificationMessageComposer),
-            new RoomMessageNotificationMessageComposerSerializer(
-                MessageComposer.RoomMessageNotificationMessageComposer
-            )
-        );
-        builder.MapSerializer(
-            typeof(YoutubeControlVideoMessageComposer),
-            new YoutubeControlVideoMessageComposerSerializer(
-                MessageComposer.YoutubeControlVideoMessageComposer
-            )
-        );
-        builder.MapSerializer(
-            typeof(YoutubeDisplayPlaylistsMessageComposer),
-            new YoutubeDisplayPlaylistsMessageComposerSerializer(
-                MessageComposer.YoutubeDisplayPlaylistsMessageComposer
-            )
-        );
-        builder.MapSerializer(
-            typeof(YoutubeDisplayVideoMessageComposer),
-            new YoutubeDisplayVideoMessageComposerSerializer(
-                MessageComposer.YoutubeDisplayVideoMessageComposer
             )
         );
 
@@ -767,31 +613,13 @@ internal sealed class RoomMap : IRevisionMap
             new RoomForwardMessageComposerSerializer(MessageComposer.RoomForwardMessageComposer)
         );
         builder.MapSerializer(
-            typeof(RoomQueueStatusMessageComposer),
-            new RoomQueueStatusMessageComposerSerializer(
-                MessageComposer.RoomQueueStatusMessageComposer
-            )
-        );
-        builder.MapSerializer(
             typeof(RoomReadyMessageComposer),
             new RoomReadyMessageComposerSerializer(MessageComposer.RoomReadyMessageComposer)
-        );
-        builder.MapSerializer(
-            typeof(YouAreNotSpectatorMessageComposer),
-            new YouAreNotSpectatorMessageComposerSerializer(
-                MessageComposer.YouAreNotSpectatorMessageComposer
-            )
         );
         builder.MapSerializer(
             typeof(YouArePlayingGameMessageComposer),
             new YouArePlayingGameMessageComposerSerializer(
                 MessageComposer.YouArePlayingGameMessageComposer
-            )
-        );
-        builder.MapSerializer(
-            typeof(YouAreSpectatorMessageComposer),
-            new YouAreSpectatorMessageComposerSerializer(
-                MessageComposer.YouAreSpectatorMessageComposer
             )
         );
     }

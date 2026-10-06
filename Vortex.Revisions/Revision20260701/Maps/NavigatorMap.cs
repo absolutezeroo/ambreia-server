@@ -55,10 +55,6 @@ internal sealed class NavigatorMap : IRevisionMap
             new CanCreateRoomMessageComposerSerializer(MessageComposer.CanCreateRoomComposer)
         );
         builder.MapSerializer(
-            typeof(ConvertedRoomIdMessageComposer),
-            new ConvertedRoomIdMessageComposerSerializer(MessageComposer.ConvertedRoomIdComposer)
-        );
-        builder.MapSerializer(
             typeof(DoorbellMessageComposer),
             new DoorbellMessageComposerSerializer(MessageComposer.DoorbellMessageComposer)
         );
@@ -87,10 +83,6 @@ internal sealed class NavigatorMap : IRevisionMap
             new NavigatorSettingsMessageComposerSerializer(
                 MessageComposer.NavigatorSettingsComposer
             )
-        );
-        builder.MapSerializer(
-            typeof(RoomInfoUpdatedMessageComposer),
-            new RoomInfoUpdatedMessageComposerSerializer(MessageComposer.RoomInfoUpdatedComposer)
         );
         builder.MapSerializer(
             typeof(RoomRatingMessageComposer),

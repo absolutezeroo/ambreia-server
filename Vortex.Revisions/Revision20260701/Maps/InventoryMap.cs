@@ -251,10 +251,6 @@ internal sealed class InventoryMap : IRevisionMap
                 MessageComposer.FurniListRemoveComposer
             )
         );
-        builder.MapSerializer(
-            typeof(PostItPlacedEventMessageComposer),
-            new PostItPlacedEventMessageComposerSerializer(MessageComposer.PostItPlacedComposer)
-        );
 
         // Inventory Pets
         builder.MapSerializer(
@@ -266,10 +262,6 @@ internal sealed class InventoryMap : IRevisionMap
         builder.MapSerializer(
             typeof(PetInventoryEventMessageComposer),
             new PetInventoryEventMessageComposerSerializer(MessageComposer.PetInventoryComposer)
-        );
-        builder.MapSerializer(
-            typeof(PetReceivedMessageComposer),
-            new PetReceivedMessageComposerSerializer(MessageComposer.PetReceivedMessageComposer)
         );
         builder.MapSerializer(
             typeof(PetRemovedFromInventoryEventMessageComposer),
@@ -289,18 +281,6 @@ internal sealed class InventoryMap : IRevisionMap
             typeof(TradeOpenFailedEventPaserMessageComposer),
             new TradeOpenFailedEventPaserMessageComposerSerializer(
                 MessageComposer.TradeOpenFailedComposer
-            )
-        );
-        builder.MapSerializer(
-            typeof(TradeSilverFeeMessageComposer),
-            new TradeSilverFeeMessageComposerSerializer(
-                MessageComposer.TradeSilverFeeMessageComposer
-            )
-        );
-        builder.MapSerializer(
-            typeof(TradeSilverSetMessageComposer),
-            new TradeSilverSetMessageComposerSerializer(
-                MessageComposer.TradeSilverSetMessageComposer
             )
         );
         builder.MapSerializer(
@@ -336,18 +316,6 @@ internal sealed class InventoryMap : IRevisionMap
         builder.MapSerializer(
             typeof(TradingOpenEventMessageComposer),
             new TradingOpenEventMessageComposerSerializer(MessageComposer.TradingOpenComposer)
-        );
-        builder.MapSerializer(
-            typeof(TradingOtherNotAllowedEventMessageComposer),
-            new TradingOtherNotAllowedEventMessageComposerSerializer(
-                MessageComposer.TradingOtherNotAllowedComposer
-            )
-        );
-        builder.MapSerializer(
-            typeof(TradingYouAreNotAllowedEventMessageComposer),
-            new TradingYouAreNotAllowedEventMessageComposerSerializer(
-                MessageComposer.TradingYouAreNotAllowedComposer
-            )
         );
     }
 }

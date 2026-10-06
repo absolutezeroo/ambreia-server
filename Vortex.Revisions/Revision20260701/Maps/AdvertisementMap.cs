@@ -13,10 +13,6 @@ internal sealed class AdvertisementMap : IRevisionMap
             MessageEvent.GetInterstitialMessageEvent,
             new GetInterstitialMessageParser()
         );
-        builder.MapParser(
-            MessageEvent.InterstitialShownMessageEvent,
-            new InterstitialShownMessageParser()
-        );
 
         builder.MapSerializer(
             typeof(InterstitialMessageComposer),

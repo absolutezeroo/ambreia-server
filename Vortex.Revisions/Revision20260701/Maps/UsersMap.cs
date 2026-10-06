@@ -26,7 +26,6 @@ internal sealed class UsersMap : IRevisionMap
             MessageEvent.GetBadgeLeaderboardEvent,
             new GetBadgeLeaderboardMessageParser()
         );
-        builder.MapParser(MessageEvent.ChangeEmailEvent, new ChangeEmailMessageParser());
         builder.MapParser(MessageEvent.CreateGuildMessageEvent, new CreateGuildMessageParser());
         builder.MapParser(
             MessageEvent.DeactivateGuildMessageEvent,
@@ -36,7 +35,6 @@ internal sealed class UsersMap : IRevisionMap
             MessageEvent.DeselectFavouriteHabboGroupMessageEvent,
             new DeselectFavouriteHabboGroupMessageParser()
         );
-        builder.MapParser(MessageEvent.GetEmailStatusEvent, new GetEmailStatusMessageParser());
         builder.MapParser(
             MessageEvent.GetExtendedProfileByNameMessageEvent,
             new GetExtendedProfileByNameMessageParser()
@@ -263,27 +261,9 @@ internal sealed class UsersMap : IRevisionMap
             new ApproveNameMessageComposerSerializer(MessageComposer.ApproveNameMessageComposer)
         );
         builder.MapSerializer(
-            typeof(ChangeEmailResultEventMessageComposer),
-            new ChangeEmailResultEventMessageComposerSerializer(
-                MessageComposer.ChangeEmailResultComposer
-            )
-        );
-        builder.MapSerializer(
-            typeof(EmailStatusResultEventMessageComposer),
-            new EmailStatusResultEventMessageComposerSerializer(
-                MessageComposer.EmailStatusResultComposer
-            )
-        );
-        builder.MapSerializer(
             typeof(ExtendedProfileMessageComposer),
             new ExtendedProfileMessageComposerSerializer(
                 MessageComposer.ExtendedProfileMessageComposer
-            )
-        );
-        builder.MapSerializer(
-            typeof(ExtendedProfileChangedMessageComposer),
-            new ExtendedProfileChangedMessageComposerSerializer(
-                MessageComposer.ExtendedProfileChangedMessageComposer
             )
         );
         builder.MapSerializer(

@@ -42,10 +42,6 @@ internal sealed class HandshakeMap : IRevisionMap
             )
         );
         builder.MapSerializer(
-            typeof(GenericErrorMessage),
-            new GenericErrorMessageSerializer(MessageComposer.GenericErrorComposer)
-        );
-        builder.MapSerializer(
             typeof(InitDiffieHandshakeMessageComposer),
             new InitDiffieHandshakeMessageSerializer(MessageComposer.InitDiffieHandshakeComposer)
         );
@@ -60,10 +56,6 @@ internal sealed class HandshakeMap : IRevisionMap
         builder.MapSerializer(
             typeof(PingMessage),
             new PingMessageSerializer(MessageComposer.PingMessageComposer)
-        );
-        builder.MapSerializer(
-            typeof(UniqueMachineIdMessage),
-            new UniqueMachineIdMessageSerializer(MessageComposer.UniqueMachineIDComposer)
         );
         builder.MapSerializer(
             typeof(UserObjectMessage),

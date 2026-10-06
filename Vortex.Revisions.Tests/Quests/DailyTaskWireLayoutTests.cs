@@ -131,47 +131,6 @@ public sealed class DailyTaskWireLayoutTests
         packet.PopInt().Should().Be(-30);
     }
 
-    [Fact]
-    public void TasksAdded_UsesTheSameLayoutAsTheFullBoard()
-    {
-        // The client parses both with the same struct constructor, so they must not drift apart.
-        ClientPacket packet = Serialize(
-            new DailyTasksTasksAddedMessageComposer
-            {
-                Tasks =
-                [
-                    new DailyTaskSnapshot
-                    {
-                        TaskId = 9,
-                        TaskCode = "bonus",
-                        QuestTypeCode = "Login",
-                        IsBonus = true,
-                        ImageVersion = "",
-                        CatalogName = "",
-                        RequiredRepeats = 1,
-                        Repeats = 0,
-                        Status = DailyTaskStatus.Available,
-                        SecondsLeft = 60,
-                    },
-                ],
-            }
-        );
-
-        packet.PopInt().Should().Be(1);
-        packet.PopLong().Should().Be(9);
-        packet.PopString().Should().Be("bonus");
-        packet.PopString().Should().Be("Login");
-        packet.PopBoolean().Should().BeTrue();
-        packet.PopString().Should().BeEmpty();
-        packet.PopString().Should().BeEmpty();
-        packet.PopInt().Should().Be(1);
-        packet.PopInt().Should().Be(0);
-        packet.PopByte().Should().Be(0);
-        packet.PopInt().Should().Be(60);
-        packet.PopInt().Should().Be(0); // no rewards, but the count is still written
-        packet.Remaining.Should().Be(0);
-    }
-
     private static ClientPacket Serialize<T>(T composer)
         where T : IComposer
     {

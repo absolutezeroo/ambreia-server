@@ -36,10 +36,6 @@ internal sealed class CatalogMap : IRevisionMap
         );
         builder.MapParser(MessageEvent.GetProductOfferEvent, new GetProductOfferMessageParser());
         builder.MapParser(
-            MessageEvent.GetSeasonalCalendarDailyEvent,
-            new GetSeasonalCalendarDailyOfferMessageParser()
-        );
-        builder.MapParser(
             MessageEvent.GetSellablePetPalettesEvent,
             new GetSellablePetPalettesMessageParser()
         );
@@ -84,12 +80,6 @@ internal sealed class CatalogMap : IRevisionMap
             new CatalogPageMessageComposerSerializer(MessageComposer.CatalogPageMessageComposer)
         );
         builder.MapSerializer(
-            typeof(CatalogPublishedMessageComposer),
-            new CatalogPublishedMessageComposerSerializer(
-                MessageComposer.CatalogPublishedMessageComposer
-            )
-        );
-        builder.MapSerializer(
             typeof(ClubGiftInfoEventMessageComposer),
             new ClubGiftInfoEventMessageComposerSerializer(MessageComposer.ClubGiftInfoComposer)
         );
@@ -130,12 +120,6 @@ internal sealed class CatalogMap : IRevisionMap
             )
         );
         builder.MapSerializer(
-            typeof(LimitedEditionSoldOutEventMessageComposer),
-            new LimitedEditionSoldOutEventMessageComposerSerializer(
-                MessageComposer.LimitedEditionSoldOutComposer
-            )
-        );
-        builder.MapSerializer(
             typeof(NotEnoughBalanceMessageComposer),
             new NotEnoughBalanceMessageComposerSerializer(
                 MessageComposer.NotEnoughBalanceMessageComposer
@@ -160,21 +144,9 @@ internal sealed class CatalogMap : IRevisionMap
             new PurchaseOKMessageComposerSerializer(MessageComposer.PurchaseOKMessageComposer)
         );
         builder.MapSerializer(
-            typeof(SeasonalCalendarDailyOfferMessageComposer),
-            new SeasonalCalendarDailyOfferMessageComposerSerializer(
-                MessageComposer.SeasonalCalendarDailyOfferMessageComposer
-            )
-        );
-        builder.MapSerializer(
             typeof(SellablePetPalettesMessageComposer),
             new SellablePetPalettesMessageComposerSerializer(
                 MessageComposer.SellablePetPalettesMessageComposer
-            )
-        );
-        builder.MapSerializer(
-            typeof(SnowWarGameTokensMessageMessageComposer),
-            new SnowWarGameTokensMessageMessageComposerSerializer(
-                MessageComposer.SnowWarGameTokensMessageComposer
             )
         );
     }

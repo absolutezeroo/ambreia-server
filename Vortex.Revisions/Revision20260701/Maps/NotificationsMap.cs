@@ -29,12 +29,6 @@ internal sealed class NotificationsMap : IRevisionMap
             )
         );
         builder.MapSerializer(
-            typeof(ElementPointerMessageComposer),
-            new ElementPointerMessageComposerSerializer(
-                MessageComposer.ElementPointerMessageComposer
-            )
-        );
-        builder.MapSerializer(
             typeof(HabboAchievementNotificationMessageComposer),
             new HabboAchievementNotificationMessageComposerSerializer(
                 MessageComposer.HabboAchievementNotificationMessageComposer
@@ -44,12 +38,6 @@ internal sealed class NotificationsMap : IRevisionMap
             typeof(HabboActivityPointNotificationMessageComposer),
             new HabboActivityPointNotificationMessageComposerSerializer(
                 MessageComposer.HabboActivityPointNotificationMessageComposer
-            )
-        );
-        builder.MapSerializer(
-            typeof(HabboBroadcastMessageComposer),
-            new HabboBroadcastMessageComposerSerializer(
-                MessageComposer.HabboBroadcastMessageComposer
             )
         );
         builder.MapSerializer(
@@ -71,20 +59,10 @@ internal sealed class NotificationsMap : IRevisionMap
             )
         );
         builder.MapSerializer(
-            typeof(OfferRewardDeliveredMessageComposer),
-            new OfferRewardDeliveredMessageComposerSerializer(
-                MessageComposer.OfferRewardDeliveredMessageComposer
-            )
-        );
-        builder.MapSerializer(
             typeof(PetLevelNotificationEventMessageComposer),
             new PetLevelNotificationEventMessageComposerSerializer(
                 MessageComposer.PetLevelNotificationComposer
             )
-        );
-        builder.MapSerializer(
-            typeof(RestoreClientMessageComposer),
-            new RestoreClientMessageComposerSerializer(MessageComposer.RestoreClientMessageComposer)
         );
         builder.MapSerializer(
             typeof(UnseenItemsEventMessageComposer),

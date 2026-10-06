@@ -18,17 +18,6 @@ public sealed record DailyTasksActiveListMessageComposer : IComposer
 }
 
 /// <summary>
-/// Tasks appearing without a full refresh (header 2506) — a new day's batch, or a bonus unlocking.
-/// The client appends these; anything already in its list by id is ignored.
-/// </summary>
-[GenerateSerializer, Immutable]
-public sealed record DailyTasksTasksAddedMessageComposer : IComposer
-{
-    [Id(0)]
-    public required ImmutableArray<DailyTaskSnapshot> Tasks { get; init; }
-}
-
-/// <summary>
 /// One task's progress changed (header 1065). Carries only the four fields the client patches in
 /// place; anything else it already has stays untouched.
 /// </summary>

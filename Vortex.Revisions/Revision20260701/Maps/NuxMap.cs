@@ -10,14 +10,6 @@ internal sealed class NuxMap : IRevisionMap
     public void RegisterInto(IRevisionMapBuilder builder)
     {
         builder.MapParser(
-            MessageEvent.NewUserExperienceGetGiftsMessageEvent,
-            new NewUserExperienceGetGiftsMessageParser()
-        );
-        builder.MapParser(
-            MessageEvent.NewUserExperienceScriptProceedEvent,
-            new NewUserExperienceScriptProceedMessageParser()
-        );
-        builder.MapParser(
             MessageEvent.SelectInitialRoomEvent,
             new SelectInitialRoomMessageParser()
         );

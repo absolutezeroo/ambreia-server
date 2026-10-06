@@ -79,10 +79,6 @@ internal sealed class FriendListMap : IRevisionMap
             new FriendListUpdateMessageSerializer(MessageComposer.FriendListUpdateComposer)
         );
         builder.MapSerializer(
-            typeof(FriendNotificationMessageComposer),
-            new FriendNotificationMessageSerializer(MessageComposer.FriendNotificationComposer)
-        );
-        builder.MapSerializer(
             typeof(FriendRequestsMessageComposer),
             new FriendRequestsMessageSerializer(MessageComposer.FriendRequestsComposer)
         );
@@ -103,24 +99,12 @@ internal sealed class FriendListMap : IRevisionMap
             new MessengerInitMessageSerializer(MessageComposer.MessengerInitComposer)
         );
         builder.MapSerializer(
-            typeof(MiniMailNewMessageComposer),
-            new MiniMailNewMessageSerializer(MessageComposer.MiniMailNewMessageComposer)
-        );
-        builder.MapSerializer(
-            typeof(MiniMailUnreadCountMessageComposer),
-            new MiniMailUnreadCountMessageSerializer(MessageComposer.MiniMailUnreadCountComposer)
-        );
-        builder.MapSerializer(
             typeof(NewConsoleMessageMessageComposer),
             new NewConsoleMessageMessageSerializer(MessageComposer.NewConsoleMessageComposer)
         );
         builder.MapSerializer(
             typeof(NewFriendRequestMessageComposer),
             new NewFriendRequestMessageSerializer(MessageComposer.NewFriendRequestComposer)
-        );
-        builder.MapSerializer(
-            typeof(RoomInviteErrorMessageComposer),
-            new RoomInviteErrorMessageSerializer(MessageComposer.RoomInviteErrorComposer)
         );
         builder.MapSerializer(
             typeof(RoomInviteMessageComposer),

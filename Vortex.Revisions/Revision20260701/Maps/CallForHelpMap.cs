@@ -9,10 +9,6 @@ internal sealed class CallForHelpMap : IRevisionMap
     public void RegisterInto(IRevisionMapBuilder builder)
     {
         builder.MapSerializer(
-            typeof(CfhSanctionMessageComposer),
-            new CfhSanctionMessageComposerSerializer(MessageComposer.CfhSanctionMessageComposer)
-        );
-        builder.MapSerializer(
             typeof(CfhTopicsInitMessageComposer),
             new CfhTopicsInitMessageComposerSerializer(MessageComposer.CfhTopicsInitMessageComposer)
         );

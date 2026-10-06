@@ -15,24 +15,6 @@ internal sealed class AvailabilityMap : IRevisionMap
             )
         );
         builder.MapSerializer(
-            typeof(InfoHotelClosedMessageComposer),
-            new InfoHotelClosedMessageComposerSerializer(
-                MessageComposer.InfoHotelClosedMessageComposer
-            )
-        );
-        builder.MapSerializer(
-            typeof(InfoHotelClosingMessageComposer),
-            new InfoHotelClosingMessageComposerSerializer(
-                MessageComposer.InfoHotelClosingMessageComposer
-            )
-        );
-        builder.MapSerializer(
-            typeof(LoginFailedHotelClosedMessageComposer),
-            new LoginFailedHotelClosedMessageComposerSerializer(
-                MessageComposer.LoginFailedHotelClosedMessageComposer
-            )
-        );
-        builder.MapSerializer(
             typeof(MaintenanceStatusMessageComposer),
             new MaintenanceStatusMessageComposerSerializer(
                 MessageComposer.MaintenanceStatusMessageComposer

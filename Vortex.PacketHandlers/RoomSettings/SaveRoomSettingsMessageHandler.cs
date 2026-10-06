@@ -31,8 +31,8 @@ public class SaveRoomSettingsMessageHandler(IGrainFactory grainFactory, IWordFil
         }
 
         // The name and the description only — the password is a secret, never shown to anybody.
-        // A refusal saves nothing: RoomSettingsSaveErrorEventMessageComposer is still an empty stub
-        // on this server, so the bubble is what tells the owner why.
+        // A refusal saves nothing: this server sends no room-settings save error, so the bubble is
+        // what tells the owner why.
         string? name = await wordFilter
             .PassAsync(ctx, message.RoomName, WordFilterSource.Room, ct)
             .ConfigureAwait(false);

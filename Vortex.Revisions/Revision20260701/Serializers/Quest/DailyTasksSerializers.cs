@@ -22,24 +22,6 @@ internal class DailyTasksActiveListMessageComposerSerializer(int header)
     }
 }
 
-/// <summary>Newly appearing tasks — same layout as the full board.</summary>
-internal class DailyTasksTasksAddedMessageComposerSerializer(int header)
-    : AbstractSerializer<DailyTasksTasksAddedMessageComposer>(header)
-{
-    protected override void Serialize(
-        IServerPacket packet,
-        DailyTasksTasksAddedMessageComposer message
-    )
-    {
-        packet.WriteInteger(message.Tasks.Length);
-
-        foreach (DailyTaskSnapshot task in message.Tasks)
-        {
-            DailyTaskWriter.Write(packet, task);
-        }
-    }
-}
-
 /// <summary>
 /// A single task's patch: id, repeats, status, seconds left. The status is a byte here too — the
 /// client reads it with readByte, exactly as it does inside the full task block.

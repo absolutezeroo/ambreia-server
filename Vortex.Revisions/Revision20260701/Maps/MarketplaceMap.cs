@@ -15,10 +15,6 @@ internal sealed class MarketplaceMap(ProtocolLimitsConfig protocolLimits) : IRev
             new BuyMarketplaceOfferMessageParser()
         );
         builder.MapParser(
-            MessageEvent.BuyMarketplaceTokensMessageEvent,
-            new BuyMarketplaceTokensMessageParser()
-        );
-        builder.MapParser(
             MessageEvent.CancelMarketplaceOfferMessageEvent,
             new CancelMarketplaceOfferMessageParser()
         );

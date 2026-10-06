@@ -7,7 +7,6 @@ using Vortex.Primitives.Packets;
 using Vortex.Protocol.Messages.Outgoing.Advertisement;
 using Vortex.Protocol.Messages.Outgoing.Availability;
 using Vortex.Protocol.Messages.Outgoing.Callforhelp;
-using Vortex.Protocol.Messages.Outgoing.Campaign;
 using Vortex.Protocol.Messages.Outgoing.Catalog;
 using Vortex.Protocol.Messages.Outgoing.Handshake;
 using Vortex.Protocol.Messages.Outgoing.Inventory.Trading;
@@ -60,55 +59,6 @@ public sealed class EmptySerializerBatchWireTests
         packet.PopBoolean().Should().BeTrue();
     }
 
-    /// <summary>WIN63 unknowns/_SafePkg_2152/_SafeCls_2483.as (header 184).</summary>
-    [Fact]
-    public void InfoHotelClosing_WritesMinutes()
-    {
-        ClientPacket packet = Body(
-            typeof(InfoHotelClosingMessageComposer),
-            new InfoHotelClosingMessageComposer { MinutesUntilClosing = 12 }
-        );
-
-        packet.PopInt().Should().Be(12);
-    }
-
-    /// <summary>
-    ///     WIN63 unknowns/_SafePkg_2152/_SafeCls_2990.as (header 698). Two fields, where the
-    ///     hotel-closed notification below carries three - they are separate parser classes and the
-    ///     shorter one must not grow to match.
-    /// </summary>
-    [Fact]
-    public void LoginFailedHotelClosed_WritesOpeningTimeOnly()
-    {
-        ClientPacket packet = Body(
-            typeof(LoginFailedHotelClosedMessageComposer),
-            new LoginFailedHotelClosedMessageComposer { OpenHour = 7, OpenMinute = 30 }
-        );
-
-        packet.PopInt().Should().Be(7);
-        packet.PopInt().Should().Be(30);
-        packet.Remaining.Should().Be(0);
-    }
-
-    /// <summary>WIN63 unknowns/_SafePkg_2152/_SafeCls_3608.as (header 3058).</summary>
-    [Fact]
-    public void InfoHotelClosed_WritesOpeningTimeAndThrownOutFlag()
-    {
-        ClientPacket packet = Body(
-            typeof(InfoHotelClosedMessageComposer),
-            new InfoHotelClosedMessageComposer
-            {
-                OpenHour = 7,
-                OpenMinute = 30,
-                UserThrownOutAtClose = true,
-            }
-        );
-
-        packet.PopInt().Should().Be(7);
-        packet.PopInt().Should().Be(30);
-        packet.PopBoolean().Should().BeTrue();
-    }
-
     /// <summary>
     ///     WIN63 unknowns/_SafePkg_2152/_SafeCls_3162.as (header 1737). The duration is read behind
     ///     a bytes-available guard on the client, which defaults it to 15; this serializer always
@@ -129,93 +79,6 @@ public sealed class EmptySerializerBatchWireTests
         packet.PopBoolean().Should().BeFalse();
         packet.PopInt().Should().Be(45);
         packet.PopInt().Should().Be(15);
-    }
-
-    /// <summary>WIN63 unknowns/_SafePkg_1714/_SafeCls_3506.as (header 773).</summary>
-    [Fact]
-    public void CatalogPublished_WritesFlagThenHash()
-    {
-        ClientPacket packet = Body(
-            typeof(CatalogPublishedMessageComposer),
-            new CatalogPublishedMessageComposer
-            {
-                InstantlyRefreshCatalogue = true,
-                NewFurniDataHash = "abc123",
-            }
-        );
-
-        packet.PopBoolean().Should().BeTrue();
-        packet.PopString().Should().Be("abc123");
-    }
-
-    /// <summary>WIN63 unknowns/_SafePkg_3317/_SafeCls_3336.as (header 2164).</summary>
-    [Fact]
-    public void CampaignCalendarDoorOpened_WritesAllThreeStringsEvenWhenRefused()
-    {
-        ClientPacket packet = Body(
-            typeof(CampaignCalendarDoorOpenedMessageComposer),
-            new CampaignCalendarDoorOpenedMessageComposer
-            {
-                DoorOpened = false,
-                ProductName = string.Empty,
-                CustomImage = string.Empty,
-                FurnitureClassName = string.Empty,
-            }
-        );
-
-        packet.PopBoolean().Should().BeFalse();
-        packet.PopString().Should().BeEmpty();
-        packet.PopString().Should().BeEmpty();
-        packet.PopString().Should().BeEmpty();
-    }
-
-    /// <summary>WIN63 unknowns/_SafePkg_2546/_SafeCls_4291.as (header 3497).</summary>
-    [Fact]
-    public void TradeSilverFee_WritesFee()
-    {
-        ClientPacket packet = Body(
-            typeof(TradeSilverFeeMessageComposer),
-            new TradeSilverFeeMessageComposer { SilverFee = 25 }
-        );
-
-        packet.PopInt().Should().Be(25);
-    }
-
-    /// <summary>WIN63 unknowns/_SafePkg_2546/_SafeCls_2855.as (header 1490).</summary>
-    [Fact]
-    public void TradeSilverSet_WritesOwnStakeFirst()
-    {
-        ClientPacket packet = Body(
-            typeof(TradeSilverSetMessageComposer),
-            new TradeSilverSetMessageComposer { PlayerSilver = 10, OtherPlayerSilver = 5 }
-        );
-
-        packet.PopInt().Should().Be(10);
-        packet.PopInt().Should().Be(5);
-    }
-
-    /// <summary>WIN63 unknowns/_SafePkg_1810/_SafeCls_4146.as (header 1807).</summary>
-    [Fact]
-    public void ElementPointer_WritesKey()
-    {
-        ClientPacket packet = Body(
-            typeof(ElementPointerMessageComposer),
-            new ElementPointerMessageComposer { Key = "navigator" }
-        );
-
-        packet.PopString().Should().Be("navigator");
-    }
-
-    /// <summary>WIN63 unknowns/_SafePkg_1810/_SafeCls_2614.as (header 334).</summary>
-    [Fact]
-    public void HabboBroadcast_WritesText()
-    {
-        ClientPacket packet = Body(
-            typeof(HabboBroadcastMessageComposer),
-            new HabboBroadcastMessageComposer { MessageText = "Server restarting" }
-        );
-
-        packet.PopString().Should().Be("Server restarting");
     }
 
     /// <summary>
@@ -276,25 +139,6 @@ public sealed class EmptySerializerBatchWireTests
         packet.PopString().Should().BeEmpty();
     }
 
-    /// <summary>WIN63 unknowns/_SafePkg_2942/_SafeCls_3790.as (header 1740).</summary>
-    [Fact]
-    public void RoomMessageNotification_WritesRoomThenCount()
-    {
-        ClientPacket packet = Body(
-            typeof(RoomMessageNotificationMessageComposer),
-            new RoomMessageNotificationMessageComposer
-            {
-                RoomId = 4711,
-                RoomName = "My room",
-                MessageCount = 3,
-            }
-        );
-
-        packet.PopInt().Should().Be(4711);
-        packet.PopString().Should().Be("My room");
-        packet.PopInt().Should().Be(3);
-    }
-
     /// <summary>WIN63 unknowns/_SafePkg_2918/_SafeCls_3620.as (header 3208).</summary>
     [Fact]
     public void RoomFilterSettings_WritesCountedWordList()
@@ -319,49 +163,6 @@ public sealed class EmptySerializerBatchWireTests
         );
 
         packet.PopInt().Should().Be(1);
-    }
-
-    /// <summary>WIN63 unknowns/_SafePkg_1891/_SafeCls_4028.as (header 2050).</summary>
-    [Fact]
-    public void ChangeEmailResult_WritesResult()
-    {
-        ClientPacket packet = Body(
-            typeof(ChangeEmailResultEventMessageComposer),
-            new ChangeEmailResultEventMessageComposer { Result = 0 }
-        );
-
-        packet.PopInt().Should().Be(0);
-    }
-
-    /// <summary>WIN63 unknowns/_SafePkg_1891/_SafeCls_1994.as (header 2343).</summary>
-    [Fact]
-    public void EmailStatusResult_WritesAddressThenBothFlags()
-    {
-        ClientPacket packet = Body(
-            typeof(EmailStatusResultEventMessageComposer),
-            new EmailStatusResultEventMessageComposer
-            {
-                Email = "player@example.com",
-                IsVerified = true,
-                AllowChange = false,
-            }
-        );
-
-        packet.PopString().Should().Be("player@example.com");
-        packet.PopBoolean().Should().BeTrue();
-        packet.PopBoolean().Should().BeFalse();
-    }
-
-    /// <summary>WIN63 unknowns/_SafePkg_1820/_SafeCls_4080.as (header 1973).</summary>
-    [Fact]
-    public void UniqueMachineId_WritesMachineId()
-    {
-        ClientPacket packet = Body(
-            typeof(UniqueMachineIdMessage),
-            new UniqueMachineIdMessage { MachineID = "abc-def" }
-        );
-
-        packet.PopString().Should().Be("abc-def");
     }
 
     /// <summary>
@@ -396,51 +197,6 @@ public sealed class EmptySerializerBatchWireTests
         packet.PopString().Should().Be("hd-180-1");
         packet.PopInt().Should().Be(1);
         packet.PopInt().Should().Be(900);
-    }
-
-    /// <summary>
-    ///     WIN63 unknowns/_SafePkg_1744/_SafeCls_3217.as (header 530). Nested counts: each queue set
-    ///     carries its own list, and the client takes the first set's target as the active one.
-    /// </summary>
-    [Fact]
-    public void RoomQueueStatus_WritesNestedQueueCounts()
-    {
-        ClientPacket packet = Body(
-            typeof(RoomQueueStatusMessageComposer),
-            new RoomQueueStatusMessageComposer
-            {
-                FlatId = 4711,
-                QueueSets =
-                [
-                    new RoomQueueSet
-                    {
-                        Name = "visitors",
-                        Target = 1,
-                        Queues = [new RoomQueueEntry { Name = "spectators", Count = 4 }],
-                    },
-                    new RoomQueueSet
-                    {
-                        Name = "game",
-                        Target = 2,
-                        Queues = ImmutableArray<RoomQueueEntry>.Empty,
-                    },
-                ],
-            }
-        );
-
-        packet.PopInt().Should().Be(4711);
-        packet.PopInt().Should().Be(2);
-
-        packet.PopString().Should().Be("visitors");
-        packet.PopInt().Should().Be(1);
-        packet.PopInt().Should().Be(1);
-        packet.PopString().Should().Be("spectators");
-        packet.PopInt().Should().Be(4);
-
-        packet.PopString().Should().Be("game");
-        packet.PopInt().Should().Be(2);
-        packet.PopInt().Should().Be(0);
-        packet.Remaining.Should().Be(0);
     }
 
     /// <summary>

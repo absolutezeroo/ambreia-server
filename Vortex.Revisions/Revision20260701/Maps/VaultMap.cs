@@ -10,20 +10,12 @@ internal sealed class VaultMap : IRevisionMap
     public void RegisterInto(IRevisionMapBuilder builder)
     {
         builder.MapParser(
-            MessageEvent.CreditVaultStatusMessageEvent,
-            new CreditVaultStatusMessageParser()
-        );
-        builder.MapParser(
             MessageEvent.IncomeRewardClaimMessageEvent,
             new IncomeRewardClaimMessageParser()
         );
         builder.MapParser(
             MessageEvent.IncomeRewardStatusMessageEvent,
             new IncomeRewardStatusMessageParser()
-        );
-        builder.MapParser(
-            MessageEvent.WithdrawCreditVaultMessageEvent,
-            new WithdrawCreditVaultMessageParser()
         );
 
         builder.MapSerializer(

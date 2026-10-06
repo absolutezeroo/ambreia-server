@@ -78,10 +78,6 @@ internal sealed class QuestMap : IRevisionMap
             )
         );
         builder.MapSerializer(
-            typeof(EpicPopupMessageComposer),
-            new EpicPopupMessageComposerSerializer(MessageComposer.EpicPopupMessageComposer)
-        );
-        builder.MapSerializer(
             typeof(CommunityGoalHallOfFameMessageComposer),
             new CommunityGoalHallOfFameMessageComposerSerializer(
                 MessageComposer.CommunityGoalHallOfFameMessageComposer
@@ -103,12 +99,6 @@ internal sealed class QuestMap : IRevisionMap
             typeof(DailyTasksActiveListMessageComposer),
             new DailyTasksActiveListMessageComposerSerializer(
                 MessageComposer.DailyTasksActiveListMessageComposer
-            )
-        );
-        builder.MapSerializer(
-            typeof(DailyTasksTasksAddedMessageComposer),
-            new DailyTasksTasksAddedMessageComposerSerializer(
-                MessageComposer.DailyTasksTasksAddedMessageComposer
             )
         );
         builder.MapSerializer(

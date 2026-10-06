@@ -6,10 +6,10 @@ using Vortex.Protocol.Messages.Incoming.Vault;
 namespace Docs.Patterns;
 
 // Reference-only sample: mirrors packet handler shape used in Vortex.PacketHandlers.
-public sealed class HandlerPattern : IMessageHandler<CreditVaultStatusMessage>
+public sealed class HandlerPattern : IMessageHandler<IncomeRewardStatusMessage>
 {
     public async ValueTask HandleAsync(
-        CreditVaultStatusMessage message,
+        IncomeRewardStatusMessage message,
         MessageContext ctx,
         CancellationToken ct
     )
