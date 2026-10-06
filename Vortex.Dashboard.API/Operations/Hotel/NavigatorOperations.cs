@@ -309,7 +309,7 @@ internal sealed class NavigatorOperations(
         );
 
     /// <summary>An ordinal the client never sends is a bug in the form, not a new query — refuse it
-    /// rather than storing a value <c>ResolveQueryType</c> would later read as "every room".</summary>
+    /// rather than storing a value <c>ResolveQueryType</c> could not route.</summary>
     private static NavigatorQueryType ToQueryType(int value) =>
         Enum.IsDefined(typeof(NavigatorQueryType), value)
             ? (NavigatorQueryType)value

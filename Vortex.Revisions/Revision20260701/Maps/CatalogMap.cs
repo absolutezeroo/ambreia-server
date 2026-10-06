@@ -35,7 +35,6 @@ internal sealed class CatalogMap : IRevisionMap
             new GetIsOfferGiftableMessageParser()
         );
         builder.MapParser(MessageEvent.GetProductOfferEvent, new GetProductOfferMessageParser());
-
         builder.MapParser(
             MessageEvent.GetSeasonalCalendarDailyEvent,
             new GetSeasonalCalendarDailyOfferMessageParser()

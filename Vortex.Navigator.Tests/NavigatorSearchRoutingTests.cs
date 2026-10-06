@@ -16,6 +16,7 @@ using Vortex.Primitives.Orleans.Snapshots.Navigator;
 using Vortex.Primitives.Orleans.Snapshots.Room;
 using Vortex.Primitives.Players;
 using Vortex.Primitives.Rooms;
+using Vortex.Primitives.Rooms.Enums;
 using Vortex.Primitives.Rooms.Grains;
 using Vortex.Primitives.Server.Grains;
 using Vortex.Tests.Support;
@@ -45,9 +46,12 @@ public sealed class NavigatorSearchRoutingTests
     {
         Recorder recorder = new();
 
-        await SearchAsync(recorder, searchCode).ConfigureAwait(true);
+        ImmutableArray<RoomInfoSnapshot> results = await SearchAsync(recorder, searchCode)
+            .ConfigureAwait(true);
 
         recorder.Calls.Should().Equal(expectedProviderCall);
+        // The rooms the provider answered are the rooms the search returns.
+        results.Select(r => r.Name).Should().Equal(expectedProviderCall);
     }
 
     [Fact]
@@ -55,10 +59,15 @@ public sealed class NavigatorSearchRoutingTests
     {
         Recorder recorder = new();
 
-        await SearchAsync(recorder, NavigatorSearchCodes.TextSearch, filterValue: "lounge")
+        ImmutableArray<RoomInfoSnapshot> results = await SearchAsync(
+                recorder,
+                NavigatorSearchCodes.TextSearch,
+                filterValue: "lounge"
+            )
             .ConfigureAwait(true);
 
         recorder.Calls.Should().Equal(nameof(INavigatorProvider.SearchRoomsAsync));
+        results.Select(r => r.Name).Should().Equal(nameof(INavigatorProvider.SearchRoomsAsync));
     }
 
     /// <summary>A text search with nothing typed is not "every room".</summary>
@@ -150,7 +159,11 @@ public sealed class NavigatorSearchRoutingTests
             .ConfigureAwait(true);
 
         blocks.Select(b => b.SearchCode).Should().Equal(NavigatorSearchCodes.MyRooms, "popular");
-        blocks.SelectMany(b => b.Results).Should().BeEmpty();
+        blocks[0]
+            .Results.Select(r => r.Name)
+            .Should()
+            .Equal(nameof(INavigatorProvider.GetRoomsByOwnerAsync));
+        blocks[1].Results.Should().BeEmpty();
         recorder.Calls.Should().Equal(nameof(INavigatorProvider.GetRoomsByOwnerAsync));
     }
 
@@ -378,10 +391,37 @@ public sealed class NavigatorSearchRoutingTests
 
                 Calls.Add(call.Method.Name);
 
+                // One sentinel room per provider method, named after it, so a test can tell which
+                // query's rooms came back.
                 return call.Method.ReturnType == typeof(Task<List<RoomInfoSnapshot>>)
-                    ? Task.FromResult(new List<RoomInfoSnapshot>())
+                    ? Task.FromResult(new List<RoomInfoSnapshot> { Sentinel(call.Method.Name) })
                     : null;
             });
+
+        private static RoomInfoSnapshot Sentinel(string name) =>
+            new()
+            {
+                RoomId = (RoomId)1,
+                Name = name,
+                Description = string.Empty,
+                OwnerId = (PlayerId)1,
+                OwnerName = string.Empty,
+                Population = 0,
+                LastUpdatedUtc = DateTime.UnixEpoch,
+                DoorMode = RoomDoorModeType.Open,
+                PlayersMax = 25,
+                TradeType = RoomTradeModeType.Disabled,
+                Score = 0,
+                Ranking = 0,
+                CategoryId = -1,
+                Tags = [],
+                AllowBlocking = false,
+                AllowPets = false,
+                AllowPetsEat = false,
+                PaintWall = string.Empty,
+                PaintFloor = string.Empty,
+                PaintLandscape = string.Empty,
+            };
 
         private ImmutableArray<NavigatorTopLevelContextSnapshot> BuildContexts() =>
             QuickLinks.Count == 0

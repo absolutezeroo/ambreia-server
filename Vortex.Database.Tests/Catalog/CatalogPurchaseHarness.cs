@@ -84,9 +84,6 @@ internal sealed class CatalogPurchaseHarness
 
     public List<IEvent> Events { get; } = [];
 
-    /// <summary>Room advertisements the purchase created: (roomId, name, expiry). The duration a
-    /// room ad buys is encoded in the product rather than configured, so what lands here is the
-    /// only place that arithmetic is observable.</summary>
     /// <summary>Stands in for the behaviours a plugin would register on
     /// <see cref="Vortex.Primitives.Events.CatalogPurchasingEvent" />: set before buying and the
     /// grain sees its pre-purchase publish come back cancelled.</summary>
