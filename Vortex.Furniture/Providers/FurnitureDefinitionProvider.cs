@@ -72,8 +72,7 @@ public sealed class FurnitureDefinitionProvider(
             ? definition
             : null;
 
-    public IReadOnlyCollection<FurnitureDefinitionSnapshot> All() =>
-        [.. _definitions.ById.Values];
+    public IReadOnlyCollection<FurnitureDefinitionSnapshot> All() => [.. _definitions.ById.Values];
 
     public FurnitureDefinitionSnapshot? TryGetDefinitionByName(string name) =>
         _definitions.ByName.TryGetValue(name, out FurnitureDefinitionSnapshot? definition)
