@@ -7,6 +7,7 @@ using Vortex.Database.Entities.Players;
 using Vortex.Database.Entities.Room;
 using Vortex.Database.Entities.Security;
 using Vortex.Database.Entities.Server;
+using Vortex.Database.Entities.World;
 
 namespace Vortex.Database.Context;
 
@@ -46,4 +47,8 @@ public class VortexDbContext(DbContextOptions<VortexDbContext> options)
     public DbSet<ErrorOccurrenceEntity> ErrorOccurrences { get; init; } = null!;
 
     public DbSet<ServerConfigEntity> ServerConfig { get; init; } = null!;
+
+    public DbSet<ZoneEntity> Zones { get; init; } = null!;
+
+    public DbSet<ZoneVersionEntity> ZoneVersions { get; init; } = null!;
 }

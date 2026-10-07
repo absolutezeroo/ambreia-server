@@ -508,6 +508,88 @@ namespace Vortex.Database.Migrations
 
             migrationBuilder
                 .CreateTable(
+                    name: "zone_versions",
+                    columns: table => new
+                    {
+                        id = table
+                            .Column<int>(type: "int", nullable: false)
+                            .Annotation(
+                                "MySql:ValueGenerationStrategy",
+                                MySqlValueGenerationStrategy.IdentityColumn
+                            ),
+                        zone_id = table.Column<int>(type: "int", nullable: false),
+                        version = table.Column<int>(type: "int", nullable: false),
+                        schema_version = table.Column<int>(type: "int", nullable: false),
+                        document = table
+                            .Column<string>(type: "longtext", maxLength: 512, nullable: false)
+                            .Annotation("MySql:CharSet", "utf8mb4"),
+                        author_account_id = table.Column<int>(type: "int", nullable: false),
+                        status = table.Column<int>(type: "int", nullable: false),
+                        comment = table
+                            .Column<string>(type: "varchar(512)", maxLength: 512, nullable: false)
+                            .Annotation("MySql:CharSet", "utf8mb4"),
+                        created_at = table
+                            .Column<DateTime>(type: "datetime(6)", nullable: false)
+                            .Annotation(
+                                "MySql:ValueGenerationStrategy",
+                                MySqlValueGenerationStrategy.IdentityColumn
+                            ),
+                        updated_at = table
+                            .Column<DateTime>(type: "datetime(6)", nullable: false)
+                            .Annotation(
+                                "MySql:ValueGenerationStrategy",
+                                MySqlValueGenerationStrategy.ComputedColumn
+                            ),
+                        deleted_at = table.Column<DateTime>(type: "datetime(6)", nullable: true),
+                    },
+                    constraints: table =>
+                    {
+                        table.PrimaryKey("PK_zone_versions", x => x.id);
+                    }
+                )
+                .Annotation("MySql:CharSet", "utf8mb4");
+
+            migrationBuilder
+                .CreateTable(
+                    name: "zones",
+                    columns: table => new
+                    {
+                        id = table
+                            .Column<int>(type: "int", nullable: false)
+                            .Annotation(
+                                "MySql:ValueGenerationStrategy",
+                                MySqlValueGenerationStrategy.IdentityColumn
+                            ),
+                        zone_key = table
+                            .Column<string>(type: "varchar(64)", maxLength: 64, nullable: false)
+                            .Annotation("MySql:CharSet", "utf8mb4"),
+                        room_id = table.Column<int>(type: "int", nullable: false),
+                        published_version = table.Column<int>(type: "int", nullable: true),
+                        locked_by_account_id = table.Column<int>(type: "int", nullable: true),
+                        locked_at = table.Column<DateTime>(type: "datetime(6)", nullable: true),
+                        created_at = table
+                            .Column<DateTime>(type: "datetime(6)", nullable: false)
+                            .Annotation(
+                                "MySql:ValueGenerationStrategy",
+                                MySqlValueGenerationStrategy.IdentityColumn
+                            ),
+                        updated_at = table
+                            .Column<DateTime>(type: "datetime(6)", nullable: false)
+                            .Annotation(
+                                "MySql:ValueGenerationStrategy",
+                                MySqlValueGenerationStrategy.ComputedColumn
+                            ),
+                        deleted_at = table.Column<DateTime>(type: "datetime(6)", nullable: true),
+                    },
+                    constraints: table =>
+                    {
+                        table.PrimaryKey("PK_zones", x => x.id);
+                    }
+                )
+                .Annotation("MySql:CharSet", "utf8mb4");
+
+            migrationBuilder
+                .CreateTable(
                     name: "players",
                     columns: table => new
                     {
@@ -1315,6 +1397,27 @@ namespace Vortex.Database.Migrations
                 unique: true
             );
 
+            migrationBuilder.CreateIndex(
+                name: "IX_zone_versions_zone_id_version",
+                table: "zone_versions",
+                columns: new[] { "zone_id", "version" },
+                unique: true
+            );
+
+            migrationBuilder.CreateIndex(
+                name: "IX_zones_room_id",
+                table: "zones",
+                column: "room_id",
+                unique: true
+            );
+
+            migrationBuilder.CreateIndex(
+                name: "IX_zones_zone_key",
+                table: "zones",
+                column: "zone_key",
+                unique: true
+            );
+
             // Reference data, in the order the squashed migrations applied it (M0, then the core cut).
             // Each file is under Vortex.Database/Seeds; SeedCatalogTests checks every embedded one is here.
             migrationBuilder.Sql(SeedScripts.Read("seed_world_owner.sql"));
@@ -1351,6 +1454,10 @@ namespace Vortex.Database.Migrations
             migrationBuilder.DropTable(name: "security_tickets");
 
             migrationBuilder.DropTable(name: "server_config");
+
+            migrationBuilder.DropTable(name: "zone_versions");
+
+            migrationBuilder.DropTable(name: "zones");
 
             migrationBuilder.DropTable(name: "furniture_definitions");
 

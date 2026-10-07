@@ -43,6 +43,8 @@ domain prefixes its tables (`character_*`, `quest_*`…); a table every domain r
 | `player_accounts` | `PlayerAccountEntity` | web API | e-mail + bcrypt hash; one account, several players |
 | `players` | `PlayerEntity` | `PlayerGrain` | name, motto, figure, gender; `__world__` owns the zones |
 | `security_tickets` | `SecurityTicketEntity` | authentication | SSO tickets (valid 5 min from issue, sliding on reuse; see `AuthenticationConfig`) |
+| `zones` | `ZoneEntity` | world | zones built by the map editor: key, room, published version, edit lock |
+| `zone_versions` | `ZoneVersionEntity` | world | every saved zone document (JSON), draft or published; never deleted |
 | `roles`, `role_permissions`, `player_account_roles` | `Role*Entity` | `PermissionService` | capabilities per role; seeded by `PermissionSeederService` |
 | `rooms` | `RoomEntity` | `RoomGrain` | a zone; `model_id` → `room_models` |
 | `room_models` | `RoomModelEntity` | reference data | heightmaps, imported from `turbo` |

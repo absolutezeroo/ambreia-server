@@ -1410,6 +1410,133 @@ namespace Vortex.Database.Migrations
                     b.ToTable("server_config");
                 });
 
+            modelBuilder.Entity("Vortex.Database.Entities.World.ZoneEntity", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasColumnName("id");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("CreatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime(6)")
+                        .HasColumnName("created_at");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<DateTime>("CreatedAt"));
+
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("datetime(6)")
+                        .HasColumnName("deleted_at");
+
+                    b.Property<string>("Key")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("varchar(64)")
+                        .HasColumnName("zone_key");
+
+                    b.Property<DateTime?>("LockedAt")
+                        .HasColumnType("datetime(6)")
+                        .HasColumnName("locked_at");
+
+                    b.Property<int?>("LockedByAccountId")
+                        .HasColumnType("int")
+                        .HasColumnName("locked_by_account_id");
+
+                    b.Property<int?>("PublishedVersion")
+                        .HasColumnType("int")
+                        .HasColumnName("published_version");
+
+                    b.Property<int>("RoomEntityId")
+                        .HasColumnType("int")
+                        .HasColumnName("room_id");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("datetime(6)")
+                        .HasColumnName("updated_at");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlComputedColumn(b.Property<DateTime>("UpdatedAt"));
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Key")
+                        .IsUnique();
+
+                    b.HasIndex("RoomEntityId")
+                        .IsUnique();
+
+                    b.ToTable("zones");
+                });
+
+            modelBuilder.Entity("Vortex.Database.Entities.World.ZoneVersionEntity", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasColumnName("id");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("AuthorAccountId")
+                        .HasColumnType("int")
+                        .HasColumnName("author_account_id");
+
+                    b.Property<string>("Comment")
+                        .IsRequired()
+                        .HasMaxLength(512)
+                        .HasColumnType("varchar(512)")
+                        .HasColumnName("comment");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime(6)")
+                        .HasColumnName("created_at");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<DateTime>("CreatedAt"));
+
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("datetime(6)")
+                        .HasColumnName("deleted_at");
+
+                    b.Property<string>("Document")
+                        .IsRequired()
+                        .HasMaxLength(512)
+                        .HasColumnType("longtext")
+                        .HasColumnName("document");
+
+                    b.Property<int>("SchemaVersion")
+                        .HasColumnType("int")
+                        .HasColumnName("schema_version");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("int")
+                        .HasColumnName("status");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("datetime(6)")
+                        .HasColumnName("updated_at");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlComputedColumn(b.Property<DateTime>("UpdatedAt"));
+
+                    b.Property<int>("Version")
+                        .HasColumnType("int")
+                        .HasColumnName("version");
+
+                    b.Property<int>("ZoneEntityId")
+                        .HasColumnType("int")
+                        .HasColumnName("zone_id");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ZoneEntityId", "Version")
+                        .IsUnique();
+
+                    b.ToTable("zone_versions");
+                });
+
             modelBuilder.Entity("Vortex.Database.Entities.Furniture.FurnitureEntity", b =>
                 {
                     b.HasOne("Vortex.Database.Entities.Furniture.FurnitureDefinitionEntity", "FurnitureDefinitionEntity")
