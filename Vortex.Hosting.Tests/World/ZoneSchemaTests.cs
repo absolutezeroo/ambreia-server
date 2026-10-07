@@ -1,7 +1,9 @@
 using System;
 using System.IO;
 using System.Text.Json;
+using System.Text.Json.Nodes;
 using System.Text.Json.Schema;
+using System.Text.Json.Serialization.Metadata;
 using FluentAssertions;
 using Vortex.Hosting.Tests.Architecture;
 using Vortex.Primitives.World;
@@ -23,7 +25,11 @@ public sealed class ZoneSchemaTests
             .GetJsonSchemaAsNode(
                 ZoneJson.Options,
                 typeof(ZoneDocument),
-                new JsonSchemaExporterOptions { TreatNullObliviousAsNonNullable = true }
+                new JsonSchemaExporterOptions
+                {
+                    TreatNullObliviousAsNonNullable = true,
+                    TransformSchemaNode = Title,
+                }
             )
             .ToJsonString(new JsonSerializerOptions { WriteIndented = true })
             .ReplaceLineEndings("\n");
@@ -40,6 +46,15 @@ public sealed class ZoneSchemaTests
         File.Exists(path).Should().BeTrue("run UPDATE_ZONE_SCHEMA=1 to write it");
         File.ReadAllText(path).ReplaceLineEndings("\n").TrimEnd().Should().Be(exported);
     }
+
+    /// <summary>Each record and enum is titled with its C# name: the editor's types keep it.</summary>
+    [Fact]
+    public void TheSchema_NamesItsTypes() =>
+        File.ReadAllText(Path.Combine(RepositoryPaths.Root(), "schemas", "zone.schema.json"))
+            .Should()
+            .Contain("\"title\": \"ZoneDocument\"")
+            .And.Contain("\"title\": \"ZoneTile\"")
+            .And.Contain("\"title\": \"ZoneWallSide\"");
 
     [Fact]
     public void ADocumentWithEveryLayer_SurvivesARoundTrip()
@@ -89,5 +104,22 @@ public sealed class ZoneSchemaTests
         Action parse = () => ZoneJson.Deserialize(json);
 
         parse.Should().Throw<JsonException>();
+    }
+
+    private static JsonNode Title(JsonSchemaExporterContext ctx, JsonNode schema)
+    {
+        Type type = Nullable.GetUnderlyingType(ctx.TypeInfo.Type) ?? ctx.TypeInfo.Type;
+
+        if (
+            schema is JsonObject node
+            && type.Namespace?.StartsWith("Vortex.Primitives.World", StringComparison.Ordinal)
+                == true
+            && (type.IsEnum || ctx.TypeInfo.Kind == JsonTypeInfoKind.Object)
+        )
+        {
+            node.Insert(0, "title", type.Name);
+        }
+
+        return schema;
     }
 }

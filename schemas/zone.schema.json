@@ -1,10 +1,12 @@
 {
+  "title": "ZoneDocument",
   "type": "object",
   "properties": {
     "schemaVersion": {
       "type": "integer"
     },
     "settings": {
+      "title": "ZoneSettings",
       "type": "object",
       "properties": {
         "id": {
@@ -17,6 +19,7 @@
           "type": "string"
         },
         "type": {
+          "title": "ZoneType",
           "enum": [
             "World",
             "Dungeon",
@@ -52,6 +55,7 @@
       "additionalProperties": false
     },
     "floor": {
+      "title": "ZoneFloor",
       "type": "object",
       "properties": {
         "width": {
@@ -63,6 +67,7 @@
         "tiles": {
           "type": "array",
           "items": {
+            "title": "ZoneTile",
             "type": "object",
             "properties": {
               "height": {
@@ -91,6 +96,7 @@
           }
         },
         "door": {
+          "title": "ZoneCell",
           "type": "object",
           "properties": {
             "x": {
@@ -115,6 +121,7 @@
       "additionalProperties": false
     },
     "walls": {
+      "title": "ZoneWalls",
       "type": "object",
       "properties": {
         "visible": {
@@ -132,6 +139,7 @@
     "decor": {
       "type": "array",
       "items": {
+        "title": "ZoneDecorObject",
         "type": "object",
         "properties": {
           "id": {
@@ -159,6 +167,7 @@
             "type": "integer"
           },
           "collision": {
+            "title": "ZoneCollision",
             "type": [
               "object",
               "null"
@@ -220,6 +229,7 @@
     "wallDecor": {
       "type": "array",
       "items": {
+        "title": "ZoneWallDecorObject",
         "type": "object",
         "properties": {
           "id": {
@@ -232,6 +242,7 @@
             "type": "string"
           },
           "side": {
+            "title": "ZoneWallSide",
             "enum": [
               "Left",
               "Right"
@@ -267,6 +278,7 @@
     "entries": {
       "type": "array",
       "items": {
+        "title": "ZoneEntry",
         "type": "object",
         "properties": {
           "id": {
@@ -276,6 +288,7 @@
             "type": "string"
           },
           "cell": {
+            "title": "ZoneCell",
             "type": "object",
             "properties": {
               "x": {
@@ -302,6 +315,7 @@
     "passages": {
       "type": "array",
       "items": {
+        "title": "ZonePassage",
         "type": "object",
         "properties": {
           "id": {
@@ -310,6 +324,7 @@
           "area": {
             "type": "array",
             "items": {
+              "title": "ZoneCell",
               "type": "object",
               "properties": {
                 "x": {
@@ -340,12 +355,14 @@
           "conditions": {
             "type": "array",
             "items": {
+              "title": "ZoneCondition",
               "type": "object",
               "required": [
                 "kind"
               ],
               "anyOf": [
                 {
+                  "title": "PlayerLevelCondition",
                   "properties": {
                     "kind": {
                       "const": "PlayerLevel"
@@ -364,6 +381,7 @@
                   "additionalProperties": false
                 },
                 {
+                  "title": "QuestStateCondition",
                   "properties": {
                     "kind": {
                       "const": "QuestState"
@@ -382,6 +400,7 @@
                   "additionalProperties": false
                 },
                 {
+                  "title": "TimeOfDayCondition",
                   "properties": {
                     "kind": {
                       "const": "TimeOfDay"
@@ -400,6 +419,7 @@
                   "additionalProperties": false
                 },
                 {
+                  "title": "HasItemCondition",
                   "properties": {
                     "kind": {
                       "const": "HasItem"
@@ -418,6 +438,7 @@
                   "additionalProperties": false
                 },
                 {
+                  "title": "FactionCondition",
                   "properties": {
                     "kind": {
                       "const": "Faction"
@@ -432,6 +453,7 @@
                   "additionalProperties": false
                 },
                 {
+                  "title": "ZoneActiveCondition",
                   "properties": {
                     "kind": {
                       "const": "ZoneActive"
@@ -461,6 +483,7 @@
     "zones": {
       "type": "array",
       "items": {
+        "title": "ZoneArea",
         "type": "object",
         "properties": {
           "id": {
@@ -475,6 +498,7 @@
           "polygon": {
             "type": "array",
             "items": {
+              "title": "ZoneCell",
               "$ref": "#/properties/passages/items/properties/area/items"
             }
           },
@@ -496,6 +520,7 @@
           "conditions": {
             "type": "array",
             "items": {
+              "title": "ZoneCondition",
               "$ref": "#/properties/passages/items/properties/conditions/items"
             }
           }
@@ -511,6 +536,7 @@
     "npcs": {
       "type": "array",
       "items": {
+        "title": "ZoneNpc",
         "type": "object",
         "properties": {
           "id": {
@@ -532,6 +558,7 @@
             ]
           },
           "cell": {
+            "title": "ZoneCell",
             "type": "object",
             "properties": {
               "x": {
@@ -567,6 +594,7 @@
           "appearWhen": {
             "type": "array",
             "items": {
+              "title": "ZoneCondition",
               "$ref": "#/properties/passages/items/properties/conditions/items"
             }
           }
@@ -582,6 +610,7 @@
     "spawns": {
       "type": "array",
       "items": {
+        "title": "ZoneSpawn",
         "type": "object",
         "properties": {
           "id": {
@@ -590,6 +619,7 @@
           "area": {
             "type": "array",
             "items": {
+              "title": "ZoneCell",
               "$ref": "#/properties/passages/items/properties/area/items"
             }
           },
@@ -629,6 +659,7 @@
           "conditions": {
             "type": "array",
             "items": {
+              "title": "ZoneCondition",
               "$ref": "#/properties/passages/items/properties/conditions/items"
             }
           }
@@ -644,6 +675,7 @@
     "resources": {
       "type": "array",
       "items": {
+        "title": "ZoneResource",
         "type": "object",
         "properties": {
           "id": {
@@ -656,6 +688,7 @@
             ]
           },
           "cell": {
+            "title": "ZoneCell",
             "type": [
               "object",
               "null"
@@ -696,6 +729,7 @@
     "chests": {
       "type": "array",
       "items": {
+        "title": "ZoneChest",
         "type": "object",
         "properties": {
           "id": {
@@ -716,6 +750,7 @@
           "conditions": {
             "type": "array",
             "items": {
+              "title": "ZoneCondition",
               "$ref": "#/properties/passages/items/properties/conditions/items"
             }
           }
@@ -731,6 +766,7 @@
     "interactives": {
       "type": "array",
       "items": {
+        "title": "ZoneInteractive",
         "type": "object",
         "properties": {
           "id": {
@@ -754,6 +790,7 @@
     "bosses": {
       "type": "array",
       "items": {
+        "title": "ZoneBoss",
         "type": "object",
         "properties": {
           "id": {
@@ -762,6 +799,7 @@
           "arena": {
             "type": "array",
             "items": {
+              "title": "ZoneCell",
               "$ref": "#/properties/passages/items/properties/area/items"
             }
           },
@@ -769,6 +807,7 @@
             "type": "string"
           },
           "spawn": {
+            "title": "ZoneCell",
             "type": "object",
             "properties": {
               "x": {
@@ -783,6 +822,7 @@
           "adds": {
             "type": "array",
             "items": {
+              "title": "ZoneCell",
               "$ref": "#/properties/passages/items/properties/area/items"
             }
           },
@@ -805,6 +845,7 @@
     "events": {
       "type": "array",
       "items": {
+        "title": "ZoneEvent",
         "type": "object",
         "properties": {
           "id": {
@@ -813,6 +854,7 @@
           "area": {
             "type": "array",
             "items": {
+              "title": "ZoneCell",
               "$ref": "#/properties/passages/items/properties/area/items"
             }
           },
@@ -837,12 +879,14 @@
     "triggers": {
       "type": "array",
       "items": {
+        "title": "ZoneTrigger",
         "type": "object",
         "properties": {
           "id": {
             "type": "string"
           },
           "type": {
+            "title": "ZoneTriggerType",
             "enum": [
               "EnterZone",
               "LeaveZone",
@@ -863,18 +907,21 @@
           "conditions": {
             "type": "array",
             "items": {
+              "title": "ZoneCondition",
               "$ref": "#/properties/passages/items/properties/conditions/items"
             }
           },
           "actions": {
             "type": "array",
             "items": {
+              "title": "ZoneAction",
               "type": "object",
               "required": [
                 "kind"
               ],
               "anyOf": [
                 {
+                  "title": "StartQuestAction",
                   "properties": {
                     "kind": {
                       "const": "StartQuest"
@@ -889,6 +936,7 @@
                   "additionalProperties": false
                 },
                 {
+                  "title": "ShowDialogueAction",
                   "properties": {
                     "kind": {
                       "const": "ShowDialogue"
@@ -903,6 +951,7 @@
                   "additionalProperties": false
                 },
                 {
+                  "title": "ActivateZoneAction",
                   "properties": {
                     "kind": {
                       "const": "ActivateZone"
@@ -917,6 +966,7 @@
                   "additionalProperties": false
                 },
                 {
+                  "title": "DeactivateZoneAction",
                   "properties": {
                     "kind": {
                       "const": "DeactivateZone"
@@ -931,6 +981,7 @@
                   "additionalProperties": false
                 },
                 {
+                  "title": "TeleportAction",
                   "properties": {
                     "kind": {
                       "const": "Teleport"
@@ -949,6 +1000,7 @@
                   "additionalProperties": false
                 },
                 {
+                  "title": "SpawnGroupAction",
                   "properties": {
                     "kind": {
                       "const": "SpawnGroup"
@@ -963,6 +1015,7 @@
                   "additionalProperties": false
                 },
                 {
+                  "title": "PlaySoundAction",
                   "properties": {
                     "kind": {
                       "const": "PlaySound"
@@ -977,6 +1030,7 @@
                   "additionalProperties": false
                 },
                 {
+                  "title": "OpenDoorAction",
                   "properties": {
                     "kind": {
                       "const": "OpenDoor"
@@ -1011,6 +1065,7 @@
       }
     },
     "ambience": {
+      "title": "ZoneAmbience",
       "type": "object",
       "properties": {
         "tint": {
@@ -1025,12 +1080,14 @@
         "lights": {
           "type": "array",
           "items": {
+            "title": "ZoneLight",
             "type": "object",
             "properties": {
               "id": {
                 "type": "string"
               },
               "cell": {
+                "title": "ZoneCell",
                 "type": "object",
                 "properties": {
                   "x": {
@@ -1061,12 +1118,14 @@
         "sounds": {
           "type": "array",
           "items": {
+            "title": "ZoneSound",
             "type": "object",
             "properties": {
               "id": {
                 "type": "string"
               },
               "cell": {
+                "title": "ZoneCell",
                 "type": "object",
                 "properties": {
                   "x": {
@@ -1105,12 +1164,14 @@
         "effects": {
           "type": "array",
           "items": {
+            "title": "ZoneEffect",
             "type": "object",
             "properties": {
               "id": {
                 "type": "string"
               },
               "cell": {
+                "title": "ZoneCell",
                 "type": "object",
                 "properties": {
                   "x": {
@@ -1148,6 +1209,7 @@
     "prefabs": {
       "type": "array",
       "items": {
+        "title": "ZonePrefabUse",
         "type": "object",
         "properties": {
           "prefab": {
