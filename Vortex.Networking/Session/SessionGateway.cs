@@ -51,8 +51,14 @@ public sealed class SessionGateway(
     /// <summary>
     ///     Serializes mutation of the <see cref="_sessionToPlayer" />/<see cref="_playerToSession" />
     ///     pair so a session/player mapping is never left half-updated by interleaved connects and
-    ///     disconnects. Only the map-mutation critical sections below hold this; outbound grain calls
-    ///     (observer registration, event publishing) run after release.
+    ///     disconnects. Held across the teardown of a replaced or closed session (unregister,
+    ///     disconnect event, farewell), because the replacement's <c>BeginSessionAsync</c> has to
+    ///     come after its predecessor's unregister; only the new observer's registration and the
+    ///     connected event run after release.
+    ///     <para>
+    ///     ponytail: one global gate, so a slow presence or room grain stalls every login and
+    ///     disconnect behind it until the call times out. Per-player gates if that ever shows.
+    ///     </para>
     /// </summary>
     private readonly SemaphoreSlim _mappingGate = new(1, 1);
 
@@ -162,19 +168,27 @@ public sealed class SessionGateway(
 
     public async Task RemoveSessionAsync(SessionKey key, CancellationToken ct)
     {
-        if (_sessionToPlayer.TryGetValue(key, out PlayerId playerId) && playerId > 0)
-        {
-            await _mappingGate.WaitAsync(ct).ConfigureAwait(false);
+        // First, and outside the gate: a login still attaching this socket checks for it (under
+        // the gate, and again after registering) and stands down instead of mapping a closed
+        // session to the player.
+        _sessions.TryRemove(key, out _);
 
-            try
+        // The mapping is read under the gate, never before it: a login holding the gate may be
+        // about to write it, and a read taken outside would miss it and leave the player mapped to
+        // a socket that is gone.
+        await _mappingGate.WaitAsync(ct).ConfigureAwait(false);
+
+        try
+        {
+            if (_sessionToPlayer.TryGetValue(key, out PlayerId playerId) && playerId > 0)
             {
                 await RemovePlayerSessionCoreAsync(playerId, key, closeTransport: false, ct)
                     .ConfigureAwait(false);
             }
-            finally
-            {
-                _mappingGate.Release();
-            }
+        }
+        finally
+        {
+            _mappingGate.Release();
         }
 
         if (_sessionObservers.TryRemove(key, out ObserverEntry? observer))
@@ -192,8 +206,6 @@ public sealed class SessionGateway(
                 );
             }
         }
-
-        _sessions.TryRemove(key, out _);
 
         // Keyed on what the session was ADMITTED under, not on the context, which by now may be
         // torn down and reporting no address at all.
@@ -224,6 +236,12 @@ public sealed class SessionGateway(
 
         try
         {
+            if (!_sessions.ContainsKey(key))
+            {
+                // The socket closed while the ticket was being checked.
+                return;
+            }
+
             if (
                 _sessionToPlayer.TryGetValue(key, out PlayerId currentPlayerId)
                 && currentPlayerId > 0
@@ -274,7 +292,70 @@ public sealed class SessionGateway(
         await playerPresence
             .RegisterSessionObserverAsync(observer, generation)
             .ConfigureAwait(false);
+
+        // The socket closed after the mapping was written: its removal may have unregistered the
+        // player before the registration above landed, which would leave a dead observer pinned in
+        // the presence grain. Take it back out through the normal path.
+        if (!_sessions.ContainsKey(key))
+        {
+            await UndoLateRegistrationAsync(key, playerId, playerPresence).ConfigureAwait(false);
+
+            return;
+        }
+
         await PublishConnectedEventSafelyAsync(playerId, connectedAt).ConfigureAwait(false);
+    }
+
+    /// <summary>
+    /// The socket closed while it was attaching. If its removal has not run yet, run it now; if it
+    /// already ran, its unregister may have landed before this socket's registration, so unregister
+    /// again -- unless a newer socket already holds the player.
+    /// </summary>
+    private async Task UndoLateRegistrationAsync(
+        SessionKey key,
+        PlayerId playerId,
+        IPlayerPresenceGrain playerPresence
+    )
+    {
+        await _mappingGate.WaitAsync(CancellationToken.None).ConfigureAwait(false);
+
+        try
+        {
+            if (_sessionToPlayer.TryGetValue(key, out PlayerId mapped) && mapped == playerId)
+            {
+                await RemovePlayerSessionCoreAsync(
+                        playerId,
+                        key,
+                        closeTransport: false,
+                        CancellationToken.None
+                    )
+                    .ConfigureAwait(false);
+
+                return;
+            }
+
+            if (_playerToSession.ContainsKey(playerId))
+            {
+                return;
+            }
+
+            await playerPresence
+                .UnregisterSessionObserverAsync(CancellationToken.None)
+                .ConfigureAwait(false);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(
+                ex,
+                "Failed to detach player {PlayerId} from closed session {SessionKey}",
+                playerId,
+                key
+            );
+        }
+        finally
+        {
+            _mappingGate.Release();
+        }
     }
 
     private async Task PublishConnectedEventSafelyAsync(PlayerId playerId, DateTime connectedAt)

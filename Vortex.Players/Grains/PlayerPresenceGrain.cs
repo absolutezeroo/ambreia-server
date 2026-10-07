@@ -155,13 +155,19 @@ internal sealed partial class PlayerPresenceGrain
 
     public async Task UnregisterSessionObserverAsync(CancellationToken ct)
     {
-        await ClearActiveRoomAsync(ct);
+        try
+        {
+            await ClearActiveRoomAsync(ct);
+        }
+        finally
+        {
+            // Whatever leaving the room did, the socket is gone: a kept observer would queue for
+            // nobody, and the keep-alive taken in RegisterSessionObserverAsync goes with it.
+            // Harmless on the OnDeactivateAsync path, which is already deactivating.
+            _sessionObserver = null;
 
-        _sessionObserver = null;
-
-        // The socket is gone, so the keep-alive taken in RegisterSessionObserverAsync goes with it.
-        // Harmless on the OnDeactivateAsync path, which is already deactivating.
-        DeactivateOnIdle();
+            DeactivateOnIdle();
+        }
     }
 
     public Task<bool> IsOnlineAsync(CancellationToken ct)

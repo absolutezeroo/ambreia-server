@@ -32,7 +32,9 @@ public class InfoRetrieveMessageHandler(IGrainFactory grainFactory)
         IPlayerGrain player = _grainFactory.GetPlayerGrain(ctx.PlayerId);
         PlayerSummarySnapshot snapshot = await player.GetSummaryAsync(ct).ConfigureAwait(false);
 
-        await ctx.SendComposerAsync(new UserObjectMessage { Player = snapshot }, ct)
+        await _grainFactory
+            .GetPlayerPresenceGrain(ctx.PlayerId)
+            .SendComposerAsync(new UserObjectMessage { Player = snapshot })
             .ConfigureAwait(false);
     }
 }

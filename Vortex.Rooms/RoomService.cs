@@ -60,6 +60,13 @@ internal sealed partial class RoomService(
         string password = ""
     )
     {
+        // A session not yet signed in carries no player: it must not activate a presence grain,
+        // nor a room of its choosing.
+        if (playerId <= 0)
+        {
+            return;
+        }
+
         IPlayerPresenceGrain playerPresence = _grainFactory.GetPlayerPresenceGrain(playerId);
         RoomPendingSnapshot pendingRoom = await playerPresence
             .GetPendingRoomAsync()

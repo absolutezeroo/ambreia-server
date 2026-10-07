@@ -9,6 +9,7 @@ using Vortex.Primitives.Networking;
 using Vortex.Primitives.Orleans;
 using Vortex.Primitives.Permissions;
 using Vortex.Primitives.Players.Enums;
+using Vortex.Primitives.Players.Grains;
 using Vortex.Primitives.Rooms;
 using Vortex.Protocol.Messages.Incoming.Handshake;
 using Vortex.Protocol.Messages.Outgoing.Handshake;
@@ -72,26 +73,22 @@ public class SSOTicketMessageHandler(
             PermissionSet permissions = await permissionsTask.ConfigureAwait(false);
             int startRoomId = await startRoomTask.ConfigureAwait(false);
 
-            await ctx.SendComposerAsync(
-                    new AuthenticationOKMessage
-                    {
-                        AccountId = playerId,
-                        SuggestedLoginActions = [],
-                        IdentityId = playerId,
-                    },
-                    ct
-                )
-                .ConfigureAwait(false);
-            await ctx.SendComposerAsync(
-                    new UserRightsMessage
-                    {
-                        MembershipLevel = MembershipLevelType.None,
-                        SecurityLevel = SecurityLevelPolicy.Resolve(permissions),
-                        IsAmbassador = false,
-                    },
-                    ct
-                )
-                .ConfigureAwait(false);
+            AuthenticationOKMessage authenticated = new()
+            {
+                AccountId = playerId,
+                SuggestedLoginActions = [],
+                IdentityId = playerId,
+            };
+            UserRightsMessage rights = new()
+            {
+                MembershipLevel = MembershipLevelType.None,
+                SecurityLevel = SecurityLevelPolicy.Resolve(permissions),
+                IsAmbassador = false,
+            };
+
+            // Through the presence queue like everything else sent to a signed-in player, so the
+            // burst cannot overtake or fall behind what the grains send.
+            IPlayerPresenceGrain presence = _grainFactory.GetPlayerPresenceGrain(playerId);
 
             if (startRoomId <= 0)
             {
@@ -103,12 +100,16 @@ public class SSOTicketMessageHandler(
                     playerId
                 );
 
+                await presence.SendComposerAsync(authenticated, rights).ConfigureAwait(false);
+
                 return;
             }
 
-            await ctx.SendComposerAsync(
-                    new RoomForwardMessageComposer { RoomId = RoomId.Parse(startRoomId) },
-                    ct
+            await presence
+                .SendComposerAsync(
+                    authenticated,
+                    rights,
+                    new RoomForwardMessageComposer { RoomId = RoomId.Parse(startRoomId) }
                 )
                 .ConfigureAwait(false);
         }

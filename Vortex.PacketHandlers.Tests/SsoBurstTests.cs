@@ -10,6 +10,7 @@ using Vortex.PacketHandlers.Handshake;
 using Vortex.Primitives.Authentication;
 using Vortex.Primitives.Networking;
 using Vortex.Primitives.Permissions;
+using Vortex.Primitives.Players.Grains;
 using Vortex.Primitives.Rooms;
 using Vortex.Primitives.Server.Grains;
 using Vortex.Protocol.Messages.Incoming.Handshake;
@@ -67,16 +68,25 @@ public sealed class SsoBurstTests
             ),
             FakeProxy.Create<ISessionGateway>(_ => null),
             FakeProxy.Create<IGrainFactory>(call =>
-                call.Method.Name == nameof(IGrainFactory.GetGrain)
-                && call.Method.IsGenericMethod
-                && call.Method.GetGenericArguments()[0] == typeof(IServerConfigGrain)
+                call.Method.Name != nameof(IGrainFactory.GetGrain) ? null
+                : call.Method.GetGenericArguments()[0] == typeof(IServerConfigGrain)
                     ? FakeProxy.Create<IServerConfigGrain>(inner =>
                         inner.Method.Name == nameof(IServerConfigGrain.GetIntAsync)
                         && (string)inner.Args![0]! == SSOTicketMessageHandler.START_ROOM_KEY
                             ? Task.FromResult(startRoomId)
                             : null
                     )
-                    : null
+                : call.Method.GetGenericArguments()[0] == typeof(IPlayerPresenceGrain)
+                    ? FakeProxy.Create<IPlayerPresenceGrain>(inner =>
+                    {
+                        if (inner.Method.Name == nameof(IPlayerPresenceGrain.SendComposerAsync))
+                        {
+                            _sent.AddRange(((object[])inner.Args![0]!).Cast<object>());
+                        }
+
+                        return null;
+                    })
+                : null
             ),
             FakeProxy.Create<IPermissionService>(call =>
                 call.Method.Name == nameof(IPermissionService.ResolveForPlayerAsync)
@@ -88,19 +98,7 @@ public sealed class SsoBurstTests
 
         await handler.HandleAsync(
             new SSOTicketMessage { SSO = "ticket" },
-            new MessageContext(
-                FakeProxy.Create<ISessionContext>(call =>
-                {
-                    if (call.Method.Name == nameof(ISessionContext.SendComposerAsync))
-                    {
-                        _sent.Add(call.Args![0]!);
-                    }
-
-                    return null;
-                }),
-                default,
-                default
-            ),
+            new MessageContext(FakeProxy.Create<ISessionContext>(_ => null), default, default),
             CancellationToken.None
         );
     }

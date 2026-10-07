@@ -28,7 +28,10 @@ internal sealed class ClientPacketDecoder(
             ctx.CryptoIn is not null ? ctx.CryptoIn.Peek(hdr.ToArray()) : hdr
         );
 
-        if (length < 0 || length > _maxPacketBodyBytes)
+        // The body opens with the two-byte header, so anything shorter is malformed -- and refused
+        // here, as invalid data, rather than throwing from PopShort after the cipher has already
+        // advanced (which the WebSocket path does not treat as a protocol error).
+        if (length < sizeof(short) || length > _maxPacketBodyBytes)
         {
             throw new InvalidDataException(
                 $"Client packet declared an invalid body length of {length} bytes "

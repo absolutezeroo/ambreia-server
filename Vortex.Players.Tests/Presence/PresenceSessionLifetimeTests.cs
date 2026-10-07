@@ -12,6 +12,7 @@ using Vortex.Players.Grains;
 using Vortex.Primitives.Events;
 using Vortex.Primitives.Observability;
 using Vortex.Primitives.Orleans.Observers;
+using Vortex.Primitives.Rooms;
 using Vortex.Tests.Support;
 using Xunit;
 
@@ -117,12 +118,42 @@ public sealed class PresenceSessionLifetimeTests
             );
     }
 
-    private static PlayerPresenceGrain Build(Recorder recorder) =>
+    /// <summary>
+    /// Leaving the room on the way out talks to the room directory, and that call sat outside any
+    /// guard: when it threw, the observer and the keep-alive stayed, and the grain kept queueing
+    /// for a socket that was gone until the player logged in again.
+    /// </summary>
+    [Fact]
+    public async Task DroppingTheSession_ReleasesTheActivation_EvenWhenLeavingTheRoomFails()
+    {
+        Recorder recorder = new();
+        PlayerPresenceGrain grain = Build(
+            recorder,
+            FakeProxy.Create<IGrainFactory>(_ => throw new InvalidOperationException("silo busy"))
+        );
+
+        await grain
+            .RegisterSessionObserverAsync(FakeProxy.Create<ISessionContextObserver>(_ => null), 1)
+            .ConfigureAwait(true);
+        grain._state.ActiveRoomId = new RoomId(5);
+
+        Func<Task> drop = () => grain.UnregisterSessionObserverAsync(CancellationToken.None);
+
+        await drop.Should().ThrowAsync<InvalidOperationException>().ConfigureAwait(true);
+
+        grain.AttachedObserver.Should().BeNull();
+        recorder.Deactivations.Should().Be(1);
+    }
+
+    private static PlayerPresenceGrain Build(
+        Recorder recorder,
+        IGrainFactory? grainFactory = null
+    ) =>
         GrainActivationContext.CreateWithIntegerKey<PlayerPresenceGrain>(
             primaryKey: 42,
             recorder.Observe,
             [
-                FakeProxy.Create<IGrainFactory>(_ => null),
+                grainFactory ?? FakeProxy.Create<IGrainFactory>(_ => null),
                 FakeProxy.Create<IEventPublisher>(_ => Task.CompletedTask),
                 NullLogger<PlayerPresenceGrain>.Instance,
                 FakeProxy.Create<IVortexMetrics>(_ => null),
