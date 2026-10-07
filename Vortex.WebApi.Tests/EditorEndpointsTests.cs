@@ -57,7 +57,10 @@ public sealed class EditorEndpointsTests
         );
 
         r.StatusCode.Should().Be(HttpStatusCode.BadRequest);
-        (await r.Content.ReadAsStringAsync()).Should().Contain("\"code\":\"Json\"");
+        (await r.Content.ReadAsStringAsync())
+            .Should()
+            .Contain("\"code\":\"Json\"")
+            .And.Contain("\"severity\":\"Error\"");
     }
 
     [Fact]

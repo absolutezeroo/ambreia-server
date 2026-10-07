@@ -1241,11 +1241,10 @@
       },
       "ZoneSeverity": {
         "enum": [
-          0,
-          1
+          "Error",
+          "Warning"
         ],
-        "type": "integer",
-        "format": "int32"
+        "type": "string"
       },
       "ZoneSummary": {
         "required": [
