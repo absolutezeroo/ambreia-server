@@ -18,6 +18,20 @@ public enum ProductType
 
 public static class ProductTypeEnumExtension
 {
+    /// <summary>
+    /// Whether something still grants this type. A robot (player-owned bots, removed in M0 bis) and
+    /// any retired value would be skipped by the fulfilment planner after the debit, so the catalogue
+    /// does not sell them at all.
+    /// </summary>
+    public static bool IsSold(this ProductType productType) =>
+        productType
+            is ProductType.Floor
+                or ProductType.Wall
+                or ProductType.Effect
+                or ProductType.Badge
+                or ProductType.Premium
+                or ProductType.Pet;
+
     public static string ToLegacyString(this ProductType productType) =>
         productType switch
         {

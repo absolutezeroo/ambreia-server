@@ -12,6 +12,7 @@ using Vortex.Primitives.Catalog;
 using Vortex.Primitives.Catalog.Admin;
 using Vortex.Primitives.Catalog.Providers;
 using Vortex.Primitives.Catalog.Tags;
+using Vortex.Primitives.Furniture.Enums;
 using Vortex.Primitives.Players.Enums.Wallet;
 
 namespace Vortex.Dashboard.API.Admin.Catalogue;
@@ -345,6 +346,13 @@ internal sealed class CatalogAdminService(
             return CatalogAdminResult.Fail("offer_not_found");
         }
 
+        // Nothing grants it, and the catalogue snapshot drops it: written here it would be a row
+        // an operator sees and no player can buy.
+        if (!spec.ProductType.IsSold())
+        {
+            return CatalogAdminResult.Fail("product_type_not_sold");
+        }
+
         if (spec.FurnitureDefinitionId is { } definitionId)
         {
             bool definitionExists = await db
@@ -394,6 +402,11 @@ internal sealed class CatalogAdminService(
         if (entity is null)
         {
             return CatalogAdminResult.Fail("product_not_found");
+        }
+
+        if (!spec.ProductType.IsSold())
+        {
+            return CatalogAdminResult.Fail("product_type_not_sold");
         }
 
         if (spec.FurnitureDefinitionId is { } definitionId)

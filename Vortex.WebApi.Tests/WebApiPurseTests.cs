@@ -1,5 +1,6 @@
 using System;
 using System.Reflection;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using FluentAssertions;
@@ -180,5 +181,21 @@ public sealed class WebApiPurseTests
         (WebApiPlayerService service, _) = await BuildAsync(activityPointCurrencies: 0);
 
         (await service.GetPurseAsync(9999, CancellationToken.None)).Should().BeNull();
+    }
+
+    /// <summary>
+    /// The site's purse still reads <c>habboClubDays</c>: the membership rename stops at the wire
+    /// until the client's protocol step, or every member's purse reads as a non-member's.
+    /// </summary>
+    [Fact]
+    public void Purse_KeepsTheJsonNameTheSiteReads()
+    {
+        string json = JsonSerializer.Serialize(
+            new PlayerPurse(1, 2, 3, 30),
+            JsonSerializerOptions.Web
+        );
+
+        using JsonDocument doc = JsonDocument.Parse(json);
+        doc.RootElement.GetProperty("habboClubDays").GetInt32().Should().Be(30);
     }
 }

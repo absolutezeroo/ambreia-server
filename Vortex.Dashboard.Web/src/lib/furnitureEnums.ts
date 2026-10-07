@@ -9,12 +9,9 @@ export const PRODUCT_TYPES = [
   { value: 1, label: 'Wall' },
   { value: 2, label: 'Effect' },
   { value: 3, label: 'Badge' },
-  { value: 4, label: 'Robot' },
   { value: 5, label: 'Premium' },
   { value: 6, label: 'Pet' },
-  // Extra param is the id in the client's own chat-style library. Only 1000 and up can be granted:
-  // below that the client gates the bubble itself and never asks the server about it.
-  { value: 7, label: 'Chat style' },
+  // 4 (Robot) and 7 (chat style) are not sold any more: nothing grants them (M0 bis).
 ];
 
 export const FURNITURE_CATEGORIES = [

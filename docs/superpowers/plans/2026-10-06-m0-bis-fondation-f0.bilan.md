@@ -11,7 +11,7 @@ Plan : `docs/superpowers/plans/2026-10-06-m0-bis-fondation-f0.md`. Spec : `docs/
 | Fichiers `.cs` suivis | 4 712 | 3 712 |
 | Lignes `.cs` (hors `Vortex.Database/Migrations`) | 289 691 | 248 002 |
 | Attributs `[Fact]`/`[Theory]` | 2 177 | 1 834 |
-| Tests exécutés par le QualityGate | 2 995 (fin du M0) | **2 600, 0 échec** |
+| Tests exécutés par le QualityGate | 2 995 (fin du M0) | **2 604, 0 échec** (après la revue finale) |
 
 | Projet de tests | Fin du M0 | Fin du M0 bis |
 |---|---|---|
@@ -48,7 +48,8 @@ Plan : `docs/superpowers/plans/2026-10-06-m0-bis-fondation-f0.md`. Spec : `docs/
 | 11 | `f7e4ffbd` | Authentication → WebApi.Authentication + Permissions ; ticket SSO dans Players |
 | 12 | `45cc36dc` | Shop → WebApi.Shop |
 | 13 | `6f6fc118` | documents de règles (AGENTS, CONTEXT, CLAUDE, copilot, docs/codebase) |
-| 14 | ce commit | InitialCreate régénérée, corrections révélées par la suite complète, bilan |
+| 14 | `722e1af5` | InitialCreate régénérée, corrections révélées par la suite complète, bilan |
+| revue | ce commit | revue finale de la branche : 2 points importants corrigés (voir plus bas) |
 
 Décisions conservées sans travail de code : 1 (comptes multi-avatars = personnages), 2 (moteur de quêtes gardé,
 signaux enrichis plus tard), 4 (or + diamants, à câbler en M2), 7 (cadeaux gardés), 8 (maison fixe : aucune
@@ -95,6 +96,23 @@ signaux enrichis plus tard), 4 (or + diamants, à câbler en M2), 7 (cadeaux gar
 Toutes les décisions prises en route (« Ruling ») et les mineurs différés sont dans le ledger
 `.superpowers/sdd/2026-10-06-m0-bis-fondation-f0/progress.md` et reportés dans le message de fin de session.
 
+## Revue finale de la branche
+
+Aucun point critique. Deux points importants, corrigés chacun par un test vu rouge puis vert :
+- **Le catalogue vendait des produits que plus rien ne livre** (4 produits `Robot` importés de turbo ; la valeur 7,
+  styles de chat, faisait aussi planter `ToLegacyString` à l'ouverture de la page) : le joueur était débité pour
+  rien. `ProductType.IsSold()` ; le chargement du catalogue écarte ces produits et retire une offre qui n'a plus
+  rien ; le dashboard refuse de les écrire (`product_type_not_sold`) et ne les propose plus.
+  Tests : `AProductNothingGrants_IsDropped_AndAnOfferLeftEmpty_IsNotSold`, `CreateProduct_OfATypeNothingGrants_IsRefused`.
+- **Le porte-monnaie du site lit `habboClubDays`** : le nom JSON est gardé jusqu'à l'étape protocole du client
+  (`[JsonPropertyName]` sur `PlayerPurse.MembershipDays`), `openapi.json` régénéré. Test :
+  `Purse_KeepsTheJsonNameTheSiteReads`.
+
+Mineurs laissés au propriétaire : le sélecteur de vêtements du dashboard lit encore `row.club` (le champ est
+maintenant `membership`, le badge « abonnés » ne s'affiche plus) ; le mur de couches n'interdit pas encore
+Web → Exploitation ; un cas de test « BotNotification » ne teste plus rien ; deux pages de docs citent encore la
+section de config `Vortex:Club`.
+
 ## Inventaire des champs réseau figés ajoutés au M0 bis (à joindre à celui du M0 pour l'étape protocole du client)
 
 | Message | Champ | Valeur | Fichier |
@@ -115,7 +133,7 @@ Toutes les décisions prises en route (« Ruling ») et les mineurs différés s
 
 Messages que le client envoie encore et que le serveur ne lit plus (avertissement « no parser », pas d'erreur) :
 `GetCurrentTimingCode`, `GetBonusRareInfo` (vue d'hôtel), `GetPetCommands`, `PetSelected`, `PassCarryItemToPet`,
-plus ceux retirés au T1-T7. Champs JSON de l'API web publique renommés (`clubDays` → `membershipDays`, etc.) :
+plus ceux retirés au T1-T7. API web publique : le porte-monnaie garde `habboClubDays` (nom lu par le site) ;
 `Vortex.WebApi/openapi.json` régénéré.
 
 ## Checklist du propriétaire avec le client
@@ -127,4 +145,5 @@ plus ceux retirés au T1-T7. Champs JSON de l'API web publique renommés (`clubD
 - [ ] Pet : poser, il suit son maître quand on s'éloigne de plus de 3 cases, sinon il erre ; fiche du pet (barres
       pleines) ; mettre la selle, monter, descendre, retirer la selle.
 - [ ] Échange de meubles entre deux joueurs.
+- [ ] Site : le porte-monnaie d'un abonné affiche bien ses jours restants.
 - [ ] Dashboard : pages Abonnements (Membership), Tables de loot, Pets (colonne Skin), Bots (plus d'onglet objets en main).

@@ -11,6 +11,7 @@ using Vortex.Primitives.Catalog;
 using Vortex.Primitives.Catalog.Enums;
 using Vortex.Primitives.Catalog.Providers;
 using Vortex.Primitives.Catalog.Snapshots;
+using Vortex.Primitives.Furniture.Enums;
 using Vortex.Primitives.Furniture.Providers;
 using Vortex.Primitives.Hosting;
 
@@ -72,11 +73,27 @@ public sealed class CatalogSnapshotProvider<TTag>(
 
             HashSet<int> offerIds = offers.Select(o => o.Id).ToHashSet();
 
-            List<CatalogProductEntity> products = await dbCtx
+            List<CatalogProductEntity> loadedProducts = await dbCtx
                 .CatalogProducts.AsNoTracking()
                 .Where(p => offerIds.Contains(p.CatalogOfferEntityId))
                 .ToListAsync(ct)
                 .ConfigureAwait(false);
+
+            // A product nothing grants any more is not sold: the planner would skip it after the
+            // debit. An offer left with no product at all goes too, so nobody pays for nothing; an
+            // offer that never had a product row is untouched.
+            HashSet<int> offersWithProducts = loadedProducts
+                .Select(p => p.CatalogOfferEntityId)
+                .ToHashSet();
+            List<CatalogProductEntity> products = loadedProducts
+                .Where(p => p.ProductType.IsSold())
+                .ToList();
+            HashSet<int> offersStillSelling = products
+                .Select(p => p.CatalogOfferEntityId)
+                .ToHashSet();
+            offers = offers
+                .Where(o => !offersWithProducts.Contains(o.Id) || offersStillSelling.Contains(o.Id))
+                .ToList();
             List<CatalogFrontPageItemEntity> frontPageItems = await dbCtx
                 .CatalogFrontPageItems.AsNoTracking()
                 .OrderBy(x => x.Position)

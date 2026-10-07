@@ -11,6 +11,7 @@ export default {
     wordfilter_invalid: 'Un mot doit contenir au moins une lettre ou un chiffre, et 64 caractères au plus (le remplacement aussi).',
     wordfilter_notfound: 'Ce mot n’est plus dans la liste.',
     offer_has_products: "Cette offre contient encore des produits. Supprime-les d'abord, puis l'offre.",
+    product_type_not_sold: "Plus rien ne livre ce type de produit : il ne peut plus être vendu.",
     offer_has_purchases: "Cette offre a déjà été achetée ; elle est conservée pour l'historique d'achat.",
     page_has_children: "Cette page a encore des sous-pages. Déplace-les ou supprime-les d'abord.",
     page_has_offers: "Cette page contient encore des offres. Déplace-les ou supprime-les d'abord.",

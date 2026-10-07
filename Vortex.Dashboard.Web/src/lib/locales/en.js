@@ -13,6 +13,7 @@ export default {
     wordfilter_invalid: 'A word needs at least one letter or digit, and 64 characters at most (the replacement too).',
     wordfilter_notfound: 'That word is no longer on the list.',
     offer_has_products: 'This offer still contains products. Delete them first, then delete the offer.',
+    product_type_not_sold: 'Nothing grants this product type any more, so it cannot be sold.',
     offer_has_purchases: 'This offer has already been purchased and is kept for the purchase history.',
     page_has_children: 'This page still has sub-pages. Move or delete them first.',
     page_has_offers: 'This page still holds offers. Move or delete them first.',

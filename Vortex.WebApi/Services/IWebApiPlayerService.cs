@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Text.Json.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -14,9 +15,15 @@ public sealed record AvatarInfo(
 
 /// <summary>
 /// What the site's purse shows. The day count is what is LEFT of the Membership subscription, not
-/// how long it has run.
+/// how long it has run. Sent as <c>habboClubDays</c>, the name the site reads, until the client's
+/// protocol step renames it.
 /// </summary>
-public sealed record PlayerPurse(int Credits, int Diamonds, int Duckets, int MembershipDays);
+public sealed record PlayerPurse(
+    int Credits,
+    int Diamonds,
+    int Duckets,
+    [property: JsonPropertyName("habboClubDays")] int MembershipDays
+);
 
 public interface IWebApiPlayerService
 {

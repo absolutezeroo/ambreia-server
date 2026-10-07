@@ -410,6 +410,65 @@ public sealed class CatalogAdminServiceTests
             .BeTrue();
     }
 
+    /// <summary>
+    /// A robot or a retired type would be listed and charged for, then granted nothing; the
+    /// catalogue snapshot drops such rows, so the editor refuses to write them in the first place.
+    /// </summary>
+    [Theory]
+    [InlineData(ProductType.Robot)]
+    [InlineData((ProductType)7)]
+    public async Task CreateProduct_OfATypeNothingGrants_IsRefused(ProductType type)
+    {
+        DbContextOptions<VortexDbContext> options = NewOptions();
+        CatalogAdminService service = NewService(options, out _);
+
+        CatalogAdminResult page = await service
+            .CreatePageAsync(
+                new CatalogPageCreateSpec(
+                    CatalogType.Normal,
+                    null,
+                    "page",
+                    null,
+                    0,
+                    CatalogPageLayout.Default3x3,
+                    null,
+                    null,
+                    0,
+                    true
+                ),
+                CancellationToken.None
+            )
+            .ConfigureAwait(true);
+
+        CatalogAdminResult offer = await service
+            .CreateOfferAsync(
+                new CatalogOfferCreateSpec(
+                    page.Id!.Value,
+                    "offer_loc",
+                    10,
+                    0,
+                    null,
+                    true,
+                    true,
+                    0,
+                    0,
+                    true
+                ),
+                CancellationToken.None
+            )
+            .ConfigureAwait(true);
+
+        CatalogAdminResult product = await service
+            .CreateProductAsync(
+                new CatalogProductCreateSpec(offer.Id!.Value, type, null, null, 1, 0, 0),
+                CancellationToken.None
+            )
+            .ConfigureAwait(true);
+
+        product.Success.Should().BeFalse();
+        product.ErrorCode.Should().Be("product_type_not_sold");
+    }
+
     [Fact]
     public async Task UpdatePage_UnknownId_ReturnsNotFound()
     {
