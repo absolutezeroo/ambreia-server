@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using Vortex.Primitives.Furniture.Snapshots;
@@ -15,4 +16,7 @@ public interface IFurnitureDefinitionProvider
     /// </summary>
     public FurnitureDefinitionSnapshot? TryGetDefinitionByName(string name);
     public Task ReloadAsync(CancellationToken ct);
+
+    /// <summary>Every loaded definition: the map editor's palette.</summary>
+    public IReadOnlyCollection<FurnitureDefinitionSnapshot> All();
 }
