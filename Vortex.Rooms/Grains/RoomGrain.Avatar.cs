@@ -30,25 +30,7 @@ public sealed partial class RoomGrain
     {
         try
         {
-            IRoomAvatar avatar = await AvatarModule.CreateAvatarFromPlayerAsync(ctx, snapshot, ct);
-
-            // Restore the effect the player was wearing (persisted selection) so it shows on entry and to
-            // everyone already in the room. Late joiners re-sync the same field via the room-entry handler.
-            int wornEffect = await _grainFactory
-                .GetPlayerEffectGrain(snapshot.PlayerId)
-                .GetSelectedEffectAsync(ct);
-
-            if (wornEffect > 0 && avatar.SetEffect(wornEffect))
-            {
-                await SendComposerToRoomAsync(
-                    new AvatarEffectMessageComposer
-                    {
-                        UserId = avatar.ObjectId,
-                        EffectId = wornEffect,
-                        DelayMilliseconds = 0,
-                    }
-                );
-            }
+            await AvatarModule.CreateAvatarFromPlayerAsync(ctx, snapshot, ct);
 
             await PublishRoomEventAsync(
                 new PlayerEnterEvent

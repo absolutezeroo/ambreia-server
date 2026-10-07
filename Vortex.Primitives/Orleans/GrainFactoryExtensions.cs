@@ -91,16 +91,6 @@ public static class GrainFactoryExtensions
     public static IPlayerDirectoryGrain GetPlayerDirectoryGrain(this IGrainFactory factory) =>
         factory.GetGrain<IPlayerDirectoryGrain>(SingletonGrainId.GLOBAL);
 
-    public static IPlayerWalletGrain GetPlayerWalletGrain(
-        this IGrainFactory factory,
-        PlayerId playerId
-    ) => factory.GetGrain<IPlayerWalletGrain>(playerId.Value);
-
-    public static IPlayerWalletGrain GetPlayerWalletGrain(
-        this IGrainFactory factory,
-        long playerId
-    ) => factory.GetGrain<IPlayerWalletGrain>(playerId);
-
     public static IInventoryGrain GetInventoryGrain(
         this IGrainFactory factory,
         PlayerId playerId
@@ -119,16 +109,6 @@ public static class GrainFactoryExtensions
         long playerId
     ) => factory.GetGrain<ICatalogPurchaseGrain>(playerId);
 
-    public static IPlayerNavigatorGrain GetPlayerNavigatorGrain(
-        this IGrainFactory factory,
-        PlayerId playerId
-    ) => factory.GetGrain<IPlayerNavigatorGrain>(playerId.Value);
-
-    public static IPlayerNavigatorGrain GetPlayerNavigatorGrain(
-        this IGrainFactory factory,
-        long playerId
-    ) => factory.GetGrain<IPlayerNavigatorGrain>(playerId);
-
     public static IMarketplacePurchaseGrain GetMarketplacePurchaseGrain(
         this IGrainFactory factory,
         PlayerId playerId
@@ -141,16 +121,6 @@ public static class GrainFactoryExtensions
 
     public static IMarketplaceSearchGrain GetMarketplaceSearchGrain(this IGrainFactory factory) =>
         factory.GetGrain<IMarketplaceSearchGrain>(SingletonGrainId.GLOBAL);
-
-    public static IPlayerRewardVaultGrain GetPlayerRewardVaultGrain(
-        this IGrainFactory factory,
-        PlayerId playerId
-    ) => factory.GetGrain<IPlayerRewardVaultGrain>(playerId.Value);
-
-    public static IPlayerRewardVaultGrain GetPlayerRewardVaultGrain(
-        this IGrainFactory factory,
-        long playerId
-    ) => factory.GetGrain<IPlayerRewardVaultGrain>(playerId);
 
     public static IMessengerGrain GetMessengerGrain(
         this IGrainFactory factory,
@@ -169,44 +139,11 @@ public static class GrainFactoryExtensions
     public static IGroupForumGrain GetGroupForumGrain(this IGrainFactory factory, int groupId) =>
         factory.GetGrain<IGroupForumGrain>(groupId);
 
-    public static IPlayerBadgeGrain GetPlayerBadgeGrain(
-        this IGrainFactory factory,
-        PlayerId playerId
-    ) => factory.GetGrain<IPlayerBadgeGrain>(playerId.Value);
-
-    public static IPlayerBadgeGrain GetPlayerBadgeGrain(
-        this IGrainFactory factory,
-        long playerId
-    ) => factory.GetGrain<IPlayerBadgeGrain>(playerId);
-
-    public static IPlayerEffectGrain GetPlayerEffectGrain(
-        this IGrainFactory factory,
-        PlayerId playerId
-    ) => factory.GetGrain<IPlayerEffectGrain>(playerId.Value);
-
-    public static IPlayerEffectGrain GetPlayerEffectGrain(
-        this IGrainFactory factory,
-        long playerId
-    ) => factory.GetGrain<IPlayerEffectGrain>(playerId);
-
-    public static IAchievementManagerGrain GetAchievementManagerGrain(this IGrainFactory factory) =>
-        factory.GetGrain<IAchievementManagerGrain>(SingletonGrainId.GLOBAL);
-
     public static IServerConfigGrain GetServerConfigGrain(this IGrainFactory factory) =>
         factory.GetGrain<IServerConfigGrain>(SingletonGrainId.GLOBAL);
 
     public static IBadgeDirectoryGrain GetBadgeDirectoryGrain(this IGrainFactory factory) =>
         factory.GetGrain<IBadgeDirectoryGrain>(SingletonGrainId.GLOBAL);
-
-    public static IPlayerAchievementGrain GetPlayerAchievementGrain(
-        this IGrainFactory factory,
-        PlayerId playerId
-    ) => factory.GetGrain<IPlayerAchievementGrain>(playerId.Value);
-
-    public static IPlayerAchievementGrain GetPlayerAchievementGrain(
-        this IGrainFactory factory,
-        long playerId
-    ) => factory.GetGrain<IPlayerAchievementGrain>(playerId);
 
     public static IQuestManagerGrain GetQuestManagerGrain(this IGrainFactory factory) =>
         factory.GetGrain<IQuestManagerGrain>(SingletonGrainId.GLOBAL);
@@ -236,16 +173,6 @@ public static class GrainFactoryExtensions
 
     public static IPlayerLootGrain GetPlayerLootGrain(this IGrainFactory factory, long playerId) =>
         factory.GetGrain<IPlayerLootGrain>(playerId);
-
-    public static IPlayerClothingGrain GetPlayerClothingGrain(
-        this IGrainFactory factory,
-        PlayerId playerId
-    ) => factory.GetGrain<IPlayerClothingGrain>(playerId.Value);
-
-    public static IPlayerClothingGrain GetPlayerClothingGrain(
-        this IGrainFactory factory,
-        long playerId
-    ) => factory.GetGrain<IPlayerClothingGrain>(playerId);
 
     public static IFishingDefinitionsGrain GetFishingDefinitionsGrain(this IGrainFactory factory) =>
         factory.GetGrain<IFishingDefinitionsGrain>(SingletonGrainId.GLOBAL);

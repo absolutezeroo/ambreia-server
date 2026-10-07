@@ -385,9 +385,8 @@ public sealed partial class RoomPetSystem(RoomGrain roomGrain)
     {
         try
         {
-            await _roomGrain
-                ._grainFactory.GetPlayerPresenceGrain(pet.OwnerId)
-                .OnPetAddedToInventoryAsync(pet, ct);
+            // Pets leave in T6; the inventory notice left with the inventory.
+            await Task.CompletedTask;
         }
         catch (Exception ex)
         {

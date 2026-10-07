@@ -51,14 +51,12 @@
   <ItemGroup>
     <ProjectReference Include="..\Vortex.WebApi.Authentication\Vortex.WebApi.Authentication.csproj" />
     <ProjectReference Include="..\Vortex.Permissions\Vortex.Permissions.csproj" />
-    <ProjectReference Include="..\Vortex.Fishing\Vortex.Fishing.csproj" />
     <ProjectReference Include="..\Vortex.WebApi.Shop\Vortex.WebApi.Shop.csproj" />
     <!--
       Referenced for one reason: the assembly scan only sees assemblies the host has loaded, and a
       Vortex.Signals that nobody references is a progression layer that never registers a single
       translator and never raises an error about it.
     -->
-    <ProjectReference Include="..\Vortex.Signals\Vortex.Signals.csproj" />
     <ProjectReference Include="..\Vortex.Crypto\Vortex.Crypto.csproj" />
     <ProjectReference Include="..\Vortex.Database\Vortex.Database.csproj" />
     <ProjectReference Include="..\Vortex.Events\Vortex.Events.csproj" />
@@ -76,7 +74,6 @@
     <ProjectReference Include="..\Vortex.PacketHandlers\Vortex.PacketHandlers.csproj" />
     <ProjectReference Include="..\Vortex.Pipeline\Vortex.Pipeline.csproj" />
     <ProjectReference Include="..\Vortex.Players\Vortex.Players.csproj" />
-    <ProjectReference Include="..\Vortex.Progression\Vortex.Progression.csproj" />
     <ProjectReference Include="..\Vortex.Plugins\Vortex.Plugins.csproj" />
     <ProjectReference Include="..\Vortex.Primitives\Vortex.Primitives.csproj" />
     <ProjectReference Include="..\Vortex.Protocol\Vortex.Protocol.csproj" />

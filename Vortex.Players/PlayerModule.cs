@@ -4,7 +4,6 @@ using Microsoft.Extensions.Options;
 using Vortex.Players.Authentication;
 using Vortex.Players.Configuration;
 using Vortex.Players.Providers;
-using Vortex.Players.RewardVault;
 using Vortex.Primitives.Authentication;
 using Vortex.Primitives.Content;
 using Vortex.Primitives.Hosting;
@@ -36,17 +35,10 @@ public sealed class PlayerModule : IHostPluginModule
         >();
         services.AddSingleton<IAuthenticationService, AuthenticationService>();
 
-        services.Configure<MembershipConfig>(
-            builder.Configuration.GetSection(MembershipConfig.SECTION_NAME)
-        );
         services.Configure<PlayerPresenceConfig>(
             builder.Configuration.GetSection(PlayerPresenceConfig.SECTION_NAME)
         );
 
-        services.AddSingleton<ICurrencyTypeProvider, CurrencyTypeProvider>();
-        services.AddSingleton<IReferenceDataProvider>(sp =>
-            (IReferenceDataProvider)sp.GetRequiredService<ICurrencyTypeProvider>()
-        );
         services.AddSingleton<IPetSkinProvider, PetSkinProvider>();
         services.AddSingleton<IReferenceDataProvider>(sp =>
             (IReferenceDataProvider)sp.GetRequiredService<IPetSkinProvider>()
@@ -55,8 +47,6 @@ public sealed class PlayerModule : IHostPluginModule
         services.AddSingleton<IReferenceDataProvider>(sp =>
             (IReferenceDataProvider)sp.GetRequiredService<IPetLevelProvider>()
         );
-        services.AddSingleton<IRewardVaultSettler, CurrencyRewardVaultSettler>();
-        services.AddSingleton<RewardVaultSettlerMap>();
 
         // The admin services moved to the dashboard: authoring content is its job, not the
         // emulator's. A host without that module has no authoring path here, deliberately.

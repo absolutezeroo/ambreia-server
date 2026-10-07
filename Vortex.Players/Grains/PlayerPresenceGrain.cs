@@ -8,7 +8,6 @@ using Orleans;
 using Orleans.Streams;
 using Vortex.Logging.Extensions;
 using Vortex.Players.Configuration;
-using Vortex.Players.Grains.Modules;
 using Vortex.Primitives.Events;
 using Vortex.Primitives.Networking;
 using Vortex.Primitives.Observability;
@@ -30,11 +29,8 @@ internal sealed partial class PlayerPresenceGrain
     internal readonly IVortexMetrics _metrics;
     internal readonly PlayerPresenceConfig _config;
 
-    private readonly PlayerInventoryModule _inventoryModule;
-
     private readonly Queue<IComposer> _outgoingQueue = new();
     internal readonly PlayerPresenceLiveState _state;
-    private readonly PlayerWalletModule _walletModule;
     private bool _isProcessingQueue;
 
     // Set once the outgoing queue has overflowed and the session has been told to close. Cleared
@@ -73,8 +69,6 @@ internal sealed partial class PlayerPresenceGrain
         _config = config.Value;
 
         _state = new PlayerPresenceLiveState();
-        _inventoryModule = new PlayerInventoryModule(this);
-        _walletModule = new PlayerWalletModule(this);
     }
 
     public Task OnNextAsync(RoomOutbound item, StreamSequenceToken? token = null)

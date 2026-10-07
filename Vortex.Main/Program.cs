@@ -15,7 +15,6 @@ using Vortex.Crypto.Extensions;
 using Vortex.Database.Extensions;
 using Vortex.Database.Migrations;
 using Vortex.Events.Extensions;
-using Vortex.Fishing;
 using Vortex.Furniture;
 using Vortex.Logging.Extensions;
 using Vortex.Main.Configuration;
@@ -32,11 +31,9 @@ using Vortex.Plugins.Extensions;
 using Vortex.Primitives.Console;
 using Vortex.Primitives.Hosting;
 using Vortex.Primitives.Orleans;
-using Vortex.Progression;
 using Vortex.Revisions.Extensions;
 using Vortex.Rooms;
 using Vortex.Runtime.AssemblyProcessing;
-using Vortex.Signals;
 using Vortex.WebApi.Authentication;
 
 namespace Vortex.Main;
@@ -129,9 +126,6 @@ internal class Program
         builder.Services.AddHostPlugin<WebApiAuthenticationModule>(builder);
         builder.Services.AddHostPlugin<FurnitureModule>(builder);
         builder.Services.AddHostPlugin<PlayerModule>(builder);
-        builder.Services.AddHostPlugin<SignalsModule>(builder);
-        builder.Services.AddHostPlugin<ProgressionModule>(builder);
-        builder.Services.AddHostPlugin<FishingModule>(builder);
         // No dashboard or web API module here any more. Both are LOADABLE plugins, found in their
         // folders by PluginManager rather than compiled into this host — registering either here
         // would mean referencing its assembly, which is exactly what makes a plugin impossible to
