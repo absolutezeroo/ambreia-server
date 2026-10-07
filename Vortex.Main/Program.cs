@@ -23,7 +23,6 @@ using Vortex.Main.Console;
 using Vortex.Main.Extensions;
 using Vortex.Main.Hosting;
 using Vortex.Messages.Extensions;
-using Vortex.Navigator;
 using Vortex.Networking.Extensions;
 using Vortex.Observability;
 using Vortex.PacketHandlers;
@@ -38,7 +37,6 @@ using Vortex.Revisions.Extensions;
 using Vortex.Rooms;
 using Vortex.Runtime.AssemblyProcessing;
 using Vortex.Signals;
-using Vortex.Social;
 using Vortex.WebApi.Authentication;
 
 namespace Vortex.Main;
@@ -131,7 +129,6 @@ internal class Program
         builder.Services.AddHostPlugin<WebApiAuthenticationModule>(builder);
         builder.Services.AddHostPlugin<FurnitureModule>(builder);
         builder.Services.AddHostPlugin<PlayerModule>(builder);
-        builder.Services.AddHostPlugin<SocialModule>(builder);
         builder.Services.AddHostPlugin<SignalsModule>(builder);
         builder.Services.AddHostPlugin<ProgressionModule>(builder);
         builder.Services.AddHostPlugin<FishingModule>(builder);
@@ -139,7 +136,6 @@ internal class Program
         // folders by PluginManager rather than compiled into this host — registering either here
         // would mean referencing its assembly, which is exactly what makes a plugin impossible to
         // unload.
-        builder.Services.AddHostPlugin<NavigatorModule>(builder);
         builder.Services.AddHostPlugin<RoomModule>(builder);
         builder.Services.AddHostPlugin<PacketHandlersModule>(builder);
 

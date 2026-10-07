@@ -65,7 +65,6 @@
     <ProjectReference Include="..\Vortex.Furniture\Vortex.Furniture.csproj" />
     <ProjectReference Include="..\Vortex.Logging\Vortex.Logging.csproj" />
     <ProjectReference Include="..\Vortex.Messages\Vortex.Messages.csproj" />
-    <ProjectReference Include="..\Vortex.Navigator\Vortex.Navigator.csproj" />
     <ProjectReference Include="..\Vortex.Networking\Vortex.Networking.csproj" />
     <!-- Vortex.Dashboard.API is deliberately NOT referenced, and must not be. It is a loadable
          plugin now, and ByteLoadingAlc hands any assembly the host already holds to the default
@@ -78,7 +77,6 @@
     <ProjectReference Include="..\Vortex.Pipeline\Vortex.Pipeline.csproj" />
     <ProjectReference Include="..\Vortex.Players\Vortex.Players.csproj" />
     <ProjectReference Include="..\Vortex.Progression\Vortex.Progression.csproj" />
-    <ProjectReference Include="..\Vortex.Social\Vortex.Social.csproj" />
     <ProjectReference Include="..\Vortex.Plugins\Vortex.Plugins.csproj" />
     <ProjectReference Include="..\Vortex.Primitives\Vortex.Primitives.csproj" />
     <ProjectReference Include="..\Vortex.Protocol\Vortex.Protocol.csproj" />

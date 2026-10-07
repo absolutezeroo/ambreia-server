@@ -17,7 +17,6 @@
   <ItemGroup>
     <ProjectReference Include="..\Vortex.Players\Vortex.Players.csproj" />
     <ProjectReference Include="..\Vortex.Progression\Vortex.Progression.csproj" />
-    <ProjectReference Include="..\Vortex.Social\Vortex.Social.csproj" />
     <ProjectReference Include="..\Vortex.Primitives\Vortex.Primitives.csproj" />
     <!--
       The admin services moved to the dashboard, but these tests reach domain types the
