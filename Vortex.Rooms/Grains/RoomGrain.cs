@@ -33,6 +33,7 @@ using Vortex.Primitives.Rooms.Grains;
 using Vortex.Primitives.Rooms.Providers;
 using Vortex.Primitives.Rooms.Snapshots;
 using Vortex.Primitives.World;
+using Vortex.Protocol.Messages.Outgoing.Room.Session;
 using Vortex.Rooms.Configuration;
 using Vortex.Rooms.Grains.Modules;
 using Vortex.Rooms.Grains.Systems;
@@ -143,6 +144,21 @@ public sealed partial class RoomGrain : Grain, IRoomGrain
         DeactivateOnIdle();
 
         return Task.CompletedTask;
+    }
+
+    public async Task ReloadZoneAsync()
+    {
+        RoomForwardMessageComposer forward = new() { RoomId = _state.RoomId };
+
+        // Each occupant's client reloads the room and comes back in by the door of the new
+        // version: the fade the spec asks for, with no new message.
+        await Task.WhenAll(
+            _state.AvatarsByPlayerId.Keys.Select(player =>
+                _grainFactory.GetPlayerPresenceGrain(player).SendComposerAsync(forward)
+            )
+        );
+
+        DeactivateOnIdle();
     }
 
     public Task DelayRoomDeactivationAsync()

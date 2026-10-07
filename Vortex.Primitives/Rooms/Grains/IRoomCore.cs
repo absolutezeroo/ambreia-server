@@ -27,6 +27,12 @@ public interface IRoomCore : IGrainWithIntegerKey
 
     [OneWay]
     public Task DelayRoomDeactivationAsync();
+
+    /// <summary>
+    /// A new version of this room's zone was published: occupants are forwarded back into the room
+    /// and the activation goes, so the next one loads the published document.
+    /// </summary>
+    public Task ReloadZoneAsync();
     public Task EnsureRoomActiveAsync(CancellationToken ct);
 
     // Pure reads: they never mutate _state, so letting them interleave with the room tick (and each

@@ -18,7 +18,7 @@ public sealed class WorldModule : IHostPluginModule
         services.Configure<WorldConfig>(builder.Configuration.GetSection(WorldConfig.SECTION_NAME));
         services.AddSingleton<ZoneValidator>();
         services.AddSingleton(sp => new ZoneRoomReloader(roomId =>
-            sp.GetRequiredService<IGrainFactory>().GetRoomGrain(roomId).DeactivateRoomAsync()
+            sp.GetRequiredService<IGrainFactory>().GetRoomGrain(roomId).ReloadZoneAsync()
         ));
         services.AddSingleton<IZoneEditorService, ZoneEditorService>();
         services.AddSingleton<IZoneRoomSource, ZoneRoomSource>();

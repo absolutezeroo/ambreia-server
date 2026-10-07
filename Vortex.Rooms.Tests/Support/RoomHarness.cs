@@ -83,63 +83,68 @@ internal sealed class RoomHarness
 
         Grain = GrainActivationContext.CreateWithIntegerKey<RoomGrain>(
             RoomIdValue,
-            new SingleOptionsFactory(options),
-            FakeProxy.Create<IFurnitureDefinitionProvider>(call =>
-                call.Method.Name == nameof(IFurnitureDefinitionProvider.TryGetDefinition)
-                    ? Definitions.GetValueOrDefault((int)call.Args![0]!)
-                    : null
-            ),
-            FakeProxy.Create<IStuffDataFactory>(_ => null),
-            Options.Create(new RoomConfig()),
-            NullLogger<IRoomGrain>.Instance,
-            FakeProxy.Create<IRoomModelProvider>(call =>
-                call.Method.Name == nameof(IRoomModelProvider.CompileCustomModel)
-                    ? call.Method.Invoke(Models, call.Args)
-                    : null
-            ),
-            FakeProxy.Create<IRoomItemsProvider>(call =>
-                call.Method.Name == nameof(IRoomItemsProvider.LoadByRoomIdAsync)
-                    ? CountItemsLoadAsync()
-                    : null
-            ),
-            FakeProxy.Create<IRoomObjectLogicProvider>(call =>
-                call.Method.Name == nameof(IRoomObjectLogicProvider.CreateLogicInstance)
-                    ? LogicFactory?.Invoke()
-                    : null
-            ),
-            FakeProxy.Create<IRoomAvatarProvider>(_ => null),
-            FakeProxy.Create<IRoomEventListenerProvider>(_ => Array.Empty<IRoomEventListener>()),
-            BuildGrainFactory(),
-            FakeProxy.Create<IEventPublisher>(call =>
-            {
-                if (call.Method.Name == nameof(IEventPublisher.PublishAsync))
+            ObserveContext,
+            [
+                new SingleOptionsFactory(options),
+                FakeProxy.Create<IFurnitureDefinitionProvider>(call =>
+                    call.Method.Name == nameof(IFurnitureDefinitionProvider.TryGetDefinition)
+                        ? Definitions.GetValueOrDefault((int)call.Args![0]!)
+                        : null
+                ),
+                FakeProxy.Create<IStuffDataFactory>(_ => null),
+                Options.Create(new RoomConfig()),
+                NullLogger<IRoomGrain>.Instance,
+                FakeProxy.Create<IRoomModelProvider>(call =>
+                    call.Method.Name == nameof(IRoomModelProvider.CompileCustomModel)
+                        ? call.Method.Invoke(Models, call.Args)
+                        : null
+                ),
+                FakeProxy.Create<IRoomItemsProvider>(call =>
+                    call.Method.Name == nameof(IRoomItemsProvider.LoadByRoomIdAsync)
+                        ? CountItemsLoadAsync()
+                        : null
+                ),
+                FakeProxy.Create<IRoomObjectLogicProvider>(call =>
+                    call.Method.Name == nameof(IRoomObjectLogicProvider.CreateLogicInstance)
+                        ? LogicFactory?.Invoke()
+                        : null
+                ),
+                FakeProxy.Create<IRoomAvatarProvider>(_ => null),
+                FakeProxy.Create<IRoomEventListenerProvider>(_ =>
+                    Array.Empty<IRoomEventListener>()
+                ),
+                BuildGrainFactory(),
+                FakeProxy.Create<IEventPublisher>(call =>
                 {
-                    PublishedEvents.Add((IEvent)call.Args![0]!);
-                }
-
-                // VSTHRD003: handing back a task the test made on purpose -- a slow or broken
-                // publisher is the whole point of PublishResult, and nothing here awaits it.
-#pragma warning disable VSTHRD003
-                return PublishResult;
-#pragma warning restore VSTHRD003
-            }),
-            FakeProxy.Create<ICancellableEventPublisher>(call =>
-            {
-                IEvent published = (IEvent)call.Args![0]!;
-
-                PublishedEvents.Add(published);
-
-                return Task.FromResult(
-                    new EventContext
+                    if (call.Method.Name == nameof(IEventPublisher.PublishAsync))
                     {
-                        CorrelationId = string.Empty,
-                        Cancel = CancelWhen(published),
+                        PublishedEvents.Add((IEvent)call.Args![0]!);
                     }
-                );
-            }),
-            BuildPermissionService(capabilities),
-            FakeProxy.Create<IVortexMetrics>(_ => null),
-            FakeProxy.Create<IZoneRoomSource>(_ => Task.FromResult(Zone))
+
+                    // VSTHRD003: handing back a task the test made on purpose -- a slow or broken
+                    // publisher is the whole point of PublishResult, and nothing here awaits it.
+#pragma warning disable VSTHRD003
+                    return PublishResult;
+#pragma warning restore VSTHRD003
+                }),
+                FakeProxy.Create<ICancellableEventPublisher>(call =>
+                {
+                    IEvent published = (IEvent)call.Args![0]!;
+
+                    PublishedEvents.Add(published);
+
+                    return Task.FromResult(
+                        new EventContext
+                        {
+                            CorrelationId = string.Empty,
+                            Cancel = CancelWhen(published),
+                        }
+                    );
+                }),
+                BuildPermissionService(capabilities),
+                FakeProxy.Create<IVortexMetrics>(_ => null),
+                FakeProxy.Create<IZoneRoomSource>(_ => Task.FromResult(Zone)),
+            ]
         );
 
         // The security module reads the room's own snapshot to decide who owns the place, so a
@@ -341,9 +346,25 @@ internal sealed class RoomHarness
         await harness.Grain.ApplyZoneAsync(CancellationToken.None).ConfigureAwait(true);
 
         harness.Grain._state.IsMapReady = false;
-        await harness.Grain.MapModule.EnsureMapBuiltAsync(CancellationToken.None).ConfigureAwait(true);
+        await harness
+            .Grain.MapModule.EnsureMapBuiltAsync(CancellationToken.None)
+            .ConfigureAwait(true);
 
         return harness;
+    }
+
+    /// <summary>How many times the room asked to be deactivated.</summary>
+    public int Deactivations { get; private set; }
+
+    private object? ObserveContext(ProxyCall call)
+    {
+        if (call.Method.Name == "DeactivateOnIdle")
+        {
+            Deactivations++;
+        }
+
+        // Recorded, never answered: the default stub decides what the call returns.
+        return null;
     }
 
     /// <summary>Runs the room's write-behind flush once.</summary>
