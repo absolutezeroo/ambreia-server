@@ -41,7 +41,6 @@ public static class VortexEventIds
     public static readonly EventId WordFilterLoaded = new(1212, nameof(WordFilterLoaded));
     public static readonly EventId WordFilterLoadFailed = new(1213, nameof(WordFilterLoadFailed));
 
-
     public static readonly EventId HandlerPipelineError = new(1400, nameof(HandlerPipelineError));
     public static readonly EventId ErrorGroupingDropped = new(1401, nameof(ErrorGroupingDropped));
     public static readonly EventId ErrorGroupingWriteRetry = new(

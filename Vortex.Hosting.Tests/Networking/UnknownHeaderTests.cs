@@ -29,8 +29,8 @@ public sealed class UnknownHeaderTests
     // GetTalentTrackMessageEvent: the client still sends it, the server no longer parses it.
     private const int REMOVED_HEADER = 3757;
 
-    // GetSelectedBadgesMessageEvent: its parser reads an int, so an empty body is a parse failure.
-    private const int PARSED_HEADER = 3726;
+    // SSOTicketMessageEvent: its parser reads a string, so an empty body is a parse failure.
+    private const int PARSED_HEADER = 882;
 
     private static readonly Revision20260701 Revision = new(
         Options.Create(new ProtocolLimitsConfig())

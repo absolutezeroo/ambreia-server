@@ -56,9 +56,8 @@ public sealed class WebApiPlayerService(
         await using VortexDbContext db = await _db.CreateDbContextAsync(ct).ConfigureAwait(false);
 
         // A blank name means the caller is registering: the client posts to this route straight
-        // after /api/public/registration/new, and the avatar is named later by the onboarding step
-        // that AuthenticationOK asks for (AVATAR_NAME_CHANGE is sent for as long as the player has
-        // no NuxCompletedAt, and ChangeUserNameMessageHandler is what sets it). The player row still
+        // after /api/public/registration/new, and the avatar is named later through
+        // /api/newuser/name/select. The player row still
         // has to exist before then — there is no ticket, and so no connection, without one — so it
         // is given a placeholder. Player.Name is uniquely indexed, so the placeholder embeds a GUID
         // rather than a counter: it cannot collide with another registration racing it, nor with a
@@ -115,14 +114,6 @@ public sealed class WebApiPlayerService(
             Gender = genderType,
             PlayerStatus = PlayerStatusType.Offline,
             PlayerPerks = PlayerPerkFlags.None,
-            // A caller who supplied a name has already been through the naming step — the site's
-            // "create an avatar" modal asks for one, checks it as you type, and posts it. Leaving
-            // NuxCompletedAt null meant AuthenticationOK asked for AVATAR_NAME_CHANGE anyway and the
-            // client opened the rename dialog over a player who had just chosen their name.
-            //
-            // The placeholder branch above is the opposite case and must stay null: a registration
-            // names its avatar in the client, which is the whole reason the placeholder exists.
-            NuxCompletedAt = named ? DateTime.UtcNow : null,
         };
 
         db.Players.Add(player);

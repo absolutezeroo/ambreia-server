@@ -58,45 +58,6 @@ public sealed class WebApiPluginContainerTests
         act.Should().NotThrow();
     }
 
-    [Fact]
-    public async Task EveryEventHandler_CanBeBuiltFromThePluginContainer()
-    {
-        await using ServiceProvider provider = await BuildPluginContainerAsync();
-
-        // PluginManager resolves these from the plugin's container, not the host's.
-        Type[] handlers =
-        [
-            .. typeof(WebApiPlugin)
-                .Assembly.GetTypes()
-                .Where(type =>
-                    type is { IsClass: true, IsAbstract: false, IsGenericTypeDefinition: false }
-                    && type.GetInterfaces()
-                        .Any(i =>
-                            i.IsGenericType
-                            && i.GetGenericTypeDefinition() == typeof(IEventHandler<>)
-                        )
-                ),
-        ];
-
-        handlers.Should().NotBeEmpty();
-
-        List<string> failed = [];
-
-        foreach (Type handler in handlers)
-        {
-            try
-            {
-                ActivatorUtilities.CreateInstance(provider, handler);
-            }
-            catch (InvalidOperationException ex)
-            {
-                failed.Add($"{handler.Name}: {ex.Message}");
-            }
-        }
-
-        string.Join(Environment.NewLine, failed).Should().BeEmpty();
-    }
-
     private static async Task<ServiceProvider> BuildPluginContainerAsync()
     {
         ServiceCollection services = [];

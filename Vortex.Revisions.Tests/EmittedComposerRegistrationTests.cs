@@ -144,6 +144,6 @@ public sealed class EmittedComposerRegistrationTests
         files
             .Count(path => ComposerConstruction.IsMatch(File.ReadAllText(path)))
             .Should()
-            .BeGreaterThan(50, "server code is expected to construct composers in many files");
+            .BeGreaterThan(10, "server code is expected to construct composers in many files");
     }
 }

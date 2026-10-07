@@ -79,9 +79,7 @@ public sealed class ConsoleCommandDispatcherTests
             .Dispatcher.Commands.Select(c => c.RequiredCapability)
             .OfType<string>();
 
-        declared
-            .Should()
-            .OnlyContain(capability => Capabilities.Server.All.Contains(capability));
+        declared.Should().OnlyContain(capability => Capabilities.Server.All.Contains(capability));
     }
 
     [Fact]

@@ -73,15 +73,3 @@ entries:
     implementation: Vortex.Rooms/Grains/RoomGrain.cs
     justification: Pure read of an immutable property array.
     owner: rooms
-
-  - symbol: Vortex.Primitives.FriendList.Grains.IMessengerGrain.ReceiveMessageAsync
-    overload: (PlayerId, String, String, String, DateTime, Int32, Int32, CancellationToken)
-    category: SynchronousBoundedLivenessOperation
-    implementation: Vortex.Social/Grains/MessengerGrain.Messaging.cs
-    justification: >
-      SendMessageAsync awaits the receiver's ReceiveMessageAsync with its own turn held open, so two
-      friends writing to each other at the same moment each waited on the other's turn until the 30s
-      call timeout. The body never awaits: it reads the ignore list, hands the push to presence with
-      LogAndForget and adds the id to the delivered set, which the flush copies and clears in one
-      synchronous step.
-    owner: social
