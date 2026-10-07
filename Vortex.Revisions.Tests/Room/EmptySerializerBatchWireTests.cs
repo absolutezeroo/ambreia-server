@@ -166,40 +166,6 @@ public sealed class EmptySerializerBatchWireTests
     }
 
     /// <summary>
-    ///     WIN63 unknowns/_SafePkg_1976/_SafeCls_4488.as via _SafeCls_4504.as (header 363).
-    /// </summary>
-    [Fact]
-    public void CommunityGoalHallOfFame_WritesGoalThenCountedEntries()
-    {
-        ClientPacket packet = Body(
-            typeof(CommunityGoalHallOfFameMessageComposer),
-            new CommunityGoalHallOfFameMessageComposer
-            {
-                GoalCode = "summer_2026",
-                Entries =
-                [
-                    new CommunityGoalHallOfFameEntry
-                    {
-                        UserId = 1,
-                        UserName = "Alice",
-                        Figure = "hd-180-1",
-                        Rank = 1,
-                        CurrentScore = 900,
-                    },
-                ],
-            }
-        );
-
-        packet.PopString().Should().Be("summer_2026");
-        packet.PopInt().Should().Be(1);
-        packet.PopInt().Should().Be(1);
-        packet.PopString().Should().Be("Alice");
-        packet.PopString().Should().Be("hd-180-1");
-        packet.PopInt().Should().Be(1);
-        packet.PopInt().Should().Be(900);
-    }
-
-    /// <summary>
     ///     WIN63 unknowns/_SafePkg_2056/_SafeCls_2564.as (header 1746). Two nested sanction types
     ///     per record, and they bracket the scalars rather than sitting side by side.
     /// </summary>

@@ -43,7 +43,6 @@ internal static class MessageEvent
 
     public const int GetCurrentTimingCodeMessageEvent = 1503;
 
-    public const int GetBotInventoryEvent = 3148;
     public const int GetCreditsInfoEvent = 540;
     public const int CallForHelpFromForumMessageMessageEvent = 2991;
     public const int CallForHelpFromForumThreadMessageEvent = 380;
@@ -97,8 +96,6 @@ internal static class MessageEvent
     public const int UpdateFloorPropertiesMessageEvent = 2937; // AS3-verified 2026-08-13: _composers[2937] = _SafeCls_2580, sent by BCFloorPlanEditor on save. Variable length -- one, six or seven fields
     public const int SelectInitialRoomEvent = 3267; // AS3-verified (direct read, both revisions): RoomPicker::onButtonSelect() -> connection.send(new _SafeCls_3967(roomType)) registry@3267 (old _SafeCls_3549@1176 moved)
     public const int GetInterstitialMessageEvent = 1369; // AS3-verified (old-revision trace): AdManager::showInterstitial() still exists in current revision at 1369
-    public const int CommandBotEvent = 3813; // AS3-verified (direct read): _composers[3813] = _SafeCls_2928(botId, commandId, data), sent by the bot-skill configuration views
-    public const int GetBotCommandConfigurationDataEvent = 2311; // AS3-verified (direct read, both revisions): BotSkillConfigurationViewBase::open() -> _SafeCls_3415
     public const int GetBadgePointLimitsEvent = 2944; // AS3-verified 2026-08-22 (WIN63 registry + sender): _composers[2944] = _SafeCls_2019(), HabboInventory.as:207. The request trigger the old comment could not find is this one; 981 was in no registry table.
     public const int GetBadgesEvent = 770;
     public const int GetBadgeInfoEvent = 3159; // AS3-verified 2026-09-19 (WIN63 registry + sender): _composers[3159] = _SafePkg_2020/_SafeCls_3448(String), sent by ui/handler/FurnitureBadgeDisplayWidgetHandler.as:151. Outgoing 3159 is NftEmeraldConvertResult -- separate id spaces, not a collision
@@ -195,10 +192,6 @@ internal static class MessageEvent
     public const int ActivateQuestMessageEvent = 555;
     public const int CancelQuestMessageEvent = 1221;
     public const int FriendRequestQuestCompleteMessageEvent = 3074; // AS3-verified (direct read, both revisions): HabboFriendList::askForAFriend() quest side-effect -> _SafeCls_2290 (outgoing.quest package)
-    public const int GetCommunityGoalHallOfFameMessageEvent = 2252;
-    public const int GetCommunityGoalProgressMessageEvent = 1815;
-    public const int GetConcurrentUsersGoalProgressMessageEvent = 2167;
-    public const int GetConcurrentUsersRewardMessageEvent = 2451;
     public const int GetDailyQuestMessageEvent = 397;
     public const int GetQuestsMessageEvent = 2895; // AS3-verified (direct search, exact match): HabboQuestEngine::requestQuests() -> _SafeCls_1837
     public const int GetSeasonalQuestsOnlyMessageEvent = 1236; // shape+AS3-verified: HabboQuestEngine::requestSeasonalQuests() (_SafeCls_1847)
@@ -215,10 +208,8 @@ internal static class MessageEvent
     public const int MovePetMessageEvent = 432; // AS3-verified (direct read): _composers[432] = _SafeCls_2560 in WIN63's registry _SafeCls_2046.as:1088, sent by habbo/room/_SafeCls_1821.as::sendMoveUserObjectMessage() on the "monsterplant" branch. The previous 2761 was win63_version's header — a different build, absent from this revision entirely
     public const int MoveWallItemMessageEvent = 2999; // AS3-verified (direct read, both revisions): modifyRoomObject() param3==20 (wall item move) -> _SafeCls_2682
     public const int PickupObjectMessageEvent = 1919;
-    public const int PlaceBotMessageEvent = 2102; // AS3-verified (old-revision trace): _SafeCls_3867 -> placeItemToRoom() still exists in current revision at 2102
     public const int PlaceObjectMessageEvent = 1974; // AS3-verified (direct read, both revisions): room engine placeObject() generic/default branch -> _SafeCls_2135 @1974 (old _SafeCls_2136@3258; prior name-only fix wrongly landed on the stickie/post-it branch's value)
     public const int PlacePetMessageEvent = 1018; // AS3-verified (old-revision trace): _SafeCls_3396 -> placePetToRoom() still exists in current revision at 1018
-    public const int RemoveBotFromFlatMessageEvent = 2743; // AS3-verified (old-revision trace): _SafeCls_2709 -> buttonEventProc() still exists in current revision at 2743
     public const int RemoveItemMessageEvent = 141; // AS3-verified (old-revision trace): _SafeCls_3756 -> deleteWallItem() still exists in current revision at 141
     public const int RemovePetFromFlatMessageEvent = 1640; // AS3-verified (old-revision trace): _SafeCls_2455 -> pickUpPet() still exists in current revision at 1640
     public const int RemoveSaddleFromPetMessageEvent = 2884;
@@ -297,11 +288,6 @@ internal static class MessageEvent
 
     public const int PlacePostItMessageEvent = 1122; // AS3-verified (direct read, both revisions): room engine placeObject() furniture_is_stickie branch -> _SafeCls_3815 @1122 (old _SafeCls_3355@174; slot freed by correcting PlaceObjectMessageEvent above)
     public const int PresentOpenMessageEvent = 2485;
-    public const int RentableSpaceCancelRentMessageEvent = 61; // AS3-verified (old-revision trace): _SafeCls_2575 -> cancelRent() still exists in current revision at 61
-    public const int RentableSpaceConfigureMessageEvent = 4601; // Vortex-custom (not in official AS3 dumps): confirmed via vortex-client's own registry (_composers[4601] = ConfigureRentableSpaceMessageComposer) and commit f3bba54 "feat(rentablespace): add config message, compositors and updated display widget"
-    public const int RentableSpaceGetConfigMessageEvent = 4600; // Vortex-custom (not in official AS3 dumps): confirmed via vortex-client's own registry (_composers[4600] = GetRentableSpaceConfigMessageComposer) and commit e8dc43d "chore(protocol): register rentable space (4600/4601) and pet (3072/3073) message IDs"
-    public const int RentableSpaceRentMessageEvent = 3165; // AS3-verified (old-revision trace): _SafeCls_2674 -> rentSpace() still exists in current revision at 3165
-    public const int RentableSpaceStatusMessageEvent = 2626; // AS3-verified: getRentableSpaceStatus() (exact name match). Note: RentableSpaceGetConfigMessageEvent (4600) also candidate-matched this same AS3 message but with a weaker name fit - left untouched, likely a distinct Vortex-specific config feature paired with RentableSpaceConfigureMessageEvent (4601)
     public const int RoomDimmerChangeStateMessageEvent = 3894;
     public const int RoomDimmerGetPresetsMessageEvent = 3145;
     public const int RoomDimmerSavePresetMessageEvent = 130;
@@ -408,24 +394,11 @@ internal static class MessageEvent
     // interaction.
     public const int VortexStartFishingMessageEvent = 8101;
     public const int VortexFishingMountCatchMessageEvent = 8103;
-    public const int VortexFishingJoinDerbyMessageEvent = 8105;
     public const int VortexStopFishingMessageEvent = 8107;
 
     // The player's whole Hook Havoc attempt, replayed server-side against the seed it was given.
     public const int VortexHookHavocInputMessageEvent = 8109;
 
-    // Raid protection. These two ARE the AIR 1.0.31 ids -- _composers[206] and _composers[2687] --
-    // and they are safe to take because neither appears in the WIN63-202607011411 `_composers`
-    // table: this revision's target client sends nothing on either. (206 is live in WIN63 in the
-    // OTHER direction, as UserTypingMessageComposer below; the two tables are independent.)
-    //
-    // The three composers could not follow suit: AIR binds them at 734 and 3620, which WIN63
-    // already spends on ChatReviewSessionOfferedToGuide and SecondsUntil, and 3553. Taking those
-    // would have silenced two working messages, so the two that collide were reassigned to 3554
-    // and 3555 -- see RaidProtection*MessageComposer below, which is where the real numbers are.
-    // When this revision moves to an AIR-era client, those constants change and nothing else does.
-    public const int GetRaidProtectionSettingsMessageEvent = 206;
-    public const int SaveRaidProtectionSettingsMessageEvent = 2687;
     #endregion
 }
 
@@ -470,7 +443,6 @@ internal static class MessageComposer
     public const int RoomForwardMessageComposer = 3339;
     public const int RoomReadyMessageComposer = 2349;
     public const int YouArePlayingGameMessageComposer = 1600;
-    public const int BotCommandConfigurationComposer = 2463; // AS3-verified (ghost fix): onBotCommandConfigurationEvent @ BotSkillConfigurationViewBase
     public const int BotSkillListUpdateComposer = 1293; // AS3-verified (ghost fix): onBotSkillListUpdateEvent @ RoomDesktop
     public const int AvailabilityStatusMessageComposer = 1350;
     public const int MaintenanceStatusMessageComposer = 1737;
@@ -508,9 +480,6 @@ internal static class MessageComposer
     public const int GuildFurniContextMenuInfoMessageComposer = 3220;
     public const int OneWayDoorStatusMessageComposer = 1778; // AS3-verified (ghost fix): onOneWayDoorStatus
     public const int PresentOpenedMessageComposer = 914;
-    public const int RentableSpaceConfigMessageComposer = 4600; // Vortex-custom (not in official AS3 dumps): confirmed via vortex-client's own registry (_events[4600] = RentableSpaceConfigMessageEvent) and commit f3bba54 "feat(rentablespace): add config message, compositors and updated display widget"
-    public const int RentableSpaceRentFailedMessageComposer = 3117; // AS3-verified (name-only): onRentableSpaceRentFailedMessage
-    public const int RentableSpaceStatusMessageComposer = 2800;
     public const int RoomDimmerPresetsMessageComposer = 1093;
     public const int TradeOpenFailedComposer = 2855; // AS3-verified (direct read, both revisions): inventory handler::onTradingOpenFailed() -> _SafeCls_3581 @2855 (old _SafeCls_3311@2675)
     public const int TradingAcceptComposer = 560;
@@ -594,7 +563,6 @@ internal static class MessageComposer
     public const int IncomeRewardClaimResponseMessageComposer = 2984;
     public const int IncomeRewardStatusMessageComposer = 3976;
     public const int BotAddedToInventoryComposer = 3570; // AS3-verified (old-revision trace): _SafeCls_3152 -> onBotAdded() still exists in current revision at 3570
-    public const int BotInventoryComposer = 682;
     public const int BotRemovedFromInventoryComposer = 2032; // AS3-verified (old-revision trace): still exists in current revision at 2032
     public const int BadgePointLimitsComposer = 3510; // AS3-verified (ghost fix): onBadgePointLimits
     public const int BadgeReceivedComposer = 2840; // AS3-verified (ghost fix): onBadgeReceived
@@ -660,9 +628,6 @@ internal static class MessageComposer
     public const int UserObjectComposer = 3985;
     public const int UserRightsMessageComposer = 3599;
     public const int LatencyPingResponseMessageComposer = 188;
-    public const int CommunityGoalHallOfFameMessageComposer = 363;
-    public const int CommunityGoalProgressMessageComposer = 283;
-    public const int ConcurrentUsersGoalProgressMessageComposer = 1003;
     public const int QuestCancelledMessageComposer = 1425; // AS3-verified (ghost fix): onQuestCancelled
     public const int QuestCompletedMessageComposer = 1272; // AS3-verified (name-only): onQuestCompleted
     public const int QuestDailyMessageComposer = 1417;
@@ -803,7 +768,6 @@ internal static class MessageComposer
     // 8110 was CatchFailed. Origins has no per-cast miss: catches keep coming until the spot runs
     // dry, so the id carries the end of the session instead.
     public const int VortexFishingSpotDepletedMessageComposer = 8110;
-    public const int VortexFishingDerbyStandingMessageComposer = 8112;
     public const int VortexFishingErrorMessageComposer = 8114;
 
     // Only the species actually caught; the client greys out the rest from the definitions.
@@ -822,8 +786,5 @@ internal static class MessageComposer
     // first ids after it that are unused as an event AND as a composer in the WIN63 registry, in
     // that file, and here. Changing one side alone silently unplugs the panel.
     // See packages/vortex-engine/src/habbo/communication/HabboMessages.ts, "=== RAID PROTECTION ===".
-    public const int RaidProtectionCapabilityMessageComposer = 3554; // AIR 1.0.31: 734
-    public const int RaidProtectionSettingsMessageComposer = 3553; // AIR 1.0.31: 3553, kept
-    public const int RaidProtectionSettingsResultMessageComposer = 3555; // AIR 1.0.31: 3620
     #endregion
 }

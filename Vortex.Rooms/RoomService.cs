@@ -21,7 +21,6 @@ using Vortex.Primitives.Rooms;
 using Vortex.Primitives.Rooms.Enums;
 using Vortex.Primitives.Rooms.Grains;
 using Vortex.Primitives.Rooms.Object;
-using Vortex.Primitives.Rooms.RaidProtection;
 using Vortex.Primitives.Rooms.Snapshots.Avatars;
 using Vortex.Primitives.Rooms.Snapshots.Furniture;
 using Vortex.Primitives.Rooms.Snapshots.Mapping;
@@ -30,7 +29,6 @@ using Vortex.Protocol.Messages.Outgoing.Room.Action;
 using Vortex.Protocol.Messages.Outgoing.Room.Engine;
 using Vortex.Protocol.Messages.Outgoing.Room.Layout;
 using Vortex.Protocol.Messages.Outgoing.Room.Permissions;
-using Vortex.Protocol.Messages.Outgoing.Room.RaidProtection;
 using Vortex.Protocol.Messages.Outgoing.Room.Session;
 using Vortex.Rooms.Configuration;
 
@@ -198,38 +196,6 @@ internal sealed partial class RoomService(
         // Builds the whole entry payload -- core, security, avatars, map and furni. Deliberately
         // the aggregate; see EnterRoomAsync above.
         IRoomGrain room = _grainFactory.GetRoomGrain(roomId);
-
-        // Raid protection judges the arrival here and counts it, which is why it sits in this
-        // method and not in OpenRoomForPlayerIdAsync: this is the one place every entry passes
-        // through, doorbell admissions included, and it is reached exactly once per entry. Earlier
-        // would count arrivals that a full room, a wrong password or a cancelled entry then turned
-        // away, and drag the threshold down onto honest traffic.
-        RaidEntryDecision raid = await room.EvaluateEntryAsync(playerId, ct).ConfigureAwait(false);
-
-        if (raid.Verdict != RaidEntryVerdict.Allow)
-        {
-            _logger.LogInformation(
-                "Room {RoomId} turned player {PlayerId} away: raid protection returned {Verdict}.",
-                roomId.Value,
-                playerId.Value,
-                raid.Verdict
-            );
-
-            await playerPresence
-                .SendComposerAsync(
-                    new CantConnectMessageComposer
-                    {
-                        ErrorType =
-                            raid.Verdict == RaidEntryVerdict.Ban
-                                ? RoomConnectionErrorType.Banned
-                                : RoomConnectionErrorType.NoEntry,
-                    }
-                )
-                .ConfigureAwait(false);
-            await playerPresence.SetPendingRoomAsync(RoomId.Invalid, false).ConfigureAwait(false);
-
-            return;
-        }
 
         RoomSnapshot snapshot = await room.GetSnapshotAsync().ConfigureAwait(false);
         RoomControllerType controllerLevel = await room.GetControllerLevelAsync(ctx, ct)
@@ -423,20 +389,6 @@ internal sealed partial class RoomService(
         {
             await playerPresence.SendComposerAsync(replayComposers).ConfigureAwait(false);
         }
-
-        // Last, and to everyone -- including the visitors who get a plain "no". The official client
-        // gates the whole raid-protection feature on this one flag, answers to its own messages
-        // included, so a player who never receives it has it silently switched off. It goes out at
-        // the end of entry because the client drops it unless the room session is already live.
-        await playerPresence
-            .SendComposerAsync(
-                new RaidProtectionCapabilityMessageComposer
-                {
-                    RoomId = roomId.Value,
-                    CanManage = raid.CanManage,
-                }
-            )
-            .ConfigureAwait(false);
 
         await playerPresence.SetActiveRoomAsync(roomId, ct).ConfigureAwait(false);
 

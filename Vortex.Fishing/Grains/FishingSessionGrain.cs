@@ -546,7 +546,7 @@ internal sealed class FishingSessionGrain(
         }
     }
 
-    /// <summary>Hands the catch to the player grain, tells the client, and offers it to the derby.</summary>
+    /// <summary>Hands the catch to the player grain and tells the client.</summary>
     private async Task<FishingCatchOutcome> BankCatchAsync(
         FishSpeciesSnapshot species,
         bool golden,
@@ -616,11 +616,6 @@ internal sealed class FishingSessionGrain(
         await _grainFactory
             .GetFishingPlayerGrain(PlayerId)
             .PushStateAsync(_catches, ct)
-            .ConfigureAwait(true);
-
-        await _grainFactory
-            .GetFishingDerbyGrain()
-            .OfferCatchAsync(PlayerId, weight, ct)
             .ConfigureAwait(true);
 
         return outcome;

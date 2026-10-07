@@ -62,14 +62,6 @@ internal static partial class DashboardEndpoints
             Capabilities.Dashboard.EconomyRead,
             TagEconomy
         );
-        MapReadGet<RentableSpaceAuditPage>(
-            app,
-            ApiV1 + "/rentable-spaces/activity",
-            (HttpContext ctx, EconomyReads reads, CancellationToken ct) =>
-                OkAsync(reads.RentableSpacesAsync(ctx.QueryAsNameValues(), ct)),
-            Capabilities.Dashboard.EconomyRead,
-            TagEconomy
-        );
     }
 
     public static void MapCurrencyOperations(WebApplication app)

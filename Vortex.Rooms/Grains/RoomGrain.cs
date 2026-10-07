@@ -111,7 +111,6 @@ public sealed partial class RoomGrain : Grain, IRoomGrain
     public readonly RoomBotSystem BotSystem;
     public readonly RoomSecurityModule SecurityModule;
     public readonly RoomModerationSystem ModerationSystem;
-    public readonly RoomRaidProtectionSystem RaidProtectionSystem;
     public readonly RoomTradingSystem TradingSystem;
 
     internal IAsyncStream<RoomOutbound> _roomOutbound = default!;
@@ -186,7 +185,6 @@ public sealed partial class RoomGrain : Grain, IRoomGrain
         GameTimers = new GameTimerSystem(this);
         ScoreboardPresenter = new GameScoreboardPresenter(this);
         ModerationSystem = new RoomModerationSystem(this);
-        RaidProtectionSystem = new RoomRaidProtectionSystem(this);
         TradingSystem = new RoomTradingSystem(this);
 
         // Every game the room hosts arrives from the provider, which holds whatever any scanned
@@ -374,10 +372,6 @@ public sealed partial class RoomGrain : Grain, IRoomGrain
         await RunTickStepAsync("games", () => GameRuntime.TickAsync(now, ct));
 
         await RunTickStepAsync("doorbell", () => ProcessDoorbellTimeoutsAsync(now, ct));
-        await RunTickStepAsync(
-            "raid-protection",
-            () => RaidProtectionSystem.TickAsync(DateTime.UtcNow, ct)
-        );
         await RunTickStepAsync("flush-tiles", () => FlushDirtyTilesAsync(ct));
         await RunTickStepAsync("flush-items", () => FlushDirtyItemsAsync(ct));
 

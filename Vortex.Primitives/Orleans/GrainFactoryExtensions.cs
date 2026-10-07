@@ -57,11 +57,6 @@ public static class GrainFactoryExtensions
     public static IRoomModeration GetRoomModeration(this IGrainFactory factory, RoomId roomId) =>
         factory.GetGrain<IRoomModeration>((long)roomId.Value);
 
-    public static IRoomRaidProtection GetRoomRaidProtection(
-        this IGrainFactory factory,
-        RoomId roomId
-    ) => factory.GetGrain<IRoomRaidProtection>((long)roomId.Value);
-
     public static IRoomTrading GetRoomTrading(this IGrainFactory factory, RoomId roomId) =>
         factory.GetGrain<IRoomTrading>((long)roomId.Value);
 
@@ -174,11 +169,6 @@ public static class GrainFactoryExtensions
     public static IGroupForumGrain GetGroupForumGrain(this IGrainFactory factory, int groupId) =>
         factory.GetGrain<IGroupForumGrain>(groupId);
 
-    public static IRentableSpaceGrain GetRentableSpaceGrain(
-        this IGrainFactory factory,
-        int furnitureId
-    ) => factory.GetGrain<IRentableSpaceGrain>(furnitureId);
-
     public static IPlayerBadgeGrain GetPlayerBadgeGrain(
         this IGrainFactory factory,
         PlayerId playerId
@@ -236,9 +226,6 @@ public static class GrainFactoryExtensions
         long playerId
     ) => factory.GetGrain<IPlayerDailyTaskGrain>(playerId);
 
-    public static ICommunityGoalGrain GetCommunityGoalGrain(this IGrainFactory factory) =>
-        factory.GetGrain<ICommunityGoalGrain>(SingletonGrainId.GLOBAL);
-
     public static IPrizePoolManagerGrain GetPrizePoolManagerGrain(this IGrainFactory factory) =>
         factory.GetGrain<IPrizePoolManagerGrain>(SingletonGrainId.GLOBAL);
 
@@ -264,9 +251,6 @@ public static class GrainFactoryExtensions
 
     public static IFishingDefinitionsGrain GetFishingDefinitionsGrain(this IGrainFactory factory) =>
         factory.GetGrain<IFishingDefinitionsGrain>(SingletonGrainId.GLOBAL);
-
-    public static IFishingDerbyGrain GetFishingDerbyGrain(this IGrainFactory factory) =>
-        factory.GetGrain<IFishingDerbyGrain>(SingletonGrainId.GLOBAL);
 
     public static IFishingPlayerGrain GetFishingPlayerGrain(
         this IGrainFactory factory,

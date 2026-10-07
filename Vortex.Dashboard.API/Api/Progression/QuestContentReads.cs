@@ -12,8 +12,8 @@ using Vortex.Primitives.Quests;
 namespace Vortex.Dashboard.API.Api.Progression;
 
 /// <summary>
-/// Read surface for the content behind the quest system that is not a quest: community goals with
-/// their ladder and standing, and daily-task definitions with their rewards and take-up. Authoring
+/// Read surface for the content behind the quest system that is not a quest: daily-task
+/// definitions with their rewards and take-up. Authoring
 /// lives in <see cref="Operations.QuestContentOperations"/>.
 /// </summary>
 /// <remarks>
@@ -23,99 +23,6 @@ namespace Vortex.Dashboard.API.Api.Progression;
 internal sealed class QuestContentReads(IDbContextFactory<VortexDbContext> dbContextFactory)
     : DashboardReads(dbContextFactory)
 {
-    /// <summary>
-    /// Every community goal with its ladder and where the hotel currently stands on it. The active
-    /// one is flagged: exactly one goal is served to players, and which one is a rule (enabled,
-    /// in-window, lowest sort order) an operator should not have to reconstruct by eye.
-    /// </summary>
-    public Task<CommunityGoalList> CommunityGoalsAsync(CancellationToken ct) =>
-        QueryAsync<CommunityGoalList>(
-            async db =>
-            {
-                List<CommunityGoalEntity> goals = await db
-                    .CommunityGoals.AsNoTracking()
-                    .OrderBy(g => g.SortOrder)
-                    .ThenBy(g => g.Id)
-                    .ToListAsync(ct)
-                    .ConfigureAwait(false);
-
-                if (goals.Count == 0)
-                {
-                    return new CommunityGoalList(0, []);
-                }
-
-                List<int> goalIds = [.. goals.Select(g => g.Id)];
-
-                ILookup<int, CommunityGoalLevelEntity> levelsByGoal = (
-                    await db
-                        .CommunityGoalLevels.AsNoTracking()
-                        .Where(l => goalIds.Contains(l.CommunityGoalEntityId))
-                        .OrderBy(l => l.ScoreThreshold)
-                        .ThenBy(l => l.LevelNumber)
-                        .ToListAsync(ct)
-                        .ConfigureAwait(false)
-                ).ToLookup(l => l.CommunityGoalEntityId);
-
-                Dictionary<int, (int Total, int Contributors)> standings = (
-                    await db
-                        .PlayerCommunityGoalContributions.AsNoTracking()
-                        .Where(c => goalIds.Contains(c.CommunityGoalEntityId))
-                        .GroupBy(c => c.CommunityGoalEntityId)
-                        .Select(g => new
-                        {
-                            GoalId = g.Key,
-                            Total = g.Sum(c => c.Score),
-                            Contributors = g.Count(),
-                        })
-                        .ToListAsync(ct)
-                        .ConfigureAwait(false)
-                ).ToDictionary(x => x.GoalId, x => (x.Total, x.Contributors));
-
-                DateTime now = DateTime.UtcNow;
-
-                // The same rule the grain applies, so the page cannot disagree with what players see.
-                int? activeGoalId = goals
-                    .Where(g => g.Enabled && (g.EndsAt is null || g.EndsAt > now))
-                    .Select(g => (int?)g.Id)
-                    .FirstOrDefault();
-
-                List<CommunityGoalRow> items = goals
-                    .Select(goal =>
-                    {
-                        (int total, int contributors) = standings.GetValueOrDefault(goal.Id);
-                        List<CommunityGoalLevelEntity> levels = [.. levelsByGoal[goal.Id]];
-
-                        return new CommunityGoalRow(
-                            goal.Id,
-                            goal.Code,
-                            goal.CampaignCode,
-                            goal.ScorePerQuest,
-                            goal.Enabled,
-                            goal.EndsAt,
-                            goal.SortOrder,
-                            goal.EndsAt is { } endsAt && endsAt <= now,
-                            activeGoalId == goal.Id,
-                            total,
-                            contributors,
-                            levels.Count(l => total >= l.ScoreThreshold),
-                            levels
-                                .Select(l => new CommunityGoalLevelRow(
-                                    l.Id,
-                                    l.LevelNumber,
-                                    l.ScoreThreshold,
-                                    l.RewardUserLimit,
-                                    total >= l.ScoreThreshold
-                                ))
-                                .ToList()
-                        );
-                    })
-                    .ToList();
-
-                return new CommunityGoalList(items.Count, items);
-            },
-            ct
-        );
-
     /// <summary>
     /// Daily-task definitions with their rewards and how they have actually landed: how many
     /// assignments each has produced, and how many were finished and claimed. A task nobody ever

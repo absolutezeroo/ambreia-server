@@ -25,80 +25,6 @@ internal sealed class QuestContentOperations(
     private readonly OperationRunner _runner = runner;
     private readonly IQuestContentAdminService _questContentAdmin = questContentAdmin;
 
-    public Task<OperationResult> CreateCommunityGoalAsync(
-        CreateCommunityGoalRequest request,
-        string actor,
-        CancellationToken ct
-    ) =>
-        _runner.ExecuteAsync(
-            "ops.community_goal.create",
-            actor,
-            request.Reason,
-            targetPlayerId: null,
-            roomId: null,
-            detail: new
-            {
-                request.Code,
-                request.CampaignCode,
-                levelCount = request.Levels?.Count ?? 0,
-            },
-            work: async c =>
-                Throw(
-                    await _questContentAdmin
-                        .CreateCommunityGoalAsync(ToSpec(request), c)
-                        .ConfigureAwait(false)
-                ),
-            ct
-        );
-
-    public Task<OperationResult> UpdateCommunityGoalAsync(
-        UpdateCommunityGoalRequest request,
-        string actor,
-        CancellationToken ct
-    ) =>
-        _runner.ExecuteAsync(
-            "ops.community_goal.update",
-            actor,
-            request.Reason,
-            targetPlayerId: null,
-            roomId: null,
-            detail: new
-            {
-                request.GoalId,
-                request.Code,
-                request.Enabled,
-                levelCount = request.Levels?.Count ?? 0,
-            },
-            work: async c =>
-                Throw(
-                    await _questContentAdmin
-                        .UpdateCommunityGoalAsync(request.GoalId, ToSpec(request), c)
-                        .ConfigureAwait(false)
-                ),
-            ct
-        );
-
-    public Task<OperationResult> DeleteCommunityGoalAsync(
-        DeleteCommunityGoalRequest request,
-        string actor,
-        CancellationToken ct
-    ) =>
-        _runner.ExecuteAsync(
-            "ops.community_goal.delete",
-            actor,
-            request.Reason,
-            targetPlayerId: null,
-            roomId: null,
-            detail: new { request.GoalId },
-            work: async c =>
-                Throw(
-                    await _questContentAdmin
-                        .DeleteCommunityGoalAsync(request.GoalId, c)
-                        .ConfigureAwait(false)
-                ),
-            ct
-        );
-
     public Task<OperationResult> CreateDailyTaskAsync(
         CreateDailyTaskRequest request,
         string actor,
@@ -184,28 +110,6 @@ internal sealed class QuestContentOperations(
         }
     }
 
-    private static CommunityGoalSpec ToSpec(CreateCommunityGoalRequest request) =>
-        new(
-            request.Code,
-            request.CampaignCode,
-            request.ScorePerQuest,
-            request.Enabled,
-            request.EndsAt,
-            request.SortOrder,
-            ToLevels(request.Levels)
-        );
-
-    private static CommunityGoalSpec ToSpec(UpdateCommunityGoalRequest request) =>
-        new(
-            request.Code,
-            request.CampaignCode,
-            request.ScorePerQuest,
-            request.Enabled,
-            request.EndsAt,
-            request.SortOrder,
-            ToLevels(request.Levels)
-        );
-
     private static DailyTaskSpec ToSpec(CreateDailyTaskRequest request) =>
         new(
             request.TaskCode,
@@ -231,22 +135,6 @@ internal sealed class QuestContentOperations(
             request.SortOrder,
             ToRewards(request.Rewards)
         );
-
-    private static IReadOnlyList<CommunityGoalLevelSpec> ToLevels(
-        IReadOnlyList<CommunityGoalLevelBody>? levels
-    ) =>
-        levels is null
-            ? []
-            :
-            [
-                // The level number is derived from the threshold order by the admin service; the
-                // placeholder here is never persisted.
-                .. levels.Select(l => new CommunityGoalLevelSpec(
-                    LevelNumber: 0,
-                    l.ScoreThreshold,
-                    l.RewardUserLimit
-                )),
-            ];
 
     private static IReadOnlyList<DailyTaskRewardSpec> ToRewards(
         IReadOnlyList<DailyTaskRewardBody>? rewards

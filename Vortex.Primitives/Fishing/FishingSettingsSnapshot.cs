@@ -65,8 +65,7 @@ public sealed record FishingSettingsSnapshot
     [Id(12)]
     public required int HookHavocTrophyHandItemId { get; init; }
 
-    [Id(13)]
-    public required int DerbyLeaderboardSize { get; init; }
+    // [Id(13)] was DerbyLeaderboardSize, removed with the fishing derby (M0 bis). Never reuse it.
 
     /// <summary>
     /// The furni class a mounted catch becomes — one model, the catch inscribed into its stuff data.
@@ -102,7 +101,6 @@ public sealed record FishingSettingsSnapshot
             HookHavocFillRate = 250,
             HookHavocTolerance = 12,
             HookHavocTrophyHandItemId = 2001,
-            DerbyLeaderboardSize = 20,
             // The id effectmap.xml gives VortexFishingRod, in the 8000-8999 band no Habbo effect
             // uses. Zero here disables the rod without touching the asset host.
             RodEffectId = 8100,

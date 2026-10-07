@@ -1,5 +1,4 @@
 using System.Collections.Generic;
-using Vortex.Primitives.Bots;
 using Vortex.Primitives.Pets;
 
 namespace Vortex.Inventory.Fulfillment;
@@ -11,8 +10,7 @@ namespace Vortex.Inventory.Fulfillment;
 /// <para>
 /// It is data, not delegates. A plan that carried a <c>DbContext</c> or a callback would be a
 /// workflow engine wearing a smaller name, and it would be exactly as hard to test as the method it
-/// replaced. What is here is what the grant writes: rows, badge codes, pet and bot requests, effect
-/// grants.
+/// replaced. What is here is what the grant writes: rows, badge codes, pet requests, effect grants.
 /// </para>
 /// <para>
 /// Producing it is deterministic and pure. That matters because it runs <em>before</em> the debit:
@@ -29,8 +27,6 @@ public sealed record FulfillmentPlan
 
     public required IReadOnlyList<PetCreateRequest> Pets { get; init; }
 
-    public required IReadOnlyList<BotCreateRequest> Bots { get; init; }
-
     public required IReadOnlyList<PlannedEffect> Effects { get; init; }
 
     public static readonly FulfillmentPlan Empty = new()
@@ -38,18 +34,13 @@ public sealed record FulfillmentPlan
         Furniture = [],
         BadgeCodes = [],
         Pets = [],
-        Bots = [],
         Effects = [],
     };
 
     /// <summary>Whether the plan promises nothing at all — a bundle of product types nothing here
     /// knows how to grant, which is worth telling apart from a bundle that succeeded.</summary>
     public bool IsEmpty =>
-        Furniture.Count == 0
-        && BadgeCodes.Count == 0
-        && Pets.Count == 0
-        && Bots.Count == 0
-        && Effects.Count == 0;
+        Furniture.Count == 0 && BadgeCodes.Count == 0 && Pets.Count == 0 && Effects.Count == 0;
 }
 
 /// <summary>One furniture row to write: which definition, and the stuff data baked into it.</summary>

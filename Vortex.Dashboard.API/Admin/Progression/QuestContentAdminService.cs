@@ -4,12 +4,9 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Logging;
-using Orleans;
 using Vortex.Dashboard.API.Admin.Rules;
 using Vortex.Database.Context;
 using Vortex.Database.Entities.Quests;
-using Vortex.Primitives.Orleans;
 using Vortex.Primitives.Players.Providers;
 using Vortex.Primitives.Players.Wallet;
 using Vortex.Primitives.Quests;
@@ -18,155 +15,14 @@ using Vortex.Primitives.Quests.Admin;
 namespace Vortex.Dashboard.API.Admin.Progression;
 
 /// <summary>
-/// CRUD for community goals and daily-task definitions. A plain singleton opening a short-lived
-/// context per call, like the quest and poll admin services: this data is not grain-owned and admin
-/// writes are rare. Community-goal writes reload the kept-alive goal grain, which caches the active
-/// goal and the hotel total — without that a retimed ladder would only take effect on restart.
+/// CRUD for daily-task definitions. A plain singleton opening a short-lived context per call: this
+/// data is not grain-owned and admin writes are rare.
 /// </summary>
 internal sealed class QuestContentAdminService(
     IDbContextFactory<VortexDbContext> dbContextFactory,
-    IGrainFactory grainFactory,
-    ICurrencyTypeProvider currencyTypes,
-    ILogger<QuestContentAdminService> logger
+    ICurrencyTypeProvider currencyTypes
 ) : IQuestContentAdminService
 {
-    public async Task<QuestContentAdminResult> CreateCommunityGoalAsync(
-        CommunityGoalSpec spec,
-        CancellationToken ct
-    )
-    {
-        if (QuestContentRules.ValidateGoal(spec) is { } error)
-        {
-            return QuestContentAdminResult.Fail(error);
-        }
-
-        await using VortexDbContext db = await dbContextFactory
-            .CreateDbContextAsync(ct)
-            .ConfigureAwait(false);
-
-        string code = spec.Code.Trim();
-
-        if (await db.CommunityGoals.AnyAsync(g => g.Code == code, ct).ConfigureAwait(false))
-        {
-            return QuestContentAdminResult.Fail("goal_code_taken");
-        }
-
-        CommunityGoalEntity entity = new()
-        {
-            Code = code,
-            CampaignCode = (spec.CampaignCode ?? string.Empty).Trim(),
-            ScorePerQuest = Math.Max(1, spec.ScorePerQuest),
-            Enabled = spec.Enabled,
-            EndsAt = spec.EndsAt,
-            SortOrder = spec.SortOrder,
-        };
-
-        db.CommunityGoals.Add(entity);
-        await db.SaveChangesAsync(ct).ConfigureAwait(false);
-
-        AddLevels(db, entity.Id, spec.Levels);
-
-        await db.SaveChangesAsync(ct).ConfigureAwait(false);
-        await ReloadGoalAsync(ct).ConfigureAwait(false);
-
-        return QuestContentAdminResult.Ok(entity.Id);
-    }
-
-    public async Task<QuestContentAdminResult> UpdateCommunityGoalAsync(
-        int goalId,
-        CommunityGoalSpec spec,
-        CancellationToken ct
-    )
-    {
-        if (QuestContentRules.ValidateGoal(spec) is { } error)
-        {
-            return QuestContentAdminResult.Fail(error);
-        }
-
-        await using VortexDbContext db = await dbContextFactory
-            .CreateDbContextAsync(ct)
-            .ConfigureAwait(false);
-
-        CommunityGoalEntity? entity = await db
-            .CommunityGoals.FirstOrDefaultAsync(g => g.Id == goalId, ct)
-            .ConfigureAwait(false);
-
-        if (entity is null)
-        {
-            return QuestContentAdminResult.Fail("goal_not_found");
-        }
-
-        string code = spec.Code.Trim();
-
-        if (
-            await db
-                .CommunityGoals.AnyAsync(g => g.Code == code && g.Id != goalId, ct)
-                .ConfigureAwait(false)
-        )
-        {
-            return QuestContentAdminResult.Fail("goal_code_taken");
-        }
-
-        entity.Code = code;
-        entity.CampaignCode = (spec.CampaignCode ?? string.Empty).Trim();
-        entity.ScorePerQuest = Math.Max(1, spec.ScorePerQuest);
-        entity.Enabled = spec.Enabled;
-        entity.EndsAt = spec.EndsAt;
-        entity.SortOrder = spec.SortOrder;
-
-        // The ladder is replaced wholesale: rungs hold no player state, so nothing is lost, and
-        // reshaping a goal rung by rung would otherwise mean a write per level.
-        List<CommunityGoalLevelEntity> existing = await db
-            .CommunityGoalLevels.Where(l => l.CommunityGoalEntityId == goalId)
-            .ToListAsync(ct)
-            .ConfigureAwait(false);
-
-        db.CommunityGoalLevels.RemoveRange(existing);
-        AddLevels(db, goalId, spec.Levels);
-
-        await db.SaveChangesAsync(ct).ConfigureAwait(false);
-        await ReloadGoalAsync(ct).ConfigureAwait(false);
-
-        return QuestContentAdminResult.Ok(goalId);
-    }
-
-    public async Task<QuestContentAdminResult> DeleteCommunityGoalAsync(
-        int goalId,
-        CancellationToken ct
-    )
-    {
-        await using VortexDbContext db = await dbContextFactory
-            .CreateDbContextAsync(ct)
-            .ConfigureAwait(false);
-
-        CommunityGoalEntity? entity = await db
-            .CommunityGoals.FirstOrDefaultAsync(g => g.Id == goalId, ct)
-            .ConfigureAwait(false);
-
-        if (entity is null)
-        {
-            return QuestContentAdminResult.Fail("goal_not_found");
-        }
-
-        // Contributions reference the goal non-cascade on purpose: what a hotel built together is a
-        // record, not a draft. Disabling is the way to retire one.
-        bool hasContributions = await db
-            .PlayerCommunityGoalContributions.AnyAsync(c => c.CommunityGoalEntityId == goalId, ct)
-            .ConfigureAwait(false);
-
-        if (hasContributions)
-        {
-            return QuestContentAdminResult.Fail("goal_has_contributions");
-        }
-
-        db.CommunityGoals.Remove(entity);
-
-        await db.SaveChangesAsync(ct).ConfigureAwait(false);
-        await ReloadGoalAsync(ct).ConfigureAwait(false);
-
-        return QuestContentAdminResult.Ok(goalId);
-    }
-
     public async Task<QuestContentAdminResult> CreateDailyTaskAsync(
         DailyTaskSpec spec,
         CancellationToken ct
@@ -317,32 +173,6 @@ internal sealed class QuestContentAdminService(
         return QuestContentAdminResult.Ok(taskId);
     }
 
-    private static void AddLevels(
-        VortexDbContext db,
-        int goalId,
-        IReadOnlyList<CommunityGoalLevelSpec> levels
-    )
-    {
-        int number = 1;
-
-        // Renumbered in threshold order: the client pairs reward limits with levels by position, so a
-        // ladder numbered out of order would hand out the wrong rung's limits.
-        foreach (CommunityGoalLevelSpec level in levels.OrderBy(l => l.ScoreThreshold))
-        {
-            db.CommunityGoalLevels.Add(
-                new CommunityGoalLevelEntity
-                {
-                    CommunityGoalEntityId = goalId,
-                    LevelNumber = number,
-                    ScoreThreshold = Math.Max(0, level.ScoreThreshold),
-                    RewardUserLimit = Math.Max(0, level.RewardUserLimit),
-                }
-            );
-
-            number++;
-        }
-    }
-
     private static void AddRewards(
         VortexDbContext db,
         int taskId,
@@ -361,26 +191,6 @@ internal sealed class QuestContentAdminService(
                     Amount = Math.Max(0, reward.Amount),
                 }
             );
-        }
-    }
-
-    private async Task ReloadGoalAsync(CancellationToken ct)
-    {
-        try
-        {
-            await grainFactory.GetCommunityGoalGrain().ReloadAsync(ct).ConfigureAwait(false);
-        }
-        catch (Exception ex)
-        {
-            // The DB write already committed -- the live goal is now stale until the next reload or
-            // restart. Never swallow this: it is the "DB write not reflected in live state" bug
-            // class called out in AGENTS.md.
-            logger.LogError(
-                ex,
-                "Community goal reload failed after an admin write committed -- the live goal is now stale until the next reload or restart"
-            );
-
-            throw;
         }
     }
 

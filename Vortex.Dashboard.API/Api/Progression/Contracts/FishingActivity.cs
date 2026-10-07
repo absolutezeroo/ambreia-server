@@ -7,8 +7,4 @@ namespace Vortex.Dashboard.API.Api.Progression.Contracts;
 /// an operator sets.
 /// </summary>
 /// <param name="Anglers">How many players have ever fished.</param>
-public sealed record FishingActivity(
-    IReadOnlyList<FishingRecordRow> Records,
-    IReadOnlyList<FishingDerbyRow> Derbies,
-    int Anglers
-);
+public sealed record FishingActivity(IReadOnlyList<FishingRecordRow> Records, int Anglers);

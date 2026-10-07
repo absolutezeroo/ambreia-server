@@ -327,57 +327,6 @@ internal sealed class ContentOperations(OperationRunner runner, IContentAdminSer
             ct
         );
 
-    public Task<OperationResult> SaveRentableTermsAsync(
-        RentableTermsRequest request,
-        string actor,
-        CancellationToken ct
-    ) =>
-        _runner.ExecuteAsync(
-            "ops.content.rentable_terms.save",
-            actor,
-            request.Reason,
-            targetPlayerId: null,
-            roomId: null,
-            detail: new { request.FurnitureId, request.Price },
-            work: async c =>
-                Throw(
-                    await _contentAdmin
-                        .UpsertRentableSpaceTermsAsync(
-                            new RentableSpaceTermsSpec(
-                                request.FurnitureId,
-                                request.Price,
-                                request.CurrencyTypeId,
-                                request.RentDurationSeconds,
-                                request.RequiresHc
-                            ),
-                            c
-                        )
-                        .ConfigureAwait(false)
-                ),
-            ct
-        );
-
-    public Task<OperationResult> DeleteRentableTermsAsync(
-        DeleteRentableTermsRequest request,
-        string actor,
-        CancellationToken ct
-    ) =>
-        _runner.ExecuteAsync(
-            "ops.content.rentable_terms.delete",
-            actor,
-            request.Reason,
-            targetPlayerId: null,
-            roomId: null,
-            detail: new { request.TermsId },
-            work: async c =>
-                Throw(
-                    await _contentAdmin
-                        .DeleteRentableSpaceTermsAsync(request.TermsId, c)
-                        .ConfigureAwait(false)
-                ),
-            ct
-        );
-
     public Task<OperationResult> GrantBadgeAsync(
         BadgeGrantRequest request,
         string actor,

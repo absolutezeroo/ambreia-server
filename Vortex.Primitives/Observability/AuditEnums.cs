@@ -12,7 +12,6 @@ public enum AuditCategory
     Security,
     Social,
     System,
-    RentableSpace,
 
     /// <summary>
     /// Player progression: achievements, quests, badges. The player-life events that are neither

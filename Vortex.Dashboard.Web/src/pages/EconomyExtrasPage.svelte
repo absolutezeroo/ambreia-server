@@ -1,6 +1,6 @@
 <script lang="ts">
-  // The economy's smaller tables, each of which had no surface at all: rentable spaces with who is
-  // actually renting them, and the currency catalogue with how much of each is held.
+  // The economy's smaller tables that have no surface of their own: today the currency catalogue,
+  // with how much of each is held.
   import { onMount } from 'svelte';
   import { apiGet } from '../lib/api';
   import { createWriteOps } from '../lib/writeOps';
@@ -10,24 +10,18 @@
   import ConfirmReasonModal from '../components/ConfirmReasonModal.svelte';
   import LoadingOverlay from '../components/LoadingOverlay.svelte';
   import OpResult from '../components/OpResult.svelte';
-  import { formatNumber, formatDate } from '../lib/format';
+  import { formatNumber } from '../lib/format';
   import { isPermissionDeniedError } from '../lib/permissions';
-  import { openPlayer } from '../lib/session';
   import AccessDeniedNotice from '../components/AccessDeniedNotice.svelte';
   import Drawer from '../components/Drawer.svelte';
   import PageHeader from '../components/PageHeader.svelte';
-  import AssetImage from '../components/AssetImage.svelte';
-  import EntityLink from '../components/EntityLink.svelte';
   import StatCard from '../components/StatCard.svelte';
-  import Tabs from '../components/Tabs.svelte';
-  import { Store, Coins } from '@lucide/svelte';
-  import TableFilter from '../components/TableFilter.svelte';
-  import { filterRows } from '../lib/tableView';
+  import { Coins } from '@lucide/svelte';
   import { t } from '../lib/i18n';
   import type { EconomyExtras } from '../lib/apiTypes';
 
   /**
-   * The three editors' forms. Every number binds to a <input type="number">, which hands back a
+   * The currency editor's form. Every number binds to a <input type="number">, which hands back a
    * string while it is being typed and a number once it is not -- hence both, and the Number()
    * on every read below.
    */
@@ -40,30 +34,15 @@
     startingAmount: number | string;
   };
 
-  type TermsForm = {
-    furnitureId: number | string;
-    price: number | string;
-    currencyTypeId: number | string;
-    rentDurationSeconds: number | string;
-    requiresHc: boolean;
-  };
 
   let loading = $state(false);
   let forbidden = $state(false);
   let error = $state('');
   let data = $state<EconomyExtras | null>(null);
 
-  // Grows without bound -- one row per rented space.
-  let rentQuery = $state('');
-  let rentRows = $derived(data?.rentableSpaces || []);
-  let rentView = $derived(filterRows(rentRows, rentQuery));
 
   const ops = createWriteOps(refresh);
 
-  // These sections are independent jobs that were stacked vertically, so reaching the last one
-  // meant scrolling past every other. Nothing here is read against anything else -- which is
-  // both what makes tabs right and what would have made them wrong.
-  let tab = $state('rentables');
 
   let canManage = $derived(hasDashboardCapability($identity, CAPABILITIES.opsContentManage));
 
@@ -75,22 +54,9 @@
     enabled: true,
     startingAmount: 0,
   });
-  const emptyTerms = (): TermsForm => ({
-    furnitureId: 0,
-    price: 0,
-    currencyTypeId: 0,
-    rentDurationSeconds: 3600,
-    requiresHc: false,
-  });
 
   let currencyForm = $state<CurrencyForm | null>(null);
-  let termsForm = $state<TermsForm | null>(null);
 
-  // Placed-furniture ids have no picker of their own (the furniture picker searches definitions, not
-  // placed items), so the id at least previews the space it points at.
-  let termsPreviewUrl =
-    $derived((data?.rentableSpaces || []).find((r) => r.furnitureId === Number(termsForm?.furnitureId))
-      ?.iconUrl ?? null);
 
   async function refresh() {
     loading = true;
@@ -134,15 +100,6 @@
 
 {#if data}
   <div class="metric-grid" style="margin-top: 12px;">
-    <StatCard
-      label={$t('economyExtras.rentableSpaces')}
-      value={formatNumber(data.totals.rentableSpaces)}
-      sub={$t('economyExtras.rentedNow', { count: formatNumber(data.totals.rentedNow) })}
-    >
-      {#snippet icon()}
-        <Store size={15} strokeWidth={2} aria-hidden="true" />
-      {/snippet}
-    </StatCard>
     <StatCard label={$t('economyExtras.currencies')} value={formatNumber(data.totals.currencies)}>
       {#snippet icon()}
         <Coins size={15} strokeWidth={2} aria-hidden="true" />
@@ -150,70 +107,6 @@
     </StatCard>
   </div>
 
-  <Tabs
-    bind:active={tab}
-    storageKey="economyExtras"
-    tabs={[
-      { id: 'rentables', label: $t('economyExtras.tabRentables'), icon: Store },
-      { id: 'currencies', label: $t('economyExtras.tabCurrencies'), icon: Coins },
-    ]}
-  />
-
-  {#if tab === 'rentables'}
-  <section class="panel" style="margin-top: 12px;">
-    <div class="panel-head">
-      <h2>{$t('economyExtras.rentableTitle')}</h2>
-      {#if canManage}
-        <button type="button" class="ghost-button" onclick={() => (termsForm = emptyTerms())}>{$t('economyExtras.termsEditorTitle')}</button>
-      {/if}
-    </div>
-    <p class="muted">{$t('economyExtras.rentableDescription')}</p>
-    <TableFilter bind:query={rentQuery} shown={rentView.length} total={rentRows.length} />
-    <div class="table-wrap">
-      <table>
-        <thead>
-          <tr>
-            <th>{$t('economyExtras.colFurniture')}</th>
-            <th>{$t('economyExtras.colRenter')}</th>
-            <th>{$t('economyExtras.colUntil')}</th>
-            <th>{$t('economyExtras.colTerms')}</th>
-          </tr>
-        </thead>
-        <tbody>
-          {#each rentView as row}
-            <tr>
-              <td>
-                <span class="cell">
-                  <AssetImage src={row.iconUrl} alt={row.furnitureName || ''} size={32} />
-                  <span>{row.furnitureName || `#${row.furnitureId}`}</span>
-                </span>
-              </td>
-              <td>
-                {#if row.renterId}
-                  <EntityLink type="player" id={row.renterId} label={row.renterName} {openPlayer} />
-                {:else}
-                  <span class="muted">{$t('economyExtras.vacant')}</span>
-                {/if}
-              </td>
-              <td>{row.rentedUntil ? formatDate(row.rentedUntil) : '—'}</td>
-              <td>
-                {#if row.hasTerms}
-                  <span class="status-badge status-badge--ok">{$t('economyExtras.termsSet')}</span>
-                {:else}
-                  <span class="status-badge status-badge--warn">{$t('economyExtras.noTerms')}</span>
-                {/if}
-              </td>
-            </tr>
-          {:else}
-            <tr><td colspan="4" class="muted">{$t('economyExtras.noRentals')}</td></tr>
-          {/each}
-        </tbody>
-      </table>
-    </div>
-  </section>
-  {/if}
-
-  {#if tab === 'currencies'}
   <section class="panel" style="margin-top: 12px;">
     <div class="panel-head">
       <h2>{$t('economyExtras.currenciesTitle')}</h2>
@@ -320,69 +213,6 @@
     {/snippet}
   </Drawer>
 {/if}
-
-{#if canManage && termsForm}
-  {@const form = termsForm}
-  <Drawer title={$t('economyExtras.termsEditorTitle')} eyebrow={$t('economyExtras.editorTitle')} onclose={() => (termsForm = null)}>
-        <form id="terms-form"
-          class="inline-form"
-          onsubmit={(event) => {
-            event.preventDefault();
-            ops.ask(
-              '/api/v1/operations/content/rentable-terms',
-              {
-                furnitureId: Number(form.furnitureId),
-                price: Number(form.price) || 0,
-                currencyTypeId: Number(form.currencyTypeId),
-                rentDurationSeconds: Number(form.rentDurationSeconds),
-                requiresHc: Boolean(form.requiresHc),
-              },
-              $t('economyExtras.saveTerms'),
-              $t('economyExtras.saveTermsSummary', { id: form.furnitureId })
-            );
-          }}
-        >
-          <label>
-            {$t('economyExtras.colFurniture')}
-            <span class="cell">
-              <input autocomplete="off" spellcheck="false" type="number" bind:value={form.furnitureId} min="1" />
-              <AssetImage src={termsPreviewUrl} alt="" size={32} />
-            </span>
-          </label>
-          <label>
-            {$t('economyExtras.price')}
-            <input autocomplete="off" spellcheck="false" type="number" bind:value={form.price} min="0" />
-          </label>
-          <label>
-            {$t('economyExtras.colCurrency')}
-            <select bind:value={form.currencyTypeId}>
-              <option value={0}>{$t('economyExtras.pickCurrency')}</option>
-              {#each data.currencies || [] as currency}
-                <option value={currency.id}>{currency.name || `#${currency.id}`}</option>
-              {/each}
-            </select>
-          </label>
-          <label>
-            {$t('economyExtras.durationSeconds')}
-            <input autocomplete="off" spellcheck="false" type="number" bind:value={form.rentDurationSeconds} min="1" />
-          </label>
-          <label class="check">
-            <input autocomplete="off" spellcheck="false" type="checkbox" bind:checked={form.requiresHc} />
-            {$t('economyExtras.requiresHc')}
-          </label>
-        </form>
-
-    {#if $ops.error}<p class="empty-state danger" role="alert">{$ops.error}</p>{/if}
-    {#if $ops.result}<OpResult result={$ops.result} />{/if}
-
-    {#snippet actions()}
-      <button type="submit" form="terms-form" disabled={!form.furnitureId || !form.currencyTypeId || !form.rentDurationSeconds}>{$t('economyExtras.saveTerms')}</button>
-      <button type="button" class="ghost-button" onclick={() => (termsForm = null)}>{$t('common.cancel')}</button>
-    {/snippet}
-  </Drawer>
-{/if}
-
-  {/if}
 
 {/if}
 

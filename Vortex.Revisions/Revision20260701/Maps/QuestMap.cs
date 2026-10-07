@@ -16,22 +16,6 @@ internal sealed class QuestMap : IRevisionMap
             MessageEvent.FriendRequestQuestCompleteMessageEvent,
             new FriendRequestQuestCompleteMessageParser()
         );
-        builder.MapParser(
-            MessageEvent.GetCommunityGoalHallOfFameMessageEvent,
-            new GetCommunityGoalHallOfFameMessageParser()
-        );
-        builder.MapParser(
-            MessageEvent.GetCommunityGoalProgressMessageEvent,
-            new GetCommunityGoalProgressMessageParser()
-        );
-        builder.MapParser(
-            MessageEvent.GetConcurrentUsersGoalProgressMessageEvent,
-            new GetConcurrentUsersGoalProgressMessageParser()
-        );
-        builder.MapParser(
-            MessageEvent.GetConcurrentUsersRewardMessageEvent,
-            new GetConcurrentUsersRewardMessageParser()
-        );
         builder.MapParser(MessageEvent.GetDailyTasksEvent, new GetDailyTasksMessageParser());
         builder.MapParser(MessageEvent.ClaimDailyTaskEvent, new ClaimDailyTaskMessageParser());
         builder.MapParser(MessageEvent.GetDailyQuestMessageEvent, new GetDailyQuestMessageParser());
@@ -75,24 +59,6 @@ internal sealed class QuestMap : IRevisionMap
             typeof(QuestCancelledMessageComposer),
             new QuestCancelledMessageComposerSerializer(
                 MessageComposer.QuestCancelledMessageComposer
-            )
-        );
-        builder.MapSerializer(
-            typeof(CommunityGoalHallOfFameMessageComposer),
-            new CommunityGoalHallOfFameMessageComposerSerializer(
-                MessageComposer.CommunityGoalHallOfFameMessageComposer
-            )
-        );
-        builder.MapSerializer(
-            typeof(CommunityGoalProgressMessageComposer),
-            new CommunityGoalProgressMessageComposerSerializer(
-                MessageComposer.CommunityGoalProgressMessageComposer
-            )
-        );
-        builder.MapSerializer(
-            typeof(ConcurrentUsersGoalProgressMessageComposer),
-            new ConcurrentUsersGoalProgressMessageComposerSerializer(
-                MessageComposer.ConcurrentUsersGoalProgressMessageComposer
             )
         );
         builder.MapSerializer(

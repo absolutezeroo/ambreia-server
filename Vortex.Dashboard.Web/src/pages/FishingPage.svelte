@@ -533,33 +533,6 @@
         </div>
       {/if}
 
-      {#if activity && activity.derbies.length > 0}
-        <div class="panel-head">
-          <h2>{$t('fishing.derbies')}</h2>
-        </div>
-        <div class="table-scroll">
-          <table>
-            <thead>
-              <tr>
-                <th>{$t('fishing.nameKey')}</th>
-                <th>{$t('fishing.bestAt')}</th>
-                <th>{$t('fishing.entries')}</th>
-              </tr>
-            </thead>
-            <tbody>
-              {#each activity.derbies as derby (derby.id)}
-                <tr>
-                  <td>{derby.nameKey}</td>
-                  <td class="muted">
-                    {new Date(derby.startsAt).toLocaleDateString()} – {new Date(derby.endsAt).toLocaleDateString()}
-                  </td>
-                  <td>{formatNumber(derby.entries)}</td>
-                </tr>
-              {/each}
-            </tbody>
-          </table>
-        </div>
-      {/if}
     </section>
   {/if}
 {/if}

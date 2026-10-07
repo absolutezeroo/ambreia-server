@@ -21,7 +21,6 @@ using Vortex.Inventory.Fulfillment;
 using Vortex.Inventory.Furniture;
 using Vortex.Logging;
 using Vortex.Primitives;
-using Vortex.Primitives.Bots;
 using Vortex.Primitives.Catalog;
 using Vortex.Primitives.Catalog.Providers;
 using Vortex.Primitives.Catalog.Snapshots;
@@ -44,7 +43,6 @@ using Vortex.Primitives.Players.Grains;
 using Vortex.Primitives.Rooms.Enums;
 using Vortex.Primitives.Rooms.Object;
 using Vortex.Primitives.Rooms.Snapshots.Furniture;
-using Vortex.Protocol.Messages.Outgoing.Inventory.Bots;
 
 namespace Vortex.Inventory.Grains;
 
@@ -158,11 +156,9 @@ public sealed partial class InventoryGrain
 
         IReadOnlyList<string> badgeCodes = plan.BadgeCodes;
         IReadOnlyList<PetCreateRequest> petRequests = plan.Pets;
-        IReadOnlyList<BotCreateRequest> botRequests = plan.Bots;
         IReadOnlyList<PlannedEffect> effectGrants = plan.Effects;
 
         List<PetEntity> committedPets = [];
-        List<BotEntity> committedBots = [];
 
         VortexDbContext dbCtx = await _dbCtxFactory.CreateDbContextAsync(ct).ConfigureAwait(true);
 
@@ -201,7 +197,7 @@ public sealed partial class InventoryGrain
                 grantedBadgeCodes.Add(badgeCode);
             }
 
-            // Pets and bots join the same transaction as the furniture and the badges. They used to
+            // Pets join the same transaction as the furniture and the badges. They used to
             // be committed by CreatePetAsync and CreateBotAsync, one commit each, after this one had
             // already gone through — so an offer carrying several families had four commit
             // boundaries, and a failure at any of them left the earlier families delivered while the
@@ -209,10 +205,8 @@ public sealed partial class InventoryGrain
             // in the same grain: four commits was an artefact of how the code grew, not a constraint
             // anything imposed.
             committedPets = [.. petRequests.Select(BuildPetEntity)];
-            committedBots = [.. botRequests.Select(BuildBotEntity)];
 
             dbCtx.Pets.AddRange(committedPets);
-            dbCtx.Bots.AddRange(committedBots);
 
             // THE PIVOT. Everything the offer promised that this grain owns is durable after this
             // line, and nothing past it may refund the purchase: the goods exist. What remains is
@@ -304,7 +298,7 @@ public sealed partial class InventoryGrain
         // theirs, or grants an effect in another grain — none of it is a reason to take the purchase
         // back, and none of it runs under the request's cancellation token: the client hanging up is
         // the single most common way this used to fail, and it was being read as "undo the sale".
-        await AnnounceGrantedFamiliesAsync(committedPets, committedBots, effectGrants);
+        await AnnounceGrantedFamiliesAsync(committedPets, effectGrants);
     }
 
     /// <summary>
@@ -319,7 +313,6 @@ public sealed partial class InventoryGrain
     /// </remarks>
     private async Task AnnounceGrantedFamiliesAsync(
         List<PetEntity> pets,
-        List<BotEntity> bots,
         IReadOnlyList<PlannedEffect> effectGrants
     )
     {
@@ -357,33 +350,6 @@ public sealed partial class InventoryGrain
                     ex,
                     "Pet {PetId} was granted to player {PlayerId} but could not be announced.",
                     pet.Id,
-                    this.GetPrimaryKeyLong()
-                );
-            }
-        }
-
-        foreach (BotEntity bot in bots)
-        {
-            try
-            {
-                // Opens the inventory on top of adding the row: the player just bought this, so
-                // showing them where it went is the point.
-                await presence
-                    .SendComposerAsync(
-                        new BotAddedToInventoryEventMessageComposer
-                        {
-                            Bot = ToSnapshot(bot),
-                            OpenInventory = true,
-                        }
-                    )
-                    .ConfigureAwait(true);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(
-                    ex,
-                    "Bot {BotId} was granted to player {PlayerId} but could not be announced.",
-                    bot.Id,
                     this.GetPrimaryKeyLong()
                 );
             }

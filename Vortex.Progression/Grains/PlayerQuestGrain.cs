@@ -47,11 +47,6 @@ internal sealed class PlayerQuestGrain(
     /// the main campaign list).</summary>
     private const string DailyCampaign = "daily";
 
-    /// <summary>Admin-editable knobs for the landing-view "players online" goal.</summary>
-    private const string ConcurrentUsersGoalEnabledKey = "quests.concurrent_users_goal.enabled";
-    private const string ConcurrentUsersGoalCountKey = "quests.concurrent_users_goal.user_count";
-    private const string ConcurrentUsersGoalBadgeKey = "quests.concurrent_users_goal.reward_badge";
-
     private int PlayerId => (int)this.GetPrimaryKeyLong();
 
     public async Task<QuestListSnapshot> GetQuestsAsync(bool openWindow, CancellationToken ct)
@@ -59,105 +54,6 @@ internal sealed class PlayerQuestGrain(
         ImmutableArray<QuestSnapshot> all = await BuildAllAsync(ct).ConfigureAwait(true);
 
         return new QuestListSnapshot { Quests = BuildListQuests(all), OpenWindow = openWindow };
-    }
-
-    public async Task SendConcurrentUsersGoalAsync(int onlineCount, CancellationToken ct)
-    {
-        (bool enabled, int goal, string badgeCode) = await ReadConcurrentGoalConfigAsync()
-            .ConfigureAwait(true);
-
-        bool rewarded = await HasBadgeAsync(badgeCode, ct).ConfigureAwait(true);
-
-        await SendConcurrentUsersGoalAsync(
-                ConcurrentUsersGoalRule.Resolve(enabled, goal, onlineCount, rewarded),
-                onlineCount,
-                goal
-            )
-            .ConfigureAwait(true);
-    }
-
-    public async Task ClaimConcurrentUsersRewardAsync(int onlineCount, CancellationToken ct)
-    {
-        (bool enabled, int goal, string badgeCode) = await ReadConcurrentGoalConfigAsync()
-            .ConfigureAwait(true);
-
-        bool rewarded = await HasBadgeAsync(badgeCode, ct).ConfigureAwait(true);
-
-        if (ConcurrentUsersGoalRule.CanClaim(enabled, goal, onlineCount, rewarded))
-        {
-            await _grainFactory
-                .GetInventoryGrain(PlayerId)
-                .GrantBadgeAsync(badgeCode, ct)
-                .ConfigureAwait(true);
-
-            rewarded = true;
-
-            _logger.LogInformation(
-                "Player {PlayerId} claimed the concurrent-users goal reward ({BadgeCode}) at {OnlineCount} online.",
-                PlayerId,
-                badgeCode,
-                onlineCount
-            );
-        }
-
-        // Answered either way: a refused claim (too few online, or a second click) must still leave
-        // the widget showing the truth rather than spinning on the button it just pressed.
-        await SendConcurrentUsersGoalAsync(
-                ConcurrentUsersGoalRule.Resolve(enabled, goal, onlineCount, rewarded),
-                onlineCount,
-                goal
-            )
-            .ConfigureAwait(true);
-    }
-
-    private Task SendConcurrentUsersGoalAsync(
-        ConcurrentUsersGoalState state,
-        int onlineCount,
-        int goal
-    ) =>
-        Presence.SendComposerAsync(
-            new ConcurrentUsersGoalProgressMessageComposer
-            {
-                State = state,
-                UserCount = onlineCount,
-                UserCountGoal = goal,
-            }
-        );
-
-    /// <summary>
-    /// The goal's admin-editable knobs. They live in the server-config grain rather than appsettings
-    /// so an operator can raise the target mid-event without a restart.
-    /// </summary>
-    private async Task<(bool Enabled, int Goal, string BadgeCode)> ReadConcurrentGoalConfigAsync()
-    {
-        IServerConfigGrain config = _grainFactory.GetServerConfigGrain();
-
-        bool enabled = await config
-            .GetBoolAsync(ConcurrentUsersGoalEnabledKey, false)
-            .ConfigureAwait(true);
-        int goal = await config.GetIntAsync(ConcurrentUsersGoalCountKey, 0).ConfigureAwait(true);
-        string badgeCode =
-            await config.GetValueAsync(ConcurrentUsersGoalBadgeKey).ConfigureAwait(true)
-            ?? string.Empty;
-
-        // No badge configured means there is nothing to hand out, so the goal is not really on --
-        // otherwise the button would claim a reward that does not exist and never flip to rewarded.
-        return (enabled && badgeCode.Length > 0, goal, badgeCode);
-    }
-
-    private async Task<bool> HasBadgeAsync(string badgeCode, CancellationToken ct)
-    {
-        if (badgeCode.Length == 0)
-        {
-            return false;
-        }
-
-        ImmutableArray<PlayerBadgeSnapshot> badges = await _grainFactory
-            .GetPlayerBadgeGrain(PlayerId)
-            .GetBadgesAsync(ct)
-            .ConfigureAwait(true);
-
-        return badges.Any(b => string.Equals(b.BadgeCode, badgeCode, StringComparison.Ordinal));
     }
 
     public async Task StartCampaignAsync(string campaignCode, CancellationToken ct)
@@ -605,15 +501,6 @@ internal sealed class PlayerQuestGrain(
                     .SendComposerAsync(
                         new QuestCompletedMessageComposer { Quest = snapshot, ShowDialog = true }
                     )
-                    .ConfigureAwait(true);
-
-                // A finished quest feeds the community goal, if the active one is fed by this
-                // campaign. The goal grain decides that -- it owns which campaign counts, what a
-                // completion is worth (`score_per_quest`), and ignores everything else. One quest
-                // finished is one completion here; turning it into score is not this grain's call.
-                await _grainFactory
-                    .GetCommunityGoalGrain()
-                    .ContributeAsync(PlayerId, snapshot.CampaignCode, completions: 1, ct)
                     .ConfigureAwait(true);
 
                 await _events

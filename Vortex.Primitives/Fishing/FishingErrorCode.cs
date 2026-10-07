@@ -31,8 +31,7 @@ public enum FishingErrorCode
     /// <summary>The sighting or record id is unknown, expired, or belongs to somebody else.</summary>
     UnknownSighting = 4,
 
-    /// <summary>The derby is not in its registration window.</summary>
-    DerbyClosed = 5,
+    // 5 was DerbyClosed, removed with the fishing derby (M0 bis). Never reuse it.
 
     /// <summary>
     /// The player is not standing next to the spot. Checked server-side because the client sends a

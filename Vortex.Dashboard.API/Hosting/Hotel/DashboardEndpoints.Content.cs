@@ -81,18 +81,6 @@ internal static partial class DashboardEndpoints
             (ops, body, actor, ct) => ops.SaveCurrencyAsync(body, actor, ct),
             body => !string.IsNullOrWhiteSpace(body.Name)
         );
-        Map<RentableTermsRequest>(
-            app,
-            "/rentable-terms",
-            (ops, body, actor, ct) => ops.SaveRentableTermsAsync(body, actor, ct),
-            body => body.FurnitureId > 0 && body.RentDurationSeconds > 0 && body.CurrencyTypeId > 0
-        );
-        Map<DeleteRentableTermsRequest>(
-            app,
-            "/rentable-terms/delete",
-            (ops, body, actor, ct) => ops.DeleteRentableTermsAsync(body, actor, ct),
-            body => body.TermsId > 0
-        );
         Map<BadgeGrantRequest>(
             app,
             "/badges/grant",

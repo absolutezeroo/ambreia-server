@@ -6,37 +6,10 @@ namespace Vortex.Dashboard.API.Admin.Rules;
 
 /// <summary>
 /// What the dashboard may save as quest content. Pure, because the mistakes these catch are ones
-/// the client never reports: it simply draws a ladder that cannot progress, or a task nobody can
-/// finish.
+/// the client never reports: it simply draws a task nobody can finish.
 /// </summary>
 public static class QuestContentRules
 {
-    /// <summary>Null when the goal may be saved; otherwise the error code.</summary>
-    public static string? ValidateGoal(CommunityGoalSpec spec)
-    {
-        if (string.IsNullOrWhiteSpace(spec.Code))
-        {
-            return "goal_code_required";
-        }
-
-        if (spec.Levels.Count == 0)
-        {
-            // A goal with no rungs can never progress: the widget would sit at 0% forever.
-            return "goal_levels_required";
-        }
-
-        if (spec.Levels.Any(l => l.ScoreThreshold < 0))
-        {
-            return "goal_threshold_negative";
-        }
-
-        // Two rungs at the same total cannot both be "next", and the ladder would stall on whichever
-        // came first.
-        return spec.Levels.Select(l => l.ScoreThreshold).Distinct().Count() == spec.Levels.Count
-            ? null
-            : "goal_threshold_duplicate";
-    }
-
     /// <summary>Null when the daily task may be saved; otherwise the error code.</summary>
     public static string? ValidateDailyTask(DailyTaskSpec spec)
     {

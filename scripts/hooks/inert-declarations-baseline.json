@@ -2,7 +2,6 @@
   "known": [
     "config-catalog/clothing.enforce_ownership",
     "config-catalog/fishing.daily_currency_cap",
-    "config-catalog/fishing.derby_leaderboard_size",
     "config-catalog/fishing.frenzy_duration_minutes",
     "config-catalog/fishing.frenzy_interval_hours",
     "config-catalog/fishing.frenzy_xp_multiplier",
@@ -29,9 +28,6 @@
     "config-catalog/pets.vocal_interval_ms",
     "config-catalog/pets.wander_idle_max_ms",
     "config-catalog/pets.wander_idle_min_ms",
-    "config-catalog/quests.concurrent_users_goal.enabled",
-    "config-catalog/quests.concurrent_users_goal.reward_badge",
-    "config-catalog/quests.concurrent_users_goal.user_count",
     "inbound-chain/ChargeFireworkMessage",
     "inbound-chain/class_165Message",
     "inbound-chain/class_200Message",

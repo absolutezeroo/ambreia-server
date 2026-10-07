@@ -16,45 +16,6 @@ namespace Vortex.Players.Tests.Quests;
 public sealed class QuestContentRulesTests
 {
     [Fact]
-    public void ValidateGoal_RejectsAGoalWithNoRungs()
-    {
-        // The widget would sit at 0% forever with no way to progress.
-        QuestContentRules.ValidateGoal(Goal()).Should().Be("goal_levels_required");
-    }
-
-    [Fact]
-    public void ValidateGoal_RejectsTwoRungsAtTheSameTotal()
-    {
-        // Neither can be "next", so the ladder stalls on whichever the ordering happens to pick.
-        QuestContentRules
-            .ValidateGoal(Goal(Rung(100), Rung(100)))
-            .Should()
-            .Be("goal_threshold_duplicate");
-    }
-
-    [Fact]
-    public void ValidateGoal_RejectsANegativeThreshold()
-    {
-        QuestContentRules.ValidateGoal(Goal(Rung(-1))).Should().Be("goal_threshold_negative");
-    }
-
-    [Fact]
-    public void ValidateGoal_RejectsAnEmptyCode()
-    {
-        QuestContentRules
-            .ValidateGoal(Goal(Rung(100)) with { Code = "  " })
-            .Should()
-            .Be("goal_code_required");
-    }
-
-    [Fact]
-    public void ValidateGoal_AcceptsALadderInAnyOrder()
-    {
-        // The admin service renumbers by threshold, so an operator typing them out of order is fine.
-        QuestContentRules.ValidateGoal(Goal(Rung(500), Rung(100))).Should().BeNull();
-    }
-
-    [Fact]
     public void ValidateDailyTask_RejectsATaskWithNoObjective()
     {
         // Nothing would ever advance it, so it can never be completed or claimed.
@@ -99,20 +60,6 @@ public sealed class QuestContentRulesTests
         // A task can be worth doing for the badge count alone; only a malformed reward is refused.
         QuestContentRules.ValidateDailyTask(Task()).Should().BeNull();
     }
-
-    private static CommunityGoalLevelSpec Rung(int threshold) =>
-        new(0, threshold, RewardUserLimit: 5);
-
-    private static CommunityGoalSpec Goal(params CommunityGoalLevelSpec[] levels) =>
-        new(
-            Code: "summer_build",
-            CampaignCode: "summer",
-            ScorePerQuest: 1,
-            Enabled: true,
-            EndsAt: null,
-            SortOrder: 0,
-            Levels: new List<CommunityGoalLevelSpec>(levels)
-        );
 
     private static DailyTaskSpec Task(params DailyTaskRewardSpec[] rewards) =>
         new(

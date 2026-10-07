@@ -748,35 +748,6 @@ export interface CodeDirectoryRow {
   description: string | null;
 }
 
-export interface CommunityGoalLevelRow {
-  id: number;
-  levelNumber: number;
-  scoreThreshold: number;
-  rewardUserLimit: number;
-  reached: boolean;
-}
-
-export interface CommunityGoalList {
-  count: number;
-  items: CommunityGoalRow[];
-}
-
-export interface CommunityGoalRow {
-  id: number;
-  code: string;
-  campaignCode: string;
-  scorePerQuest: number;
-  enabled: boolean;
-  endsAt: string | null;
-  sortOrder: number;
-  expired: boolean;
-  isActive: boolean;
-  totalScore: number;
-  contributors: number;
-  reachedLevel: number;
-  levels: CommunityGoalLevelRow[];
-}
-
 export interface ConfigEntryDto {
   key: string;
   group: string;
@@ -921,15 +892,10 @@ export interface EconomyCurrencyTotals {
 
 export interface EconomyExtras {
   totals: EconomyExtrasTotals;
-  rentableSpaces: RentableSpaceRow[];
-  rentableTerms: RentableSpaceTermRow[];
   currencies: CurrencyTypeRow[];
 }
 
 export interface EconomyExtrasTotals {
-  rentableSpaces: number;
-  rentedNow: number;
-  rentableTerms: number;
   currencies: number;
 }
 
@@ -995,7 +961,6 @@ export interface EffectOwnerCount {
 
 export interface FishingActivity {
   records: FishingRecordRow[];
-  derbies: FishingDerbyRow[];
   anglers: number;
 }
 
@@ -1004,14 +969,6 @@ export interface FishingContent {
   species: FishingSpeciesRow[];
   rodTiers: FishingRodTierRow[];
   levels: FishingLevelRow[];
-}
-
-export interface FishingDerbyRow {
-  id: number;
-  nameKey: string;
-  startsAt: string;
-  endsAt: string;
-  entries: number;
 }
 
 export interface FishingLevelRow {
@@ -2311,51 +2268,6 @@ export interface QuestTypeOption {
 export interface QuestTypeOptions {
   count: number;
   items: QuestTypeOption[];
-}
-
-export interface RentableSpaceAuditEntry {
-  id: number;
-  occurredAt: string;
-  action: string;
-  actorPlayerId: number | null;
-  actorName: string | null;
-  targetPlayerId: number | null;
-  targetName: string | null;
-  roomId: number | null;
-  itemId: number | null;
-  data: string | null;
-  correlationId: string | null;
-}
-
-export interface RentableSpaceAuditPage {
-  activeRentals: number;
-  count: number;
-  page: number;
-  limit: number;
-  total: number;
-  offset: number;
-  items: RentableSpaceAuditEntry[];
-}
-
-export interface RentableSpaceRow {
-  id: number;
-  furnitureId: number;
-  furnitureName: string | null;
-  iconUrl: string | null;
-  renterId: number | null;
-  renterName: string | null;
-  rentedUntil: string | null;
-  rented: boolean;
-  hasTerms: boolean;
-}
-
-export interface RentableSpaceTermRow {
-  id: number;
-  furnitureEntityId: number;
-  price: number;
-  currencyTypeEntityId: number;
-  rentDurationSeconds: number;
-  requiresHc: boolean;
 }
 
 export interface ReportWindow {

@@ -91,8 +91,6 @@ public class VortexDbContext(DbContextOptions<VortexDbContext> options)
 
     public DbSet<RoomMuteEntity> RoomMutes { get; init; } = null!;
 
-    public DbSet<RoomRaidProtectionEntity> RoomRaidProtection { get; init; } = null!;
-
     public DbSet<RoomRightEntity> RoomRights { get; init; } = null!;
 
     public DbSet<RoomEntryLogEntity> RoomEntryLogs { get; init; } = null!;
@@ -192,10 +190,6 @@ public class VortexDbContext(DbContextOptions<VortexDbContext> options)
 
     public DbSet<GroupForumPostEntity> GroupForumPosts { get; init; } = null!;
 
-    public DbSet<RentableSpaceTermsEntity> RentableSpaceTerms { get; init; } = null!;
-
-    public DbSet<RoomRentableSpaceEntity> RoomRentableSpaces { get; init; } = null!;
-
     public DbSet<PetEntity> Pets { get; init; } = null!;
 
     public DbSet<BotEntity> Bots { get; init; } = null!;
@@ -226,12 +220,6 @@ public class VortexDbContext(DbContextOptions<VortexDbContext> options)
     public DbSet<FishingPlayerStateEntity> FishingPlayerState { get; init; } = null!;
 
     public DbSet<FishingRecordEntity> FishingRecords { get; init; } = null!;
-
-    // The derby is Vortex's own addition, not an Origins feature — Origins has the Fishing Frenzy,
-    // which is a schedule rather than a leaderboard and therefore needs no table.
-    public DbSet<FishingDerbyEntity> FishingDerbies { get; init; } = null!;
-
-    public DbSet<FishingDerbyEntryEntity> FishingDerbyEntries { get; init; } = null!;
 
     public DbSet<FurniturePurchasableClothingEntity> FurniturePurchasableClothing { get; init; } =
         null!;
@@ -275,13 +263,6 @@ public class VortexDbContext(DbContextOptions<VortexDbContext> options)
     public DbSet<DailyTaskRewardEntity> DailyTaskRewards { get; init; } = null!;
 
     public DbSet<PlayerDailyTaskEntity> PlayerDailyTasks { get; init; } = null!;
-
-    public DbSet<CommunityGoalEntity> CommunityGoals { get; init; } = null!;
-
-    public DbSet<CommunityGoalLevelEntity> CommunityGoalLevels { get; init; } = null!;
-
-    public DbSet<PlayerCommunityGoalContributionEntity> PlayerCommunityGoalContributions { get; init; } =
-        null!;
 
     public DbSet<PrizePoolEntity> PrizePools { get; init; } = null!;
 
@@ -337,14 +318,6 @@ public class VortexDbContext(DbContextOptions<VortexDbContext> options)
         // "At most one live guild per room" is enforced on rooms.group_id instead — nullable, so
         // repeated NULLs are allowed and dissolving a guild frees the room.
         mb.Entity<GroupEntity>().HasIndex(g => g.RoomEntityId).IsUnique(false);
-
-        // Self-referencing FK on furniture.rentable_space_furniture_id (DATA-MODEL §3.3).
-        // Non-cascade: deleting a space furni must not cascade-delete the items placed in it.
-        mb.Entity<FurnitureEntity>()
-            .HasOne(f => f.RentableSpaceFurnitureEntity)
-            .WithMany()
-            .HasForeignKey(f => f.RentableSpaceFurnitureEntityId)
-            .OnDelete(DeleteBehavior.SetNull);
 
         // cfh_tickets has three FKs to players (reporter, reported, picker) — non-cascade on all of
         // them so MySQL never has to pick a cascade path, and so a ticket record (audit-adjacent)
@@ -420,26 +393,6 @@ public class VortexDbContext(DbContextOptions<VortexDbContext> options)
             .HasOne(a => a.DailyTaskEntity)
             .WithMany()
             .HasForeignKey(a => a.DailyTaskEntityId)
-            .OnDelete(DeleteBehavior.Restrict);
-
-        // A goal owns its levels; contributions cascade with the player and are Restrict against the
-        // goal so retiring a goal never silently destroys who contributed what.
-        mb.Entity<CommunityGoalLevelEntity>()
-            .HasOne(l => l.CommunityGoalEntity)
-            .WithMany()
-            .HasForeignKey(l => l.CommunityGoalEntityId)
-            .OnDelete(DeleteBehavior.Cascade);
-
-        mb.Entity<PlayerCommunityGoalContributionEntity>()
-            .HasOne(c => c.PlayerEntity)
-            .WithMany()
-            .HasForeignKey(c => c.PlayerEntityId)
-            .OnDelete(DeleteBehavior.Cascade);
-
-        mb.Entity<PlayerCommunityGoalContributionEntity>()
-            .HasOne(c => c.CommunityGoalEntity)
-            .WithMany()
-            .HasForeignKey(c => c.CommunityGoalEntityId)
             .OnDelete(DeleteBehavior.Restrict);
 
         // Prize entries carry a plain definition id (no FK) because effect and club prizes

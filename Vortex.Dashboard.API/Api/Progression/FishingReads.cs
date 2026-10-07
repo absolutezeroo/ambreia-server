@@ -154,7 +154,7 @@ internal sealed class FishingReads(
         );
 
     /// <summary>
-    /// What players have actually caught: the records board and the derbies. Read-only — a record is
+    /// What players have actually caught: the records board. Read-only — a record is
     /// something that happened, not something an operator sets.
     /// </summary>
     public Task<FishingActivity> FishingActivityAsync(
@@ -187,23 +187,8 @@ internal sealed class FishingReads(
                     .ToListAsync(ct)
                     .ConfigureAwait(false);
 
-                List<FishingDerbyRow> derbies = await db
-                    .FishingDerbies.AsNoTracking()
-                    .OrderByDescending(d => d.StartsAt)
-                    .Take(limit)
-                    .Select(d => new FishingDerbyRow(
-                        d.Id,
-                        d.NameKey,
-                        d.StartsAt,
-                        d.EndsAt,
-                        db.FishingDerbyEntries.Count(e => e.DerbyId == d.Id)
-                    ))
-                    .ToListAsync(ct)
-                    .ConfigureAwait(false);
-
                 return new FishingActivity(
                     records,
-                    derbies,
                     await db.FishingPlayerState.CountAsync(ct).ConfigureAwait(false)
                 );
             },

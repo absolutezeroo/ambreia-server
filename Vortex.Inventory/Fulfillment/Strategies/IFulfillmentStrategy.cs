@@ -1,5 +1,4 @@
 using System.Collections.Generic;
-using Vortex.Primitives.Bots;
 using Vortex.Primitives.Catalog.Snapshots;
 using Vortex.Primitives.Furniture.Enums;
 using Vortex.Primitives.Groups.Snapshots;
@@ -44,8 +43,7 @@ internal interface IFulfillmentStrategy
 /// own count — ignoring the second collapsed every bundle to one of each item.
 /// </param>
 /// <param name="PurchaseExtraParam">
-/// What the buyer typed, not what the catalogue holds: a pet's name, race and colour, or the name
-/// for a bot. Newline-separated, and the strategy that needs it knows its own shape.
+/// What the buyer typed, not what the catalogue holds: a pet's name, race and colour. Newline-separated, and the strategy that needs it knows its own shape.
 /// </param>
 /// <param name="GuildIdentity">
 /// Resolved by the caller because resolving it is a grain call, and this stays pure.
@@ -63,7 +61,6 @@ internal sealed class FulfillmentPlanBuilder
     private readonly List<PlannedFurniture> _furniture = [];
     private readonly List<string> _badgeCodes = [];
     private readonly List<PetCreateRequest> _pets = [];
-    private readonly List<BotCreateRequest> _bots = [];
     private readonly List<PlannedEffect> _effects = [];
 
     public void AddFurniture(PlannedFurniture furniture) => _furniture.Add(furniture);
@@ -71,8 +68,6 @@ internal sealed class FulfillmentPlanBuilder
     public void AddBadge(string code) => _badgeCodes.Add(code);
 
     public void AddPet(PetCreateRequest pet) => _pets.Add(pet);
-
-    public void AddBot(BotCreateRequest bot) => _bots.Add(bot);
 
     public void AddEffect(PlannedEffect effect) => _effects.Add(effect);
 
@@ -82,7 +77,6 @@ internal sealed class FulfillmentPlanBuilder
             Furniture = _furniture,
             BadgeCodes = _badgeCodes,
             Pets = _pets,
-            Bots = _bots,
             Effects = _effects,
         };
 }

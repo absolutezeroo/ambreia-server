@@ -301,32 +301,6 @@ public static class ConfigKeyCatalog
             "The bubble a player sees when the hotel-wide filter refuses what they wrote. Read when the list compiles; editing any word reloads it.",
             "Moderation"
         ),
-        // Raid protection. A room owner picks low/medium/high in their own panel; what each of the
-        // three means in arrivals per minute is the hotel's call, and it has to be, because the
-        // right number depends on how busy the hotel is. Habbo publishes no threshold — the client
-        // never receives one — so unlike most keys here these defaults are ours, not a mirror of
-        // anything official. Read together in one round trip by RoomRaidProtectionSystem.
-        new(
-            "room.raid_protection.threshold.low",
-            "12",
-            ConfigValueKind.Int,
-            "Arrivals in one minute that count as a raid on the 'low' setting. Too low and a popular room fights its own visitors.",
-            "Raid protection"
-        ),
-        new(
-            "room.raid_protection.threshold.medium",
-            "8",
-            ConfigValueKind.Int,
-            "Arrivals in one minute that count as a raid on the 'medium' setting.",
-            "Raid protection"
-        ),
-        new(
-            "room.raid_protection.threshold.high",
-            "5",
-            ConfigValueKind.Int,
-            "Arrivals in one minute that count as a raid on the 'high' setting. Also the usual choice for the post-incident guard period.",
-            "Raid protection"
-        ),
         // Navigator result caps. Keys/defaults mirror Vortex.Primitives NavigatorConfig.
         new(
             "navigator.search_result_limit",

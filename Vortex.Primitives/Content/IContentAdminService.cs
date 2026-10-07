@@ -52,13 +52,6 @@ public interface IContentAdminService
         CancellationToken ct
     );
 
-    Task<ContentAdminResult> UpsertRentableSpaceTermsAsync(
-        RentableSpaceTermsSpec spec,
-        CancellationToken ct
-    );
-
-    Task<ContentAdminResult> DeleteRentableSpaceTermsAsync(int termsId, CancellationToken ct);
-
     /// <summary>Grants a badge to a player, live: the badge grain is told, not just the table.</summary>
     Task<ContentAdminResult> GrantBadgeAsync(int playerId, string badgeCode, CancellationToken ct);
 

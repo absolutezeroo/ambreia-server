@@ -29,7 +29,6 @@
     'Security',
     'Social',
     'System',
-    'RentableSpace',
     'Progression',
   ];
 
@@ -43,7 +42,6 @@
     Security: '#df6f7b',
     Social: '#4fb3bf',
     System: '#64748b',
-    RentableSpace: '#4fae8a',
     Progression: '#c9a227',
     other: '#64748b',
   };

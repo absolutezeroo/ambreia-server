@@ -45,12 +45,3 @@ public sealed record CurrencySpec(
     bool Enabled,
     int StartingAmount
 );
-
-/// <summary>The rental terms of one rentable space.</summary>
-public sealed record RentableSpaceTermsSpec(
-    int FurnitureId,
-    int Price,
-    int CurrencyTypeId,
-    int RentDurationSeconds,
-    bool RequiresHc
-);

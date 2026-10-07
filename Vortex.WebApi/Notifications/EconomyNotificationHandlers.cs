@@ -61,27 +61,3 @@ public sealed class GiftNotificationHandler(INotificationSink notifications)
             .ConfigureAwait(false);
     }
 }
-
-/// <summary>
-/// A rental ran out.
-/// </summary>
-/// <remarks>
-/// Off a timer, like the club expiring, and with the same consequence: the furniture stops being
-/// mine while I am not there to see it happen.
-/// </remarks>
-public sealed class RentalExpiredNotificationHandler(INotificationSink notifications)
-    : IEventHandler<RentalExpiredEvent>
-{
-    public async ValueTask HandleAsync(RentalExpiredEvent e, EventContext ctx, CancellationToken ct)
-    {
-        await notifications
-            .NotifyAsync(
-                e.RenterId,
-                NotificationKind.RentalExpired,
-                targetId: e.RoomId,
-                data: JsonSerializer.Serialize(new { furniture = e.FurnitureId }),
-                ct: ct
-            )
-            .ConfigureAwait(false);
-    }
-}

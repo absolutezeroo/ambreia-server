@@ -70,7 +70,6 @@ public sealed class RoomEntryPayloadTests
         "YouAreControllerMessageComposer",
         "YouAreOwnerMessageComposer",
         "RoomRatingMessageComposer",
-        "RaidProtectionCapabilityMessageComposer",
     ];
 
     [Fact]

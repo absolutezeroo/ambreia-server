@@ -1,14 +1,12 @@
 using System.Threading;
 using System.Threading.Tasks;
 using FluentAssertions;
-using Vortex.PacketHandlers.Room.Bots;
 using Vortex.PacketHandlers.Room.Engine;
 using Vortex.PacketHandlers.Room.Furniture;
 using Vortex.Primitives.Bots;
 using Vortex.Primitives.Moderation.WordFilter;
 using Vortex.Primitives.Rooms;
 using Vortex.Primitives.Rooms.Object;
-using Vortex.Protocol.Messages.Incoming.Room.Bots;
 using Vortex.Protocol.Messages.Incoming.Room.Engine;
 using Vortex.Protocol.Messages.Incoming.Room.Furniture;
 using Xunit;
@@ -66,69 +64,5 @@ public sealed class WordFilterItemHandlerTests : WordFilterHandlerFixture
         );
 
         GrainCall("SetMannequinNameAsync")[2].Should().Be("bobba");
-    }
-
-    [Fact]
-    public async Task ARefusedBotName_IsNeverSet_AndIsFilteredAsAKey()
-    {
-        await new CommandBotMessageHandler(Grains(), Refusing()).HandleAsync(
-            new CommandBotMessage
-            {
-                BotId = 8,
-                CommandId = BotSkillId.ChangeName,
-                Data = "con",
-            },
-            Context(roomId: 4),
-            CancellationToken.None
-        );
-
-        GrainCalls.Should().NotContain(c => c.Method.Name == "SetBotSkillAsync");
-        AppliedSources.Should().OnlyContain(s => s == WordFilterSource.BotName);
-    }
-
-    /// <summary>
-    /// Only the lines are prose; the flags after them are the bot's settings and must come back
-    /// byte for byte, or the bot stops talking on its own or talks every second.
-    /// </summary>
-    [Theory]
-    [InlineData("salut con;#;true;#;30;#;false", "salut bobba;#;true;#;30;#;false")]
-    [InlineData("salut con;true;30", "salut bobba;true;30")]
-    [InlineData("salut con", "salut bobba")]
-    public async Task ABotsLines_AreFilteredAndItsSettingsKept(string data, string expected)
-    {
-        await new CommandBotMessageHandler(
-            Grains(),
-            Filter(text => new WordFilterResult(text.Replace("con", "bobba"), false, true))
-        ).HandleAsync(
-            new CommandBotMessage
-            {
-                BotId = 8,
-                CommandId = BotSkillId.Chatter,
-                Data = data,
-            },
-            Context(roomId: 4),
-            CancellationToken.None
-        );
-
-        GrainCall("SetBotSkillAsync")[3].Should().Be(expected);
-        AppliedSources.Should().OnlyContain(s => s == WordFilterSource.BotChatter);
-    }
-
-    [Fact]
-    public async Task ABotCommandWithNoText_IsNotFiltered()
-    {
-        await new CommandBotMessageHandler(Grains(), Refusing()).HandleAsync(
-            new CommandBotMessage
-            {
-                BotId = 8,
-                CommandId = 1,
-                Data = "",
-            },
-            Context(roomId: 4),
-            CancellationToken.None
-        );
-
-        FilterCalls.Should().BeEmpty();
-        GrainCalls.Should().Contain(c => c.Method.Name == "SetBotSkillAsync");
     }
 }

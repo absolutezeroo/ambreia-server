@@ -26,7 +26,6 @@ public sealed class UnreadFieldWireTests
 {
     private const int GetMarketplaceOwnOffersEvent = 2086; // _composers[2086] = _SafeCls_1881
     private const int RemoveOwnRoomRightsRoomEvent = 260; // _composers[260]  = _SafeCls_2158
-    private const int GetCommunityGoalHallOfFameEvent = 2252; // _composers[2252] = _SafeCls_3450
     private const int GetDailyQuestEvent = 397; // _composers[397]  = _SafeCls_3520
 
     private static readonly Rev Revision = new(Options.Create(new ProtocolLimitsConfig()));
@@ -68,17 +67,6 @@ public sealed class UnreadFieldWireTests
         );
 
         message.Unknown1.Should().Be(1);
-    }
-
-    [Fact]
-    public void GetCommunityGoalHallOfFameParser_ReadsTheGoalCode()
-    {
-        GetCommunityGoalHallOfFameMessage message = Parse<GetCommunityGoalHallOfFameMessage>(
-            GetCommunityGoalHallOfFameEvent,
-            sp => sp.WriteString("summer_goal")
-        );
-
-        message.GoalCode.Should().Be("summer_goal");
     }
 
     [Fact]

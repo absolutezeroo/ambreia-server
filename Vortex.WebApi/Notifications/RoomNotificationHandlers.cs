@@ -116,37 +116,3 @@ public sealed class RoomRightsNotificationHandler(INotificationSink notification
             .ConfigureAwait(false);
     }
 }
-
-/// <summary>
-/// A crowd arrived in my room all at once.
-/// </summary>
-/// <remarks>
-/// The event carries no player at all — it is the room's alarm, raised by arrival rate — so the
-/// owner is looked up and told. This is the one notification whose actor is genuinely the hotel.
-/// </remarks>
-public sealed class RoomRaidNotificationHandler(
-    INotificationSink notifications,
-    IDbContextFactory<VortexDbContext> dbContextFactory
-) : IEventHandler<RoomRaidDetectedEvent>
-{
-    public async ValueTask HandleAsync(
-        RoomRaidDetectedEvent e,
-        EventContext ctx,
-        CancellationToken ct
-    )
-    {
-        int owner = await RoomOwner.OfAsync(dbContextFactory, e.RoomId, ct).ConfigureAwait(false);
-
-        await notifications
-            .NotifyAsync(
-                owner,
-                NotificationKind.RoomRaidDetected,
-                targetId: e.RoomId,
-                data: JsonSerializer.Serialize(
-                    new { arrivals = e.ArrivalsInWindow, guardArmed = e.GuardArmed }
-                ),
-                ct: ct
-            )
-            .ConfigureAwait(false);
-    }
-}

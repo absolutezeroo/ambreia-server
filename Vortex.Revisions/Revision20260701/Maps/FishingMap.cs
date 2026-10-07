@@ -12,7 +12,7 @@ namespace Vortex.Revisions.Revision20260701.Maps;
 /// </summary>
 /// <remarks>
 /// Five parsers against ten serializers, which is the shape of the feature: the client starts a
-/// session, stops it, mounts a catch, joins a derby and plays one minigame. Everything else — which
+/// session, stops it, mounts a catch and plays one minigame. Everything else — which
 /// fish, what weight, what rewards, when the spot runs dry — is decided here and arrives unasked.
 /// </remarks>
 internal sealed class FishingMap : IRevisionMap
@@ -30,10 +30,6 @@ internal sealed class FishingMap : IRevisionMap
         builder.MapParser(
             MessageEvent.VortexFishingMountCatchMessageEvent,
             new VortexFishingMountCatchMessageParser()
-        );
-        builder.MapParser(
-            MessageEvent.VortexFishingJoinDerbyMessageEvent,
-            new VortexFishingJoinDerbyMessageParser()
         );
         builder.MapParser(
             MessageEvent.VortexHookHavocInputMessageEvent,
@@ -68,12 +64,6 @@ internal sealed class FishingMap : IRevisionMap
             typeof(VortexFishingSpotDepletedMessageComposer),
             new VortexFishingSpotDepletedMessageComposerSerializer(
                 MessageComposer.VortexFishingSpotDepletedMessageComposer
-            )
-        );
-        builder.MapSerializer(
-            typeof(VortexFishingDerbyStandingMessageComposer),
-            new VortexFishingDerbyStandingMessageComposerSerializer(
-                MessageComposer.VortexFishingDerbyStandingMessageComposer
             )
         );
         builder.MapSerializer(

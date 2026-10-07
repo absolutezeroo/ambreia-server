@@ -57,7 +57,8 @@ public enum NotificationKind
     // ---- Economy and items -----------------------------------------------------------------
     MarketplaceSold = 30,
     GiftReceived = 31,
-    RentalExpired = 32,
+
+    // 32 was RentalExpired, removed with rentable spaces (M0 bis). Not renumbered.
 
     // ---- Progression -----------------------------------------------------------------------
     /// <remarks>
@@ -90,5 +91,5 @@ public enum NotificationKind
     // ---- My room ---------------------------------------------------------------------------
     // 70 was the room-rated notification, removed with room rating (M0). Not renumbered.
     RoomRightsGranted = 71,
-    RoomRaidDetected = 72,
+    // 72 was the room-raid notification, removed with raid protection (M0 bis). Not renumbered.
 }

@@ -160,38 +160,6 @@ public sealed class CatalogFulfillmentPlannerTests
         plan.Effects.Should().HaveCount(6);
     }
 
-    /// <summary>
-    /// A bot with no figure is skipped rather than granted. An invisible bot in the inventory is
-    /// worse than a purchase that visibly delivered nothing.
-    /// </summary>
-    [Fact]
-    public void ABotWithNoFigure_IsSkipped()
-    {
-        Plan(
-            quantity: 1,
-            CatalogOffers.Product(1, ProductType.Robot, extraParam: "name:Robbie;gender:m")
-        )
-            .Bots.Should()
-            .BeEmpty();
-    }
-
-    [Fact]
-    public void ABotProduct_CarriesItsFigureAndName()
-    {
-        FulfillmentPlan plan = Plan(
-            quantity: 1,
-            CatalogOffers.Product(
-                1,
-                ProductType.Robot,
-                extraParam: "name:Robbie;figure:hd-180-1;gender:m"
-            )
-        );
-
-        plan.Bots.Should().ContainSingle();
-        plan.Bots[0].Figure.Should().Be("hd-180-1");
-        plan.Bots[0].Name.Should().Be("Robbie");
-    }
-
     /// <summary>The pet's name, race and colour come from what the player typed, not from the offer.</summary>
     [Fact]
     public void APetProduct_TakesItsNameRaceAndColourFromThePurchase()

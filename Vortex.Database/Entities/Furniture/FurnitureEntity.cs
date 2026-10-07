@@ -47,15 +47,9 @@ public class FurnitureEntity : VortexEntity
     [ForeignKey(nameof(PlayerEntityId))]
     public PlayerEntity? PlayerEntity { get; set; }
 
-    [Column("rentable_space_furniture_id")]
-    public int? RentableSpaceFurnitureEntityId { get; set; }
-
     [ForeignKey(nameof(FurnitureDefinitionEntityId))]
     public FurnitureDefinitionEntity? FurnitureDefinitionEntity { get; set; }
 
     [ForeignKey(nameof(RoomEntityId))]
     public RoomEntity? RoomEntity { get; set; }
-
-    [ForeignKey(nameof(RentableSpaceFurnitureEntityId))]
-    public FurnitureEntity? RentableSpaceFurnitureEntity { get; set; }
 }

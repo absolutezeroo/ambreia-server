@@ -24,18 +24,6 @@ public interface IPlayerQuestGrain : IGrainWithIntegerKey
     /// </summary>
     public Task StartCampaignAsync(string campaignCode, CancellationToken ct);
 
-    /// <summary>
-    /// Answers the landing view's "players online" goal widget. <paramref name="onlineCount"/> is
-    /// passed in because the live count belongs to the session gateway, not to a grain.
-    /// </summary>
-    public Task SendConcurrentUsersGoalAsync(int onlineCount, CancellationToken ct);
-
-    /// <summary>
-    /// Claims the "players online" reward if the goal is currently met and this player has not
-    /// claimed it, then re-sends the widget state either way.
-    /// </summary>
-    public Task ClaimConcurrentUsersRewardAsync(int onlineCount, CancellationToken ct);
-
     /// <summary>Seasonal quests only.</summary>
     public Task<QuestListSnapshot> GetSeasonalQuestsAsync(CancellationToken ct);
 

@@ -72,7 +72,6 @@ public sealed class CatalogFulfillmentPlanner
             new FurnitureFulfillmentStrategy(definitions),
             new BadgeFulfillmentStrategy(),
             new EffectFulfillmentStrategy(),
-            new BotFulfillmentStrategy(logger),
             new PetFulfillmentStrategy(),
         ];
 

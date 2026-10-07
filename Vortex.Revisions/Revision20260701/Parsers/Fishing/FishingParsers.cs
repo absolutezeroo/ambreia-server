@@ -32,13 +32,6 @@ internal class VortexFishingMountCatchMessageParser : IParser
         new VortexFishingMountCatchMessage { RecordId = packet.PopInt() };
 }
 
-/// <summary>Enter the running derby.</summary>
-internal class VortexFishingJoinDerbyMessageParser : IParser
-{
-    public IMessageEvent Parse(IClientPacket packet) =>
-        new VortexFishingJoinDerbyMessage { DerbyId = packet.PopInt() };
-}
-
 /// <summary>
 /// The player's whole Hook Havoc attempt: a count, then that many ints, alternating tick and
 /// direction.

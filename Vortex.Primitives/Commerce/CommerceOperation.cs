@@ -100,7 +100,8 @@ public enum CommerceOperationKind
     MarketplaceCancel = 4,
     MarketplaceBuy = 5,
     MarketplaceRedeem = 6,
-    RentableSpaceRent = 7,
+
+    // 7 was RentableSpaceRent, removed in M0 bis with rentable spaces. Persisted: never reuse it.
     ClubPurchase = 8,
 
     // 9 was the LTD raffle entry, removed in M0. Persisted: never reuse it.
@@ -197,13 +198,6 @@ public static class CommerceStepKeys
 
     /// <summary>The club months, their badges and the events that go with them.</summary>
     public const string CLUB_MONTHS = "club-months";
-
-    /// <summary>Writing the rental itself: who holds the space and until when.</summary>
-    public const string RENTABLE_SPACE_GRANT = "rentable-space-grant";
-
-    /// <summary>Paying the space's owner what their tenant just paid. Strictly after the pivot: the
-    /// tenant already holds the space, so a failure here is owed, never refunded.</summary>
-    public const string RENTABLE_SPACE_OWNER_CREDIT = "rentable-space-owner-credit";
 
     /// <summary>Moving the staked furniture into the chest and the reward furniture out of it. The
     /// pivot of a chest contract: after it the goods have changed hands and the payment is no longer

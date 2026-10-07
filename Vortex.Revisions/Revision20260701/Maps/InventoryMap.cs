@@ -13,7 +13,6 @@ using Vortex.Revisions.Configuration;
 using Vortex.Revisions.Revision20260701.Parsers.Inventory.Achievements;
 using Vortex.Revisions.Revision20260701.Parsers.Inventory.Avatareffect;
 using Vortex.Revisions.Revision20260701.Parsers.Inventory.Badges;
-using Vortex.Revisions.Revision20260701.Parsers.Inventory.Bots;
 using Vortex.Revisions.Revision20260701.Parsers.Inventory.Clothing;
 using Vortex.Revisions.Revision20260701.Parsers.Inventory.Furni;
 using Vortex.Revisions.Revision20260701.Parsers.Inventory.Pets;
@@ -74,7 +73,6 @@ internal sealed class InventoryMap : IRevisionMap
         );
 
         // Inventory Bots
-        builder.MapParser(MessageEvent.GetBotInventoryEvent, new GetBotInventoryMessageParser());
 
         // Inventory Furni
         builder.MapParser(
@@ -210,10 +208,6 @@ internal sealed class InventoryMap : IRevisionMap
             new BotAddedToInventoryEventMessageComposerSerializer(
                 MessageComposer.BotAddedToInventoryComposer
             )
-        );
-        builder.MapSerializer(
-            typeof(BotInventoryEventMessageComposer),
-            new BotInventoryEventMessageComposerSerializer(MessageComposer.BotInventoryComposer)
         );
         builder.MapSerializer(
             typeof(BotRemovedFromInventoryEventMessageComposer),

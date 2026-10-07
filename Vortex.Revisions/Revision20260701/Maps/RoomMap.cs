@@ -10,7 +10,6 @@ using Vortex.Protocol.Messages.Outgoing.Room.Pets;
 using Vortex.Protocol.Messages.Outgoing.Room.Session;
 using Vortex.Revisions.Revision20260701.Parsers.Room.Action;
 using Vortex.Revisions.Revision20260701.Parsers.Room.Avatar;
-using Vortex.Revisions.Revision20260701.Parsers.Room.Bots;
 using Vortex.Revisions.Revision20260701.Parsers.Room.Chat;
 using Vortex.Revisions.Revision20260701.Parsers.Room.Engine;
 using Vortex.Revisions.Revision20260701.Parsers.Room.Furniture;
@@ -72,11 +71,6 @@ internal sealed class RoomMap : IRevisionMap
         builder.MapParser(MessageEvent.SignMessageEvent, new SignMessageParser());
 
         // Room Bots
-        builder.MapParser(MessageEvent.CommandBotEvent, new CommandBotMessageParser());
-        builder.MapParser(
-            MessageEvent.GetBotCommandConfigurationDataEvent,
-            new GetBotCommandConfigurationDataMessageParser()
-        );
 
         // Room Chat
         builder.MapParser(MessageEvent.CancelTypingMessageEvent, new CancelTypingMessageParser());
@@ -119,13 +113,8 @@ internal sealed class RoomMap : IRevisionMap
             new VortexApplyFurniDefinitionMessageParser()
         );
         builder.MapParser(MessageEvent.PickupObjectMessageEvent, new PickupObjectMessageParser());
-        builder.MapParser(MessageEvent.PlaceBotMessageEvent, new PlaceBotMessageParser());
         builder.MapParser(MessageEvent.PlaceObjectMessageEvent, new PlaceObjectMessageParser());
         builder.MapParser(MessageEvent.PlacePetMessageEvent, new PlacePetMessageParser());
-        builder.MapParser(
-            MessageEvent.RemoveBotFromFlatMessageEvent,
-            new RemoveBotFromFlatMessageParser()
-        );
         builder.MapParser(MessageEvent.RemoveItemMessageEvent, new RemoveItemMessageParser());
         builder.MapParser(
             MessageEvent.RemovePetFromFlatMessageEvent,
@@ -168,26 +157,6 @@ internal sealed class RoomMap : IRevisionMap
         );
         builder.MapParser(MessageEvent.PlacePostItMessageEvent, new PlacePostItMessageParser());
         builder.MapParser(MessageEvent.PresentOpenMessageEvent, new PresentOpenMessageParser());
-        builder.MapParser(
-            MessageEvent.RentableSpaceCancelRentMessageEvent,
-            new RentableSpaceCancelRentMessageParser()
-        );
-        builder.MapParser(
-            MessageEvent.RentableSpaceConfigureMessageEvent,
-            new ConfigureRentableSpaceMessageParser()
-        );
-        builder.MapParser(
-            MessageEvent.RentableSpaceGetConfigMessageEvent,
-            new GetRentableSpaceConfigMessageParser()
-        );
-        builder.MapParser(
-            MessageEvent.RentableSpaceRentMessageEvent,
-            new RentableSpaceRentMessageParser()
-        );
-        builder.MapParser(
-            MessageEvent.RentableSpaceStatusMessageEvent,
-            new RentableSpaceStatusMessageParser()
-        );
         builder.MapParser(
             MessageEvent.RoomDimmerChangeStateMessageEvent,
             new RoomDimmerChangeStateMessageParser()
@@ -279,12 +248,6 @@ internal sealed class RoomMap : IRevisionMap
         );
 
         // Room Bots
-        builder.MapSerializer(
-            typeof(BotCommandConfigurationMessageComposer),
-            new BotCommandConfigurationMessageComposerSerializer(
-                MessageComposer.BotCommandConfigurationComposer
-            )
-        );
         builder.MapSerializer(
             typeof(BotSkillListUpdateMessageComposer),
             new BotSkillListUpdateMessageComposerSerializer(
@@ -482,24 +445,6 @@ internal sealed class RoomMap : IRevisionMap
         builder.MapSerializer(
             typeof(PresentOpenedMessageComposer),
             new PresentOpenedMessageComposerSerializer(MessageComposer.PresentOpenedMessageComposer)
-        );
-        builder.MapSerializer(
-            typeof(RentableSpaceConfigMessageComposer),
-            new RentableSpaceConfigMessageComposerSerializer(
-                MessageComposer.RentableSpaceConfigMessageComposer
-            )
-        );
-        builder.MapSerializer(
-            typeof(RentableSpaceRentFailedMessageComposer),
-            new RentableSpaceRentFailedMessageComposerSerializer(
-                MessageComposer.RentableSpaceRentFailedMessageComposer
-            )
-        );
-        builder.MapSerializer(
-            typeof(RentableSpaceStatusMessageComposer),
-            new RentableSpaceStatusMessageComposerSerializer(
-                MessageComposer.RentableSpaceStatusMessageComposer
-            )
         );
         builder.MapSerializer(
             typeof(RoomDimmerPresetsMessageComposer),

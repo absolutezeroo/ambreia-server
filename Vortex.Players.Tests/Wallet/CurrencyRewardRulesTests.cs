@@ -118,9 +118,7 @@ public sealed class CurrencyRewardRulesTests
     {
         QuestContentAdminService service = new(
             new UnusedDbContextFactory(),
-            FakeProxy.Create<IGrainFactory>(_ => null),
-            StubCurrencies.WithDuckets(),
-            NullLogger<QuestContentAdminService>.Instance
+            StubCurrencies.WithDuckets()
         );
 
         QuestContentAdminResult result = await service

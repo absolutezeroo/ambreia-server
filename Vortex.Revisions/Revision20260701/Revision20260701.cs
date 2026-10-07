@@ -30,7 +30,6 @@ public sealed class Revision20260701(IOptions<ProtocolLimitsConfig> protocolLimi
             new RegisterMap(),
             new RoomMap(),
             new RoomSettingsMap(protocolLimits.Value),
-            new RaidProtectionMap(),
             new SoundMap(),
             new TrackingMap(),
             new UsersMap(),

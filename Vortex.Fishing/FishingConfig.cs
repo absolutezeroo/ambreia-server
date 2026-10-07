@@ -41,7 +41,6 @@ public static class FishingConfig
     public const string HookHavocFillRateKey = "fishing.hook_havoc_fill_rate";
     public const string HookHavocToleranceKey = "fishing.hook_havoc_tolerance";
     public const string HookHavocTrophyHandItemKey = "fishing.hook_havoc_trophy_hand_item_id";
-    public const string DerbyLeaderboardSizeKey = "fishing.derby_leaderboard_size";
     public const string TrophyFurniClassKey = "fishing.trophy_furni_class";
     public const string RodEffectIdKey = "fishing.rod_effect_id";
 
@@ -61,7 +60,6 @@ public static class FishingConfig
         HookHavocFillRateKey,
         HookHavocToleranceKey,
         HookHavocTrophyHandItemKey,
-        DerbyLeaderboardSizeKey,
         TrophyFurniClassKey,
         RodEffectIdKey,
     ];
@@ -142,11 +140,6 @@ public static class FishingConfig
                 v,
                 HookHavocTrophyHandItemKey,
                 d.HookHavocTrophyHandItemId
-            ),
-            DerbyLeaderboardSize = ServerConfigValues.GetInt(
-                v,
-                DerbyLeaderboardSizeKey,
-                d.DerbyLeaderboardSize
             ),
             TrophyFurniClass = ServerConfigValues.GetString(
                 v,

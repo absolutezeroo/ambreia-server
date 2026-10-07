@@ -41,48 +41,22 @@ public sealed partial class RoomActionModule
             throw new VortexException(VortexErrorCodeEnum.FloorItemNotFound);
         }
 
-        IRoomFloorItem? rentedSpace = null;
-
-        if (await _roomGrain.SecurityModule.CanManipulateFurniAsync(ctx))
+        if (!await _roomGrain.SecurityModule.CanManipulateFurniAsync(ctx))
         {
-            if (
-                !await _roomGrain.FurniModule.ValidateNewFloorItemPlacementAsync(
-                    ctx,
-                    floorItem,
-                    x,
-                    y,
-                    rot
-                )
-            )
-            {
-                return await RefusePlacementAsync(ctx);
-            }
+            throw new VortexException(VortexErrorCodeEnum.NoPermissionToPlaceFurni);
         }
-        else
-        {
-            rentedSpace = await _roomGrain.SecurityModule.FindRentedSpaceForPlayerAsync(
-                ctx.PlayerId.Value,
-                ct
-            );
 
-            if (rentedSpace is null)
-            {
-                throw new VortexException(VortexErrorCodeEnum.NoPermissionToPlaceFurni);
-            }
-
-            if (
-                !await _roomGrain.FurniModule.ValidateNewFloorItemPlacementInRentedSpaceAsync(
-                    ctx,
-                    floorItem,
-                    x,
-                    y,
-                    rot,
-                    rentedSpace
-                )
+        if (
+            !await _roomGrain.FurniModule.ValidateNewFloorItemPlacementAsync(
+                ctx,
+                floorItem,
+                x,
+                y,
+                rot
             )
-            {
-                return await RefusePlacementAsync(ctx);
-            }
+        )
+        {
+            return await RefusePlacementAsync(ctx);
         }
 
         // The row enters the room before the room does anything with it. The other order puts the
@@ -127,34 +101,6 @@ public sealed partial class RoomActionModule
         IInventoryGrain inventory = _roomGrain._grainFactory.GetInventoryGrain(item.OwnerId);
 
         await inventory.RemoveFurnitureAsync(item.ObjectId, ct);
-
-        if (rentedSpace is not null)
-        {
-            try
-            {
-                await using VortexDbContext db =
-                    await _roomGrain._dbCtxFactory.CreateDbContextAsync(ct);
-                await db
-                    .Furnitures.Where(f => f.Id == floorItem.ObjectId.Value && f.DeletedAt == null)
-                    .ExecuteUpdateAsync(
-                        s =>
-                            s.SetProperty(
-                                f => f.RentableSpaceFurnitureEntityId,
-                                (int?)rentedSpace.ObjectId.Value
-                            ),
-                        ct
-                    );
-            }
-            catch (Exception ex)
-            {
-                _roomGrain._logger.LogWarning(
-                    ex,
-                    "Failed to tag furniture {FurniId} with rentable space {SpaceId}",
-                    floorItem.ObjectId.Value,
-                    rentedSpace.ObjectId.Value
-                );
-            }
-        }
 
         (int kinds, int sameLogic) = CountAround(floorItem);
 
@@ -210,27 +156,7 @@ public sealed partial class RoomActionModule
         }
         else
         {
-            IRoomFloorItem? rentedSpace =
-                await _roomGrain.SecurityModule.FindRentedSpaceForOwnedItemAsync(ctx, itemId, ct);
-
-            if (rentedSpace is null)
-            {
-                throw new VortexException(VortexErrorCodeEnum.NoPermissionToManipulateFurni);
-            }
-
-            if (
-                !await _roomGrain.FurniModule.ValidateFloorItemMoveInRentedSpaceAsync(
-                    ctx,
-                    itemId,
-                    x,
-                    y,
-                    rot,
-                    rentedSpace
-                )
-            )
-            {
-                return await RefusePlacementAsync(ctx);
-            }
+            throw new VortexException(VortexErrorCodeEnum.NoPermissionToManipulateFurni);
         }
 
         // Read before the move, because after it there is nothing left to compare against: the
