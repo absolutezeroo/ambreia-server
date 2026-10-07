@@ -545,6 +545,47 @@ async function cmdZone() {
   log('Zone OK.');
 }
 
+// Enters a published zone by its key, as the throwaway player, and lists the floor items the room
+// sends: what the map editor saved is what a player sees.
+async function cmdEnter(key) {
+  if (!key) die('usage: driver.mjs enter <zone key>');
+  const base = `http://127.0.0.1:${WEBAPI}`;
+  const headers = { cookie: (await webSession()).cookie };
+  const zones = JSON.parse((await request(`${base}/api/editor/zones`, { headers })).body);
+  const zone = Array.isArray(zones) && zones.find((z) => z.key === key);
+  if (!zone) die(`No zone ${key} (or the account cannot list zones).`);
+  if (!zone.publishedVersion) die(`Zone ${key} was never published.`);
+
+  const ticket = await ssoTicket();
+  const g = await gameSocket().catch((e) => die(`Socket error on :${GAME_TCP}: ${e.message}`));
+  g.send(frame(H.sso, ticket, 0));
+  if (!(await g.wait([H.authOk]))) die('No AuthenticationOK.');
+  const before = g.frames.length;
+  g.send(frame(H.openFlat, zone.roomId, '', -1));
+  const objects = await g.wait([H.objects], before, 10000);
+  g.close();
+  if (!objects) die(`No Objects from room ${zone.roomId}.`);
+
+  // Objects: owner count, (id, name)*, then the floor item count and each item (id, sprite, x, y…).
+  const b = objects.body;
+  let o = 0;
+  const int = () => ((o += 4), b.readInt32BE(o - 4));
+  const str = () => {
+    const n = b.readInt16BE(o);
+    o += 2 + n;
+    return b.subarray(o - n, o).toString('utf8');
+  };
+  for (let owners = int(); owners > 0; owners--) (int(), str());
+  const count = int();
+  const items = [];
+  for (let i = 0; i < count; i++) {
+    const [id, sprite, x, y] = [int(), int(), int(), int()];
+    items.push(`#${id} sprite ${sprite} (${x},${y})`);
+    break; // the rest of an item is variable-length; the first one proves the layout
+  }
+  log(`zone ${key} v${zone.publishedVersion} -> room ${zone.roomId}: ${count} floor item(s)${items.length ? `, first ${items[0]}` : ''}`);
+}
+
 function cmdCleanup() {
   const id = sql(`SELECT id FROM player_accounts WHERE email='${PLAYER.email}' LIMIT 1;`);
   if (!id) return log('Nothing to clean up.');
@@ -580,6 +621,7 @@ const table = {
   health: cmdHealth,
   play: cmdPlay,
   zone: cmdZone,
+  enter: () => cmdEnter(args[0]),
   cleanup: cmdCleanup,
   smoke: cmdSmoke,
 };
@@ -597,6 +639,7 @@ if (!cmd || !table[cmd]) {
   ping      raw frame on :${GAME_TCP} -- ${H.initDiffie} out, ${H.initDiffieReply} back
   play      throwaway player -> SSO -> start zone -> heightmap -> one step
   zone      publish a zone through /api/editor, enter it, republish while inside
+  enter <k> enter the published zone <k> and count the floor items it sends
   cleanup   delete the throwaway account and its players`);
   process.exit(cmd ? 1 : 0);
 }

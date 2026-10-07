@@ -63,6 +63,7 @@ node .claude/skills/run-vortex-emulator/driver.mjs smoke
 | `ping` | raw frame on :40000 — `InitDiffieHandshake` (2022) out, 3309 back |
 | `play` | the four steps above |
 | `zone` | publishes `proof_zone` through `/api/editor` (owner role granted to the throwaway account on the target database), enters it (decor in `Objects`), republishes while inside and expects `RoomForward`. Point it at a scratch database: `VORTEX__Vortex__Database__ConnectionString` is read by both the emulator and the driver |
+| `enter <key>` | enters the published zone `<key>` (made with the map editor, say) and counts the floor items the room sends |
 | `cleanup` | deletes the throwaway account and its players |
 
 State (pid file, console log) lives in `%TEMP%\vortex-run\`, never in the repo.
