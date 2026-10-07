@@ -4,6 +4,8 @@ using System.Text;
 using System.Threading.Tasks;
 using FluentAssertions;
 using Vortex.Primitives.Permissions;
+using Vortex.Primitives.Players;
+using Vortex.Primitives.Rooms;
 using Xunit;
 
 namespace Vortex.WebApi.Tests;
@@ -61,6 +63,32 @@ public sealed class EditorEndpointsTests
             .Should()
             .Contain("\"code\":\"Json\"")
             .And.Contain("\"severity\":\"Error\"");
+    }
+
+    [Fact]
+    public async Task TestMode_TicketsTheTesterIntoThePublishedZone()
+    {
+        await using WebApiTestFactory f = new(capabilities: [Capabilities.World.ZoneEdit]);
+
+        HttpResponseMessage r = await f.CreateAuthenticatedClient()
+            .PostAsync("/api/editor/zones/village/test?x=2&y=3", null);
+
+        r.StatusCode.Should().Be(HttpStatusCode.OK);
+        (await r.Content.ReadAsStringAsync())
+            .Should()
+            .Contain("\"ssoToken\":\"ticket-100\"")
+            .And.Contain("\"roomId\":7");
+        f.ZoneTests.Should().Equal((new PlayerId(100), new RoomId(7), 2, 3));
+    }
+
+    [Fact]
+    public async Task TestMode_ForAnUnknownZone_IsNotFound()
+    {
+        await using WebApiTestFactory f = new(capabilities: [Capabilities.World.ZoneEdit]);
+
+        (await f.CreateAuthenticatedClient().PostAsync("/api/editor/zones/moon/test", null))
+            .StatusCode.Should()
+            .Be(HttpStatusCode.NotFound);
     }
 
     [Fact]

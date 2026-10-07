@@ -8,6 +8,7 @@ using Vortex.Primitives.Authentication;
 using Vortex.Primitives.Networking;
 using Vortex.Primitives.Orleans;
 using Vortex.Primitives.Permissions;
+using Vortex.Primitives.Players;
 using Vortex.Primitives.Players.Enums;
 using Vortex.Primitives.Players.Grains;
 using Vortex.Primitives.Rooms;
@@ -69,9 +70,15 @@ public class SSOTicketMessageHandler(
             Task<int> startRoomTask = _grainFactory
                 .GetServerConfigGrain()
                 .GetIntAsync(START_ROOM_KEY, 0);
+            // The map editor's test mode: the zone under test, once, instead of the start zone.
+            Task<RoomId?> testRoomTask = _grainFactory
+                .GetZoneTestGrain()
+                .TakeAsync(new PlayerId(playerId));
 
             PermissionSet permissions = await permissionsTask.ConfigureAwait(false);
-            int startRoomId = await startRoomTask.ConfigureAwait(false);
+            int startRoomId = await testRoomTask.ConfigureAwait(false) is { } testRoom
+                ? testRoom.Value
+                : await startRoomTask.ConfigureAwait(false);
 
             AuthenticationOKMessage authenticated = new()
             {

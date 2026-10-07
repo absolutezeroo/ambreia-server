@@ -35,7 +35,7 @@ public sealed class ZoneRuntimeState(CompiledZone compiled)
     public bool? Bed(int objectId) => Doors.ContainsKey(objectId) ? false : null;
 
     /// <summary>The entry each expected player arrives on, and when the expectation lapses.</summary>
-    public Dictionary<PlayerId, (string EntryId, long ExpiresAtMs)> ExpectedArrivals { get; } = [];
+    public Dictionary<PlayerId, ZoneExpectedArrival> ExpectedArrivals { get; } = [];
 
     /// <summary>Areas switched off by an action: nobody enters or leaves them (plan D13).</summary>
     public HashSet<string> InactiveAreas { get; } = [];

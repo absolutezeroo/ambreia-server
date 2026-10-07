@@ -8,11 +8,17 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Routing;
+using Orleans;
+using Vortex.Primitives.Orleans;
 using Vortex.Primitives.Permissions;
+using Vortex.Primitives.Players;
+using Vortex.Primitives.Rooms;
 using Vortex.Primitives.World;
 using Vortex.Primitives.World.Editing;
 using Vortex.WebApi.Http;
+using Vortex.WebApi.Services;
 using Vortex.WebApi.Session;
 
 namespace Vortex.WebApi.Hosting;
@@ -406,6 +412,100 @@ internal static partial class WebApiEndpoints
                 }
             )
             .WithName("EditorUnlockZone");
+
+        editor
+            .MapPost(
+                "/zones/{key}/test",
+                async Task<IResult> (
+                    HttpContext ctx,
+                    string key,
+                    int? x,
+                    int? y,
+                    WebApiSessionStore sessions,
+                    IPermissionService permissions,
+                    IZoneEditorService zones,
+                    IWebApiPlayerService players,
+                    IWebApiAuthService auth,
+                    [FromServices] IGrainFactory grains,
+                    CancellationToken ct
+                ) =>
+                {
+                    IResult? denied = await DenyAsync(
+                            ctx,
+                            sessions,
+                            permissions,
+                            Capabilities.World.ZoneEdit,
+                            ct
+                        )
+                        .ConfigureAwait(false);
+
+                    if (denied is not null)
+                    {
+                        return denied;
+                    }
+
+                    ZoneSummary? zone = (
+                        await zones.ListAsync(ct).ConfigureAwait(false)
+                    ).FirstOrDefault(z => z.Key == key);
+
+                    if (zone is null)
+                    {
+                        return TypedResults.NotFound();
+                    }
+
+                    if (zone.PublishedVersion is null)
+                    {
+                        return TypedResults.Conflict(
+                            new ApiErrorResponse("editor.zone_not_published")
+                        );
+                    }
+
+                    // The avatar the site selected, else the account's first: the one that plays.
+                    int? playerId = sessions.GetSelectedPlayer(ctx.SessionId());
+
+                    if (playerId is null)
+                    {
+                        List<AvatarInfo> avatars = await players
+                            .GetAvatarsForAccountAsync(ctx.AccountId(sessions)!.Value, ct)
+                            .ConfigureAwait(false);
+
+                        if (avatars.Count == 0 || !int.TryParse(avatars[0].UniqueId, out int first))
+                        {
+                            return TypedResults.NotFound(
+                                new ApiErrorResponse("pocket.auth.no_avatars")
+                            );
+                        }
+
+                        playerId = first;
+                    }
+
+                    await grains
+                        .GetZoneTestGrain()
+                        .ExpectAsync(
+                            new PlayerId(playerId.Value),
+                            new RoomId(zone.RoomId),
+                            x ?? -1,
+                            y ?? -1
+                        )
+                        .ConfigureAwait(false);
+
+                    (bool success, string? ticket, string? error) = await auth.GetSsoTokenAsync(
+                            playerId.Value,
+                            ctx.RemoteIp(),
+                            ct
+                        )
+                        .ConfigureAwait(false);
+
+                    return success
+                        ? TypedResults.Ok(new ZoneTestTicket(ticket!, zone.RoomId))
+                        : new ForbiddenError(error ?? "avatar_not_owned");
+                }
+            )
+            .WithName("EditorTestZone")
+            .WithSummary(
+                "An SSO ticket whose sign-in starts in the published zone, on the cell given."
+            )
+            .Produces<ZoneTestTicket>();
 
         editor
             .MapGet(

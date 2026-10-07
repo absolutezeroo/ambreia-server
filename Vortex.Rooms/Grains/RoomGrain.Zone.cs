@@ -11,4 +11,11 @@ public sealed partial class RoomGrain
 
         return Task.CompletedTask;
     }
+
+    public Task ExpectArrivalAtAsync(PlayerId playerId, int x, int y)
+    {
+        ZoneArrival.ExpectAt(playerId, x, y);
+
+        return Task.CompletedTask;
+    }
 }

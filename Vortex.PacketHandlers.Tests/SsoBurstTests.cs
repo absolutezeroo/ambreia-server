@@ -13,6 +13,7 @@ using Vortex.Primitives.Permissions;
 using Vortex.Primitives.Players.Grains;
 using Vortex.Primitives.Rooms;
 using Vortex.Primitives.Server.Grains;
+using Vortex.Primitives.World.Grains;
 using Vortex.Protocol.Messages.Incoming.Handshake;
 using Vortex.Protocol.Messages.Outgoing.Handshake;
 using Vortex.Protocol.Messages.Outgoing.Room.Session;
@@ -48,6 +49,14 @@ public sealed class SsoBurstTests
     }
 
     [Fact]
+    public async Task SsoBurst_ForATester_ForwardsToTheZoneUnderTest()
+    {
+        await LoginAsync(startRoomId: 42, testRoomId: 77);
+
+        _sent.OfType<RoomForwardMessageComposer>().Single().RoomId.Should().Be(new RoomId(77));
+    }
+
+    [Fact]
     public async Task SsoBurst_WithoutAStartZone_StillLogsIn()
     {
         await LoginAsync(startRoomId: 0);
@@ -58,7 +67,7 @@ public sealed class SsoBurstTests
             .Equal(typeof(AuthenticationOKMessage), typeof(UserRightsMessage));
     }
 
-    private async Task LoginAsync(int startRoomId)
+    private async Task LoginAsync(int startRoomId, int? testRoomId = null)
     {
         SSOTicketMessageHandler handler = new(
             FakeProxy.Create<IAuthenticationService>(call =>
@@ -75,6 +84,10 @@ public sealed class SsoBurstTests
                         && (string)inner.Args![0]! == SSOTicketMessageHandler.START_ROOM_KEY
                             ? Task.FromResult(startRoomId)
                             : null
+                    )
+                : call.Method.GetGenericArguments()[0] == typeof(IZoneTestGrain)
+                    ? FakeProxy.Create<IZoneTestGrain>(_ =>
+                        Task.FromResult(testRoomId is { } room ? (RoomId?)new RoomId(room) : null)
                     )
                 : call.Method.GetGenericArguments()[0] == typeof(IPlayerPresenceGrain)
                     ? FakeProxy.Create<IPlayerPresenceGrain>(inner =>

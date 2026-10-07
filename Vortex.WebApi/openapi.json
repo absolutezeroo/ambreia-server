@@ -421,6 +421,53 @@
         }
       }
     },
+    "/api/editor/zones/{key}/test": {
+      "post": {
+        "tags": [
+          "Editor"
+        ],
+        "summary": "An SSO ticket whose sign-in starts in the published zone, on the cell given.",
+        "operationId": "EditorTestZone",
+        "parameters": [
+          {
+            "name": "key",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "x",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "y",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ZoneTestTicket"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/editor/furniture": {
       "get": {
         "tags": [
@@ -1278,6 +1325,23 @@
             "type": "integer",
             "format": "int32",
             "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "ZoneTestTicket": {
+        "required": [
+          "roomId",
+          "ssoToken"
+        ],
+        "type": "object",
+        "properties": {
+          "ssoToken": {
+            "type": "string"
+          },
+          "roomId": {
+            "type": "integer",
+            "format": "int32"
           }
         },
         "additionalProperties": false

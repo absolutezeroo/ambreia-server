@@ -16,4 +16,8 @@ public interface IRoomZone : IGrainWithIntegerKey
     /// </summary>
     [AlwaysInterleave]
     public Task ExpectArrivalAsync(PlayerId playerId, string entryId);
+
+    /// <summary>The same for a cell rather than an entry (the editor's test mode, plan D18).</summary>
+    [AlwaysInterleave]
+    public Task ExpectArrivalAtAsync(PlayerId playerId, int x, int y);
 }

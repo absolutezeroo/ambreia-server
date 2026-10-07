@@ -18,6 +18,7 @@
   <ItemGroup>
     <ProjectReference Include="..\Vortex.Database\Vortex.Database.csproj" />
     <ProjectReference Include="..\Vortex.Primitives\Vortex.Primitives.csproj" />
+    <ProjectReference Include="..\Vortex.Tests.Support\Vortex.Tests.Support.csproj" />
     <ProjectReference Include="..\Vortex.WebApi\Vortex.WebApi.csproj" />
     <!--
       Vortex.WebApi deliberately does not reference this; the tests do. The wallet-link endpoint is

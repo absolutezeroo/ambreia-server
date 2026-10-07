@@ -50,6 +50,13 @@ entries:
       call timeout. The body records the expected entry synchronously and returns.
     owner: rooms
 
+  - symbol: Vortex.Primitives.Rooms.Grains.IRoomZone.ExpectArrivalAtAsync
+    overload: (PlayerId, Int32, Int32)
+    category: SynchronousBoundedLivenessOperation
+    implementation: Vortex.Rooms/Grains/RoomGrain.Zone.cs
+    justification: Same body as ExpectArrivalAsync, a cell instead of an entry; recorded synchronously.
+    owner: rooms
+
   - symbol: Vortex.Primitives.Rooms.Grains.IRoomCore.GetSnapshotAsync
     overload: ()
     category: ImmutableRead

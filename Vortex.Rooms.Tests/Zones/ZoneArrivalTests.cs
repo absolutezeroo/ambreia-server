@@ -74,6 +74,18 @@ public sealed class ZoneArrivalTests
     }
 
     [Fact]
+    public async Task AnExpectedCell_WinsOnce()
+    {
+        RoomHarness harness = await ZoneAsync(Entry("gate", ZoneEntryKinds.Arrival, 3, 3));
+
+        await harness.Grain.ExpectArrivalAtAsync(Player, 4, 1);
+
+        IRoomAvatar avatar = await EnterAsync(harness);
+
+        (avatar.X, avatar.Y).Should().Be((4, 1));
+    }
+
+    [Fact]
     public async Task AnUnknownExpectedEntry_IsTheDefaultArrival()
     {
         RoomHarness harness = await ZoneAsync(Entry("gate", ZoneEntryKinds.Arrival, 3, 3));

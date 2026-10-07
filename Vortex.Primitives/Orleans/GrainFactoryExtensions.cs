@@ -4,6 +4,7 @@ using Vortex.Primitives.Players.Grains;
 using Vortex.Primitives.Rooms;
 using Vortex.Primitives.Rooms.Grains;
 using Vortex.Primitives.Server.Grains;
+using Vortex.Primitives.World.Grains;
 
 namespace Vortex.Primitives.Orleans;
 
@@ -37,6 +38,9 @@ public static class GrainFactoryExtensions
 
     public static IRoomZone GetRoomZone(this IGrainFactory factory, RoomId roomId) =>
         factory.GetGrain<IRoomZone>((long)roomId.Value);
+
+    public static IZoneTestGrain GetZoneTestGrain(this IGrainFactory factory) =>
+        factory.GetGrain<IZoneTestGrain>(0);
 
     public static IRoomPersistenceGrain GetRoomPersistenceGrain(
         this IGrainFactory factory,

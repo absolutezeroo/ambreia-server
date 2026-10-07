@@ -20,10 +20,15 @@ public sealed class ZoneArrivalModule(RoomGrain roomGrain)
             return;
         }
 
-        zone.ExpectedArrivals[playerId] = (
-            entryId,
-            roomGrain.NowMs() + roomGrain._roomConfig.ExpectedArrivalTimeoutMs
-        );
+        zone.ExpectedArrivals[playerId] = new(entryId, -1, -1, ExpiresAt());
+    }
+
+    public void ExpectAt(PlayerId playerId, int x, int y)
+    {
+        if (roomGrain._state.ZoneRuntime is { } zone && x >= 0 && y >= 0)
+        {
+            zone.ExpectedArrivals[playerId] = new(null, x, y, ExpiresAt());
+        }
     }
 
     /// <summary>The cell and facing of the player's arrival, or null for the model's door.</summary>
@@ -36,25 +41,39 @@ public sealed class ZoneArrivalModule(RoomGrain roomGrain)
             return null;
         }
 
-        ZoneEntry? entry = null;
-
-        if (zone.ExpectedArrivals.Remove(playerId, out (string EntryId, long ExpiresAtMs) expected))
+        if (
+            zone.ExpectedArrivals.Remove(playerId, out ZoneExpectedArrival expected)
+            && expected.ExpiresAtMs >= roomGrain.NowMs()
+        )
         {
-            if (expected.ExpiresAtMs >= roomGrain.NowMs())
+            if (expected.EntryId is null && Standable(expected.X, expected.Y))
             {
-                entry = Standable(zone.Compiled.Entries.GetValueOrDefault(expected.EntryId));
+                return (expected.X, expected.Y, Rotation.East);
+            }
+
+            if (
+                Standable(
+                    zone.Compiled.Entries.GetValueOrDefault(expected.EntryId ?? string.Empty)
+                ) is
+                { } chosen
+            )
+            {
+                return At(chosen);
             }
         }
 
-        entry ??= Standable(zone.Compiled.DefaultArrival);
-
-        return entry is null ? null : (entry.Cell.X, entry.Cell.Y, (Rotation)(entry.Direction & 7));
+        return Standable(zone.Compiled.DefaultArrival) is { } arrival ? At(arrival) : null;
     }
 
+    private long ExpiresAt() => roomGrain.NowMs() + roomGrain._roomConfig.ExpectedArrivalTimeoutMs;
+
+    private static (int X, int Y, Rotation Rotation) At(ZoneEntry entry) =>
+        (entry.Cell.X, entry.Cell.Y, (Rotation)(entry.Direction & 7));
+
     private ZoneEntry? Standable(ZoneEntry? entry) =>
-        entry is not null
-        && roomGrain.MapModule.InBounds(entry.Cell.X, entry.Cell.Y)
-        && roomGrain.MapModule.IsSpawnable(roomGrain.MapModule.ToIdx(entry.Cell.X, entry.Cell.Y))
-            ? entry
-            : null;
+        entry is not null && Standable(entry.Cell.X, entry.Cell.Y) ? entry : null;
+
+    private bool Standable(int x, int y) =>
+        roomGrain.MapModule.InBounds(x, y)
+        && roomGrain.MapModule.IsSpawnable(roomGrain.MapModule.ToIdx(x, y));
 }

@@ -11,6 +11,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using Orleans;
 using Vortex.Database.Context;
 using Vortex.Primitives.Authentication;
 using Vortex.Primitives.Crypto;
@@ -266,6 +267,8 @@ internal sealed class WebApiWebHost(
         services.AddSingleton(rootServices.GetRequiredService<RequiredServiceGuard>());
         services.AddSingleton(rootServices.GetRequiredService<IZoneEditorService>());
         services.AddSingleton(rootServices.GetRequiredService<IPermissionService>());
+        // The editor's test route reaches the zone test grain (plan D18).
+        services.AddSingleton(rootServices.GetRequiredService<IGrainFactory>());
 
         services.AddSingleton(
             rootServices.GetRequiredService<IDbContextFactory<VortexDbContext>>()

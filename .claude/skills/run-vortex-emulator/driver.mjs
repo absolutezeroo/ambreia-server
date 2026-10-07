@@ -370,18 +370,19 @@ function sessionCookie(res) {
   return c ? c.split(';')[0] : null;
 }
 
-// Registration, or login when the address exists: the site's web session.
+// Login, or registration when the account does not exist yet: the site's web session. Login first:
+// registration allows 3 attempts per 5 minutes, and a few driver runs in a row used them all up.
 async function webSession() {
   const base = `http://127.0.0.1:${WEBAPI}`;
   const json = (o) => JSON.stringify(o);
-  let res = await request(`${base}/api/public/registration/new`, {
+  let res = await request(`${base}/api/public/authentication/login`, {
     method: 'POST',
-    body: json({ email: PLAYER.email, password: PLAYER.password, passwordRepeated: PLAYER.password }),
+    body: json({ email: PLAYER.email, password: PLAYER.password }),
   });
-  if (res.status === 409) {
-    res = await request(`${base}/api/public/authentication/login`, {
+  if (!sessionCookie(res) && res.status !== 429) {
+    res = await request(`${base}/api/public/registration/new`, {
       method: 'POST',
-      body: json({ email: PLAYER.email, password: PLAYER.password }),
+      body: json({ email: PLAYER.email, password: PLAYER.password, passwordRepeated: PLAYER.password }),
     });
   }
   const cookie = sessionCookie(res);
@@ -691,6 +692,38 @@ async function cmdTravel() {
   log(`proof_b: arrived on (2,2), the passage's entry. Travel OK.`);
 }
 
+// The map editor's test mode: the route mints a ticket whose sign-in starts in the zone, on the
+// cell asked for, instead of the start zone. Run `travel` first: it publishes proof_b.
+async function cmdTestMode() {
+  const base = `http://127.0.0.1:${WEBAPI}`;
+  const headers = { cookie: (await webSession()).cookie };
+  const res = await request(`${base}/api/editor/zones/proof_b/test?x=6&y=6`, { method: 'POST', headers });
+  if (res.status !== 200) die(`Test route: ${res.status} ${res.body}`);
+  const { ssoToken, roomId } = JSON.parse(res.body);
+  log(`POST /api/editor/zones/proof_b/test?x=6&y=6 -> ticket for room ${roomId}`);
+
+  const g = await gameSocket().catch((e) => die(`Socket error on :${GAME_TCP}: ${e.message}`));
+  g.send(frame(H.sso, ssoToken, 0));
+  const forward = await g.wait([H.roomForward]);
+  if (!forward) die('No RoomForward after the test ticket.');
+  const to = forward.body.readInt32BE(0);
+  if (to !== roomId) die(`Signed in towards room ${to}, not the zone under test (${roomId}).`);
+  const before = g.frames.length;
+  g.send(frame(H.openFlat, to, '', -1));
+  const burst = await g.wait([H.objects, H.cantConnect], before, 10000);
+  if (!burst || burst.header === H.cantConnect) die(`Room ${to} refused or silent.`);
+  const own = await g.wait([H.users], g.frames.indexOf(burst) + 1, 5000);
+  g.close();
+  if (!own) die('No avatar announced.');
+  const b = own.body;
+  let o = 8;
+  for (let i = 0; i < 3; i++) o += 2 + b.readInt16BE(o);
+  o += 4;
+  const [x, y] = [b.readInt32BE(o), b.readInt32BE(o + 4)];
+  if (x !== 6 || y !== 6) die(`Arrived on (${x},${y}), not the tested cell (6,6).`);
+  log(`Sign-in -> RoomForward ${to}; arrived on (6,6), the tested cell. Test mode OK.`);
+}
+
 // Enters a published zone by its key, as the throwaway player, and lists the floor items the room
 // sends: what the map editor saved is what a player sees.
 async function cmdEnter(key) {
@@ -769,6 +802,7 @@ const table = {
   zone: cmdZone,
   enter: () => cmdEnter(args[0]),
   travel: cmdTravel,
+  testmode: cmdTestMode,
   cleanup: cmdCleanup,
   smoke: cmdSmoke,
 };
@@ -788,6 +822,7 @@ if (!cmd || !table[cmd]) {
   zone      publish a zone through /api/editor, enter it, republish while inside
   enter <k> enter the published zone <k> and count the floor items it sends
   travel    two proof zones: named area bubble, passage A -> B, arrival on the passage's entry
+  testmode  the editor's test route: a ticket that signs in to proof_b on (6,6)
   cleanup   delete the throwaway account and its players`);
   process.exit(cmd ? 1 : 0);
 }

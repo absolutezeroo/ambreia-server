@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
@@ -11,12 +12,17 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
+using Orleans;
 using Vortex.Database.Context;
 using Vortex.Primitives.Authentication;
 using Vortex.Primitives.Hosting;
 using Vortex.Primitives.Observability;
 using Vortex.Primitives.Permissions;
+using Vortex.Primitives.Players;
+using Vortex.Primitives.Rooms;
 using Vortex.Primitives.World.Editing;
+using Vortex.Primitives.World.Grains;
+using Vortex.Tests.Support;
 using Vortex.WebApi.Configuration;
 using Vortex.WebApi.Hosting;
 using Vortex.WebApi.Services;
@@ -84,6 +90,26 @@ internal sealed class WebApiTestFactory : IAsyncDisposable
             new FakePermissionService(capabilities ?? [.. Capabilities.World.All])
         );
         builder.Services.AddSingleton<IZoneEditorService>(new FakeZoneEditorService());
+        builder.Services.AddSingleton<IGrainFactory>(
+            FakeProxy.Create<IGrainFactory>(call =>
+                call.Method.Name == nameof(IGrainFactory.GetGrain)
+                && call.Method.GetGenericArguments()[0] == typeof(IZoneTestGrain)
+                    ? FakeProxy.Create<IZoneTestGrain>(inner =>
+                    {
+                        ZoneTests.Add(
+                            (
+                                (PlayerId)inner.Args![0]!,
+                                (RoomId)inner.Args![1]!,
+                                (int)inner.Args![2]!,
+                                (int)inner.Args![3]!
+                            )
+                        );
+
+                        return null;
+                    })
+                    : null
+            )
+        );
         builder.Services.AddSingleton<IOptions<WebApiConfig>>(Options.Create(config));
 
         builder.Services.AddSingleton<RequiredServiceGuard>();
@@ -123,6 +149,9 @@ internal sealed class WebApiTestFactory : IAsyncDisposable
     }
 
     public WebApiSessionStore Sessions { get; }
+
+    /// <summary>Every test-mode sign-in the editor's test route announced.</summary>
+    public List<(PlayerId Player, RoomId Room, int X, int Y)> ZoneTests { get; } = [];
 
     /// <summary>The in-memory database behind the app, so a test can seed the rows it is about.</summary>
     public IDbContextFactory<VortexDbContext> DbContexts { get; }
