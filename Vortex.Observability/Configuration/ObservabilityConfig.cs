@@ -23,12 +23,6 @@ public sealed class ObservabilityConfig
     /// <summary>Maximum number of audit events persisted per database round-trip.</summary>
     public int AuditBatchSize { get; init; } = 200;
 
-    /// <summary>Sliding window in seconds for live `/api/overview` aggregates.</summary>
-    public int LiveStatsWindowSeconds { get; init; } = 60;
-
-    /// <summary>Maximum number of top entries returned for live rooms/abusers.</summary>
-    public int LiveStatsTopK { get; init; } = 5;
-
     /// <summary>Retry attempts when durable audit batch persistence fails.</summary>
     public int AuditWriteRetryAttempts { get; init; } = 2;
 
@@ -82,52 +76,4 @@ public sealed class ObservabilityConfig
 
     /// <summary>Delay between error-grouping write retries (milliseconds).</summary>
     public int ErrorTrackingWriteRetryDelayMs { get; init; } = 250;
-
-    /// <summary>Latency threshold (ms) above which DB health is marked degraded.</summary>
-    public int DatabaseProbeDegradedMs { get; init; } = 250;
-
-    /// <summary>Latency threshold (ms) above which DB health is marked critical.</summary>
-    public int DatabaseProbeCriticalMs { get; init; } = 1200;
-
-    /// <summary>Latency threshold (ms) above which Orleans health is marked degraded.</summary>
-    public int OrleansProbeDegradedMs { get; init; } = 350;
-
-    /// <summary>Latency threshold (ms) above which Orleans health is marked critical.</summary>
-    public int OrleansProbeCriticalMs { get; init; } = 1200;
-
-    /// <summary>Incident detection rolling window in minutes.</summary>
-    public int IncidentLookbackMinutes { get; init; } = 5;
-
-    /// <summary>Degraded threshold for runtime error rate (errors/minute).</summary>
-    public int ErrorSpikesDegradedPerMinute { get; init; } = 20;
-
-    /// <summary>Critical threshold for runtime error rate (errors/minute).</summary>
-    public int ErrorSpikesCriticalPerMinute { get; init; } = 80;
-
-    /// <summary>Degraded threshold for login-failed rate (fails/minute).</summary>
-    public int LoginFailedSpikesDegradedPerMinute { get; init; } = 8;
-
-    /// <summary>Critical threshold for login-failed rate (fails/minute).</summary>
-    public int LoginFailedSpikesCriticalPerMinute { get; init; } = 20;
-
-    /// <summary>
-    /// Degraded threshold for one account's audited actions (actions/minute). The other two spike
-    /// signals are about the hotel; this one is about a single account, and it is what catches a
-    /// script long before a person notices the pattern by hand.
-    /// </summary>
-    /// <remarks>
-    /// Set well above what a person can produce. Playing normally, an account files a few audited
-    /// actions a minute; sustaining dozens means something is driving the client. Too low and every
-    /// busy player becomes an alert, which is the failure mode that gets alerting switched off.
-    /// </remarks>
-    public int AccountActionSpikesDegradedPerMinute { get; init; } = 40;
-
-    /// <summary>Critical threshold for one account's audited actions (actions/minute).</summary>
-    public int AccountActionSpikesCriticalPerMinute { get; init; } = 100;
-
-    /// <summary>Number of top error groups returned in an incident snapshot.</summary>
-    public int IncidentTopErrorGroups { get; init; } = 5;
-
-    /// <summary>Rolling window in days for the top error groups query in an incident snapshot.</summary>
-    public int IncidentErrorGroupWindowDays { get; init; } = 7;
 }

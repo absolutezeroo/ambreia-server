@@ -26,7 +26,6 @@ public class SessionContext(
     public SessionKey SessionKey { get; private set; } = string.Empty;
     public string RevisionId { get; private set; } = "Default";
     public DateTime LastActivityUtc { get; private set; } = DateTime.UtcNow;
-    public AsyncSignal PongWaiter { get; } = new();
     public CancellationTokenSource HeartbeatCts { get; } = new();
     public string? RemoteIpAddress =>
         Connection?.RemoteEndPoint is IPEndPoint ipEndpoint ? ipEndpoint.Address?.ToString() : null;

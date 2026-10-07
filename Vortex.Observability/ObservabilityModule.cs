@@ -16,9 +16,9 @@ namespace Vortex.Observability;
 
 /// <summary>
 /// Registers the observability module: the trace-context accessor (correlation id + Orleans
-/// propagation + logging scope + activity), the metrics façade, the durable audit pipeline
-/// (event-handler sinks -> bounded channel -> background writer), the grain-call filter and the
-/// native admin dashboard (self-disabled unless configured with a token).
+/// propagation + logging scope + activity), the metrics façade, the durable audit and error
+/// pipelines (sinks -> bounded channel -> background writer), the retention sweep and the
+/// grain-call filter.
 /// </summary>
 public sealed class ObservabilityModule : IHostPluginModule
 {
@@ -33,27 +33,12 @@ public sealed class ObservabilityModule : IHostPluginModule
         services.AddMetrics();
 
         services.TryAddSingleton<IVortexContextAccessor, VortexContextAccessor>();
-        services.TryAddSingleton<ILiveStatsAggregator, LiveStatsAggregator>();
         services.TryAddSingleton<IVortexMetrics, VortexMetrics>();
-        services.TryAddSingleton<MembershipMetrics>();
         services.AddHostedService<ForensicsRetentionService>();
 
         // Hosted only so the container instantiates it — its gauges observe the session gateway on
         // scrape and it has no work of its own to start.
         services.AddHostedService<ConnectionMetrics>();
-
-        // Reads the room instruments back off the meter for the dashboard. Registered as a singleton
-        // *and* as the hosted service that starts it, so the dashboard resolves the same instance
-        // that is actually listening rather than a second, silent one.
-        services.TryAddSingleton<RoomPerformanceAggregator>();
-        services.AddHostedService(sp => sp.GetRequiredService<RoomPerformanceAggregator>());
-
-        services.TryAddSingleton<ClientPerformanceMetrics>();
-        services.TryAddSingleton<IPerformanceLogSink>(sp =>
-            sp.GetRequiredService<ClientPerformanceMetrics>()
-        );
-        services.TryAddSingleton<IInfrastructureHealthService, InfrastructureHealthService>();
-        services.TryAddSingleton<IIncidentDetectionService, IncidentDetectionService>();
 
         // Error-grouping pipeline: bounded channel -> single background writer (no DB on the hot path).
         services.AddSingleton<ErrorGroupingChannel>();

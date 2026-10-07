@@ -4,23 +4,18 @@ namespace Vortex.Observability.Diagnostics;
 
 /// <summary>
 /// Centrally-allocated, stable <see cref="EventId"/>s. Ranges are reserved per concern so ids never
-/// collide and can be referenced from log queries and dashboards:
+/// collide and can be referenced from log queries:
 /// <list type="bullet">
 /// <item>1000-1099 observability core</item>
-/// <item>1100-1199 networking / packet pipeline</item>
 /// <item>1200-1299 audit pipeline</item>
-/// <item>1300-1399 dashboard</item>
-/// <item>2000-2099 authentication</item>
-/// <item>3000-3099 economy</item>
-/// <item>3100-3199 catalog</item>
-/// <item>3200-3299 furniture</item>
+/// <item>1400-1499 error grouping</item>
 /// </list>
-/// New ids are appended here rather than declared inline at the call site.
+/// New ids are appended here rather than declared inline at the call site. A removed id leaves its
+/// number unused, so an old log query never matches a different event.
 /// </summary>
 public static class VortexEventIds
 {
-    public static readonly EventId ObservabilityReady = new(1000, nameof(ObservabilityReady));
-    public static readonly EventId TraceScopeFault = new(1001, nameof(TraceScopeFault));
+    // 1000 ObservabilityReady and 1001 TraceScopeFault: retired, never logged.
     public static readonly EventId GrainContextFault = new(1002, nameof(GrainContextFault));
 
     public static readonly EventId AuditDropped = new(1200, nameof(AuditDropped));
@@ -35,13 +30,9 @@ public static class VortexEventIds
         nameof(AuditDeadLetterWriteFailed)
     );
 
-    // The hotel-wide word filter, whose journal rides the audit channel.
-    public static readonly EventId WordFilterHitDropped = new(1210, nameof(WordFilterHitDropped));
-    public static readonly EventId WordFilterTimedOut = new(1211, nameof(WordFilterTimedOut));
-    public static readonly EventId WordFilterLoaded = new(1212, nameof(WordFilterLoaded));
-    public static readonly EventId WordFilterLoadFailed = new(1213, nameof(WordFilterLoadFailed));
+    // 1210-1213: retired with the word filter (cut of 2026-10-07).
 
-    public static readonly EventId HandlerPipelineError = new(1400, nameof(HandlerPipelineError));
+    // 1400 HandlerPipelineError: retired, never logged.
     public static readonly EventId ErrorGroupingDropped = new(1401, nameof(ErrorGroupingDropped));
     public static readonly EventId ErrorGroupingWriteRetry = new(
         1402,
@@ -59,18 +50,7 @@ public static class VortexEventIds
         1405,
         nameof(ErrorGroupingDeadLetterWriteFailed)
     );
-    public static readonly EventId ErrorGroupingRecordFailed = new(
-        1406,
-        nameof(ErrorGroupingRecordFailed)
-    );
 
-    public static readonly EventId CatalogSnapshotReloadFailed = new(
-        3100,
-        nameof(CatalogSnapshotReloadFailed)
-    );
-
-    public static readonly EventId FurnitureDefinitionReloadFailed = new(
-        3200,
-        nameof(FurnitureDefinitionReloadFailed)
-    );
+    // 1406 ErrorGroupingRecordFailed, 3100 CatalogSnapshotReloadFailed and
+    // 3200 FurnitureDefinitionReloadFailed: retired, never logged.
 }

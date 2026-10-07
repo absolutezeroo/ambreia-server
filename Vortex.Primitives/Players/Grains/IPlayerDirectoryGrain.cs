@@ -3,7 +3,6 @@ using System.Collections.Immutable;
 using System.Threading;
 using System.Threading.Tasks;
 using Orleans;
-using Vortex.Primitives.Snapshots.FriendList;
 
 namespace Vortex.Primitives.Players.Grains;
 
@@ -14,11 +13,5 @@ public interface IPlayerDirectoryGrain : IGrainWithStringKey
         List<PlayerId> playerIds,
         CancellationToken ct
     );
-    public Task<PlayerId?> GetPlayerIdAsync(string userName, CancellationToken ct);
     public Task SetPlayerNameAsync(PlayerId playerId, string name, CancellationToken ct);
-    public Task<List<MessengerSearchResultSnapshot>> SearchPlayersAsync(
-        string query,
-        int limit,
-        CancellationToken ct
-    );
 }

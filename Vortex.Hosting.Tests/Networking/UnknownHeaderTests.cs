@@ -12,7 +12,6 @@ using Vortex.Primitives.Networking;
 using Vortex.Primitives.Networking.Revisions;
 using Vortex.Primitives.Observability;
 using Vortex.Primitives.Packets;
-using Vortex.Revisions.Configuration;
 using Vortex.Revisions.Revision20260701;
 using Vortex.Tests.Support;
 using Xunit;
@@ -32,9 +31,7 @@ public sealed class UnknownHeaderTests
     // SSOTicketMessageEvent: its parser reads a string, so an empty body is a parse failure.
     private const int PARSED_HEADER = 882;
 
-    private static readonly Revision20260701 Revision = new(
-        Options.Create(new ProtocolLimitsConfig())
-    );
+    private static readonly Revision20260701 Revision = new();
 
     [Fact]
     public async Task AHeaderWithNoParser_IsNotAParseFailure_AndKeepsTheSession()

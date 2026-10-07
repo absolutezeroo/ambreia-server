@@ -37,19 +37,13 @@ namespace Vortex.Rooms;
 internal sealed partial class RoomService(
     ILogger<IRoomService> logger,
     IOptions<RoomConfig> roomConfig,
-    ISessionGateway sessionGateway,
     IGrainFactory grainFactory,
-    IDbContextFactory<VortexDbContext> dbContextFactory,
-    IEventPublisher events,
     ICancellableEventPublisher cancellableEvents
 ) : IRoomService
 {
-    private readonly IDbContextFactory<VortexDbContext> _dbContextFactory = dbContextFactory;
     private readonly IGrainFactory _grainFactory = grainFactory;
     private readonly ILogger<IRoomService> _logger = logger;
     private readonly RoomConfig _roomConfig = roomConfig.Value;
-    private readonly ISessionGateway _sessionGateway = sessionGateway;
-    private readonly IEventPublisher _events = events;
     private readonly ICancellableEventPublisher _cancellableEvents = cancellableEvents;
 
     public async Task OpenRoomForPlayerIdAsync(

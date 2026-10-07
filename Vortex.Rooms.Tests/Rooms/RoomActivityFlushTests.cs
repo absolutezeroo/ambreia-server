@@ -121,40 +121,6 @@ public sealed class RoomActivityFlushTests : IDisposable
             .Be(5, "only the rooms whose occupancy changed are written");
     }
 
-    /// <summary>
-    /// The client labels this "Top rated rooms rank:" and hides it unless it is positive, so the
-    /// numbering is 1-based and an unrated room stays at 0.
-    /// </summary>
-    [Fact]
-    public async Task Ranking_NumbersTheTopRatedRoomsFromOne()
-    {
-        SeedRoom(id: 1, score: 5);
-        SeedRoom(id: 2, score: 40);
-        SeedRoom(id: 3, score: 12);
-        SeedRoom(id: 4);
-
-        await NewGrain().FlushRoomActivityAsync(CancellationToken.None);
-
-        (await LoadAsync(2)).Ranking.Should().Be(1);
-        (await LoadAsync(3)).Ranking.Should().Be(2);
-        (await LoadAsync(1)).Ranking.Should().Be(3);
-        (await LoadAsync(4)).Ranking.Should().Be(0, "an unrated room is not in the table at all");
-    }
-
-    /// <summary>A stale rank reads as a current one — the client cannot tell them apart — so a room
-    /// that dropped out of the table has to be cleared, not merely left behind.</summary>
-    [Fact]
-    public async Task Ranking_ClearsARoomThatFellOutOfTheTable()
-    {
-        SeedRoom(id: 1, score: 0, ranking: 4);
-        SeedRoom(id: 2, score: 40);
-
-        await NewGrain().FlushRoomActivityAsync(CancellationToken.None);
-
-        (await LoadAsync(1)).Ranking.Should().Be(0);
-        (await LoadAsync(2)).Ranking.Should().Be(1);
-    }
-
     /// <summary>One activation of this grain serves the whole cluster and it starts empty, so any
     /// occupancy already in the column belongs to a run that is over.</summary>
     [Fact]
@@ -186,7 +152,7 @@ public sealed class RoomActivityFlushTests : IDisposable
     /// <summary>Raw SQL: created_at is DatabaseGenerated(Identity) and updated_at is Computed, so EF
     /// writes neither and EnsureCreated leaves both NOT NULL with no default. Only the columns
     /// without one are listed; the flush is updates, which are unaffected.</summary>
-    private void SeedRoom(int id, int usersNow = 0, int score = 0, int ranking = 0)
+    private void SeedRoom(int id, int usersNow = 0)
     {
         using VortexDbContext db = new(_options);
 
@@ -194,14 +160,12 @@ public sealed class RoomActivityFlushTests : IDisposable
             """
             INSERT INTO rooms (id, name, player_id, model_id, users_now, score, ranking,
                                last_active, created_at, updated_at)
-            VALUES ({0}, {1}, 1, 1, {2}, {3}, {4},
+            VALUES ({0}, {1}, 1, 1, {2}, 0, 0,
                     '2020-01-01 00:00:00', '2020-01-01 00:00:00', '2020-01-01 00:00:00')
             """,
             id,
             $"room-{id}",
-            usersNow,
-            score,
-            ranking
+            usersNow
         );
     }
 

@@ -1,11 +1,9 @@
-using Microsoft.Extensions.Options;
 using Vortex.Primitives.Networking.Revisions;
-using Vortex.Revisions.Configuration;
 using Vortex.Revisions.Revision20260701.Maps;
 
 namespace Vortex.Revisions.Revision20260701;
 
-public sealed class Revision20260701(IOptions<ProtocolLimitsConfig> protocolLimits)
+public sealed class Revision20260701()
     : RevisionBase(
         new IRevisionMap[]
         {
@@ -14,7 +12,6 @@ public sealed class Revision20260701(IOptions<ProtocolLimitsConfig> protocolLimi
             new NavigatorMap(),
             new NotificationsMap(),
             new RoomMap(),
-            new RoomSettingsMap(protocolLimits.Value),
             new AvailabilityMap(),
         }
     )

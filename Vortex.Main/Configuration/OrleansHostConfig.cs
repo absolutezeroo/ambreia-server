@@ -35,12 +35,9 @@ public sealed class OrleansHostConfig
     ///     The configuration can already form a multi-silo cluster; several components still assume
     ///     they are the only silo, and none of them fail loudly when they are not:
     ///     <list type="bullet">
-    ///         <item><c>FurnitureDefinitionProvider</c> and <c>CatalogService</c> are singletons
-    ///         whose <c>ReloadAsync</c> reloads the calling process only — after an admin edit,
-    ///         every other silo keeps serving the old definitions indefinitely.</item>
-    ///         <item><c>LiveStatsAggregator</c>, <c>RoomPerformanceAggregator</c> and incident
-    ///         detection aggregate their own node, so the dashboard reports whichever silo it
-    ///         happens to run on rather than the cluster.</item>
+    ///         <item><c>FurnitureDefinitionProvider</c> is a singleton whose <c>ReloadAsync</c>
+    ///         reloads the calling process only — every other silo keeps serving the old
+    ///         definitions indefinitely.</item>
     ///         <item>Room fan-out uses memory streams, which the official guidance restricts to
     ///         development and testing where durability matters.</item>
     ///     </list>

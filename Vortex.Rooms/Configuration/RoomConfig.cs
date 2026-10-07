@@ -28,10 +28,6 @@ public class RoomConfig
     /// </summary>
     public int RoomPopulationFlushMs { get; init; } = 30000;
 
-    /// <summary>How many rooms the top-rated ranking covers. The client hides the field unless the
-    /// value is positive, so everything past this stays honestly unranked.</summary>
-    public int RoomRankingSize { get; init; } = 100;
-
     /// <summary>
     /// How often the room wakes up to look at its clocks.
     /// <para>

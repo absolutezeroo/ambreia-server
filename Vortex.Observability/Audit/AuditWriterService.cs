@@ -20,11 +20,10 @@ namespace Vortex.Observability.Audit;
 
 /// <summary>
 ///     Single background consumer of the durable-observability channel. It batches records of every family
-///     (audit, economy ledger, item forensics), routes each to its table, and persists them with one
+///     (audit, item forensics), routes each to its table, and persists them with one
 ///     <c>SaveChanges</c> per batch — keeping all durable writes off the gameplay hot path. A failed
 ///     flush retries a bounded number of times and then writes to a dead-letter file to avoid losing audit
-///     history. Client performance telemetry does not go through this pipeline — see
-///     <see cref="Metrics.ClientPerformanceMetrics" />.
+///     history.
 /// </summary>
 public sealed class AuditWriterService : BackgroundService
 {

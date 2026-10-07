@@ -10,7 +10,6 @@ using Vortex.Primitives.Rooms.Enums;
 using Vortex.Primitives.Rooms.Object;
 using Vortex.Primitives.Rooms.Snapshots.Furniture;
 using Vortex.Protocol.Messages.Outgoing.Room.Engine;
-using Vortex.Revisions.Configuration;
 using Xunit;
 using Rev = Vortex.Revisions.Revision20260701.Revision20260701;
 
@@ -28,7 +27,7 @@ namespace Vortex.Revisions.Tests.Room;
 /// </summary>
 public sealed class WallItemStuffDataWireTests
 {
-    private static readonly Rev Revision = new(Options.Create(new ProtocolLimitsConfig()));
+    private static readonly Rev Revision = new();
 
     private static ClientPacket SerializeAndReadBody(ItemsMessageComposer composer)
     {

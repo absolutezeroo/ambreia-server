@@ -7,7 +7,6 @@ using Vortex.Primitives.Orleans.Snapshots.Players;
 using Vortex.Primitives.Packets;
 using Vortex.Primitives.Rooms.Enums;
 using Vortex.Protocol.Messages.Outgoing.Handshake;
-using Vortex.Revisions.Configuration;
 using Xunit;
 using Rev = Vortex.Revisions.Revision20260701.Revision20260701;
 
@@ -25,7 +24,7 @@ namespace Vortex.Revisions.Tests.Users;
 /// </remarks>
 public sealed class UserObjectWireTests
 {
-    private static readonly Rev Revision = new(Options.Create(new ProtocolLimitsConfig()));
+    private static readonly Rev Revision = new();
 
     [Fact]
     public void TheFrozenRespectBlock_IsWrittenAsZeroesInTheSameShape()

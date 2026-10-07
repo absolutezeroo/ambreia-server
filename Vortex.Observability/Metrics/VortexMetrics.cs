@@ -29,19 +29,13 @@ public sealed class VortexMetrics : IVortexMetrics, IDisposable
     private readonly Counter<long> _furnitureLogicFallback;
     private readonly Counter<long> _referenceDataPublished;
     private readonly Counter<long> _auditWriteFailure;
-    private readonly ILiveStatsAggregator _liveStats;
 
     public bool Enabled => _enabled;
 
-    public VortexMetrics(
-        IMeterFactory meterFactory,
-        ILiveStatsAggregator liveStats,
-        IOptions<ObservabilityConfig> options
-    )
+    public VortexMetrics(IMeterFactory meterFactory, IOptions<ObservabilityConfig> options)
     {
         _enabled = options.Value.MetricsEnabled;
         _meter = meterFactory.Create(VortexTelemetry.Name, VortexTelemetry.Version);
-        _liveStats = liveStats;
 
         _packetReceived = _meter.CreateCounter<long>(
             "Vortex.packet.received",
@@ -104,8 +98,6 @@ public sealed class VortexMetrics : IVortexMetrics, IDisposable
         {
             _packetReceived.Add(1, Tag(operation));
         }
-
-        _liveStats.RecordPacketReceived(operation, actorId, roomId);
     }
 
     public void PacketCompleted(
@@ -119,8 +111,6 @@ public sealed class VortexMetrics : IVortexMetrics, IDisposable
         {
             _packetDuration.Record(elapsedMilliseconds, Tag(operation));
         }
-
-        _liveStats.RecordPacketCompleted(actorId, roomId, elapsedMilliseconds);
     }
 
     public void PacketFailed(string operation, long? actorId = null, int? roomId = null)
@@ -129,8 +119,6 @@ public sealed class VortexMetrics : IVortexMetrics, IDisposable
         {
             _packetFailed.Add(1, Tag(operation));
         }
-
-        _liveStats.RecordPacketFailed(operation, actorId, roomId);
     }
 
     public void PacketDropped(string reason)

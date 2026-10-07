@@ -13,10 +13,6 @@ public static class ServiceCollectionExtensions
         HostApplicationBuilder builder
     )
     {
-        services.Configure<ProtocolLimitsConfig>(
-            builder.Configuration.GetSection(ProtocolLimitsConfig.SECTION_NAME)
-        );
-
         services.Configure<RevisionConfig>(
             builder.Configuration.GetSection(RevisionConfig.SECTION_NAME)
         );

@@ -177,7 +177,6 @@ public sealed class VortexMetricsInstrumentTests
     private static VortexMetrics CreateMetrics(IMeterFactory factory, bool enabled) =>
         new VortexMetrics(
             factory,
-            new NoopLiveStats(),
             Options.Create(new ObservabilityConfig { MetricsEnabled = enabled })
         );
 
@@ -319,29 +318,5 @@ public sealed class VortexMetricsInstrumentTests
             PlayerId playerId,
             System.Threading.CancellationToken ct
         ) => Task.CompletedTask;
-    }
-
-    private sealed class NoopLiveStats : ILiveStatsAggregator
-    {
-        public void RecordPacketReceived(
-            string operation,
-            long? actorId = null,
-            int? roomId = null
-        ) { }
-
-        public void RecordPacketCompleted(
-            long? actorId = null,
-            int? roomId = null,
-            double elapsedMilliseconds = 0
-        ) { }
-
-        public void RecordPacketFailed(
-            string operation,
-            long? actorId = null,
-            int? roomId = null
-        ) { }
-
-        public Task<LiveStatsSnapshot> GetSnapshotAsync() =>
-            Task.FromResult(new LiveStatsSnapshot(0, 0, 0, 0, [], [], [], []));
     }
 }

@@ -6,7 +6,6 @@ using System.Text.RegularExpressions;
 using FluentAssertions;
 using Microsoft.Extensions.Options;
 using Vortex.Primitives.Networking;
-using Vortex.Revisions.Configuration;
 using Xunit;
 using Rev = Vortex.Revisions.Revision20260701.Revision20260701;
 
@@ -49,7 +48,7 @@ public sealed class EmittedComposerRegistrationTests
         RegexOptions.Compiled
     );
 
-    private static readonly Rev Revision = new(Options.Create(new ProtocolLimitsConfig()));
+    private static readonly Rev Revision = new();
 
     private static DirectoryInfo RepositoryRoot()
     {

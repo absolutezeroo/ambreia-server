@@ -5,7 +5,6 @@ using FluentAssertions;
 using Microsoft.Extensions.Options;
 using Vortex.Primitives.Networking;
 using Vortex.Primitives.Packets;
-using Vortex.Revisions.Configuration;
 using Xunit;
 using Rev = Vortex.Revisions.Revision20260701.Revision20260701;
 
@@ -31,7 +30,7 @@ namespace Vortex.Revisions.Tests;
 /// </summary>
 public sealed class SerializerPairingTests
 {
-    private static readonly Rev Revision = new(Options.Create(new ProtocolLimitsConfig()));
+    private static readonly Rev Revision = new();
 
     [Fact]
     public void EverySerializerIsRegisteredAgainstTheComposerItActuallySerializes()

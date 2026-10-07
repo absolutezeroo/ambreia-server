@@ -29,14 +29,5 @@ public record RoomSummarySnapshot
     [Id(6)]
     public required DateTime LastUpdatedUtc { get; init; } = DateTime.UtcNow;
 
-    /// <summary>
-    /// Whether this room is handling a raid right now.
-    /// </summary>
-    /// <remarks>
-    /// Not <c>required</c>, unlike everything above it: this is a late addition and false is the
-    /// honest answer for every caller that has no idea — a room reporting its own summary knows,
-    /// the directory knows because the room told it, and nobody else should have to say.
-    /// </remarks>
-    [Id(7)]
-    public bool RaidIncidentActive { get; init; }
+    // [Id(7)] retired: RaidIncidentActive (raids left with the cut of 2026-10-07).
 }

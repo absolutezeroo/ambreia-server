@@ -39,13 +39,6 @@ public class RoomDirectoryGrain(
     /// changed since the last flush, so a quiet hotel writes nothing at all.</summary>
     private readonly Dictionary<RoomId, int> _unflushedPopulations = [];
 
-    /// <summary>Rooms handling a raid right now. Only the ones that are — an empty set is the norm.</summary>
-    private readonly HashSet<RoomId> _raidIncidents = [];
-
-    /// <summary>Last time the top-rated ranking was renumbered. Ratings move far more slowly than
-    /// occupancy, so it rides the occupancy flush on its own, much longer clock.</summary>
-    private DateTime _lastRankingAt = DateTime.MinValue;
-
     public override async Task OnActivateAsync(CancellationToken ct)
     {
         this.RegisterGrainTimer<object?>(
@@ -97,7 +90,6 @@ public class RoomDirectoryGrain(
         _activeRooms.Remove(roomId);
         _roomPlayers.Remove(roomId);
         _roomPopulations.Remove(roomId);
-        _raidIncidents.Remove(roomId);
 
         // Queued after the removal, not before: dropping the in-memory entry is exactly the moment
         // the room's last persisted headcount became a lie.
@@ -154,7 +146,6 @@ public class RoomDirectoryGrain(
                         OwnerName = x.OwnerName,
                         Population = population,
                         LastUpdatedUtc = x.LastUpdatedUtc,
-                        RaidIncidentActive = _raidIncidents.Contains(x.RoomId),
                     };
                 })
                 .ToImmutableArray()
@@ -176,8 +167,7 @@ public class RoomDirectoryGrain(
     }
 
     /// <summary>
-    /// Writes the occupancy the hotel has actually been living with back to <c>rooms.users_now</c>,
-    /// then refreshes the top-rated ranking off it.
+    /// Writes the occupancy the hotel has actually been living with back to <c>rooms.users_now</c>.
     /// </summary>
     /// <remarks>
     /// The column was set to 0 when a room was created and never written again, so every navigator
@@ -196,10 +186,7 @@ public class RoomDirectoryGrain(
 
         _unflushedPopulations.Clear();
 
-        bool rankingDue =
-            DateTime.UtcNow - _lastRankingAt >= TimeSpan.FromMilliseconds(_roomConfig.RoomCheckMs);
-
-        if (pending.Count == 0 && !rankingDue)
+        if (pending.Count == 0)
         {
             return;
         }
@@ -241,13 +228,6 @@ public class RoomDirectoryGrain(
                         .ConfigureAwait(true);
                 }
             }
-
-            if (rankingDue)
-            {
-                _lastRankingAt = now;
-
-                await RefreshRankingAsync(dbCtx, ct).ConfigureAwait(true);
-            }
         }
         catch (Exception ex)
         {
@@ -261,50 +241,6 @@ public class RoomDirectoryGrain(
 
             _logger.LogError(ex, "Failed to flush room occupancy for {Count} rooms", pending.Count);
         }
-    }
-
-    /// <summary>
-    /// Renumbers <c>rooms.ranking</c> — the client's "Top rated rooms rank:", which it hides unless
-    /// the value is positive. Only the rows whose place actually moved are written, so a hotel whose
-    /// ratings are settled pays one read and no writes.
-    /// </summary>
-    private async Task RefreshRankingAsync(VortexDbContext dbCtx, CancellationToken ct)
-    {
-        List<RankedRoom> top = await dbCtx
-            .Rooms.AsNoTracking()
-            .Where(r => r.DeletedAt == null && r.Score > 0)
-            .OrderByDescending(r => r.Score)
-            .ThenBy(r => r.Id)
-            .Take(_roomConfig.RoomRankingSize)
-            .Select(r => new RankedRoom { Id = r.Id, Ranking = r.Ranking })
-            .ToListAsync(ct)
-            .ConfigureAwait(true);
-
-        HashSet<int> ranked = [.. top.Select(x => x.Id)];
-
-        for (int i = 0; i < top.Count; i++)
-        {
-            int rank = i + 1;
-
-            if (top[i].Ranking == rank)
-            {
-                continue;
-            }
-
-            int roomId = top[i].Id;
-
-            await dbCtx
-                .Rooms.Where(r => r.Id == roomId)
-                .ExecuteUpdateAsync(s => s.SetProperty(r => r.Ranking, rank), ct)
-                .ConfigureAwait(true);
-        }
-
-        // A room that fell out of the table keeps its old number until something clears it, and a
-        // stale rank reads as a current one — the client cannot tell them apart.
-        await dbCtx
-            .Rooms.Where(r => r.Ranking != 0 && !ranked.Contains(r.Id))
-            .ExecuteUpdateAsync(s => s.SetProperty(r => r.Ranking, 0), ct)
-            .ConfigureAwait(true);
     }
 
     /// <summary>Drops occupancy left behind by a previous silo. Failure is logged rather than
@@ -335,13 +271,6 @@ public class RoomDirectoryGrain(
         {
             _logger.LogError(ex, "Failed to clear stale room occupancy at startup");
         }
-    }
-
-    /// <summary>Projection shape for the ranking pass; only ever exists inside an EF query.</summary>
-    private sealed class RankedRoom
-    {
-        public int Id { get; set; }
-        public int Ranking { get; set; }
     }
 
     /// <summary>

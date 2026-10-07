@@ -4,7 +4,7 @@ namespace Vortex.Primitives.Observability;
 /// Small façade over the runtime metric instruments. Kept intentionally narrow; further instruments
 /// are added as later phases land. Implementations must be cheap and allocation-free on the hot path.
 /// Every recording method takes only bounded dimensions — a player id or a room id must never reach a
-/// metric tag; those breakdowns belong to <c>ILiveStatsAggregator</c>.
+/// metric tag.
 /// </summary>
 public interface IVortexMetrics
 {
