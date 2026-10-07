@@ -19,12 +19,11 @@
   import Drawer from '../components/Drawer.svelte';
   import PageHeader from '../components/PageHeader.svelte';
   import AssetImage from '../components/AssetImage.svelte';
-  import Chip from '../components/Chip.svelte';
   import EmptyState from '../components/EmptyState.svelte';
   import EntityLink from '../components/EntityLink.svelte';
   import PickerModal from '../components/PickerModal.svelte';
   import StatCard from '../components/StatCard.svelte';
-  import { Award, Sparkles, MessageCircle, Shirt } from '@lucide/svelte';
+  import { Award, Sparkles, Shirt } from '@lucide/svelte';
   import { t } from '../lib/i18n';
   import type { PlayerRewardDetail, PlayerRewardStats } from '../lib/apiTypes';
   import type { PickerRow } from '../lib/pickers/directories';
@@ -68,10 +67,6 @@
       ? data.effectImageTemplate.replace('{effect}', String(Number(effectId)))
       : null);
   let effectDuration = $state(0);
-
-  // The client's own library id, not a row id. Anything below 1000 is refused by the grain rather
-  // than here, so there is one range rule and the form does not have to restate it.
-  let chatStyleId = $state(0);
 
   async function refresh() {
     loading = true;
@@ -160,11 +155,6 @@
         <Sparkles size={15} strokeWidth={2} aria-hidden="true" />
       {/snippet}
     </StatCard>
-    <StatCard label={$t('playerRewards.chatStyles')} value={formatNumber(data.totals.chatStyleCount)}>
-      {#snippet icon()}
-        <MessageCircle size={15} strokeWidth={2} aria-hidden="true" />
-      {/snippet}
-    </StatCard>
     <StatCard
       label={$t('playerRewards.outfits')}
       value={formatNumber(data.totals.wardrobeOutfits)}
@@ -243,30 +233,6 @@
   </div>
 
   <div class="split-grid" style="margin-top: 12px;">
-    <div class="panel">
-      <div class="panel-head"><h2>{$t('playerRewards.chatStylesTitle')}</h2></div>
-      <div class="table-wrap">
-        <table>
-          <thead>
-            <tr>
-              <th>{$t('playerRewards.colStyleId')}</th>
-              <th>{$t('playerRewards.colOwners')}</th>
-            </tr>
-          </thead>
-          <tbody>
-            {#each data.chatStyles || [] as row}
-              <tr>
-                <td>{row.clientStyleId}</td>
-                <td>{formatNumber(row.owners)}</td>
-              </tr>
-            {:else}
-              <tr><td colspan="2" class="muted">{$t('playerRewards.noChatStyles')}</td></tr>
-            {/each}
-          </tbody>
-        </table>
-      </div>
-    </div>
-
     <div class="panel">
       <div class="panel-head"><h2>{$t('playerRewards.topCollectorsTitle')}</h2></div>
       <div class="table-wrap">
@@ -380,22 +346,6 @@
           {/if}
         </div>
       </div>
-
-      <h3 class="subhead">{$t('playerRewards.chatStylesTitle')}</h3>
-      {#if (detail.chatStyles || []).length === 0}
-        <EmptyState message={$t('playerRewards.noChatStyles')} />
-      {:else}
-        <!-- Chips, not a table: a style is one number and nothing else, so a table would be four
-             borders around a four-digit id. -->
-        <div class="chip-row">
-          {#each detail.chatStyles as style}
-            <Chip>
-              <MessageCircle size={14} aria-hidden="true" />
-              <code>{style.clientStyleId}</code>
-            </Chip>
-          {/each}
-        </div>
-      {/if}
 
       <h3 class="subhead">{$t('playerRewards.outfitsTitle')}</h3>
       {#if (detail.outfits || []).length === 0}
@@ -514,44 +464,6 @@
       </button>
     </form>
 
-    <p class="muted">{$t('playerRewards.chatStyleHint')}</p>
-
-    <form
-      class="inline-form"
-      onsubmit={(event) => {
-        event.preventDefault();
-        ops.ask(
-          '/api/v1/operations/content/chat-styles/grant',
-          { playerId: target.id, clientStyleId: Number(chatStyleId) },
-          $t('playerRewards.grantChatStyle'),
-          $t('playerRewards.grantChatStyleSummary', { id: chatStyleId, name: target.name })
-        );
-      }}
-    >
-      <!-- No preview beside this one, unlike the badge and the effect: the bubble's artwork lives in
-           the client's own style library and the server has no picture of it. A generic glyph in that
-           slot would read as "this is what 1004 looks like". -->
-      <label>
-        {$t('playerRewards.colStyleId')}
-        <input autocomplete="off" spellcheck="false" type="number" bind:value={chatStyleId} min="1000" />
-      </label>
-      <button type="submit" disabled={!chatStyleId}>{$t('playerRewards.grantChatStyle')}</button>
-      <button
-        type="button"
-        class="ghost-button danger"
-        disabled={!chatStyleId}
-        onclick={() =>
-          ops.ask(
-            '/api/v1/operations/content/chat-styles/revoke',
-            { playerId: target.id, clientStyleId: Number(chatStyleId) },
-            $t('playerRewards.revokeChatStyle'),
-            $t('playerRewards.revokeChatStyleSummary', { id: chatStyleId, name: target.name })
-          )}
-      >
-        {$t('playerRewards.revokeChatStyle')}
-      </button>
-    </form>
-
     {#if $ops.result}
       <OpResult result={$ops.result} />
     {/if}
@@ -601,11 +513,5 @@
   .subhead {
     margin: 14px 0 8px;
     font-size: 0.95rem;
-  }
-
-  .chip-row {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 6px;
   }
 </style>

@@ -356,30 +356,6 @@ internal sealed partial class PlayerGrain : Grain, IPlayerGrain
         return true;
     }
 
-    public async Task SetChatStylePreferenceAsync(int chatStyle, CancellationToken ct)
-    {
-        // No-op when unchanged so a repeated toggle from the client never touches the database.
-        if (_state.RoomChatStyleId == chatStyle)
-        {
-            return;
-        }
-
-        _state.RoomChatStyleId = chatStyle;
-
-        // Targeted single-column update: RoomChatStyleId is not part of the shared
-        // WriteToDatabaseAsync property set, so writing it here can neither clobber nor be clobbered
-        // by the other player fields.
-        await using VortexDbContext dbCtx = await _dbCtxFactory.CreateDbContextAsync(ct);
-
-        await dbCtx
-            .Players.Where(p => p.Id == (int)_state.PlayerId)
-            .ExecuteUpdateAsync(up => up.SetProperty(p => p.RoomChatStyleId, chatStyle), ct)
-            .ConfigureAwait(true);
-    }
-
-    public Task<int> GetChatStylePreferenceAsync(CancellationToken ct) =>
-        Task.FromResult(_state.RoomChatStyleId);
-
     public Task<PlayerSummarySnapshot> GetSummaryAsync(CancellationToken ct)
     {
         return Task.FromResult(
@@ -1251,7 +1227,6 @@ internal sealed partial class PlayerGrain : Grain, IPlayerGrain
         _state.Motto = entity.Motto ?? string.Empty;
         _state.Figure = entity.Figure;
         _state.Gender = entity.Gender;
-        _state.RoomChatStyleId = entity.RoomChatStyleId ?? 0;
         _state.Perks = entity.PlayerPerks;
         _state.AchievementScore = entity.AchievementScore;
         _state.RespectReceived = entity.RespectReceived;

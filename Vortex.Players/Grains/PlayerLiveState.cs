@@ -12,7 +12,6 @@ public sealed class PlayerLiveState
     public string Motto { get; set; } = string.Empty;
     public string Figure { get; set; } = string.Empty;
     public AvatarGenderType Gender { get; set; } = AvatarGenderType.Male;
-    public int RoomChatStyleId { get; set; } = 0;
 
     /// <summary>
     /// The account's entitlements. Cached here as well as stored because a perk gates what the

@@ -245,7 +245,6 @@ public sealed class PreferencesWireLayoutTests
             RoomInvitesIgnored = false,
             RoomCameraFollowDisabled = true,
             UIFlags = UIFlags.FriendBarExpanded,
-            PreferedChatStyle = 4,
             WiredMenuButton = true,
             WiredInspectButton = false,
             PlayTestMode = true,
@@ -275,7 +274,9 @@ public sealed class PreferencesWireLayoutTests
         body.PopBoolean().Should().BeFalse();
         body.PopBoolean().Should().BeTrue();
         body.PopInt().Should().Be((int)UIFlags.FriendBarExpanded);
-        body.PopInt().Should().Be(4);
+        body.PopInt()
+            .Should()
+            .Be(0, "preferedChatStyle is frozen at 0 since chat styles were removed");
         body.PopBoolean().Should().BeTrue();
         body.PopBoolean().Should().BeFalse();
         body.PopBoolean().Should().BeTrue();

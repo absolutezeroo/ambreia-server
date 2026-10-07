@@ -50,7 +50,6 @@ public class WhisperMessageHandler : IMessageHandler<WhisperMessage>
                 ctx.PlayerId,
                 message.Text,
                 AvatarGestureType.None,
-                message.StyleId,
                 [],
                 0,
                 targetPlayerId,

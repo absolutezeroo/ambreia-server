@@ -12,7 +12,9 @@ internal class ShoutMessageComposerSerializer(int header)
             .WriteInteger(message.ObjectId)
             .WriteString(message.Text)
             .WriteInteger((int)message.Gesture)
-            .WriteInteger(message.StyleId)
+            // styleId: figé, retiré avec le client -- chat styles were removed (M0 bis); the
+            // client still reads the field.
+            .WriteInteger(0)
             .WriteInteger(message.Links.Count);
 
         foreach ((string one, string two, bool three) in message.Links)

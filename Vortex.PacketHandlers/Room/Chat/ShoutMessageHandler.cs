@@ -37,7 +37,6 @@ public class ShoutMessageHandler : IMessageHandler<ShoutMessage>
                 ctx.PlayerId,
                 message.Text,
                 AvatarGestureType.None,
-                message.StyleId,
                 [],
                 0,
                 chatType: RoomChatType.Shout

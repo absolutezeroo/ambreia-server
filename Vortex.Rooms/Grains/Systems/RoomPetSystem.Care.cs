@@ -286,7 +286,6 @@ public sealed partial class RoomPetSystem
                 ObjectId = RoomPetRuntime.ToRoomObjectId(pet.PetId),
                 Text = line,
                 Gesture = default,
-                StyleId = 0,
                 Links = [],
                 TrackingId = 0,
             }

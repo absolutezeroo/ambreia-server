@@ -60,7 +60,6 @@ public sealed class CancellablePreEventTests
             RoomHarness.Owner,
             LINE,
             default,
-            styleId: 0,
             links: [],
             trackingId: 0
         );

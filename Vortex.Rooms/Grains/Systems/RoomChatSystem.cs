@@ -37,7 +37,6 @@ public sealed class RoomChatSystem(RoomGrain roomGrain)
         PlayerId playerId,
         string text,
         AvatarGestureType gesture,
-        int styleId,
         List<(string, string, bool)> links,
         int trackingId,
         PlayerId? targetPlayerId = null,
@@ -106,15 +105,6 @@ public sealed class RoomChatSystem(RoomGrain roomGrain)
             return;
         }
 
-        if (styleId == -1)
-        {
-            styleId = avatar.LastChatStyleId;
-        }
-        else
-        {
-            avatar.LastChatStyleId = styleId;
-        }
-
         // After the cancellable event, so a handler still sees what was actually typed, and before
         // the line reaches anybody -- including the speaker, who must see the same masked text as
         // the room or they would not know the filter exists. The hotel's list first, then the room
@@ -133,7 +123,6 @@ public sealed class RoomChatSystem(RoomGrain roomGrain)
             playerId,
             text,
             gesture,
-            styleId,
             links,
             trackingId,
             targetPlayerId,
@@ -245,7 +234,6 @@ public sealed class RoomChatSystem(RoomGrain roomGrain)
         PlayerId playerId,
         string text,
         AvatarGestureType gesture,
-        int styleId,
         List<(string, string, bool)> links,
         int trackingId,
         PlayerId? targetPlayerId,
@@ -276,7 +264,6 @@ public sealed class RoomChatSystem(RoomGrain roomGrain)
                         ObjectId = objectId,
                         Text = text,
                         Gesture = gesture,
-                        StyleId = styleId,
                         Links = links,
                         TrackingId = trackingId,
                     }
@@ -285,7 +272,6 @@ public sealed class RoomChatSystem(RoomGrain roomGrain)
                         ObjectId = objectId,
                         Text = text,
                         Gesture = gesture,
-                        StyleId = styleId,
                         Links = links,
                         TrackingId = trackingId,
                     }
@@ -298,7 +284,6 @@ public sealed class RoomChatSystem(RoomGrain roomGrain)
                 ObjectId = objectId,
                 Text = text,
                 Gesture = gesture,
-                StyleId = styleId,
                 Links = links,
                 TrackingId = trackingId,
             };

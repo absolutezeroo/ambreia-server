@@ -12,11 +12,8 @@ internal class WhisperMessageParser : IParser
         string recipientName = parts[0];
         string text = parts[1];
 
-        return new WhisperMessage
-        {
-            RecipientName = recipientName,
-            Text = text,
-            StyleId = packet.PopInt(),
-        };
+        packet.PopInt(); // chat style: figé, retiré avec le client (read and ignored)
+
+        return new WhisperMessage { RecipientName = recipientName, Text = text };
     }
 }

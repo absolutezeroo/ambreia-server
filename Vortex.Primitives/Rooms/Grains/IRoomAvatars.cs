@@ -78,7 +78,6 @@ public interface IRoomAvatars : IGrainWithIntegerKey
         PlayerId playerId,
         string text,
         AvatarGestureType gesture,
-        int styleId,
         List<(string, string, bool)> links,
         int trackingId,
         PlayerId? targetPlayerId = null,

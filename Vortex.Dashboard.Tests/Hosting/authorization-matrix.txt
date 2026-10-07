@@ -132,8 +132,6 @@ POST /api/v1/operations/content/badges/grant -> dashboard.ops.content.manage
 POST /api/v1/operations/content/badges/revoke -> dashboard.ops.content.manage
 POST /api/v1/operations/content/bots -> dashboard.ops.content.manage
 POST /api/v1/operations/content/bots/delete -> dashboard.ops.content.manage
-POST /api/v1/operations/content/chat-styles/grant -> dashboard.ops.content.manage
-POST /api/v1/operations/content/chat-styles/revoke -> dashboard.ops.content.manage
 POST /api/v1/operations/content/currencies -> dashboard.ops.content.manage
 POST /api/v1/operations/content/effects/grant -> dashboard.ops.content.manage
 POST /api/v1/operations/content/effects/revoke -> dashboard.ops.content.manage

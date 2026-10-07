@@ -621,12 +621,6 @@ export interface CfhTotals {
   avgResolutionMinutes: number;
 }
 
-export interface ChatStyleRow {
-  id: number;
-  clientStyleId: number;
-  owners: number;
-}
-
 export interface ChatlogEntry {
   id: number;
   createdAt: string;
@@ -1967,11 +1961,6 @@ export interface PlayerChatRow {
   targetPlayerName: string | null;
 }
 
-export interface PlayerChatStyleRow {
-  id: number;
-  clientStyleId: number;
-}
-
 export interface PlayerDirectoryPage {
   count: number;
   total: number;
@@ -2055,7 +2044,6 @@ export interface PlayerRewardDetail {
   avatarUrl: string | null;
   badges: PlayerBadgeRow[];
   effects: PlayerEffectRow[];
-  chatStyles: PlayerChatStyleRow[];
   outfits: PlayerOutfitRow[];
 }
 
@@ -2065,7 +2053,6 @@ export interface PlayerRewardStats {
   badgeImageTemplate: string | null;
   topBadges: BadgeHolderCount[];
   topEffects: EffectOwnerCount[];
-  chatStyles: ChatStyleRow[];
   topCollectors: BadgeCollector[];
 }
 
@@ -2077,7 +2064,6 @@ export interface PlayerRewardTotals {
   totalEffects: number;
   activatedEffects: number;
   selectedEffects: number;
-  chatStyleCount: number;
   wardrobeOutfits: number;
   wardrobeUsers: number;
 }

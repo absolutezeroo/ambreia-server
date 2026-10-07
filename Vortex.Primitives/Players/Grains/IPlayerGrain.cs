@@ -43,54 +43,6 @@ public interface IPlayerGrain : IGrainWithIntegerKey
     /// </remarks>
     public Task OnAccountSafetyLockChangedAsync(bool locked, CancellationToken ct);
 
-    /// <summary>Persists the player's preferred chat-bubble style (SetChatStylePreference, header
-    /// 2634). No-op when the style is unchanged so a repeated toggle doesn't touch the database.</summary>
-    public Task SetChatStylePreferenceAsync(int chatStyle, CancellationToken ct);
-
-    /// <summary>The player's persisted preferred chat-bubble style (0 = default). Surfaced back to the
-    /// client in the account-preferences packet so the settings UI shows the saved selection.</summary>
-    public Task<int> GetChatStylePreferenceAsync(CancellationToken ct);
-
-    /// <summary>
-    /// Every chat-bubble style this player has been given, as the client numbers them.
-    /// </summary>
-    /// <remarks>
-    /// Answers <c>GetUserNftChatStyles</c>. The client keeps a style out of the selector unless its
-    /// id came back in this list, so an empty answer is what a player with no unlocks should see —
-    /// and, until this existed, what every player saw.
-    /// </remarks>
-    public Task<List<int>> GetOwnedChatStyleIdsAsync(CancellationToken ct);
-
-    /// <summary>
-    /// Sends both chat-style bands to this player, unasked.
-    /// </summary>
-    /// <remarks>
-    /// The client rebuilds its style selector from scratch every time a room's chat input is
-    /// created — <c>RoomChatInputView.createOrUpdateChatStylesView()</c> walks its style library and
-    /// keeps every unlockable id out unless <c>hasNftChatStyle</c> says otherwise, and every
-    /// purchasable one out unless <c>hasPurchasableChatStyle</c> does. Both sets live on
-    /// <c>SessionDataManager</c> and are only ever filled by these two messages, so whatever is in
-    /// them at that moment is the picker for the whole visit. The client asks once, at session init;
-    /// a room entered before that answer lands builds the selector without them. That is why the
-    /// official server repeats this on entry, and why we do.
-    /// </remarks>
-    public Task PushOwnedChatStylesAsync(CancellationToken ct);
-
-    /// <summary>
-    /// Gives the player the chat-bubble style the client knows as <paramref name="clientStyleId"/>,
-    /// and pushes the refreshed list if they are connected.
-    /// </summary>
-    /// <remarks>
-    /// Idempotent: a style already held is a no-op that still reports success, because every caller
-    /// (a reward track step, an operator) can be retried.
-    /// </remarks>
-    /// <returns>False only when the id is one no unlock can reach — see the implementation.</returns>
-    public Task<bool> GrantChatStyleAsync(int clientStyleId, CancellationToken ct);
-
-    /// <summary>Takes the style back, and pushes the shortened list if the player is connected.</summary>
-    /// <returns>False when the player did not have it.</returns>
-    public Task<bool> RevokeChatStyleAsync(int clientStyleId, CancellationToken ct);
-
     /// <summary>
     /// Adjusts the player's persisted achievement score by <paramref name="delta"/> and returns the
     /// new total. Owned here (not by the achievement grain) because the score is cached in this
@@ -269,7 +221,8 @@ public interface IPlayerGrain : IGrainWithIntegerKey
         CancellationToken ct
     );
 
-    /// <summary>Persists the chat font size step (SetChatStylePreference, header 2634).</summary>
+    /// <summary>Persists the chat font size step (SetChatStylePreference, header 2634; the style
+    /// half of that message is read and ignored).</summary>
     public Task SetChatSizePreferenceAsync(int sizePreference, CancellationToken ct);
 
     /// <summary>The player's personal chat word filter, in insertion order (GetCustomFilter, header 801).</summary>

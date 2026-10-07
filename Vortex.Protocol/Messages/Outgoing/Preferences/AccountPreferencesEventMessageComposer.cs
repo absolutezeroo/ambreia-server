@@ -29,8 +29,8 @@ public sealed record AccountPreferencesEventMessageComposer : IComposer
     [Id(6)]
     public required UIFlags UIFlags { get; init; }
 
-    [Id(7)]
-    public required int PreferedChatStyle { get; init; }
+    // [Id(7)] was PreferedChatStyle, retired with chat styles (M0 bis): never reuse it. The wire
+    // field is written as 0 by the serializer.
 
     [Id(8)]
     public required bool WiredMenuButton { get; init; }

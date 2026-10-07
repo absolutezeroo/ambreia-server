@@ -33,9 +33,6 @@ public sealed record FulfillmentPlan
 
     public required IReadOnlyList<PlannedEffect> Effects { get; init; }
 
-    /// <summary>Chat-bubble style ids, as the client's own style library numbers them.</summary>
-    public required IReadOnlyList<int> ChatStyleIds { get; init; }
-
     public static readonly FulfillmentPlan Empty = new()
     {
         Furniture = [],
@@ -43,7 +40,6 @@ public sealed record FulfillmentPlan
         Pets = [],
         Bots = [],
         Effects = [],
-        ChatStyleIds = [],
     };
 
     /// <summary>Whether the plan promises nothing at all — a bundle of product types nothing here
@@ -53,8 +49,7 @@ public sealed record FulfillmentPlan
         && BadgeCodes.Count == 0
         && Pets.Count == 0
         && Bots.Count == 0
-        && Effects.Count == 0
-        && ChatStyleIds.Count == 0;
+        && Effects.Count == 0;
 }
 
 /// <summary>One furniture row to write: which definition, and the stuff data baked into it.</summary>

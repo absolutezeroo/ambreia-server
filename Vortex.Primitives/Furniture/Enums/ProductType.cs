@@ -12,19 +12,8 @@ public enum ProductType
     HabboClub = 5,
     Pet = 6,
 
-    /// <summary>
-    /// A chat bubble. <c>ExtraParam</c> is the id in the client's own style library.
-    /// </summary>
-    /// <remarks>
-    /// The one legacy code that is a word rather than a letter, and it is the client's spelling:
-    /// <c>PRODUCT_TYPE_CHAT_STYLE = "chat_style"</c>. Products of this type read off the wire like
-    /// any non-badge product (class id, extra param, count, unique flag), so nothing in the
-    /// serializer special-cases it.
-    /// </remarks>
-    ChatStyle = 7,
-
-    // 8 and 9 were the Builders Club days and furni add-ons, removed in M0. Not renumbered: the
-    // values are persisted.
+    // 7 was the chat bubble ("chat_style"), removed in M0 bis. 8 and 9 were the Builders Club days
+    // and furni add-ons, removed in M0. Not renumbered: the values are persisted.
 }
 
 public static class ProductTypeEnumExtension
@@ -39,7 +28,6 @@ public static class ProductTypeEnumExtension
             ProductType.Robot => "r",
             ProductType.HabboClub => "h",
             ProductType.Pet => "p",
-            ProductType.ChatStyle => "chat_style",
             _ => throw new ArgumentOutOfRangeException(nameof(productType), productType, null),
         };
 
@@ -53,7 +41,6 @@ public static class ProductTypeEnumExtension
             "r" => ProductType.Robot,
             "h" => ProductType.HabboClub,
             "p" => ProductType.Pet,
-            "chat_style" => ProductType.ChatStyle,
             _ => throw new ArgumentOutOfRangeException(nameof(productType), productType, null),
         };
 }

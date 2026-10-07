@@ -160,7 +160,6 @@ public sealed partial class InventoryGrain
         IReadOnlyList<PetCreateRequest> petRequests = plan.Pets;
         IReadOnlyList<BotCreateRequest> botRequests = plan.Bots;
         IReadOnlyList<PlannedEffect> effectGrants = plan.Effects;
-        IReadOnlyList<int> chatStyleGrants = plan.ChatStyleIds;
 
         List<PetEntity> committedPets = [];
         List<BotEntity> committedBots = [];
@@ -305,12 +304,7 @@ public sealed partial class InventoryGrain
         // theirs, or grants an effect in another grain — none of it is a reason to take the purchase
         // back, and none of it runs under the request's cancellation token: the client hanging up is
         // the single most common way this used to fail, and it was being read as "undo the sale".
-        await AnnounceGrantedFamiliesAsync(
-            committedPets,
-            committedBots,
-            effectGrants,
-            chatStyleGrants
-        );
+        await AnnounceGrantedFamiliesAsync(committedPets, committedBots, effectGrants);
     }
 
     /// <summary>
@@ -326,8 +320,7 @@ public sealed partial class InventoryGrain
     private async Task AnnounceGrantedFamiliesAsync(
         List<PetEntity> pets,
         List<BotEntity> bots,
-        IReadOnlyList<PlannedEffect> effectGrants,
-        IReadOnlyList<int> chatStyleGrants
+        IReadOnlyList<PlannedEffect> effectGrants
     )
     {
         // ponytail: CancellationToken.None rather than a host-shutdown token. The requirement is
@@ -420,32 +413,6 @@ public sealed partial class InventoryGrain
                         this.GetPrimaryKeyLong()
                     );
                 }
-            }
-        }
-
-        if (chatStyleGrants.Count == 0)
-        {
-            return;
-        }
-
-        // Same shape as the effect above: the player grain owns the ownership rows and pushes
-        // whichever chat-style message the id's band calls for, so there is nothing to announce here.
-        IPlayerGrain player = _grainFactory.GetPlayerGrain((int)this.GetPrimaryKeyLong());
-
-        foreach (int chatStyleId in chatStyleGrants)
-        {
-            try
-            {
-                await player.GrantChatStyleAsync(chatStyleId, ct).ConfigureAwait(true);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(
-                    ex,
-                    "Chat style {ChatStyleId} was bought by player {PlayerId} but could not be granted.",
-                    chatStyleId,
-                    this.GetPrimaryKeyLong()
-                );
             }
         }
     }

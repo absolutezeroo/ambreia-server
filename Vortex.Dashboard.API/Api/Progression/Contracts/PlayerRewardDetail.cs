@@ -9,6 +9,5 @@ public sealed record PlayerRewardDetail(
     string? AvatarUrl,
     IReadOnlyList<PlayerBadgeRow> Badges,
     IReadOnlyList<PlayerEffectRow> Effects,
-    IReadOnlyList<PlayerChatStyleRow> ChatStyles,
     IReadOnlyList<PlayerOutfitRow> Outfits
 );

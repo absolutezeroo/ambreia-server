@@ -38,8 +38,6 @@ public abstract class RoomAvatar<TSelf, TLogic, TContext>
     public long NextMoveUpdateAtMs { get; set; } = 0;
     public long PendingStopAtMs { get; set; } = 0;
 
-    public int LastChatStyleId { get; set; } = 0;
-
     public int CurrentEffectId { get; private set; } = 0;
 
     public bool IsMovementLocked { get; private set; } = false;

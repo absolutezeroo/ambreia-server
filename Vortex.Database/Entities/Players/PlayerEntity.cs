@@ -50,9 +50,6 @@ public class PlayerEntity : VortexEntity
     [DatabaseGenerated(DatabaseGeneratedOption.None)]
     public required PlayerPerkFlags PlayerPerks { get; set; }
 
-    [Column("room_chat_style_id")]
-    public int? RoomChatStyleId { get; set; }
-
     /// <summary>Stamped on every successful SSO login. Null for an account that has never logged in
     /// since the column was introduced. The staff mod tool's user card is the only reader — it shows
     /// "minutes since last login", which is meaningless without a persisted timestamp.</summary>
@@ -144,9 +141,6 @@ public class PlayerEntity : VortexEntity
 
     [InverseProperty("PlayerEntity")]
     public List<PlayerCurrencyEntity>? PlayerCurrencies { get; set; }
-
-    [InverseProperty("PlayerEntity")]
-    public List<PlayerChatStyleOwnedEntity>? PlayerOwnedChatStyles { get; set; }
 
     [InverseProperty("PlayerEntity")]
     public List<FurnitureEntity>? Furniture { get; set; }

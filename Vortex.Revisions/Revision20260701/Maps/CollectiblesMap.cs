@@ -1,15 +1,13 @@
 using Vortex.Primitives.Networking.Revisions;
 using Vortex.Protocol.Messages.Outgoing.Collectibles;
-using Vortex.Protocol.Messages.Outgoing.Nft;
 using Vortex.Revisions.Revision20260701.Serializers.Collectibles;
-using Vortex.Revisions.Revision20260701.Serializers.Nft;
 
 namespace Vortex.Revisions.Revision20260701.Maps;
 
 /// <summary>
-/// What is left of the collectibles protocol: the Emerald and Silver wallet balances and the chat
-/// style lists, which the client files under collectibles but which belong to the wallet and the
-/// avatar. The NFT, minting and store messages were removed with their feature.
+/// What is left of the collectibles protocol: the Emerald and Silver wallet balances, which the
+/// client files under collectibles but which belong to the wallet. The NFT, minting and store
+/// messages were removed with their feature, the chat style lists with chat styles.
 /// </summary>
 internal sealed class CollectiblesMap : IRevisionMap
 {
@@ -24,24 +22,6 @@ internal sealed class CollectiblesMap : IRevisionMap
         builder.MapSerializer(
             typeof(SilverBalanceMessageComposer),
             new SilverBalanceMessageComposerSerializer(MessageComposer.SilverBalanceMessageComposer)
-        );
-        builder.MapSerializer(
-            typeof(UserNftChatStylesMessageComposer),
-            new UserNftChatStylesMessageComposerSerializer(
-                MessageComposer.UserNftChatStylesMessageComposer
-            )
-        );
-        builder.MapSerializer(
-            typeof(UserPurchasableChatStylesMessageComposer),
-            new UserPurchasableChatStylesMessageComposerSerializer(
-                MessageComposer.UserPurchasableChatStylesMessageComposer
-            )
-        );
-        builder.MapSerializer(
-            typeof(UserPurchasableChatStyleChangedMessageComposer),
-            new UserPurchasableChatStyleChangedMessageComposerSerializer(
-                MessageComposer.UserPurchasableChatStyleChangedMessageComposer
-            )
         );
     }
 }

@@ -53,6 +53,7 @@ public sealed class SeedCatalogTests
         "account_level",
         "quiz",
         "furniture_teleport_link",
+        "chat_style",
     ];
 
     private static readonly Assembly DatabaseAssembly = typeof(SeedScripts).Assembly;

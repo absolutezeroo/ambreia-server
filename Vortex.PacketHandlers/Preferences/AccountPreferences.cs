@@ -24,9 +24,6 @@ internal static class AccountPreferences
         CancellationToken ct
     )
     {
-        // In-memory read on the already-activated grain — no extra DB query.
-        int preferedChatStyle = await player.GetChatStylePreferenceAsync(ct).ConfigureAwait(false);
-
         PlayerAccountPreferencesSnapshot accountPrefs = await player
             .GetAccountPreferencesAsync(ct)
             .ConfigureAwait(false);
@@ -40,7 +37,6 @@ internal static class AccountPreferences
             RoomInvitesIgnored = accountPrefs.RoomInvitesIgnored,
             RoomCameraFollowDisabled = accountPrefs.RoomCameraFollowDisabled,
             UIFlags = (UIFlags)accountPrefs.UiFlags,
-            PreferedChatStyle = preferedChatStyle,
             // The wired editor is gone; its fields stay on the wire at their old defaults.
             WiredMenuButton = false,
             WiredInspectButton = false,

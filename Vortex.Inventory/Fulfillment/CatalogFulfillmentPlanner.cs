@@ -74,7 +74,6 @@ public sealed class CatalogFulfillmentPlanner
             new EffectFulfillmentStrategy(),
             new BotFulfillmentStrategy(logger),
             new PetFulfillmentStrategy(),
-            new ChatStyleFulfillmentStrategy(),
         ];
 
     /// <summary>

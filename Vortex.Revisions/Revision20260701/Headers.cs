@@ -139,7 +139,6 @@ internal static class MessageEvent
     public const int GetMOTDMessageEvent = 3163;
     public const int GetRelationshipStatusInfoMessageEvent = 3219; // reverted to client-verified value: GetRelationshipStatusInfoMessageComposer=3219 in HabboMessages.ts. 1773 legitimately belongs to SetRelationshipStatusMessageEvent (also client-verified: SetRelationshipStatusMessageComposer=1773)
     public const int GetSelectedBadgesMessageEvent = 3726;
-    public const int GetUserNftChatStylesMessageEvent = 3642;
     public const int IgnoreUserMessageEvent = 2070;
     public const int JoinHabboGroupMessageEvent = 1469;
 
@@ -457,8 +456,6 @@ internal static class MessageComposer
     // added) has no constant: nothing ever sent it, so its composer was removed in M0 bis.
     public const int DailyTasksActiveListMessageComposer = 1824;
     public const int DailyTasksTaskUpdateMessageComposer = 1065;
-    public const int UserPurchasableChatStyleChangedMessageComposer = 3971; // AS3-verified (direct read): _SafeStr_4546[3971] = _SafeCls_2210, consumed by SessionDataManager.as; was 2894, which has no entry in the WIN63 registry at all
-    public const int UserPurchasableChatStylesMessageComposer = 3774; // AS3-verified (direct read): _SafeStr_4546[3774] = _SafeCls_2023, consumed by SessionDataManager.as; was 2255, which has no entry in the WIN63 registry at all
     public const int BanInfoMessageComposer = 2557;
     public const int MyCfhReportStatusMessageComposer = 3809; // AS3-verified 2026-08-22 (WIN63 registry + sender): _events[3809] = _SafeCls_1752, HabboHelp::onMyCfhReportStatusMessageEvent. 2474 was in no registry table.
 
@@ -670,7 +667,6 @@ internal static class MessageComposer
     public const int PingMessageComposer = 1407;
     public const int UserObjectComposer = 3985;
     public const int UserRightsMessageComposer = 3599;
-    public const int UserNftChatStylesMessageComposer = 2996;
     public const int LatencyPingResponseMessageComposer = 188;
     public const int CommunityGoalHallOfFameMessageComposer = 363;
     public const int CommunityGoalProgressMessageComposer = 283;

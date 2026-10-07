@@ -143,10 +143,6 @@ public class VortexDbContext(DbContextOptions<VortexDbContext> options)
 
     public DbSet<NavigatorQuickLinkEntity> NavigatorQuickLinks { get; init; } = null!;
 
-    public DbSet<PlayerChatStyleEntity> PlayerChatStyles { get; init; } = null!;
-
-    public DbSet<PlayerChatStyleOwnedEntity> PlayerOwnedChatStyles { get; init; } = null!;
-
     public DbSet<PlayerNavigatorPreferencesEntity> PlayerNavigatorPreferences { get; init; } =
         null!;
 

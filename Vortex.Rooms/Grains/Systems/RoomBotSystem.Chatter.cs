@@ -93,7 +93,6 @@ public sealed partial class RoomBotSystem
                         ObjectId = ToRoomObjectId(bot.BotId),
                         Text = chatter.Phrases[Random.Shared.Next(chatter.Phrases.Length)],
                         Gesture = default,
-                        StyleId = 0,
                         Links = [],
                         TrackingId = 0,
                     }
@@ -174,7 +173,6 @@ public sealed partial class RoomBotSystem
                     ObjectId = ToRoomObjectId(botId),
                     Text = text,
                     Gesture = default,
-                    StyleId = 0,
                     Links = [],
                     TrackingId = 0,
                 }

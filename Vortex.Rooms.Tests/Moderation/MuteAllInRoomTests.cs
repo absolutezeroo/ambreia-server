@@ -121,7 +121,6 @@ public sealed class MuteAllInRoomTests
             speaker,
             LINE,
             default,
-            styleId: 0,
             links: [],
             trackingId: 0
         );

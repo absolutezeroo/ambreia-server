@@ -8,8 +8,7 @@ namespace Vortex.Database.Entities.Players;
 
 /// <summary>
 /// Per-player account preferences echoed back to the client in the account-preferences packet on
-/// login (volumes, free-flow chat / room-camera / room-invite toggles, UI flags). The preferred
-/// chat-bubble style stays on <see cref="PlayerEntity.RoomChatStyleId"/>; everything else the
+/// login (volumes, free-flow chat / room-camera / room-invite toggles, UI flags). Everything the
 /// settings UI persists lives here so it survives a reconnect.
 /// </summary>
 [Table("player_account_preferences")]

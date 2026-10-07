@@ -12,13 +12,12 @@ using Vortex.Database.Context;
 namespace Vortex.Dashboard.API.Api.Progression;
 
 /// <summary>
-/// Everything a player accumulates that is neither currency nor furniture: badges, avatar effects,
-/// chat styles and saved outfits.
+/// Everything a player accumulates that is neither currency nor furniture: badges, avatar effects
+/// and saved outfits.
 /// <para>
 /// These tables are only ever read one player at a time by the game, so nothing in the emulator ever
 /// looks at them hotel-wide — which is exactly where a broken grant shows up: a badge code held by
-/// thousands, an effect nobody ever activated, a chat style owned by nobody because the catalogue
-/// never sold it.
+/// thousands, an effect nobody ever activated.
 /// </para>
 /// </summary>
 internal sealed class PlayerRewardReads(
@@ -120,19 +119,6 @@ internal sealed class PlayerRewardReads(
                     ))
                     .ToList();
 
-                List<ChatStyleRow> chatStyles = await db
-                    .PlayerChatStyles.AsNoTracking()
-                    .OrderBy(s => s.ClientStyleId)
-                    .Select(s => new ChatStyleRow(
-                        s.Id,
-                        s.ClientStyleId,
-                        db.PlayerOwnedChatStyles.Count(o =>
-                            o.ChatStyleId == s.Id && o.DeletedAt == null
-                        )
-                    ))
-                    .ToListAsync(ct)
-                    .ConfigureAwait(false);
-
                 int wardrobeOutfits = await db
                     .PlayerWardrobeOutfits.AsNoTracking()
                     .CountAsync(o => o.DeletedAt == null, ct)
@@ -181,7 +167,6 @@ internal sealed class PlayerRewardReads(
                         totalEffects,
                         activatedEffects,
                         selectedEffects,
-                        chatStyles.Count,
                         wardrobeOutfits,
                         wardrobeUsers
                     ),
@@ -191,7 +176,6 @@ internal sealed class PlayerRewardReads(
                     _assetUrls.BadgeImageTemplate,
                     topBadges,
                     topEffects,
-                    chatStyles,
                     topCollectors
                         .Select(c => new BadgeCollector(
                             c.playerId,
@@ -205,7 +189,7 @@ internal sealed class PlayerRewardReads(
         );
 
     /// <summary>Everything one player holds, for the investigation flow: their badges (equipped
-    /// first), effects, chat styles and saved outfits in one call.</summary>
+    /// first), effects and saved outfits in one call.</summary>
     public Task<PlayerRewardDetail?> PlayerRewardDetailAsync(int playerId, CancellationToken ct) =>
         QueryAsync<PlayerRewardDetail?>(
             async db =>
@@ -280,18 +264,6 @@ internal sealed class PlayerRewardReads(
                     ))
                     .ToList();
 
-                List<PlayerChatStyleRow> chatStyles = await db
-                    .PlayerOwnedChatStyles.AsNoTracking()
-                    .Where(o => o.PlayerEntityId == playerId && o.DeletedAt == null)
-                    // The catalogue's client id, not the foreign key: the number an operator can act
-                    // on is the one the client uses, and the two are not the same.
-                    // Ordered before the projection: EF cannot translate an OrderBy on a record built
-                    // by Select, and the player-rewards page answered 500 for every player.
-                    .OrderBy(o => o.ChatStyle.ClientStyleId)
-                    .Select(o => new PlayerChatStyleRow(o.Id, o.ChatStyle.ClientStyleId))
-                    .ToListAsync(ct)
-                    .ConfigureAwait(false);
-
                 List<PlayerOutfitRow> outfits = await db
                     .PlayerWardrobeOutfits.AsNoTracking()
                     .Where(o => o.PlayerEntityId == playerId && o.DeletedAt == null)
@@ -306,7 +278,6 @@ internal sealed class PlayerRewardReads(
                     _assetUrls.AvatarImage(player.Figure),
                     badges,
                     effects,
-                    chatStyles,
                     outfits
                 );
             },

@@ -32,7 +32,6 @@ public class ChatMessageHandler(IGrainFactory grainFactory) : IMessageHandler<Ch
                 ctx.PlayerId,
                 message.Text,
                 AvatarGestureType.None,
-                message.StyleId,
                 [],
                 message.TrackingId
             )

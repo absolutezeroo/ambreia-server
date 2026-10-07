@@ -49,15 +49,13 @@ public sealed class RoomEntryPayloadTests
     /// The entry burst in the order an official room entry was captured sending it.
     /// </summary>
     /// <remarks>
-    /// The chat styles go first, immediately after OpenConnection. Then the room's shell: ready, the
-    /// door tile, the paint, the geometry, the visualisation settings. Then who is here, then what is
+    /// The room's shell first: ready, the door tile, the paint, the geometry, the visualisation settings. Then who is here, then what is
     /// here, then whose room it is. Then the furniture configuration and the
     /// rights. The rating comes last of the room's own state, after the client
     /// has been told whether the player owns the place.
     /// </remarks>
     private static readonly string[] CapturedOrder =
     [
-        "PushOwnedChatStylesAsync",
         "RoomReadyMessageComposer",
         "RoomEntryTileMessageComposer",
         "RoomPropertyMessageComposer",

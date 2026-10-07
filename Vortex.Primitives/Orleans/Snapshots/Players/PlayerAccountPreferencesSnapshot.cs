@@ -33,7 +33,7 @@ public sealed record PlayerAccountPreferencesSnapshot
     public required int UiFlags { get; init; }
 
     /// <summary>Chat font size step, 0-4. The client clamps it to that range and scales the bubble
-    /// text by it; it arrives on the chat-style message, next to the bubble style.</summary>
+    /// text by it; it arrives on SetChatStylePreference, whose style half is ignored.</summary>
     [Id(12)]
     public required int ChatSizePreference { get; init; }
 

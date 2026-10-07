@@ -94,10 +94,6 @@ internal sealed class UsersMap : IRevisionMap
             MessageEvent.GetSelectedBadgesMessageEvent,
             new GetSelectedBadgesMessageParser()
         );
-        builder.MapParser(
-            MessageEvent.GetUserNftChatStylesMessageEvent,
-            new GetUserNftChatStylesMessageParser()
-        );
         builder.MapParser(MessageEvent.IgnoreUserMessageEvent, new IgnoreUserMessageParser());
         builder.MapParser(
             MessageEvent.JoinHabboGroupMessageEvent,

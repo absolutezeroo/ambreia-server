@@ -254,17 +254,6 @@ internal sealed partial class RoomService(
         // before the sends so the sequence reads as the sequence, with no grain round trip wedged
         // between two packets that Sulake sends back to back.
 
-        // The chat-style selector is rebuilt from scratch when the room's chat input is created, off
-        // whatever the session sets hold at that instant. The client asks for them once at session
-        // init, so a room entered before that answer lands -- the home room, every time -- builds
-        // the picker without a single unlockable bubble in it. The official server sends them here,
-        // immediately after OpenConnection, which is as early as our gates allow: a refused entry
-        // has returned well above this line.
-        await _grainFactory
-            .GetPlayerGrain(playerId)
-            .PushOwnedChatStylesAsync(ct)
-            .ConfigureAwait(false);
-
         await playerPresence
             .SendComposerAsync(
                 new RoomReadyMessageComposer { WorldType = snapshot.WorldType, RoomId = roomId },

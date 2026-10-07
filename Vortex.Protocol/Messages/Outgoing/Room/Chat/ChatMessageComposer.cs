@@ -18,8 +18,8 @@ public record ChatMessageComposer : IComposer
     [Id(2)]
     public required AvatarGestureType Gesture { get; init; }
 
-    [Id(3)]
-    public required int StyleId { get; init; }
+    // [Id(3)] was StyleId, retired with chat styles (M0 bis): never reuse it. The wire field is
+    // written as 0 by the serializers.
 
     [Id(4)]
     public required List<(string, string, bool)> Links { get; init; }

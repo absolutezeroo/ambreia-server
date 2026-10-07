@@ -6,6 +6,11 @@ namespace Vortex.Revisions.Revision20260701.Parsers.Room.Chat;
 
 internal class ShoutMessageParser : IParser
 {
-    public IMessageEvent Parse(IClientPacket packet) =>
-        new ShoutMessage { Text = packet.PopString(), StyleId = packet.PopInt() };
+    public IMessageEvent Parse(IClientPacket packet)
+    {
+        string text = packet.PopString();
+        packet.PopInt(); // chat style: figé, retiré avec le client (read and ignored)
+
+        return new ShoutMessage { Text = text };
+    }
 }
