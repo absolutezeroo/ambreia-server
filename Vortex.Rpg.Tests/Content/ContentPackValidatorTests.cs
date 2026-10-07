@@ -211,6 +211,14 @@ public sealed class ContentPackValidatorTests
         pack.Findings.Select(f => f.Code).Should().Contain("Json");
     }
 
+    [Theory]
+    [InlineData("FR")]
+    [InlineData("french_texts")]
+    public void ALanguageThatIsNotACode_IsAnError(string language) =>
+        RunWarrior(new Dictionary<string, string> { ["fr"] = Fr["fr"], [language] = "" })
+            .Findings.Should()
+            .Contain(f => f.Code == "BadLanguage" && f.Severity == ContentSeverity.Error);
+
     [Fact]
     public void ANullPack_IsAFinding() =>
         Validator()

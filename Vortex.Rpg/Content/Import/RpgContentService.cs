@@ -8,6 +8,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.Extensions.Logging;
 using Vortex.Database.Context;
+using Vortex.Database.Entities;
 using Vortex.Database.Entities.Rpg;
 using Vortex.Primitives.Furniture.Providers;
 using Vortex.Primitives.Rpg.Content;
@@ -63,7 +64,7 @@ public sealed class RpgContentService(
 
         return await db
             .RpgContentTexts.AsNoTracking()
-            .Where(t => t.Language == language && t.DeletedAt == null)
+            .Where(t => t.Language == language)
             .Select(t => t.Body)
             .FirstOrDefaultAsync(ct);
     }
@@ -82,10 +83,63 @@ public sealed class RpgContentService(
 
         if (valid.HasErrors)
         {
-            return Refused(valid.Findings);
+            return LogRefused(Refused(valid.Findings), accountId, started);
         }
 
+        Dictionary<string, string> hashes = valid.Definitions.ToDictionary(
+            d => d.Key,
+            d => RpgContentRegistry.Hash(d.Value)
+        );
+        Dictionary<string, string> texts = (
+            pack.Texts ?? new Dictionary<string, string>()
+        ).ToDictionary(t => t.Key, t => (t.Value ?? string.Empty).TrimStart(ContentParser.Bom));
+
+        // A transient failure replays the whole attempt on a fresh context: it reads the tables
+        // again, so a commit that went through before its answer was lost now diffs as no change.
+        await using VortexDbContext owner = await dbFactory.CreateDbContextAsync(ct);
+        (ContentImportResult result, long stored, int rules) = await owner
+            .Database.CreateExecutionStrategy()
+            .ExecuteAsync(() => AttemptAsync(valid, hashes, texts, accountId, ct));
+
+        if (!result.Imported)
+        {
+            return LogRefused(result, accountId, started);
+        }
+
+        // Past the commit the data is written: a client hanging up must not leave the registry on
+        // the old version, so neither the reload nor the log listen to its token.
+        if (registry.Version != stored)
+        {
+            await registry.ReloadAsync(CancellationToken.None);
+        }
+
+        logger.LogInformation(
+            "Content pack v{Version} imported by account {AccountId} in {ElapsedMs}ms: {Added} added, {Changed} changed, {Removed} removed, {Rules} migration rule(s), {Warnings} warning(s).",
+            result.PackVersion,
+            accountId,
+            (long)Stopwatch.GetElapsedTime(started).TotalMilliseconds,
+            result.Added,
+            result.Changed,
+            result.Removed,
+            rules,
+            result.Findings.Count
+        );
+
+        return result;
+    }
+
+    /// <summary>One attempt, all inside one transaction: read, diff, check the references, write.
+    /// Returns the result, the version the tables now hold, and how many rules it applied.</summary>
+    private async Task<(ContentImportResult Result, long Stored, int Rules)> AttemptAsync(
+        ValidatedPack valid,
+        Dictionary<string, string> hashes,
+        Dictionary<string, string> texts,
+        int accountId,
+        CancellationToken ct
+    )
+    {
         await using VortexDbContext db = await dbFactory.CreateDbContextAsync(ct);
+        await using IDbContextTransaction tx = await db.Database.BeginTransactionAsync(ct);
 
         // Soft-deleted rows too: an id added back revives its row (content_id is unique).
         Dictionary<string, RpgContentEntity> rows = await db
@@ -94,19 +148,8 @@ public sealed class RpgContentService(
         Dictionary<string, RpgContentTextEntity> textRows = await db
             .RpgContentTexts.IgnoreQueryFilters()
             .ToDictionaryAsync(t => t.Language, ct);
-        HashSet<(string, string?)> applied =
-        [
-            .. (
-                await db
-                    .RpgContentMigrations.Select(m => new { m.FromContentId, m.ToContentId })
-                    .ToListAsync(ct)
-            ).Select(m => (m.FromContentId, m.ToContentId)),
-        ];
+        long stored = await db.RpgContentPacks.MaxAsync(p => (long?)p.Id, ct) ?? 0;
 
-        Dictionary<string, string> hashes = valid.Definitions.ToDictionary(
-            d => d.Key,
-            d => RpgContentRegistry.Hash(d.Value)
-        );
         string[] added =
         [
             .. hashes.Keys.Where(id => !rows.TryGetValue(id, out RpgContentEntity? r) || !Live(r)),
@@ -123,15 +166,16 @@ public sealed class RpgContentService(
         [
             .. rows.Values.Where(r => Live(r) && !hashes.ContainsKey(r.ContentId)),
         ];
+
+        // A replace rule acts when its id leaves the pack, this import: every time it does (the
+        // rewrite is idempotent), never while the id is still live.
         ContentMigrationRule[] rules =
         [
             .. valid.Rules.Where(r =>
-                r.Action == ContentMigrationAction.Replace && !applied.Contains((r.From, r.To))
+                r.Action == ContentMigrationAction.Replace
+                && removed.Any(row => row.ContentId == r.From)
             ),
         ];
-        Dictionary<string, string> texts = (
-            pack.Texts ?? new Dictionary<string, string>()
-        ).ToDictionary(t => t.Key, t => (t.Value ?? string.Empty).TrimStart(ContentParser.Bom));
         bool textsChanged =
             texts.Any(t =>
                 !textRows.TryGetValue(t.Key, out RpgContentTextEntity? r)
@@ -139,20 +183,19 @@ public sealed class RpgContentService(
                 || r.Body != t.Value
             ) || textRows.Values.Any(r => Live(r) && !texts.ContainsKey(r.Language));
 
-        if (added.Length + changed.Length + removed.Length + rules.Length == 0 && !textsChanged)
+        if (added.Length + changed.Length + removed.Length == 0 && !textsChanged)
         {
-            return new ContentImportResult(true, registry.Version, 0, 0, 0, valid.Findings);
+            return (new ContentImportResult(true, stored, 0, 0, 0, valid.Findings), stored, 0);
         }
 
         List<ContentFinding> held = [];
 
         foreach (RpgContentEntity row in removed)
         {
-            bool replaced = valid.Rules.Any(r =>
-                r.From == row.ContentId && r.Action == ContentMigrationAction.Replace
-            );
-
-            if (!replaced && await IsReferencedAsync(db, row.Kind, row.ContentId, ct))
+            if (
+                !rules.Any(r => r.From == row.ContentId)
+                && await IsReferencedAsync(db, row.Kind, row.ContentId, ct)
+            )
             {
                 held.Add(
                     new ContentFinding(
@@ -168,7 +211,7 @@ public sealed class RpgContentService(
 
         if (held.Count > 0)
         {
-            return Refused([.. valid.Findings, .. held]);
+            return (Refused([.. valid.Findings, .. held]), stored, 0);
         }
 
         RpgContentPackEntity written = new()
@@ -178,93 +221,75 @@ public sealed class RpgContentService(
             Changed = changed.Length,
             Removed = removed.Length,
         };
+        db.RpgContentPacks.Add(written);
 
-        IExecutionStrategy strategy = db.Database.CreateExecutionStrategy();
-
-        await strategy.ExecuteAsync(async () =>
+        foreach (string id in added.Concat(changed))
         {
-            await using IDbContextTransaction tx = await db.Database.BeginTransactionAsync(ct);
+            ContentDefinition definition = valid.Definitions[id];
 
-            db.RpgContentPacks.Add(written);
-
-            foreach (string id in added.Concat(changed))
+            if (!rows.TryGetValue(id, out RpgContentEntity? row))
             {
-                ContentDefinition definition = valid.Definitions[id];
-
-                if (!rows.TryGetValue(id, out RpgContentEntity? row))
+                row = new RpgContentEntity
                 {
-                    row = new RpgContentEntity
-                    {
-                        ContentId = id,
-                        Kind = definition.Kind,
-                        Document = string.Empty,
-                        Hash = string.Empty,
-                        PackId = 0,
-                    };
-                    db.RpgContent.Add(row);
-                }
-
-                row.Kind = definition.Kind;
-                row.Document = ContentJson.Serialize(definition);
-                row.Hash = hashes[id];
-                row.DeletedAt = null;
-                row.Pack = written;
+                    ContentId = id,
+                    Kind = definition.Kind,
+                    Document = string.Empty,
+                    Hash = string.Empty,
+                    PackId = 0,
+                };
+                db.RpgContent.Add(row);
             }
 
-            foreach (RpgContentEntity row in removed)
+            row.Kind = definition.Kind;
+            row.Document = ContentJson.Serialize(definition);
+            row.Hash = hashes[id];
+            row.DeletedAt = null;
+            row.Pack = written;
+        }
+
+        foreach (RpgContentEntity row in removed)
+        {
+            row.DeletedAt = DateTime.UtcNow;
+            row.Pack = written;
+        }
+
+        foreach (ContentMigrationRule rule in rules)
+        {
+            string kind = valid.Definitions[rule.To!].Kind;
+
+            foreach (IContentReferences refs in _references.Where(r => r.Kind == kind))
             {
-                row.DeletedAt = DateTime.UtcNow;
-                row.Pack = written;
+                await refs.ReplaceAsync(db, rule.From, rule.To!, ct);
             }
 
-            foreach (ContentMigrationRule rule in rules)
-            {
-                string kind = valid.Definitions[rule.To!].Kind;
-
-                foreach (IContentReferences refs in _references.Where(r => r.Kind == kind))
+            db.RpgContentMigrations.Add(
+                new RpgContentMigrationEntity
                 {
-                    await refs.ReplaceAsync(db, rule.From, rule.To!, ct);
+                    FromContentId = rule.From,
+                    Action = rule.Action,
+                    ToContentId = rule.To,
+                    PackId = 0,
+                    Pack = written,
                 }
+            );
+        }
 
-                db.RpgContentMigrations.Add(
-                    new RpgContentMigrationEntity
-                    {
-                        FromContentId = rule.From,
-                        Action = rule.Action,
-                        ToContentId = rule.To,
-                        PackId = 0,
-                        Pack = written,
-                    }
-                );
-            }
+        WriteTexts(db, textRows, texts);
 
-            WriteTexts(db, textRows, texts);
+        await db.SaveChangesAsync(ct);
+        await tx.CommitAsync(ct);
 
-            await db.SaveChangesAsync(ct);
-            await tx.CommitAsync(ct);
-        });
-
-        await registry.ReloadAsync(ct);
-
-        logger.LogInformation(
-            "Content pack v{Version} imported by account {AccountId} in {ElapsedMs}ms: {Added} added, {Changed} changed, {Removed} removed, {Rules} migration rule(s), {Warnings} warning(s).",
+        return (
+            new ContentImportResult(
+                true,
+                written.Id,
+                added.Length,
+                changed.Length,
+                removed.Length,
+                valid.Findings
+            ),
             written.Id,
-            accountId,
-            (long)Stopwatch.GetElapsedTime(started).TotalMilliseconds,
-            added.Length,
-            changed.Length,
-            removed.Length,
-            rules.Length,
-            valid.Findings.Count
-        );
-
-        return new ContentImportResult(
-            true,
-            written.Id,
-            added.Length,
-            changed.Length,
-            removed.Length,
-            valid.Findings
+            rules.Length
         );
     }
 
@@ -312,8 +337,21 @@ public sealed class RpgContentService(
         }
     }
 
-    private static bool Live(Database.Entities.VortexEntity row) => row.DeletedAt is null;
+    private static bool Live(VortexEntity row) => row.DeletedAt is null;
 
     private ContentImportResult Refused(IReadOnlyList<ContentFinding> findings) =>
         new(false, registry.Version, 0, 0, 0, findings);
+
+    private ContentImportResult LogRefused(ContentImportResult result, int accountId, long started)
+    {
+        logger.LogWarning(
+            "Content pack from account {AccountId} refused in {ElapsedMs}ms: {Errors} error(s), first {First}.",
+            accountId,
+            (long)Stopwatch.GetElapsedTime(started).TotalMilliseconds,
+            result.Findings.Count(f => f.Severity == ContentSeverity.Error),
+            result.Findings.FirstOrDefault(f => f.Severity == ContentSeverity.Error)?.Code
+        );
+
+        return result;
+    }
 }

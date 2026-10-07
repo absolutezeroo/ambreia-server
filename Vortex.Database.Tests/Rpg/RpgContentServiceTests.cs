@@ -53,14 +53,20 @@ public sealed class RpgContentServiceTests : IAsyncLifetime
     private Func<string, bool> _referenced = _ => false;
     private Exception? _replaceFails;
     private readonly List<(string From, string To)> _replaced = [];
+    private readonly CommitFaults _commits = new();
 
     public async Task InitializeAsync()
     {
         (_conn, _) = await SqliteTestDb.OpenAsync();
 
-        // Production runs Pomelo's retrying strategy, which refuses hand-opened transactions.
+        // Production runs Pomelo's retrying strategy, which refuses hand-opened transactions and
+        // replays the operation after a transient failure.
         _options = new DbContextOptionsBuilder<VortexDbContext>()
-            .UseSqlite(_conn, sqlite => sqlite.ExecutionStrategy(d => new RetryingStrategy(d)))
+            .UseSqlite(
+                _conn,
+                sqlite => sqlite.ExecutionStrategy(d => new RetryOnTimeoutStrategy(d))
+            )
+            .AddInterceptors(_commits)
             .Options;
 
         _registry = new RpgContentRegistry(
@@ -202,6 +208,79 @@ public sealed class RpgContentServiceTests : IAsyncLifetime
         _registry.Get<ItemDefinition>("item.weapon.axe").Should().BeNull();
     }
 
+    // Review 7-8: the retry, the client that hangs up, and replace rules across imports.
+
+    [Fact]
+    public async Task ACommitRetried_WritesTheWholePack()
+    {
+        await ImportAsync(WarriorPack(("item/sword.json", Sword)));
+        _commits.FailNext = 1;
+
+        ContentImportResult result = await ImportAsync(
+            Pack(
+                ("class/warrior.json", Warrior.Replace("\"range\": 1", "\"range\": 2")),
+                ("specialization/guardian.json", Guardian),
+                ("item/axe.json", Axe)
+            )
+        );
+
+        (result.Imported, result.Added, result.Changed, result.Removed)
+            .Should()
+            .Be((true, 1, 1, 1));
+        await using VortexDbContext db = new(_options);
+        (await db.RpgContent.SingleAsync(c => c.ContentId == "class.warrior"))
+            .Document.Should()
+            .Contain("\"range\":2");
+        _registry.Get<ClassDefinition>("class.warrior")!.Range.Should().Be(2);
+        _registry.Get<ItemDefinition>("item.weapon.axe").Should().NotBeNull();
+        _registry.Get<ItemDefinition>("item.weapon.sword").Should().BeNull();
+    }
+
+    [Fact]
+    public async Task AClientHangingUpAfterTheCommit_StillGetsTheRegistryReloaded()
+    {
+        await ImportAsync(WarriorPack());
+        using CancellationTokenSource hangUp = new();
+        _commits.AfterCommit = hangUp.Cancel;
+
+        await Service().ImportAsync(WarriorPack(("item/axe.json", Axe)), Owner, hangUp.Token);
+
+        _registry.Get<ItemDefinition>("item.weapon.axe").Should().NotBeNull();
+        _registry.Version.Should().Be(2);
+    }
+
+    [Fact]
+    public async Task AReplaceRule_IsAppliedAgain_WhenItsIdIsRemovedAgain()
+    {
+        string rule =
+            """[{ "from": "item.weapon.sword", "action": "replace", "to": "item.weapon.axe" }]""";
+        await ImportAsync(WarriorPack(("item/sword.json", Sword), ("item/axe.json", Axe)));
+        _referenced = id => id == "item.weapon.sword";
+
+        await ImportAsync(WarriorPack(rule, ("item/axe.json", Axe)));
+        await ImportAsync(WarriorPack(rule, ("item/sword.json", Sword), ("item/axe.json", Axe)));
+        ContentImportResult again = await ImportAsync(WarriorPack(rule, ("item/axe.json", Axe)));
+
+        again.Removed.Should().Be(1);
+        _replaced.Should().HaveCount(2);
+    }
+
+    [Fact]
+    public async Task AReplaceRuleOfLiveContent_IsNotApplied()
+    {
+        ContentImportResult result = await ImportAsync(
+            WarriorPack(
+                """[{ "from": "item.weapon.sword", "action": "replace", "to": "item.weapon.axe" }]""",
+                ("item/sword.json", Sword),
+                ("item/axe.json", Axe)
+            )
+        );
+
+        result.Imported.Should().BeTrue();
+        _replaced.Should().BeEmpty();
+        result.Findings.Select(f => f.Code).Should().Contain("MigrationOfLiveContent");
+    }
+
     [Fact]
     public async Task TheTextsAreKeptPerLanguage()
     {
@@ -260,7 +339,7 @@ public sealed class RpgContentServiceTests : IAsyncLifetime
                         nameof(IContentReferences.IsReferencedAsync) => Task.FromResult(
                             _referenced((string)call.Args![1]!)
                         ),
-                        nameof(IContentReferences.ReplaceAsync) => Replace(
+                        nameof(IContentReferences.ReplaceAsync) => ReplaceAsync(
                             (string)call.Args![1]!,
                             (string)call.Args![2]!
                         ),
@@ -273,7 +352,7 @@ public sealed class RpgContentServiceTests : IAsyncLifetime
             NullLogger<RpgContentService>.Instance
         );
 
-    private Task Replace(string from, string to)
+    private Task ReplaceAsync(string from, string to)
     {
         if (_replaceFails is not null)
         {

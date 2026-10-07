@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json;
+using System.Text.RegularExpressions;
 using Vortex.Primitives.Rpg.Content;
 using Vortex.Rpg.Content.Definitions;
 using Vortex.Rpg.Content.Kinds;
@@ -13,10 +14,13 @@ namespace Vortex.Rpg.Content.Validation;
 /// Reads a whole pack and says everything wrong with it at once (spec Contenu §9). Never throws:
 /// a broken pack comes back as findings.
 /// </summary>
-public sealed class ContentPackValidator(IEnumerable<IContentKind> kinds)
+public sealed partial class ContentPackValidator(IEnumerable<IContentKind> kinds)
 {
     private const string MigrationsFile = "migrations.json";
     private const string French = "fr";
+
+    [GeneratedRegex("^[a-z]{2}(-[a-z]{2})?$")]
+    private static partial Regex LanguageCode();
 
     private readonly IReadOnlyDictionary<string, IContentKind> _kinds = kinds.ToDictionary(k =>
         k.Kind
@@ -162,6 +166,21 @@ public sealed class ContentPackValidator(IEnumerable<IContentKind> kinds)
                     )
                 );
             }
+            else if (
+                rule.Action == ContentMigrationAction.Replace
+                && definitions.ContainsKey(rule.From)
+            )
+            {
+                // Kept for the day the id is removed: until then nobody is moved off a live item.
+                findings.Add(
+                    Warning(
+                        "MigrationOfLiveContent",
+                        MigrationsFile,
+                        rule.From,
+                        $"'{rule.From}' is still in the pack: the rule waits until it is removed."
+                    )
+                );
+            }
         }
 
         return [.. rules.OfType<ContentMigrationRule>()];
@@ -173,6 +192,19 @@ public sealed class ContentPackValidator(IEnumerable<IContentKind> kinds)
         List<ContentFinding> findings
     )
     {
+        // The language is a column of 8 characters, unique without regard to case.
+        foreach (string language in texts.Keys.Where(l => !LanguageCode().IsMatch(l)))
+        {
+            findings.Add(
+                Error(
+                    "BadLanguage",
+                    $"texts/{language}.txt",
+                    null,
+                    $"'{language}' is not a language code such as fr or pt-br."
+                )
+            );
+        }
+
         if (!texts.TryGetValue(French, out IReadOnlyDictionary<string, string>? fr))
         {
             // An empty database starts with an empty registry (spec Contenu §6).
