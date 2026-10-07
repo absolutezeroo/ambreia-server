@@ -72,6 +72,26 @@ forwards occupants back in and deactivates. On activation `RoomGrain` asks `IZon
 map is compiled from `floor`, its decor built from `decor` (no `furniture` rows, never flushed).
 Proof: `driver.mjs zone`. Schema: `schemas/zone.schema.json` (exported from the records, test-checked).
 
+## Flow 5 — a zone at run time
+
+`ApplyZoneAsync` compiles the document once per activation (`ZoneCompiler` → `CompiledZone`: areas
+per cell by priority, passages, entries, decor object ids) into `RoomLiveState.ZoneRuntime`
+(`ZoneRuntimeState`: doors, inactive areas, visitors, cooldowns, expected arrivals), and
+`ZoneSettingsApplier` puts the zone's name, capacity and walls on the room snapshot in memory. The
+modules under `Vortex.Rooms/Grains/Zones` then answer, each for one thing:
+
+| Module | Answers | Driven by |
+|---|---|---|
+| `ZoneArrivalModule` | where an entering avatar appears: expected entry or cell > first `arrival` > door | `RoomAvatarModule.CreateAvatarFromPlayerAsync` |
+| `ZoneAreaModule` | which areas a player stands in; `ZoneAreaEntered/LeftEvent`, the area bubble | each committed step (`OnZoneStepAsync`) |
+| `ZonePassageModule` | passages: same zone on the spot, another through `IRoomZone.ExpectArrivalAsync` + `RoomForward` | the step, teleporters, `Teleport` actions |
+| `ZoneInteractionModule` + `Interactions/` | `UseFurniture`/`UseWallItem` on zone decor: one class per `interaction` | `RoomActionModule.UseItemByIdAsync` |
+| `ZoneTriggerModule` + `Triggers/` | triggers on the room event bus and the `zone-clock` tick step; one evaluator per condition, one executor per action | `RoomEventModule`, the room tick |
+
+The map reads zone overrides through `RoomMapModule.CanWalkOn/CanSitOn/CanLayOn` (doors, decor
+collision). The editor's test mode: `POST /api/editor/zones/{key}/test` → `IZoneTestGrain` → the SSO
+handler forwards the tester's next sign-in to the zone. Proofs: `driver.mjs travel`, `testmode`.
+
 ## Persistence
 
 | State | Owner | Written |

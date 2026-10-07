@@ -64,6 +64,8 @@ node .claude/skills/run-vortex-emulator/driver.mjs smoke
 | `play` | the four steps above |
 | `zone` | publishes `proof_zone` through `/api/editor` (owner role granted to the throwaway account on the target database), enters it (decor in `Objects`), republishes while inside and expects `RoomForward`. Point it at a scratch database: `VORTEX__Vortex__Database__ConnectionString` is read by both the emulator and the driver |
 | `enter <key>` | enters the published zone `<key>` (made with the map editor, say) and counts the floor items the room sends |
+| `travel` | publishes `proof_a` and `proof_b`, then walks them on the socket: a closed door refuses the step until `UseFurniture` opens it, a sign speaks, a named area and its `EnterZone` trigger speak and open a gate, a passage forwards to `proof_b` and the player lands on the passage's entry |
+| `testmode` | the editor's test route: a ticket whose sign-in lands on `proof_b` (6,6); run `travel` first |
 | `cleanup` | deletes the throwaway account and its players |
 
 State (pid file, console log) lives in `%TEMP%\vortex-run\`, never in the repo.
