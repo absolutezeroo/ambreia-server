@@ -576,10 +576,23 @@ async function cmdTravel() {
       floor,
       zones: [{ id: 'market', kind: 'Safe', name: 'Marché', polygon: [{ x: 3, y: 0 }, { x: 5, y: 0 }, { x: 5, y: 9 }, { x: 3, y: 9 }] }],
       passages: [{ id: 'road', area: [{ x: 7, y: 5 }], destinationZone: 'proof_b', destinationEntry: 'gate' }],
-      // Room objects 1 and 2: a closed door on (2,2) and a sign on (1,1).
+      // Room objects 1 to 3: a closed door on (2,2), a sign on (1,1), and a closed gate on (6,2)
+      // that only the market's trigger opens.
       decor: [
         { id: 'door', definition: THRONE, class: 'throne', x: 2, y: 2, interaction: 'door' },
         { id: 'sign', definition: THRONE, class: 'throne', x: 1, y: 1, interaction: 'sign', tag: 'Bienvenue à Preuve A' },
+        { id: 'gate', definition: THRONE, class: 'throne', x: 6, y: 2, interaction: 'door' },
+      ],
+      triggers: [
+        {
+          id: 't_market',
+          type: 'EnterZone',
+          target: 'market',
+          actions: [
+            { kind: 'ShowDialogue', dialogue: 'Le marché s\'anime' },
+            { kind: 'OpenDoor', decor: 'gate' },
+          ],
+        },
       ],
     },
   };
@@ -659,6 +672,14 @@ async function cmdTravel() {
   log('UseFurniture on the sign -> NotificationDialog "Bienvenue à Preuve A".');
   if (!(await walk(4, 5, [H.notificationDialog]))) fail('No bubble on entering the Marché area.');
   log('Walked into Marché -> NotificationDialog.');
+  await sleep(500);
+  if (!g.frames.some((f) => f.header === H.notificationDialog && f.body.includes('anime')))
+    fail("The market's EnterZone trigger said nothing.");
+  mark = g.frames.length;
+  g.send(frame(H.moveAvatar, 6, 2));
+  await sleep(2500);
+  if (!movesOnto(6, 2, mark)) fail("The trigger's OpenDoor did not open the gate.");
+  log('EnterZone trigger -> ShowDialogue "Le marché s\'anime" and OpenDoor: walked through the gate.');
   const forward = await walk(7, 5, [H.roomForward]);
   if (!forward) fail('No RoomForward from the passage.');
   const to = forward.body.readInt32BE(0);

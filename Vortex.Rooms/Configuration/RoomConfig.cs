@@ -53,4 +53,7 @@ public class RoomConfig
 
     /// <summary>How long a zone keeps the entry a passage or a teleport announced for a player.</summary>
     public int ExpectedArrivalTimeoutMs { get; init; } = 30000;
+
+    /// <summary>How deep zone triggers may set each other off before the chain is cut (plan D15).</summary>
+    public int ZoneTriggerMaxDepth { get; init; } = 8;
 }

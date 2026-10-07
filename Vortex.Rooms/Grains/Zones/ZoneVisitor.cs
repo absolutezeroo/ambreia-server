@@ -9,4 +9,7 @@ public sealed class ZoneVisitor
     public IReadOnlyList<ZoneArea> Areas { get; set; } = [];
 
     public Dictionary<string, long> PassageReadyAtMs { get; } = [];
+
+    /// <summary>When each trigger fires again for this player (plan D14).</summary>
+    public Dictionary<string, long> TriggerReadyAtMs { get; } = [];
 }

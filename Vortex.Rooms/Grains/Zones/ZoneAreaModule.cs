@@ -29,7 +29,7 @@ public sealed class ZoneAreaModule(RoomGrain roomGrain)
         }
 
         IReadOnlyList<ZoneArea> before = visitor.Areas;
-        IReadOnlyList<ZoneArea> now = zone.Compiled.AreasAt(x, y);
+        IReadOnlyList<ZoneArea> now = zone.ActiveAreasAt(x, y);
 
         if (before.SequenceEqual(now))
         {

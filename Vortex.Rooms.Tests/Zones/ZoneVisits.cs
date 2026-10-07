@@ -28,6 +28,17 @@ internal static class ZoneVisits
         return harness;
     }
 
+    /// <summary>The same, with the decor loaded first on furni that do whatever they are told.</summary>
+    public static async Task<RoomHarness> ZoneWithDecorAsync(ZoneDocument doc)
+    {
+        RoomHarness harness = await RoomHarness.CreateZoneAsync(doc);
+
+        await harness.Grain.FurniModule.EnsureFurniLoadedAsync(default);
+        harness.LogicFactory = () => FakeProxy.Create<IRoomPlayerLogic>(_ => null);
+
+        return harness;
+    }
+
     public static ZoneEntry Entry(string id, string kind, int x, int y) =>
         new()
         {

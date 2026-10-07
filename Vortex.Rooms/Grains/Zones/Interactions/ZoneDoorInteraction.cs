@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using Vortex.Primitives.Rooms.Enums;
+using Vortex.Primitives.Rooms.Object.Furniture.Floor;
 
 namespace Vortex.Rooms.Grains.Zones.Interactions;
 
@@ -10,16 +11,25 @@ public sealed class ZoneDoorInteraction : IZoneInteraction
 {
     public string Kind => "door";
 
-    public async Task UseAsync(ZoneUse use, CancellationToken ct)
+    public Task UseAsync(ZoneUse use, CancellationToken ct) =>
+        SetOpenAsync(
+            use.Room,
+            use.Item,
+            !use.Room._state.ZoneRuntime!.Doors.GetValueOrDefault(use.Item.ObjectId.Value)
+        );
+
+    /// <summary>Opens or shuts a door furni (an OpenDoor action too); nothing if it already is.</summary>
+    public static async Task SetOpenAsync(RoomGrain room, IRoomFloorItem door, bool open)
     {
-        ZoneRuntimeState zone = use.Room._state.ZoneRuntime!;
-        int id = use.Item.ObjectId.Value;
-        bool open = !zone.Doors.GetValueOrDefault(id);
+        ZoneRuntimeState zone = room._state.ZoneRuntime!;
+        int id = door.ObjectId.Value;
 
         if (
-            !open
-            && use.Room._state.TileFlags[use.Room.MapModule.ToIdx(use.Item.X, use.Item.Y)]
-                .Has(RoomTileFlags.AvatarOccupied)
+            !zone.Doors.TryGetValue(id, out bool isOpen)
+            || isOpen == open
+            || !open
+                && room._state.TileFlags[room.MapModule.ToIdx(door.X, door.Y)]
+                    .Has(RoomTileFlags.AvatarOccupied)
         )
         {
             return;
@@ -27,8 +37,8 @@ public sealed class ZoneDoorInteraction : IZoneInteraction
 
         zone.Doors[id] = open;
 
-        await use.Item.Logic.SetStateAsync(open ? 1 : 0);
+        await door.Logic.SetStateAsync(open ? 1 : 0);
 
-        use.Room.MapModule.RecomputeFootprint(use.Item);
+        room.MapModule.RecomputeFootprint(door);
     }
 }

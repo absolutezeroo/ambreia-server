@@ -38,6 +38,7 @@ using Vortex.Rooms.Configuration;
 using Vortex.Rooms.Grains.Modules;
 using Vortex.Rooms.Grains.Systems;
 using Vortex.Rooms.Grains.Zones;
+using Vortex.Rooms.Grains.Zones.Triggers;
 using Vortex.Rooms.Providers;
 
 namespace Vortex.Rooms.Grains;
@@ -87,6 +88,7 @@ public sealed partial class RoomGrain : Grain, IRoomGrain
     public readonly ZoneAreaModule ZoneAreas;
     public readonly ZonePassageModule ZonePassages;
     public readonly ZoneInteractionModule ZoneInteractions;
+    public readonly ZoneTriggerModule ZoneTriggers;
 
     internal IAsyncStream<RoomOutbound> _roomOutbound = default!;
 
@@ -141,6 +143,8 @@ public sealed partial class RoomGrain : Grain, IRoomGrain
         ZoneAreas = new ZoneAreaModule(this);
         ZonePassages = new ZonePassageModule(this);
         ZoneInteractions = new ZoneInteractionModule(this);
+        ZoneTriggers = new ZoneTriggerModule(this);
+        EventModule.Register(ZoneTriggers);
 
         AvatarTickSystem = new RoomAvatarTickSystem(this);
     }
@@ -317,6 +321,7 @@ public sealed partial class RoomGrain : Grain, IRoomGrain
         // last, the room also stopped persisting furniture and tile changes for as long as
         // the fault lasted.
         await RunTickStepAsync("avatars", () => AvatarTickSystem.ProcessAvatarsAsync(now, ct));
+        await RunTickStepAsync("zone-clock", () => ZoneTriggers.TickAsync(ct));
         await RunTickStepAsync("flush-tiles", () => FlushDirtyTilesAsync(ct));
         await RunTickStepAsync("flush-items", () => FlushDirtyItemsAsync(ct));
 

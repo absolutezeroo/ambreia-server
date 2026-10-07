@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using Vortex.Primitives.Players;
+using Vortex.Primitives.World.Layers;
 
 namespace Vortex.Rooms.Grains.Zones;
 
@@ -35,6 +36,21 @@ public sealed class ZoneRuntimeState(CompiledZone compiled)
 
     /// <summary>The entry each expected player arrives on, and when the expectation lapses.</summary>
     public Dictionary<PlayerId, (string EntryId, long ExpiresAtMs)> ExpectedArrivals { get; } = [];
+
+    /// <summary>Areas switched off by an action: nobody enters or leaves them (plan D13).</summary>
+    public HashSet<string> InactiveAreas { get; } = [];
+
+    /// <summary>The areas covering (x, y) that are switched on, highest priority first.</summary>
+    public IReadOnlyList<ZoneArea> ActiveAreasAt(int x, int y) =>
+        InactiveAreas.Count == 0
+            ? Compiled.AreasAt(x, y)
+            : [.. Compiled.AreasAt(x, y).Where(a => !InactiveAreas.Contains(a.Id))];
+
+    /// <summary>When each trigger fires again for everyone (the clock's, and those set off by nobody).</summary>
+    public Dictionary<string, long> TriggerReadyAtMs { get; } = [];
+
+    /// <summary>When each Timer trigger is next due, in epoch milliseconds.</summary>
+    public Dictionary<string, long> TimerNextAtMs { get; } = [];
 
     /// <summary>The players in the room, from their arrival step to their exit.</summary>
     public Dictionary<PlayerId, ZoneVisitor> Visitors { get; } = [];

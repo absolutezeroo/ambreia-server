@@ -37,9 +37,8 @@ public sealed class ZonePassageModule(RoomGrain roomGrain)
             return false;
         }
 
-        // ponytail: conditions come with their evaluators (phase 5); until then a conditional
-        // passage stays closed rather than open to everyone. Cost is RPG currency: ignored.
-        if (passage.Conditions.Count > 0)
+        // Cost is RPG currency: ignored until there is one.
+        if (!roomGrain.ZoneTriggers.ConditionsHold(passage.Conditions, player.PlayerId))
         {
             return false;
         }
