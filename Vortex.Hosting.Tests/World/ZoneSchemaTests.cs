@@ -65,6 +65,22 @@ public sealed class ZoneSchemaTests
         json.Should().Contain("\"kind\":\"PlayerLevel\"").And.Contain("\"type\":\"World\"");
     }
 
+    /// <summary>The NPC inspector writes the dialogue an NPC opens with.</summary>
+    [Fact]
+    public void AnNpcKeepsItsDialogue()
+    {
+        ZoneDocument doc = ZoneSamples.EveryLayer();
+        string json = ZoneJson.Serialize(
+            doc with
+            {
+                Npcs = [doc.Npcs[0] with { Dialogue = "forge_hello" }],
+            }
+        );
+
+        json.Should().Contain("\"dialogue\":\"forge_hello\"");
+        ZoneJson.Deserialize(json).Npcs[0].Dialogue.Should().Be("forge_hello");
+    }
+
     /// <summary>JSON objects have no order: an editor may well write "kind" last.</summary>
     [Fact]
     public void AKindWrittenLast_StillParses()

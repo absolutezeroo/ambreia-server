@@ -14,5 +14,8 @@ public sealed record ZoneNpc
     public List<string> Interactions { get; init; } = [];
     public string? Animation { get; init; }
     public string? Icon { get; init; }
+
+    /// <summary>The dialogue the NPC opens when talked to (an id; the dialogue system is RPG).</summary>
+    public string? Dialogue { get; init; }
     public List<ZoneCondition> AppearWhen { get; init; } = [];
 }

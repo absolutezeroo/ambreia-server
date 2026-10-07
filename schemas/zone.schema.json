@@ -591,6 +591,12 @@
               "null"
             ]
           },
+          "dialogue": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
           "appearWhen": {
             "type": "array",
             "items": {
