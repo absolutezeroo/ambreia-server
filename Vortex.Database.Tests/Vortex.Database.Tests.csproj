@@ -18,6 +18,7 @@
     <ProjectReference Include="..\Vortex.Database\Vortex.Database.csproj" />
     <ProjectReference Include="..\Vortex.Furniture\Vortex.Furniture.csproj" />
     <ProjectReference Include="..\Vortex.Observability\Vortex.Observability.csproj" />
+    <ProjectReference Include="..\Vortex.Rpg\Vortex.Rpg.csproj" />
     <ProjectReference Include="..\Vortex.Tests.Support\Vortex.Tests.Support.csproj" />
     <ProjectReference Include="..\Vortex.World\Vortex.World.csproj" />
   </ItemGroup>
