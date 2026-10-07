@@ -1,0 +1,25 @@
+using System;
+using System.Collections.Generic;
+using Vortex.Primitives.Rpg.Content;
+using Vortex.Rpg.Content.Definitions;
+using Vortex.Rpg.Content.Validation;
+
+namespace Vortex.Rpg.Content.Kinds;
+
+/// <summary>
+/// One kind of content (spec Contenu §4.3): its name, its record and its rules. Declared in the
+/// container by the module that owns it (<c>services.AddSingleton&lt;IContentKind, ItemKind&gt;()</c>).
+/// </summary>
+public interface IContentKind
+{
+    /// <summary>The kind as written in documents and as the first segment of their ids.</summary>
+    public string Kind { get; }
+
+    public Type DefinitionType { get; }
+
+    /// <exception cref="System.Text.Json.JsonException">The document does not fit the record.</exception>
+    public ContentDefinition Parse(string json);
+
+    /// <summary>The kind's own rules and its references (spec Contenu §9, levels 2 and 3).</summary>
+    public IEnumerable<ContentFinding> Check(ContentDefinition definition, ContentCheck check);
+}
