@@ -33,7 +33,7 @@ public sealed class ExportRollbackTests
         await registry.SwapAsync<IGreeter>("greeter", original);
 
         Greeter replacement = new("replacement");
-        await registry.SwapJournaledAsync<IGreeter>("greeter", replacement, journal);
+        await registry.SwapJournaledAsync(typeof(IGreeter), "greeter", replacement, journal);
 
         registry.GetOrCreate<IGreeter>("greeter").Current.Greet().Should().Be("replacement");
 
@@ -51,7 +51,12 @@ public sealed class ExportRollbackTests
         Greeter original = new("original");
         await registry.SwapAsync<IGreeter>("greeter", original);
 
-        await registry.SwapJournaledAsync<IGreeter>("greeter", new Greeter("replacement"), journal);
+        await registry.SwapJournaledAsync(
+            typeof(IGreeter),
+            "greeter",
+            new Greeter("replacement"),
+            journal
+        );
         await journal.RollbackAsync("plugin");
 
         // The whole point of deferring disposal: restoring an already-disposed instance would be a
@@ -68,7 +73,7 @@ public sealed class ExportRollbackTests
         await registry.SwapAsync<IGreeter>("greeter", new Greeter("original"));
 
         Greeter replacement = new("replacement");
-        await registry.SwapJournaledAsync<IGreeter>("greeter", replacement, journal);
+        await registry.SwapJournaledAsync(typeof(IGreeter), "greeter", replacement, journal);
         await journal.RollbackAsync("plugin");
 
         replacement.Disposed.Should().BeTrue();
@@ -84,7 +89,7 @@ public sealed class ExportRollbackTests
         await registry.SwapAsync<IGreeter>("greeter", original);
 
         Greeter replacement = new("replacement");
-        await registry.SwapJournaledAsync<IGreeter>("greeter", replacement, journal);
+        await registry.SwapJournaledAsync(typeof(IGreeter), "greeter", replacement, journal);
         await journal.CommitAsync();
 
         original.Disposed.Should().BeTrue("the superseded instance is dead once the swap commits");
@@ -98,7 +103,12 @@ public sealed class ExportRollbackTests
         ExportRegistry registry = new(NullLogger.Instance);
         ExportJournal journal = new(NullLogger.Instance);
 
-        await registry.SwapJournaledAsync<IGreeter>("greeter", new Greeter("only"), journal);
+        await registry.SwapJournaledAsync(
+            typeof(IGreeter),
+            "greeter",
+            new Greeter("only"),
+            journal
+        );
         await journal.RollbackAsync("plugin");
 
         // There was nothing to restore, so the slot must go back to "never bound" rather than keep
@@ -118,8 +128,8 @@ public sealed class ExportRollbackTests
         await registry.SwapAsync<IGreeter>("a", new Greeter("a-original"));
         await registry.SwapAsync<IGreeter>("b", new Greeter("b-original"));
 
-        await registry.SwapJournaledAsync<IGreeter>("a", new Greeter("a-new"), journal);
-        await registry.SwapJournaledAsync<IGreeter>("b", new Greeter("b-new"), journal);
+        await registry.SwapJournaledAsync(typeof(IGreeter), "a", new Greeter("a-new"), journal);
+        await registry.SwapJournaledAsync(typeof(IGreeter), "b", new Greeter("b-new"), journal);
 
         journal.Count.Should().Be(2);
 
@@ -140,7 +150,12 @@ public sealed class ExportRollbackTests
         string? seen = null;
         registry.GetOrCreate<IGreeter>("greeter").Subscribe(g => seen = g.Greet());
 
-        await registry.SwapJournaledAsync<IGreeter>("greeter", new Greeter("replacement"), journal);
+        await registry.SwapJournaledAsync(
+            typeof(IGreeter),
+            "greeter",
+            new Greeter("replacement"),
+            journal
+        );
         seen.Should().Be("replacement");
 
         await journal.RollbackAsync("plugin");

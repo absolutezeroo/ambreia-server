@@ -1,3 +1,4 @@
+using System;
 using System.Threading.Tasks;
 using Vortex.Primitives.Plugins.Exports;
 
@@ -9,6 +10,6 @@ namespace Vortex.Plugins.Exports;
 /// </summary>
 internal sealed class ExportBinder(ExportRegistry registry, ExportJournal journal) : IExportBinder
 {
-    public Task ExportAsync<T>(string exportKey, T instance)
-        where T : class => registry.SwapJournaledAsync(exportKey, instance, journal);
+    public Task ExportAsync(Type contract, string exportKey, object instance) =>
+        registry.SwapJournaledAsync(contract, exportKey, instance, journal);
 }
