@@ -337,51 +337,6 @@ internal sealed class BotReads(
             ct
         );
 
-    /// <summary>The hand-item table: what a pet gets out of each id. Rows only exist for consumables,
-    /// so an id missing here is held and passed around but never eaten — which is correct for a
-    /// camera and a bug for a plate of food, and the reason the whole table is shown at once.</summary>
-    public Task<HandItemList> HandItemsAsync(CancellationToken ct) =>
-        QueryAsync<HandItemList>(
-            async db =>
-            {
-                var rows = await db
-                    .HandItems.AsNoTracking()
-                    .OrderBy(h => h.HandItemId)
-                    .Select(h => new
-                    {
-                        h.Id,
-                        h.HandItemId,
-                        h.Name,
-                        h.Nutrition,
-                        h.Thirst,
-                        consumable = h.Nutrition > 0 || h.Thirst > 0,
-                    })
-                    .ToListAsync(ct)
-                    .ConfigureAwait(false);
-
-                // A hand item has no icon of its own anywhere in the client: the only picture of one
-                // is an avatar holding it, which is what this renders.
-                List<HandItemRow> items = rows.Select(h => new HandItemRow(
-                        h.Id,
-                        h.HandItemId,
-                        h.Name,
-                        h.Nutrition,
-                        h.Thirst,
-                        h.consumable,
-                        _assetUrls.HandItemImage(h.HandItemId)
-                    ))
-                    .ToList();
-
-                return new HandItemList(
-                    items.Count,
-                    items.Count(i => i.Consumable),
-                    _assetUrls.HandItemImageTemplate,
-                    items
-                );
-            },
-            ct
-        );
-
     /// <summary>Decodes <c>skills_json</c> (client skill id → payload) into something readable. A
     /// blob that will not parse yields an empty summary rather than throwing: one malformed bot must
     /// not take the whole listing down.</summary>

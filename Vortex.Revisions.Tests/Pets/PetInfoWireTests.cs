@@ -42,10 +42,6 @@ public sealed class PetInfoWireTests
                 Gender = AvatarGenderType.Male,
                 Level = 8,
                 Experience = 1_830,
-                Energy = 260,
-                Nutrition = 100,
-                Happiness = 26,
-                Respect = 60,
                 X = 1,
                 Y = 15,
                 Z = 0,
@@ -79,8 +75,9 @@ public sealed class PetInfoWireTests
             .Should()
             .Be(
                 "00056320000566696C6F750000000800000014000007260000096000000104"
-                    // respect (60 in the capture) is frozen at 0 since respects were removed (M0 bis).
-                    + "000001040000001A000000640000000000B8CDE00000171F0009636C6179746F"
+                    // respect (60 in the capture) is frozen at 0 since respects were removed, and
+                    // happiness (26) at its cap of 100 since pets lost their needs (M0 bis).
+                    + "0000010400000064000000640000000000B8CDE00000171F0009636C6179746F"
                     + "6E7879000000010000000000000000000000000000000000FFFFFFFFFFFFFFFF"
                     + "FFFFFFFF01"
             );

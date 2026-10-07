@@ -142,12 +142,6 @@ public sealed class RoomChatSystem(RoomGrain roomGrain)
             CancellationToken.None
         );
 
-        // A public line may also be an order to one of the speaker's pets.
-        if (targetPlayerId is null)
-        {
-            await TryIssuePetCommandFromChatAsync(playerId, text);
-        }
-
         // Public chat (not whispers) feeds the wired "avatar says (keyword)" trigger.
         if (targetPlayerId is null && !string.IsNullOrWhiteSpace(text))
         {
@@ -161,71 +155,6 @@ public sealed class RoomChatSystem(RoomGrain roomGrain)
                 },
                 CancellationToken.None
             );
-        }
-    }
-
-    /// <summary>
-    /// Recognises "&lt;pet name&gt; &lt;command&gt;" in a public line and runs the command.
-    ///
-    /// There is no "issue pet command" packet in the client: AS3's PetCommandTool builds the string
-    /// "&lt;pet name&gt; &lt;localised command&gt;" and hands it to roomSession.sendChatMessage(), so
-    /// an order and a chat line are the same message on the wire. That is also why a player can type
-    /// the order by hand. Only the pet's own owner is obeyed, which IssueCommandAsync enforces again.
-    /// </summary>
-    private async Task TryIssuePetCommandFromChatAsync(PlayerId playerId, string text)
-    {
-        if (string.IsNullOrWhiteSpace(text) || _roomGrain._state.PetsById.Count == 0)
-        {
-            return;
-        }
-
-        string trimmed = text.Trim();
-        int split = trimmed.IndexOf(' ');
-
-        // A bare name with no command word is just chat.
-        if (split <= 0)
-        {
-            return;
-        }
-
-        string spokenName = trimmed[..split];
-        string spokenCommand = trimmed[(split + 1)..].Trim();
-
-        if (spokenCommand.Length == 0)
-        {
-            return;
-        }
-
-        foreach (PetSnapshot pet in _roomGrain._state.PetsById.Values)
-        {
-            if (pet.OwnerId != playerId)
-            {
-                continue;
-            }
-
-            if (!string.Equals(pet.Name, spokenName, StringComparison.OrdinalIgnoreCase))
-            {
-                continue;
-            }
-
-            int? commandId = _roomGrain._petCommandProvider.ResolveCommandIdByName(
-                pet.Type,
-                spokenCommand
-            );
-
-            if (commandId is null)
-            {
-                return;
-            }
-
-            await _roomGrain.PetSystem.IssueCommandAsync(
-                ActionContext.CreateForPlayer(playerId, _roomGrain.RoomId),
-                pet.PetId,
-                commandId.Value,
-                CancellationToken.None
-            );
-
-            return;
         }
     }
 

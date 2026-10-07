@@ -39,7 +39,6 @@ export default {
     entry_not_found: 'Entrée introuvable.',
     furniture_definition_not_found: 'Définition de mobilier introuvable.',
     furniture_not_found: 'Mobilier introuvable.',
-    hand_item_not_found: 'Objet en main introuvable.',
     item_not_found: 'Objet introuvable.',
     level_not_found: 'Niveau introuvable.',
     offer_not_found: 'Offre introuvable.',
@@ -72,7 +71,6 @@ export default {
     reward_currency_disabled: 'Cette monnaie est désactivée : la récompense ne serait jamais versée.',
     code_and_name_required: 'Un code et un nom sont tous deux obligatoires.',
     effect_id_required: "Un identifiant d'effet est obligatoire.",
-    hand_item_id_required: "Un identifiant d'objet en main est obligatoire.",
     identifier_required: 'Un identifiant est obligatoire.',
     name_required: 'Un nom est obligatoire.',
     player_and_product_required: 'Un joueur et un produit sont tous deux obligatoires.',
@@ -471,7 +469,6 @@ export default {
       furnitureDefinitions: 'Définitions de furni',
       bots: 'Bots',
       pets: 'Pets',
-      handItems: 'Objets en main',
       players: 'Joueurs',
       accounts: 'Comptes',
       badges: 'Badges détenus',
@@ -2184,7 +2181,6 @@ export default {
   },
   bots: {
     tabRoster: 'Effectif',
-    tabHandItems: 'Objets en main',
     edit: 'Modifier',
     delete: 'Supprimer',
     save: 'Enregistrer',
@@ -2198,13 +2194,6 @@ export default {
     placedLocked: 'Le bot est posé dans une salle — ramassez-le d’abord.',
     placedHint:
       "Un bot posé dans une salle appartient à cette salle, qui garde sa propre copie du nom et de la figure. Les modifications attendent son retour en inventaire.",
-    handItemEditorTitle: 'Éditer les objets en main',
-    handItemEditorHint:
-      "Lu dans la table à chaque fois qu’un pet est nourri : un changement ici est immédiat. Un id sans ligne se tient et se passe quand même, il n’est juste jamais mangé.",
-    saveHandItem: 'Enregistrer l’objet',
-    saveHandItemSummary: 'Enregistrer l’objet en main {id} ({name}).',
-    deleteHandItem: 'Supprimer l’objet',
-    deleteHandItemSummary: 'Supprimer l’objet en main {name}. Il reste tenable, mais aucun pet ne le prendra.',
     title: 'Bots',
     description:
       "Chaque bot, son propriétaire et sa salle, et sa configuration décodée — les boutons de son menu et ce qu'on lui a dit de dire.",
@@ -2252,15 +2241,6 @@ export default {
     noPhrases: "Ce bot n'a aucune phrase configurée.",
     noBots: 'Aucun bot ne correspond à ce filtre.',
     paginationLabel: 'bots',
-    handItemsTitle: 'Objets en main',
-    handItemsDescription:
-      "Ce qu'un pet retire de chaque objet en main. Un id sans ligne se tient et se passe quand même, mais aucun pet ne le prendra.",
-    handItemsCount: '{total} objets, {consumable} consommables',
-    noHandItems: 'Aucun objet en main enregistré.',
-    colHandItemId: 'Id',
-    colHandItemName: 'Nom',
-    colNutrition: 'Nutrition',
-    colThirst: 'Soif',
   },
   navigatorConfig: {
     tabContexts: 'Contextes',

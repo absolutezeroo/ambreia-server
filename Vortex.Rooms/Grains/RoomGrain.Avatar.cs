@@ -288,9 +288,6 @@ public sealed partial class RoomGrain
         CancellationToken ct
     ) => Task.FromResult(HandItemModule.Pass(ctx.PlayerId, targetPlayerId));
 
-    public Task<bool> PassCarryItemToPetAsync(ActionContext ctx, int petId, CancellationToken ct) =>
-        PetSystem.ConsumeHandItemAsync(ctx, petId, ct);
-
     public async Task<bool> SetAvatarEffectAsync(
         ActionContext ctx,
         int effectId,

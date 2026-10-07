@@ -41,7 +41,6 @@ export default {
     entry_not_found: 'No such entry.',
     furniture_definition_not_found: 'No such furniture definition.',
     furniture_not_found: 'No such furniture.',
-    hand_item_not_found: 'No such hand item.',
     item_not_found: 'No such item.',
     level_not_found: 'No such level.',
     offer_not_found: 'No such offer.',
@@ -74,7 +73,6 @@ export default {
     reward_currency_disabled: 'That currency is disabled, so the reward would never be paid.',
     code_and_name_required: 'A code and a name are both required.',
     effect_id_required: 'An effect id is required.',
-    hand_item_id_required: 'A hand item id is required.',
     identifier_required: 'An identifier is required.',
     name_required: 'A name is required.',
     player_and_product_required: 'A player and a product are both required.',
@@ -472,7 +470,6 @@ export default {
       furnitureDefinitions: 'Furni definitions',
       bots: 'Bots',
       pets: 'Pets',
-      handItems: 'Hand items',
       players: 'Players',
       accounts: 'Accounts',
       badges: 'Badges held',
@@ -2179,7 +2176,6 @@ export default {
   },
   bots: {
     tabRoster: 'Roster',
-    tabHandItems: 'Hand items',
     edit: 'Edit',
     delete: 'Delete',
     save: 'Save',
@@ -2193,13 +2189,6 @@ export default {
     placedLocked: 'The bot is standing in a room — pick it up first.',
     placedHint:
       'A bot standing in a room is owned by that room, which holds its own copy of the name and figure. Edits wait until it is back in its inventory.',
-    handItemEditorTitle: 'Edit hand items',
-    handItemEditorHint:
-      'Read from the table every time a pet is fed, so a change here is live at once. An id with no row is still held and passed around, just never eaten.',
-    saveHandItem: 'Save hand item',
-    saveHandItemSummary: 'Save hand item {id} ({name}).',
-    deleteHandItem: 'Delete hand item',
-    deleteHandItemSummary: 'Delete the hand item {name}. It stays holdable, but no pet will take it.',
     title: 'Bots',
     description:
       'Every bot, its owner and room, and its decoded configuration - which buttons its menu shows and what it was told to say.',
@@ -2247,15 +2236,6 @@ export default {
     noPhrases: 'This bot has no phrase configured.',
     noBots: 'No bot matches this filter.',
     paginationLabel: 'bots',
-    handItemsTitle: 'Hand items',
-    handItemsDescription:
-      'What a pet gets out of each hand item. An id with no row is still held and passed around, but no pet will take it.',
-    handItemsCount: '{total} items, {consumable} consumable',
-    noHandItems: 'No hand item is registered.',
-    colHandItemId: 'Id',
-    colHandItemName: 'Name',
-    colNutrition: 'Nutrition',
-    colThirst: 'Thirst',
   },
   navigatorConfig: {
     tabContexts: 'Contexts',

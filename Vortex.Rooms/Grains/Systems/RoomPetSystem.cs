@@ -32,9 +32,8 @@ namespace Vortex.Rooms.Grains.Systems;
 /// <summary>
 ///     Loading, the per-tick loop, dirty-stat flush, and shared helpers (avatar-snapshot
 ///     building, composer fan-out, motion-state bookkeeping). Placement/movement lives in
-///     <c>RoomPetSystem.Placement.cs</c>, wander/mood/nest/toy AI in
-///     <c>RoomPetSystem.Motion.cs</c>, respect/commands/XP in <c>RoomPetSystem.Care.cs</c>,
-///     saddles and riding in <c>RoomPetSystem.Riding.cs</c>.
+///     <c>RoomPetSystem.Placement.cs</c>, following the owner and wandering in
+///     <c>RoomPetSystem.Motion.cs</c>, saddles and riding in <c>RoomPetSystem.Riding.cs</c>.
 /// </summary>
 public sealed partial class RoomPetSystem(RoomGrain roomGrain)
 {
@@ -49,8 +48,8 @@ public sealed partial class RoomPetSystem(RoomGrain roomGrain)
     private long _nextTuningRefreshAtMs = -1;
 
     /// <summary>
-    /// The live tunables. Read once per flush interval rather than per tick -- the mood maths runs
-    /// twice a second per room and cannot afford a grain call -- and never null once the tick has
+    /// The live tunables. Read once per flush interval rather than per tick -- the tick runs twice a
+    /// second per room and cannot afford a grain call -- and never null once the tick has
     /// started, because <see cref="RefreshTuningAsync" /> runs before the loop.
     /// </summary>
     private PetTuning Tuning => _tuning ??= PetTuning.FromDefaults(_roomGrain._roomConfig.Pet);
@@ -139,96 +138,16 @@ public sealed partial class RoomPetSystem(RoomGrain roomGrain)
             {
                 PetMotionState motion = GetMotionState(pet, now);
                 PetSnapshot current = ApplyPendingPetStep(pet, motion);
-                current = ApplyMoodAndRest(current, motion, now);
+                RoomPetAvatarSnapshot? update = await ProcessPetMotionAsync(
+                    current,
+                    motion,
+                    now,
+                    ct
+                );
 
-                if (motion.PendingSleepVocal)
+                if (update is not null)
                 {
-                    motion.PendingSleepVocal = false;
-                    motion.NextVocalAtMs = ScheduleNextVocalAt(now);
-                    await BroadcastPetVocalAsync(current, "SLEEPING");
-                }
-                else if (motion.PendingWakeVocal)
-                {
-                    motion.PendingWakeVocal = false;
-                    motion.NextVocalAtMs = ScheduleNextVocalAt(now);
-                    await SendPetSleepAsync(current, sleeping: false);
-                    await BroadcastPetVocalAsync(current, "GENERIC_HAPPY");
-                }
-                else if (motion.NextVocalAtMs < 0)
-                {
-                    motion.NextVocalAtMs = ScheduleNextVocalAt(now);
-                }
-                else if (now >= motion.NextVocalAtMs)
-                {
-                    motion.NextVocalAtMs = ScheduleNextVocalAt(now);
-                    await BroadcastPetVocalAsync(current, SelectVocalForState(current, motion));
-                }
-
-                // A bout of play holds the pet where it is until it is over, then puts the toy back
-                // to its resting frame.
-                if (motion.PlayingWithToyId is not null)
-                {
-                    if (now >= motion.ToyPlayEndsAtMs)
-                    {
-                        RoomPetAvatarSnapshot? finished = await FinishToyPlayAsync(
-                            current,
-                            motion,
-                            ct
-                        );
-
-                        if (finished is not null)
-                        {
-                            dirtySnapshots.Add(finished);
-                        }
-                    }
-
-                    continue;
-                }
-
-                // Walking onto a toy is enough -- the pet does not have to have set out for it. The
-                // cooldown inside makes this safe to ask on every tick.
-                if (!motion.IsSleeping)
-                {
-                    RoomPetAvatarSnapshot? started = await StartToyPlayAsync(
-                        current,
-                        motion,
-                        now,
-                        ct
-                    );
-
-                    if (started is not null)
-                    {
-                        dirtySnapshots.Add(started);
-
-                        continue;
-                    }
-                }
-
-                if (motion.IsSleeping && !motion.SleepPostureSent)
-                {
-                    motion.SleepPostureSent = true;
-                    RoomPetAvatarSnapshot sleepSnapshot = await ToAvatarSnapshotAsync(
-                        current,
-                        PetAnimation.LayStatus(current.Z),
-                        PetAnimation.LayPosture,
-                        ct
-                    );
-                    dirtySnapshots.Add(sleepSnapshot);
-                    await SendPetSleepAsync(current, sleeping: true);
-                }
-                else if (!motion.IsSleeping)
-                {
-                    RoomPetAvatarSnapshot? update = await ProcessPetMotionAsync(
-                        current,
-                        motion,
-                        now,
-                        ct
-                    );
-
-                    if (update is not null)
-                    {
-                        dirtySnapshots.Add(update);
-                    }
+                    dirtySnapshots.Add(update);
                 }
             }
             catch (Exception ex)
@@ -328,11 +247,7 @@ public sealed partial class RoomPetSystem(RoomGrain roomGrain)
             return motion;
         }
 
-        motion = new PetMotionState
-        {
-            NextWanderAtMs = ScheduleNextWanderAt(now),
-            LastHappinessDecayAtMs = now,
-        };
+        motion = new PetMotionState { NextWanderAtMs = ScheduleNextWanderAt(now) };
         _motionByPetId[pet.PetId] = motion;
 
         return motion;
@@ -342,15 +257,6 @@ public sealed partial class RoomPetSystem(RoomGrain roomGrain)
     {
         int minMs = Math.Max(_roomGrain._roomConfig.Pet.TickMs, Tuning.WanderIdleMinMs);
         int maxMs = Math.Max(minMs, Tuning.WanderIdleMaxMs);
-
-        return now + Random.Shared.Next(minMs, maxMs + 1);
-    }
-
-    private long ScheduleNextVocalAt(long now)
-    {
-        int intervalMs = Tuning.VocalIntervalMs;
-        int minMs = intervalMs * 3 / 4;
-        int maxMs = intervalMs * 5 / 4;
 
         return now + Random.Shared.Next(minMs, maxMs + 1);
     }
@@ -417,23 +323,6 @@ public sealed partial class RoomPetSystem(RoomGrain roomGrain)
 
         await _roomGrain.SendComposerToRoomAsync(new UsersMessageComposer { Avatars = [snapshot] });
     }
-
-    /// <summary>
-    /// Draws (or clears) the Zzz over a sleeping pet.
-    /// </summary>
-    /// <remarks>
-    /// The Zzz is not a posture and does not travel in the status string: the client keeps it in its
-    /// own <c>figure_sleep</c> flag, set only by this message. Nothing in the emulator sent it, for
-    /// pets or for idle players, so no pet has ever shown one.
-    /// </remarks>
-    private Task SendPetSleepAsync(PetSnapshot pet, bool sleeping) =>
-        _roomGrain.SendComposerToRoomAsync(
-            new SleepMessageComposer
-            {
-                UserId = RoomPetRuntime.ToRoomObjectId(pet.PetId).Value,
-                IsSleeping = sleeping,
-            }
-        );
 
     private async Task SendPetUpdatedAsync(
         PetSnapshot pet,
@@ -582,27 +471,13 @@ public sealed partial class RoomPetSystem(RoomGrain roomGrain)
         public int NextTileId { get; set; } = -1;
         public long PendingStopAtMs { get; set; }
         public long NextWanderAtMs { get; set; }
-        public long LastHappinessDecayAtMs { get; set; } = -1;
         public bool IsStatsDirty { get; set; }
-        public bool IsSleeping { get; set; }
-        public long WakeAtMs { get; set; }
-        public bool SleepPostureSent { get; set; }
-        public bool IsHeadingToNest { get; set; }
-        public bool IsHeadingToToy { get; set; }
-        public RoomObjectId? PlayingWithToyId { get; set; }
-        public long ToyPlayEndsAtMs { get; set; }
-        public long NextToyPlayAtMs { get; set; }
-        public long NextVocalAtMs { get; set; } = -1;
-        public bool PendingSleepVocal { get; set; }
-        public bool PendingWakeVocal { get; set; }
 
         public void ClearMovement()
         {
             TilePath.Clear();
             NextTileId = -1;
             PendingStopAtMs = 0;
-            IsHeadingToNest = false;
-            IsHeadingToToy = false;
         }
     }
 }

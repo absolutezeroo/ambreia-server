@@ -39,7 +39,6 @@ internal static class MessageEvent
 
     public const int CustomizePetWithFurniEvent = 2099; // AS3-verified (old-revision trace): _SafeCls_3494 -> useProductForPet() still exists in current revision at 2099
     public const int GetPetInfoMessageEvent = 3899; // AS3-verified (old-revision trace): _SafeCls_3258 -> requestPetInfo() still exists in current revision at 3899
-    public const int PetSelectedMessageEvent = 2757; // AS3-verified (old-revision trace): _SafeCls_2740 -> handleGetPetInfoMessage() still exists in current revision at 2757
 
     public const int GetCreditsInfoEvent = 540;
     public const int CallForHelpFromForumMessageMessageEvent = 2991;
@@ -198,7 +197,6 @@ internal static class MessageEvent
     public const int ClickFurniMessageEvent = 443;
     public const int GetFurnitureAliasesMessageEvent = 1901;
     public const int GetItemDataMessageEvent = 350;
-    public const int GetPetCommandsMessageEvent = 2425;
     public const int MountPetMessageEvent = 1996;
     public const int MoveAvatarMessageEvent = 2364;
     public const int MoveObjectMessageEvent = 1482;
@@ -238,7 +236,6 @@ internal static class MessageEvent
     public const int DropCarryItemMessageEvent = 1545; // AS3-verified (direct read, both revisions): InfoStandWidgetHandler RWUAM_DROP_CARRY_ITEM -> _SafeCls_2423
     public const int LookToMessageEvent = 2508; // AS3-verified: the client registry maps _composers[2508] to the (x,y) composer RoomObjectEventHandler.setSelectedAvatar() sends when an avatar is selected without a click-user wired (WIN63 habbo/communication/_SafeCls_2046.as:819, LookToMessageComposer in win63_version). Was 9103, a placeholder whose own comment flagged it as unresolved; the parser here already read the right two ints, so only the header was wrong
     public const int PassCarryItemMessageEvent = 1101; // AS3-verified (direct read, both revisions): InfoStandWidgetHandler RWUAM_PASS_CARRY_ITEM -> _SafeCls_3124
-    public const int PassCarryItemToPetMessageEvent = 1429; // AS3-verified (direct read, both revisions): InfoStandWidgetHandler RWUAM_GIVE_CARRY_ITEM_TO_PET -> _SafeCls_2543
     public const int SignMessageEvent = 211;
 
     public const int GetForumsListMessageEvent = 488; // AS3-verified (ghost fix): GroupForumController::openForumsList()
@@ -638,7 +635,6 @@ internal static class MessageComposer
     public const int NotificationDialogMessageComposer = 2243;
     public const int PetLevelNotificationComposer = 1702;
     public const int UnseenItemsComposer = 3059;
-    public const int PetCommandsMessageComposer = 332; // AS3-verified (old-revision trace): _SafeCls_2541 -> onEnabledPetCommands() still exists in current revision at 332
     public const int PetExperienceComposer = 946; // AS3-verified (ghost fix): onPetExperience
     public const int PetFigureUpdateComposer = 3796;
     public const int PetInfoMessageComposer = 3192;

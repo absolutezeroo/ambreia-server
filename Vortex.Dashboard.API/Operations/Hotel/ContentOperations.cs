@@ -131,52 +131,6 @@ internal sealed class ContentOperations(OperationRunner runner, IContentAdminSer
             ct
         );
 
-    public Task<OperationResult> SaveHandItemAsync(
-        HandItemRequest request,
-        string actor,
-        CancellationToken ct
-    ) =>
-        _runner.ExecuteAsync(
-            "ops.content.hand_item.save",
-            actor,
-            request.Reason,
-            targetPlayerId: null,
-            roomId: null,
-            detail: new { request.HandItemId, request.Name },
-            work: async c =>
-                Throw(
-                    await _contentAdmin
-                        .UpsertHandItemAsync(
-                            new HandItemSpec(
-                                request.HandItemId,
-                                request.Name,
-                                request.Nutrition,
-                                request.Thirst
-                            ),
-                            c
-                        )
-                        .ConfigureAwait(false)
-                ),
-            ct
-        );
-
-    public Task<OperationResult> DeleteHandItemAsync(
-        DeleteHandItemRequest request,
-        string actor,
-        CancellationToken ct
-    ) =>
-        _runner.ExecuteAsync(
-            "ops.content.hand_item.delete",
-            actor,
-            request.Reason,
-            targetPlayerId: null,
-            roomId: null,
-            detail: new { request.Id },
-            work: async c =>
-                Throw(await _contentAdmin.DeleteHandItemAsync(request.Id, c).ConfigureAwait(false)),
-            ct
-        );
-
     /// <summary>
     /// The counterpart of the item grant, which had none.
     /// </summary>

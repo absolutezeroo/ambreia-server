@@ -62,7 +62,6 @@ export const LOGIC_GROUPS = [
       { value: 'dice', label: 'dice - Dice' },
       { value: 'fireworks', label: 'fireworks - Fireworks' },
       { value: 'gate', label: 'gate - Gate (blocks/unblocks a tile)' },
-      { value: 'nest', label: 'nest' },
       { value: 'room_invisible_click_tile', label: 'room_invisible_click_tile - Invisible click tile' },
       { value: 'vending', label: 'vending' },
       { value: 'vendingmachine', label: 'vendingmachine' },
@@ -93,14 +92,6 @@ export const LOGIC_GROUPS = [
       { value: 'furniture_score', label: 'furniture_score' },
       { value: 'furniture_static', label: 'furniture_static' },
       { value: 'furniture_window', label: 'furniture_window' },
-    ],
-  },
-  {
-    label: 'Pets',
-    options: [
-      { value: 'pet_nest', label: 'pet_nest - Pet nest' },
-      { value: 'pet_toy', label: 'pet_toy' },
-      { value: 'pet_trampoline', label: 'pet_trampoline' },
     ],
   },
   {

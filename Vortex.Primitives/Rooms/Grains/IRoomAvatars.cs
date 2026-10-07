@@ -68,12 +68,6 @@ public interface IRoomAvatars : IGrainWithIntegerKey
         PlayerId targetPlayerId,
         CancellationToken ct
     );
-
-    /// <summary>
-    /// Gives what the acting player is holding to one of the room's pets, which consumes it. False
-    /// when the pet is out of reach, or the item is nothing a pet will take.
-    /// </summary>
-    public Task<bool> PassCarryItemToPetAsync(ActionContext ctx, int petId, CancellationToken ct);
     public Task SendChatFromPlayerAsync(
         PlayerId playerId,
         string text,

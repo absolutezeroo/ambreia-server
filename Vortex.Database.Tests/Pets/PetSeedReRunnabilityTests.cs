@@ -31,7 +31,6 @@ public sealed class PetSeedReRunnabilityTests
     [Theory]
     [InlineData("pet_palettes.sql")]
     [InlineData("pet_levels.sql")]
-    [InlineData("pet_commands.sql")]
     public void EveryInsertSurvivesATableThatIsAlreadyPopulated(string script)
     {
         string sql = SeedScripts.Read(script);

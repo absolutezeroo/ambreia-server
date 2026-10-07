@@ -16,7 +16,6 @@ internal static partial class DashboardEndpoints
 {
     private const string TagBots = "Bots";
     private const string ApiBots = ApiV1 + "/bots";
-    private const string ApiHandItems = ApiV1 + "/hand-items";
 
     public static void MapBotReads(WebApplication app)
     {
@@ -41,13 +40,6 @@ internal static partial class DashboardEndpoints
             ApiBots + "/{botId:int}",
             (int botId, BotReads reads, CancellationToken ct) =>
                 OkNullableAsync(reads.BotDetailAsync(botId, ct)),
-            Capabilities.Dashboard.BotsRead,
-            TagBots
-        );
-        MapReadGet<HandItemList>(
-            app,
-            ApiHandItems,
-            (BotReads reads, CancellationToken ct) => OkAsync(reads.HandItemsAsync(ct)),
             Capabilities.Dashboard.BotsRead,
             TagBots
         );

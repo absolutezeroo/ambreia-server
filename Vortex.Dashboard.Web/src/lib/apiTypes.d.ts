@@ -1347,23 +1347,6 @@ export interface GuildThreadRow {
   lastPostAt: string | null;
 }
 
-export interface HandItemList {
-  count: number;
-  consumableCount: number;
-  imageTemplate: string | null;
-  items: HandItemRow[];
-}
-
-export interface HandItemRow {
-  id: number;
-  handItemId: number;
-  name: string;
-  nutrition: number;
-  thirst: number;
-  consumable: boolean;
-  imageUrl: string | null;
-}
-
 export interface HealthComponentSnapshot {
   name: string;
   status: string;

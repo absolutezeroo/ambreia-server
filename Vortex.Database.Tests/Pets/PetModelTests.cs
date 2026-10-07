@@ -36,7 +36,6 @@ public sealed class PetModelTests
             .Be(AvatarGenderType.Male);
         pet.FindProperty(nameof(PetEntity.Level))!.GetDefaultValue().Should().Be(1);
         pet.FindProperty(nameof(PetEntity.Experience))!.GetDefaultValue().Should().Be(0);
-        pet.FindProperty(nameof(PetEntity.Respect))!.GetDefaultValue().Should().Be(0);
     }
 
     private static VortexDbContext NewContext() =>

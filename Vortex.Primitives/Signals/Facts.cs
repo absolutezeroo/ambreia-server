@@ -224,22 +224,6 @@ public static class Facts
         "Pet species"
     );
 
-    /// <summary>
-    /// An order a pet was given.
-    /// </summary>
-    /// <remarks>
-    /// An id rather than a closed set, although there are only eleven of them and every pet type
-    /// answers all eleven: the names live in <c>pet_command_names</c> where an operator can edit
-    /// them, and a second copy enumerated here would be the drift this vocabulary exists to
-    /// prevent. The editor offers the directory instead.
-    /// </remarks>
-    public static readonly FactKey PetCommand = new(
-        "pet_command",
-        FactKind.OpaqueId,
-        "rewardTracks.fact_pet_command",
-        "Pet command"
-    );
-
     /// <summary>A name the player typed.</summary>
     public static readonly FactKey GivenName = new(
         "given_name",
@@ -427,7 +411,6 @@ public static class Facts
         ClubGift,
         VaultCategory,
         PetType,
-        PetCommand,
         GivenName,
         Effect,
         DurationSeconds,

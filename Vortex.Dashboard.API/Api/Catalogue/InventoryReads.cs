@@ -72,11 +72,6 @@ internal sealed class InventoryReads(IDbContextFactory<VortexDbContext> dbContex
                                     .ConfigureAwait(false),
                                 "/pets-stats"
                             ),
-                            Row(
-                                "handItems",
-                                await db.HandItems.CountAsync(ct).ConfigureAwait(false),
-                                "/bots"
-                            ),
                         ]
                     ),
                     Group(

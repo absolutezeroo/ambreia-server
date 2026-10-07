@@ -181,13 +181,7 @@ public class VortexDbContext(DbContextOptions<VortexDbContext> options)
 
     public DbSet<BotEntity> Bots { get; init; } = null!;
 
-    public DbSet<PetCommandEntity> PetCommands { get; init; } = null!;
-
-    public DbSet<PetCommandNameEntity> PetCommandNames { get; init; } = null!;
-
     public DbSet<PetLevelEntity> PetLevels { get; init; } = null!;
-
-    public DbSet<HandItemEntity> HandItems { get; init; } = null!;
 
     // Fishing — reconstructed from Habbo Origins, which has no client dump. Every number in these
     // four tables is an operator-editable guess rather than a recovered value; see the client's
@@ -216,8 +210,6 @@ public class VortexDbContext(DbContextOptions<VortexDbContext> options)
     public DbSet<PlayerClothingEntity> PlayerClothing { get; init; } = null!;
 
     public DbSet<PetPaletteEntity> PetPalettes { get; init; } = null!;
-
-    public DbSet<PetVocalEntity> PetVocals { get; init; } = null!;
 
     public DbSet<PlayerAccountPreferencesEntity> PlayerAccountPreferences { get; init; } = null!;
 

@@ -51,18 +51,6 @@ internal static partial class DashboardEndpoints
             (ops, body, actor, ct) => ops.DeleteAchievementLevelAsync(body, actor, ct),
             body => body.LevelId > 0
         );
-        Map<HandItemRequest>(
-            app,
-            "/hand-items",
-            (ops, body, actor, ct) => ops.SaveHandItemAsync(body, actor, ct),
-            body => body.HandItemId > 0 && !string.IsNullOrWhiteSpace(body.Name)
-        );
-        Map<DeleteHandItemRequest>(
-            app,
-            "/hand-items/delete",
-            (ops, body, actor, ct) => ops.DeleteHandItemAsync(body, actor, ct),
-            body => body.Id > 0
-        );
         Map<BotRequest>(
             app,
             "/bots",

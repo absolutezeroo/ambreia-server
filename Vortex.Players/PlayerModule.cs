@@ -32,17 +32,9 @@ public sealed class PlayerModule : IHostPluginModule
         services.AddSingleton<IReferenceDataProvider>(sp =>
             (IReferenceDataProvider)sp.GetRequiredService<IPetPaletteProvider>()
         );
-        services.AddSingleton<IPetCommandProvider, PetCommandProvider>();
-        services.AddSingleton<IReferenceDataProvider>(sp =>
-            (IReferenceDataProvider)sp.GetRequiredService<IPetCommandProvider>()
-        );
         services.AddSingleton<IPetLevelProvider, PetLevelProvider>();
         services.AddSingleton<IReferenceDataProvider>(sp =>
             (IReferenceDataProvider)sp.GetRequiredService<IPetLevelProvider>()
-        );
-        services.AddSingleton<IPetVocalProvider, PetVocalProvider>();
-        services.AddSingleton<IReferenceDataProvider>(sp =>
-            (IReferenceDataProvider)sp.GetRequiredService<IPetVocalProvider>()
         );
         services.AddSingleton<IVaultRewardSettler, CurrencyVaultRewardSettler>();
         services.AddSingleton<VaultRewardSettlerMap>();

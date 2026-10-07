@@ -16,11 +16,9 @@ using Vortex.Primitives.Players;
 namespace Vortex.Dashboard.API.Admin.Hotel;
 
 /// <summary>
-/// The hotel's smaller editable tables: hand items, bots, the currency/rental rows,
-/// and direct player grants.
+/// The hotel's smaller editable tables: bots, the currency rows, and direct player grants.
 /// <para>
-/// Three different live-state rules apply here, and each one is enforced rather than assumed. Hand
-/// items are read from the database every time a pet is fed, so a write is live immediately. A bot
+/// Two different live-state rules apply here, and each one is enforced rather than assumed. A bot
 /// standing in a room is owned by that room's grain, so editing its row would leave the two
 /// disagreeing — those edits are refused until it is picked up. Player grants go through the
 /// player's own grain where one exists, so the client is told rather than silently drifting.
@@ -28,75 +26,6 @@ namespace Vortex.Dashboard.API.Admin.Hotel;
 /// </summary>
 internal sealed partial class ContentAdminService
 {
-    public async Task<ContentAdminResult> UpsertHandItemAsync(
-        HandItemSpec spec,
-        CancellationToken ct
-    )
-    {
-        if (spec.HandItemId <= 0)
-        {
-            return ContentAdminResult.Fail("hand_item_id_required");
-        }
-
-        if (string.IsNullOrWhiteSpace(spec.Name))
-        {
-            return ContentAdminResult.Fail("name_required");
-        }
-
-        await using VortexDbContext db = await dbContextFactory
-            .CreateDbContextAsync(ct)
-            .ConfigureAwait(false);
-
-        HandItemEntity? entity = await db
-            .HandItems.FirstOrDefaultAsync(h => h.HandItemId == spec.HandItemId, ct)
-            .ConfigureAwait(false);
-
-        if (entity is null)
-        {
-            entity = new HandItemEntity
-            {
-                HandItemId = spec.HandItemId,
-                Name = spec.Name.Trim(),
-                Nutrition = Math.Max(0, spec.Nutrition),
-                Thirst = Math.Max(0, spec.Thirst),
-            };
-
-            db.HandItems.Add(entity);
-        }
-        else
-        {
-            entity.Name = spec.Name.Trim();
-            entity.Nutrition = Math.Max(0, spec.Nutrition);
-            entity.Thirst = Math.Max(0, spec.Thirst);
-            entity.DeletedAt = null;
-        }
-
-        await db.SaveChangesAsync(ct).ConfigureAwait(false);
-
-        return ContentAdminResult.Ok(entity.Id);
-    }
-
-    public async Task<ContentAdminResult> DeleteHandItemAsync(int handItemId, CancellationToken ct)
-    {
-        await using VortexDbContext db = await dbContextFactory
-            .CreateDbContextAsync(ct)
-            .ConfigureAwait(false);
-
-        HandItemEntity? entity = await db
-            .HandItems.FirstOrDefaultAsync(h => h.Id == handItemId, ct)
-            .ConfigureAwait(false);
-
-        if (entity is null)
-        {
-            return ContentAdminResult.Fail("hand_item_not_found");
-        }
-
-        db.HandItems.Remove(entity);
-        await db.SaveChangesAsync(ct).ConfigureAwait(false);
-
-        return ContentAdminResult.Ok(handItemId);
-    }
-
     public async Task<ContentAdminResult> UpdateBotAsync(
         int botId,
         BotSpec spec,

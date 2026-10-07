@@ -47,32 +47,6 @@ public class PetEntity : VortexEntity
     [DefaultValue(0)]
     public required int Experience { get; set; }
 
-    /// <summary>
-    /// Energy, nutrition and thirst stay at their maximum: a pet has no needs since M0. The columns
-    /// stay because they are sent to the client.
-    /// </summary>
-    [Column("energy")]
-    public int Energy { get; set; } = 100;
-
-    [Column("nutrition")]
-    public int Nutrition { get; set; } = 100;
-
-    [Column("thirst")]
-    [DefaultValue(100)]
-    public int Thirst { get; set; } = 100;
-
-    [Column("respect")]
-    [DefaultValue(0)]
-    public required int Respect { get; set; }
-
-    /// <summary>
-    /// Mood, 0-100: it drains on its own clock, recovers while the pet rests, and rises when the
-    /// pet is scratched or plays.
-    /// </summary>
-    [Column("happiness")]
-    [DefaultValue(100)]
-    public int Happiness { get; set; } = 100;
-
     /// <summary>A saddle has been fitted, so the pet can be ridden at all.</summary>
     [Column("has_saddle")]
     [DefaultValue(false)]

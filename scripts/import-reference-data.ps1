@@ -48,14 +48,12 @@ if (-not $hadPassword) {
 }
 
 # Applied by InitialCreate on an empty furniture_definitions, where they matched nothing. Same order
-# as InitialCreate. Each is keyed on name or outcome, so replaying them is safe; pet_commands.sql
-# also rewrites pet_commands from scratch (DELETE + INSERT), i.e. back to its seeded state.
+# as InitialCreate. Each is keyed on name or outcome, so replaying them is safe.
 $seeds = @(
     "catalog_pet_products.sql",
     "guild_furni_logic.sql",
     "furni_logic_bindings.sql",
     "furni_stuff_data_types.sql",
-    "pet_commands.sql",
     "highscore_families.sql",
     "purchasable_clothing.sql",
     "furni_logic_self_named_rebind.sql",
@@ -73,8 +71,7 @@ SELECT 'catalog_products', COUNT(*) FROM catalog_products UNION ALL
 SELECT 'catalog_club_offers', COUNT(*) FROM catalog_club_offers UNION ALL
 SELECT 'catalog_club_gifts', COUNT(*) FROM catalog_club_gifts UNION ALL
 SELECT 'catalog_frontpage_items', COUNT(*) FROM catalog_frontpage_items UNION ALL
-SELECT 'currency_types', COUNT(*) FROM currency_types UNION ALL
-SELECT 'pet_commands', COUNT(*) FROM pet_commands;"
+SELECT 'currency_types', COUNT(*) FROM currency_types;"
 
 Push-Location $repoRoot  # `source` paths are relative to the client's working directory
 try {

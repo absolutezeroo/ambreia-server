@@ -71,9 +71,6 @@ public sealed partial class RoomGrain : Grain, IRoomGrain
     internal readonly IRoomModerationStore _moderationStore;
     internal readonly IVortexMetrics _metrics;
     internal readonly IPermissionService _permissionService;
-    internal readonly IPetLevelProvider _petLevelProvider;
-    internal readonly IPetCommandProvider _petCommandProvider;
-    internal readonly IPetVocalProvider _petVocalProvider;
     internal readonly RoomConfig _roomConfig;
     internal readonly IRoomModelProvider _roomModelProvider;
 
@@ -132,9 +129,6 @@ public sealed partial class RoomGrain : Grain, IRoomGrain
         IPermissionService permissionService,
         IVortexMetrics metrics,
         IRoomModerationStore moderationStore,
-        IPetLevelProvider petLevelProvider,
-        IPetCommandProvider petCommandProvider,
-        IPetVocalProvider petVocalProvider,
         IRoomGameProvider gameProvider,
         ICommerceJournal commerceJournal,
         // Last on purpose: GrainActivationContext.CreateWithIntegerKey takes params object[], so a
@@ -160,9 +154,6 @@ public sealed partial class RoomGrain : Grain, IRoomGrain
         _permissionService = permissionService;
         _metrics = metrics;
         _moderationStore = moderationStore;
-        _petLevelProvider = petLevelProvider;
-        _petCommandProvider = petCommandProvider;
-        _petVocalProvider = petVocalProvider;
         _commerceJournal = commerceJournal;
         _wordFilter = wordFilter;
 

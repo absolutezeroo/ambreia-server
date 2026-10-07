@@ -19,23 +19,6 @@ public sealed record PetPlacedEvent(PlayerId ActorId, int PetId, int Type, int R
 public sealed record PetPickedUpEvent(PlayerId ActorId, int PetId, int Type, int RoomId) : IEvent;
 
 /// <summary>
-/// A pet obeyed an order.
-/// </summary>
-/// <remarks>
-/// Published where the order lands rather than where it is typed: a command reaches the server as
-/// ordinary chat — the client has no packet for it — and the words are only an order once the pet
-/// has been found, the owner checked, the level met and the energy paid. Anything raised earlier
-/// would count a player who said "sit" at a pet that ignored them.
-/// </remarks>
-public sealed record PetCommandObeyedEvent(
-    PlayerId ActorId,
-    PlayerId OwnerId,
-    int PetId,
-    int Type,
-    int CommandId
-) : IEvent;
-
-/// <summary>
 /// A pet reached a new level. Deliberately the level, not every experience grant: XP moves on every
 /// command obeyed, and a record per grant would bury the timeline it is meant to make readable.
 /// </summary>

@@ -203,9 +203,6 @@ public static class SignalActions
     /// <summary>Claimed vault income. (no Habbo artwork: this hotel's own signal)</summary>
     public const string ClaimVaultIncome = "claim_vault_income";
 
-    /// <summary>A pet obeyed an order. Raised where it obeys, never where the words were typed.</summary>
-    public const string CommandPet = "command_pet";
-
     /// <summary>
     /// Stood on a tile beside a piece of furniture, or on it. Carries which side, measured from the
     /// furniture, so "in front of the television" survives the television being turned round.
@@ -274,7 +271,6 @@ public static class SignalActions
         OpenPresent,
         BuyGift,
         ClaimVaultIncome,
-        CommandPet,
         StandNearFurni,
         ReceiveGift
     );

@@ -123,14 +123,6 @@ internal static partial class DashboardEndpoints
             Capabilities.Dashboard.PetsRead,
             TagDirectory
         );
-        MapReadGet<DirectoryPage>(
-            app,
-            ApiDirectory + "/pet-commands",
-            (HttpContext ctx, SignalDirectoryReads signalDirectory, CancellationToken ct) =>
-                OkAsync(signalDirectory.PetCommandsDirectoryAsync(ctx.QueryAsNameValues(), ct)),
-            Capabilities.Dashboard.PetsRead,
-            TagDirectory
-        );
         MapReadGet<CodeDirectoryPage>(
             app,
             ApiDirectory + "/quest-campaigns",

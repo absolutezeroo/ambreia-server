@@ -36,7 +36,6 @@ export const DIRECTORIES: Record<string, Directory> = {
   // Its own row for the same reason the garments have one: the hotel has no name for a species,
   // so "Species 17" is all the text there is and the picture carries the recognition.
   petSpecies: { endpoint: '/api/v1/directory/pet-species', row: 'pet' },
-  petCommand: { endpoint: '/api/v1/directory/pet-commands', row: 'plain' },
   campaign: { endpoint: '/api/v1/directory/quest-campaigns', row: 'plain' },
   clubGift: { endpoint: '/api/v1/directory/club-gifts', row: 'plain' },
   thread: { endpoint: '/api/v1/directory/forum-threads', row: 'plain' },

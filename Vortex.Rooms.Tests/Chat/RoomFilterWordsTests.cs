@@ -110,9 +110,6 @@ public sealed class RoomFilterWordsTests
             FakeProxy.Create<IPermissionService>(_ => null),
             FakeProxy.Create<IVortexMetrics>(_ => null),
             FakeProxy.Create<IRoomModerationStore>(_ => null),
-            FakeProxy.Create<IPetLevelProvider>(_ => null),
-            FakeProxy.Create<IPetCommandProvider>(_ => null),
-            FakeProxy.Create<IPetVocalProvider>(_ => null),
             TestRoomGames.Provider(),
             FakeProxy.Create<ICommerceJournal>(_ => Task.CompletedTask),
             RoomGrainStubs.PassThroughWordFilter()

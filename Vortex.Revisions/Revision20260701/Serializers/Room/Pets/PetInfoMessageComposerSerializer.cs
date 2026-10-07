@@ -19,12 +19,12 @@ internal class PetInfoMessageComposerSerializer(int header)
             .WriteInteger(Math.Max(message.MaxLevel, pet.Level))
             .WriteInteger(pet.Experience)
             .WriteInteger(Math.Max(message.ExperienceRequiredToLevel, pet.Experience))
-            .WriteInteger(pet.Energy)
-            .WriteInteger(Math.Max(message.MaxEnergy, pet.Energy))
-            // Happiness, not nutrition: this pair is the panel's happiness bar. Hunger and thirst
-            // never appear in this message at all -- they are the server's business.
-            .WriteInteger(pet.Happiness)
-            .WriteInteger(Math.Max(message.MaxHappiness, pet.Happiness))
+            // energy and happiness: figés au maximum -- a companion has no needs (M0 bis), so both
+            // bars are drawn full until the client drops them.
+            .WriteInteger(message.MaxEnergy)
+            .WriteInteger(message.MaxEnergy)
+            .WriteInteger(message.MaxHappiness)
+            .WriteInteger(message.MaxHappiness)
             // respect: figé, retiré avec le client -- pet respects were removed (M0 bis).
             .WriteInteger(0)
             .WriteInteger(pet.OwnerId.Value)

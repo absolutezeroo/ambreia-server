@@ -19,27 +19,26 @@ namespace Vortex.Revisions.Tests.Pets;
 /// zero days old.
 /// </summary>
 /// <remarks>
-/// Hunger and thirst do not appear in this message. Habbo keeps them server-side; only happiness,
-/// energy, experience and respect are shown.
+/// A companion has no needs (M0 bis): the energy and happiness pairs are still on the wire, both
+/// drawn full from the level caps, until the client drops them.
 /// </remarks>
 public sealed class PetInfoWireLayoutTests
 {
     private static readonly Rev Revision = new(Options.Create(new ProtocolLimitsConfig()));
 
-    private const int Happiness = 42;
-    private const int Nutrition = 7;
-    private const int Energy = 88;
+    private const int MaxEnergy = 260;
+    private const int MaxHappiness = 100;
     private const int Age = 13;
 
     [Fact]
-    public void TheHappinessPairCarriesHappinessAndNotNutrition()
+    public void TheNeedBarsAreDrawnFull()
     {
         ClientPacket body = Serialize();
 
         SkipToHappiness(body);
 
-        body.PopInt().Should().Be(Happiness, "the bar is labelled happiness and reads this slot");
-        body.PopInt().Should().Be(100, "and its maximum, never the nutrition cap");
+        body.PopInt().Should().Be(MaxHappiness, "happiness, frozen at its cap");
+        body.PopInt().Should().Be(MaxHappiness, "and its maximum");
     }
 
     [Fact]
@@ -65,8 +64,8 @@ public sealed class PetInfoWireLayoutTests
         body.PopInt();
         body.PopInt();
         body.PopInt();
-        body.PopInt().Should().Be(Energy);
-        body.PopInt();
+        body.PopInt().Should().Be(MaxEnergy, "energy, frozen at its cap");
+        body.PopInt().Should().Be(MaxEnergy);
     }
 
     private static ClientPacket Serialize()
@@ -79,6 +78,8 @@ public sealed class PetInfoWireLayoutTests
                     Pet = Pet(),
                     OwnerName = "Owner",
                     Age = Age,
+                    MaxEnergy = MaxEnergy,
+                    MaxHappiness = MaxHappiness,
                 }
             )
             .ToArray();
@@ -102,10 +103,6 @@ public sealed class PetInfoWireLayoutTests
             Gender = AvatarGenderType.Male,
             Level = 4,
             Experience = 30,
-            Energy = Energy,
-            Nutrition = Nutrition,
-            Happiness = Happiness,
-            Respect = 0,
             X = 0,
             Y = 0,
             Z = 0,

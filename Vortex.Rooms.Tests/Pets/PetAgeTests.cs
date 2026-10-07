@@ -3,17 +3,14 @@ using FluentAssertions;
 using Vortex.Primitives.Pets.Snapshots;
 using Vortex.Primitives.Players;
 using Vortex.Primitives.Rooms.Enums;
-using Vortex.Rooms.Configuration;
-using Vortex.Rooms.Grains.Systems;
 using Xunit;
 
 namespace Vortex.Rooms.Tests.Pets;
 
 /// <summary>
-/// Age and mood, the two numbers the info panel got wrong: age was never computed at all, and the
-/// happiness bar was fed the pet's nutrition because there was no mood stat to feed it.
+/// Age, which the info panel got wrong: it was never computed at all.
 /// </summary>
-public sealed class PetAgeAndHappinessTests
+public sealed class PetAgeTests
 {
     private static readonly DateTime Now = new(2026, 8, 3, 22, 0, 0, DateTimeKind.Utc);
 
@@ -40,42 +37,6 @@ public sealed class PetAgeAndHappinessTests
         pet.AgeInDays(Now).Should().Be(1, "a pet is never zero or minus two days old");
     }
 
-    [Fact]
-    public void Happiness_DrainsWhileAwakeAndComesBackFasterWhileResting()
-    {
-        PetConfig config = new();
-
-        config
-            .HappinessRestGainPerMinute.Should()
-            .BeGreaterThan(
-                config.HappinessDecayPerMinute,
-                "a nap has to be worth taking, or mood only ever falls"
-            );
-    }
-
-    [Fact]
-    public void Happiness_UsesItsOwnClock()
-    {
-        long clock = 0;
-        int drained = 0;
-
-        // Ten minutes of room ticks at the rate a waking pet loses mood.
-        for (long now = 500; now <= 10 * 60_000; now += 500)
-        {
-            drained += RoomPetRuntime.TakeWholeNeedPoints(clock, now, 2.0, out clock);
-        }
-
-        drained.Should().Be(20, "2 a minute, the rate Habbo drains it at");
-    }
-
-    [Fact]
-    public void ANewPetStartsContent()
-    {
-        PetWith(createdAt: Now)
-            .Happiness.Should()
-            .Be(100, "and so does every pet the migration touches");
-    }
-
     private static PetSnapshot PetWith(DateTime createdAt) =>
         new()
         {
@@ -89,9 +50,6 @@ public sealed class PetAgeAndHappinessTests
             Gender = AvatarGenderType.Male,
             Level = 1,
             Experience = 0,
-            Energy = 100,
-            Nutrition = 100,
-            Respect = 0,
             X = 0,
             Y = 0,
             Z = 0,

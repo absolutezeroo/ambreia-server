@@ -40,7 +40,6 @@ const LABELS = {
   fireworks: 'Fireworks',
   room_invisible_click_tile: 'Invisible click tile',
   wheel_of_fortune: 'Wheel of fortune',
-  pet_nest: 'Pet nest',
 };
 
 function walk(dir, out = []) {

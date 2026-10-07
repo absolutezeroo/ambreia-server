@@ -278,8 +278,6 @@ public sealed class RoomPersistenceGrain(
 
                 entity.Experience = pet.Experience;
                 entity.Level = pet.Level;
-                entity.Respect = pet.Respect;
-                entity.Happiness = pet.Happiness;
                 entity.X = pet.X;
                 entity.Y = pet.Y;
                 entity.Z = pet.Z;

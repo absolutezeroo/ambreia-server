@@ -72,7 +72,6 @@ public sealed class ApiTypeScriptContractTests
         typeof(BotListResponse),
         typeof(BotDetail),
         typeof(BotStats),
-        typeof(HandItemList),
         typeof(AuditPage),
         typeof(ModerationStats),
         typeof(ItemAnomalyScan),

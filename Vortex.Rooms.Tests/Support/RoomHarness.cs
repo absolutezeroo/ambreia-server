@@ -142,13 +142,6 @@ internal sealed class RoomHarness
                 new SingleOptionsFactory(options),
                 NullLogger<RoomModerationStore>.Instance
             ),
-            BuildPetLevelProvider(),
-            FakeProxy.Create<IPetCommandProvider>(call =>
-                call.Method.Name == nameof(IPetCommandProvider.GetCommandConfig)
-                    ? PetCommands((int)call.Args![0]!, (int)call.Args![1]!)
-                    : null
-            ),
-            FakeProxy.Create<IPetVocalProvider>(_ => null),
             TestRoomGames.Provider(),
             BuildCommerceJournal(),
             RoomGrainStubs.PassThroughWordFilter()
@@ -301,12 +294,6 @@ internal sealed class RoomHarness
     /// attach rather than reaching the map.
     /// </summary>
     public Func<IRoomObjectLogic>? LogicFactory { get; set; }
-
-    /// <summary>
-    /// The pet commands the room knows, by pet type and command id. None by default, which is a
-    /// room whose pets refuse every order as unknown.
-    /// </summary>
-    public Func<int, int, PetCommandEntry?> PetCommands { get; set; } = (_, _) => null;
 
     /// <summary>
     /// Server-config integers that differ from the compiled default. Everything else reads its
@@ -480,9 +467,6 @@ internal sealed class RoomHarness
             Gender = AvatarGenderType.Male,
             Level = 1,
             Experience = 0,
-            Energy = 100,
-            Nutrition = 100,
-            Respect = 0,
             X = x,
             Y = y,
             Z = 0,
@@ -514,18 +498,6 @@ internal sealed class RoomHarness
             }
         );
     }
-
-    /// <summary>
-    /// Caps at Habbo's full-bar hundred. The default stub answers zero, which silently clamps every
-    /// fed pet back to empty and makes feeding look broken when it is not.
-    /// </summary>
-    private static IPetLevelProvider BuildPetLevelProvider() =>
-        FakeProxy.Create<IPetLevelProvider>(call =>
-            call.Method.Name.StartsWith("Get", StringComparison.Ordinal)
-            && call.Method.ReturnType == typeof(int)
-                ? 100
-                : null
-        );
 
     /// <summary>
     /// What the event publisher hands back, so a test can make handlers slow or broken. Null (the

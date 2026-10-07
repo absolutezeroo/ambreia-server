@@ -36,10 +36,6 @@ public interface IContentAdminService
 
     Task<ContentAdminResult> DeleteAchievementLevelAsync(int levelId, CancellationToken ct);
 
-    Task<ContentAdminResult> UpsertHandItemAsync(HandItemSpec spec, CancellationToken ct);
-
-    Task<ContentAdminResult> DeleteHandItemAsync(int handItemId, CancellationToken ct);
-
     Task<ContentAdminResult> UpdateBotAsync(int botId, BotSpec spec, CancellationToken ct);
 
     Task<ContentAdminResult> DeleteBotAsync(int botId, CancellationToken ct);

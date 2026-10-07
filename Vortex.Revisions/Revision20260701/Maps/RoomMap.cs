@@ -64,10 +64,6 @@ internal sealed class RoomMap : IRevisionMap
         builder.MapParser(MessageEvent.DropCarryItemMessageEvent, new DropCarryItemMessageParser());
         builder.MapParser(MessageEvent.LookToMessageEvent, new LookToMessageParser());
         builder.MapParser(MessageEvent.PassCarryItemMessageEvent, new PassCarryItemMessageParser());
-        builder.MapParser(
-            MessageEvent.PassCarryItemToPetMessageEvent,
-            new PassCarryItemToPetMessageParser()
-        );
         builder.MapParser(MessageEvent.SignMessageEvent, new SignMessageParser());
 
         // Room Bots
@@ -87,10 +83,6 @@ internal sealed class RoomMap : IRevisionMap
             new GetFurnitureAliasesMessageParser()
         );
         builder.MapParser(MessageEvent.GetItemDataMessageEvent, new GetItemDataMessageParser());
-        builder.MapParser(
-            MessageEvent.GetPetCommandsMessageEvent,
-            new GetPetCommandsMessageParser()
-        );
         builder.MapParser(MessageEvent.MountPetMessageEvent, new MountPetMessageParser());
         builder.MapParser(MessageEvent.MoveAvatarMessageEvent, new MoveAvatarMessageParser());
         builder.MapParser(MessageEvent.MoveObjectMessageEvent, new MoveObjectMessageParser());
@@ -216,7 +208,6 @@ internal sealed class RoomMap : IRevisionMap
             new CustomizePetWithFurniMessageParser()
         );
         builder.MapParser(MessageEvent.GetPetInfoMessageEvent, new GetPetInfoMessageParser());
-        builder.MapParser(MessageEvent.PetSelectedMessageEvent, new PetSelectedMessageParser());
 
         // Room Session
         builder.MapParser(
@@ -484,10 +475,6 @@ internal sealed class RoomMap : IRevisionMap
         );
 
         // Room Pets
-        builder.MapSerializer(
-            typeof(PetCommandsMessageComposer),
-            new PetCommandsMessageComposerSerializer(MessageComposer.PetCommandsMessageComposer)
-        );
         builder.MapSerializer(
             typeof(PetExperienceMessageComposer),
             new PetExperienceMessageComposerSerializer(MessageComposer.PetExperienceComposer)

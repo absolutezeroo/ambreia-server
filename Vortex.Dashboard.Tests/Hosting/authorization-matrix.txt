@@ -32,7 +32,6 @@ GET /api/v1/directory/forum-threads -> dashboard.social.read
 GET /api/v1/directory/furniture -> dashboard.furniture.read
 GET /api/v1/directory/groups -> dashboard.social.read
 GET /api/v1/directory/navigator-categories -> dashboard.navigator.read
-GET /api/v1/directory/pet-commands -> dashboard.pets.read
 GET /api/v1/directory/pet-species -> dashboard.pets.read
 GET /api/v1/directory/placed-furniture -> dashboard.furniture.read
 GET /api/v1/directory/players -> dashboard.players.read
@@ -62,7 +61,6 @@ GET /api/v1/groups/stats -> dashboard.groups.read
 GET /api/v1/guilds -> dashboard.ops.guilds.manage
 GET /api/v1/guilds/{guildId:int} -> dashboard.ops.guilds.manage
 GET /api/v1/guilds/{guildId:int}/threads/{threadId:int} -> dashboard.ops.guilds.manage
-GET /api/v1/hand-items -> dashboard.bots.read
 GET /api/v1/meta/endpoints -> dashboard.overview.read
 GET /api/v1/monitoring/incidents -> dashboard.overview.read
 GET /api/v1/monitoring/infrastructure -> dashboard.overview.read
@@ -134,8 +132,6 @@ POST /api/v1/operations/content/bots/delete -> dashboard.ops.content.manage
 POST /api/v1/operations/content/currencies -> dashboard.ops.content.manage
 POST /api/v1/operations/content/effects/grant -> dashboard.ops.content.manage
 POST /api/v1/operations/content/effects/revoke -> dashboard.ops.content.manage
-POST /api/v1/operations/content/hand-items -> dashboard.ops.content.manage
-POST /api/v1/operations/content/hand-items/delete -> dashboard.ops.content.manage
 POST /api/v1/operations/content/rentable-terms -> dashboard.ops.content.manage
 POST /api/v1/operations/content/rentable-terms/delete -> dashboard.ops.content.manage
 POST /api/v1/operations/currency/activity-points -> dashboard.ops.currency.grant

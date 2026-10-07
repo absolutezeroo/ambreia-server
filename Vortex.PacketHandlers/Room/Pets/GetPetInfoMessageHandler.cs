@@ -59,11 +59,7 @@ public class GetPetInfoMessageHandler(
             .SendComposerAsync(
                 new PetInfoMessageComposer
                 {
-                    // A pet has no fatigue since M0: the energy bar is always full.
-                    Pet = pet with
-                    {
-                        Energy = maxEnergy,
-                    },
+                    Pet = pet,
                     OwnerName = ownerName,
                     Age = pet.AgeInDays(DateTime.UtcNow),
                     MaxLevel = maxLevel,

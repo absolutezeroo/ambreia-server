@@ -8605,16 +8605,12 @@ namespace Vortex.Database.Migrations
             migrationBuilder.Sql(SeedScripts.Read("add_server_config.sql"));
             migrationBuilder.Sql(SeedScripts.Read("group_badge_parts.sql"));
             migrationBuilder.Sql(SeedScripts.Read("group_colors.sql"));
-            migrationBuilder.Sql(SeedScripts.Read("pet_vocals.sql"));
             migrationBuilder.Sql(SeedScripts.Read("catalog_pet_products.sql"));
-            migrationBuilder.Sql(SeedScripts.Read("pet_command_names.sql"));
             migrationBuilder.Sql(SeedScripts.Read("guild_furni_logic.sql"));
             migrationBuilder.Sql(SeedScripts.Read("furni_logic_bindings.sql"));
             migrationBuilder.Sql(SeedScripts.Read("furni_stuff_data_types.sql"));
-            migrationBuilder.Sql(SeedScripts.Read("pet_commands.sql"));
             migrationBuilder.Sql(SeedScripts.Read("highscore_families.sql"));
             migrationBuilder.Sql(SeedScripts.Read("navigator_configuration.sql"));
-            migrationBuilder.Sql(SeedScripts.Read("hand_items.sql"));
             migrationBuilder.Sql(SeedScripts.Read("currencies.sql"));
             migrationBuilder.Sql(SeedScripts.Read("purchasable_clothing.sql"));
             migrationBuilder.Sql(SeedScripts.Read("fishing.sql"));

@@ -262,32 +262,6 @@ internal sealed class SignalDirectoryReads(
         );
 
     /// <summary>
-    /// The orders a pet can be given.
-    /// </summary>
-    /// <remarks>
-    /// Only the ones some pet type is actually configured for. <c>pet_command_names</c> holds
-    /// forty-six names and <c>pet_commands</c> configures eleven of them, so two thirds of that
-    /// table name an order no pet in the hotel has ever been able to obey — and a filter on one
-    /// would be exactly the silent never-matching task the pickers exist to prevent.
-    /// </remarks>
-    public Task<DirectoryPage> PetCommandsDirectoryAsync(
-        NameValueCollection query,
-        CancellationToken ct
-    ) =>
-        PickerPageAsync(
-            query,
-            db =>
-                db.PetCommandNames.AsNoTracking()
-                    .Where(n => db.PetCommands.Any(c => c.CommandId == n.CommandId)),
-            (commands, term, id) =>
-                commands.Where(n => n.Name.Contains(term) || (id != null && n.CommandId == id)),
-            commands => commands.OrderBy(n => n.CommandId),
-            // The signal carries the command id, not the row's own primary key.
-            n => new PickerRow(n.CommandId, n.Name, null),
-            ct
-        );
-
-    /// <summary>
     /// Quest campaigns, by code.
     /// </summary>
     /// <remarks>

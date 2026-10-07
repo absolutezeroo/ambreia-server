@@ -31,11 +31,6 @@ internal static class RoomPetRuntime
             Gender = entity.Gender,
             Level = entity.Level,
             Experience = entity.Experience,
-            Energy = entity.Energy,
-            Nutrition = entity.Nutrition,
-            Thirst = entity.Thirst,
-            Respect = entity.Respect,
-            Happiness = entity.Happiness,
             CreatedAt = entity.CreatedAt,
             HasSaddle = entity.HasSaddle,
             SaddleDefinitionId = entity.SaddleDefinitionId,
@@ -140,42 +135,29 @@ internal static class RoomPetRuntime
         return false;
     }
 
-    /// <summary>
-    /// How likely a pet is to obey one order, in percent. A capture of the live hotel caught a pet
-    /// ignoring four orders out of nine and saying so, so a pet that always obeys is wrong; what the
-    /// hotel's real rule is, nine samples do not say. This is Arcturus' shape -- a base chance plus
-    /// a bonus for every level the pet has over the command's own requirement, under a ceiling --
-    /// and all three numbers are server configuration precisely because they are assumed.
-    ///
-    /// A base of 100 restores the old always-obeys behaviour, and the ceiling is what stops a
-    /// long-outgrown trick from becoming automatic.
-    /// </summary>
-    public static int ObeyChancePercent(
-        int petLevel,
-        int levelRequired,
-        int basePercent,
-        int perLevelPercent,
-        int maxPercent
-    )
-    {
-        int bonus = Math.Max(0, petLevel - levelRequired) * perLevelPercent;
+    /// <summary>Whether two tiles are at most <paramref name="distance" /> steps apart, diagonals
+    /// counting as one step -- the way a pet walks.</summary>
+    public static bool IsWithin(int fromX, int fromY, int toX, int toY, int distance) =>
+        Math.Max(Math.Abs(fromX - toX), Math.Abs(fromY - toY)) <= distance;
 
-        return Math.Clamp(Math.Min(basePercent + bonus, maxPercent), 0, 100);
+    /// <summary>The eight tiles around a tile, bounds unchecked.</summary>
+    public static IEnumerable<(int X, int Y)> Neighbours(int x, int y)
+    {
+        for (int dx = -1; dx <= 1; dx++)
+        {
+            for (int dy = -1; dy <= 1; dy++)
+            {
+                if (dx != 0 || dy != 0)
+                {
+                    yield return (x + dx, y + dy);
+                }
+            }
+        }
     }
 
     /// <summary>
-    /// The command that is an errand rather than a pose: the pet has to walk to its nest for it to
-    /// mean anything. The id is the client's own, from <c>pet.command.&lt;id&gt;</c>.
-    /// </summary>
-    public const int NestCommandId = 13;
-
-    /// <summary>Whether a pet is bored enough to go and find a toy.</summary>
-    public static bool IsBored(PetSnapshot pet, int boredHappinessThreshold) =>
-        pet.Happiness <= boredHappinessThreshold;
-
-    /// <summary>
     /// The nearest candidate tile by walking distance, or null when there is none. Ties keep the
-    /// first candidate, so a room with two equidistant nests picks the same one every tick rather
+    /// first candidate, so a pet with two equidistant tiles beside its owner picks the same one every tick rather
     /// than dithering between them.
     /// </summary>
     public static (int X, int Y)? PickNearestTile(
@@ -201,49 +183,6 @@ internal static class RoomPetRuntime
         }
 
         return best;
-    }
-
-    /// <summary>
-    /// Takes the whole points a need has accrued since its own clock, and moves that clock forward
-    /// by only the time those points cost -- never to <paramref name="now" />, so the leftover
-    /// fraction carries into the next tick.
-    /// </summary>
-    /// <remarks>
-    /// Happiness is the one stat left on a clock since M0 removed hunger, thirst and fatigue.
-    /// </remarks>
-    public static int TakeWholeNeedPoints(
-        long clockMs,
-        long now,
-        double perMinute,
-        out long nextClockMs
-    )
-    {
-        nextClockMs = clockMs;
-
-        if (perMinute <= 0)
-        {
-            nextClockMs = now;
-
-            return 0;
-        }
-
-        long elapsedMs = now - clockMs;
-
-        if (elapsedMs <= 0)
-        {
-            return 0;
-        }
-
-        int points = (int)(elapsedMs / 60_000.0 * perMinute);
-
-        if (points <= 0)
-        {
-            return 0;
-        }
-
-        nextClockMs = clockMs + (long)(points / perMinute * 60_000.0);
-
-        return points;
     }
 
     private static string ToFigureString(PetSnapshot pet) => $"{pet.Type} {pet.Race} {pet.Color} 0";

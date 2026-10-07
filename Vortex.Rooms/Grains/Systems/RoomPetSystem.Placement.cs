@@ -154,12 +154,7 @@ public sealed partial class RoomPetSystem
         // Preserve live in-memory stats (may not have been flushed to DB yet)
         if (_roomGrain._state.PetsById.TryGetValue(pet.Id, out PetSnapshot? prev))
         {
-            snapshot = snapshot with
-            {
-                Experience = prev.Experience,
-                Level = prev.Level,
-                Respect = prev.Respect,
-            };
+            snapshot = snapshot with { Experience = prev.Experience, Level = prev.Level };
         }
 
         _roomGrain._state.PetsById[pet.Id] = snapshot;
@@ -193,7 +188,6 @@ public sealed partial class RoomPetSystem
         {
             pet.Experience = liveSnapshot.Experience;
             pet.Level = liveSnapshot.Level;
-            pet.Respect = liveSnapshot.Respect;
         }
 
         pet.RoomEntityId = null;

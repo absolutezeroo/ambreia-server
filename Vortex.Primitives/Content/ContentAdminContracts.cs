@@ -31,9 +31,6 @@ public sealed record AchievementLevelSpec(
     int ScorePoints
 );
 
-/// <summary>What a pet gets out of a hand item. An id with no row is still held, just never eaten.</summary>
-public sealed record HandItemSpec(int HandItemId, string Name, int Nutrition, int Thirst);
-
 /// <summary>The editable half of a bot: what it is called and how it looks.</summary>
 public sealed record BotSpec(string Name, string Motto, string Figure);
 

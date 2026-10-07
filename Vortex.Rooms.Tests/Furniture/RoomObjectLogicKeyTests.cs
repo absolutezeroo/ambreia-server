@@ -62,7 +62,22 @@ public sealed class RoomObjectLogicKeyTests
     /// definition that failed to load would take its room down with it.
     /// </summary>
     [Fact]
-    public void ARollerDefinition_LoadsAsDefaultLogic()
+    public void ARollerDefinition_LoadsAsDefaultLogic() =>
+        ResolvedImplementation("roller").Should().Be<FurnitureFloorLogic>();
+
+    /// <summary>
+    /// Pet toys, the trampoline and the nest were removed with the pets' life sim (M0 bis); their
+    /// definitions load as plain floor furniture, for the same reason as the roller above.
+    /// </summary>
+    [Theory]
+    [InlineData("pet_toy")]
+    [InlineData("pet_trampoline")]
+    [InlineData("nest")]
+    [InlineData("pet_nest")]
+    public void APetToyOrNestDefinition_LoadsAsDefaultLogic(string key) =>
+        ResolvedImplementation(key).Should().Be<FurnitureFloorLogic>();
+
+    private static Type ResolvedImplementation(string key)
     {
         RoomObjectLogicProvider provider = new(
             FakeProxy.Create<IServiceProvider>(_ => null),
@@ -94,12 +109,11 @@ public sealed class RoomObjectLogicKeyTests
             }
         }
 
-        provider
-            .CreateLogicInstance("roller", FakeProxy.Create<IRoomFloorItemContext>(_ => null))
+        return provider
+            .CreateLogicInstance(key, FakeProxy.Create<IRoomFloorItemContext>(_ => null))
             .Should()
             .BeOfType<ResolvedLogic>()
-            .Which.Implementation.Should()
-            .Be<FurnitureFloorLogic>();
+            .Which.Implementation;
     }
 
     private sealed class ResolvedLogic(Type implementation) : IRoomObjectLogic

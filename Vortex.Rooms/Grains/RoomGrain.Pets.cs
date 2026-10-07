@@ -97,29 +97,6 @@ public sealed partial class RoomGrain
     public Task<ImmutableArray<PetSnapshot>> GetPlacedPetSnapshotsAsync(CancellationToken ct) =>
         PetSystem.GetPlacedPetSnapshotsAsync(ct);
 
-    public async Task<PetSnapshot?> GrantPetCommandXpAsync(
-        ActionContext ctx,
-        int petId,
-        CancellationToken ct
-    )
-    {
-        try
-        {
-            return await PetSystem.GrantPetCommandXpAsync(ctx, petId, ct);
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(
-                ex,
-                "Failed to grant command XP to pet {PetId} in room {RoomId}",
-                petId,
-                _state.RoomId
-            );
-
-            return null;
-        }
-    }
-
     public async Task MountPetAsync(ActionContext ctx, int petId, bool mount, CancellationToken ct)
     {
         try
@@ -196,31 +173,6 @@ public sealed partial class RoomGrain
                 petId,
                 _state.RoomId
             );
-        }
-    }
-
-    public async Task<PetSnapshot?> IssueCommandAsync(
-        ActionContext ctx,
-        int petId,
-        int commandId,
-        CancellationToken ct
-    )
-    {
-        try
-        {
-            return await PetSystem.IssueCommandAsync(ctx, petId, commandId, ct);
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(
-                ex,
-                "Failed to issue command {CommandId} to pet {PetId} in room {RoomId}",
-                commandId,
-                petId,
-                _state.RoomId
-            );
-
-            return null;
         }
     }
 }

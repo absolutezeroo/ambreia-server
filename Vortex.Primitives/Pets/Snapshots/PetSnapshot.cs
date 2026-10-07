@@ -38,14 +38,8 @@ public sealed record PetSnapshot
     [Id(9)]
     public required int Experience { get; init; }
 
-    [Id(10)]
-    public required int Energy { get; init; }
-
-    [Id(11)]
-    public required int Nutrition { get; init; }
-
-    [Id(12)]
-    public required int Respect { get; init; }
+    // 10 to 12 were energy, nutrition and respect, and 27 and 29 happiness and thirst: a companion
+    // has no needs (M0 bis). The info panel's bars are drawn full. Retired, never reused.
 
     [Id(13)]
     public required int X { get; init; }
@@ -78,24 +72,9 @@ public sealed record PetSnapshot
     [Id(26)]
     public PlayerId? RiderId { get; init; }
 
-    /// <summary>
-    /// Mood, 0-100. Its own stat: it drains slowly whatever else the pet is doing, comes back while
-    /// the pet rests, and jumps when the pet is played with. The info panel's happiness bar reads
-    /// this and nothing else.
-    /// </summary>
-    [Id(27)]
-    public int Happiness { get; init; } = 100;
-
     /// <summary>When the pet was created -- the info panel shows its age in days.</summary>
     [Id(28)]
     public DateTime CreatedAt { get; init; }
-
-    /// <summary>
-    /// Water, 0-100. Pets have no needs since M0: this, <see cref="Nutrition"/> and
-    /// <see cref="Energy"/> are kept because they are stored and sent, and stay at their maximum.
-    /// </summary>
-    [Id(29)]
-    public int Thirst { get; init; } = 100;
 
     /// <summary>The fitted saddle's furniture definition, handed back when it comes off.</summary>
     [Id(30)]

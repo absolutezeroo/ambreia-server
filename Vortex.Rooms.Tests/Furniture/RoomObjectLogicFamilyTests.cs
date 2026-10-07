@@ -68,35 +68,6 @@ public sealed class RoomObjectLogicFamilyTests
     }
 
     /// <summary>
-    /// The pet furni the room AI looks for. A pet only finds a nest if the definition resolved to
-    /// the matching logic in the first place, and the shipped catalogue spells it the Arcturus way
-    /// -- <c>nest</c>, not the <c>pet_nest</c> Vortex invented. Every nest in the hotel used to fall
-    /// back to <c>default_floor</c>, so no pet ever slept on one.
-    /// </summary>
-    /// <remarks>
-    /// The assets are no help here: they call a nest <c>furniture_multistate</c>, which is the same
-    /// trap <see cref="TheGateIsNotAPlainMultiStateFurni" /> guards against.
-    /// </remarks>
-    [Theory]
-    [InlineData(typeof(FurniturePetNestLogic), "nest")]
-    [InlineData(typeof(FurniturePetNestLogic), "pet_nest")]
-    public void ThePetFurniCarryEverySpellingTheCatalogueUses(Type logic, string logicName)
-    {
-        string[] keys =
-        [
-            .. logic.GetCustomAttributes<RoomObjectLogicAttribute>(false).Select(a => a.Key),
-        ];
-
-        keys.Should().Contain(logicName);
-    }
-
-    [Fact]
-    public void TheNestIsNotAPlainMultiStateFurni()
-    {
-        KeysOf<FurniturePetNestLogic>().Should().NotContain("furniture_multistate");
-    }
-
-    /// <summary>
     /// A gate is the standing counter-example to "just take the logic from the assets": the client
     /// calls it <c>furniture_multistate</c> because Flash derives blocking from the visualization,
     /// while Vortex resolves walkability server-side. 375 definitions were one blind remap away from

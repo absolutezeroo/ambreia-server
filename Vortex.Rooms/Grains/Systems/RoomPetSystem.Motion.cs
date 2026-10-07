@@ -18,6 +18,7 @@ using Vortex.Primitives.Pets.Snapshots;
 using Vortex.Primitives.Players;
 using Vortex.Primitives.Rooms.Enums;
 using Vortex.Primitives.Rooms.Object;
+using Vortex.Primitives.Rooms.Object.Avatars;
 using Vortex.Primitives.Rooms.Object.Furniture;
 using Vortex.Primitives.Rooms.Snapshots.Avatars;
 using Vortex.Protocol.Messages.Outgoing.Inventory.Pets;
@@ -25,7 +26,6 @@ using Vortex.Protocol.Messages.Outgoing.Notifications;
 using Vortex.Protocol.Messages.Outgoing.Room.Engine;
 using Vortex.Protocol.Messages.Outgoing.Room.Pets;
 using Vortex.Protocol.Messages.Outgoing.Users;
-using Vortex.Rooms.Object.Logic.Furniture.Floor;
 
 namespace Vortex.Rooms.Grains.Systems;
 
@@ -48,40 +48,18 @@ public sealed partial class RoomPetSystem
             motion.PendingStopAtMs = 0;
             motion.NextWanderAtMs = ScheduleNextWanderAt(now);
 
-            if (motion.IsHeadingToNest)
-            {
-                motion.IsHeadingToNest = false;
-
-                // Only curl up if the walk actually ended on the nest -- a path cut short by a
-                // blocked tile leaves the pet standing wherever it stopped, and it should retry.
-                if (IsOnNestTile(pet))
-                {
-                    StartNestNap(motion, now);
-                }
-            }
-            else if (motion.IsHeadingToToy)
-            {
-                motion.IsHeadingToToy = false;
-
-                RoomPetAvatarSnapshot? played = await StartToyPlayAsync(pet, motion, now, ct);
-
-                if (played is not null)
-                {
-                    return played;
-                }
-            }
-
             return await ToAvatarSnapshotAsync(pet, ct);
         }
 
-        if (motion.TilePath.Count == 0 && now >= motion.NextWanderAtMs)
+        // The owner first: a companion that has fallen behind goes back to them, checked on every
+        // idle tick so it does not stand around while they walk off. Close by, it wanders.
+        if (
+            motion.TilePath.Count == 0
+            && !TryFollowOwner(pet, motion, now)
+            && now >= motion.NextWanderAtMs
+        )
         {
-            // Boredom, then wandering. The nest is only ever an order (command 13) since M0
-            // removed fatigue.
-            if (!TryDirectPetToToy(pet, motion, now))
-            {
-                TryStartWander(pet, motion, now);
-            }
+            TryStartWander(pet, motion, now);
         }
 
         if (motion.TilePath.Count == 0)
@@ -218,35 +196,85 @@ public sealed partial class RoomPetSystem
                 continue;
             }
 
-            int targetTileId = _roomGrain.MapModule.ToIdx(targetX, targetY);
-
-            if (!CanPetOccupyTile(pet.PetId, targetTileId))
+            if (TryWalkTo(pet, motion, targetX, targetY))
             {
-                continue;
+                return true;
             }
-
-            IReadOnlyList<(int X, int Y)> path = _roomGrain.PathingSystem.FindPath(
-                (pet.X, pet.Y),
-                (targetX, targetY),
-                tileId => CanPetOccupyTile(pet.PetId, tileId),
-                (currentTileId, nextTileId, isGoal) =>
-                    CanPetWalkBetween(pet.PetId, currentTileId, nextTileId, isGoal)
-            );
-
-            if (path.Count < 2)
-            {
-                continue;
-            }
-
-            motion.TilePath.Clear();
-            motion.TilePath.AddRange(
-                path.Skip(1).Select(pos => _roomGrain.MapModule.ToIdx(pos.X, pos.Y))
-            );
-
-            return true;
         }
 
         return false;
+    }
+
+    /// <summary>
+    /// Walks a pet that has strayed more than <see cref="Configuration.PetConfig.FollowDistance" />
+    /// tiles from its owner back to the nearest free tile beside them. False when the owner is not
+    /// in the room, is close enough already, or cannot be reached.
+    /// </summary>
+    private bool TryFollowOwner(PetSnapshot pet, PetMotionState motion, long now)
+    {
+        if (
+            !_roomGrain._state.AvatarsByPlayerId.TryGetValue(pet.OwnerId, out RoomObjectId objectId)
+            || !_roomGrain._state.AvatarsByObjectId.TryGetValue(objectId, out IRoomAvatar? owner)
+            || RoomPetRuntime.IsWithin(
+                pet.X,
+                pet.Y,
+                owner.X,
+                owner.Y,
+                _roomGrain._roomConfig.Pet.FollowDistance
+            )
+        )
+        {
+            return false;
+        }
+
+        (int X, int Y)? beside = RoomPetRuntime.PickNearestTile(
+            pet.X,
+            pet.Y,
+            RoomPetRuntime
+                .Neighbours(owner.X, owner.Y)
+                .Where(tile =>
+                    _roomGrain.MapModule.InBounds(tile.X, tile.Y)
+                    && CanPetOccupyTile(pet.PetId, _roomGrain.MapModule.ToIdx(tile.X, tile.Y))
+                )
+        );
+
+        if (beside is null || !TryWalkTo(pet, motion, beside.Value.X, beside.Value.Y))
+        {
+            return false;
+        }
+
+        motion.NextWanderAtMs = ScheduleNextWanderAt(now);
+
+        return true;
+    }
+
+    /// <summary>Paths the pet to a tile it may stand on; false when there is no way there.</summary>
+    private bool TryWalkTo(PetSnapshot pet, PetMotionState motion, int targetX, int targetY)
+    {
+        if (!CanPetOccupyTile(pet.PetId, _roomGrain.MapModule.ToIdx(targetX, targetY)))
+        {
+            return false;
+        }
+
+        IReadOnlyList<(int X, int Y)> path = _roomGrain.PathingSystem.FindPath(
+            (pet.X, pet.Y),
+            (targetX, targetY),
+            tileId => CanPetOccupyTile(pet.PetId, tileId),
+            (currentTileId, nextTileId, isGoal) =>
+                CanPetWalkBetween(pet.PetId, currentTileId, nextTileId, isGoal)
+        );
+
+        if (path.Count < 2)
+        {
+            return false;
+        }
+
+        motion.TilePath.Clear();
+        motion.TilePath.AddRange(
+            path.Skip(1).Select(pos => _roomGrain.MapModule.ToIdx(pos.X, pos.Y))
+        );
+
+        return true;
     }
 
     private bool CanPetWalkBetween(int petId, int currentTileId, int nextTileId, bool isGoal)
@@ -322,290 +350,5 @@ public sealed partial class RoomPetSystem
         }
 
         return false;
-    }
-
-    /// <summary>
-    /// What is left of the old need decay since M0 removed hunger, thirst and fatigue: mood drifts
-    /// on its own clock -- down while the pet is up, back while it naps -- and a nap ends on its
-    /// own after <see cref="Configuration.PetConfig.NestNapMs" />.
-    /// </summary>
-    private PetSnapshot ApplyMoodAndRest(PetSnapshot pet, PetMotionState motion, long now)
-    {
-        if (motion.IsSleeping && now >= motion.WakeAtMs)
-        {
-            motion.IsSleeping = false;
-            motion.SleepPostureSent = false;
-            motion.PendingWakeVocal = true;
-        }
-
-        int happinessStep = RoomPetRuntime.TakeWholeNeedPoints(
-            motion.LastHappinessDecayAtMs,
-            now,
-            motion.IsSleeping ? Tuning.HappinessRestGainPerMinute : Tuning.HappinessDecayPerMinute,
-            out long nextHappinessClockMs
-        );
-        motion.LastHappinessDecayAtMs = nextHappinessClockMs;
-
-        if (happinessStep <= 0)
-        {
-            return pet;
-        }
-
-        int newHappiness = Math.Clamp(
-            motion.IsSleeping ? pet.Happiness + happinessStep : pet.Happiness - happinessStep,
-            0,
-            _roomGrain._roomConfig.Pet.HappinessCap
-        );
-
-        if (newHappiness == pet.Happiness)
-        {
-            return pet;
-        }
-
-        motion.IsStatsDirty = true;
-
-        PetSnapshot updated = pet with { Happiness = newHappiness };
-        _roomGrain._state.PetsById[pet.PetId] = updated;
-
-        return updated;
-    }
-
-    private bool IsOnNestTile(PetSnapshot pet)
-    {
-        foreach (IRoomItem item in _roomGrain._state.ItemsById.Values)
-        {
-            if (item.X == pet.X && item.Y == pet.Y && item.Logic is FurniturePetNestLogic)
-            {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    /// <summary>
-    /// An ordered pet (command 13) walks to the nearest reachable nest and naps there.
-    /// </summary>
-    private bool TryDirectPetToNest(PetSnapshot pet, PetMotionState motion, long now)
-    {
-        if (IsOnNestTile(pet))
-        {
-            StartNestNap(motion, now);
-
-            return true;
-        }
-
-        (int X, int Y)? nest = RoomPetRuntime.PickNearestTile(
-            pet.X,
-            pet.Y,
-            _roomGrain
-                ._state.ItemsById.Values.Where(item => item.Logic is FurniturePetNestLogic)
-                .Select(item => (item.X, item.Y))
-        );
-
-        if (nest is null)
-        {
-            return false;
-        }
-
-        (int nestX, int nestY) = nest.Value;
-
-        IReadOnlyList<(int X, int Y)> path = _roomGrain.PathingSystem.FindPath(
-            (pet.X, pet.Y),
-            (nestX, nestY),
-            tileId => CanPetOccupyTile(pet.PetId, tileId),
-            (currentTileId, nextTileId, isGoal) =>
-                CanPetWalkBetween(pet.PetId, currentTileId, nextTileId, isGoal)
-        );
-
-        if (path.Count < 2)
-        {
-            return false;
-        }
-
-        motion.TilePath.Clear();
-        motion.TilePath.AddRange(
-            path.Skip(1).Select(pos => _roomGrain.MapModule.ToIdx(pos.X, pos.Y))
-        );
-        motion.IsHeadingToNest = true;
-        motion.NextWanderAtMs = ScheduleNextWanderAt(now);
-
-        return true;
-    }
-
-    /// <summary>
-    /// A bored pet goes and plays with the nearest toy. Habbo's own guides name toys as what cheers
-    /// a pet up; nothing in the hotel had ever driven one, because no toy furni carried a logic.
-    /// </summary>
-    private bool TryDirectPetToToy(PetSnapshot pet, PetMotionState motion, long now)
-    {
-        if (!CanPlayWithAToy(motion, now))
-        {
-            return false;
-        }
-
-        // Boredom is the reason it must go; the whim is why it sometimes goes anyway. A pet that
-        // only ever played when miserable would look like a machine.
-        bool bored = RoomPetRuntime.IsBored(pet, Tuning.BoredHappinessThreshold);
-        bool onAWhim = Random.Shared.Next(100) < Tuning.ToyPlayChancePercent;
-
-        if (!bored && !onAWhim)
-        {
-            return false;
-        }
-
-        (int X, int Y)? toy = RoomPetRuntime.PickNearestTile(
-            pet.X,
-            pet.Y,
-            _roomGrain
-                ._state.ItemsById.Values.Where(item => item.Logic is FurniturePetToyLogic)
-                .Select(item => (item.X, item.Y))
-        );
-
-        if (toy is null)
-        {
-            return false;
-        }
-
-        (int toyX, int toyY) = toy.Value;
-
-        if (pet.X == toyX && pet.Y == toyY)
-        {
-            // Already standing on it -- play where it is rather than pathing nowhere.
-            motion.IsHeadingToToy = true;
-            motion.PendingStopAtMs = _roomGrain.AlignToNextBoundary(
-                now,
-                _roomGrain._roomConfig.Pet.TickMs
-            );
-
-            return true;
-        }
-
-        IReadOnlyList<(int X, int Y)> path = _roomGrain.PathingSystem.FindPath(
-            (pet.X, pet.Y),
-            (toyX, toyY),
-            tileId => CanPetOccupyTile(pet.PetId, tileId),
-            (currentTileId, nextTileId, isGoal) =>
-                CanPetWalkBetween(pet.PetId, currentTileId, nextTileId, isGoal)
-        );
-
-        if (path.Count < 2)
-        {
-            return false;
-        }
-
-        motion.TilePath.Clear();
-        motion.TilePath.AddRange(
-            path.Skip(1).Select(pos => _roomGrain.MapModule.ToIdx(pos.X, pos.Y))
-        );
-        motion.IsHeadingToToy = true;
-        motion.NextWanderAtMs = ScheduleNextWanderAt(now);
-
-        return true;
-    }
-
-    /// <summary>
-    /// Whether a pet is in any state to play: not still inside the cooldown that stops a pet pacing
-    /// across a ball from topping its mood up for free.
-    /// </summary>
-    private static bool CanPlayWithAToy(PetMotionState motion, long now) =>
-        now >= motion.NextToyPlayAtMs && motion.PlayingWithToyId is null;
-
-    /// <summary>
-    /// Starts a bout of play on the toy under the pet, whatever brought it there -- it may have set
-    /// out for the toy, or simply wandered across one.
-    /// </summary>
-    private async Task<RoomPetAvatarSnapshot?> StartToyPlayAsync(
-        PetSnapshot pet,
-        PetMotionState motion,
-        long now,
-        CancellationToken ct
-    )
-    {
-        IRoomItem? toy = _roomGrain._state.ItemsById.Values.FirstOrDefault(item =>
-            IsToyUnder(item, pet)
-        );
-
-        if (toy is null || !CanPlayWithAToy(motion, now))
-        {
-            return null;
-        }
-
-        PetSnapshot updated = pet with
-        {
-            Happiness = Math.Clamp(
-                pet.Happiness + Tuning.ToyHappinessReward,
-                0,
-                _roomGrain._roomConfig.Pet.HappinessCap
-            ),
-        };
-        _roomGrain._state.PetsById[pet.PetId] = updated;
-
-        motion.ClearMovement();
-        motion.IsStatsDirty = true;
-        motion.PlayingWithToyId = toy.ObjectId;
-        motion.ToyPlayEndsAtMs = now + Tuning.ToyPlayDurationMs;
-        motion.NextToyPlayAtMs = motion.ToyPlayEndsAtMs + Tuning.ToyPlayCooldownMs;
-        motion.NextWanderAtMs = motion.ToyPlayEndsAtMs;
-
-        await SetToyInUseAsync(toy, inUse: true);
-        await BroadcastPetVocalAsync(updated, "PLAYFUL");
-
-        return await ToAvatarSnapshotAsync(
-            updated,
-            PetAnimation.PlayStatus(updated.Z),
-            PetAnimation.PlayPosture,
-            ct
-        );
-    }
-
-    /// <summary>Ends the bout: the toy goes back to its resting frame and the pet gets up.</summary>
-    private async Task<RoomPetAvatarSnapshot?> FinishToyPlayAsync(
-        PetSnapshot pet,
-        PetMotionState motion,
-        CancellationToken ct
-    )
-    {
-        if (
-            motion.PlayingWithToyId is not RoomObjectId toyId
-            || !_roomGrain._state.ItemsById.TryGetValue(toyId, out IRoomItem? toy)
-        )
-        {
-            motion.PlayingWithToyId = null;
-
-            return null;
-        }
-
-        motion.PlayingWithToyId = null;
-        await SetToyInUseAsync(toy, inUse: false);
-
-        return await ToAvatarSnapshotAsync(pet, ct);
-    }
-
-    /// <summary>
-    /// Paints the toy. Arcturus flips the same extra data to "1" while a pet is on it and back to
-    /// "0" afterwards, which is what animates the furni.
-    /// </summary>
-    private Task SetToyInUseAsync(IRoomItem toy, bool inUse)
-    {
-        string state = inUse ? "1" : "0";
-
-        toy.Logic.StuffData.SetState(state);
-        toy.SetExtraData(state);
-
-        return _roomGrain.SendComposerToRoomAsync(toy.GetRefreshStuffDataComposer());
-    }
-
-    private static bool IsToyUnder(IRoomItem item, PetSnapshot pet) =>
-        item.X == pet.X && item.Y == pet.Y && item.Logic is FurniturePetToyLogic;
-
-    private void StartNestNap(PetMotionState motion, long now)
-    {
-        motion.ClearMovement();
-        motion.IsSleeping = true;
-        motion.WakeAtMs = now + _roomGrain._roomConfig.Pet.NestNapMs;
-        motion.SleepPostureSent = false;
-        motion.PendingSleepVocal = true;
-        motion.NextWanderAtMs = ScheduleNextWanderAt(now);
     }
 }

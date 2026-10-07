@@ -27,7 +27,7 @@
   import PickerModal from '../components/PickerModal.svelte';
   import StatCard from '../components/StatCard.svelte';
   import Tabs from '../components/Tabs.svelte';
-  import { Bot, MessageSquare, MapPin, Users, Hand } from '@lucide/svelte';
+  import { Bot, MessageSquare, MapPin, Users } from '@lucide/svelte';
   import { t } from '../lib/i18n';
   import type { PickerRow } from '../lib/pickers/directories';
   import type {
@@ -35,19 +35,10 @@
     BotListItem,
     BotListResponse,
     BotStats,
-    HandItemList,
   } from '../lib/apiTypes';
 
   /** The owner filter, held as an {id, name} pair so the button can name who was picked. */
   type PickedOwner = { id: number; name: string };
-
-  /** The hand-item editor's form. The number inputs bind as strings while being typed. */
-  type HandItemForm = {
-    handItemId: number | string;
-    name: string;
-    nutrition: number | string;
-    thirst: number | string;
-  };
 
   /** The only four fields a bot can be edited on from here. */
   type BotDraft = { id: number; name: string; motto: string; figure: string };
@@ -70,8 +61,7 @@
   let tab = $state('roster');
   let pickingOwner = $state(false);
 
-  // Three endpoints, one screen, so one resource: the roster is meaningless without the stats header
-  // and the hand-item table, and a page that loaded two of the three would be lying about the third.
+  // Two endpoints, one screen, so one resource: the roster is meaningless without the stats header.
   const bots = createResource(
     () => ['bots', page, term.trim(), owner?.id ?? null, placedFilter],
     async () => {
@@ -80,19 +70,16 @@
       if (owner) params.set('ownerId', String(owner.id));
       if (placedFilter) params.set('placed', placedFilter);
 
-      const [list, stats, handItems] = await Promise.all([
+      const [list, stats] = await Promise.all([
         apiGet<BotListResponse>(`/api/v1/bots?${params}`),
         apiGet<BotStats>('/api/v1/bots/stats'),
-        apiGet<HandItemList>('/api/v1/hand-items'),
       ]);
 
-      return { list, stats, handItems };
+      return { list, stats };
     }
   );
 
-  let { list, stats, handItems } = $derived(
-    bots.data ?? { list: undefined, stats: undefined, handItems: undefined },
-  );
+  let { list, stats } = $derived(bots.data ?? { list: undefined, stats: undefined });
 
   // The expanded row's bot, keyed by which row is open: selecting a bot IS the request, and a bot
   // looked at once reopens from cache. `enabled` is what keeps it from firing with no selection.
@@ -106,21 +93,6 @@
 
   let canManage = $derived(hasDashboardCapability($identity, CAPABILITIES.opsContentManage));
 
-  const emptyHandItem = (): HandItemForm => ({
-    handItemId: 0,
-    name: '',
-    nutrition: 0,
-    thirst: 0,
-  });
-  // null means the editor is closed; the drawer is the editor now.
-  let handItemForm = $state<HandItemForm | null>(null);
-
-  // The only picture of a hand item is an avatar holding it, and the id decides which. Built from
-  // the template so a brand-new id previews before its row exists.
-  let handItemPreviewUrl =
-    $derived(handItemForm?.handItemId && handItems?.imageTemplate
-      ? handItems.imageTemplate.replace('{item}', String(Number(handItemForm.handItemId)))
-      : null);
   let botDraft = $state<BotDraft | null>(null);
 
   let totalPages = $derived(list ? Math.max(1, Math.ceil((list.total || 0) / (list.limit || PAGE_SIZE))) : 1);
@@ -152,27 +124,6 @@
   function clearOwner() {
     owner = null;
     search();
-  }
-
-  function saveHandItem() {
-    const form = handItemForm!;
-
-    ops.ask(
-      '/api/v1/operations/content/hand-items',
-      {
-        handItemId: Number(form.handItemId),
-        name: form.name,
-        nutrition: Number(form.nutrition) || 0,
-        thirst: Number(form.thirst) || 0,
-      },
-      $t('bots.saveHandItem'),
-      $t('bots.saveHandItemSummary', { id: form.handItemId, name: form.name }),
-      {
-        onSuccess: () => {
-          handItemForm = null;
-        },
-      },
-    );
   }
 
   function saveBot() {
@@ -298,7 +249,6 @@
     storageKey="bots"
     tabs={[
       { id: 'roster', label: $t('bots.tabRoster'), icon: Bot, count: list?.items?.length },
-      { id: 'handItems', label: $t('bots.tabHandItems'), icon: Hand, count: handItems?.items?.length },
     ]}
   />
 
@@ -456,118 +406,6 @@
     {/if}
   </section>
   {/if}
-{/if}
-
-{#if handItems}
-  {#if tab === 'handItems'}
-  <section class="panel" style="margin-top: 12px;">
-    <div class="panel-head">
-      <h2>{$t('bots.handItemsTitle')}</h2>
-      <div class="head-actions">
-        <span class="muted">{$t('bots.handItemsCount', { total: handItems.count, consumable: handItems.consumableCount })}</span>
-        {#if canManage}
-          <button type="button" class="ghost-button" onclick={() => (handItemForm = emptyHandItem())}>
-            {$t('bots.saveHandItem')}
-          </button>
-        {/if}
-      </div>
-    </div>
-    <p class="muted">{$t('bots.handItemsDescription')}</p>
-    {#if (handItems.items || []).length === 0}
-      <EmptyState message={$t('bots.noHandItems')} />
-    {:else}
-      <div class="table-wrap">
-        <table>
-          <thead>
-            <tr>
-              <th>{$t('bots.colHandItemId')}</th>
-              <th>{$t('bots.colHandItemName')}</th>
-              <th>{$t('bots.colNutrition')}</th>
-              <th>{$t('bots.colThirst')}</th>
-              {#if canManage}<th>{$t('common.actions')}</th>{/if}
-            </tr>
-          </thead>
-          <tbody>
-            {#each handItems.items as item}
-              <tr>
-                <td>
-                  <span class="bot-cell">
-                    <AssetImage src={item.imageUrl} alt={item.name} size={40} fallbackIcon={Hand} />
-                    {item.handItemId}
-                  </span>
-                </td>
-                <td>{item.name}</td>
-                <td>{item.nutrition || '—'}</td>
-                <td>{item.thirst || '—'}</td>
-                {#if canManage}
-                  <td class="row-actions">
-                    <button type="button" class="ghost-button" onclick={() => (handItemForm = { ...item })}>
-                      {$t('bots.edit')}
-                    </button>
-                    <button
-                      type="button"
-                      class="ghost-button danger"
-                      onclick={() =>
-                        ops.ask(
-                          '/api/v1/operations/content/hand-items/delete',
-                          { id: Number(item.id) },
-                          $t('bots.deleteHandItem'),
-                          $t('bots.deleteHandItemSummary', { name: item.name })
-                        )}
-                    >
-                      {$t('bots.delete')}
-                    </button>
-                  </td>
-                {/if}
-              </tr>
-            {/each}
-          </tbody>
-        </table>
-      </div>
-    {/if}
-  </section>
-  {/if}
-{/if}
-
-{#if canManage && handItemForm}
-  <Drawer
-    title={$t('bots.handItemEditorTitle')}
-    eyebrow={$t('bots.tabHandItems')}
-    onclose={() => (handItemForm = null)}
-  >
-    <p class="muted">{$t('bots.handItemEditorHint')}</p>
-
-    <div class="op-field">
-      <label for="hand-item-id">{$t('bots.colHandItemId')}</label>
-      <span class="bot-cell">
-        <input autocomplete="off" spellcheck="false" id="hand-item-id" type="number" bind:value={handItemForm.handItemId} min="1" />
-        <AssetImage src={handItemPreviewUrl} alt="" size={40} fallbackIcon={Hand} />
-      </span>
-    </div>
-    <div class="op-field">
-      <label for="hand-item-name">{$t('bots.colHandItemName')}</label>
-      <input autocomplete="off" spellcheck="false" id="hand-item-name" bind:value={handItemForm.name} />
-    </div>
-    <div class="op-field">
-      <label for="hand-item-nutrition">{$t('bots.colNutrition')}</label>
-      <input autocomplete="off" spellcheck="false" id="hand-item-nutrition" type="number" bind:value={handItemForm.nutrition} min="0" />
-    </div>
-    <div class="op-field">
-      <label for="hand-item-thirst">{$t('bots.colThirst')}</label>
-      <input autocomplete="off" spellcheck="false" id="hand-item-thirst" type="number" bind:value={handItemForm.thirst} min="0" />
-    </div>
-
-    {#snippet actions()}
-      <button
-        type="button"
-        disabled={!handItemForm?.name.trim() || !handItemForm?.handItemId}
-        onclick={saveHandItem}
-      >
-        {$t('bots.saveHandItem')}
-      </button>
-      <button type="button" class="ghost-button" onclick={() => (handItemForm = null)}>{$t('bots.cancel')}</button>
-    {/snippet}
-  </Drawer>
 {/if}
 
 {#if canManage && botDraft}

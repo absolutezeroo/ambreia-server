@@ -68,7 +68,7 @@ public sealed class VocabularyGovernanceTests
         "vault_category",
         // "targeted_offer" was here, removed with targeted offers (M0).
         "pet_type",
-        "pet_command",
+        // "pet_command" was here, removed with pet commands (M0 bis).
         "relation",
         "given_name",
         "effect",
@@ -152,7 +152,7 @@ public sealed class VocabularyGovernanceTests
         "claim_vault_income",
         // "respect_pet" and "pet_respected" were here, removed with pet respects (M0 bis).
         // "feed_pet" was here, removed with pet needs (M0).
-        "command_pet",
+        // "command_pet" was here, removed with pet commands (M0 bis).
         "stand_near_furni",
         "receive_gift",
     ];
