@@ -32,9 +32,11 @@ using Vortex.Primitives.Rooms.Events;
 using Vortex.Primitives.Rooms.Grains;
 using Vortex.Primitives.Rooms.Providers;
 using Vortex.Primitives.Rooms.Snapshots;
+using Vortex.Primitives.World;
 using Vortex.Rooms.Configuration;
 using Vortex.Rooms.Grains.Modules;
 using Vortex.Rooms.Grains.Systems;
+using Vortex.Rooms.Grains.Zones;
 using Vortex.Rooms.Providers;
 
 namespace Vortex.Rooms.Grains;
@@ -58,6 +60,7 @@ public sealed partial class RoomGrain : Grain, IRoomGrain
     internal readonly ICancellableEventPublisher _cancellableEvents;
     internal readonly IGrainFactory _grainFactory;
     internal readonly IRoomItemsProvider _itemsLoader;
+    internal readonly IZoneRoomSource _zoneSource;
     internal readonly ILogger<IRoomGrain> _logger;
     internal readonly IRoomObjectLogicProvider _logicProvider;
     internal readonly IVortexMetrics _metrics;
@@ -99,9 +102,11 @@ public sealed partial class RoomGrain : Grain, IRoomGrain
         IPermissionService permissionService,
         // GrainActivationContext.CreateWithIntegerKey takes params object[]: a dependency changed
         // here compiles cleanly in every test that builds this grain and fails at activation.
-        IVortexMetrics metrics
+        IVortexMetrics metrics,
+        IZoneRoomSource zoneSource
     )
     {
+        _zoneSource = zoneSource;
         _dbCtxFactory = dbCtxFactory;
         _definitionProvider = definitionProvider;
         _stuffDataFactory = stuffDataFactory;
@@ -370,6 +375,23 @@ public sealed partial class RoomGrain : Grain, IRoomGrain
         }
     }
 
+    /// <summary>
+    /// A zone built by the map editor takes its map from its published document instead of
+    /// <c>room_models</c>; its decor follows in <see cref="RoomFurniModule.EnsureFurniLoadedAsync"/>.
+    /// </summary>
+    internal async Task ApplyZoneAsync(CancellationToken ct)
+    {
+        ZoneDocument? zone = await _zoneSource.GetPublishedAsync(_state.RoomId, ct);
+
+        if (zone is null)
+        {
+            return;
+        }
+
+        _state.Zone = zone;
+        _state.Model = ZoneRoomLoader.CompileModel(zone, _state.RoomId.Value, _roomModelProvider);
+    }
+
     private async Task HydrateRoomStateAsync(CancellationToken ct)
     {
         VortexDbContext dbCtx = await _dbCtxFactory.CreateDbContextAsync(ct);
@@ -384,6 +406,8 @@ public sealed partial class RoomGrain : Grain, IRoomGrain
                 ?? throw new VortexException(VortexErrorCodeEnum.RoomNotFound);
 
             _state.Model = _roomModelProvider.GetModelById(entity.RoomModelEntityId);
+
+            await ApplyZoneAsync(ct);
 
             _state.RoomSnapshot = new RoomSnapshot
             {

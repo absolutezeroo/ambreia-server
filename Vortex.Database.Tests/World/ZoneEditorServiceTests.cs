@@ -153,6 +153,24 @@ public sealed class ZoneEditorServiceTests : IAsyncLifetime
             .Contain(f => f.Code == "KeyMismatch");
     }
 
+    [Fact]
+    public async Task TheRoomSource_ServesThePublishedDocument_AndNothingForOtherRooms()
+    {
+        ZoneSummary zone = await _service.CreateAsync("village", "Village", Author, null, default);
+        await _service.TryLockAsync("village", Author, false, default);
+        ZoneRoomSource source = new(new Factory(_options), NullLogger<ZoneRoomSource>.Instance);
+
+        (await source.GetPublishedAsync(new RoomId(zone.RoomId), default)).Should().BeNull();
+
+        ZoneSaveResult saved = await _service.SaveAsync("village", Json(), Author, "", default);
+        await _service.PublishAsync("village", saved.Version!.Value, default);
+
+        (await source.GetPublishedAsync(new RoomId(zone.RoomId), default))!
+            .Settings.Id.Should()
+            .Be("village");
+        (await source.GetPublishedAsync(new RoomId(zone.RoomId + 100), default)).Should().BeNull();
+    }
+
     private async Task CreateLockedAsync()
     {
         await _service.CreateAsync("village", "Village", Author, null, default);

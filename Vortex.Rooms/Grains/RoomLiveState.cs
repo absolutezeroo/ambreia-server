@@ -8,6 +8,7 @@ using Vortex.Primitives.Rooms.Object;
 using Vortex.Primitives.Rooms.Object.Avatars;
 using Vortex.Primitives.Rooms.Object.Furniture;
 using Vortex.Primitives.Rooms.Snapshots.Mapping;
+using Vortex.Primitives.World;
 using Vortex.Rooms.Configuration;
 
 namespace Vortex.Rooms.Grains;
@@ -45,6 +46,9 @@ public sealed class RoomLiveState
     public HashSet<RoomObjectId> DirtyWallItemIds { get; set; } = [];
 
     public bool IsMapReady { get; internal set; } = false;
+
+    /// <summary>The published document this room runs when it is a zone; null otherwise.</summary>
+    public ZoneDocument? Zone { get; internal set; }
     public bool IsFurniLoaded { get; internal set; } = false;
     public bool IsTileComputationPaused { get; internal set; } = false;
 

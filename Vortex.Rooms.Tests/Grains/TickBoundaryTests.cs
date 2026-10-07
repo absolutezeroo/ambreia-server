@@ -13,6 +13,7 @@ using Vortex.Primitives.Permissions;
 using Vortex.Primitives.Rooms;
 using Vortex.Primitives.Rooms.Grains;
 using Vortex.Primitives.Rooms.Providers;
+using Vortex.Primitives.World;
 using Vortex.Rooms.Configuration;
 using Vortex.Rooms.Grains;
 using Vortex.Rooms.Tests.Support;
@@ -114,7 +115,8 @@ public sealed class TickBoundaryTests
             FakeProxy.Create<IEventPublisher>(_ => null),
             RoomGrainStubs.NeverCancels(),
             FakeProxy.Create<IPermissionService>(_ => null),
-            FakeProxy.Create<IVortexMetrics>(_ => null)
+            FakeProxy.Create<IVortexMetrics>(_ => null),
+            FakeProxy.Create<IZoneRoomSource>(_ => Task.FromResult<ZoneDocument?>(null))
         );
 
         grain._state.EpochMs = epoch;

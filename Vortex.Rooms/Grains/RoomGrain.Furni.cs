@@ -123,8 +123,17 @@ public sealed partial class RoomGrain
         await item.Logic.SetStateAsync(state);
     }
 
-    private async Task FlushDirtyItemsAsync(CancellationToken ct)
+    internal async Task FlushDirtyItemsAsync(CancellationToken ct)
     {
+        // A zone's decor has no furniture rows: its ids can equal another room's rows, and a flush
+        // would overwrite them. It only changes by publishing a new version.
+        if (_state.Zone is not null)
+        {
+            _state.DirtyItemIds.Clear();
+
+            return;
+        }
+
         if (_state.DirtyItemIds.Count == 0)
         {
             return;

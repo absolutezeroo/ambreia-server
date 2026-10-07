@@ -16,6 +16,8 @@ using Vortex.Primitives.Rooms.Object.Furniture;
 using Vortex.Primitives.Rooms.Object.Furniture.Floor;
 using Vortex.Primitives.Rooms.Object.Furniture.Wall;
 using Vortex.Primitives.Rooms.Snapshots.Furniture;
+using Vortex.Primitives.World;
+using Vortex.Rooms.Grains.Zones;
 
 namespace Vortex.Rooms.Grains.Modules;
 
@@ -39,10 +41,12 @@ public sealed partial class RoomFurniModule(RoomGrain roomGrain)
             IReadOnlyList<IRoomFloorItem> floorItems,
             IReadOnlyList<IRoomWallItem> wallItems,
             IReadOnlyDictionary<PlayerId, string> ownerNames
-        ) = await _roomGrain._itemsLoader.LoadByRoomIdAsync(
-            (RoomId)_roomGrain.GetPrimaryKeyLong(),
-            ct
-        );
+        ) = _roomGrain._state.Zone is { } zone
+            ? LoadZoneDecor(zone)
+            : await _roomGrain._itemsLoader.LoadByRoomIdAsync(
+                (RoomId)_roomGrain.GetPrimaryKeyLong(),
+                ct
+            );
 
         foreach ((PlayerId id, string name) in ownerNames)
         {
@@ -72,6 +76,29 @@ public sealed partial class RoomFurniModule(RoomGrain roomGrain)
         }
 
         _roomGrain._state.IsFurniLoaded = true;
+    }
+
+    /// <summary>A zone's decor, owned by the room's owner (the world account).</summary>
+    private (
+        IReadOnlyList<IRoomFloorItem>,
+        IReadOnlyList<IRoomWallItem>,
+        IReadOnlyDictionary<PlayerId, string>
+    ) LoadZoneDecor(ZoneDocument zone)
+    {
+        PlayerId owner = (PlayerId)_roomGrain._state.RoomSnapshot.OwnerId;
+        (IReadOnlyList<IRoomFloorItem> floor, IReadOnlyList<IRoomWallItem> wall) =
+            ZoneRoomLoader.BuildDecor(
+                zone,
+                owner,
+                _roomGrain._definitionProvider,
+                _roomGrain._logger
+            );
+
+        return (
+            floor,
+            wall,
+            new Dictionary<PlayerId, string> { [owner] = _roomGrain._state.RoomSnapshot.OwnerName }
+        );
     }
 
     /// <summary>

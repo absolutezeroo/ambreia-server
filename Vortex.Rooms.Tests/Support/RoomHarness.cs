@@ -16,6 +16,7 @@ using Vortex.Primitives;
 using Vortex.Primitives.Action;
 using Vortex.Primitives.Events;
 using Vortex.Primitives.Furniture.Providers;
+using Vortex.Primitives.Furniture.Snapshots;
 using Vortex.Primitives.Navigator.Enums;
 using Vortex.Primitives.Networking;
 using Vortex.Primitives.Observability;
@@ -39,10 +40,12 @@ using Vortex.Primitives.Rooms.Snapshots;
 using Vortex.Primitives.Rooms.Snapshots.Avatars;
 using Vortex.Primitives.Rooms.Snapshots.Mapping;
 using Vortex.Primitives.Server.Grains;
+using Vortex.Primitives.World;
 using Vortex.Rooms.Configuration;
 using Vortex.Rooms.Grains;
 using Vortex.Rooms.Grains.Systems;
 using Vortex.Rooms.Object.Avatars.Player;
+using Vortex.Rooms.Providers;
 using Vortex.Tests.Support;
 
 namespace Vortex.Rooms.Tests.Support;
@@ -81,18 +84,22 @@ internal sealed class RoomHarness
         Grain = GrainActivationContext.CreateWithIntegerKey<RoomGrain>(
             RoomIdValue,
             new SingleOptionsFactory(options),
-            FakeProxy.Create<IFurnitureDefinitionProvider>(_ => null),
+            FakeProxy.Create<IFurnitureDefinitionProvider>(call =>
+                call.Method.Name == nameof(IFurnitureDefinitionProvider.TryGetDefinition)
+                    ? Definitions.GetValueOrDefault((int)call.Args![0]!)
+                    : null
+            ),
             FakeProxy.Create<IStuffDataFactory>(_ => null),
             Options.Create(new RoomConfig()),
             NullLogger<IRoomGrain>.Instance,
-            FakeProxy.Create<IRoomModelProvider>(_ => null),
+            FakeProxy.Create<IRoomModelProvider>(call =>
+                call.Method.Name == nameof(IRoomModelProvider.CompileCustomModel)
+                    ? call.Method.Invoke(Models, call.Args)
+                    : null
+            ),
             FakeProxy.Create<IRoomItemsProvider>(call =>
                 call.Method.Name == nameof(IRoomItemsProvider.LoadByRoomIdAsync)
-                    ? Task.FromResult<(
-                        IReadOnlyList<IRoomFloorItem>,
-                        IReadOnlyList<IRoomWallItem>,
-                        IReadOnlyDictionary<PlayerId, string>
-                    )>((FloorItemsToLoad, [], new Dictionary<PlayerId, string>()))
+                    ? CountItemsLoadAsync()
                     : null
             ),
             FakeProxy.Create<IRoomObjectLogicProvider>(call =>
@@ -131,7 +138,8 @@ internal sealed class RoomHarness
                 );
             }),
             BuildPermissionService(capabilities),
-            FakeProxy.Create<IVortexMetrics>(_ => null)
+            FakeProxy.Create<IVortexMetrics>(_ => null),
+            FakeProxy.Create<IZoneRoomSource>(_ => Task.FromResult(Zone))
         );
 
         // The security module reads the room's own snapshot to decide who owns the place, so a
@@ -282,6 +290,64 @@ internal sealed class RoomHarness
 
     /// <summary>The floor items the room reads from its rows when it loads its furniture.</summary>
     public List<IRoomFloorItem> FloorItemsToLoad { get; } = [];
+
+    /// <summary>The published document the zone source answers with; null = an ordinary room.</summary>
+    public ZoneDocument? Zone { get; set; }
+
+    /// <summary>The furniture definitions the room can resolve by id.</summary>
+    public Dictionary<int, FurnitureDefinitionSnapshot> Definitions { get; } = [];
+
+    /// <summary>How many times the room asked for its furniture rows.</summary>
+    public int ItemsProviderCalls { get; private set; }
+
+    /// <summary>What the room handed its write-behind, one entry per call.</summary>
+    public List<object?[]> PersistenceBatches { get; } = [];
+
+    private static readonly RoomModelProvider Models = new(
+        null!,
+        NullLogger<IRoomModelProvider>.Instance
+    );
+
+    private Task<(
+        IReadOnlyList<IRoomFloorItem>,
+        IReadOnlyList<IRoomWallItem>,
+        IReadOnlyDictionary<PlayerId, string>
+    )> CountItemsLoadAsync()
+    {
+        ItemsProviderCalls++;
+
+        return Task.FromResult<(
+            IReadOnlyList<IRoomFloorItem>,
+            IReadOnlyList<IRoomWallItem>,
+            IReadOnlyDictionary<PlayerId, string>
+        )>((FloorItemsToLoad, [], new Dictionary<PlayerId, string>()));
+    }
+
+    /// <summary>A room running <paramref name="zone"/>: the zone is applied the way activation
+    /// applies it, then the map is rebuilt from the compiled model.</summary>
+    public static async Task<RoomHarness> CreateZoneAsync(ZoneDocument zone)
+    {
+        RoomHarness harness = await CreateAsync().ConfigureAwait(true);
+
+        harness.Zone = zone;
+        harness.Definitions[ZoneSamples.Throne] = TestDefinitions.Floor(
+            ZoneSamples.Throne,
+            "throne",
+            1,
+            1
+        );
+        harness.LogicFactory ??= TestFloorItems.WorkingLogic;
+
+        await harness.Grain.ApplyZoneAsync(CancellationToken.None).ConfigureAwait(true);
+
+        harness.Grain._state.IsMapReady = false;
+        await harness.Grain.MapModule.EnsureMapBuiltAsync(CancellationToken.None).ConfigureAwait(true);
+
+        return harness;
+    }
+
+    /// <summary>Runs the room's write-behind flush once.</summary>
+    public Task FlushItemsAsync() => Grain.FlushDirtyItemsAsync(CancellationToken.None);
 
     /// <summary>
     /// Server-config integers that differ from the compiled default. Everything else reads its
@@ -446,7 +512,12 @@ internal sealed class RoomHarness
             // and a null grain there is an exception in the middle of one.
             if (call.Method.GetGenericArguments()[0] == typeof(IRoomPersistenceGrain))
             {
-                return FakeProxy.Create<IRoomPersistenceGrain>(_ => null);
+                return FakeProxy.Create<IRoomPersistenceGrain>(inner =>
+                {
+                    PersistenceBatches.Add(inner.Args ?? []);
+
+                    return null;
+                });
             }
 
             // An empty batch snapshot (and the caller's own fallback for single reads) gives the
