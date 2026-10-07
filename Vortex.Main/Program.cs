@@ -11,20 +11,17 @@ using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Orleans;
-using Vortex.Catalog;
 using Vortex.Crypto.Extensions;
 using Vortex.Database.Extensions;
 using Vortex.Database.Migrations;
 using Vortex.Events.Extensions;
 using Vortex.Fishing;
 using Vortex.Furniture;
-using Vortex.Inventory;
 using Vortex.Logging.Extensions;
 using Vortex.Main.Configuration;
 using Vortex.Main.Console;
 using Vortex.Main.Extensions;
 using Vortex.Main.Hosting;
-using Vortex.Marketplace;
 using Vortex.Messages.Extensions;
 using Vortex.Navigator;
 using Vortex.Networking.Extensions;
@@ -133,13 +130,10 @@ internal class Program
         builder.Services.AddHostPlugin<PermissionsModule>(builder);
         builder.Services.AddHostPlugin<WebApiAuthenticationModule>(builder);
         builder.Services.AddHostPlugin<FurnitureModule>(builder);
-        builder.Services.AddHostPlugin<CatalogModule>(builder);
         builder.Services.AddHostPlugin<PlayerModule>(builder);
         builder.Services.AddHostPlugin<SocialModule>(builder);
         builder.Services.AddHostPlugin<SignalsModule>(builder);
         builder.Services.AddHostPlugin<ProgressionModule>(builder);
-        builder.Services.AddHostPlugin<InventoryModule>(builder);
-        builder.Services.AddHostPlugin<MarketplaceModule>(builder);
         builder.Services.AddHostPlugin<FishingModule>(builder);
         // No dashboard or web API module here any more. Both are LOADABLE plugins, found in their
         // folders by PluginManager rather than compiled into this host — registering either here

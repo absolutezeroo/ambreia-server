@@ -6,7 +6,6 @@ using Vortex.Logging;
 using Vortex.Primitives;
 using Vortex.Primitives.Action;
 using Vortex.Primitives.Events;
-using Vortex.Primitives.Inventory.Grains;
 using Vortex.Primitives.Orleans;
 using Vortex.Primitives.Players;
 using Vortex.Primitives.Rooms.Enums;
@@ -132,11 +131,7 @@ public sealed partial class RoomActionModule(RoomGrain roomGrain)
 
         RoomItemSnapshot snapshot = item.GetSnapshot();
 
-        IInventoryGrain inventory = _roomGrain._grainFactory.GetInventoryGrain(snapshot.OwnerId);
-
-        await inventory.AddFurnitureFromRoomItemSnapshotAsync(snapshot, ct);
-
-        // Detached: the item is already in the inventory and the client already has its answer.
+        // Detached: the item is already back with its owner and the client already has its answer.
         // See RoomGrain.PublishDetached.
         _roomGrain.PublishDetached(
             new ItemPickedUpEvent(

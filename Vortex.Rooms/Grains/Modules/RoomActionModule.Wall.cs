@@ -6,7 +6,6 @@ using Vortex.Logging;
 using Vortex.Primitives;
 using Vortex.Primitives.Action;
 using Vortex.Primitives.Events;
-using Vortex.Primitives.Inventory.Grains;
 using Vortex.Primitives.Inventory.Snapshots;
 using Vortex.Primitives.Orleans;
 using Vortex.Primitives.Rooms.Enums;
@@ -102,10 +101,6 @@ public sealed partial class RoomActionModule
 
             return false;
         }
-
-        IInventoryGrain inventory = _roomGrain._grainFactory.GetInventoryGrain(item.OwnerId);
-
-        await inventory.RemoveFurnitureAsync(item.ObjectId, ct);
 
         (int kinds, int sameLogic) = CountAround(wallItem);
 

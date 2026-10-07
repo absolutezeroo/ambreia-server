@@ -49,7 +49,6 @@
     </Content>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Vortex.Catalog\Vortex.Catalog.csproj" />
     <ProjectReference Include="..\Vortex.WebApi.Authentication\Vortex.WebApi.Authentication.csproj" />
     <ProjectReference Include="..\Vortex.Permissions\Vortex.Permissions.csproj" />
     <ProjectReference Include="..\Vortex.Fishing\Vortex.Fishing.csproj" />
@@ -64,9 +63,7 @@
     <ProjectReference Include="..\Vortex.Database\Vortex.Database.csproj" />
     <ProjectReference Include="..\Vortex.Events\Vortex.Events.csproj" />
     <ProjectReference Include="..\Vortex.Furniture\Vortex.Furniture.csproj" />
-    <ProjectReference Include="..\Vortex.Inventory\Vortex.Inventory.csproj" />
     <ProjectReference Include="..\Vortex.Logging\Vortex.Logging.csproj" />
-    <ProjectReference Include="..\Vortex.Marketplace\Vortex.Marketplace.csproj" />
     <ProjectReference Include="..\Vortex.Messages\Vortex.Messages.csproj" />
     <ProjectReference Include="..\Vortex.Navigator\Vortex.Navigator.csproj" />
     <ProjectReference Include="..\Vortex.Networking\Vortex.Networking.csproj" />
