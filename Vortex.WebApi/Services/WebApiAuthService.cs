@@ -59,21 +59,9 @@ public sealed class WebApiAuthService(
     }
 
     /// <summary>
-    /// Whether this sign-in gets a trusted session, and — when it does not — throws the safety lock
-    /// on the way past.
+    /// Creates an account (e-mail and bcrypt hash). The caller opens the web session right after;
+    /// the avatar and the game ticket come from the user routes.
     /// </summary>
-    /// <remarks>
-    /// <para>
-    /// An account with no security questions is always trusted: there is nothing to challenge with,
-    /// and pretending otherwise would lock every account on the hotel out of its own settings.
-    /// </para>
-    /// <para>
-    /// An account that HAS them and is signing in from a place it has never answered from is what
-    /// habbo.com describes as "si nous détectons que ton compte est en danger": the session cannot
-    /// do anything risky until the questions are answered, and the lock goes on so the thief cannot
-    /// spend from inside the GAME either — the web session is not where the credits are.
-    /// </para>
-    /// </remarks>
     public async Task<(bool Success, int AccountId, string? Error)> RegisterAsync(
         string email,
         string password,

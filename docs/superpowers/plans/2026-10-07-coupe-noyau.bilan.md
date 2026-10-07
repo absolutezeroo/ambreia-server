@@ -13,8 +13,8 @@ faire F4 (l'éditeur de cartes) tôt.
 | | Avant (`371cd7bf`) | Après |
 |---|---|---|
 | Projets `.csproj` suivis | 49 | 35 |
-| Fichiers `.cs` suivis | 3 712 | 852 |
-| Lignes `.cs` (hors `Vortex.Database/Migrations`) | 248 185 | 60 533 |
+| Fichiers `.cs` suivis | 3 712 | 829 |
+| Lignes `.cs` (hors `Vortex.Database/Migrations`) | 248 185 | 59 762 |
 | Attributs `[Fact]`/`[Theory]` | 1 788 | 520 |
 | Tests exécutés par le QualityGate | 2 604 | **662, 0 échec** |
 | Tables (InitialCreate) | 105 | 17 |
@@ -53,7 +53,8 @@ Navigator(.Tests), Progression, Signals(.Tests), Fishing.
 | 7 | `af52d38d` | joueur `__world__`, zone de développement, `world.start_room_id` |
 | 8 | `e1132b48` | protocole, contrats et tables orphelins |
 | 9 | `309f3035` | règles et outillage |
-| 10 | (ce commit) | migration régénérée, colonnes mortes, tests alignés, validation réelle, bilan |
+| 10 | `493ecd0f` | migration régénérée, colonnes mortes, tests alignés, validation réelle, bilan |
+| revue | (ce commit) | revue finale de la branche et corrections |
 
 ## Validation réelle (Tâche 10)
 
@@ -141,6 +142,26 @@ Rejouable : `node .claude/skills/run-vortex-emulator/driver.mjs smoke`.
 4. **Réaligner `appsettings.Development.json`** (local, ignoré par git) : il référence encore le plugin
    `Vortex.Dashboard.API` dans `DevPluginPaths`.
 5. **Ensuite** : F1, puis F4 (éditeur de cartes) tôt, comme décidé.
+
+## Revue finale
+
+Relecture des ~630 lignes ajoutées ou modifiées par la branche (le reste est de la suppression), plus
+un balayage des commentaires de production qui citent des systèmes retirés. Corrigé :
+
+- **Le balayage de T8 avait un trou** : il lisait `record struct X` comme un type nommé « struct »,
+  mot présent partout, ce qui gardait en vie 23 fichiers de Primitives (tickets CFH, filtre de mots,
+  grand livre, commerce, sanctions, monnaies…). Expression corrigée, balayage rejoué jusqu'au point
+  fixe, métriques commerce (`CommerceOperationTransitioned`, `CommerceStepReplayed`) retirées.
+- Deux commentaires décrivaient des méthodes disparues (`RegisterAsync` présenté comme la session de
+  confiance et le verrou de sécurité ; le renommage citant un handler de jeu supprimé).
+
+Rien de bloquant trouvé dans le code ajouté : SSO, `PlayerGrain`, entrée en room (porte verrouillée),
+routes web (contrôle de propriété de l'avatar), constructeurs des grains. Après correction : gate
+verte (662 tests), `check-inert-declarations` 0 trou, surface d'autorisation inchangée (29), `smoke` OK.
+
+Laissé pour la passe de guidage de l'IA : des noms et commentaires hérités qui restent justes mais
+évoquent l'hôtel (`ProgressionAuditHandlers` ne garde que l'effet d'avatar, `SocialAuditHandlers` le
+look et la devise ; quelques commentaires de `RoomService` parlent du navigateur).
 
 ## Suite prévue
 

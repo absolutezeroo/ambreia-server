@@ -136,11 +136,8 @@ public sealed class WebApiPlayerService(
 
     public async Task<bool> SetNameAsync(int playerId, string name, CancellationToken ct)
     {
-        // The in-game rename runs this same check (ChangeUserNameMessageHandler); this route reaches
-        // the identical grain call, so without it the HTTP path is a second door onto the same sink
-        // with no lock on it. A name is public identity — whisper, gifting, friend requests and
-        // LetUserIn all resolve by exact string — so one that the client's own dialog would refuse
-        // is a working impersonation.
+        // A name is public identity and resolves by exact string, so one the client's own dialog
+        // would refuse is a working impersonation: the shape is checked here, at the only door.
         if (!NameShape.IsWellFormed(name))
         {
             return false;

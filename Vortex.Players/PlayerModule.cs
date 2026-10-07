@@ -5,7 +5,6 @@ using Vortex.Players.Authentication;
 using Vortex.Players.Configuration;
 using Vortex.Primitives.Authentication;
 using Vortex.Primitives.Hosting;
-using Vortex.Primitives.Moderation;
 using Vortex.Primitives.Players;
 using Vortex.Primitives.Plugins;
 

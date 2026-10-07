@@ -11,7 +11,6 @@ using Vortex.Primitives;
 using Vortex.Primitives.Action;
 using Vortex.Primitives.Events;
 using Vortex.Primitives.Inventory.Snapshots;
-using Vortex.Primitives.Moderation.WordFilter;
 using Vortex.Primitives.Orleans;
 using Vortex.Primitives.Rooms.Enums;
 using Vortex.Primitives.Rooms.Object;

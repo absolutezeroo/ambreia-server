@@ -38,22 +38,6 @@ public interface IVortexMetrics
     void RoomTickCompleted(double elapsedMilliseconds);
 
     /// <summary>
-    /// A value-moving operation changed state. Before this there was no signal at all for the
-    /// commerce flows — an operation stuck past its pivot was indistinguishable from one that
-    /// completed, for as long as nobody happened to look at the table.
-    /// </summary>
-    void CommerceOperationTransitioned(
-        Vortex.Primitives.Commerce.CommerceOperationKind kind,
-        Vortex.Primitives.Commerce.CommerceOperationState state
-    );
-
-    /// <summary>
-    /// A post-pivot step was asked to run again and found its own receipt. Expected traffic on a
-    /// retry; a rising rate means something upstream is failing after doing its work.
-    /// </summary>
-    void CommerceStepReplayed(string stepKey);
-
-    /// <summary>
     /// A reference-data cache published a new version. Reloads are admin actions, so the useful
     /// question is not how often they happen but which version is being served — an operator who has
     /// just edited definitions wants to know the emulator agrees, and the count of this counter is

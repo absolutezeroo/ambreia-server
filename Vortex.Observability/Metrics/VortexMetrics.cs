@@ -26,8 +26,6 @@ public sealed class VortexMetrics : IVortexMetrics, IDisposable
     private readonly Histogram<double> _roomTickStepDuration;
     private readonly Histogram<double> _roomTickDuration;
     private readonly Histogram<double> _roomDirectoryCallDuration;
-    private readonly Counter<long> _commerceOperation;
-    private readonly Counter<long> _commerceStepReplayed;
     private readonly Counter<long> _furnitureLogicFallback;
     private readonly Counter<long> _referenceDataPublished;
     private readonly Counter<long> _auditWriteFailure;
@@ -80,17 +78,6 @@ public sealed class VortexMetrics : IVortexMetrics, IDisposable
             unit: "ms",
             description: "Round-trip time of a call to the room directory grain, by method, "
                 + "measured at the call site."
-        );
-        _commerceOperation = _meter.CreateCounter<long>(
-            "Vortex.commerce.operation",
-            unit: "{operation}",
-            description: "Value-moving operations by flow and state. A rising count of "
-                + "needs-intervention is money nobody has delivered."
-        );
-        _commerceStepReplayed = _meter.CreateCounter<long>(
-            "Vortex.commerce.step.replayed",
-            unit: "{step}",
-            description: "Post-pivot steps that found their own receipt and skipped their work."
         );
         _referenceDataPublished = _meter.CreateCounter<long>(
             "Vortex.reference.published",
@@ -154,21 +141,6 @@ public sealed class VortexMetrics : IVortexMetrics, IDisposable
         }
     }
 
-    public void CommerceOperationTransitioned(
-        Vortex.Primitives.Commerce.CommerceOperationKind kind,
-        Vortex.Primitives.Commerce.CommerceOperationState state
-    )
-    {
-        if (_enabled)
-        {
-            _commerceOperation.Add(
-                1,
-                new KeyValuePair<string, object?>("flow", kind.ToString()),
-                new KeyValuePair<string, object?>("state", state.ToString())
-            );
-        }
-    }
-
     public void ReferenceDataPublished(string provider, int version)
     {
         if (_enabled)
@@ -189,14 +161,6 @@ public sealed class VortexMetrics : IVortexMetrics, IDisposable
                 new KeyValuePair<string, object?>("logic_name", logicName),
                 new KeyValuePair<string, object?>("family", family)
             );
-        }
-    }
-
-    public void CommerceStepReplayed(string stepKey)
-    {
-        if (_enabled)
-        {
-            _commerceStepReplayed.Add(1, new KeyValuePair<string, object?>("step", stepKey));
         }
     }
 

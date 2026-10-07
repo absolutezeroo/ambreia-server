@@ -14,7 +14,6 @@ using Vortex.Database.Entities.Room;
 using Vortex.Events.Registry;
 using Vortex.Primitives;
 using Vortex.Primitives.Action;
-using Vortex.Primitives.Commerce;
 using Vortex.Primitives.Events;
 using Vortex.Primitives.Furniture.Providers;
 using Vortex.Primitives.Navigator.Enums;
