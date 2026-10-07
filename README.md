@@ -327,8 +327,7 @@ Canonical integrated workflow lives in the plugin repo:
 
 ## Orleans Notes
 Vortex Cloud uses Orleans as its core runtime model for stateful domain workflows.
-For project-specific Orleans guidance, see `docs/orleans.md`.
-For a concrete end-to-end trace of a single packet through handlers, grains, and streams, see `docs/walkthroughs/request-lifecycle.md`.
+Runtime flows, grains and persistence: `docs/architecture.md`.
 
 ## Troubleshooting
 ### MySQL connection errors
@@ -356,32 +355,11 @@ dotnet build Vortex.Main/Vortex.Main.csproj
 ```
 
 ## AI-Assisted Development
-Canonical AI context files:
-- `AGENTS.md` (coding contract and review rules)
-- `CONTEXT.md` (architecture boundaries and placement rules)
-- `docs/patterns/` (golden implementation examples)
-- `docs/walkthroughs/request-lifecycle.md` (one packet, socket to client — the real flow)
-- `docs/walkthroughs/add-a-feature.md` (adding a feature, layer by layer)
-- `docs/patterns/vertical-slice.md` (handler + grain + test on a single feature)
-- `docs/glossary.md` (Habbo + Orleans terminology, each term mapped to its file)
-
-Planning & design references:
-- `docs/superpowers/specs/2026-10-05-habbo-rpg-design.md` (the RPG design)
-- `docs/superpowers/plans/2026-10-07-coupe-noyau.md` (the core cut this base comes from)
-- `DATA-MODEL.md` (schema + naming conventions)
-
-Tool-specific adapters:
-- `.github/copilot-instructions.md` (GitHub Copilot)
-- `CLAUDE.md` (Claude)
-- `CODEX.md` (Codex)
-
-Prompt recipe for any AI tool:
-1. Include task + exact target file paths.
-2. Attach `AGENTS.md` and `CONTEXT.md`.
-3. Reference one relevant file from `docs/patterns/` or a walkthrough from `docs/walkthroughs/` (and the relevant `DATA-MODEL.md` section for schema work).
-4. Ask for edge-case handling and validation commands.
-
-Boost-style prompting pack:
-- portable prompt contract + task recipes live in `AGENTS.md`
-- architecture invariants live in `CONTEXT.md`
-- tool adapters live in `.github/copilot-instructions.md`, `CLAUDE.md`, and `CODEX.md`
+- `AGENTS.md` — the contract every AI tool reads first: commands, where code goes, rules, gotchas,
+  what "done" means. Codex and Copilot read it natively; `CLAUDE.md` imports it.
+- `.claude/rules/*.md` — rules scoped to an area (grains, protocol, database, tests), loaded by Claude
+  Code when it touches those files and pointed to from `.github/copilot-instructions.md`.
+- `.claude/skills/*/SKILL.md` — step-by-step procedures with scripts: adding a packet, changing the
+  schema, adding a furniture logic, removing dead code, running the emulator, one-off SQL fixes.
+- `docs/architecture.md` — runtime flows (sign-in, zone entry, walking), grains, persistence.
+- `DATA-MODEL.md` — schema conventions; `docs/superpowers/specs/2026-10-05-habbo-rpg-design.md` — the RPG design.

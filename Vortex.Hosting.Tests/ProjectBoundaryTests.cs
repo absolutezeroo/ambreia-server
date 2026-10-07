@@ -8,7 +8,7 @@ using Xunit;
 namespace Vortex.Hosting.Tests;
 
 /// <summary>
-/// AGENTS.md and CONTEXT.md both forbid packet handlers from touching database contexts or
+/// AGENTS.md forbids packet handlers from touching database contexts or
 /// repositories directly — handlers orchestrate, grains own persistence. That rule was documented
 /// but not enforced: <c>Vortex.PacketHandlers.csproj</c> still referenced <c>Vortex.Database</c>, so
 /// the first handler to add a <c>using Vortex.Database.Context;</c> would have compiled cleanly and

@@ -77,46 +77,10 @@ git config --local core.hooksPath .githooks
 
 ## AI-assisted contribution policy
 
-Canonical instructions for all AI tools:
-- `AGENTS.md` (coding constraints, review expectations, and validation contract)
-- `CONTEXT.md` (architecture and dependency boundaries)
-- `docs/patterns/` (golden sample implementations)
-
-Copilot-specific adapter:
-- `.github/copilot-instructions.md`
-
-### Prompt recipe (Claude/Gemini/Copilot/other)
-1. Include exact file paths being changed.
-2. Attach `AGENTS.md` and `CONTEXT.md`.
-3. Reference one matching file in `docs/patterns/`.
-4. Require failure-mode handling and explicit verification commands.
-
-### Boost-style prompt contract
-Use this structure for all AI requests:
-1. Goal
-2. Target files
-3. Required context files
-4. Invariants to preserve
-5. Forbidden changes
-6. Validation commands
-7. Expected output format (diff summary + risk notes + command results)
-
-Task-specific recipes are maintained in `AGENTS.md`:
-- Add packet handler
-- Change grain behavior
-- Add message/composer mapping
-- Refactor lookup/cache logic
-
-### PR review requirements for AI-generated code
-1. Author must disclose AI usage in the PR template.
-2. Author must explain complex generated logic in their own words.
-3. Reviewer must verify at least one edge-case or failure-path test/update.
-
-## AI contract maintenance
-- If architecture flow changes, update `CONTEXT.md` in the same PR.
-- If a recurring task pattern emerges, add/update a task recipe in `AGENTS.md`.
-- Keep plugin mirror rules concise and aligned with core source-of-truth docs.
-- Remove conflicting or duplicated guidance when contract files diverge.
+All AI tools follow `AGENTS.md`; area rules are in `.claude/rules/`, procedures in
+`.claude/skills/`, runtime flows in `docs/architecture.md`. When a recurring mistake shows up, fix the
+contract in the same change: a rule in the area file (paired with what to do instead), a step in the
+matching skill, or — if it must hold every time — a hook or a test.
 
 ## Local development config
 
@@ -158,4 +122,4 @@ dotnet build Vortex.Main/Vortex.Main.csproj
 
 ## Orleans design and lifecycle checks
 
-For grain mental model, snapshots guidance, and session/presence cleanup test checklist, see `docs/orleans.md`.
+For the grain model and the session/presence flow, see `docs/architecture.md`.

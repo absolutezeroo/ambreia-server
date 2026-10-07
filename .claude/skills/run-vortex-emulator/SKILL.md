@@ -1,6 +1,6 @@
 ---
 name: run-vortex-emulator
-description: Build, launch and drive the Vortex RPG emulator on this machine. Use when asked to run or start the emulator, check it is alive, hit its game socket or web API, log a player into the start zone, or confirm a change works in the running app rather than in a build log.
+description: Builds, launches and drives the Vortex RPG emulator on this Windows machine — start/stop, health, raw game-socket frames, and a throwaway player taken from registration through SSO into the start zone and one step. Use when asked to run or start the emulator, check it is alive, probe a packet, log a player in, or prove a change works in the running app rather than in a build log.
 ---
 
 # Run the Vortex emulator
@@ -57,7 +57,7 @@ node .claude/skills/run-vortex-emulator/driver.mjs smoke
 | `mysql` | starts Laragon's `mysqld` if 3306 is closed |
 | `start` | launches `Vortex.Main`; **reuses** an instance it did not start, never stops one |
 | `status` | pids and the ports |
-| `stop` | stops **only** an emulator this driver started; refuses otherwise |
+| `stop` | stops **only** an emulator this driver started; refuses otherwise — the owner stops theirs |
 | `logs [n]` | tail of the console log of an emulator this driver started |
 | `health` | `/health`, `/api/public/info/hello` |
 | `ping` | raw frame on :40000 — `InitDiffieHandshake` (2022) out, 3309 back |

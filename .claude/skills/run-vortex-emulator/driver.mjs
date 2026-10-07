@@ -160,11 +160,12 @@ async function cmdMysql() {
   const mysqld = path.join(root, dir, 'bin', 'mysqld.exe');
   const ini = path.join(root, dir, 'my.ini');
   spawn(mysqld, [`--defaults-file=${ini}`], { detached: true, stdio: 'ignore' }).unref();
-  for (let i = 0; i < 20; i++) {
+  // Laragon's mysqld spawns a child and takes well over 10s to listen on a cold start.
+  for (let i = 0; i < 120; i++) {
     await sleep(500);
-    if (await portOpen(3306)) return log(`MySQL up on 3306 (${mysqld}).`);
+    if (await portOpen(3306)) return log(`MySQL up on 3306 after ~${Math.ceil((i + 1) / 2)}s (${mysqld}).`);
   }
-  die('MySQL did not come up within 10s.');
+  die('MySQL did not come up within 60s.');
 }
 
 // ---------------------------------------------------------------- lifecycle

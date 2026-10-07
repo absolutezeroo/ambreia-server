@@ -1,5 +1,5 @@
 ﻿#!/usr/bin/env node
-// The boundaries CONTEXT.md states in prose, made executable.
+// The boundaries AGENTS.md states in prose, made executable.
 //
 // Seven rules that no compiler, test or grep enforces today, all of them currently respected --
 // which is what makes encoding them cheap: only a state to hold. A rule that lives in a document is
@@ -66,7 +66,7 @@ const failures = [];
 // ---------------------------------------------------------------------------------------------
 // Wall 1 -- packet handlers stay orchestration-only.
 //
-// CONTEXT.md: handlers do not query database contexts or repositories. They route to a grain and
+// AGENTS.md: handlers do not query database contexts or repositories. They route to a grain and
 // nothing else. Currently zero violations across 536 handler files; this holds that at zero.
 // ---------------------------------------------------------------------------------------------
 const handlerDb = hits(

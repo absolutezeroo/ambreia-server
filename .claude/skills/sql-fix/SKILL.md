@@ -1,6 +1,6 @@
 ---
 name: sql-fix
-description: Fix wrong or missing rows with a reviewable SQL script in scripts/sql/ instead of building a seeder. Use for one-off data corrections.
+description: Fixes wrong or missing database rows with a reviewable, re-runnable SQL script in scripts/sql/ instead of a seeder, measured first and run on the fork database (never turbo). Use for one-off data corrections.
 disable-model-invocation: true
 ---
 
@@ -33,15 +33,15 @@ doubt, write the SQL.
 ```bash
 # The fork's own database (Vortex.Main user-secrets). `turbo` is READ ONLY: never a target.
 # The password goes through MYSQL_PWD; never print it or put it on the command line.
-/c/laragon/bin/mysql/mysql-8.4.3-winx64/bin/mysql.exe -h127.0.0.1 -uroot <fork_db> < scripts/sql/<subject>.sql
+/c/laragon/bin/mysql/mysql-8.4.3-winx64/bin/mysql.exe --host=127.0.0.1 --user=root <fork_db> < scripts/sql/<subject>.sql
 ```
 
 ## Traps
 
 - **Grain-owned rows are not yours to edit while the emulator runs.** A grain holds them in memory
-  and writes them back on deactivation, over your change (`AGENTS.md`, "Do not mutate the database
-  directly for grain-owned state"). Players, rooms and placed furniture: stop first, or go through
-  the grain.
+  and writes them back on deactivation, over your change (`AGENTS.md`, rule "Grain-owned rows are
+  written by their grain"). Players, rooms and placed furniture: the owner stops the emulator first,
+  or the fix goes through the grain.
 - Take a `mysqldump` before any destructive script.
 - `furniture_definitions.name` is **not unique** (3533 duplicates, by design — the client's own
   furnidata ships duplicates). Never key a join or a `ToDictionary` on it.

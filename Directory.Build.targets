@@ -21,7 +21,7 @@
     />
     <!--
       Checks that no compiler sees, each under a second and needing no node_modules.
-        - architecture walls: the CONTEXT.md boundaries that were prose and therefore optional
+        - architecture walls: the AGENTS.md boundaries that were prose and therefore optional
     -->
     <Exec
       Command="node scripts/hooks/check-architecture-walls.mjs"
@@ -48,24 +48,20 @@
       Text="Missing AGENTS.md at repository root."
     />
     <Error
-      Condition="!Exists('$(MSBuildThisFileDirectory)CONTEXT.md')"
-      Text="Missing CONTEXT.md at repository root."
+      Condition="!Exists('$(MSBuildThisFileDirectory)CLAUDE.md')"
+      Text="Missing CLAUDE.md at repository root."
     />
     <Error
       Condition="!Exists('$(MSBuildThisFileDirectory).github/copilot-instructions.md')"
       Text="Missing .github/copilot-instructions.md."
     />
     <Error
-      Condition="!Exists('$(MSBuildThisFileDirectory)docs/patterns/ServicePattern.cs')"
-      Text="Missing docs/patterns/ServicePattern.cs."
+      Condition="!Exists('$(MSBuildThisFileDirectory)docs/architecture.md')"
+      Text="Missing docs/architecture.md."
     />
     <Error
-      Condition="!Exists('$(MSBuildThisFileDirectory)docs/patterns/HandlerPattern.cs')"
-      Text="Missing docs/patterns/HandlerPattern.cs."
-    />
-    <Error
-      Condition="!Exists('$(MSBuildThisFileDirectory)docs/patterns/UnitTestPattern.cs')"
-      Text="Missing docs/patterns/UnitTestPattern.cs."
+      Condition="!Exists('$(MSBuildThisFileDirectory).claude/rules/grains.md')"
+      Text="Missing .claude/rules/grains.md."
     />
   </Target>
 

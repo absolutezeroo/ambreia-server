@@ -15,9 +15,7 @@ This folder is the source of truth for plugin protocol revision mappings.
 - `turbo-sample-plugin` owns revision parser/serializer code.
 - `vortex-cloud` does not own `Revision<id>/Parsers` or `Revision<id>/Serializers`.
 - `vortex-cloud` owns runtime host/domain handlers; plugin revision folders own packet read/write mappings.
-- For handler/grain architecture rules (for example extended profile flow), follow:
-  - `../vortex-cloud/AGENTS.md`
-  - `../vortex-cloud/CONTEXT.md`
+- For handler/grain architecture rules, follow `AGENTS.md` and `.claude/rules/protocol.md`.
 - For reusable AI task recipes/prompt contract, follow `../vortex-cloud/AGENTS.md`.
 
 ## When adding protocol support
