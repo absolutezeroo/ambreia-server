@@ -84,10 +84,12 @@ Les fichiers du dépôt l'utilisent (`$schema`) pour l'autocomplétion dans l'é
 | `progression` | `ProgressionDefinition` (XP par niveau) | spec Personnage §5 |
 | `item` | `ItemDefinition` | spec Objets §4 |
 
-Une sorte est une classe `[ContentKind("item")]` qui nomme son record et son validateur ; le registre
-découvre les sortes par balayage d'assemblies, comme `[RoomObjectLogic]`
-(`Vortex.Rooms/Object/Logic/RoomObjectLogicFeatureProcessor.cs`). Une sorte inconnue dans un fichier
-est refusée.
+Une sorte est une classe (`IContentKind`) qui nomme son record et son validateur, déclarée dans le
+conteneur par le module qui la possède (`services.AddSingleton<IContentKind, ItemKind>()`), comme les
+fournisseurs de données de référence ; un plugin en ajoute par son propre module. Pas de balayage
+d'assemblies : le registre doit connaître toutes les sortes avant de charger le contenu au
+démarrage, et le balayage n'a pas d'ordre garanti par rapport à ce chargement. Une sorte inconnue
+dans un fichier est refusée.
 
 ## 5. Propriétaire et persistance
 
