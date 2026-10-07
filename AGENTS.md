@@ -138,8 +138,7 @@ Each major domain component should operate in its own grain. When a grain needs 
 
 ### Use grain boundaries for thread safety
 Orleans grains are single-threaded by design. Use this for concurrency-sensitive operations by giving each user their own grain for the operation.
-- Example: each player gets a `PurchaseGrain` so catalog purchases are serialized per-player with no locks needed.
-- Example: limited-edition items should use a dedicated grain (e.g. `LimitedItemGrain`) so concurrent buyers are safely serialized.
+- Example: each player gets a `CatalogPurchaseGrain` so catalog purchases are serialized per-player with no locks needed.
 - Do not add manual locking (`lock`, `SemaphoreSlim`) inside grains — that fights the actor model.
 
 ### Grains orchestrate their own outbound communication
@@ -164,6 +163,20 @@ updated in the *same* method that persists the change, and hydrated from DB on g
 - A DB write + a UI-notification composer is not proof the feature works. Verify the corresponding live
   check (e.g. `GetControllerLevelAsync`) reflects the change within the same session, not just after a
   grain reactivation.
+
+## Layers (spec §3.4 bis)
+The solution is cut into four layers, and references only point down:
+- **Core** — `Networking`, `Pipeline`, `Protocol`, `Messages`, `Revisions`, `PacketHandlers`,
+  `Runtime`, `Crypto`, `Database`, `Events`, `Logging`, `Observability`, `Plugins`, `Primitives`.
+- **Platform** — the game's domains: `Rooms`, `Players`, `Inventory`, `Furniture`, `Social`,
+  `Marketplace`, `Signals`, `Progression`, `Fishing`, `Catalog`, `Permissions`, `Navigator`.
+- **Web** — `WebApi`, `WebApi.Authentication` (the site's accounts), `WebApi.Shop`.
+- **Operations** — `Dashboard.*`.
+
+Core references no Platform, Web or Operations project; Platform references neither Web nor
+Operations. `Vortex.Main` is the host and wires them all. A type two layers both need goes down
+into `Vortex.Primitives` (interfaces, snapshots, config keys) — never a reference upward. Wall 8 of
+`scripts/hooks/check-architecture-walls.mjs` enforces it, inside the FastCheck.
 
 ## Profile and grain flow constraints
 - Keep packet handlers orchestration-only:
@@ -268,28 +281,14 @@ time.
      there, and both `DashboardWebHost` and `DashboardAuthService` read it — do **not** reintroduce
      a per-file copy, that duplication is what used to throw
      `InvalidOperationException: The AuthorizationPolicy named '<capability>' was not found`)
-  2. `Vortex.Dashboard.Web/src/lib/dashboardPermissions.js` — `CAPABILITIES` **and**
+  2. `Vortex.Dashboard.Web/src/lib/dashboardPermissions.ts` — `CAPABILITIES` **and**
      `ROUTE_PERMISSIONS`
-  3. `Vortex.Dashboard.Web/src/lib/routes.js` — route row with a `load: () => import(...)` thunk
+  3. `Vortex.Dashboard.Web/src/lib/routes.ts` — route row with a `load: () => import(...)` thunk
      (pages are code-split; only the overview and access-denied fallback are imported eagerly, and
      the import path must be a literal or Vite cannot split it)
   4. `Vortex.Dashboard.Web/src/lib/locales/en.js` **and** `fr.js` — page block **and** `nav.*` labels
      (the two files must stay structurally identical; `en.js` is every other locale's fallback)
 - Required context files:
-  - `docs/architecture/dashboard-architecture.md` — the owner's architecture contract for
-    `Vortex.Dashboard.API`, and the shape to preserve for every new feature. It outranks
-    case-by-case judgement: a change that breaks one of its rules is to be redone even if it
-    compiles and the tests pass. Read it before moving anything in that project. §11-13 in
-    particular: what decides how a mutation is written is who owns the mutable state, not which
-    assembly the call sits in.
-  - `docs/architecture/dashboard-architecture-rules.md` — the 41 rules that governed dismantling the
-    god services. That migration is **complete**; the file is kept for the reasoning behind rules
-    still cited by name (§13, §24, §33-35). Where the two disagree, the file above wins.
-  - `docs/architecture/dashboard-admin-coverage.md` — what an operator can actually act on, and the
-    slices that would close the gap. Read it before adding an admin operation: the surface is strong
-    on authoring content and thin on acting for a player, and the entity you are about to touch is
-    probably already listed as read-only or absent. Numbers regenerate with
-    `node scripts/dashboard-admin-coverage.mjs`.
   - `docs/walkthroughs/add-a-dashboard-page.md` (full walkthrough, server + front end)
   - an existing pair such as `DashboardEndpoints.Quests.cs` + `DashboardApiService.Quests.cs`
 - Any page that shows or selects furniture, a player, or a group MUST use the existing surfaces --
@@ -324,9 +323,9 @@ time.
   - no new endpoint left unregistered in `DashboardEndpoints.cs`
 - Validation:
   - `node scripts/hooks/check-dashboard-capabilities.mjs` — cross-checks `Capabilities.cs` against
-    `dashboardPermissions.js`, every `ROUTE_PERMISSIONS` key and page import path named by
-    `routes.js`, and `en.js`/`fr.js` structural parity including the `nav.*` keys
-  - `grep -rn "<an existing capability string>" --include=*.cs --include=*.js .` and confirm the new
+    `dashboardPermissions.ts`, every `ROUTE_PERMISSIONS` key and page import path named by
+    `routes.ts`, and `en.js`/`fr.js` structural parity including the `nav.*` keys
+  - `grep -rn "<an existing capability string>" --include=*.cs --include=*.ts --include=*.js .` and confirm the new
     capability appears in the same set of files
   - `cd Vortex.Dashboard.Web && npm run lint` — `npm run build` does not catch an undefined
     identifier used in markup
@@ -335,70 +334,6 @@ time.
   - `dotnet build Vortex.Main/Vortex.Main.csproj -t:VortexCloudQualityGate`
   - restart the emulator — a running `Vortex.Main` holds its own DLLs, so a rebuilt binary is not
     live until it is restarted
-
-### Add a room game (Freeze, Battle Banzai, football, and the next one)
-Every room game is rules and nothing else. The framework in `Vortex.Rooms/Games/` owns the
-lifecycle, the teams, the scores, the arena index, the client IO and the match identity, so adding a
-game is **a new folder and a `[RoomGame]` attribute** — no file outside that folder changes, and
-nothing that starts or stops a round learns the game's name.
-- Required context files:
-  - `docs/walkthroughs/add-a-room-game.md` (full checklist and the non-obvious rules)
-  - `Vortex.Rooms/Games/Abstractions/IRoomGame.cs` and `IRoomGameContext.cs`
-  - `Vortex.Rooms/Games/Freeze/FreezeGame.cs` as the worked example
-- Required edits:
-  1. `Vortex.Rooms/Games/<Game>/<Game>Game.cs` — the module, `[RoomGame]`, `: RoomGameModule`,
-     a `GameProfile`, and only the hooks it uses
-  2. `Vortex.Rooms/Games/<Game>/Components/*.cs` — one `[RoomObjectLogic]` class per arena furni
-     family, `: GameFurnitureLogic` plus the capability interface it plays
-     (`IArenaTileComponent`, `ITeamGateComponent`, `IGoalComponent`, `IBallComponent`, …)
-  3. `Vortex.Primitives/Server/ConfigKeyCatalog.cs` — the balance keys, so an operator can edit them
-  4. `tools/catalog_converter/data/vortex_logics.json` — the logic keys, so furniture can bind
-  5. `Vortex.Rooms.Tests/<Game>/` — rules tests on the pure parts, plus one integration test driven
-     through `RoomGameRuntime.SignalAsync` with real components (`GameFurni.Place`)
-- Use the shared bricks, never a private copy:
-  - lifecycle: `GamePhase` + `GameStateMachine`. A module has NO `IsRunning` of its own —
-    `RoomGameModule.IsLive` / `.HasMatch` read the runtime's phase
-  - teams and scores: the arena's `TeamBook`, keyed by the game's own `TeamId`s over the `TeamSet`
-    its profile declares — two teams, four, seven, or teams with no Habbo colour at all. Written
-    through `_context.ScoreAsync` with a `GameScore(team, player, amount, reason, source)`; gates go
-    through `TeamGateRules.Toggle`
-  - Habbo colours: `_context.Palette` (`HabboTeamPalette`) is the ONLY place a colour becomes a team.
-    A gate/goal/board reports the colour it is painted, the module asks the palette which of its own
-    teams that is. `GameTeamColor` never appears in a rule, a score or an event
-  - arena lookup: `_context.Arena` (`ComponentsOf<T>` / `CountOf<T>` / `OnTile<T>` / `TilesOf<T>`),
-    a filtered view over the room's ONE item index — never a scan of `ItemsById`
-  - client IO: `_context.Chrome` (`IGameChrome`). From a participant-left hook, only
-    `SetPlayingModeAndForget` — an awaited call back into the leaver's own presence grain deadlocks
-    the room's turn
-  - balance: `_context.GetConfigAsync` in ONE grain round trip at prepare
-  - randomness: `_context.Random`, seeded per match — never `Random.Shared`
-  - colour-family furni (gates, scoreboards, goals) is ONE logic class with one `[RoomObjectLogic]`
-    attribute per colour key and `GameColorKey.FromKeySuffix` — never a shell subclass per colour
-- Forbidden changes:
-  - no per-game member on `IRoomObjectContext`, and no per-game access interface. Arena furniture
-    reports a `GameSignal`; the runtime routes it. This is the rule the old
-    `IRoomFreezeAccess`/`IRoomBanzaiAccess` pair broke
-  - no `GameTeamColor` in the domain — not as a team identity, not as a score key, not on an event.
-    A colour is presentation; teams are `TeamId` over the game's own `TeamSet`
-  - no team book captured in a FIELD INITIALISER; the arena's book is bound after the module is
-    constructed (which book depends on the teams the module declares), so read `_context.Teams`
-    where you need it. `ArenaHost.Teams` throws rather than hand out a null
-  - no per-game teams or scores kept privately alongside the book; a second store is invisible to
-    the scoreboards and every other reader of the book
-  - no direct `TeamBook` score write; go through `_context.ScoreAsync` or `SCORE_ACHIEVED`
-    never fires
-  - no clearing scores in `OnPreparingAsync`; the runtime already did it before GAME_STARTS was
-    published, and doing it again silently wipes what that event just awarded
-  - no assuming a start reaches you. A start resolves to ONE arena (`GameTargetResolver`: the named
-    game, else the requesting furni's own arena, else the arena it stands nearest to, else the only
-    candidate) and refuses an ambiguous room outright. A game that wants several playfields in one
-    room sets `GameProfile.ArenaSeparation`; the default of 0 is one arena per room, which is all the
-    client can address
-  - no ending your own match; call `_context.RequestMatchEndAsync`, which ends the room's round,
-    fires GAME_ENDS and resets the timer furni
-  - no registration line in `RoomGrain`, and no new hardcoded game call in `FurnitureGameTimerLogic`
-  - no deferred work without `_context.Match` on it; that stamp is what stops a callback from match
-    N mutating match N+1
 
 ### Refactor lookup/cache logic
 - Required context files:

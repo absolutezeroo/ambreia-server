@@ -11,17 +11,23 @@
   - Incoming message handling orchestration and domain dispatch.
 - `Vortex.Events/`
   - Event behavior/handler pipeline registration and execution.
-- `Vortex.*` domain modules (`Rooms`, `Players`, `Catalog`, `Inventory`, etc.)
+- `Vortex.*` domain modules (`Rooms`, `Players`, `Catalog`, `Inventory`, etc.) — the Platform layer
   - Domain services, snapshot providers, and Orleans grain orchestration.
+- `Vortex.Permissions/`
+  - Roles and capabilities, sanction presets, the call-for-help catalogue, the hotel-wide word filter.
+- `Vortex.WebApi/`, `Vortex.WebApi.Authentication/`, `Vortex.WebApi.Shop/` — the Web layer
+  - The public site's API, its accounts (passwords, second factors, e-mail), its shop.
+- `Vortex.Dashboard.*` — the Operations layer.
 - `Vortex.Database/`
   - EF Core context and persistence infrastructure.
 - `Vortex.Primitives/`
   - Cross-module contracts, identifiers, snapshots, and message types.
 
 ## Hard boundaries
-Three of these are no longer prose: `scripts/hooks/check-architecture-walls.mjs` fails the build on a
+Four of these are no longer prose: `scripts/hooks/check-architecture-walls.mjs` fails the build on a
 packet handler that reaches for the database, a dashboard `SaveChanges` that bypasses the owning
-grain, and a new wire-protocol import inside the contracts hub. The rest still rely on review.
+grain, a new wire-protocol import inside the contracts hub, and a reference that points up the
+layers (Core → Platform/Web/Operations, Platform → Web/Operations; see `AGENTS.md`, "Layers"). The rest still rely on review.
 
 - Keep host composition and module registration in `Vortex.Main`; avoid leaking host concerns into domain modules.
 - Keep packet handlers focused on request/response orchestration, not persistence infrastructure wiring.
@@ -76,7 +82,7 @@ grain, and a new wire-protocol import inside the contracts hub. The rest still r
 - Replace `.Ignore()` on grain tasks with a `LogAndForget` helper that logs faulted continuations.
 - In-memory collections that grow per-event (message history, queues) must have a configurable cap.
 - One grain per responsibility: isolate heavy I/O (DB writes, persistence) into secondary grains so the primary domain grain stays responsive (e.g. `RoomGrain` → `RoomPersistenceGrain`).
-- Use grain single-threading for concurrency safety: per-player `PurchaseGrain` for catalog buys, dedicated grains for limited-edition items. Do not add manual locks inside grains.
+- Use grain single-threading for concurrency safety: per-player `CatalogPurchaseGrain` for catalog buys. Do not add manual locks inside grains.
 - Grains orchestrate their own outbound: when state changes, the grain sends the composer via `PlayerPresenceGrain.SendComposerAsync`. Callers do not build or send composers after calling a grain method.
 - All mutations to grain-owned data must go through grain methods. Do not update the database directly — grains may hold cached state that will not reflect raw DB changes.
 
@@ -94,7 +100,7 @@ grain, and a new wire-protocol import inside the contracts hub. The rest still r
     `Vortex.Dashboard.API/Operations/DashboardOperationsService.<Domain>.cs`, endpoints
     `Vortex.Dashboard.API/Hosting/DashboardEndpoints.<Domain>.cs`, page
     `Vortex.Dashboard.Web/src/pages/<Domain>Page.svelte`
-  - the capability string must be added to **six** files — see the checklist in `AGENTS.md`
+  - the capability string must be added to **four** files — see the checklist in `AGENTS.md`
     ("Add dashboard capability or admin page") and `docs/walkthroughs/add-a-dashboard-page.md`.
     Omitting the policy list throws `AuthorizationPolicy named '<capability>' was not found` at
     runtime; nothing in the build or tests catches it.

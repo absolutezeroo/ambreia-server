@@ -33,7 +33,7 @@ Include in every request:
   - Do not generate new `Revision<id>/Parsers` or `Revision<id>/Serializers` in `vortex-cloud` for
     revisions other than the embedded `Revision20260701` default.
 - A new dashboard capability string lives in **four** files (`Capabilities.cs` const + its entry in
-  `Capabilities.Dashboard.All`, `dashboardPermissions.js`, `routes.js`, `locales/en.js` + `fr.js`).
+  `Capabilities.Dashboard.All`, `dashboardPermissions.ts`, `routes.ts`, `locales/en.js` + `fr.js`).
   `DashboardWebHost` and `DashboardAuthService` read the one list — do not reintroduce per-file
   copies. The server half is covered by `CapabilityDeclarationTests`; the client half by
   `node scripts/hooks/check-dashboard-capabilities.mjs`, which runs in `VortexCloudFastCheck`. A
@@ -63,7 +63,7 @@ Include in every request:
 - Replace `.Ignore()` with a `LogAndForget` helper that logs faulted tasks.
 - Cap in-memory per-event collections (message history, queues).
 - One grain per responsibility — isolate heavy I/O into secondary grains (e.g. `RoomPersistenceGrain`).
-- Use grain single-threading for concurrency safety (per-player `PurchaseGrain`, per-item `LimitedItemGrain`). No manual locks.
+- Use grain single-threading for concurrency safety (per-player `CatalogPurchaseGrain`). No manual locks.
 - Grains orchestrate their own outbound communication via `PlayerPresenceGrain.SendComposerAsync`. Callers do not send composers.
 - All mutations to grain-owned data go through grain methods. No direct DB updates for grain-owned state.
 

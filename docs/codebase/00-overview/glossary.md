@@ -59,7 +59,7 @@ in it.
 **Pile** (wired)
 The set of wired boxes co-located on one tile. Resolved **live at fire time**, never cached — which is
 what makes the same-pile rule enforceable by construction.
-→ [Wireds](../04-rooms/wireds.md)
+→ Wireds (retirés au M0)
 
 **Wall**
 One of six text-scan rules in `check-architecture-walls.mjs`, ratcheted against a baseline, that fail

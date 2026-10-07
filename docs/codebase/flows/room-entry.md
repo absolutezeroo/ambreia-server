@@ -41,7 +41,7 @@ membership       PlayerPresenceGrain.SetActiveRoomAsync
 | a locked door parks the entry in `PendingDoorbellRingersMs` until an answer or a 20 s tick sweep | [Movement and tick](../04-rooms/movement-and-tick.md) |
 | stream subscription is what makes room fan-out work at all | [Presence routing](../03-orleans/presence-routing.md) |
 | the avatar's `flatctrl` status is stamped at creation from the resolved level | [Room architecture](../04-rooms/room-architecture.md) |
-| `PlayerEnterEvent` is what feeds the wired `wf_trg_enter_room` trigger | [Wireds](../04-rooms/wireds.md) |
+| `PlayerEnterEvent` is what feeds the wired `wf_trg_enter_room` trigger | Wireds (retirés au M0) |
 
 ## The one thing to remember
 

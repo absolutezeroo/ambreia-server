@@ -125,7 +125,7 @@ semantics) · `wired_chests` and `wired_contracts` (both unique on `furniture_id
 per placed furni) · `wired_chest_transactions` · `room_wired_logs` (indexed `(room_id, created_at)`)
 
 **Wired *configuration* is not in these tables** — it lives in `furniture.extra_data`'s `wired`
-section. → [Wireds](../04-rooms/wireds.md)
+section. → Wireds (retirés au M0)
 
 ## Pets and bots
 

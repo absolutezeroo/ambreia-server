@@ -156,7 +156,7 @@ Room and hotel mutes are written to live state in the same methods that persist 
 `MaxTradeItemsPerSide` 1500 · `HandItemDurationMs` 30 000 · `ChatFloodIntervalSeconds` [4,2,1] ·
 `ChatFloodAllowance` 5.
 
-Wired limits are on [Wireds](wireds.md). `PetConfig.TickMs` = 500. **`BotTickMs` = 1000 is a private
+Wired limits are on Wireds (retirés au M0). `PetConfig.TickMs` = 500. **`BotTickMs` = 1000 is a private
 const** in `RoomBotSystem.cs`, not configuration.
 
 ## Sub-pages
@@ -166,7 +166,7 @@ const** in `RoomBotSystem.cs`, not configuration.
 | [Lifecycle](lifecycle.md) | enter → hydrate → membership → leave → deactivate, with the composer burst |
 | [Movement and tick](movement-and-tick.md) | the 50 ms tick, its 11 steps, pathfinding |
 | [Furniture](furniture.md) | definitions, logic binding, placement, pickup |
-| [Wireds](wireds.md) | the five-component engine |
+| Wireds (retirés au M0) | the five-component engine |
 
 ## Tests
 

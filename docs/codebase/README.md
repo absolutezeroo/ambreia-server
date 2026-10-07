@@ -2,6 +2,15 @@
 
 Reconstructed from the source at commit **`e57f0be7`** (branch `main`) by `/document-vortex full`.
 
+> **Antérieure au fork RPG.** Cette base décrit le code d'avant le M0 et le M0 bis. Depuis, ont été
+> retirés : wireds, collectibles, chansons, rollers, respects, styles de chat, quiz, guides, niveaux
+> de compte, vue d'hôtel, fil social du site, objectifs communautaires, derby, espaces à louer,
+> anti-raid, bots possédés et la vie simulée des pets ; renommés : Habbo Club → Membership, coffre de
+> gains → RewardVault, prize pools → LootTable, palettes → PetSkin ; scindés : Vortex.Authentication
+> → Vortex.WebApi.Authentication + Vortex.Permissions, Vortex.Shop → Vortex.WebApi.Shop. Les pages
+> wireds et collectibles sont supprimées ; les autres peuvent encore en parler. Le code et
+> `AGENTS.md` font foi ; régénérer avec `/document-vortex update`.
+
 This documentation explains **how the emulator actually works**: what owns which state, what happens
 between a byte arriving on a socket and a composer going back out, and where the contract the
 repository writes down and the code that ships disagree. It is not a tour of folders.
@@ -16,7 +25,7 @@ repository writes down and the code that ships disagree. It is not a tour of fol
 | Follow a packet end to end | [Packet round trip](flows/packet-roundtrip.md) |
 | Understand a login | [Authentication](flows/authentication.md) |
 | Add or change a grain | [Grain map](03-orleans/grain-map.md) · [State ownership](03-orleans/persistence.md) |
-| Work on a room, furni or wired | [Room architecture](04-rooms/room-architecture.md) · [Wireds](04-rooms/wireds.md) |
+| Work on a room or furni | [Room architecture](04-rooms/room-architecture.md) |
 | Touch money or items | [Economy overview](06-economy/overview.md) · [Transactions](06-economy/transactions.md) |
 | Change a packet's wire format | [Revisions](02-network-protocol/revisions.md) |
 | Add an admin surface | [Dashboard capabilities](08-dashboard/capabilities.md) |

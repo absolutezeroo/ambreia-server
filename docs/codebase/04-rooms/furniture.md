@@ -68,7 +68,7 @@ overwriting. The doc records the prior bug: a plugin silently took over a core f
 dropped that furni to `default_floor` **permanently**. A duplicate registration of the *same* type is
 tolerated and returns an inert disposable.
 
-**238 unique logic keys across 199 classes**, of which 169 are wired ([Wireds](wireds.md)).
+**238 unique logic keys across 199 classes**, of which 169 are wired (Wireds (retirés au M0)).
 
 Missing bindings are counted: `Vortex.furniture.logic.fallback`.
 
@@ -110,7 +110,7 @@ The full sequence, and the ownership-transfer subtlety in `FurniturePickupType.S
 
 Authorization: `PlaceFloorItemAsync` and `MoveFloorItemByIdAsync` both call
 `SecurityModule.CanManipulateFurniAsync(ctx)`. `ApplyWiredUpdateAsync`, in the same file, does
-**not** — see the open item on [Wireds](wireds.md).
+**not** — see the open item on Wireds (retirés au M0).
 
 ## Interaction
 
