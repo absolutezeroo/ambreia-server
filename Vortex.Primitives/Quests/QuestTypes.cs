@@ -55,7 +55,7 @@ public static class QuestTypes
     public const string JoinGroup = "JoinGroup";
 
     /// <summary>The player bought Membership.</summary>
-    public const string BuyMembership = "BuyMembership";
+    public const string BuyMembership = "BuyClub";
 
     /// <summary>The player placed furniture. Pair with target <c>base_item_id</c> = a furniture
     /// definition id to require a specific furni type; leave empty for "place anything".</summary>

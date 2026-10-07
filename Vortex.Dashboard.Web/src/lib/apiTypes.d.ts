@@ -655,84 +655,6 @@ export interface ChatlogWindow {
   until: string;
 }
 
-export interface ExpiringMembership {
-  playerId: number;
-  playerName: string | null;
-  type: string;
-  level: number;
-  totalMonths: number;
-  expiresAt: string;
-  remainingDays: number;
-}
-
-export interface MembershipLifecyclePoint {
-  bucket: string;
-  label: string;
-  purchases: number;
-  renewals: number;
-  expired: number;
-}
-
-export interface MembershipLifecycleTotals {
-  purchases: number;
-  renewals: number;
-  expired: number;
-  renewalShare: number;
-}
-
-export interface MembershipMonthsBreakdown {
-  months: number;
-  total: number;
-  purchases: number;
-  renewals: number;
-  expired: number;
-}
-
-export interface MembershipEventRow {
-  occurredAt: string;
-  action: string;
-  actorPlayerId: number | null;
-  actorPlayerName: string | null;
-  months: number | null;
-  totalMonths: number | null;
-  creditCost: number | null;
-  isRenewal: boolean | null;
-  isVip: boolean | null;
-}
-
-export interface MembershipLifecycle {
-  totals: MembershipLifecycleTotals;
-  byMonths: MembershipMonthsBreakdown[];
-  recentEvents: MembershipEventRow[];
-  timeline: MembershipLifecyclePoint[];
-}
-
-export interface MembershipTotals {
-  totalSubscriptions: number;
-  activeSubscriptions: number;
-  inactiveSubscriptions: number;
-  expiringIn7Days: number;
-  expiringIn30Days: number;
-  activeRate: number;
-}
-
-export interface MembershipTypeBreakdown {
-  type: string;
-  total: number;
-  active: number;
-  inactive: number;
-  averageRemainingDays: number;
-  averageTotalMonths: number;
-}
-
-export interface Memberships {
-  window: ModerationWindow;
-  totals: MembershipTotals;
-  byType: MembershipTypeBreakdown[];
-  topExpiring: ExpiringMembership[];
-  lifecycle: MembershipLifecycle;
-}
-
 export interface CodeDirectoryPage {
   count: number;
   total: number;
@@ -957,6 +879,16 @@ export interface EffectOwnerCount {
   owners: number;
   activated: number;
   selected: number;
+}
+
+export interface ExpiringMembership {
+  playerId: number;
+  playerName: string | null;
+  type: string;
+  level: number;
+  totalMonths: number;
+  expiresAt: string;
+  remainingDays: number;
 }
 
 export interface FishingActivity {
@@ -1485,6 +1417,93 @@ export interface LiveRoomSnapshot {
   packetsPerMinute: number;
 }
 
+export interface LootEntryDraws {
+  entryId: number;
+  draws: number;
+}
+
+export interface LootSourceDraws {
+  source: string;
+  draws: number;
+}
+
+export interface LootTableBindingList {
+  count: number;
+  items: LootTableBindingRow[];
+}
+
+export interface LootTableBindingRow {
+  id: number;
+  furnitureDefinitionId: number;
+  pool: string;
+  hitsRequired: number;
+  enabled: boolean;
+  furnitureName: string | null;
+  furnitureLogic: string | null;
+  furnitureIconUrl: string | null;
+}
+
+export interface LootTableContent {
+  pools: LootTableList;
+  entries: LootTableEntryList;
+  totals: LootTableWeightTotal[];
+  bindings: LootTableBindingList;
+  productTypes: string[];
+}
+
+export interface LootTableDraws {
+  pool: string;
+  draws: number;
+  entries: LootEntryDraws[];
+  sources: LootSourceDraws[];
+}
+
+export interface LootTableEntryList {
+  count: number;
+  items: LootTableEntryRow[];
+}
+
+export interface LootTableEntryRow {
+  id: number;
+  poolId: number;
+  pool: string;
+  variant: string | null;
+  productType: string;
+  furnitureDefinitionId: number | null;
+  extraParam: string | null;
+  weight: number;
+  enabled: boolean;
+  furnitureName: string | null;
+  furnitureIconUrl: string | null;
+}
+
+export interface LootTableList {
+  count: number;
+  items: LootTableRow[];
+}
+
+export interface LootTableRow {
+  id: number;
+  code: string;
+  name: string;
+  variants: string | null;
+  notes: string | null;
+  enabled: boolean;
+}
+
+export interface LootTableStats {
+  days: number;
+  totalDraws: number;
+  pools: LootTableDraws[];
+}
+
+export interface LootTableWeightTotal {
+  poolId: number;
+  variant: string | null;
+  totalWeight: number;
+  entries: number;
+}
+
 export interface MarketplaceSalePoint {
   bucket: string;
   label: string;
@@ -1511,6 +1530,74 @@ export interface MarketplaceTotals {
   soldCount: number;
   totalVolume: number;
   averagePrice: number;
+}
+
+export interface MembershipEventRow {
+  occurredAt: string;
+  action: string;
+  actorPlayerId: number | null;
+  actorPlayerName: string | null;
+  months: number | null;
+  totalMonths: number | null;
+  creditCost: number | null;
+  isRenewal: boolean | null;
+  isVip: boolean | null;
+}
+
+export interface MembershipLifecycle {
+  totals: MembershipLifecycleTotals;
+  byMonths: MembershipMonthsBreakdown[];
+  recentEvents: MembershipEventRow[];
+  timeline: MembershipLifecyclePoint[];
+}
+
+export interface MembershipLifecyclePoint {
+  bucket: string;
+  label: string;
+  purchases: number;
+  renewals: number;
+  expired: number;
+}
+
+export interface MembershipLifecycleTotals {
+  purchases: number;
+  renewals: number;
+  expired: number;
+  renewalShare: number;
+}
+
+export interface MembershipMonthsBreakdown {
+  months: number;
+  total: number;
+  purchases: number;
+  renewals: number;
+  expired: number;
+}
+
+export interface MembershipTotals {
+  totalSubscriptions: number;
+  activeSubscriptions: number;
+  inactiveSubscriptions: number;
+  expiringIn7Days: number;
+  expiringIn30Days: number;
+  activeRate: number;
+}
+
+export interface MembershipTypeBreakdown {
+  type: string;
+  total: number;
+  active: number;
+  inactive: number;
+  averageRemainingDays: number;
+  averageTotalMonths: number;
+}
+
+export interface Memberships {
+  window: ModerationWindow;
+  totals: MembershipTotals;
+  byType: MembershipTypeBreakdown[];
+  topExpiring: ExpiringMembership[];
+  lifecycle: MembershipLifecycle;
 }
 
 export interface ModerationActionCount {
@@ -1884,93 +1971,6 @@ export interface PlayerRewardTotals {
   selectedEffects: number;
   wardrobeOutfits: number;
   wardrobeUsers: number;
-}
-
-export interface LootEntryDraws {
-  entryId: number;
-  draws: number;
-}
-
-export interface LootTableBindingList {
-  count: number;
-  items: LootTableBindingRow[];
-}
-
-export interface LootTableBindingRow {
-  id: number;
-  furnitureDefinitionId: number;
-  pool: string;
-  hitsRequired: number;
-  enabled: boolean;
-  furnitureName: string | null;
-  furnitureLogic: string | null;
-  furnitureIconUrl: string | null;
-}
-
-export interface LootTableContent {
-  pools: LootTableList;
-  entries: LootTableEntryList;
-  totals: LootTableWeightTotal[];
-  bindings: LootTableBindingList;
-  productTypes: string[];
-}
-
-export interface LootTableDraws {
-  pool: string;
-  draws: number;
-  entries: LootEntryDraws[];
-  sources: LootSourceDraws[];
-}
-
-export interface LootTableEntryList {
-  count: number;
-  items: LootTableEntryRow[];
-}
-
-export interface LootTableEntryRow {
-  id: number;
-  poolId: number;
-  pool: string;
-  variant: string | null;
-  productType: string;
-  furnitureDefinitionId: number | null;
-  extraParam: string | null;
-  weight: number;
-  enabled: boolean;
-  furnitureName: string | null;
-  furnitureIconUrl: string | null;
-}
-
-export interface LootTableList {
-  count: number;
-  items: LootTableRow[];
-}
-
-export interface LootTableRow {
-  id: number;
-  code: string;
-  name: string;
-  variants: string | null;
-  notes: string | null;
-  enabled: boolean;
-}
-
-export interface LootTableStats {
-  days: number;
-  totalDraws: number;
-  pools: LootTableDraws[];
-}
-
-export interface LootTableWeightTotal {
-  poolId: number;
-  variant: string | null;
-  totalWeight: number;
-  entries: number;
-}
-
-export interface LootSourceDraws {
-  source: string;
-  draws: number;
 }
 
 export interface ProfileActivity {

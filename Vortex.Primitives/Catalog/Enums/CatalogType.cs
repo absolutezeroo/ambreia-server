@@ -5,7 +5,7 @@ namespace Vortex.Primitives.Catalog.Enums;
 public enum CatalogType
 {
     Normal = 0,
-    // 1 was the Builders Membership catalog, removed in M0. Not renumbered: the value is persisted.
+    // 1 was the Builders Club catalog, removed in M0. Not renumbered: the value is persisted.
 }
 
 public static class CatalogTypeExtensions

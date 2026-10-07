@@ -34,7 +34,7 @@
 -- (GameAuthorExperience, GamePlayerExperience), mystery box (MysteryBox), monster plants (the eight
 -- MonsterPlant* families), pet food (PetFeeding, GnomeFeeding, HaloompaFeeding, LeprechaunFeeding),
 -- pet breeding (BearBreeder, CatBreeder, DogBreeder, PigBreeder, TerrierBreeder), camera
--- (CameraPhotoCount), Builders Membership (BuildersClub, RoomDecoBC) and crackables (EggCracker).
+-- (CameraPhotoCount), Builders Club (BuildersClub, RoomDecoBC) and crackables (EggCracker).
 
 CREATE TEMPORARY TABLE `vortex_achievement_seed` (
   `name` VARCHAR(64) NOT NULL,
@@ -91,11 +91,11 @@ VALUES
   ('BaseJumpWins', 'games', 5, 'ACH_BaseJumpWins5', 35, 50, 0, 5),
   ('BaseJumpWins', 'games', 6, 'ACH_BaseJumpWins6', 50, 60, 0, 6),
   ('BaseJumpWins', 'games', 7, 'ACH_BaseJumpWins7', 65, 70, 0, 7),
-  ('BasicMembership', 'archive', 1, 'ACH_BasicClub1', 1, 10, 0, 1),
-  ('BasicMembership', 'archive', 2, 'ACH_BasicClub2', 12, 20, 0, 2),
-  ('BasicMembership', 'archive', 3, 'ACH_BasicClub3', 24, 30, 0, 3),
-  ('BasicMembership', 'archive', 4, 'ACH_BasicClub4', 36, 40, 0, 4),
-  ('BasicMembership', 'archive', 5, 'ACH_BasicClub5', 48, 50, 0, 5),
+  ('BasicClub', 'archive', 1, 'ACH_BasicClub1', 1, 10, 0, 1),
+  ('BasicClub', 'archive', 2, 'ACH_BasicClub2', 12, 20, 0, 2),
+  ('BasicClub', 'archive', 3, 'ACH_BasicClub3', 24, 30, 0, 3),
+  ('BasicClub', 'archive', 4, 'ACH_BasicClub4', 36, 40, 0, 4),
+  ('BasicClub', 'archive', 5, 'ACH_BasicClub5', 48, 50, 0, 5),
   ('CostumeHopper', 'explore', 1, 'ACH_CostumeHopper1', 1, 10, 0, 1),
   ('CostumeHopper', 'explore', 2, 'ACH_CostumeHopper2', 10, 20, 0, 2),
   ('CostumeHopper', 'explore', 3, 'ACH_CostumeHopper3', 100, 30, 0, 3),
@@ -856,11 +856,11 @@ VALUES
   ('ViciousViking', 'explore', 8, 'ACH_ViciousViking8', 250, 80, 0, 8),
   ('ViciousViking', 'explore', 9, 'ACH_ViciousViking9', 350, 90, 0, 9),
   ('ViciousViking', 'explore', 10, 'ACH_ViciousViking10', 600, 100, 0, 10),
-  ('VipMembership', 'archive', 1, 'ACH_VipClub1', 1, 10, 0, 1),
-  ('VipMembership', 'archive', 2, 'ACH_VipClub2', 12, 20, 0, 2),
-  ('VipMembership', 'archive', 3, 'ACH_VipClub3', 24, 30, 0, 3),
-  ('VipMembership', 'archive', 4, 'ACH_VipClub4', 36, 40, 0, 4),
-  ('VipMembership', 'archive', 5, 'ACH_VipClub5', 48, 50, 0, 5),
+  ('VipClub', 'archive', 1, 'ACH_VipClub1', 1, 10, 0, 1),
+  ('VipClub', 'archive', 2, 'ACH_VipClub2', 12, 20, 0, 2),
+  ('VipClub', 'archive', 3, 'ACH_VipClub3', 24, 30, 0, 3),
+  ('VipClub', 'archive', 4, 'ACH_VipClub4', 36, 40, 0, 4),
+  ('VipClub', 'archive', 5, 'ACH_VipClub5', 48, 50, 0, 5),
   ('VipHC', 'identity', 1, 'ACH_VipHC1', 1, 10, 0, 1),
   ('VipHC', 'identity', 2, 'ACH_VipHC2', 12, 20, 0, 2),
   ('VipHC', 'identity', 3, 'ACH_VipHC3', 24, 30, 0, 3),

@@ -10,7 +10,7 @@ using Vortex.Protocol.Messages.Incoming.Room.Layout;
 namespace Vortex.PacketHandlers.Room.Layout;
 
 /// <summary>
-/// Save, from the Builders Membership floor-plan editor.
+/// Save, from the Builders Club floor-plan editor.
 ///
 /// The room the plan applies to is the one the sender is standing in — the composer carries no room
 /// id, because the editor can only be opened from inside.

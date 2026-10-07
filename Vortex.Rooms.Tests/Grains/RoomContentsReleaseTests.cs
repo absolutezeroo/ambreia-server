@@ -73,11 +73,10 @@ public sealed class RoomContentsReleaseTests : IAsyncLifetime
         // that say nothing about where it lives, which is the only column under test.
         await db.Database.ExecuteSqlRawAsync(
             """
-            INSERT INTO pets (id, player_id, room_id, name, type, race, color, gender, level,
-                              experience, energy, nutrition, thirst, respect, happiness,
-                              x, y, z, direction,
+            INSERT INTO pets (id, player_id, room_id, name, type, skin, color, gender, level,
+                              experience, x, y, z, direction,
                               created_at, updated_at)
-            VALUES (600, {0}, {1}, 'Rex', 0, 0, 'FFFFFF', 0, 1, 0, 100, 100, 100, 0, 100,
+            VALUES (600, {0}, {1}, 'Rex', 0, 0, 'FFFFFF', 0, 1, 0,
                     0, 0, 0, 0, datetime('now'), datetime('now'))
             """,
             GUEST,

@@ -17,40 +17,6 @@ namespace Vortex.Database.Migrations
 
             migrationBuilder
                 .CreateTable(
-                    name: "account_levels",
-                    columns: table => new
-                    {
-                        id = table
-                            .Column<int>(type: "int", nullable: false)
-                            .Annotation(
-                                "MySql:ValueGenerationStrategy",
-                                MySqlValueGenerationStrategy.IdentityColumn
-                            ),
-                        level_number = table.Column<int>(type: "int", nullable: false),
-                        required_score = table.Column<int>(type: "int", nullable: false),
-                        created_at = table
-                            .Column<DateTime>(type: "datetime(6)", nullable: false)
-                            .Annotation(
-                                "MySql:ValueGenerationStrategy",
-                                MySqlValueGenerationStrategy.IdentityColumn
-                            ),
-                        updated_at = table
-                            .Column<DateTime>(type: "datetime(6)", nullable: false)
-                            .Annotation(
-                                "MySql:ValueGenerationStrategy",
-                                MySqlValueGenerationStrategy.ComputedColumn
-                            ),
-                        deleted_at = table.Column<DateTime>(type: "datetime(6)", nullable: true),
-                    },
-                    constraints: table =>
-                    {
-                        table.PrimaryKey("PK_account_levels", x => x.id);
-                    }
-                )
-                .Annotation("MySql:CharSet", "utf8mb4");
-
-            migrationBuilder
-                .CreateTable(
                     name: "achievements",
                     columns: table => new
                     {
@@ -144,130 +110,6 @@ namespace Vortex.Database.Migrations
                     constraints: table =>
                     {
                         table.PrimaryKey("PK_audit_events", x => x.id);
-                    }
-                )
-                .Annotation("MySql:CharSet", "utf8mb4");
-
-            migrationBuilder
-                .CreateTable(
-                    name: "catalog_club_gifts",
-                    columns: table => new
-                    {
-                        id = table
-                            .Column<int>(type: "int", nullable: false)
-                            .Annotation(
-                                "MySql:ValueGenerationStrategy",
-                                MySqlValueGenerationStrategy.IdentityColumn
-                            ),
-                        product_code = table
-                            .Column<string>(type: "varchar(64)", maxLength: 64, nullable: false)
-                            .Annotation("MySql:CharSet", "utf8mb4"),
-                        product_type = table
-                            .Column<string>(type: "varchar(4)", maxLength: 4, nullable: false)
-                            .Annotation("MySql:CharSet", "utf8mb4"),
-                        furni_definition_id = table.Column<int>(type: "int", nullable: true),
-                        extra_param = table
-                            .Column<string>(type: "varchar(256)", maxLength: 256, nullable: true)
-                            .Annotation("MySql:CharSet", "utf8mb4"),
-                        quantity = table.Column<int>(type: "int", nullable: false, defaultValue: 1),
-                        is_vip = table.Column<bool>(
-                            type: "tinyint(1)",
-                            nullable: false,
-                            defaultValue: false
-                        ),
-                        sort_order = table.Column<int>(
-                            type: "int",
-                            nullable: false,
-                            defaultValue: 0
-                        ),
-                        created_at = table
-                            .Column<DateTime>(type: "datetime(6)", nullable: false)
-                            .Annotation(
-                                "MySql:ValueGenerationStrategy",
-                                MySqlValueGenerationStrategy.IdentityColumn
-                            ),
-                        updated_at = table
-                            .Column<DateTime>(type: "datetime(6)", nullable: false)
-                            .Annotation(
-                                "MySql:ValueGenerationStrategy",
-                                MySqlValueGenerationStrategy.ComputedColumn
-                            ),
-                        deleted_at = table.Column<DateTime>(type: "datetime(6)", nullable: true),
-                    },
-                    constraints: table =>
-                    {
-                        table.PrimaryKey("PK_catalog_club_gifts", x => x.id);
-                    }
-                )
-                .Annotation("MySql:CharSet", "utf8mb4");
-
-            migrationBuilder
-                .CreateTable(
-                    name: "catalog_club_offers",
-                    columns: table => new
-                    {
-                        id = table
-                            .Column<int>(type: "int", nullable: false)
-                            .Annotation(
-                                "MySql:ValueGenerationStrategy",
-                                MySqlValueGenerationStrategy.IdentityColumn
-                            ),
-                        product_code = table
-                            .Column<string>(type: "varchar(64)", maxLength: 64, nullable: false)
-                            .Annotation("MySql:CharSet", "utf8mb4"),
-                        price_credits = table.Column<int>(
-                            type: "int",
-                            nullable: false,
-                            defaultValue: 0
-                        ),
-                        price_activity_points = table.Column<int>(
-                            type: "int",
-                            nullable: false,
-                            defaultValue: 0
-                        ),
-                        price_activity_point_type = table.Column<int>(
-                            type: "int",
-                            nullable: false,
-                            defaultValue: 0
-                        ),
-                        is_vip = table.Column<bool>(
-                            type: "tinyint(1)",
-                            nullable: false,
-                            defaultValue: false
-                        ),
-                        months = table.Column<int>(type: "int", nullable: false, defaultValue: 1),
-                        extra_days = table.Column<int>(
-                            type: "int",
-                            nullable: false,
-                            defaultValue: 0
-                        ),
-                        is_giftable = table.Column<bool>(
-                            type: "tinyint(1)",
-                            nullable: false,
-                            defaultValue: true
-                        ),
-                        sort_order = table.Column<int>(
-                            type: "int",
-                            nullable: false,
-                            defaultValue: 0
-                        ),
-                        created_at = table
-                            .Column<DateTime>(type: "datetime(6)", nullable: false)
-                            .Annotation(
-                                "MySql:ValueGenerationStrategy",
-                                MySqlValueGenerationStrategy.IdentityColumn
-                            ),
-                        updated_at = table
-                            .Column<DateTime>(type: "datetime(6)", nullable: false)
-                            .Annotation(
-                                "MySql:ValueGenerationStrategy",
-                                MySqlValueGenerationStrategy.ComputedColumn
-                            ),
-                        deleted_at = table.Column<DateTime>(type: "datetime(6)", nullable: true),
-                    },
-                    constraints: table =>
-                    {
-                        table.PrimaryKey("PK_catalog_club_offers", x => x.id);
                     }
                 )
                 .Annotation("MySql:CharSet", "utf8mb4");
@@ -549,65 +391,6 @@ namespace Vortex.Database.Migrations
                     constraints: table =>
                     {
                         table.PrimaryKey("PK_commerce_receipts", x => x.id);
-                    }
-                )
-                .Annotation("MySql:CharSet", "utf8mb4");
-
-            migrationBuilder
-                .CreateTable(
-                    name: "community_goals",
-                    columns: table => new
-                    {
-                        id = table
-                            .Column<int>(type: "int", nullable: false)
-                            .Annotation(
-                                "MySql:ValueGenerationStrategy",
-                                MySqlValueGenerationStrategy.IdentityColumn
-                            ),
-                        code = table
-                            .Column<string>(type: "varchar(512)", maxLength: 512, nullable: false)
-                            .Annotation("MySql:CharSet", "utf8mb4"),
-                        campaign_code = table
-                            .Column<string>(
-                                type: "varchar(512)",
-                                maxLength: 512,
-                                nullable: false,
-                                defaultValue: ""
-                            )
-                            .Annotation("MySql:CharSet", "utf8mb4"),
-                        score_per_quest = table.Column<int>(
-                            type: "int",
-                            nullable: false,
-                            defaultValue: 1
-                        ),
-                        enabled = table.Column<bool>(
-                            type: "tinyint(1)",
-                            nullable: false,
-                            defaultValue: true
-                        ),
-                        ends_at = table.Column<DateTime>(type: "datetime(6)", nullable: true),
-                        sort_order = table.Column<int>(
-                            type: "int",
-                            nullable: false,
-                            defaultValue: 0
-                        ),
-                        created_at = table
-                            .Column<DateTime>(type: "datetime(6)", nullable: false)
-                            .Annotation(
-                                "MySql:ValueGenerationStrategy",
-                                MySqlValueGenerationStrategy.IdentityColumn
-                            ),
-                        updated_at = table
-                            .Column<DateTime>(type: "datetime(6)", nullable: false)
-                            .Annotation(
-                                "MySql:ValueGenerationStrategy",
-                                MySqlValueGenerationStrategy.ComputedColumn
-                            ),
-                        deleted_at = table.Column<DateTime>(type: "datetime(6)", nullable: true),
-                    },
-                    constraints: table =>
-                    {
-                        table.PrimaryKey("PK_community_goals", x => x.id);
                     }
                 )
                 .Annotation("MySql:CharSet", "utf8mb4");
@@ -907,79 +690,6 @@ namespace Vortex.Database.Migrations
                     constraints: table =>
                     {
                         table.PrimaryKey("PK_figure_sellable_sets", x => x.id);
-                    }
-                )
-                .Annotation("MySql:CharSet", "utf8mb4");
-
-            migrationBuilder
-                .CreateTable(
-                    name: "fishing_derbies",
-                    columns: table => new
-                    {
-                        id = table
-                            .Column<int>(type: "int", nullable: false)
-                            .Annotation(
-                                "MySql:ValueGenerationStrategy",
-                                MySqlValueGenerationStrategy.IdentityColumn
-                            ),
-                        name_key = table
-                            .Column<string>(type: "varchar(128)", maxLength: 128, nullable: false)
-                            .Annotation("MySql:CharSet", "utf8mb4"),
-                        starts_at = table.Column<DateTime>(type: "datetime(6)", nullable: false),
-                        ends_at = table.Column<DateTime>(type: "datetime(6)", nullable: false),
-                        zone_id = table.Column<int>(type: "int", nullable: false),
-                        created_at = table
-                            .Column<DateTime>(type: "datetime(6)", nullable: false)
-                            .Annotation(
-                                "MySql:ValueGenerationStrategy",
-                                MySqlValueGenerationStrategy.IdentityColumn
-                            ),
-                        updated_at = table
-                            .Column<DateTime>(type: "datetime(6)", nullable: false)
-                            .Annotation(
-                                "MySql:ValueGenerationStrategy",
-                                MySqlValueGenerationStrategy.ComputedColumn
-                            ),
-                        deleted_at = table.Column<DateTime>(type: "datetime(6)", nullable: true),
-                    },
-                    constraints: table =>
-                    {
-                        table.PrimaryKey("PK_fishing_derbies", x => x.id);
-                    }
-                )
-                .Annotation("MySql:CharSet", "utf8mb4");
-
-            migrationBuilder
-                .CreateTable(
-                    name: "fishing_derby_entries",
-                    columns: table => new
-                    {
-                        id = table
-                            .Column<int>(type: "int", nullable: false)
-                            .Annotation(
-                                "MySql:ValueGenerationStrategy",
-                                MySqlValueGenerationStrategy.IdentityColumn
-                            ),
-                        derby_id = table.Column<int>(type: "int", nullable: false),
-                        player_id = table.Column<int>(type: "int", nullable: false),
-                        best_weight = table.Column<int>(type: "int", nullable: false),
-                        created_at = table
-                            .Column<DateTime>(type: "datetime(6)", nullable: false)
-                            .Annotation(
-                                "MySql:ValueGenerationStrategy",
-                                MySqlValueGenerationStrategy.IdentityColumn
-                            ),
-                        updated_at = table
-                            .Column<DateTime>(type: "datetime(6)", nullable: false)
-                            .Annotation(
-                                "MySql:ValueGenerationStrategy",
-                                MySqlValueGenerationStrategy.ComputedColumn
-                            ),
-                        deleted_at = table.Column<DateTime>(type: "datetime(6)", nullable: true),
-                    },
-                    constraints: table =>
-                    {
-                        table.PrimaryKey("PK_fishing_derby_entries", x => x.id);
                     }
                 )
                 .Annotation("MySql:CharSet", "utf8mb4");
@@ -1431,44 +1141,6 @@ namespace Vortex.Database.Migrations
 
             migrationBuilder
                 .CreateTable(
-                    name: "hand_items",
-                    columns: table => new
-                    {
-                        id = table
-                            .Column<int>(type: "int", nullable: false)
-                            .Annotation(
-                                "MySql:ValueGenerationStrategy",
-                                MySqlValueGenerationStrategy.IdentityColumn
-                            ),
-                        hand_item_id = table.Column<int>(type: "int", nullable: false),
-                        name = table
-                            .Column<string>(type: "varchar(64)", maxLength: 64, nullable: false)
-                            .Annotation("MySql:CharSet", "utf8mb4"),
-                        nutrition = table.Column<int>(type: "int", nullable: false),
-                        thirst = table.Column<int>(type: "int", nullable: false),
-                        created_at = table
-                            .Column<DateTime>(type: "datetime(6)", nullable: false)
-                            .Annotation(
-                                "MySql:ValueGenerationStrategy",
-                                MySqlValueGenerationStrategy.IdentityColumn
-                            ),
-                        updated_at = table
-                            .Column<DateTime>(type: "datetime(6)", nullable: false)
-                            .Annotation(
-                                "MySql:ValueGenerationStrategy",
-                                MySqlValueGenerationStrategy.ComputedColumn
-                            ),
-                        deleted_at = table.Column<DateTime>(type: "datetime(6)", nullable: true),
-                    },
-                    constraints: table =>
-                    {
-                        table.PrimaryKey("PK_hand_items", x => x.id);
-                    }
-                )
-                .Annotation("MySql:CharSet", "utf8mb4");
-
-            migrationBuilder
-                .CreateTable(
                     name: "item_events",
                     columns: table => new
                     {
@@ -1510,6 +1182,65 @@ namespace Vortex.Database.Migrations
                     constraints: table =>
                     {
                         table.PrimaryKey("PK_item_events", x => x.id);
+                    }
+                )
+                .Annotation("MySql:CharSet", "utf8mb4");
+
+            migrationBuilder
+                .CreateTable(
+                    name: "loot_tables",
+                    columns: table => new
+                    {
+                        id = table
+                            .Column<int>(type: "int", nullable: false)
+                            .Annotation(
+                                "MySql:ValueGenerationStrategy",
+                                MySqlValueGenerationStrategy.IdentityColumn
+                            ),
+                        code = table
+                            .Column<string>(type: "varchar(64)", maxLength: 64, nullable: false)
+                            .Annotation("MySql:CharSet", "utf8mb4"),
+                        name = table
+                            .Column<string>(type: "varchar(128)", maxLength: 128, nullable: false)
+                            .Annotation("MySql:CharSet", "utf8mb4"),
+                        variants = table
+                            .Column<string>(
+                                type: "varchar(512)",
+                                maxLength: 512,
+                                nullable: false,
+                                defaultValue: ""
+                            )
+                            .Annotation("MySql:CharSet", "utf8mb4"),
+                        enabled = table.Column<bool>(
+                            type: "tinyint(1)",
+                            nullable: false,
+                            defaultValue: true
+                        ),
+                        notes = table
+                            .Column<string>(
+                                type: "varchar(512)",
+                                maxLength: 512,
+                                nullable: false,
+                                defaultValue: ""
+                            )
+                            .Annotation("MySql:CharSet", "utf8mb4"),
+                        created_at = table
+                            .Column<DateTime>(type: "datetime(6)", nullable: false)
+                            .Annotation(
+                                "MySql:ValueGenerationStrategy",
+                                MySqlValueGenerationStrategy.IdentityColumn
+                            ),
+                        updated_at = table
+                            .Column<DateTime>(type: "datetime(6)", nullable: false)
+                            .Annotation(
+                                "MySql:ValueGenerationStrategy",
+                                MySqlValueGenerationStrategy.ComputedColumn
+                            ),
+                        deleted_at = table.Column<DateTime>(type: "datetime(6)", nullable: true),
+                    },
+                    constraints: table =>
+                    {
+                        table.PrimaryKey("PK_loot_tables", x => x.id);
                     }
                 )
                 .Annotation("MySql:CharSet", "utf8mb4");
@@ -1562,6 +1293,130 @@ namespace Vortex.Database.Migrations
                     constraints: table =>
                     {
                         table.PrimaryKey("PK_marketplace_settings", x => x.id);
+                    }
+                )
+                .Annotation("MySql:CharSet", "utf8mb4");
+
+            migrationBuilder
+                .CreateTable(
+                    name: "membership_gifts",
+                    columns: table => new
+                    {
+                        id = table
+                            .Column<int>(type: "int", nullable: false)
+                            .Annotation(
+                                "MySql:ValueGenerationStrategy",
+                                MySqlValueGenerationStrategy.IdentityColumn
+                            ),
+                        product_code = table
+                            .Column<string>(type: "varchar(64)", maxLength: 64, nullable: false)
+                            .Annotation("MySql:CharSet", "utf8mb4"),
+                        product_type = table
+                            .Column<string>(type: "varchar(4)", maxLength: 4, nullable: false)
+                            .Annotation("MySql:CharSet", "utf8mb4"),
+                        furni_definition_id = table.Column<int>(type: "int", nullable: true),
+                        extra_param = table
+                            .Column<string>(type: "varchar(256)", maxLength: 256, nullable: true)
+                            .Annotation("MySql:CharSet", "utf8mb4"),
+                        quantity = table.Column<int>(type: "int", nullable: false, defaultValue: 1),
+                        is_vip = table.Column<bool>(
+                            type: "tinyint(1)",
+                            nullable: false,
+                            defaultValue: false
+                        ),
+                        sort_order = table.Column<int>(
+                            type: "int",
+                            nullable: false,
+                            defaultValue: 0
+                        ),
+                        created_at = table
+                            .Column<DateTime>(type: "datetime(6)", nullable: false)
+                            .Annotation(
+                                "MySql:ValueGenerationStrategy",
+                                MySqlValueGenerationStrategy.IdentityColumn
+                            ),
+                        updated_at = table
+                            .Column<DateTime>(type: "datetime(6)", nullable: false)
+                            .Annotation(
+                                "MySql:ValueGenerationStrategy",
+                                MySqlValueGenerationStrategy.ComputedColumn
+                            ),
+                        deleted_at = table.Column<DateTime>(type: "datetime(6)", nullable: true),
+                    },
+                    constraints: table =>
+                    {
+                        table.PrimaryKey("PK_membership_gifts", x => x.id);
+                    }
+                )
+                .Annotation("MySql:CharSet", "utf8mb4");
+
+            migrationBuilder
+                .CreateTable(
+                    name: "membership_offers",
+                    columns: table => new
+                    {
+                        id = table
+                            .Column<int>(type: "int", nullable: false)
+                            .Annotation(
+                                "MySql:ValueGenerationStrategy",
+                                MySqlValueGenerationStrategy.IdentityColumn
+                            ),
+                        product_code = table
+                            .Column<string>(type: "varchar(64)", maxLength: 64, nullable: false)
+                            .Annotation("MySql:CharSet", "utf8mb4"),
+                        price_credits = table.Column<int>(
+                            type: "int",
+                            nullable: false,
+                            defaultValue: 0
+                        ),
+                        price_activity_points = table.Column<int>(
+                            type: "int",
+                            nullable: false,
+                            defaultValue: 0
+                        ),
+                        price_activity_point_type = table.Column<int>(
+                            type: "int",
+                            nullable: false,
+                            defaultValue: 0
+                        ),
+                        is_vip = table.Column<bool>(
+                            type: "tinyint(1)",
+                            nullable: false,
+                            defaultValue: false
+                        ),
+                        months = table.Column<int>(type: "int", nullable: false, defaultValue: 1),
+                        extra_days = table.Column<int>(
+                            type: "int",
+                            nullable: false,
+                            defaultValue: 0
+                        ),
+                        is_giftable = table.Column<bool>(
+                            type: "tinyint(1)",
+                            nullable: false,
+                            defaultValue: true
+                        ),
+                        sort_order = table.Column<int>(
+                            type: "int",
+                            nullable: false,
+                            defaultValue: 0
+                        ),
+                        created_at = table
+                            .Column<DateTime>(type: "datetime(6)", nullable: false)
+                            .Annotation(
+                                "MySql:ValueGenerationStrategy",
+                                MySqlValueGenerationStrategy.IdentityColumn
+                            ),
+                        updated_at = table
+                            .Column<DateTime>(type: "datetime(6)", nullable: false)
+                            .Annotation(
+                                "MySql:ValueGenerationStrategy",
+                                MySqlValueGenerationStrategy.ComputedColumn
+                            ),
+                        deleted_at = table.Column<DateTime>(type: "datetime(6)", nullable: true),
+                    },
+                    constraints: table =>
+                    {
+                        table.PrimaryKey("PK_membership_offers", x => x.id);
                     }
                 )
                 .Annotation("MySql:CharSet", "utf8mb4");
@@ -1680,82 +1535,6 @@ namespace Vortex.Database.Migrations
 
             migrationBuilder
                 .CreateTable(
-                    name: "pet_command_names",
-                    columns: table => new
-                    {
-                        id = table
-                            .Column<int>(type: "int", nullable: false)
-                            .Annotation(
-                                "MySql:ValueGenerationStrategy",
-                                MySqlValueGenerationStrategy.IdentityColumn
-                            ),
-                        command = table.Column<int>(type: "int", nullable: false),
-                        name = table
-                            .Column<string>(type: "varchar(512)", maxLength: 512, nullable: false)
-                            .Annotation("MySql:CharSet", "utf8mb4"),
-                        created_at = table
-                            .Column<DateTime>(type: "datetime(6)", nullable: false)
-                            .Annotation(
-                                "MySql:ValueGenerationStrategy",
-                                MySqlValueGenerationStrategy.IdentityColumn
-                            ),
-                        updated_at = table
-                            .Column<DateTime>(type: "datetime(6)", nullable: false)
-                            .Annotation(
-                                "MySql:ValueGenerationStrategy",
-                                MySqlValueGenerationStrategy.ComputedColumn
-                            ),
-                        deleted_at = table.Column<DateTime>(type: "datetime(6)", nullable: true),
-                    },
-                    constraints: table =>
-                    {
-                        table.PrimaryKey("PK_pet_command_names", x => x.id);
-                    }
-                )
-                .Annotation("MySql:CharSet", "utf8mb4");
-
-            migrationBuilder
-                .CreateTable(
-                    name: "pet_commands",
-                    columns: table => new
-                    {
-                        id = table
-                            .Column<int>(type: "int", nullable: false)
-                            .Annotation(
-                                "MySql:ValueGenerationStrategy",
-                                MySqlValueGenerationStrategy.IdentityColumn
-                            ),
-                        pet_type = table.Column<int>(type: "int", nullable: false),
-                        command = table.Column<int>(type: "int", nullable: false),
-                        level_required = table.Column<int>(type: "int", nullable: false),
-                        posture = table
-                            .Column<string>(type: "varchar(512)", maxLength: 512, nullable: false)
-                            .Annotation("MySql:CharSet", "utf8mb4"),
-                        energy_cost = table.Column<int>(type: "int", nullable: false),
-                        xp_reward = table.Column<int>(type: "int", nullable: false),
-                        created_at = table
-                            .Column<DateTime>(type: "datetime(6)", nullable: false)
-                            .Annotation(
-                                "MySql:ValueGenerationStrategy",
-                                MySqlValueGenerationStrategy.IdentityColumn
-                            ),
-                        updated_at = table
-                            .Column<DateTime>(type: "datetime(6)", nullable: false)
-                            .Annotation(
-                                "MySql:ValueGenerationStrategy",
-                                MySqlValueGenerationStrategy.ComputedColumn
-                            ),
-                        deleted_at = table.Column<DateTime>(type: "datetime(6)", nullable: true),
-                    },
-                    constraints: table =>
-                    {
-                        table.PrimaryKey("PK_pet_commands", x => x.id);
-                    }
-                )
-                .Annotation("MySql:CharSet", "utf8mb4");
-
-            migrationBuilder
-                .CreateTable(
                     name: "pet_levels",
                     columns: table => new
                     {
@@ -1793,7 +1572,7 @@ namespace Vortex.Database.Migrations
 
             migrationBuilder
                 .CreateTable(
-                    name: "pet_palettes",
+                    name: "pet_skins",
                     columns: table => new
                     {
                         id = table
@@ -1803,7 +1582,7 @@ namespace Vortex.Database.Migrations
                                 MySqlValueGenerationStrategy.IdentityColumn
                             ),
                         pet_type = table.Column<int>(type: "int", nullable: false),
-                        breed_index = table.Column<int>(type: "int", nullable: false),
+                        skin_index = table.Column<int>(type: "int", nullable: false),
                         color = table.Column<int>(type: "int", nullable: false),
                         sellable = table.Column<bool>(type: "tinyint(1)", nullable: false),
                         rare = table.Column<bool>(
@@ -1827,46 +1606,7 @@ namespace Vortex.Database.Migrations
                     },
                     constraints: table =>
                     {
-                        table.PrimaryKey("PK_pet_palettes", x => x.id);
-                    }
-                )
-                .Annotation("MySql:CharSet", "utf8mb4");
-
-            migrationBuilder
-                .CreateTable(
-                    name: "pet_vocals",
-                    columns: table => new
-                    {
-                        id = table
-                            .Column<int>(type: "int", nullable: false)
-                            .Annotation(
-                                "MySql:ValueGenerationStrategy",
-                                MySqlValueGenerationStrategy.IdentityColumn
-                            ),
-                        pet_type = table.Column<int>(type: "int", nullable: false),
-                        vocal_type = table
-                            .Column<string>(type: "varchar(512)", maxLength: 512, nullable: false)
-                            .Annotation("MySql:CharSet", "utf8mb4"),
-                        text = table
-                            .Column<string>(type: "varchar(512)", maxLength: 512, nullable: false)
-                            .Annotation("MySql:CharSet", "utf8mb4"),
-                        created_at = table
-                            .Column<DateTime>(type: "datetime(6)", nullable: false)
-                            .Annotation(
-                                "MySql:ValueGenerationStrategy",
-                                MySqlValueGenerationStrategy.IdentityColumn
-                            ),
-                        updated_at = table
-                            .Column<DateTime>(type: "datetime(6)", nullable: false)
-                            .Annotation(
-                                "MySql:ValueGenerationStrategy",
-                                MySqlValueGenerationStrategy.ComputedColumn
-                            ),
-                        deleted_at = table.Column<DateTime>(type: "datetime(6)", nullable: true),
-                    },
-                    constraints: table =>
-                    {
-                        table.PrimaryKey("PK_pet_vocals", x => x.id);
+                        table.PrimaryKey("PK_pet_skins", x => x.id);
                     }
                 )
                 .Annotation("MySql:CharSet", "utf8mb4");
@@ -1915,43 +1655,6 @@ namespace Vortex.Database.Migrations
 
             migrationBuilder
                 .CreateTable(
-                    name: "player_chat_styles",
-                    columns: table => new
-                    {
-                        id = table
-                            .Column<int>(type: "int", nullable: false)
-                            .Annotation(
-                                "MySql:ValueGenerationStrategy",
-                                MySqlValueGenerationStrategy.IdentityColumn
-                            ),
-                        client_style_id = table.Column<int>(
-                            type: "int",
-                            nullable: false,
-                            defaultValue: 0
-                        ),
-                        created_at = table
-                            .Column<DateTime>(type: "datetime(6)", nullable: false)
-                            .Annotation(
-                                "MySql:ValueGenerationStrategy",
-                                MySqlValueGenerationStrategy.IdentityColumn
-                            ),
-                        updated_at = table
-                            .Column<DateTime>(type: "datetime(6)", nullable: false)
-                            .Annotation(
-                                "MySql:ValueGenerationStrategy",
-                                MySqlValueGenerationStrategy.ComputedColumn
-                            ),
-                        deleted_at = table.Column<DateTime>(type: "datetime(6)", nullable: true),
-                    },
-                    constraints: table =>
-                    {
-                        table.PrimaryKey("PK_player_chat_styles", x => x.id);
-                    }
-                )
-                .Annotation("MySql:CharSet", "utf8mb4");
-
-            migrationBuilder
-                .CreateTable(
                     name: "player_word_filters",
                     columns: table => new
                     {
@@ -1982,65 +1685,6 @@ namespace Vortex.Database.Migrations
                     constraints: table =>
                     {
                         table.PrimaryKey("PK_player_word_filters", x => x.id);
-                    }
-                )
-                .Annotation("MySql:CharSet", "utf8mb4");
-
-            migrationBuilder
-                .CreateTable(
-                    name: "prize_pools",
-                    columns: table => new
-                    {
-                        id = table
-                            .Column<int>(type: "int", nullable: false)
-                            .Annotation(
-                                "MySql:ValueGenerationStrategy",
-                                MySqlValueGenerationStrategy.IdentityColumn
-                            ),
-                        code = table
-                            .Column<string>(type: "varchar(64)", maxLength: 64, nullable: false)
-                            .Annotation("MySql:CharSet", "utf8mb4"),
-                        name = table
-                            .Column<string>(type: "varchar(128)", maxLength: 128, nullable: false)
-                            .Annotation("MySql:CharSet", "utf8mb4"),
-                        variants = table
-                            .Column<string>(
-                                type: "varchar(512)",
-                                maxLength: 512,
-                                nullable: false,
-                                defaultValue: ""
-                            )
-                            .Annotation("MySql:CharSet", "utf8mb4"),
-                        enabled = table.Column<bool>(
-                            type: "tinyint(1)",
-                            nullable: false,
-                            defaultValue: true
-                        ),
-                        notes = table
-                            .Column<string>(
-                                type: "varchar(512)",
-                                maxLength: 512,
-                                nullable: false,
-                                defaultValue: ""
-                            )
-                            .Annotation("MySql:CharSet", "utf8mb4"),
-                        created_at = table
-                            .Column<DateTime>(type: "datetime(6)", nullable: false)
-                            .Annotation(
-                                "MySql:ValueGenerationStrategy",
-                                MySqlValueGenerationStrategy.IdentityColumn
-                            ),
-                        updated_at = table
-                            .Column<DateTime>(type: "datetime(6)", nullable: false)
-                            .Annotation(
-                                "MySql:ValueGenerationStrategy",
-                                MySqlValueGenerationStrategy.ComputedColumn
-                            ),
-                        deleted_at = table.Column<DateTime>(type: "datetime(6)", nullable: true),
-                    },
-                    constraints: table =>
-                    {
-                        table.PrimaryKey("PK_prize_pools", x => x.id);
                     }
                 )
                 .Annotation("MySql:CharSet", "utf8mb4");
@@ -2151,45 +1795,6 @@ namespace Vortex.Database.Migrations
                     constraints: table =>
                     {
                         table.PrimaryKey("PK_quests", x => x.id);
-                    }
-                )
-                .Annotation("MySql:CharSet", "utf8mb4");
-
-            migrationBuilder
-                .CreateTable(
-                    name: "quizzes",
-                    columns: table => new
-                    {
-                        id = table
-                            .Column<int>(type: "int", nullable: false)
-                            .Annotation(
-                                "MySql:ValueGenerationStrategy",
-                                MySqlValueGenerationStrategy.IdentityColumn
-                            ),
-                        code = table
-                            .Column<string>(type: "varchar(512)", maxLength: 512, nullable: false)
-                            .Annotation("MySql:CharSet", "utf8mb4"),
-                        reward_badge_code = table
-                            .Column<string>(type: "varchar(512)", maxLength: 512, nullable: true)
-                            .Annotation("MySql:CharSet", "utf8mb4"),
-                        enabled = table.Column<bool>(type: "tinyint(1)", nullable: false),
-                        created_at = table
-                            .Column<DateTime>(type: "datetime(6)", nullable: false)
-                            .Annotation(
-                                "MySql:ValueGenerationStrategy",
-                                MySqlValueGenerationStrategy.IdentityColumn
-                            ),
-                        updated_at = table
-                            .Column<DateTime>(type: "datetime(6)", nullable: false)
-                            .Annotation(
-                                "MySql:ValueGenerationStrategy",
-                                MySqlValueGenerationStrategy.ComputedColumn
-                            ),
-                        deleted_at = table.Column<DateTime>(type: "datetime(6)", nullable: true),
-                    },
-                    constraints: table =>
-                    {
-                        table.PrimaryKey("PK_quizzes", x => x.id);
                     }
                 )
                 .Annotation("MySql:CharSet", "utf8mb4");
@@ -2487,51 +2092,6 @@ namespace Vortex.Database.Migrations
 
             migrationBuilder
                 .CreateTable(
-                    name: "songs",
-                    columns: table => new
-                    {
-                        id = table
-                            .Column<int>(type: "int", nullable: false)
-                            .Annotation(
-                                "MySql:ValueGenerationStrategy",
-                                MySqlValueGenerationStrategy.IdentityColumn
-                            ),
-                        name = table
-                            .Column<string>(type: "varchar(512)", maxLength: 512, nullable: false)
-                            .Annotation("MySql:CharSet", "utf8mb4"),
-                        creator = table
-                            .Column<string>(type: "varchar(512)", maxLength: 512, nullable: false)
-                            .Annotation("MySql:CharSet", "utf8mb4"),
-                        length_ms = table.Column<int>(type: "int", nullable: false),
-                        official_song_id = table
-                            .Column<string>(type: "varchar(512)", maxLength: 512, nullable: false)
-                            .Annotation("MySql:CharSet", "utf8mb4"),
-                        data = table
-                            .Column<string>(type: "text", maxLength: 512, nullable: false)
-                            .Annotation("MySql:CharSet", "utf8mb4"),
-                        created_at = table
-                            .Column<DateTime>(type: "datetime(6)", nullable: false)
-                            .Annotation(
-                                "MySql:ValueGenerationStrategy",
-                                MySqlValueGenerationStrategy.IdentityColumn
-                            ),
-                        updated_at = table
-                            .Column<DateTime>(type: "datetime(6)", nullable: false)
-                            .Annotation(
-                                "MySql:ValueGenerationStrategy",
-                                MySqlValueGenerationStrategy.ComputedColumn
-                            ),
-                        deleted_at = table.Column<DateTime>(type: "datetime(6)", nullable: true),
-                    },
-                    constraints: table =>
-                    {
-                        table.PrimaryKey("PK_songs", x => x.id);
-                    }
-                )
-                .Annotation("MySql:CharSet", "utf8mb4");
-
-            migrationBuilder
-                .CreateTable(
                     name: "web_article_categories",
                     columns: table => new
                     {
@@ -2574,41 +2134,6 @@ namespace Vortex.Database.Migrations
                     constraints: table =>
                     {
                         table.PrimaryKey("PK_web_article_categories", x => x.id);
-                    }
-                )
-                .Annotation("MySql:CharSet", "utf8mb4");
-
-            migrationBuilder
-                .CreateTable(
-                    name: "web_feed_tags",
-                    columns: table => new
-                    {
-                        id = table
-                            .Column<int>(type: "int", nullable: false)
-                            .Annotation(
-                                "MySql:ValueGenerationStrategy",
-                                MySqlValueGenerationStrategy.IdentityColumn
-                            ),
-                        tag = table
-                            .Column<string>(type: "varchar(64)", maxLength: 64, nullable: false)
-                            .Annotation("MySql:CharSet", "utf8mb4"),
-                        created_at = table
-                            .Column<DateTime>(type: "datetime(6)", nullable: false)
-                            .Annotation(
-                                "MySql:ValueGenerationStrategy",
-                                MySqlValueGenerationStrategy.IdentityColumn
-                            ),
-                        updated_at = table
-                            .Column<DateTime>(type: "datetime(6)", nullable: false)
-                            .Annotation(
-                                "MySql:ValueGenerationStrategy",
-                                MySqlValueGenerationStrategy.ComputedColumn
-                            ),
-                        deleted_at = table.Column<DateTime>(type: "datetime(6)", nullable: true),
-                    },
-                    constraints: table =>
-                    {
-                        table.PrimaryKey("PK_web_feed_tags", x => x.id);
                     }
                 )
                 .Annotation("MySql:CharSet", "utf8mb4");
@@ -2802,49 +2327,6 @@ namespace Vortex.Database.Migrations
 
             migrationBuilder
                 .CreateTable(
-                    name: "achievement_resolutions",
-                    columns: table => new
-                    {
-                        id = table
-                            .Column<int>(type: "int", nullable: false)
-                            .Annotation(
-                                "MySql:ValueGenerationStrategy",
-                                MySqlValueGenerationStrategy.IdentityColumn
-                            ),
-                        achievement_id = table.Column<int>(type: "int", nullable: false),
-                        target_level_offset = table.Column<int>(type: "int", nullable: false),
-                        sort_order = table.Column<int>(type: "int", nullable: false),
-                        enabled = table.Column<bool>(type: "tinyint(1)", nullable: false),
-                        created_at = table
-                            .Column<DateTime>(type: "datetime(6)", nullable: false)
-                            .Annotation(
-                                "MySql:ValueGenerationStrategy",
-                                MySqlValueGenerationStrategy.IdentityColumn
-                            ),
-                        updated_at = table
-                            .Column<DateTime>(type: "datetime(6)", nullable: false)
-                            .Annotation(
-                                "MySql:ValueGenerationStrategy",
-                                MySqlValueGenerationStrategy.ComputedColumn
-                            ),
-                        deleted_at = table.Column<DateTime>(type: "datetime(6)", nullable: true),
-                    },
-                    constraints: table =>
-                    {
-                        table.PrimaryKey("PK_achievement_resolutions", x => x.id);
-                        table.ForeignKey(
-                            name: "FK_achievement_resolutions_achievements_achievement_id",
-                            column: x => x.achievement_id,
-                            principalTable: "achievements",
-                            principalColumn: "id",
-                            onDelete: ReferentialAction.Cascade
-                        );
-                    }
-                )
-                .Annotation("MySql:CharSet", "utf8mb4");
-
-            migrationBuilder
-                .CreateTable(
                     name: "catalog_offers",
                     columns: table => new
                     {
@@ -2879,7 +2361,7 @@ namespace Vortex.Database.Migrations
                             nullable: false,
                             defaultValue: true
                         ),
-                        club_level = table.Column<int>(
+                        membership_level = table.Column<int>(
                             type: "int",
                             nullable: false,
                             defaultValue: 0
@@ -2915,53 +2397,6 @@ namespace Vortex.Database.Migrations
                             name: "FK_catalog_offers_catalog_pages_page_id",
                             column: x => x.page_id,
                             principalTable: "catalog_pages",
-                            principalColumn: "id",
-                            onDelete: ReferentialAction.Cascade
-                        );
-                    }
-                )
-                .Annotation("MySql:CharSet", "utf8mb4");
-
-            migrationBuilder
-                .CreateTable(
-                    name: "community_goal_levels",
-                    columns: table => new
-                    {
-                        id = table
-                            .Column<int>(type: "int", nullable: false)
-                            .Annotation(
-                                "MySql:ValueGenerationStrategy",
-                                MySqlValueGenerationStrategy.IdentityColumn
-                            ),
-                        goal_id = table.Column<int>(type: "int", nullable: false),
-                        level_number = table.Column<int>(type: "int", nullable: false),
-                        score_threshold = table.Column<int>(type: "int", nullable: false),
-                        reward_user_limit = table.Column<int>(
-                            type: "int",
-                            nullable: false,
-                            defaultValue: 0
-                        ),
-                        created_at = table
-                            .Column<DateTime>(type: "datetime(6)", nullable: false)
-                            .Annotation(
-                                "MySql:ValueGenerationStrategy",
-                                MySqlValueGenerationStrategy.IdentityColumn
-                            ),
-                        updated_at = table
-                            .Column<DateTime>(type: "datetime(6)", nullable: false)
-                            .Annotation(
-                                "MySql:ValueGenerationStrategy",
-                                MySqlValueGenerationStrategy.ComputedColumn
-                            ),
-                        deleted_at = table.Column<DateTime>(type: "datetime(6)", nullable: true),
-                    },
-                    constraints: table =>
-                    {
-                        table.PrimaryKey("PK_community_goal_levels", x => x.id);
-                        table.ForeignKey(
-                            name: "FK_community_goal_levels_community_goals_goal_id",
-                            column: x => x.goal_id,
-                            principalTable: "community_goals",
                             principalColumn: "id",
                             onDelete: ReferentialAction.Cascade
                         );
@@ -3060,6 +2495,129 @@ namespace Vortex.Database.Migrations
                             name: "FK_furniture_purchasable_clothing_furniture_definitions_furnitu~",
                             column: x => x.furniture_definition_id,
                             principalTable: "furniture_definitions",
+                            principalColumn: "id",
+                            onDelete: ReferentialAction.Cascade
+                        );
+                    }
+                )
+                .Annotation("MySql:CharSet", "utf8mb4");
+
+            migrationBuilder
+                .CreateTable(
+                    name: "loot_table_bindings",
+                    columns: table => new
+                    {
+                        id = table
+                            .Column<int>(type: "int", nullable: false)
+                            .Annotation(
+                                "MySql:ValueGenerationStrategy",
+                                MySqlValueGenerationStrategy.IdentityColumn
+                            ),
+                        furniture_definition_id = table.Column<int>(type: "int", nullable: false),
+                        pool_id = table.Column<int>(type: "int", nullable: false),
+                        hits_required = table.Column<int>(
+                            type: "int",
+                            nullable: false,
+                            defaultValue: 1
+                        ),
+                        enabled = table.Column<bool>(
+                            type: "tinyint(1)",
+                            nullable: false,
+                            defaultValue: true
+                        ),
+                        created_at = table
+                            .Column<DateTime>(type: "datetime(6)", nullable: false)
+                            .Annotation(
+                                "MySql:ValueGenerationStrategy",
+                                MySqlValueGenerationStrategy.IdentityColumn
+                            ),
+                        updated_at = table
+                            .Column<DateTime>(type: "datetime(6)", nullable: false)
+                            .Annotation(
+                                "MySql:ValueGenerationStrategy",
+                                MySqlValueGenerationStrategy.ComputedColumn
+                            ),
+                        deleted_at = table.Column<DateTime>(type: "datetime(6)", nullable: true),
+                    },
+                    constraints: table =>
+                    {
+                        table.PrimaryKey("PK_loot_table_bindings", x => x.id);
+                        table.ForeignKey(
+                            name: "FK_loot_table_bindings_loot_tables_pool_id",
+                            column: x => x.pool_id,
+                            principalTable: "loot_tables",
+                            principalColumn: "id",
+                            onDelete: ReferentialAction.Cascade
+                        );
+                    }
+                )
+                .Annotation("MySql:CharSet", "utf8mb4");
+
+            migrationBuilder
+                .CreateTable(
+                    name: "loot_table_entries",
+                    columns: table => new
+                    {
+                        id = table
+                            .Column<int>(type: "int", nullable: false)
+                            .Annotation(
+                                "MySql:ValueGenerationStrategy",
+                                MySqlValueGenerationStrategy.IdentityColumn
+                            ),
+                        pool_id = table.Column<int>(type: "int", nullable: false),
+                        variant = table
+                            .Column<string>(
+                                type: "varchar(32)",
+                                maxLength: 32,
+                                nullable: false,
+                                defaultValue: ""
+                            )
+                            .Annotation("MySql:CharSet", "utf8mb4"),
+                        product_type = table.Column<int>(
+                            type: "int",
+                            nullable: false,
+                            defaultValue: 0
+                        ),
+                        furniture_definition_id = table.Column<int>(
+                            type: "int",
+                            nullable: false,
+                            defaultValue: 0
+                        ),
+                        extra_param = table
+                            .Column<string>(
+                                type: "varchar(128)",
+                                maxLength: 128,
+                                nullable: false,
+                                defaultValue: ""
+                            )
+                            .Annotation("MySql:CharSet", "utf8mb4"),
+                        weight = table.Column<int>(type: "int", nullable: false, defaultValue: 1),
+                        enabled = table.Column<bool>(
+                            type: "tinyint(1)",
+                            nullable: false,
+                            defaultValue: true
+                        ),
+                        created_at = table
+                            .Column<DateTime>(type: "datetime(6)", nullable: false)
+                            .Annotation(
+                                "MySql:ValueGenerationStrategy",
+                                MySqlValueGenerationStrategy.IdentityColumn
+                            ),
+                        updated_at = table
+                            .Column<DateTime>(type: "datetime(6)", nullable: false)
+                            .Annotation(
+                                "MySql:ValueGenerationStrategy",
+                                MySqlValueGenerationStrategy.ComputedColumn
+                            ),
+                        deleted_at = table.Column<DateTime>(type: "datetime(6)", nullable: true),
+                    },
+                    constraints: table =>
+                    {
+                        table.PrimaryKey("PK_loot_table_entries", x => x.id);
+                        table.ForeignKey(
+                            name: "FK_loot_table_entries_loot_tables_pool_id",
+                            column: x => x.pool_id,
+                            principalTable: "loot_tables",
                             principalColumn: "id",
                             onDelete: ReferentialAction.Cascade
                         );
@@ -3300,36 +2858,11 @@ namespace Vortex.Database.Migrations
                             nullable: false,
                             defaultValue: 0
                         ),
-                        room_chat_style_id = table.Column<int>(type: "int", nullable: true),
                         last_login_at = table.Column<DateTime>(type: "datetime(6)", nullable: true),
                         achievement_score = table.Column<int>(
                             type: "int",
                             nullable: false,
                             defaultValue: 0
-                        ),
-                        respect_received = table.Column<int>(
-                            type: "int",
-                            nullable: false,
-                            defaultValue: 0
-                        ),
-                        respect_given_today = table.Column<int>(
-                            type: "int",
-                            nullable: false,
-                            defaultValue: 0
-                        ),
-                        pet_respect_given_today = table.Column<int>(
-                            type: "int",
-                            nullable: false,
-                            defaultValue: 0
-                        ),
-                        respect_replenishes_used_today = table.Column<int>(
-                            type: "int",
-                            nullable: false,
-                            defaultValue: 0
-                        ),
-                        respect_reset_date = table.Column<DateTime>(
-                            type: "datetime(6)",
-                            nullable: true
                         ),
                         favourite_group_id = table.Column<int>(type: "int", nullable: true),
                         trading_locked_until = table.Column<DateTime>(
@@ -3364,172 +2897,6 @@ namespace Vortex.Database.Migrations
                             column: x => x.account_id,
                             principalTable: "player_accounts",
                             principalColumn: "id"
-                        );
-                    }
-                )
-                .Annotation("MySql:CharSet", "utf8mb4");
-
-            migrationBuilder
-                .CreateTable(
-                    name: "prize_pool_bindings",
-                    columns: table => new
-                    {
-                        id = table
-                            .Column<int>(type: "int", nullable: false)
-                            .Annotation(
-                                "MySql:ValueGenerationStrategy",
-                                MySqlValueGenerationStrategy.IdentityColumn
-                            ),
-                        furniture_definition_id = table.Column<int>(type: "int", nullable: false),
-                        pool_id = table.Column<int>(type: "int", nullable: false),
-                        hits_required = table.Column<int>(
-                            type: "int",
-                            nullable: false,
-                            defaultValue: 1
-                        ),
-                        enabled = table.Column<bool>(
-                            type: "tinyint(1)",
-                            nullable: false,
-                            defaultValue: true
-                        ),
-                        created_at = table
-                            .Column<DateTime>(type: "datetime(6)", nullable: false)
-                            .Annotation(
-                                "MySql:ValueGenerationStrategy",
-                                MySqlValueGenerationStrategy.IdentityColumn
-                            ),
-                        updated_at = table
-                            .Column<DateTime>(type: "datetime(6)", nullable: false)
-                            .Annotation(
-                                "MySql:ValueGenerationStrategy",
-                                MySqlValueGenerationStrategy.ComputedColumn
-                            ),
-                        deleted_at = table.Column<DateTime>(type: "datetime(6)", nullable: true),
-                    },
-                    constraints: table =>
-                    {
-                        table.PrimaryKey("PK_prize_pool_bindings", x => x.id);
-                        table.ForeignKey(
-                            name: "FK_prize_pool_bindings_prize_pools_pool_id",
-                            column: x => x.pool_id,
-                            principalTable: "prize_pools",
-                            principalColumn: "id",
-                            onDelete: ReferentialAction.Cascade
-                        );
-                    }
-                )
-                .Annotation("MySql:CharSet", "utf8mb4");
-
-            migrationBuilder
-                .CreateTable(
-                    name: "prize_pool_entries",
-                    columns: table => new
-                    {
-                        id = table
-                            .Column<int>(type: "int", nullable: false)
-                            .Annotation(
-                                "MySql:ValueGenerationStrategy",
-                                MySqlValueGenerationStrategy.IdentityColumn
-                            ),
-                        pool_id = table.Column<int>(type: "int", nullable: false),
-                        variant = table
-                            .Column<string>(
-                                type: "varchar(32)",
-                                maxLength: 32,
-                                nullable: false,
-                                defaultValue: ""
-                            )
-                            .Annotation("MySql:CharSet", "utf8mb4"),
-                        product_type = table.Column<int>(
-                            type: "int",
-                            nullable: false,
-                            defaultValue: 0
-                        ),
-                        furniture_definition_id = table.Column<int>(
-                            type: "int",
-                            nullable: false,
-                            defaultValue: 0
-                        ),
-                        extra_param = table
-                            .Column<string>(
-                                type: "varchar(128)",
-                                maxLength: 128,
-                                nullable: false,
-                                defaultValue: ""
-                            )
-                            .Annotation("MySql:CharSet", "utf8mb4"),
-                        weight = table.Column<int>(type: "int", nullable: false, defaultValue: 1),
-                        enabled = table.Column<bool>(
-                            type: "tinyint(1)",
-                            nullable: false,
-                            defaultValue: true
-                        ),
-                        created_at = table
-                            .Column<DateTime>(type: "datetime(6)", nullable: false)
-                            .Annotation(
-                                "MySql:ValueGenerationStrategy",
-                                MySqlValueGenerationStrategy.IdentityColumn
-                            ),
-                        updated_at = table
-                            .Column<DateTime>(type: "datetime(6)", nullable: false)
-                            .Annotation(
-                                "MySql:ValueGenerationStrategy",
-                                MySqlValueGenerationStrategy.ComputedColumn
-                            ),
-                        deleted_at = table.Column<DateTime>(type: "datetime(6)", nullable: true),
-                    },
-                    constraints: table =>
-                    {
-                        table.PrimaryKey("PK_prize_pool_entries", x => x.id);
-                        table.ForeignKey(
-                            name: "FK_prize_pool_entries_prize_pools_pool_id",
-                            column: x => x.pool_id,
-                            principalTable: "prize_pools",
-                            principalColumn: "id",
-                            onDelete: ReferentialAction.Cascade
-                        );
-                    }
-                )
-                .Annotation("MySql:CharSet", "utf8mb4");
-
-            migrationBuilder
-                .CreateTable(
-                    name: "quiz_questions",
-                    columns: table => new
-                    {
-                        id = table
-                            .Column<int>(type: "int", nullable: false)
-                            .Annotation(
-                                "MySql:ValueGenerationStrategy",
-                                MySqlValueGenerationStrategy.IdentityColumn
-                            ),
-                        quiz_id = table.Column<int>(type: "int", nullable: false),
-                        question_number = table.Column<int>(type: "int", nullable: false),
-                        correct_answer_index = table.Column<int>(type: "int", nullable: false),
-                        sort_order = table.Column<int>(type: "int", nullable: false),
-                        created_at = table
-                            .Column<DateTime>(type: "datetime(6)", nullable: false)
-                            .Annotation(
-                                "MySql:ValueGenerationStrategy",
-                                MySqlValueGenerationStrategy.IdentityColumn
-                            ),
-                        updated_at = table
-                            .Column<DateTime>(type: "datetime(6)", nullable: false)
-                            .Annotation(
-                                "MySql:ValueGenerationStrategy",
-                                MySqlValueGenerationStrategy.ComputedColumn
-                            ),
-                        deleted_at = table.Column<DateTime>(type: "datetime(6)", nullable: true),
-                    },
-                    constraints: table =>
-                    {
-                        table.PrimaryKey("PK_quiz_questions", x => x.id);
-                        table.ForeignKey(
-                            name: "FK_quiz_questions_quizzes_quiz_id",
-                            column: x => x.quiz_id,
-                            principalTable: "quizzes",
-                            principalColumn: "id",
-                            onDelete: ReferentialAction.Cascade
                         );
                     }
                 )
@@ -4236,62 +3603,6 @@ namespace Vortex.Database.Migrations
 
             migrationBuilder
                 .CreateTable(
-                    name: "player_achievement_resolutions",
-                    columns: table => new
-                    {
-                        id = table
-                            .Column<int>(type: "int", nullable: false)
-                            .Annotation(
-                                "MySql:ValueGenerationStrategy",
-                                MySqlValueGenerationStrategy.IdentityColumn
-                            ),
-                        player_id = table.Column<int>(type: "int", nullable: false),
-                        item_id = table.Column<int>(type: "int", nullable: false),
-                        achievement_id = table.Column<int>(type: "int", nullable: false),
-                        target_level = table.Column<int>(type: "int", nullable: false),
-                        started_at = table.Column<DateTime>(type: "datetime(6)", nullable: false),
-                        ends_at = table.Column<DateTime>(type: "datetime(6)", nullable: false),
-                        completed_at = table.Column<DateTime>(type: "datetime(6)", nullable: true),
-                        awarded_badge_code = table
-                            .Column<string>(type: "varchar(512)", maxLength: 512, nullable: true)
-                            .Annotation("MySql:CharSet", "utf8mb4"),
-                        created_at = table
-                            .Column<DateTime>(type: "datetime(6)", nullable: false)
-                            .Annotation(
-                                "MySql:ValueGenerationStrategy",
-                                MySqlValueGenerationStrategy.IdentityColumn
-                            ),
-                        updated_at = table
-                            .Column<DateTime>(type: "datetime(6)", nullable: false)
-                            .Annotation(
-                                "MySql:ValueGenerationStrategy",
-                                MySqlValueGenerationStrategy.ComputedColumn
-                            ),
-                        deleted_at = table.Column<DateTime>(type: "datetime(6)", nullable: true),
-                    },
-                    constraints: table =>
-                    {
-                        table.PrimaryKey("PK_player_achievement_resolutions", x => x.id);
-                        table.ForeignKey(
-                            name: "FK_player_achievement_resolutions_achievements_achievement_id",
-                            column: x => x.achievement_id,
-                            principalTable: "achievements",
-                            principalColumn: "id",
-                            onDelete: ReferentialAction.Cascade
-                        );
-                        table.ForeignKey(
-                            name: "FK_player_achievement_resolutions_players_player_id",
-                            column: x => x.player_id,
-                            principalTable: "players",
-                            principalColumn: "id",
-                            onDelete: ReferentialAction.Cascade
-                        );
-                    }
-                )
-                .Annotation("MySql:CharSet", "utf8mb4");
-
-            migrationBuilder
-                .CreateTable(
                     name: "player_achievements",
                     columns: table => new
                     {
@@ -4386,54 +3697,6 @@ namespace Vortex.Database.Migrations
 
             migrationBuilder
                 .CreateTable(
-                    name: "player_chat_styles_owned",
-                    columns: table => new
-                    {
-                        id = table
-                            .Column<int>(type: "int", nullable: false)
-                            .Annotation(
-                                "MySql:ValueGenerationStrategy",
-                                MySqlValueGenerationStrategy.IdentityColumn
-                            ),
-                        player_id = table.Column<int>(type: "int", nullable: false),
-                        chat_style_id = table.Column<int>(type: "int", nullable: false),
-                        created_at = table
-                            .Column<DateTime>(type: "datetime(6)", nullable: false)
-                            .Annotation(
-                                "MySql:ValueGenerationStrategy",
-                                MySqlValueGenerationStrategy.IdentityColumn
-                            ),
-                        updated_at = table
-                            .Column<DateTime>(type: "datetime(6)", nullable: false)
-                            .Annotation(
-                                "MySql:ValueGenerationStrategy",
-                                MySqlValueGenerationStrategy.ComputedColumn
-                            ),
-                        deleted_at = table.Column<DateTime>(type: "datetime(6)", nullable: true),
-                    },
-                    constraints: table =>
-                    {
-                        table.PrimaryKey("PK_player_chat_styles_owned", x => x.id);
-                        table.ForeignKey(
-                            name: "FK_player_chat_styles_owned_player_chat_styles_chat_style_id",
-                            column: x => x.chat_style_id,
-                            principalTable: "player_chat_styles",
-                            principalColumn: "id",
-                            onDelete: ReferentialAction.Cascade
-                        );
-                        table.ForeignKey(
-                            name: "FK_player_chat_styles_owned_players_player_id",
-                            column: x => x.player_id,
-                            principalTable: "players",
-                            principalColumn: "id",
-                            onDelete: ReferentialAction.Cascade
-                        );
-                    }
-                )
-                .Annotation("MySql:CharSet", "utf8mb4");
-
-            migrationBuilder
-                .CreateTable(
                     name: "player_clothing",
                     columns: table => new
                     {
@@ -4467,59 +3730,6 @@ namespace Vortex.Database.Migrations
                         table.PrimaryKey("PK_player_clothing", x => x.id);
                         table.ForeignKey(
                             name: "FK_player_clothing_players_player_id",
-                            column: x => x.player_id,
-                            principalTable: "players",
-                            principalColumn: "id",
-                            onDelete: ReferentialAction.Cascade
-                        );
-                    }
-                )
-                .Annotation("MySql:CharSet", "utf8mb4");
-
-            migrationBuilder
-                .CreateTable(
-                    name: "player_community_goal_contributions",
-                    columns: table => new
-                    {
-                        id = table
-                            .Column<int>(type: "int", nullable: false)
-                            .Annotation(
-                                "MySql:ValueGenerationStrategy",
-                                MySqlValueGenerationStrategy.IdentityColumn
-                            ),
-                        player_id = table.Column<int>(type: "int", nullable: false),
-                        goal_id = table.Column<int>(type: "int", nullable: false),
-                        score = table.Column<int>(type: "int", nullable: false, defaultValue: 0),
-                        last_contributed_at = table.Column<DateTime>(
-                            type: "datetime(6)",
-                            nullable: true
-                        ),
-                        created_at = table
-                            .Column<DateTime>(type: "datetime(6)", nullable: false)
-                            .Annotation(
-                                "MySql:ValueGenerationStrategy",
-                                MySqlValueGenerationStrategy.IdentityColumn
-                            ),
-                        updated_at = table
-                            .Column<DateTime>(type: "datetime(6)", nullable: false)
-                            .Annotation(
-                                "MySql:ValueGenerationStrategy",
-                                MySqlValueGenerationStrategy.ComputedColumn
-                            ),
-                        deleted_at = table.Column<DateTime>(type: "datetime(6)", nullable: true),
-                    },
-                    constraints: table =>
-                    {
-                        table.PrimaryKey("PK_player_community_goal_contributions", x => x.id);
-                        table.ForeignKey(
-                            name: "FK_player_community_goal_contributions_community_goals_goal_id",
-                            column: x => x.goal_id,
-                            principalTable: "community_goals",
-                            principalColumn: "id",
-                            onDelete: ReferentialAction.Restrict
-                        );
-                        table.ForeignKey(
-                            name: "FK_player_community_goal_contributions_players_player_id",
                             column: x => x.player_id,
                             principalTable: "players",
                             principalColumn: "id",
@@ -4686,7 +3896,55 @@ namespace Vortex.Database.Migrations
 
             migrationBuilder
                 .CreateTable(
-                    name: "player_kickback",
+                    name: "player_loot_claims",
+                    columns: table => new
+                    {
+                        id = table
+                            .Column<int>(type: "int", nullable: false)
+                            .Annotation(
+                                "MySql:ValueGenerationStrategy",
+                                MySqlValueGenerationStrategy.IdentityColumn
+                            ),
+                        player_id = table.Column<int>(type: "int", nullable: false),
+                        pool_id = table.Column<int>(type: "int", nullable: false),
+                        created_at = table
+                            .Column<DateTime>(type: "datetime(6)", nullable: false)
+                            .Annotation(
+                                "MySql:ValueGenerationStrategy",
+                                MySqlValueGenerationStrategy.IdentityColumn
+                            ),
+                        updated_at = table
+                            .Column<DateTime>(type: "datetime(6)", nullable: false)
+                            .Annotation(
+                                "MySql:ValueGenerationStrategy",
+                                MySqlValueGenerationStrategy.ComputedColumn
+                            ),
+                        deleted_at = table.Column<DateTime>(type: "datetime(6)", nullable: true),
+                    },
+                    constraints: table =>
+                    {
+                        table.PrimaryKey("PK_player_loot_claims", x => x.id);
+                        table.ForeignKey(
+                            name: "FK_player_loot_claims_loot_tables_pool_id",
+                            column: x => x.pool_id,
+                            principalTable: "loot_tables",
+                            principalColumn: "id",
+                            onDelete: ReferentialAction.Cascade
+                        );
+                        table.ForeignKey(
+                            name: "FK_player_loot_claims_players_player_id",
+                            column: x => x.player_id,
+                            principalTable: "players",
+                            principalColumn: "id",
+                            onDelete: ReferentialAction.Cascade
+                        );
+                    }
+                )
+                .Annotation("MySql:CharSet", "utf8mb4");
+
+            migrationBuilder
+                .CreateTable(
+                    name: "player_membership_kickbacks",
                     columns: table => new
                     {
                         id = table
@@ -4716,9 +3974,66 @@ namespace Vortex.Database.Migrations
                     },
                     constraints: table =>
                     {
-                        table.PrimaryKey("PK_player_kickback", x => x.id);
+                        table.PrimaryKey("PK_player_membership_kickbacks", x => x.id);
                         table.ForeignKey(
-                            name: "FK_player_kickback_players_player_id",
+                            name: "FK_player_membership_kickbacks_players_player_id",
+                            column: x => x.player_id,
+                            principalTable: "players",
+                            principalColumn: "id",
+                            onDelete: ReferentialAction.Cascade
+                        );
+                    }
+                )
+                .Annotation("MySql:CharSet", "utf8mb4");
+
+            migrationBuilder
+                .CreateTable(
+                    name: "player_memberships",
+                    columns: table => new
+                    {
+                        id = table
+                            .Column<int>(type: "int", nullable: false)
+                            .Annotation(
+                                "MySql:ValueGenerationStrategy",
+                                MySqlValueGenerationStrategy.IdentityColumn
+                            ),
+                        player_id = table.Column<int>(type: "int", nullable: false),
+                        membership_type = table.Column<int>(type: "int", nullable: false),
+                        level = table.Column<int>(type: "int", nullable: false),
+                        expires_at = table.Column<DateTime>(type: "datetime(6)", nullable: false),
+                        total_months = table.Column<int>(type: "int", nullable: false),
+                        gifts_available = table.Column<int>(type: "int", nullable: false),
+                        next_gift_at = table.Column<DateTime>(type: "datetime(6)", nullable: true),
+                        past_membership_days = table.Column<int>(type: "int", nullable: false),
+                        past_vip_days = table.Column<int>(type: "int", nullable: false),
+                        first_subscribed_at = table.Column<DateTime>(
+                            type: "datetime(6)",
+                            nullable: true
+                        ),
+                        last_expired_at = table.Column<DateTime>(
+                            type: "datetime(6)",
+                            nullable: true
+                        ),
+                        hc_badge_granted = table.Column<bool>(type: "tinyint(1)", nullable: false),
+                        created_at = table
+                            .Column<DateTime>(type: "datetime(6)", nullable: false)
+                            .Annotation(
+                                "MySql:ValueGenerationStrategy",
+                                MySqlValueGenerationStrategy.IdentityColumn
+                            ),
+                        updated_at = table
+                            .Column<DateTime>(type: "datetime(6)", nullable: false)
+                            .Annotation(
+                                "MySql:ValueGenerationStrategy",
+                                MySqlValueGenerationStrategy.ComputedColumn
+                            ),
+                        deleted_at = table.Column<DateTime>(type: "datetime(6)", nullable: true),
+                    },
+                    constraints: table =>
+                    {
+                        table.PrimaryKey("PK_player_memberships", x => x.id);
+                        table.ForeignKey(
+                            name: "FK_player_memberships_players_player_id",
                             column: x => x.player_id,
                             principalTable: "players",
                             principalColumn: "id",
@@ -4845,54 +4160,6 @@ namespace Vortex.Database.Migrations
 
             migrationBuilder
                 .CreateTable(
-                    name: "player_prize_claims",
-                    columns: table => new
-                    {
-                        id = table
-                            .Column<int>(type: "int", nullable: false)
-                            .Annotation(
-                                "MySql:ValueGenerationStrategy",
-                                MySqlValueGenerationStrategy.IdentityColumn
-                            ),
-                        player_id = table.Column<int>(type: "int", nullable: false),
-                        pool_id = table.Column<int>(type: "int", nullable: false),
-                        created_at = table
-                            .Column<DateTime>(type: "datetime(6)", nullable: false)
-                            .Annotation(
-                                "MySql:ValueGenerationStrategy",
-                                MySqlValueGenerationStrategy.IdentityColumn
-                            ),
-                        updated_at = table
-                            .Column<DateTime>(type: "datetime(6)", nullable: false)
-                            .Annotation(
-                                "MySql:ValueGenerationStrategy",
-                                MySqlValueGenerationStrategy.ComputedColumn
-                            ),
-                        deleted_at = table.Column<DateTime>(type: "datetime(6)", nullable: true),
-                    },
-                    constraints: table =>
-                    {
-                        table.PrimaryKey("PK_player_prize_claims", x => x.id);
-                        table.ForeignKey(
-                            name: "FK_player_prize_claims_players_player_id",
-                            column: x => x.player_id,
-                            principalTable: "players",
-                            principalColumn: "id",
-                            onDelete: ReferentialAction.Cascade
-                        );
-                        table.ForeignKey(
-                            name: "FK_player_prize_claims_prize_pools_pool_id",
-                            column: x => x.pool_id,
-                            principalTable: "prize_pools",
-                            principalColumn: "id",
-                            onDelete: ReferentialAction.Cascade
-                        );
-                    }
-                )
-                .Annotation("MySql:CharSet", "utf8mb4");
-
-            migrationBuilder
-                .CreateTable(
                     name: "player_quests",
                     columns: table => new
                     {
@@ -4958,114 +4225,7 @@ namespace Vortex.Database.Migrations
 
             migrationBuilder
                 .CreateTable(
-                    name: "player_quizzes",
-                    columns: table => new
-                    {
-                        id = table
-                            .Column<int>(type: "int", nullable: false)
-                            .Annotation(
-                                "MySql:ValueGenerationStrategy",
-                                MySqlValueGenerationStrategy.IdentityColumn
-                            ),
-                        player_id = table.Column<int>(type: "int", nullable: false),
-                        quiz_id = table.Column<int>(type: "int", nullable: false),
-                        attempts = table.Column<int>(type: "int", nullable: false),
-                        passed_at = table.Column<DateTime>(type: "datetime(6)", nullable: true),
-                        created_at = table
-                            .Column<DateTime>(type: "datetime(6)", nullable: false)
-                            .Annotation(
-                                "MySql:ValueGenerationStrategy",
-                                MySqlValueGenerationStrategy.IdentityColumn
-                            ),
-                        updated_at = table
-                            .Column<DateTime>(type: "datetime(6)", nullable: false)
-                            .Annotation(
-                                "MySql:ValueGenerationStrategy",
-                                MySqlValueGenerationStrategy.ComputedColumn
-                            ),
-                        deleted_at = table.Column<DateTime>(type: "datetime(6)", nullable: true),
-                    },
-                    constraints: table =>
-                    {
-                        table.PrimaryKey("PK_player_quizzes", x => x.id);
-                        table.ForeignKey(
-                            name: "FK_player_quizzes_players_player_id",
-                            column: x => x.player_id,
-                            principalTable: "players",
-                            principalColumn: "id",
-                            onDelete: ReferentialAction.Cascade
-                        );
-                        table.ForeignKey(
-                            name: "FK_player_quizzes_quizzes_quiz_id",
-                            column: x => x.quiz_id,
-                            principalTable: "quizzes",
-                            principalColumn: "id",
-                            onDelete: ReferentialAction.Cascade
-                        );
-                    }
-                )
-                .Annotation("MySql:CharSet", "utf8mb4");
-
-            migrationBuilder
-                .CreateTable(
-                    name: "player_subscriptions",
-                    columns: table => new
-                    {
-                        id = table
-                            .Column<int>(type: "int", nullable: false)
-                            .Annotation(
-                                "MySql:ValueGenerationStrategy",
-                                MySqlValueGenerationStrategy.IdentityColumn
-                            ),
-                        player_id = table.Column<int>(type: "int", nullable: false),
-                        subscription_type = table.Column<int>(type: "int", nullable: false),
-                        level = table.Column<int>(type: "int", nullable: false),
-                        expires_at = table.Column<DateTime>(type: "datetime(6)", nullable: false),
-                        total_months = table.Column<int>(type: "int", nullable: false),
-                        gifts_available = table.Column<int>(type: "int", nullable: false),
-                        next_gift_at = table.Column<DateTime>(type: "datetime(6)", nullable: true),
-                        past_club_days = table.Column<int>(type: "int", nullable: false),
-                        past_vip_days = table.Column<int>(type: "int", nullable: false),
-                        first_subscribed_at = table.Column<DateTime>(
-                            type: "datetime(6)",
-                            nullable: true
-                        ),
-                        last_expired_at = table.Column<DateTime>(
-                            type: "datetime(6)",
-                            nullable: true
-                        ),
-                        hc_badge_granted = table.Column<bool>(type: "tinyint(1)", nullable: false),
-                        created_at = table
-                            .Column<DateTime>(type: "datetime(6)", nullable: false)
-                            .Annotation(
-                                "MySql:ValueGenerationStrategy",
-                                MySqlValueGenerationStrategy.IdentityColumn
-                            ),
-                        updated_at = table
-                            .Column<DateTime>(type: "datetime(6)", nullable: false)
-                            .Annotation(
-                                "MySql:ValueGenerationStrategy",
-                                MySqlValueGenerationStrategy.ComputedColumn
-                            ),
-                        deleted_at = table.Column<DateTime>(type: "datetime(6)", nullable: true),
-                    },
-                    constraints: table =>
-                    {
-                        table.PrimaryKey("PK_player_subscriptions", x => x.id);
-                        table.ForeignKey(
-                            name: "FK_player_subscriptions_players_player_id",
-                            column: x => x.player_id,
-                            principalTable: "players",
-                            principalColumn: "id",
-                            onDelete: ReferentialAction.Cascade
-                        );
-                    }
-                )
-                .Annotation("MySql:CharSet", "utf8mb4");
-
-            migrationBuilder
-                .CreateTable(
-                    name: "player_vault_income_rewards",
+                    name: "player_reward_vault_entries",
                     columns: table => new
                     {
                         id = table
@@ -5101,9 +4261,9 @@ namespace Vortex.Database.Migrations
                     },
                     constraints: table =>
                     {
-                        table.PrimaryKey("PK_player_vault_income_rewards", x => x.id);
+                        table.PrimaryKey("PK_player_reward_vault_entries", x => x.id);
                         table.ForeignKey(
-                            name: "FK_player_vault_income_rewards_players_player_id",
+                            name: "FK_player_reward_vault_entries_players_player_id",
                             column: x => x.player_id,
                             principalTable: "players",
                             principalColumn: "id",
@@ -5570,10 +4730,6 @@ namespace Vortex.Database.Migrations
                         extra_data = table
                             .Column<string>(type: "varchar(512)", maxLength: 512, nullable: true)
                             .Annotation("MySql:CharSet", "utf8mb4"),
-                        rentable_space_furniture_id = table.Column<int>(
-                            type: "int",
-                            nullable: true
-                        ),
                         created_at = table
                             .Column<DateTime>(type: "datetime(6)", nullable: false)
                             .Annotation(
@@ -5599,165 +4755,11 @@ namespace Vortex.Database.Migrations
                             onDelete: ReferentialAction.Cascade
                         );
                         table.ForeignKey(
-                            name: "FK_furniture_furniture_rentable_space_furniture_id",
-                            column: x => x.rentable_space_furniture_id,
-                            principalTable: "furniture",
-                            principalColumn: "id",
-                            onDelete: ReferentialAction.SetNull
-                        );
-                        table.ForeignKey(
                             name: "FK_furniture_players_player_id",
                             column: x => x.player_id,
                             principalTable: "players",
                             principalColumn: "id",
                             onDelete: ReferentialAction.Cascade
-                        );
-                    }
-                )
-                .Annotation("MySql:CharSet", "utf8mb4");
-
-            migrationBuilder
-                .CreateTable(
-                    name: "furniture_teleport_links",
-                    columns: table => new
-                    {
-                        id = table
-                            .Column<int>(type: "int", nullable: false)
-                            .Annotation(
-                                "MySql:ValueGenerationStrategy",
-                                MySqlValueGenerationStrategy.IdentityColumn
-                            ),
-                        furniture_one_id = table.Column<int>(type: "int", nullable: false),
-                        furniture_two_id = table.Column<int>(type: "int", nullable: false),
-                        created_at = table
-                            .Column<DateTime>(type: "datetime(6)", nullable: false)
-                            .Annotation(
-                                "MySql:ValueGenerationStrategy",
-                                MySqlValueGenerationStrategy.IdentityColumn
-                            ),
-                        updated_at = table
-                            .Column<DateTime>(type: "datetime(6)", nullable: false)
-                            .Annotation(
-                                "MySql:ValueGenerationStrategy",
-                                MySqlValueGenerationStrategy.ComputedColumn
-                            ),
-                        deleted_at = table.Column<DateTime>(type: "datetime(6)", nullable: true),
-                    },
-                    constraints: table =>
-                    {
-                        table.PrimaryKey("PK_furniture_teleport_links", x => x.id);
-                        table.ForeignKey(
-                            name: "FK_furniture_teleport_links_furniture_furniture_one_id",
-                            column: x => x.furniture_one_id,
-                            principalTable: "furniture",
-                            principalColumn: "id",
-                            onDelete: ReferentialAction.Cascade
-                        );
-                        table.ForeignKey(
-                            name: "FK_furniture_teleport_links_furniture_furniture_two_id",
-                            column: x => x.furniture_two_id,
-                            principalTable: "furniture",
-                            principalColumn: "id",
-                            onDelete: ReferentialAction.Cascade
-                        );
-                    }
-                )
-                .Annotation("MySql:CharSet", "utf8mb4");
-
-            migrationBuilder
-                .CreateTable(
-                    name: "room_rentable_space_terms",
-                    columns: table => new
-                    {
-                        id = table
-                            .Column<int>(type: "int", nullable: false)
-                            .Annotation(
-                                "MySql:ValueGenerationStrategy",
-                                MySqlValueGenerationStrategy.IdentityColumn
-                            ),
-                        furniture_id = table.Column<int>(type: "int", nullable: false),
-                        price = table.Column<int>(type: "int", nullable: false),
-                        currency_type_id = table.Column<int>(type: "int", nullable: false),
-                        rent_duration_seconds = table.Column<int>(type: "int", nullable: false),
-                        requires_hc = table.Column<bool>(type: "tinyint(1)", nullable: false),
-                        created_at = table
-                            .Column<DateTime>(type: "datetime(6)", nullable: false)
-                            .Annotation(
-                                "MySql:ValueGenerationStrategy",
-                                MySqlValueGenerationStrategy.IdentityColumn
-                            ),
-                        updated_at = table
-                            .Column<DateTime>(type: "datetime(6)", nullable: false)
-                            .Annotation(
-                                "MySql:ValueGenerationStrategy",
-                                MySqlValueGenerationStrategy.ComputedColumn
-                            ),
-                        deleted_at = table.Column<DateTime>(type: "datetime(6)", nullable: true),
-                    },
-                    constraints: table =>
-                    {
-                        table.PrimaryKey("PK_room_rentable_space_terms", x => x.id);
-                        table.ForeignKey(
-                            name: "FK_room_rentable_space_terms_currency_types_currency_type_id",
-                            column: x => x.currency_type_id,
-                            principalTable: "currency_types",
-                            principalColumn: "id",
-                            onDelete: ReferentialAction.Cascade
-                        );
-                        table.ForeignKey(
-                            name: "FK_room_rentable_space_terms_furniture_furniture_id",
-                            column: x => x.furniture_id,
-                            principalTable: "furniture",
-                            principalColumn: "id",
-                            onDelete: ReferentialAction.Cascade
-                        );
-                    }
-                )
-                .Annotation("MySql:CharSet", "utf8mb4");
-
-            migrationBuilder
-                .CreateTable(
-                    name: "room_rentable_spaces",
-                    columns: table => new
-                    {
-                        id = table
-                            .Column<int>(type: "int", nullable: false)
-                            .Annotation(
-                                "MySql:ValueGenerationStrategy",
-                                MySqlValueGenerationStrategy.IdentityColumn
-                            ),
-                        furniture_id = table.Column<int>(type: "int", nullable: false),
-                        renter_player_id = table.Column<int>(type: "int", nullable: true),
-                        rented_until = table.Column<DateTime>(type: "datetime(6)", nullable: true),
-                        created_at = table
-                            .Column<DateTime>(type: "datetime(6)", nullable: false)
-                            .Annotation(
-                                "MySql:ValueGenerationStrategy",
-                                MySqlValueGenerationStrategy.IdentityColumn
-                            ),
-                        updated_at = table
-                            .Column<DateTime>(type: "datetime(6)", nullable: false)
-                            .Annotation(
-                                "MySql:ValueGenerationStrategy",
-                                MySqlValueGenerationStrategy.ComputedColumn
-                            ),
-                        deleted_at = table.Column<DateTime>(type: "datetime(6)", nullable: true),
-                    },
-                    constraints: table =>
-                    {
-                        table.PrimaryKey("PK_room_rentable_spaces", x => x.id);
-                        table.ForeignKey(
-                            name: "FK_room_rentable_spaces_furniture_furniture_id",
-                            column: x => x.furniture_id,
-                            principalTable: "furniture",
-                            principalColumn: "id",
-                            onDelete: ReferentialAction.Cascade
-                        );
-                        table.ForeignKey(
-                            name: "FK_room_rentable_spaces_players_renter_player_id",
-                            column: x => x.renter_player_id,
-                            principalTable: "players",
-                            principalColumn: "id"
                         );
                     }
                 )
@@ -6408,64 +5410,6 @@ namespace Vortex.Database.Migrations
 
             migrationBuilder
                 .CreateTable(
-                    name: "web_feed_posts",
-                    columns: table => new
-                    {
-                        id = table
-                            .Column<int>(type: "int", nullable: false)
-                            .Annotation(
-                                "MySql:ValueGenerationStrategy",
-                                MySqlValueGenerationStrategy.IdentityColumn
-                            ),
-                        player_id = table.Column<int>(type: "int", nullable: false),
-                        group_id = table.Column<int>(type: "int", nullable: true),
-                        parent_id = table.Column<int>(type: "int", nullable: true),
-                        kind = table.Column<int>(type: "int", nullable: false),
-                        body = table
-                            .Column<string>(type: "varchar(500)", maxLength: 500, nullable: false)
-                            .Annotation("MySql:CharSet", "utf8mb4"),
-                        created_at = table
-                            .Column<DateTime>(type: "datetime(6)", nullable: false)
-                            .Annotation(
-                                "MySql:ValueGenerationStrategy",
-                                MySqlValueGenerationStrategy.IdentityColumn
-                            ),
-                        updated_at = table
-                            .Column<DateTime>(type: "datetime(6)", nullable: false)
-                            .Annotation(
-                                "MySql:ValueGenerationStrategy",
-                                MySqlValueGenerationStrategy.ComputedColumn
-                            ),
-                        deleted_at = table.Column<DateTime>(type: "datetime(6)", nullable: true),
-                    },
-                    constraints: table =>
-                    {
-                        table.PrimaryKey("PK_web_feed_posts", x => x.id);
-                        table.ForeignKey(
-                            name: "FK_web_feed_posts_groups_group_id",
-                            column: x => x.group_id,
-                            principalTable: "groups",
-                            principalColumn: "id"
-                        );
-                        table.ForeignKey(
-                            name: "FK_web_feed_posts_players_player_id",
-                            column: x => x.player_id,
-                            principalTable: "players",
-                            principalColumn: "id",
-                            onDelete: ReferentialAction.Cascade
-                        );
-                        table.ForeignKey(
-                            name: "FK_web_feed_posts_web_feed_posts_parent_id",
-                            column: x => x.parent_id,
-                            principalTable: "web_feed_posts",
-                            principalColumn: "id"
-                        );
-                    }
-                )
-                .Annotation("MySql:CharSet", "utf8mb4");
-
-            migrationBuilder
-                .CreateTable(
                     name: "pets",
                     columns: table => new
                     {
@@ -6481,7 +5425,7 @@ namespace Vortex.Database.Migrations
                             .Column<string>(type: "varchar(40)", maxLength: 40, nullable: false)
                             .Annotation("MySql:CharSet", "utf8mb4"),
                         type = table.Column<int>(type: "int", nullable: false),
-                        race = table.Column<int>(type: "int", nullable: false),
+                        skin = table.Column<int>(type: "int", nullable: false),
                         color = table
                             .Column<string>(type: "varchar(12)", maxLength: 12, nullable: false)
                             .Annotation("MySql:CharSet", "utf8mb4"),
@@ -6491,15 +5435,6 @@ namespace Vortex.Database.Migrations
                             type: "int",
                             nullable: false,
                             defaultValue: 0
-                        ),
-                        energy = table.Column<int>(type: "int", nullable: false),
-                        nutrition = table.Column<int>(type: "int", nullable: false),
-                        thirst = table.Column<int>(type: "int", nullable: false, defaultValue: 100),
-                        respect = table.Column<int>(type: "int", nullable: false, defaultValue: 0),
-                        happiness = table.Column<int>(
-                            type: "int",
-                            nullable: false,
-                            defaultValue: 100
                         ),
                         has_saddle = table.Column<bool>(
                             type: "tinyint(1)",
@@ -6800,54 +5735,6 @@ namespace Vortex.Database.Migrations
 
             migrationBuilder
                 .CreateTable(
-                    name: "room_raid_protection",
-                    columns: table => new
-                    {
-                        id = table
-                            .Column<int>(type: "int", nullable: false)
-                            .Annotation(
-                                "MySql:ValueGenerationStrategy",
-                                MySqlValueGenerationStrategy.IdentityColumn
-                            ),
-                        room_id = table.Column<int>(type: "int", nullable: false),
-                        enabled = table.Column<bool>(type: "tinyint(1)", nullable: false),
-                        detection_sensitivity = table.Column<int>(type: "int", nullable: false),
-                        action_type = table.Column<int>(type: "int", nullable: false),
-                        ban_duration_seconds = table.Column<int>(type: "int", nullable: false),
-                        guard_enabled = table.Column<bool>(type: "tinyint(1)", nullable: false),
-                        guard_duration_seconds = table.Column<int>(type: "int", nullable: false),
-                        guard_sensitivity = table.Column<int>(type: "int", nullable: false),
-                        last_raid_at = table.Column<DateTime>(type: "datetime(6)", nullable: true),
-                        created_at = table
-                            .Column<DateTime>(type: "datetime(6)", nullable: false)
-                            .Annotation(
-                                "MySql:ValueGenerationStrategy",
-                                MySqlValueGenerationStrategy.IdentityColumn
-                            ),
-                        updated_at = table
-                            .Column<DateTime>(type: "datetime(6)", nullable: false)
-                            .Annotation(
-                                "MySql:ValueGenerationStrategy",
-                                MySqlValueGenerationStrategy.ComputedColumn
-                            ),
-                        deleted_at = table.Column<DateTime>(type: "datetime(6)", nullable: true),
-                    },
-                    constraints: table =>
-                    {
-                        table.PrimaryKey("PK_room_raid_protection", x => x.id);
-                        table.ForeignKey(
-                            name: "FK_room_raid_protection_rooms_room_id",
-                            column: x => x.room_id,
-                            principalTable: "rooms",
-                            principalColumn: "id",
-                            onDelete: ReferentialAction.Cascade
-                        );
-                    }
-                )
-                .Annotation("MySql:CharSet", "utf8mb4");
-
-            migrationBuilder
-                .CreateTable(
                     name: "room_rights",
                     columns: table => new
                     {
@@ -6894,203 +5781,6 @@ namespace Vortex.Database.Migrations
                 )
                 .Annotation("MySql:CharSet", "utf8mb4");
 
-            migrationBuilder
-                .CreateTable(
-                    name: "web_feed_poll_choices",
-                    columns: table => new
-                    {
-                        id = table
-                            .Column<int>(type: "int", nullable: false)
-                            .Annotation(
-                                "MySql:ValueGenerationStrategy",
-                                MySqlValueGenerationStrategy.IdentityColumn
-                            ),
-                        post_id = table.Column<int>(type: "int", nullable: false),
-                        ordinal = table.Column<int>(type: "int", nullable: false),
-                        label = table
-                            .Column<string>(type: "varchar(80)", maxLength: 80, nullable: false)
-                            .Annotation("MySql:CharSet", "utf8mb4"),
-                        created_at = table
-                            .Column<DateTime>(type: "datetime(6)", nullable: false)
-                            .Annotation(
-                                "MySql:ValueGenerationStrategy",
-                                MySqlValueGenerationStrategy.IdentityColumn
-                            ),
-                        updated_at = table
-                            .Column<DateTime>(type: "datetime(6)", nullable: false)
-                            .Annotation(
-                                "MySql:ValueGenerationStrategy",
-                                MySqlValueGenerationStrategy.ComputedColumn
-                            ),
-                        deleted_at = table.Column<DateTime>(type: "datetime(6)", nullable: true),
-                    },
-                    constraints: table =>
-                    {
-                        table.PrimaryKey("PK_web_feed_poll_choices", x => x.id);
-                        table.ForeignKey(
-                            name: "FK_web_feed_poll_choices_web_feed_posts_post_id",
-                            column: x => x.post_id,
-                            principalTable: "web_feed_posts",
-                            principalColumn: "id",
-                            onDelete: ReferentialAction.Cascade
-                        );
-                    }
-                )
-                .Annotation("MySql:CharSet", "utf8mb4");
-
-            migrationBuilder
-                .CreateTable(
-                    name: "web_feed_post_tags",
-                    columns: table => new
-                    {
-                        id = table
-                            .Column<int>(type: "int", nullable: false)
-                            .Annotation(
-                                "MySql:ValueGenerationStrategy",
-                                MySqlValueGenerationStrategy.IdentityColumn
-                            ),
-                        post_id = table.Column<int>(type: "int", nullable: false),
-                        tag_id = table.Column<int>(type: "int", nullable: false),
-                        created_at = table
-                            .Column<DateTime>(type: "datetime(6)", nullable: false)
-                            .Annotation(
-                                "MySql:ValueGenerationStrategy",
-                                MySqlValueGenerationStrategy.IdentityColumn
-                            ),
-                        updated_at = table
-                            .Column<DateTime>(type: "datetime(6)", nullable: false)
-                            .Annotation(
-                                "MySql:ValueGenerationStrategy",
-                                MySqlValueGenerationStrategy.ComputedColumn
-                            ),
-                        deleted_at = table.Column<DateTime>(type: "datetime(6)", nullable: true),
-                    },
-                    constraints: table =>
-                    {
-                        table.PrimaryKey("PK_web_feed_post_tags", x => x.id);
-                        table.ForeignKey(
-                            name: "FK_web_feed_post_tags_web_feed_posts_post_id",
-                            column: x => x.post_id,
-                            principalTable: "web_feed_posts",
-                            principalColumn: "id",
-                            onDelete: ReferentialAction.Cascade
-                        );
-                        table.ForeignKey(
-                            name: "FK_web_feed_post_tags_web_feed_tags_tag_id",
-                            column: x => x.tag_id,
-                            principalTable: "web_feed_tags",
-                            principalColumn: "id",
-                            onDelete: ReferentialAction.Cascade
-                        );
-                    }
-                )
-                .Annotation("MySql:CharSet", "utf8mb4");
-
-            migrationBuilder
-                .CreateTable(
-                    name: "web_feed_reactions",
-                    columns: table => new
-                    {
-                        id = table
-                            .Column<int>(type: "int", nullable: false)
-                            .Annotation(
-                                "MySql:ValueGenerationStrategy",
-                                MySqlValueGenerationStrategy.IdentityColumn
-                            ),
-                        post_id = table.Column<int>(type: "int", nullable: false),
-                        player_id = table.Column<int>(type: "int", nullable: false),
-                        kind = table.Column<int>(type: "int", nullable: false),
-                        created_at = table
-                            .Column<DateTime>(type: "datetime(6)", nullable: false)
-                            .Annotation(
-                                "MySql:ValueGenerationStrategy",
-                                MySqlValueGenerationStrategy.IdentityColumn
-                            ),
-                        updated_at = table
-                            .Column<DateTime>(type: "datetime(6)", nullable: false)
-                            .Annotation(
-                                "MySql:ValueGenerationStrategy",
-                                MySqlValueGenerationStrategy.ComputedColumn
-                            ),
-                        deleted_at = table.Column<DateTime>(type: "datetime(6)", nullable: true),
-                    },
-                    constraints: table =>
-                    {
-                        table.PrimaryKey("PK_web_feed_reactions", x => x.id);
-                        table.ForeignKey(
-                            name: "FK_web_feed_reactions_players_player_id",
-                            column: x => x.player_id,
-                            principalTable: "players",
-                            principalColumn: "id",
-                            onDelete: ReferentialAction.Cascade
-                        );
-                        table.ForeignKey(
-                            name: "FK_web_feed_reactions_web_feed_posts_post_id",
-                            column: x => x.post_id,
-                            principalTable: "web_feed_posts",
-                            principalColumn: "id",
-                            onDelete: ReferentialAction.Cascade
-                        );
-                    }
-                )
-                .Annotation("MySql:CharSet", "utf8mb4");
-
-            migrationBuilder
-                .CreateTable(
-                    name: "web_feed_poll_votes",
-                    columns: table => new
-                    {
-                        id = table
-                            .Column<int>(type: "int", nullable: false)
-                            .Annotation(
-                                "MySql:ValueGenerationStrategy",
-                                MySqlValueGenerationStrategy.IdentityColumn
-                            ),
-                        post_id = table.Column<int>(type: "int", nullable: false),
-                        choice_id = table.Column<int>(type: "int", nullable: false),
-                        player_id = table.Column<int>(type: "int", nullable: false),
-                        created_at = table
-                            .Column<DateTime>(type: "datetime(6)", nullable: false)
-                            .Annotation(
-                                "MySql:ValueGenerationStrategy",
-                                MySqlValueGenerationStrategy.IdentityColumn
-                            ),
-                        updated_at = table
-                            .Column<DateTime>(type: "datetime(6)", nullable: false)
-                            .Annotation(
-                                "MySql:ValueGenerationStrategy",
-                                MySqlValueGenerationStrategy.ComputedColumn
-                            ),
-                        deleted_at = table.Column<DateTime>(type: "datetime(6)", nullable: true),
-                    },
-                    constraints: table =>
-                    {
-                        table.PrimaryKey("PK_web_feed_poll_votes", x => x.id);
-                        table.ForeignKey(
-                            name: "FK_web_feed_poll_votes_players_player_id",
-                            column: x => x.player_id,
-                            principalTable: "players",
-                            principalColumn: "id",
-                            onDelete: ReferentialAction.Cascade
-                        );
-                        table.ForeignKey(
-                            name: "FK_web_feed_poll_votes_web_feed_poll_choices_choice_id",
-                            column: x => x.choice_id,
-                            principalTable: "web_feed_poll_choices",
-                            principalColumn: "id",
-                            onDelete: ReferentialAction.Cascade
-                        );
-                        table.ForeignKey(
-                            name: "FK_web_feed_poll_votes_web_feed_posts_post_id",
-                            column: x => x.post_id,
-                            principalTable: "web_feed_posts",
-                            principalColumn: "id",
-                            onDelete: ReferentialAction.Cascade
-                        );
-                    }
-                )
-                .Annotation("MySql:CharSet", "utf8mb4");
-
             migrationBuilder.CreateIndex(
                 name: "IX_account_bans_account_id",
                 table: "account_bans",
@@ -7099,23 +5789,9 @@ namespace Vortex.Database.Migrations
             );
 
             migrationBuilder.CreateIndex(
-                name: "IX_account_levels_level_number",
-                table: "account_levels",
-                column: "level_number",
-                unique: true
-            );
-
-            migrationBuilder.CreateIndex(
                 name: "IX_achievement_levels_achievement_id_level",
                 table: "achievement_levels",
                 columns: new[] { "achievement_id", "level" },
-                unique: true
-            );
-
-            migrationBuilder.CreateIndex(
-                name: "IX_achievement_resolutions_achievement_id",
-                table: "achievement_resolutions",
-                column: "achievement_id",
                 unique: true
             );
 
@@ -7274,20 +5950,6 @@ namespace Vortex.Database.Migrations
             );
 
             migrationBuilder.CreateIndex(
-                name: "IX_community_goal_levels_goal_id_level_number",
-                table: "community_goal_levels",
-                columns: new[] { "goal_id", "level_number" },
-                unique: true
-            );
-
-            migrationBuilder.CreateIndex(
-                name: "IX_community_goals_code",
-                table: "community_goals",
-                column: "code",
-                unique: true
-            );
-
-            migrationBuilder.CreateIndex(
                 name: "IX_daily_task_rewards_task_id",
                 table: "daily_task_rewards",
                 column: "task_id"
@@ -7363,25 +6025,6 @@ namespace Vortex.Database.Migrations
             );
 
             migrationBuilder.CreateIndex(
-                name: "IX_fishing_derbies_starts_at_ends_at",
-                table: "fishing_derbies",
-                columns: new[] { "starts_at", "ends_at" }
-            );
-
-            migrationBuilder.CreateIndex(
-                name: "IX_fishing_derby_entries_derby_id_best_weight",
-                table: "fishing_derby_entries",
-                columns: new[] { "derby_id", "best_weight" }
-            );
-
-            migrationBuilder.CreateIndex(
-                name: "IX_fishing_derby_entries_derby_id_player_id",
-                table: "fishing_derby_entries",
-                columns: new[] { "derby_id", "player_id" },
-                unique: true
-            );
-
-            migrationBuilder.CreateIndex(
                 name: "IX_fishing_levels_level",
                 table: "fishing_levels",
                 column: "level",
@@ -7441,12 +6084,6 @@ namespace Vortex.Database.Migrations
             );
 
             migrationBuilder.CreateIndex(
-                name: "IX_furniture_rentable_space_furniture_id",
-                table: "furniture",
-                column: "rentable_space_furniture_id"
-            );
-
-            migrationBuilder.CreateIndex(
                 name: "IX_furniture_room_id",
                 table: "furniture",
                 column: "room_id"
@@ -7463,20 +6100,6 @@ namespace Vortex.Database.Migrations
                 name: "IX_furniture_purchasable_clothing_definition_set",
                 table: "furniture_purchasable_clothing",
                 columns: new[] { "furniture_definition_id", "figure_set_id" },
-                unique: true
-            );
-
-            migrationBuilder.CreateIndex(
-                name: "IX_furniture_teleport_links_furniture_one_id",
-                table: "furniture_teleport_links",
-                column: "furniture_one_id",
-                unique: true
-            );
-
-            migrationBuilder.CreateIndex(
-                name: "IX_furniture_teleport_links_furniture_two_id",
-                table: "furniture_teleport_links",
-                column: "furniture_two_id",
                 unique: true
             );
 
@@ -7620,13 +6243,6 @@ namespace Vortex.Database.Migrations
             );
 
             migrationBuilder.CreateIndex(
-                name: "IX_hand_items_hand_item_id",
-                table: "hand_items",
-                column: "hand_item_id",
-                unique: true
-            );
-
-            migrationBuilder.CreateIndex(
                 name: "IX_item_events_correlation_id",
                 table: "item_events",
                 column: "correlation_id"
@@ -7636,6 +6252,32 @@ namespace Vortex.Database.Migrations
                 name: "IX_item_events_item_id_occurred_at",
                 table: "item_events",
                 columns: new[] { "item_id", "occurred_at" }
+            );
+
+            migrationBuilder.CreateIndex(
+                name: "IX_loot_table_bindings_furniture_definition_id",
+                table: "loot_table_bindings",
+                column: "furniture_definition_id",
+                unique: true
+            );
+
+            migrationBuilder.CreateIndex(
+                name: "IX_loot_table_bindings_pool_id",
+                table: "loot_table_bindings",
+                column: "pool_id"
+            );
+
+            migrationBuilder.CreateIndex(
+                name: "IX_loot_table_entries_pool_id_enabled",
+                table: "loot_table_entries",
+                columns: new[] { "pool_id", "enabled" }
+            );
+
+            migrationBuilder.CreateIndex(
+                name: "IX_loot_tables_code",
+                table: "loot_tables",
+                column: "code",
+                unique: true
             );
 
             migrationBuilder.CreateIndex(
@@ -7747,26 +6389,6 @@ namespace Vortex.Database.Migrations
             );
 
             migrationBuilder.CreateIndex(
-                name: "IX_pet_command_names_command",
-                table: "pet_command_names",
-                column: "command",
-                unique: true
-            );
-
-            migrationBuilder.CreateIndex(
-                name: "IX_pet_commands_pet_type",
-                table: "pet_commands",
-                column: "pet_type"
-            );
-
-            migrationBuilder.CreateIndex(
-                name: "IX_pet_commands_pet_type_command",
-                table: "pet_commands",
-                columns: new[] { "pet_type", "command" },
-                unique: true
-            );
-
-            migrationBuilder.CreateIndex(
                 name: "IX_pet_levels_pet_type_level",
                 table: "pet_levels",
                 columns: new[] { "pet_type", "level" },
@@ -7774,22 +6396,16 @@ namespace Vortex.Database.Migrations
             );
 
             migrationBuilder.CreateIndex(
-                name: "IX_pet_palettes_pet_type",
-                table: "pet_palettes",
+                name: "IX_pet_skins_pet_type",
+                table: "pet_skins",
                 column: "pet_type"
             );
 
             migrationBuilder.CreateIndex(
-                name: "IX_pet_palettes_pet_type_breed_index_rare",
-                table: "pet_palettes",
-                columns: new[] { "pet_type", "breed_index", "rare" },
+                name: "IX_pet_skins_pet_type_skin_index_rare",
+                table: "pet_skins",
+                columns: new[] { "pet_type", "skin_index", "rare" },
                 unique: true
-            );
-
-            migrationBuilder.CreateIndex(
-                name: "IX_pet_vocals_pet_type_vocal_type",
-                table: "pet_vocals",
-                columns: new[] { "pet_type", "vocal_type" }
             );
 
             migrationBuilder.CreateIndex(
@@ -7842,25 +6458,6 @@ namespace Vortex.Database.Migrations
             );
 
             migrationBuilder.CreateIndex(
-                name: "IX_player_achievement_resolutions_achievement_id",
-                table: "player_achievement_resolutions",
-                column: "achievement_id"
-            );
-
-            migrationBuilder.CreateIndex(
-                name: "IX_player_achievement_resolutions_item_id",
-                table: "player_achievement_resolutions",
-                column: "item_id",
-                unique: true
-            );
-
-            migrationBuilder.CreateIndex(
-                name: "IX_player_achievement_resolutions_player_id",
-                table: "player_achievement_resolutions",
-                column: "player_id"
-            );
-
-            migrationBuilder.CreateIndex(
                 name: "IX_player_achievements_achievement_id",
                 table: "player_achievements",
                 column: "achievement_id"
@@ -7881,42 +6478,9 @@ namespace Vortex.Database.Migrations
             );
 
             migrationBuilder.CreateIndex(
-                name: "IX_player_chat_styles_client_style_id",
-                table: "player_chat_styles",
-                column: "client_style_id",
-                unique: true
-            );
-
-            migrationBuilder.CreateIndex(
-                name: "IX_player_chat_styles_owned_chat_style_id",
-                table: "player_chat_styles_owned",
-                column: "chat_style_id"
-            );
-
-            migrationBuilder.CreateIndex(
-                name: "IX_player_chat_styles_owned_player_id_chat_style_id",
-                table: "player_chat_styles_owned",
-                columns: new[] { "player_id", "chat_style_id" },
-                unique: true
-            );
-
-            migrationBuilder.CreateIndex(
                 name: "IX_player_clothing_player_set_product",
                 table: "player_clothing",
                 columns: new[] { "player_id", "figure_set_id", "product_code" },
-                unique: true
-            );
-
-            migrationBuilder.CreateIndex(
-                name: "IX_player_community_goal_contributions_goal_id_score",
-                table: "player_community_goal_contributions",
-                columns: new[] { "goal_id", "score" }
-            );
-
-            migrationBuilder.CreateIndex(
-                name: "IX_player_community_goal_contributions_player_id_goal_id",
-                table: "player_community_goal_contributions",
-                columns: new[] { "player_id", "goal_id" },
                 unique: true
             );
 
@@ -7959,9 +6523,29 @@ namespace Vortex.Database.Migrations
             );
 
             migrationBuilder.CreateIndex(
-                name: "IX_player_kickback_player_id",
-                table: "player_kickback",
+                name: "IX_player_loot_claims_player_id_pool_id",
+                table: "player_loot_claims",
+                columns: new[] { "player_id", "pool_id" },
+                unique: true
+            );
+
+            migrationBuilder.CreateIndex(
+                name: "IX_player_loot_claims_pool_id",
+                table: "player_loot_claims",
+                column: "pool_id"
+            );
+
+            migrationBuilder.CreateIndex(
+                name: "IX_player_membership_kickbacks_player_id",
+                table: "player_membership_kickbacks",
                 column: "player_id",
+                unique: true
+            );
+
+            migrationBuilder.CreateIndex(
+                name: "IX_player_memberships_player_id_membership_type",
+                table: "player_memberships",
+                columns: new[] { "player_id", "membership_type" },
                 unique: true
             );
 
@@ -7980,19 +6564,6 @@ namespace Vortex.Database.Migrations
             );
 
             migrationBuilder.CreateIndex(
-                name: "IX_player_prize_claims_player_id_pool_id",
-                table: "player_prize_claims",
-                columns: new[] { "player_id", "pool_id" },
-                unique: true
-            );
-
-            migrationBuilder.CreateIndex(
-                name: "IX_player_prize_claims_pool_id",
-                table: "player_prize_claims",
-                column: "pool_id"
-            );
-
-            migrationBuilder.CreateIndex(
                 name: "IX_player_quests_player_id_quest_id",
                 table: "player_quests",
                 columns: new[] { "player_id", "quest_id" },
@@ -8006,28 +6577,8 @@ namespace Vortex.Database.Migrations
             );
 
             migrationBuilder.CreateIndex(
-                name: "IX_player_quizzes_player_id_quiz_id",
-                table: "player_quizzes",
-                columns: new[] { "player_id", "quiz_id" },
-                unique: true
-            );
-
-            migrationBuilder.CreateIndex(
-                name: "IX_player_quizzes_quiz_id",
-                table: "player_quizzes",
-                column: "quiz_id"
-            );
-
-            migrationBuilder.CreateIndex(
-                name: "IX_player_subscriptions_player_id_subscription_type",
-                table: "player_subscriptions",
-                columns: new[] { "player_id", "subscription_type" },
-                unique: true
-            );
-
-            migrationBuilder.CreateIndex(
-                name: "IX_player_vault_income_rewards_player_id_source_key",
-                table: "player_vault_income_rewards",
+                name: "IX_player_reward_vault_entries_player_id_source_key",
+                table: "player_reward_vault_entries",
                 columns: new[] { "player_id", "source_key" },
                 unique: true
             );
@@ -8060,49 +6611,9 @@ namespace Vortex.Database.Migrations
             );
 
             migrationBuilder.CreateIndex(
-                name: "IX_prize_pool_bindings_furniture_definition_id",
-                table: "prize_pool_bindings",
-                column: "furniture_definition_id",
-                unique: true
-            );
-
-            migrationBuilder.CreateIndex(
-                name: "IX_prize_pool_bindings_pool_id",
-                table: "prize_pool_bindings",
-                column: "pool_id"
-            );
-
-            migrationBuilder.CreateIndex(
-                name: "IX_prize_pool_entries_pool_id_enabled",
-                table: "prize_pool_entries",
-                columns: new[] { "pool_id", "enabled" }
-            );
-
-            migrationBuilder.CreateIndex(
-                name: "IX_prize_pools_code",
-                table: "prize_pools",
-                column: "code",
-                unique: true
-            );
-
-            migrationBuilder.CreateIndex(
                 name: "IX_quests_campaign_code",
                 table: "quests",
                 column: "campaign_code"
-            );
-
-            migrationBuilder.CreateIndex(
-                name: "IX_quiz_questions_quiz_id_question_number",
-                table: "quiz_questions",
-                columns: new[] { "quiz_id", "question_number" },
-                unique: true
-            );
-
-            migrationBuilder.CreateIndex(
-                name: "IX_quizzes_code",
-                table: "quizzes",
-                column: "code",
-                unique: true
             );
 
             migrationBuilder.CreateIndex(
@@ -8187,39 +6698,6 @@ namespace Vortex.Database.Migrations
                 table: "room_mutes",
                 columns: new[] { "room_id", "player_id" },
                 unique: true
-            );
-
-            migrationBuilder.CreateIndex(
-                name: "IX_room_raid_protection_room_id",
-                table: "room_raid_protection",
-                column: "room_id",
-                unique: true
-            );
-
-            migrationBuilder.CreateIndex(
-                name: "IX_room_rentable_space_terms_currency_type_id",
-                table: "room_rentable_space_terms",
-                column: "currency_type_id"
-            );
-
-            migrationBuilder.CreateIndex(
-                name: "IX_room_rentable_space_terms_furniture_id",
-                table: "room_rentable_space_terms",
-                column: "furniture_id",
-                unique: true
-            );
-
-            migrationBuilder.CreateIndex(
-                name: "IX_room_rentable_spaces_furniture_id",
-                table: "room_rentable_spaces",
-                column: "furniture_id",
-                unique: true
-            );
-
-            migrationBuilder.CreateIndex(
-                name: "IX_room_rentable_spaces_renter_player_id",
-                table: "room_rentable_spaces",
-                column: "renter_player_id"
             );
 
             migrationBuilder.CreateIndex(
@@ -8328,12 +6806,6 @@ namespace Vortex.Database.Migrations
             );
 
             migrationBuilder.CreateIndex(
-                name: "IX_songs_official_song_id",
-                table: "songs",
-                column: "official_song_id"
-            );
-
-            migrationBuilder.CreateIndex(
                 name: "IX_web_article_categories_code",
                 table: "web_article_categories",
                 column: "code",
@@ -8364,89 +6836,6 @@ namespace Vortex.Database.Migrations
                 name: "IX_web_articles_status_publish_at",
                 table: "web_articles",
                 columns: new[] { "status", "publish_at" }
-            );
-
-            migrationBuilder.CreateIndex(
-                name: "IX_web_feed_poll_choices_post_id_ordinal",
-                table: "web_feed_poll_choices",
-                columns: new[] { "post_id", "ordinal" },
-                unique: true
-            );
-
-            migrationBuilder.CreateIndex(
-                name: "IX_web_feed_poll_votes_choice_id",
-                table: "web_feed_poll_votes",
-                column: "choice_id"
-            );
-
-            migrationBuilder.CreateIndex(
-                name: "IX_web_feed_poll_votes_player_id",
-                table: "web_feed_poll_votes",
-                column: "player_id"
-            );
-
-            migrationBuilder.CreateIndex(
-                name: "IX_web_feed_poll_votes_post_id_player_id",
-                table: "web_feed_poll_votes",
-                columns: new[] { "post_id", "player_id" },
-                unique: true
-            );
-
-            migrationBuilder.CreateIndex(
-                name: "IX_web_feed_post_tags_post_id_tag_id",
-                table: "web_feed_post_tags",
-                columns: new[] { "post_id", "tag_id" },
-                unique: true
-            );
-
-            migrationBuilder.CreateIndex(
-                name: "IX_web_feed_post_tags_tag_id",
-                table: "web_feed_post_tags",
-                column: "tag_id"
-            );
-
-            migrationBuilder.CreateIndex(
-                name: "IX_web_feed_posts_deleted_at_created_at",
-                table: "web_feed_posts",
-                columns: new[] { "deleted_at", "created_at" }
-            );
-
-            migrationBuilder.CreateIndex(
-                name: "IX_web_feed_posts_group_id",
-                table: "web_feed_posts",
-                column: "group_id"
-            );
-
-            migrationBuilder.CreateIndex(
-                name: "IX_web_feed_posts_parent_id_created_at",
-                table: "web_feed_posts",
-                columns: new[] { "parent_id", "created_at" }
-            );
-
-            migrationBuilder.CreateIndex(
-                name: "IX_web_feed_posts_player_id_created_at",
-                table: "web_feed_posts",
-                columns: new[] { "player_id", "created_at" }
-            );
-
-            migrationBuilder.CreateIndex(
-                name: "IX_web_feed_reactions_player_id",
-                table: "web_feed_reactions",
-                column: "player_id"
-            );
-
-            migrationBuilder.CreateIndex(
-                name: "IX_web_feed_reactions_post_id_player_id_kind",
-                table: "web_feed_reactions",
-                columns: new[] { "post_id", "player_id", "kind" },
-                unique: true
-            );
-
-            migrationBuilder.CreateIndex(
-                name: "IX_web_feed_tags_tag",
-                table: "web_feed_tags",
-                column: "tag",
-                unique: true
             );
 
             migrationBuilder.CreateIndex(
@@ -8640,19 +7029,11 @@ namespace Vortex.Database.Migrations
 
             migrationBuilder.DropTable(name: "account_bans");
 
-            migrationBuilder.DropTable(name: "account_levels");
-
             migrationBuilder.DropTable(name: "achievement_levels");
-
-            migrationBuilder.DropTable(name: "achievement_resolutions");
 
             migrationBuilder.DropTable(name: "audit_events");
 
             migrationBuilder.DropTable(name: "bots");
-
-            migrationBuilder.DropTable(name: "catalog_club_gifts");
-
-            migrationBuilder.DropTable(name: "catalog_club_offers");
 
             migrationBuilder.DropTable(name: "catalog_frontpage_items");
 
@@ -8666,8 +7047,6 @@ namespace Vortex.Database.Migrations
 
             migrationBuilder.DropTable(name: "commerce_receipts");
 
-            migrationBuilder.DropTable(name: "community_goal_levels");
-
             migrationBuilder.DropTable(name: "daily_task_rewards");
 
             migrationBuilder.DropTable(name: "economy_ledger");
@@ -8677,10 +7056,6 @@ namespace Vortex.Database.Migrations
             migrationBuilder.DropTable(name: "error_occurrences");
 
             migrationBuilder.DropTable(name: "figure_sellable_sets");
-
-            migrationBuilder.DropTable(name: "fishing_derbies");
-
-            migrationBuilder.DropTable(name: "fishing_derby_entries");
 
             migrationBuilder.DropTable(name: "fishing_levels");
 
@@ -8694,9 +7069,9 @@ namespace Vortex.Database.Migrations
 
             migrationBuilder.DropTable(name: "fishing_zones");
 
-            migrationBuilder.DropTable(name: "furniture_purchasable_clothing");
+            migrationBuilder.DropTable(name: "furniture");
 
-            migrationBuilder.DropTable(name: "furniture_teleport_links");
+            migrationBuilder.DropTable(name: "furniture_purchasable_clothing");
 
             migrationBuilder.DropTable(name: "group_badge_parts");
 
@@ -8714,13 +7089,19 @@ namespace Vortex.Database.Migrations
 
             migrationBuilder.DropTable(name: "group_membership_requests");
 
-            migrationBuilder.DropTable(name: "hand_items");
-
             migrationBuilder.DropTable(name: "item_events");
+
+            migrationBuilder.DropTable(name: "loot_table_bindings");
+
+            migrationBuilder.DropTable(name: "loot_table_entries");
 
             migrationBuilder.DropTable(name: "marketplace_offers");
 
             migrationBuilder.DropTable(name: "marketplace_settings");
+
+            migrationBuilder.DropTable(name: "membership_gifts");
+
+            migrationBuilder.DropTable(name: "membership_offers");
 
             migrationBuilder.DropTable(name: "messenger_blocked");
 
@@ -8734,15 +7115,9 @@ namespace Vortex.Database.Migrations
 
             migrationBuilder.DropTable(name: "navigator_quick_links");
 
-            migrationBuilder.DropTable(name: "pet_command_names");
-
-            migrationBuilder.DropTable(name: "pet_commands");
-
             migrationBuilder.DropTable(name: "pet_levels");
 
-            migrationBuilder.DropTable(name: "pet_palettes");
-
-            migrationBuilder.DropTable(name: "pet_vocals");
+            migrationBuilder.DropTable(name: "pet_skins");
 
             migrationBuilder.DropTable(name: "pets");
 
@@ -8754,17 +7129,11 @@ namespace Vortex.Database.Migrations
 
             migrationBuilder.DropTable(name: "player_account_trusted_locations");
 
-            migrationBuilder.DropTable(name: "player_achievement_resolutions");
-
             migrationBuilder.DropTable(name: "player_achievements");
 
             migrationBuilder.DropTable(name: "player_badges");
 
-            migrationBuilder.DropTable(name: "player_chat_styles_owned");
-
             migrationBuilder.DropTable(name: "player_clothing");
-
-            migrationBuilder.DropTable(name: "player_community_goal_contributions");
 
             migrationBuilder.DropTable(name: "player_currencies");
 
@@ -8772,31 +7141,23 @@ namespace Vortex.Database.Migrations
 
             migrationBuilder.DropTable(name: "player_effects");
 
-            migrationBuilder.DropTable(name: "player_kickback");
+            migrationBuilder.DropTable(name: "player_loot_claims");
+
+            migrationBuilder.DropTable(name: "player_membership_kickbacks");
+
+            migrationBuilder.DropTable(name: "player_memberships");
 
             migrationBuilder.DropTable(name: "player_mod_tool_preferences");
 
             migrationBuilder.DropTable(name: "player_navigator_preferences");
 
-            migrationBuilder.DropTable(name: "player_prize_claims");
-
             migrationBuilder.DropTable(name: "player_quests");
 
-            migrationBuilder.DropTable(name: "player_quizzes");
-
-            migrationBuilder.DropTable(name: "player_subscriptions");
-
-            migrationBuilder.DropTable(name: "player_vault_income_rewards");
+            migrationBuilder.DropTable(name: "player_reward_vault_entries");
 
             migrationBuilder.DropTable(name: "player_wardrobe_outfits");
 
             migrationBuilder.DropTable(name: "player_word_filters");
-
-            migrationBuilder.DropTable(name: "prize_pool_bindings");
-
-            migrationBuilder.DropTable(name: "prize_pool_entries");
-
-            migrationBuilder.DropTable(name: "quiz_questions");
 
             migrationBuilder.DropTable(name: "role_permissions");
 
@@ -8810,12 +7171,6 @@ namespace Vortex.Database.Migrations
 
             migrationBuilder.DropTable(name: "room_mutes");
 
-            migrationBuilder.DropTable(name: "room_raid_protection");
-
-            migrationBuilder.DropTable(name: "room_rentable_space_terms");
-
-            migrationBuilder.DropTable(name: "room_rentable_spaces");
-
             migrationBuilder.DropTable(name: "room_rights");
 
             migrationBuilder.DropTable(name: "security_tickets");
@@ -8826,15 +7181,7 @@ namespace Vortex.Database.Migrations
 
             migrationBuilder.DropTable(name: "shop_products");
 
-            migrationBuilder.DropTable(name: "songs");
-
             migrationBuilder.DropTable(name: "web_article_translations");
-
-            migrationBuilder.DropTable(name: "web_feed_poll_votes");
-
-            migrationBuilder.DropTable(name: "web_feed_post_tags");
-
-            migrationBuilder.DropTable(name: "web_feed_reactions");
 
             migrationBuilder.DropTable(name: "web_languages");
 
@@ -8850,35 +7197,25 @@ namespace Vortex.Database.Migrations
 
             migrationBuilder.DropTable(name: "group_forum_threads");
 
+            migrationBuilder.DropTable(name: "furniture_definitions");
+
             migrationBuilder.DropTable(name: "messenger_categories");
 
             migrationBuilder.DropTable(name: "navigator_top_level_contexts");
 
             migrationBuilder.DropTable(name: "achievements");
 
-            migrationBuilder.DropTable(name: "player_chat_styles");
-
-            migrationBuilder.DropTable(name: "community_goals");
+            migrationBuilder.DropTable(name: "currency_types");
 
             migrationBuilder.DropTable(name: "daily_tasks");
 
+            migrationBuilder.DropTable(name: "loot_tables");
+
             migrationBuilder.DropTable(name: "quests");
-
-            migrationBuilder.DropTable(name: "prize_pools");
-
-            migrationBuilder.DropTable(name: "quizzes");
 
             migrationBuilder.DropTable(name: "roles");
 
-            migrationBuilder.DropTable(name: "currency_types");
-
-            migrationBuilder.DropTable(name: "furniture");
-
             migrationBuilder.DropTable(name: "web_articles");
-
-            migrationBuilder.DropTable(name: "web_feed_poll_choices");
-
-            migrationBuilder.DropTable(name: "web_feed_tags");
 
             migrationBuilder.DropTable(name: "catalog_pages");
 
@@ -8886,11 +7223,7 @@ namespace Vortex.Database.Migrations
 
             migrationBuilder.DropTable(name: "sanction_presets");
 
-            migrationBuilder.DropTable(name: "furniture_definitions");
-
             migrationBuilder.DropTable(name: "web_article_categories");
-
-            migrationBuilder.DropTable(name: "web_feed_posts");
 
             migrationBuilder.DropTable(name: "player_accounts");
 

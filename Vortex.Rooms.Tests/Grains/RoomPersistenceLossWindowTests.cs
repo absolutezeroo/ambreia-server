@@ -261,13 +261,11 @@ public sealed class RoomPersistenceLossWindowTests
                 db.Database.ExecuteSqlRaw(
                     """
                     INSERT INTO pets (id, player_id, room_id, name, type, skin, color, gender,
-                                      level, experience, energy, nutrition, thirst, respect,
-                                      happiness, has_saddle, riding_permission, x, y, z, direction,
-                                      created_at, updated_at)
+                                      level, experience, has_saddle, riding_permission, x, y, z,
+                                      direction, created_at, updated_at)
                     VALUES ({0}, 1, NULL, 'pet', 0, 0, 'ffffff', 0,
-                            1, 0, 0, 0, 100, 0,
-                            100, 0, 0, 0, 0, 0, 0,
-                            datetime('now'), datetime('now'))
+                            1, 0, 0, 0, 0, 0, 0,
+                            0, datetime('now'), datetime('now'))
                     """,
                     petId
                 );

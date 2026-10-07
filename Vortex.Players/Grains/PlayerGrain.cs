@@ -1112,7 +1112,7 @@ internal sealed partial class PlayerGrain : Grain, IPlayerGrain
         // Staff-ness as a room sees it. Resolved here rather than per summary because the service
         // caches per account and the summary is fetched on every room entry and every look change.
         // A role change mid-session therefore does not reach an already-loaded grain — acceptable
-        // for the two things this drives (chat-flood exemption, the Builders Membership guest check) and
+        // for the two things this drives (chat-flood exemption, the Builders Club guest check) and
         // the same trade SafetyLocked above already makes.
         _state.IsModerator = (
             await _permissions.ResolveForPlayerAsync((int)_state.PlayerId, ct).ConfigureAwait(true)

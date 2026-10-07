@@ -108,32 +108,6 @@ public sealed class CatalogGrantWindowTests
     }
 
     /// <summary>
-    /// The bot's composer, one commit boundary further along before the consolidation, and now on
-    /// the far side of the same single commit as everything else.
-    /// </summary>
-    [Fact]
-    public async Task ABotNotificationThatFails_KeepsTheBotAndTheCharge()
-    {
-        using CommerceFaultHarness harness = new([
-            CatalogOffers.Product(1, ProductType.Floor),
-            CatalogOffers.Product(
-                2,
-                ProductType.Robot,
-                extraParam: "name:Robbie;figure:hd-180-1;gender:m"
-            ),
-        ])
-        {
-            Fails = CommerceFaultStep.BotNotification,
-        };
-
-        await harness.BuyAsync();
-
-        (await harness.FurnitureRowsAsync()).Should().Be(1);
-        (await harness.BotRowsAsync()).Should().Be(1);
-        harness.Refunds.Should().BeEmpty();
-    }
-
-    /// <summary>
     /// The point of the consolidation, stated directly: whatever fails after the local grant, the
     /// player never ends up holding the goods and their money back. That state was reachable from
     /// three different steps before.

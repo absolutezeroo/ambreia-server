@@ -10,7 +10,7 @@ using Rev = Vortex.Revisions.Revision20260701.Revision20260701;
 namespace Vortex.Revisions.Tests.Catalog;
 
 /// <summary>
-/// A stock client still asks for the Builders Membership catalogue, removed in M0. A parser that throws on
+/// A stock client still asks for the Builders Club catalogue, removed in M0. A parser that throws on
 /// its type string counts as a parse failure, and ten of those disconnect the client -- so a retired
 /// or unknown type reads as the normal catalogue instead.
 /// </summary>

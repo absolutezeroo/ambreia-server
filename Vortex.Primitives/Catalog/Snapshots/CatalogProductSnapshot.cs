@@ -33,5 +33,5 @@ public sealed record CatalogProductSnapshot
     [Id(8)]
     public required int UniqueRemaining { get; init; }
 
-    // Id 9 was the Builders Membership placement flag, removed in M0. Retired, not reused.
+    // Id 9 was the Builders Club placement flag, removed in M0. Retired, not reused.
 }

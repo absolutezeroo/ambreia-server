@@ -138,57 +138,6 @@ namespace Vortex.Database.Migrations
                     b.ToTable("achievement_levels");
                 });
 
-            modelBuilder.Entity("Vortex.Database.Entities.Achievements.AchievementResolutionEntity", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
-                        .HasColumnName("id");
-
-                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<int>("AchievementEntityId")
-                        .HasColumnType("int")
-                        .HasColumnName("achievement_id");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("datetime(6)")
-                        .HasColumnName("created_at");
-
-                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<DateTime>("CreatedAt"));
-
-                    b.Property<DateTime?>("DeletedAt")
-                        .HasColumnType("datetime(6)")
-                        .HasColumnName("deleted_at");
-
-                    b.Property<bool>("Enabled")
-                        .HasColumnType("tinyint(1)")
-                        .HasColumnName("enabled");
-
-                    b.Property<int>("SortOrder")
-                        .HasColumnType("int")
-                        .HasColumnName("sort_order");
-
-                    b.Property<int>("TargetLevelOffset")
-                        .HasColumnType("int")
-                        .HasColumnName("target_level_offset");
-
-                    b.Property<DateTime>("UpdatedAt")
-                        .ValueGeneratedOnAddOrUpdate()
-                        .HasColumnType("datetime(6)")
-                        .HasColumnName("updated_at");
-
-                    MySqlPropertyBuilderExtensions.UseMySqlComputedColumn(b.Property<DateTime>("UpdatedAt"));
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("AchievementEntityId")
-                        .IsUnique();
-
-                    b.ToTable("achievement_resolutions");
-                });
-
             modelBuilder.Entity("Vortex.Database.Entities.Achievements.PlayerAchievementEntity", b =>
                 {
                     b.Property<int>("Id")
@@ -240,78 +189,6 @@ namespace Vortex.Database.Migrations
                         .IsUnique();
 
                     b.ToTable("player_achievements");
-                });
-
-            modelBuilder.Entity("Vortex.Database.Entities.Achievements.PlayerAchievementResolutionEntity", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
-                        .HasColumnName("id");
-
-                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<int>("AchievementEntityId")
-                        .HasColumnType("int")
-                        .HasColumnName("achievement_id");
-
-                    b.Property<string>("AwardedBadgeCode")
-                        .HasMaxLength(512)
-                        .HasColumnType("varchar(512)")
-                        .HasColumnName("awarded_badge_code");
-
-                    b.Property<DateTime?>("CompletedAt")
-                        .HasColumnType("datetime(6)")
-                        .HasColumnName("completed_at");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("datetime(6)")
-                        .HasColumnName("created_at");
-
-                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<DateTime>("CreatedAt"));
-
-                    b.Property<DateTime?>("DeletedAt")
-                        .HasColumnType("datetime(6)")
-                        .HasColumnName("deleted_at");
-
-                    b.Property<DateTime>("EndsAt")
-                        .HasColumnType("datetime(6)")
-                        .HasColumnName("ends_at");
-
-                    b.Property<int>("ItemEntityId")
-                        .HasColumnType("int")
-                        .HasColumnName("item_id");
-
-                    b.Property<int>("PlayerEntityId")
-                        .HasColumnType("int")
-                        .HasColumnName("player_id");
-
-                    b.Property<DateTime>("StartedAt")
-                        .HasColumnType("datetime(6)")
-                        .HasColumnName("started_at");
-
-                    b.Property<int>("TargetLevel")
-                        .HasColumnType("int")
-                        .HasColumnName("target_level");
-
-                    b.Property<DateTime>("UpdatedAt")
-                        .ValueGeneratedOnAddOrUpdate()
-                        .HasColumnType("datetime(6)")
-                        .HasColumnName("updated_at");
-
-                    MySqlPropertyBuilderExtensions.UseMySqlComputedColumn(b.Property<DateTime>("UpdatedAt"));
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("AchievementEntityId");
-
-                    b.HasIndex("ItemEntityId")
-                        .IsUnique();
-
-                    b.HasIndex("PlayerEntityId");
-
-                    b.ToTable("player_achievement_resolutions");
                 });
 
             modelBuilder.Entity("Vortex.Database.Entities.Audit.AuditEventEntity", b =>
@@ -578,163 +455,6 @@ namespace Vortex.Database.Migrations
                     b.ToTable("item_events");
                 });
 
-            modelBuilder.Entity("Vortex.Database.Entities.Catalog.CatalogClubGiftEntity", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
-                        .HasColumnName("id");
-
-                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<DateTime>("CreatedAt")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("datetime(6)")
-                        .HasColumnName("created_at");
-
-                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<DateTime>("CreatedAt"));
-
-                    b.Property<DateTime?>("DeletedAt")
-                        .HasColumnType("datetime(6)")
-                        .HasColumnName("deleted_at");
-
-                    b.Property<string>("ExtraParam")
-                        .HasMaxLength(256)
-                        .HasColumnType("varchar(256)")
-                        .HasColumnName("extra_param");
-
-                    b.Property<int?>("FurniDefinitionId")
-                        .HasColumnType("int")
-                        .HasColumnName("furni_definition_id");
-
-                    b.Property<bool>("IsVip")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("tinyint(1)")
-                        .HasDefaultValue(false)
-                        .HasColumnName("is_vip");
-
-                    b.Property<string>("ProductCode")
-                        .IsRequired()
-                        .HasMaxLength(64)
-                        .HasColumnType("varchar(64)")
-                        .HasColumnName("product_code");
-
-                    b.Property<string>("ProductType")
-                        .IsRequired()
-                        .HasMaxLength(4)
-                        .HasColumnType("varchar(4)")
-                        .HasColumnName("product_type");
-
-                    b.Property<int>("Quantity")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
-                        .HasDefaultValue(1)
-                        .HasColumnName("quantity");
-
-                    b.Property<int>("SortOrder")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
-                        .HasDefaultValue(0)
-                        .HasColumnName("sort_order");
-
-                    b.Property<DateTime>("UpdatedAt")
-                        .ValueGeneratedOnAddOrUpdate()
-                        .HasColumnType("datetime(6)")
-                        .HasColumnName("updated_at");
-
-                    MySqlPropertyBuilderExtensions.UseMySqlComputedColumn(b.Property<DateTime>("UpdatedAt"));
-
-                    b.HasKey("Id");
-
-                    b.ToTable("catalog_club_gifts");
-                });
-
-            modelBuilder.Entity("Vortex.Database.Entities.Catalog.CatalogClubOfferEntity", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
-                        .HasColumnName("id");
-
-                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<DateTime>("CreatedAt")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("datetime(6)")
-                        .HasColumnName("created_at");
-
-                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<DateTime>("CreatedAt"));
-
-                    b.Property<DateTime?>("DeletedAt")
-                        .HasColumnType("datetime(6)")
-                        .HasColumnName("deleted_at");
-
-                    b.Property<int>("ExtraDays")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
-                        .HasDefaultValue(0)
-                        .HasColumnName("extra_days");
-
-                    b.Property<bool>("IsGiftable")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("tinyint(1)")
-                        .HasDefaultValue(true)
-                        .HasColumnName("is_giftable");
-
-                    b.Property<bool>("IsVip")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("tinyint(1)")
-                        .HasDefaultValue(false)
-                        .HasColumnName("is_vip");
-
-                    b.Property<int>("Months")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
-                        .HasDefaultValue(1)
-                        .HasColumnName("months");
-
-                    b.Property<int>("PriceActivityPointType")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
-                        .HasDefaultValue(0)
-                        .HasColumnName("price_activity_point_type");
-
-                    b.Property<int>("PriceActivityPoints")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
-                        .HasDefaultValue(0)
-                        .HasColumnName("price_activity_points");
-
-                    b.Property<int>("PriceCredits")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
-                        .HasDefaultValue(0)
-                        .HasColumnName("price_credits");
-
-                    b.Property<string>("ProductCode")
-                        .IsRequired()
-                        .HasMaxLength(64)
-                        .HasColumnType("varchar(64)")
-                        .HasColumnName("product_code");
-
-                    b.Property<int>("SortOrder")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
-                        .HasDefaultValue(0)
-                        .HasColumnName("sort_order");
-
-                    b.Property<DateTime>("UpdatedAt")
-                        .ValueGeneratedOnAddOrUpdate()
-                        .HasColumnType("datetime(6)")
-                        .HasColumnName("updated_at");
-
-                    MySqlPropertyBuilderExtensions.UseMySqlComputedColumn(b.Property<DateTime>("UpdatedAt"));
-
-                    b.HasKey("Id");
-
-                    b.ToTable("catalog_club_offers");
-                });
-
             modelBuilder.Entity("Vortex.Database.Entities.Catalog.CatalogFrontPageItemEntity", b =>
                 {
                     b.Property<int>("Id")
@@ -891,12 +611,6 @@ namespace Vortex.Database.Migrations
                         .HasColumnType("int")
                         .HasColumnName("page_id");
 
-                    b.Property<int>("ClubLevel")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
-                        .HasDefaultValue(0)
-                        .HasColumnName("club_level");
-
                     b.Property<int>("CostCredits")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int")
@@ -935,6 +649,12 @@ namespace Vortex.Database.Migrations
                         .HasMaxLength(512)
                         .HasColumnType("varchar(512)")
                         .HasColumnName("localization_id");
+
+                    b.Property<int>("MembershipLevel")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasDefaultValue(0)
+                        .HasColumnName("membership_level");
 
                     b.Property<DateTime>("UpdatedAt")
                         .ValueGeneratedOnAddOrUpdate()
@@ -1172,6 +892,163 @@ namespace Vortex.Database.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("currency_types");
+                });
+
+            modelBuilder.Entity("Vortex.Database.Entities.Catalog.MembershipGiftEntity", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasColumnName("id");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("CreatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime(6)")
+                        .HasColumnName("created_at");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<DateTime>("CreatedAt"));
+
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("datetime(6)")
+                        .HasColumnName("deleted_at");
+
+                    b.Property<string>("ExtraParam")
+                        .HasMaxLength(256)
+                        .HasColumnType("varchar(256)")
+                        .HasColumnName("extra_param");
+
+                    b.Property<int?>("FurniDefinitionId")
+                        .HasColumnType("int")
+                        .HasColumnName("furni_definition_id");
+
+                    b.Property<bool>("IsVip")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("tinyint(1)")
+                        .HasDefaultValue(false)
+                        .HasColumnName("is_vip");
+
+                    b.Property<string>("ProductCode")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("varchar(64)")
+                        .HasColumnName("product_code");
+
+                    b.Property<string>("ProductType")
+                        .IsRequired()
+                        .HasMaxLength(4)
+                        .HasColumnType("varchar(4)")
+                        .HasColumnName("product_type");
+
+                    b.Property<int>("Quantity")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasDefaultValue(1)
+                        .HasColumnName("quantity");
+
+                    b.Property<int>("SortOrder")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasDefaultValue(0)
+                        .HasColumnName("sort_order");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("datetime(6)")
+                        .HasColumnName("updated_at");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlComputedColumn(b.Property<DateTime>("UpdatedAt"));
+
+                    b.HasKey("Id");
+
+                    b.ToTable("membership_gifts");
+                });
+
+            modelBuilder.Entity("Vortex.Database.Entities.Catalog.MembershipOfferEntity", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasColumnName("id");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("CreatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime(6)")
+                        .HasColumnName("created_at");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<DateTime>("CreatedAt"));
+
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("datetime(6)")
+                        .HasColumnName("deleted_at");
+
+                    b.Property<int>("ExtraDays")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasDefaultValue(0)
+                        .HasColumnName("extra_days");
+
+                    b.Property<bool>("IsGiftable")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("tinyint(1)")
+                        .HasDefaultValue(true)
+                        .HasColumnName("is_giftable");
+
+                    b.Property<bool>("IsVip")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("tinyint(1)")
+                        .HasDefaultValue(false)
+                        .HasColumnName("is_vip");
+
+                    b.Property<int>("Months")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasDefaultValue(1)
+                        .HasColumnName("months");
+
+                    b.Property<int>("PriceActivityPointType")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasDefaultValue(0)
+                        .HasColumnName("price_activity_point_type");
+
+                    b.Property<int>("PriceActivityPoints")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasDefaultValue(0)
+                        .HasColumnName("price_activity_points");
+
+                    b.Property<int>("PriceCredits")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasDefaultValue(0)
+                        .HasColumnName("price_credits");
+
+                    b.Property<string>("ProductCode")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("varchar(64)")
+                        .HasColumnName("product_code");
+
+                    b.Property<int>("SortOrder")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasDefaultValue(0)
+                        .HasColumnName("sort_order");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("datetime(6)")
+                        .HasColumnName("updated_at");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlComputedColumn(b.Property<DateTime>("UpdatedAt"));
+
+                    b.HasKey("Id");
+
+                    b.ToTable("membership_offers");
                 });
 
             modelBuilder.Entity("Vortex.Database.Entities.Commerce.CommerceOperationEntity", b =>
@@ -1457,404 +1334,6 @@ namespace Vortex.Database.Migrations
                     b.HasIndex("Source", "OccurredAt");
 
                     b.ToTable("error_occurrences");
-                });
-
-            modelBuilder.Entity("Vortex.Database.Entities.Feed.WebFeedPollChoiceEntity", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
-                        .HasColumnName("id");
-
-                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<DateTime>("CreatedAt")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("datetime(6)")
-                        .HasColumnName("created_at");
-
-                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<DateTime>("CreatedAt"));
-
-                    b.Property<DateTime?>("DeletedAt")
-                        .HasColumnType("datetime(6)")
-                        .HasColumnName("deleted_at");
-
-                    b.Property<string>("Label")
-                        .IsRequired()
-                        .HasMaxLength(80)
-                        .HasColumnType("varchar(80)")
-                        .HasColumnName("label");
-
-                    b.Property<int>("Ordinal")
-                        .HasColumnType("int")
-                        .HasColumnName("ordinal");
-
-                    b.Property<DateTime>("UpdatedAt")
-                        .ValueGeneratedOnAddOrUpdate()
-                        .HasColumnType("datetime(6)")
-                        .HasColumnName("updated_at");
-
-                    MySqlPropertyBuilderExtensions.UseMySqlComputedColumn(b.Property<DateTime>("UpdatedAt"));
-
-                    b.Property<int>("WebFeedPostEntityId")
-                        .HasColumnType("int")
-                        .HasColumnName("post_id");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("WebFeedPostEntityId", "Ordinal")
-                        .IsUnique();
-
-                    b.ToTable("web_feed_poll_choices");
-                });
-
-            modelBuilder.Entity("Vortex.Database.Entities.Feed.WebFeedPollVoteEntity", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
-                        .HasColumnName("id");
-
-                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<DateTime>("CreatedAt")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("datetime(6)")
-                        .HasColumnName("created_at");
-
-                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<DateTime>("CreatedAt"));
-
-                    b.Property<DateTime?>("DeletedAt")
-                        .HasColumnType("datetime(6)")
-                        .HasColumnName("deleted_at");
-
-                    b.Property<int>("PlayerEntityId")
-                        .HasColumnType("int")
-                        .HasColumnName("player_id");
-
-                    b.Property<DateTime>("UpdatedAt")
-                        .ValueGeneratedOnAddOrUpdate()
-                        .HasColumnType("datetime(6)")
-                        .HasColumnName("updated_at");
-
-                    MySqlPropertyBuilderExtensions.UseMySqlComputedColumn(b.Property<DateTime>("UpdatedAt"));
-
-                    b.Property<int>("WebFeedPollChoiceEntityId")
-                        .HasColumnType("int")
-                        .HasColumnName("choice_id");
-
-                    b.Property<int>("WebFeedPostEntityId")
-                        .HasColumnType("int")
-                        .HasColumnName("post_id");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("PlayerEntityId");
-
-                    b.HasIndex("WebFeedPollChoiceEntityId");
-
-                    b.HasIndex("WebFeedPostEntityId", "PlayerEntityId")
-                        .IsUnique();
-
-                    b.ToTable("web_feed_poll_votes");
-                });
-
-            modelBuilder.Entity("Vortex.Database.Entities.Feed.WebFeedPostEntity", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
-                        .HasColumnName("id");
-
-                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<string>("Body")
-                        .IsRequired()
-                        .HasMaxLength(500)
-                        .HasColumnType("varchar(500)")
-                        .HasColumnName("body");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("datetime(6)")
-                        .HasColumnName("created_at");
-
-                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<DateTime>("CreatedAt"));
-
-                    b.Property<DateTime?>("DeletedAt")
-                        .HasColumnType("datetime(6)")
-                        .HasColumnName("deleted_at");
-
-                    b.Property<int?>("GroupEntityId")
-                        .HasColumnType("int")
-                        .HasColumnName("group_id");
-
-                    b.Property<int>("Kind")
-                        .HasColumnType("int")
-                        .HasColumnName("kind");
-
-                    b.Property<int?>("ParentEntityId")
-                        .HasColumnType("int")
-                        .HasColumnName("parent_id");
-
-                    b.Property<int>("PlayerEntityId")
-                        .HasColumnType("int")
-                        .HasColumnName("player_id");
-
-                    b.Property<DateTime>("UpdatedAt")
-                        .ValueGeneratedOnAddOrUpdate()
-                        .HasColumnType("datetime(6)")
-                        .HasColumnName("updated_at");
-
-                    MySqlPropertyBuilderExtensions.UseMySqlComputedColumn(b.Property<DateTime>("UpdatedAt"));
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("GroupEntityId");
-
-                    b.HasIndex("DeletedAt", "CreatedAt");
-
-                    b.HasIndex("ParentEntityId", "CreatedAt");
-
-                    b.HasIndex("PlayerEntityId", "CreatedAt");
-
-                    b.ToTable("web_feed_posts");
-                });
-
-            modelBuilder.Entity("Vortex.Database.Entities.Feed.WebFeedPostTagEntity", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
-                        .HasColumnName("id");
-
-                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<DateTime>("CreatedAt")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("datetime(6)")
-                        .HasColumnName("created_at");
-
-                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<DateTime>("CreatedAt"));
-
-                    b.Property<DateTime?>("DeletedAt")
-                        .HasColumnType("datetime(6)")
-                        .HasColumnName("deleted_at");
-
-                    b.Property<DateTime>("UpdatedAt")
-                        .ValueGeneratedOnAddOrUpdate()
-                        .HasColumnType("datetime(6)")
-                        .HasColumnName("updated_at");
-
-                    MySqlPropertyBuilderExtensions.UseMySqlComputedColumn(b.Property<DateTime>("UpdatedAt"));
-
-                    b.Property<int>("WebFeedPostEntityId")
-                        .HasColumnType("int")
-                        .HasColumnName("post_id");
-
-                    b.Property<int>("WebFeedTagEntityId")
-                        .HasColumnType("int")
-                        .HasColumnName("tag_id");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("WebFeedTagEntityId");
-
-                    b.HasIndex("WebFeedPostEntityId", "WebFeedTagEntityId")
-                        .IsUnique();
-
-                    b.ToTable("web_feed_post_tags");
-                });
-
-            modelBuilder.Entity("Vortex.Database.Entities.Feed.WebFeedReactionEntity", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
-                        .HasColumnName("id");
-
-                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<DateTime>("CreatedAt")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("datetime(6)")
-                        .HasColumnName("created_at");
-
-                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<DateTime>("CreatedAt"));
-
-                    b.Property<DateTime?>("DeletedAt")
-                        .HasColumnType("datetime(6)")
-                        .HasColumnName("deleted_at");
-
-                    b.Property<int>("Kind")
-                        .HasColumnType("int")
-                        .HasColumnName("kind");
-
-                    b.Property<int>("PlayerEntityId")
-                        .HasColumnType("int")
-                        .HasColumnName("player_id");
-
-                    b.Property<DateTime>("UpdatedAt")
-                        .ValueGeneratedOnAddOrUpdate()
-                        .HasColumnType("datetime(6)")
-                        .HasColumnName("updated_at");
-
-                    MySqlPropertyBuilderExtensions.UseMySqlComputedColumn(b.Property<DateTime>("UpdatedAt"));
-
-                    b.Property<int>("WebFeedPostEntityId")
-                        .HasColumnType("int")
-                        .HasColumnName("post_id");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("PlayerEntityId");
-
-                    b.HasIndex("WebFeedPostEntityId", "PlayerEntityId", "Kind")
-                        .IsUnique();
-
-                    b.ToTable("web_feed_reactions");
-                });
-
-            modelBuilder.Entity("Vortex.Database.Entities.Feed.WebFeedTagEntity", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
-                        .HasColumnName("id");
-
-                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<DateTime>("CreatedAt")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("datetime(6)")
-                        .HasColumnName("created_at");
-
-                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<DateTime>("CreatedAt"));
-
-                    b.Property<DateTime?>("DeletedAt")
-                        .HasColumnType("datetime(6)")
-                        .HasColumnName("deleted_at");
-
-                    b.Property<string>("Tag")
-                        .IsRequired()
-                        .HasMaxLength(64)
-                        .HasColumnType("varchar(64)")
-                        .HasColumnName("tag");
-
-                    b.Property<DateTime>("UpdatedAt")
-                        .ValueGeneratedOnAddOrUpdate()
-                        .HasColumnType("datetime(6)")
-                        .HasColumnName("updated_at");
-
-                    MySqlPropertyBuilderExtensions.UseMySqlComputedColumn(b.Property<DateTime>("UpdatedAt"));
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("Tag")
-                        .IsUnique();
-
-                    b.ToTable("web_feed_tags");
-                });
-
-            modelBuilder.Entity("Vortex.Database.Entities.Fishing.FishingDerbyEntity", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
-                        .HasColumnName("id");
-
-                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<DateTime>("CreatedAt")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("datetime(6)")
-                        .HasColumnName("created_at");
-
-                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<DateTime>("CreatedAt"));
-
-                    b.Property<DateTime?>("DeletedAt")
-                        .HasColumnType("datetime(6)")
-                        .HasColumnName("deleted_at");
-
-                    b.Property<DateTime>("EndsAt")
-                        .HasColumnType("datetime(6)")
-                        .HasColumnName("ends_at");
-
-                    b.Property<string>("NameKey")
-                        .IsRequired()
-                        .HasMaxLength(128)
-                        .HasColumnType("varchar(128)")
-                        .HasColumnName("name_key");
-
-                    b.Property<DateTime>("StartsAt")
-                        .HasColumnType("datetime(6)")
-                        .HasColumnName("starts_at");
-
-                    b.Property<DateTime>("UpdatedAt")
-                        .ValueGeneratedOnAddOrUpdate()
-                        .HasColumnType("datetime(6)")
-                        .HasColumnName("updated_at");
-
-                    MySqlPropertyBuilderExtensions.UseMySqlComputedColumn(b.Property<DateTime>("UpdatedAt"));
-
-                    b.Property<int>("ZoneId")
-                        .HasColumnType("int")
-                        .HasColumnName("zone_id");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("StartsAt", "EndsAt");
-
-                    b.ToTable("fishing_derbies");
-                });
-
-            modelBuilder.Entity("Vortex.Database.Entities.Fishing.FishingDerbyEntryEntity", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
-                        .HasColumnName("id");
-
-                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<int>("BestWeight")
-                        .HasColumnType("int")
-                        .HasColumnName("best_weight");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("datetime(6)")
-                        .HasColumnName("created_at");
-
-                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<DateTime>("CreatedAt"));
-
-                    b.Property<DateTime?>("DeletedAt")
-                        .HasColumnType("datetime(6)")
-                        .HasColumnName("deleted_at");
-
-                    b.Property<int>("DerbyId")
-                        .HasColumnType("int")
-                        .HasColumnName("derby_id");
-
-                    b.Property<int>("PlayerId")
-                        .HasColumnType("int")
-                        .HasColumnName("player_id");
-
-                    b.Property<DateTime>("UpdatedAt")
-                        .ValueGeneratedOnAddOrUpdate()
-                        .HasColumnType("datetime(6)")
-                        .HasColumnName("updated_at");
-
-                    MySqlPropertyBuilderExtensions.UseMySqlComputedColumn(b.Property<DateTime>("UpdatedAt"));
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("DerbyId", "BestWeight");
-
-                    b.HasIndex("DerbyId", "PlayerId")
-                        .IsUnique();
-
-                    b.ToTable("fishing_derby_entries");
                 });
 
             modelBuilder.Entity("Vortex.Database.Entities.Fishing.FishingLevelEntity", b =>
@@ -2475,10 +1954,6 @@ namespace Vortex.Database.Migrations
                         .HasColumnType("int")
                         .HasColumnName("player_id");
 
-                    b.Property<int?>("RentableSpaceFurnitureEntityId")
-                        .HasColumnType("int")
-                        .HasColumnName("rentable_space_furniture_id");
-
                     b.Property<int?>("RoomEntityId")
                         .HasColumnType("int")
                         .HasColumnName("room_id");
@@ -2522,8 +1997,6 @@ namespace Vortex.Database.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("FurnitureDefinitionEntityId");
-
-                    b.HasIndex("RentableSpaceFurnitureEntityId");
 
                     b.HasIndex("RoomEntityId");
 
@@ -2573,220 +2046,6 @@ namespace Vortex.Database.Migrations
                         .IsUnique();
 
                     b.ToTable("furniture_purchasable_clothing");
-                });
-
-            modelBuilder.Entity("Vortex.Database.Entities.Furniture.FurnitureTeleportLinkEntity", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
-                        .HasColumnName("id");
-
-                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<DateTime>("CreatedAt")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("datetime(6)")
-                        .HasColumnName("created_at");
-
-                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<DateTime>("CreatedAt"));
-
-                    b.Property<DateTime?>("DeletedAt")
-                        .HasColumnType("datetime(6)")
-                        .HasColumnName("deleted_at");
-
-                    b.Property<int>("FurnitureEntityOneId")
-                        .HasColumnType("int")
-                        .HasColumnName("furniture_one_id");
-
-                    b.Property<int>("FurnitureEntityTwoId")
-                        .HasColumnType("int")
-                        .HasColumnName("furniture_two_id");
-
-                    b.Property<DateTime>("UpdatedAt")
-                        .ValueGeneratedOnAddOrUpdate()
-                        .HasColumnType("datetime(6)")
-                        .HasColumnName("updated_at");
-
-                    MySqlPropertyBuilderExtensions.UseMySqlComputedColumn(b.Property<DateTime>("UpdatedAt"));
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("FurnitureEntityOneId")
-                        .IsUnique();
-
-                    b.HasIndex("FurnitureEntityTwoId")
-                        .IsUnique();
-
-                    b.ToTable("furniture_teleport_links");
-                });
-
-            modelBuilder.Entity("Vortex.Database.Entities.Furniture.RentableSpaceTermsEntity", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
-                        .HasColumnName("id");
-
-                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<DateTime>("CreatedAt")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("datetime(6)")
-                        .HasColumnName("created_at");
-
-                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<DateTime>("CreatedAt"));
-
-                    b.Property<int>("CurrencyTypeEntityId")
-                        .HasColumnType("int")
-                        .HasColumnName("currency_type_id");
-
-                    b.Property<DateTime?>("DeletedAt")
-                        .HasColumnType("datetime(6)")
-                        .HasColumnName("deleted_at");
-
-                    b.Property<int>("FurnitureEntityId")
-                        .HasColumnType("int")
-                        .HasColumnName("furniture_id");
-
-                    b.Property<int>("Price")
-                        .HasColumnType("int")
-                        .HasColumnName("price");
-
-                    b.Property<int>("RentDurationSeconds")
-                        .HasColumnType("int")
-                        .HasColumnName("rent_duration_seconds");
-
-                    b.Property<bool>("RequiresHc")
-                        .HasColumnType("tinyint(1)")
-                        .HasColumnName("requires_hc");
-
-                    b.Property<DateTime>("UpdatedAt")
-                        .ValueGeneratedOnAddOrUpdate()
-                        .HasColumnType("datetime(6)")
-                        .HasColumnName("updated_at");
-
-                    MySqlPropertyBuilderExtensions.UseMySqlComputedColumn(b.Property<DateTime>("UpdatedAt"));
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("CurrencyTypeEntityId");
-
-                    b.HasIndex("FurnitureEntityId")
-                        .IsUnique();
-
-                    b.ToTable("room_rentable_space_terms");
-                });
-
-            modelBuilder.Entity("Vortex.Database.Entities.Furniture.RoomRentableSpaceEntity", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
-                        .HasColumnName("id");
-
-                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<DateTime>("CreatedAt")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("datetime(6)")
-                        .HasColumnName("created_at");
-
-                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<DateTime>("CreatedAt"));
-
-                    b.Property<DateTime?>("DeletedAt")
-                        .HasColumnType("datetime(6)")
-                        .HasColumnName("deleted_at");
-
-                    b.Property<int>("FurnitureEntityId")
-                        .HasColumnType("int")
-                        .HasColumnName("furniture_id");
-
-                    b.Property<DateTime?>("RentedUntil")
-                        .HasColumnType("datetime(6)")
-                        .HasColumnName("rented_until");
-
-                    b.Property<int?>("RenterPlayerEntityId")
-                        .HasColumnType("int")
-                        .HasColumnName("renter_player_id");
-
-                    b.Property<DateTime>("UpdatedAt")
-                        .ValueGeneratedOnAddOrUpdate()
-                        .HasColumnType("datetime(6)")
-                        .HasColumnName("updated_at");
-
-                    MySqlPropertyBuilderExtensions.UseMySqlComputedColumn(b.Property<DateTime>("UpdatedAt"));
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("FurnitureEntityId")
-                        .IsUnique();
-
-                    b.HasIndex("RenterPlayerEntityId");
-
-                    b.ToTable("room_rentable_spaces");
-                });
-
-            modelBuilder.Entity("Vortex.Database.Entities.Gamedata.SongEntity", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
-                        .HasColumnName("id");
-
-                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<DateTime>("CreatedAt")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("datetime(6)")
-                        .HasColumnName("created_at");
-
-                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<DateTime>("CreatedAt"));
-
-                    b.Property<string>("Creator")
-                        .IsRequired()
-                        .HasMaxLength(512)
-                        .HasColumnType("varchar(512)")
-                        .HasColumnName("creator");
-
-                    b.Property<string>("Data")
-                        .IsRequired()
-                        .HasMaxLength(512)
-                        .HasColumnType("text")
-                        .HasColumnName("data");
-
-                    b.Property<DateTime?>("DeletedAt")
-                        .HasColumnType("datetime(6)")
-                        .HasColumnName("deleted_at");
-
-                    b.Property<int>("LengthMs")
-                        .HasColumnType("int")
-                        .HasColumnName("length_ms");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasMaxLength(512)
-                        .HasColumnType("varchar(512)")
-                        .HasColumnName("name");
-
-                    b.Property<string>("OfficialSongId")
-                        .IsRequired()
-                        .HasMaxLength(512)
-                        .HasColumnType("varchar(512)")
-                        .HasColumnName("official_song_id");
-
-                    b.Property<DateTime>("UpdatedAt")
-                        .ValueGeneratedOnAddOrUpdate()
-                        .HasColumnType("datetime(6)")
-                        .HasColumnName("updated_at");
-
-                    MySqlPropertyBuilderExtensions.UseMySqlComputedColumn(b.Property<DateTime>("UpdatedAt"));
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("OfficialSongId");
-
-                    b.ToTable("songs");
                 });
 
             modelBuilder.Entity("Vortex.Database.Entities.Groups.GroupBadgePartEntity", b =>
@@ -3409,7 +2668,7 @@ namespace Vortex.Database.Migrations
                     b.ToTable("group_membership_requests");
                 });
 
-            modelBuilder.Entity("Vortex.Database.Entities.Help.PlayerQuizEntity", b =>
+            modelBuilder.Entity("Vortex.Database.Entities.Loot.LootTableBindingEntity", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -3417,10 +2676,6 @@ namespace Vortex.Database.Migrations
                         .HasColumnName("id");
 
                     MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<int>("Attempts")
-                        .HasColumnType("int")
-                        .HasColumnName("attempts");
 
                     b.Property<DateTime>("CreatedAt")
                         .ValueGeneratedOnAdd()
@@ -3433,17 +2688,25 @@ namespace Vortex.Database.Migrations
                         .HasColumnType("datetime(6)")
                         .HasColumnName("deleted_at");
 
-                    b.Property<DateTime?>("PassedAt")
-                        .HasColumnType("datetime(6)")
-                        .HasColumnName("passed_at");
+                    b.Property<bool>("Enabled")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("tinyint(1)")
+                        .HasDefaultValue(true)
+                        .HasColumnName("enabled");
 
-                    b.Property<int>("PlayerEntityId")
+                    b.Property<int>("FurnitureDefinitionEntityId")
                         .HasColumnType("int")
-                        .HasColumnName("player_id");
+                        .HasColumnName("furniture_definition_id");
 
-                    b.Property<int>("QuizEntityId")
+                    b.Property<int>("HitsRequired")
+                        .ValueGeneratedOnAdd()
                         .HasColumnType("int")
-                        .HasColumnName("quiz_id");
+                        .HasDefaultValue(1)
+                        .HasColumnName("hits_required");
+
+                    b.Property<int>("LootTableEntityId")
+                        .HasColumnType("int")
+                        .HasColumnName("pool_id");
 
                     b.Property<DateTime>("UpdatedAt")
                         .ValueGeneratedOnAddOrUpdate()
@@ -3454,15 +2717,15 @@ namespace Vortex.Database.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("QuizEntityId");
-
-                    b.HasIndex("PlayerEntityId", "QuizEntityId")
+                    b.HasIndex("FurnitureDefinitionEntityId")
                         .IsUnique();
 
-                    b.ToTable("player_quizzes");
+                    b.HasIndex("LootTableEntityId");
+
+                    b.ToTable("loot_table_bindings");
                 });
 
-            modelBuilder.Entity("Vortex.Database.Entities.Help.QuizEntity", b =>
+            modelBuilder.Entity("Vortex.Database.Entities.Loot.LootTableEntity", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -3473,8 +2736,8 @@ namespace Vortex.Database.Migrations
 
                     b.Property<string>("Code")
                         .IsRequired()
-                        .HasMaxLength(512)
-                        .HasColumnType("varchar(512)")
+                        .HasMaxLength(64)
+                        .HasColumnType("varchar(64)")
                         .HasColumnName("code");
 
                     b.Property<DateTime>("CreatedAt")
@@ -3489,13 +2752,24 @@ namespace Vortex.Database.Migrations
                         .HasColumnName("deleted_at");
 
                     b.Property<bool>("Enabled")
+                        .ValueGeneratedOnAdd()
                         .HasColumnType("tinyint(1)")
+                        .HasDefaultValue(true)
                         .HasColumnName("enabled");
 
-                    b.Property<string>("RewardBadgeCode")
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(128)
+                        .HasColumnType("varchar(128)")
+                        .HasColumnName("name");
+
+                    b.Property<string>("Notes")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
                         .HasMaxLength(512)
                         .HasColumnType("varchar(512)")
-                        .HasColumnName("reward_badge_code");
+                        .HasDefaultValue("")
+                        .HasColumnName("notes");
 
                     b.Property<DateTime>("UpdatedAt")
                         .ValueGeneratedOnAddOrUpdate()
@@ -3504,15 +2778,23 @@ namespace Vortex.Database.Migrations
 
                     MySqlPropertyBuilderExtensions.UseMySqlComputedColumn(b.Property<DateTime>("UpdatedAt"));
 
+                    b.Property<string>("Variants")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasMaxLength(512)
+                        .HasColumnType("varchar(512)")
+                        .HasDefaultValue("")
+                        .HasColumnName("variants");
+
                     b.HasKey("Id");
 
                     b.HasIndex("Code")
                         .IsUnique();
 
-                    b.ToTable("quizzes");
+                    b.ToTable("loot_tables");
                 });
 
-            modelBuilder.Entity("Vortex.Database.Entities.Help.QuizQuestionEntity", b =>
+            modelBuilder.Entity("Vortex.Database.Entities.Loot.LootTableEntryEntity", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -3520,10 +2802,6 @@ namespace Vortex.Database.Migrations
                         .HasColumnName("id");
 
                     MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<int>("CorrectAnswerIndex")
-                        .HasColumnType("int")
-                        .HasColumnName("correct_answer_index");
 
                     b.Property<DateTime>("CreatedAt")
                         .ValueGeneratedOnAdd()
@@ -3536,17 +2814,90 @@ namespace Vortex.Database.Migrations
                         .HasColumnType("datetime(6)")
                         .HasColumnName("deleted_at");
 
-                    b.Property<int>("QuestionNumber")
-                        .HasColumnType("int")
-                        .HasColumnName("question_number");
+                    b.Property<bool>("Enabled")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("tinyint(1)")
+                        .HasDefaultValue(true)
+                        .HasColumnName("enabled");
 
-                    b.Property<int>("QuizEntityId")
-                        .HasColumnType("int")
-                        .HasColumnName("quiz_id");
+                    b.Property<string>("ExtraParam")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasMaxLength(128)
+                        .HasColumnType("varchar(128)")
+                        .HasDefaultValue("")
+                        .HasColumnName("extra_param");
 
-                    b.Property<int>("SortOrder")
+                    b.Property<int>("FurnitureDefinitionEntityId")
+                        .ValueGeneratedOnAdd()
                         .HasColumnType("int")
-                        .HasColumnName("sort_order");
+                        .HasDefaultValue(0)
+                        .HasColumnName("furniture_definition_id");
+
+                    b.Property<int>("LootTableEntityId")
+                        .HasColumnType("int")
+                        .HasColumnName("pool_id");
+
+                    b.Property<int>("ProductType")
+                        .HasColumnType("int")
+                        .HasDefaultValue(0)
+                        .HasColumnName("product_type");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("datetime(6)")
+                        .HasColumnName("updated_at");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlComputedColumn(b.Property<DateTime>("UpdatedAt"));
+
+                    b.Property<string>("Variant")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasMaxLength(32)
+                        .HasColumnType("varchar(32)")
+                        .HasDefaultValue("")
+                        .HasColumnName("variant");
+
+                    b.Property<int>("Weight")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasDefaultValue(1)
+                        .HasColumnName("weight");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("LootTableEntityId", "Enabled");
+
+                    b.ToTable("loot_table_entries");
+                });
+
+            modelBuilder.Entity("Vortex.Database.Entities.Loot.PlayerLootClaimEntity", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasColumnName("id");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("CreatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime(6)")
+                        .HasColumnName("created_at");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<DateTime>("CreatedAt"));
+
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("datetime(6)")
+                        .HasColumnName("deleted_at");
+
+                    b.Property<int>("LootTableEntityId")
+                        .HasColumnType("int")
+                        .HasColumnName("pool_id");
+
+                    b.Property<int>("PlayerEntityId")
+                        .HasColumnType("int")
+                        .HasColumnName("player_id");
 
                     b.Property<DateTime>("UpdatedAt")
                         .ValueGeneratedOnAddOrUpdate()
@@ -3557,10 +2908,12 @@ namespace Vortex.Database.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("QuizEntityId", "QuestionNumber")
+                    b.HasIndex("LootTableEntityId");
+
+                    b.HasIndex("PlayerEntityId", "LootTableEntityId")
                         .IsUnique();
 
-                    b.ToTable("quiz_questions");
+                    b.ToTable("player_loot_claims");
                 });
 
             modelBuilder.Entity("Vortex.Database.Entities.Marketplace.MarketplaceOfferEntity", b =>
@@ -4739,114 +4092,6 @@ namespace Vortex.Database.Migrations
                     b.ToTable("sanction_presets");
                 });
 
-            modelBuilder.Entity("Vortex.Database.Entities.Pets.PetCommandEntity", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
-                        .HasColumnName("id");
-
-                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<int>("CommandId")
-                        .HasColumnType("int")
-                        .HasColumnName("command");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("datetime(6)")
-                        .HasColumnName("created_at");
-
-                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<DateTime>("CreatedAt"));
-
-                    b.Property<DateTime?>("DeletedAt")
-                        .HasColumnType("datetime(6)")
-                        .HasColumnName("deleted_at");
-
-                    b.Property<int>("EnergyCost")
-                        .HasColumnType("int")
-                        .HasColumnName("energy_cost");
-
-                    b.Property<int>("LevelRequired")
-                        .HasColumnType("int")
-                        .HasColumnName("level_required");
-
-                    b.Property<int>("PetType")
-                        .HasColumnType("int")
-                        .HasColumnName("pet_type");
-
-                    b.Property<string>("Posture")
-                        .IsRequired()
-                        .HasMaxLength(512)
-                        .HasColumnType("varchar(512)")
-                        .HasColumnName("posture");
-
-                    b.Property<DateTime>("UpdatedAt")
-                        .ValueGeneratedOnAddOrUpdate()
-                        .HasColumnType("datetime(6)")
-                        .HasColumnName("updated_at");
-
-                    MySqlPropertyBuilderExtensions.UseMySqlComputedColumn(b.Property<DateTime>("UpdatedAt"));
-
-                    b.Property<int>("XpReward")
-                        .HasColumnType("int")
-                        .HasColumnName("xp_reward");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("PetType");
-
-                    b.HasIndex("PetType", "CommandId")
-                        .IsUnique();
-
-                    b.ToTable("pet_commands");
-                });
-
-            modelBuilder.Entity("Vortex.Database.Entities.Pets.PetCommandNameEntity", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
-                        .HasColumnName("id");
-
-                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<int>("CommandId")
-                        .HasColumnType("int")
-                        .HasColumnName("command");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("datetime(6)")
-                        .HasColumnName("created_at");
-
-                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<DateTime>("CreatedAt"));
-
-                    b.Property<DateTime?>("DeletedAt")
-                        .HasColumnType("datetime(6)")
-                        .HasColumnName("deleted_at");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasMaxLength(512)
-                        .HasColumnType("varchar(512)")
-                        .HasColumnName("name");
-
-                    b.Property<DateTime>("UpdatedAt")
-                        .ValueGeneratedOnAddOrUpdate()
-                        .HasColumnType("datetime(6)")
-                        .HasColumnName("updated_at");
-
-                    MySqlPropertyBuilderExtensions.UseMySqlComputedColumn(b.Property<DateTime>("UpdatedAt"));
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("CommandId")
-                        .IsUnique();
-
-                    b.ToTable("pet_command_names");
-                });
-
             modelBuilder.Entity("Vortex.Database.Entities.Pets.PetEntity", b =>
                 {
                     b.Property<int>("Id")
@@ -4877,10 +4122,6 @@ namespace Vortex.Database.Migrations
                         .HasColumnType("int")
                         .HasColumnName("direction");
 
-                    b.Property<int>("Energy")
-                        .HasColumnType("int")
-                        .HasColumnName("energy");
-
                     b.Property<int>("Experience")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int")
@@ -4891,12 +4132,6 @@ namespace Vortex.Database.Migrations
                         .HasColumnType("int")
                         .HasDefaultValue(0)
                         .HasColumnName("gender");
-
-                    b.Property<int>("Happiness")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
-                        .HasDefaultValue(100)
-                        .HasColumnName("happiness");
 
                     b.Property<bool>("HasSaddle")
                         .ValueGeneratedOnAdd()
@@ -4916,23 +4151,9 @@ namespace Vortex.Database.Migrations
                         .HasColumnType("varchar(40)")
                         .HasColumnName("name");
 
-                    b.Property<int>("Nutrition")
-                        .HasColumnType("int")
-                        .HasColumnName("nutrition");
-
                     b.Property<int>("OwnerPlayerEntityId")
                         .HasColumnType("int")
                         .HasColumnName("player_id");
-
-                    b.Property<int>("Race")
-                        .HasColumnType("int")
-                        .HasColumnName("race");
-
-                    b.Property<int>("Respect")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
-                        .HasDefaultValue(0)
-                        .HasColumnName("respect");
 
                     b.Property<bool>("RidingPermission")
                         .ValueGeneratedOnAdd()
@@ -4948,11 +4169,9 @@ namespace Vortex.Database.Migrations
                         .HasColumnType("int")
                         .HasColumnName("saddle_definition_id");
 
-                    b.Property<int>("Thirst")
-                        .ValueGeneratedOnAdd()
+                    b.Property<int>("Skin")
                         .HasColumnType("int")
-                        .HasDefaultValue(100)
-                        .HasColumnName("thirst");
+                        .HasColumnName("skin");
 
                     b.Property<int>("Type")
                         .HasColumnType("int")
@@ -5041,7 +4260,7 @@ namespace Vortex.Database.Migrations
                     b.ToTable("pet_levels");
                 });
 
-            modelBuilder.Entity("Vortex.Database.Entities.Pets.PetPaletteEntity", b =>
+            modelBuilder.Entity("Vortex.Database.Entities.Pets.PetSkinEntity", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -5049,10 +4268,6 @@ namespace Vortex.Database.Migrations
                         .HasColumnName("id");
 
                     MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<int>("BreedIndex")
-                        .HasColumnType("int")
-                        .HasColumnName("breed_index");
 
                     b.Property<int>("Color")
                         .HasColumnType("int")
@@ -5083,6 +4298,10 @@ namespace Vortex.Database.Migrations
                         .HasColumnType("tinyint(1)")
                         .HasColumnName("sellable");
 
+                    b.Property<int>("SkinIndex")
+                        .HasColumnType("int")
+                        .HasColumnName("skin_index");
+
                     b.Property<DateTime>("UpdatedAt")
                         .ValueGeneratedOnAddOrUpdate()
                         .HasColumnType("datetime(6)")
@@ -5094,60 +4313,10 @@ namespace Vortex.Database.Migrations
 
                     b.HasIndex("PetType");
 
-                    b.HasIndex("PetType", "BreedIndex", "Rare")
+                    b.HasIndex("PetType", "SkinIndex", "Rare")
                         .IsUnique();
 
-                    b.ToTable("pet_palettes");
-                });
-
-            modelBuilder.Entity("Vortex.Database.Entities.Pets.PetVocalEntity", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
-                        .HasColumnName("id");
-
-                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<DateTime>("CreatedAt")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("datetime(6)")
-                        .HasColumnName("created_at");
-
-                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<DateTime>("CreatedAt"));
-
-                    b.Property<DateTime?>("DeletedAt")
-                        .HasColumnType("datetime(6)")
-                        .HasColumnName("deleted_at");
-
-                    b.Property<int>("PetType")
-                        .HasColumnType("int")
-                        .HasColumnName("pet_type");
-
-                    b.Property<string>("Text")
-                        .IsRequired()
-                        .HasMaxLength(512)
-                        .HasColumnType("varchar(512)")
-                        .HasColumnName("text");
-
-                    b.Property<DateTime>("UpdatedAt")
-                        .ValueGeneratedOnAddOrUpdate()
-                        .HasColumnType("datetime(6)")
-                        .HasColumnName("updated_at");
-
-                    MySqlPropertyBuilderExtensions.UseMySqlComputedColumn(b.Property<DateTime>("UpdatedAt"));
-
-                    b.Property<string>("VocalType")
-                        .IsRequired()
-                        .HasMaxLength(512)
-                        .HasColumnType("varchar(512)")
-                        .HasColumnName("vocal_type");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("PetType", "VocalType");
-
-                    b.ToTable("pet_vocals");
+                    b.ToTable("pet_skins");
                 });
 
             modelBuilder.Entity("Vortex.Database.Entities.Players.AccountBanEntity", b =>
@@ -5196,49 +4365,6 @@ namespace Vortex.Database.Migrations
                         .IsUnique();
 
                     b.ToTable("account_bans");
-                });
-
-            modelBuilder.Entity("Vortex.Database.Entities.Players.AccountLevelEntity", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
-                        .HasColumnName("id");
-
-                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<DateTime>("CreatedAt")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("datetime(6)")
-                        .HasColumnName("created_at");
-
-                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<DateTime>("CreatedAt"));
-
-                    b.Property<DateTime?>("DeletedAt")
-                        .HasColumnType("datetime(6)")
-                        .HasColumnName("deleted_at");
-
-                    b.Property<int>("LevelNumber")
-                        .HasColumnType("int")
-                        .HasColumnName("level_number");
-
-                    b.Property<int>("RequiredScore")
-                        .HasColumnType("int")
-                        .HasColumnName("required_score");
-
-                    b.Property<DateTime>("UpdatedAt")
-                        .ValueGeneratedOnAddOrUpdate()
-                        .HasColumnType("datetime(6)")
-                        .HasColumnName("updated_at");
-
-                    MySqlPropertyBuilderExtensions.UseMySqlComputedColumn(b.Property<DateTime>("UpdatedAt"));
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("LevelNumber")
-                        .IsUnique();
-
-                    b.ToTable("account_levels");
                 });
 
             modelBuilder.Entity("Vortex.Database.Entities.Players.PlayerAccountEntity", b =>
@@ -5591,92 +4717,6 @@ namespace Vortex.Database.Migrations
                     b.ToTable("player_badges");
                 });
 
-            modelBuilder.Entity("Vortex.Database.Entities.Players.PlayerChatStyleEntity", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
-                        .HasColumnName("id");
-
-                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<int>("ClientStyleId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
-                        .HasDefaultValue(0)
-                        .HasColumnName("client_style_id");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("datetime(6)")
-                        .HasColumnName("created_at");
-
-                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<DateTime>("CreatedAt"));
-
-                    b.Property<DateTime?>("DeletedAt")
-                        .HasColumnType("datetime(6)")
-                        .HasColumnName("deleted_at");
-
-                    b.Property<DateTime>("UpdatedAt")
-                        .ValueGeneratedOnAddOrUpdate()
-                        .HasColumnType("datetime(6)")
-                        .HasColumnName("updated_at");
-
-                    MySqlPropertyBuilderExtensions.UseMySqlComputedColumn(b.Property<DateTime>("UpdatedAt"));
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("ClientStyleId")
-                        .IsUnique();
-
-                    b.ToTable("player_chat_styles");
-                });
-
-            modelBuilder.Entity("Vortex.Database.Entities.Players.PlayerChatStyleOwnedEntity", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
-                        .HasColumnName("id");
-
-                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<int>("ChatStyleId")
-                        .HasColumnType("int")
-                        .HasColumnName("chat_style_id");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("datetime(6)")
-                        .HasColumnName("created_at");
-
-                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<DateTime>("CreatedAt"));
-
-                    b.Property<DateTime?>("DeletedAt")
-                        .HasColumnType("datetime(6)")
-                        .HasColumnName("deleted_at");
-
-                    b.Property<int>("PlayerEntityId")
-                        .HasColumnType("int")
-                        .HasColumnName("player_id");
-
-                    b.Property<DateTime>("UpdatedAt")
-                        .ValueGeneratedOnAddOrUpdate()
-                        .HasColumnType("datetime(6)")
-                        .HasColumnName("updated_at");
-
-                    MySqlPropertyBuilderExtensions.UseMySqlComputedColumn(b.Property<DateTime>("UpdatedAt"));
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("ChatStyleId");
-
-                    b.HasIndex("PlayerEntityId", "ChatStyleId")
-                        .IsUnique();
-
-                    b.ToTable("player_chat_styles_owned");
-                });
-
             modelBuilder.Entity("Vortex.Database.Entities.Players.PlayerClothingEntity", b =>
                 {
                     b.Property<int>("Id")
@@ -5907,12 +4947,6 @@ namespace Vortex.Database.Migrations
                         .HasColumnType("datetime(6)")
                         .HasColumnName("nux_completed_at");
 
-                    b.Property<int>("PetRespectGivenToday")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
-                        .HasDefaultValue(0)
-                        .HasColumnName("pet_respect_given_today");
-
                     b.Property<int?>("PlayerAccountEntityId")
                         .HasColumnType("int")
                         .HasColumnName("account_id");
@@ -5930,32 +4964,6 @@ namespace Vortex.Database.Migrations
                     b.Property<bool>("ProfileVisible")
                         .HasColumnType("tinyint(1)")
                         .HasColumnName("profile_visible");
-
-                    b.Property<int>("RespectGivenToday")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
-                        .HasDefaultValue(0)
-                        .HasColumnName("respect_given_today");
-
-                    b.Property<int>("RespectReceived")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
-                        .HasDefaultValue(0)
-                        .HasColumnName("respect_received");
-
-                    b.Property<int>("RespectReplenishesUsedToday")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
-                        .HasDefaultValue(0)
-                        .HasColumnName("respect_replenishes_used_today");
-
-                    b.Property<DateTime?>("RespectResetDate")
-                        .HasColumnType("datetime(6)")
-                        .HasColumnName("respect_reset_date");
-
-                    b.Property<int?>("RoomChatStyleId")
-                        .HasColumnType("int")
-                        .HasColumnName("room_chat_style_id");
 
                     b.Property<DateTime?>("TradingLockedUntil")
                         .HasColumnType("datetime(6)")
@@ -5978,7 +4986,90 @@ namespace Vortex.Database.Migrations
                     b.ToTable("players");
                 });
 
-            modelBuilder.Entity("Vortex.Database.Entities.Players.PlayerKickbackEntity", b =>
+            modelBuilder.Entity("Vortex.Database.Entities.Players.PlayerMembershipEntity", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasColumnName("id");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("CreatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime(6)")
+                        .HasColumnName("created_at");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<DateTime>("CreatedAt"));
+
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("datetime(6)")
+                        .HasColumnName("deleted_at");
+
+                    b.Property<DateTime>("ExpiresAt")
+                        .HasColumnType("datetime(6)")
+                        .HasColumnName("expires_at");
+
+                    b.Property<DateTime?>("FirstSubscribedAt")
+                        .HasColumnType("datetime(6)")
+                        .HasColumnName("first_subscribed_at");
+
+                    b.Property<int>("GiftsAvailable")
+                        .HasColumnType("int")
+                        .HasColumnName("gifts_available");
+
+                    b.Property<bool>("HcBadgeGranted")
+                        .HasColumnType("tinyint(1)")
+                        .HasColumnName("hc_badge_granted");
+
+                    b.Property<DateTime?>("LastExpiredAt")
+                        .HasColumnType("datetime(6)")
+                        .HasColumnName("last_expired_at");
+
+                    b.Property<int>("Level")
+                        .HasColumnType("int")
+                        .HasColumnName("level");
+
+                    b.Property<int>("MembershipType")
+                        .HasColumnType("int")
+                        .HasColumnName("membership_type");
+
+                    b.Property<DateTime?>("NextGiftAt")
+                        .HasColumnType("datetime(6)")
+                        .HasColumnName("next_gift_at");
+
+                    b.Property<int>("PastMembershipDays")
+                        .HasColumnType("int")
+                        .HasColumnName("past_membership_days");
+
+                    b.Property<int>("PastVipDays")
+                        .HasColumnType("int")
+                        .HasColumnName("past_vip_days");
+
+                    b.Property<int>("PlayerEntityId")
+                        .HasColumnType("int")
+                        .HasColumnName("player_id");
+
+                    b.Property<int>("TotalMonths")
+                        .HasColumnType("int")
+                        .HasColumnName("total_months");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("datetime(6)")
+                        .HasColumnName("updated_at");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlComputedColumn(b.Property<DateTime>("UpdatedAt"));
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("PlayerEntityId", "MembershipType")
+                        .IsUnique();
+
+                    b.ToTable("player_memberships");
+                });
+
+            modelBuilder.Entity("Vortex.Database.Entities.Players.PlayerMembershipKickbackEntity", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -6030,7 +5121,7 @@ namespace Vortex.Database.Migrations
                     b.HasIndex("PlayerEntityId")
                         .IsUnique();
 
-                    b.ToTable("player_kickback");
+                    b.ToTable("player_membership_kickbacks");
                 });
 
             modelBuilder.Entity("Vortex.Database.Entities.Players.PlayerModToolPreferencesEntity", b =>
@@ -6167,90 +5258,7 @@ namespace Vortex.Database.Migrations
                     b.ToTable("player_navigator_preferences");
                 });
 
-            modelBuilder.Entity("Vortex.Database.Entities.Players.PlayerSubscriptionEntity", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
-                        .HasColumnName("id");
-
-                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<DateTime>("CreatedAt")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("datetime(6)")
-                        .HasColumnName("created_at");
-
-                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<DateTime>("CreatedAt"));
-
-                    b.Property<DateTime?>("DeletedAt")
-                        .HasColumnType("datetime(6)")
-                        .HasColumnName("deleted_at");
-
-                    b.Property<DateTime>("ExpiresAt")
-                        .HasColumnType("datetime(6)")
-                        .HasColumnName("expires_at");
-
-                    b.Property<DateTime?>("FirstSubscribedAt")
-                        .HasColumnType("datetime(6)")
-                        .HasColumnName("first_subscribed_at");
-
-                    b.Property<int>("GiftsAvailable")
-                        .HasColumnType("int")
-                        .HasColumnName("gifts_available");
-
-                    b.Property<bool>("HcBadgeGranted")
-                        .HasColumnType("tinyint(1)")
-                        .HasColumnName("hc_badge_granted");
-
-                    b.Property<DateTime?>("LastExpiredAt")
-                        .HasColumnType("datetime(6)")
-                        .HasColumnName("last_expired_at");
-
-                    b.Property<int>("Level")
-                        .HasColumnType("int")
-                        .HasColumnName("level");
-
-                    b.Property<DateTime?>("NextGiftAt")
-                        .HasColumnType("datetime(6)")
-                        .HasColumnName("next_gift_at");
-
-                    b.Property<int>("PastClubDays")
-                        .HasColumnType("int")
-                        .HasColumnName("past_club_days");
-
-                    b.Property<int>("PastVipDays")
-                        .HasColumnType("int")
-                        .HasColumnName("past_vip_days");
-
-                    b.Property<int>("PlayerEntityId")
-                        .HasColumnType("int")
-                        .HasColumnName("player_id");
-
-                    b.Property<int>("SubscriptionType")
-                        .HasColumnType("int")
-                        .HasColumnName("subscription_type");
-
-                    b.Property<int>("TotalMonths")
-                        .HasColumnType("int")
-                        .HasColumnName("total_months");
-
-                    b.Property<DateTime>("UpdatedAt")
-                        .ValueGeneratedOnAddOrUpdate()
-                        .HasColumnType("datetime(6)")
-                        .HasColumnName("updated_at");
-
-                    MySqlPropertyBuilderExtensions.UseMySqlComputedColumn(b.Property<DateTime>("UpdatedAt"));
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("PlayerEntityId", "SubscriptionType")
-                        .IsUnique();
-
-                    b.ToTable("player_subscriptions");
-                });
-
-            modelBuilder.Entity("Vortex.Database.Entities.Players.PlayerVaultIncomeRewardEntity", b =>
+            modelBuilder.Entity("Vortex.Database.Entities.Players.PlayerRewardVaultEntryEntity", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -6314,7 +5322,7 @@ namespace Vortex.Database.Migrations
                     b.HasIndex("PlayerEntityId", "SourceKey")
                         .IsUnique();
 
-                    b.ToTable("player_vault_income_rewards");
+                    b.ToTable("player_reward_vault_entries");
                 });
 
             modelBuilder.Entity("Vortex.Database.Entities.Players.PlayerWardrobeOutfitEntity", b =>
@@ -6415,378 +5423,6 @@ namespace Vortex.Database.Migrations
                         .IsUnique();
 
                     b.ToTable("player_word_filters");
-                });
-
-            modelBuilder.Entity("Vortex.Database.Entities.Prizes.PlayerPrizeClaimEntity", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
-                        .HasColumnName("id");
-
-                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<DateTime>("CreatedAt")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("datetime(6)")
-                        .HasColumnName("created_at");
-
-                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<DateTime>("CreatedAt"));
-
-                    b.Property<DateTime?>("DeletedAt")
-                        .HasColumnType("datetime(6)")
-                        .HasColumnName("deleted_at");
-
-                    b.Property<int>("PlayerEntityId")
-                        .HasColumnType("int")
-                        .HasColumnName("player_id");
-
-                    b.Property<int>("PrizePoolEntityId")
-                        .HasColumnType("int")
-                        .HasColumnName("pool_id");
-
-                    b.Property<DateTime>("UpdatedAt")
-                        .ValueGeneratedOnAddOrUpdate()
-                        .HasColumnType("datetime(6)")
-                        .HasColumnName("updated_at");
-
-                    MySqlPropertyBuilderExtensions.UseMySqlComputedColumn(b.Property<DateTime>("UpdatedAt"));
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("PrizePoolEntityId");
-
-                    b.HasIndex("PlayerEntityId", "PrizePoolEntityId")
-                        .IsUnique();
-
-                    b.ToTable("player_prize_claims");
-                });
-
-            modelBuilder.Entity("Vortex.Database.Entities.Prizes.PrizePoolBindingEntity", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
-                        .HasColumnName("id");
-
-                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<DateTime>("CreatedAt")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("datetime(6)")
-                        .HasColumnName("created_at");
-
-                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<DateTime>("CreatedAt"));
-
-                    b.Property<DateTime?>("DeletedAt")
-                        .HasColumnType("datetime(6)")
-                        .HasColumnName("deleted_at");
-
-                    b.Property<bool>("Enabled")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("tinyint(1)")
-                        .HasDefaultValue(true)
-                        .HasColumnName("enabled");
-
-                    b.Property<int>("FurnitureDefinitionEntityId")
-                        .HasColumnType("int")
-                        .HasColumnName("furniture_definition_id");
-
-                    b.Property<int>("HitsRequired")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
-                        .HasDefaultValue(1)
-                        .HasColumnName("hits_required");
-
-                    b.Property<int>("PrizePoolEntityId")
-                        .HasColumnType("int")
-                        .HasColumnName("pool_id");
-
-                    b.Property<DateTime>("UpdatedAt")
-                        .ValueGeneratedOnAddOrUpdate()
-                        .HasColumnType("datetime(6)")
-                        .HasColumnName("updated_at");
-
-                    MySqlPropertyBuilderExtensions.UseMySqlComputedColumn(b.Property<DateTime>("UpdatedAt"));
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("FurnitureDefinitionEntityId")
-                        .IsUnique();
-
-                    b.HasIndex("PrizePoolEntityId");
-
-                    b.ToTable("prize_pool_bindings");
-                });
-
-            modelBuilder.Entity("Vortex.Database.Entities.Prizes.PrizePoolEntity", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
-                        .HasColumnName("id");
-
-                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<string>("Code")
-                        .IsRequired()
-                        .HasMaxLength(64)
-                        .HasColumnType("varchar(64)")
-                        .HasColumnName("code");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("datetime(6)")
-                        .HasColumnName("created_at");
-
-                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<DateTime>("CreatedAt"));
-
-                    b.Property<DateTime?>("DeletedAt")
-                        .HasColumnType("datetime(6)")
-                        .HasColumnName("deleted_at");
-
-                    b.Property<bool>("Enabled")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("tinyint(1)")
-                        .HasDefaultValue(true)
-                        .HasColumnName("enabled");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasMaxLength(128)
-                        .HasColumnType("varchar(128)")
-                        .HasColumnName("name");
-
-                    b.Property<string>("Notes")
-                        .IsRequired()
-                        .ValueGeneratedOnAdd()
-                        .HasMaxLength(512)
-                        .HasColumnType("varchar(512)")
-                        .HasDefaultValue("")
-                        .HasColumnName("notes");
-
-                    b.Property<DateTime>("UpdatedAt")
-                        .ValueGeneratedOnAddOrUpdate()
-                        .HasColumnType("datetime(6)")
-                        .HasColumnName("updated_at");
-
-                    MySqlPropertyBuilderExtensions.UseMySqlComputedColumn(b.Property<DateTime>("UpdatedAt"));
-
-                    b.Property<string>("Variants")
-                        .IsRequired()
-                        .ValueGeneratedOnAdd()
-                        .HasMaxLength(512)
-                        .HasColumnType("varchar(512)")
-                        .HasDefaultValue("")
-                        .HasColumnName("variants");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("Code")
-                        .IsUnique();
-
-                    b.ToTable("prize_pools");
-                });
-
-            modelBuilder.Entity("Vortex.Database.Entities.Prizes.PrizePoolEntryEntity", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
-                        .HasColumnName("id");
-
-                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<DateTime>("CreatedAt")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("datetime(6)")
-                        .HasColumnName("created_at");
-
-                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<DateTime>("CreatedAt"));
-
-                    b.Property<DateTime?>("DeletedAt")
-                        .HasColumnType("datetime(6)")
-                        .HasColumnName("deleted_at");
-
-                    b.Property<bool>("Enabled")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("tinyint(1)")
-                        .HasDefaultValue(true)
-                        .HasColumnName("enabled");
-
-                    b.Property<string>("ExtraParam")
-                        .IsRequired()
-                        .ValueGeneratedOnAdd()
-                        .HasMaxLength(128)
-                        .HasColumnType("varchar(128)")
-                        .HasDefaultValue("")
-                        .HasColumnName("extra_param");
-
-                    b.Property<int>("FurnitureDefinitionEntityId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
-                        .HasDefaultValue(0)
-                        .HasColumnName("furniture_definition_id");
-
-                    b.Property<int>("PrizePoolEntityId")
-                        .HasColumnType("int")
-                        .HasColumnName("pool_id");
-
-                    b.Property<int>("ProductType")
-                        .HasColumnType("int")
-                        .HasDefaultValue(0)
-                        .HasColumnName("product_type");
-
-                    b.Property<DateTime>("UpdatedAt")
-                        .ValueGeneratedOnAddOrUpdate()
-                        .HasColumnType("datetime(6)")
-                        .HasColumnName("updated_at");
-
-                    MySqlPropertyBuilderExtensions.UseMySqlComputedColumn(b.Property<DateTime>("UpdatedAt"));
-
-                    b.Property<string>("Variant")
-                        .IsRequired()
-                        .ValueGeneratedOnAdd()
-                        .HasMaxLength(32)
-                        .HasColumnType("varchar(32)")
-                        .HasDefaultValue("")
-                        .HasColumnName("variant");
-
-                    b.Property<int>("Weight")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
-                        .HasDefaultValue(1)
-                        .HasColumnName("weight");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("PrizePoolEntityId", "Enabled");
-
-                    b.ToTable("prize_pool_entries");
-                });
-
-            modelBuilder.Entity("Vortex.Database.Entities.Quests.CommunityGoalEntity", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
-                        .HasColumnName("id");
-
-                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<string>("CampaignCode")
-                        .IsRequired()
-                        .ValueGeneratedOnAdd()
-                        .HasMaxLength(512)
-                        .HasColumnType("varchar(512)")
-                        .HasDefaultValue("")
-                        .HasColumnName("campaign_code");
-
-                    b.Property<string>("Code")
-                        .IsRequired()
-                        .HasMaxLength(512)
-                        .HasColumnType("varchar(512)")
-                        .HasColumnName("code");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("datetime(6)")
-                        .HasColumnName("created_at");
-
-                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<DateTime>("CreatedAt"));
-
-                    b.Property<DateTime?>("DeletedAt")
-                        .HasColumnType("datetime(6)")
-                        .HasColumnName("deleted_at");
-
-                    b.Property<bool>("Enabled")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("tinyint(1)")
-                        .HasDefaultValue(true)
-                        .HasColumnName("enabled");
-
-                    b.Property<DateTime?>("EndsAt")
-                        .HasColumnType("datetime(6)")
-                        .HasColumnName("ends_at");
-
-                    b.Property<int>("ScorePerQuest")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
-                        .HasDefaultValue(1)
-                        .HasColumnName("score_per_quest");
-
-                    b.Property<int>("SortOrder")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
-                        .HasDefaultValue(0)
-                        .HasColumnName("sort_order");
-
-                    b.Property<DateTime>("UpdatedAt")
-                        .ValueGeneratedOnAddOrUpdate()
-                        .HasColumnType("datetime(6)")
-                        .HasColumnName("updated_at");
-
-                    MySqlPropertyBuilderExtensions.UseMySqlComputedColumn(b.Property<DateTime>("UpdatedAt"));
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("Code")
-                        .IsUnique();
-
-                    b.ToTable("community_goals");
-                });
-
-            modelBuilder.Entity("Vortex.Database.Entities.Quests.CommunityGoalLevelEntity", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
-                        .HasColumnName("id");
-
-                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<int>("CommunityGoalEntityId")
-                        .HasColumnType("int")
-                        .HasColumnName("goal_id");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("datetime(6)")
-                        .HasColumnName("created_at");
-
-                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<DateTime>("CreatedAt"));
-
-                    b.Property<DateTime?>("DeletedAt")
-                        .HasColumnType("datetime(6)")
-                        .HasColumnName("deleted_at");
-
-                    b.Property<int>("LevelNumber")
-                        .HasColumnType("int")
-                        .HasColumnName("level_number");
-
-                    b.Property<int>("RewardUserLimit")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
-                        .HasDefaultValue(0)
-                        .HasColumnName("reward_user_limit");
-
-                    b.Property<int>("ScoreThreshold")
-                        .HasColumnType("int")
-                        .HasColumnName("score_threshold");
-
-                    b.Property<DateTime>("UpdatedAt")
-                        .ValueGeneratedOnAddOrUpdate()
-                        .HasColumnType("datetime(6)")
-                        .HasColumnName("updated_at");
-
-                    MySqlPropertyBuilderExtensions.UseMySqlComputedColumn(b.Property<DateTime>("UpdatedAt"));
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("CommunityGoalEntityId", "LevelNumber")
-                        .IsUnique();
-
-                    b.ToTable("community_goal_levels");
                 });
 
             modelBuilder.Entity("Vortex.Database.Entities.Quests.DailyTaskEntity", b =>
@@ -6938,61 +5574,6 @@ namespace Vortex.Database.Migrations
                     b.HasIndex("DailyTaskEntityId");
 
                     b.ToTable("daily_task_rewards");
-                });
-
-            modelBuilder.Entity("Vortex.Database.Entities.Quests.PlayerCommunityGoalContributionEntity", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
-                        .HasColumnName("id");
-
-                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<int>("CommunityGoalEntityId")
-                        .HasColumnType("int")
-                        .HasColumnName("goal_id");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("datetime(6)")
-                        .HasColumnName("created_at");
-
-                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<DateTime>("CreatedAt"));
-
-                    b.Property<DateTime?>("DeletedAt")
-                        .HasColumnType("datetime(6)")
-                        .HasColumnName("deleted_at");
-
-                    b.Property<DateTime?>("LastContributedAt")
-                        .HasColumnType("datetime(6)")
-                        .HasColumnName("last_contributed_at");
-
-                    b.Property<int>("PlayerEntityId")
-                        .HasColumnType("int")
-                        .HasColumnName("player_id");
-
-                    b.Property<int>("Score")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
-                        .HasDefaultValue(0)
-                        .HasColumnName("score");
-
-                    b.Property<DateTime>("UpdatedAt")
-                        .ValueGeneratedOnAddOrUpdate()
-                        .HasColumnType("datetime(6)")
-                        .HasColumnName("updated_at");
-
-                    MySqlPropertyBuilderExtensions.UseMySqlComputedColumn(b.Property<DateTime>("UpdatedAt"));
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("CommunityGoalEntityId", "Score");
-
-                    b.HasIndex("PlayerEntityId", "CommunityGoalEntityId")
-                        .IsUnique();
-
-                    b.ToTable("player_community_goal_contributions");
                 });
 
             modelBuilder.Entity("Vortex.Database.Entities.Quests.PlayerDailyTaskEntity", b =>
@@ -7358,59 +5939,6 @@ namespace Vortex.Database.Migrations
                     b.HasIndex("RoomEntityId");
 
                     b.ToTable("bots");
-                });
-
-            modelBuilder.Entity("Vortex.Database.Entities.Room.HandItemEntity", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
-                        .HasColumnName("id");
-
-                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<DateTime>("CreatedAt")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("datetime(6)")
-                        .HasColumnName("created_at");
-
-                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<DateTime>("CreatedAt"));
-
-                    b.Property<DateTime?>("DeletedAt")
-                        .HasColumnType("datetime(6)")
-                        .HasColumnName("deleted_at");
-
-                    b.Property<int>("HandItemId")
-                        .HasColumnType("int")
-                        .HasColumnName("hand_item_id");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasMaxLength(64)
-                        .HasColumnType("varchar(64)")
-                        .HasColumnName("name");
-
-                    b.Property<int>("Nutrition")
-                        .HasColumnType("int")
-                        .HasColumnName("nutrition");
-
-                    b.Property<int>("Thirst")
-                        .HasColumnType("int")
-                        .HasColumnName("thirst");
-
-                    b.Property<DateTime>("UpdatedAt")
-                        .ValueGeneratedOnAddOrUpdate()
-                        .HasColumnType("datetime(6)")
-                        .HasColumnName("updated_at");
-
-                    MySqlPropertyBuilderExtensions.UseMySqlComputedColumn(b.Property<DateTime>("UpdatedAt"));
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("HandItemId")
-                        .IsUnique();
-
-                    b.ToTable("hand_items");
                 });
 
             modelBuilder.Entity("Vortex.Database.Entities.Room.RoomBanEntity", b =>
@@ -7990,77 +6518,6 @@ namespace Vortex.Database.Migrations
                         .IsUnique();
 
                     b.ToTable("room_mutes");
-                });
-
-            modelBuilder.Entity("Vortex.Database.Entities.Room.RoomRaidProtectionEntity", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
-                        .HasColumnName("id");
-
-                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<int>("ActionType")
-                        .HasColumnType("int")
-                        .HasColumnName("action_type");
-
-                    b.Property<int>("BanDurationSeconds")
-                        .HasColumnType("int")
-                        .HasColumnName("ban_duration_seconds");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("datetime(6)")
-                        .HasColumnName("created_at");
-
-                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<DateTime>("CreatedAt"));
-
-                    b.Property<DateTime?>("DeletedAt")
-                        .HasColumnType("datetime(6)")
-                        .HasColumnName("deleted_at");
-
-                    b.Property<int>("DetectionSensitivity")
-                        .HasColumnType("int")
-                        .HasColumnName("detection_sensitivity");
-
-                    b.Property<bool>("Enabled")
-                        .HasColumnType("tinyint(1)")
-                        .HasColumnName("enabled");
-
-                    b.Property<int>("GuardDurationSeconds")
-                        .HasColumnType("int")
-                        .HasColumnName("guard_duration_seconds");
-
-                    b.Property<bool>("GuardEnabled")
-                        .HasColumnType("tinyint(1)")
-                        .HasColumnName("guard_enabled");
-
-                    b.Property<int>("GuardSensitivity")
-                        .HasColumnType("int")
-                        .HasColumnName("guard_sensitivity");
-
-                    b.Property<DateTime?>("LastRaidAt")
-                        .HasColumnType("datetime(6)")
-                        .HasColumnName("last_raid_at");
-
-                    b.Property<int>("RoomEntityId")
-                        .HasColumnType("int")
-                        .HasColumnName("room_id");
-
-                    b.Property<DateTime>("UpdatedAt")
-                        .ValueGeneratedOnAddOrUpdate()
-                        .HasColumnType("datetime(6)")
-                        .HasColumnName("updated_at");
-
-                    MySqlPropertyBuilderExtensions.UseMySqlComputedColumn(b.Property<DateTime>("UpdatedAt"));
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("RoomEntityId")
-                        .IsUnique();
-
-                    b.ToTable("room_raid_protection");
                 });
 
             modelBuilder.Entity("Vortex.Database.Entities.Room.RoomRightEntity", b =>
@@ -8764,42 +7221,12 @@ namespace Vortex.Database.Migrations
                     b.Navigation("AchievementEntity");
                 });
 
-            modelBuilder.Entity("Vortex.Database.Entities.Achievements.AchievementResolutionEntity", b =>
-                {
-                    b.HasOne("Vortex.Database.Entities.Achievements.AchievementEntity", "AchievementEntity")
-                        .WithMany()
-                        .HasForeignKey("AchievementEntityId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("AchievementEntity");
-                });
-
             modelBuilder.Entity("Vortex.Database.Entities.Achievements.PlayerAchievementEntity", b =>
                 {
                     b.HasOne("Vortex.Database.Entities.Achievements.AchievementEntity", "AchievementEntity")
                         .WithMany()
                         .HasForeignKey("AchievementEntityId")
                         .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.HasOne("Vortex.Database.Entities.Players.PlayerEntity", "PlayerEntity")
-                        .WithMany()
-                        .HasForeignKey("PlayerEntityId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("AchievementEntity");
-
-                    b.Navigation("PlayerEntity");
-                });
-
-            modelBuilder.Entity("Vortex.Database.Entities.Achievements.PlayerAchievementResolutionEntity", b =>
-                {
-                    b.HasOne("Vortex.Database.Entities.Achievements.AchievementEntity", "AchievementEntity")
-                        .WithMany()
-                        .HasForeignKey("AchievementEntityId")
-                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.HasOne("Vortex.Database.Entities.Players.PlayerEntity", "PlayerEntity")
@@ -8850,105 +7277,6 @@ namespace Vortex.Database.Migrations
                     b.Navigation("Offer");
                 });
 
-            modelBuilder.Entity("Vortex.Database.Entities.Feed.WebFeedPollChoiceEntity", b =>
-                {
-                    b.HasOne("Vortex.Database.Entities.Feed.WebFeedPostEntity", "WebFeedPostEntity")
-                        .WithMany("PollChoices")
-                        .HasForeignKey("WebFeedPostEntityId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("WebFeedPostEntity");
-                });
-
-            modelBuilder.Entity("Vortex.Database.Entities.Feed.WebFeedPollVoteEntity", b =>
-                {
-                    b.HasOne("Vortex.Database.Entities.Players.PlayerEntity", "PlayerEntity")
-                        .WithMany()
-                        .HasForeignKey("PlayerEntityId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("Vortex.Database.Entities.Feed.WebFeedPollChoiceEntity", "WebFeedPollChoiceEntity")
-                        .WithMany("Votes")
-                        .HasForeignKey("WebFeedPollChoiceEntityId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("Vortex.Database.Entities.Feed.WebFeedPostEntity", "WebFeedPostEntity")
-                        .WithMany()
-                        .HasForeignKey("WebFeedPostEntityId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("PlayerEntity");
-
-                    b.Navigation("WebFeedPollChoiceEntity");
-
-                    b.Navigation("WebFeedPostEntity");
-                });
-
-            modelBuilder.Entity("Vortex.Database.Entities.Feed.WebFeedPostEntity", b =>
-                {
-                    b.HasOne("Vortex.Database.Entities.Groups.GroupEntity", "GroupEntity")
-                        .WithMany()
-                        .HasForeignKey("GroupEntityId");
-
-                    b.HasOne("Vortex.Database.Entities.Feed.WebFeedPostEntity", "ParentEntity")
-                        .WithMany("Children")
-                        .HasForeignKey("ParentEntityId");
-
-                    b.HasOne("Vortex.Database.Entities.Players.PlayerEntity", "PlayerEntity")
-                        .WithMany()
-                        .HasForeignKey("PlayerEntityId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("GroupEntity");
-
-                    b.Navigation("ParentEntity");
-
-                    b.Navigation("PlayerEntity");
-                });
-
-            modelBuilder.Entity("Vortex.Database.Entities.Feed.WebFeedPostTagEntity", b =>
-                {
-                    b.HasOne("Vortex.Database.Entities.Feed.WebFeedPostEntity", "WebFeedPostEntity")
-                        .WithMany("Tags")
-                        .HasForeignKey("WebFeedPostEntityId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("Vortex.Database.Entities.Feed.WebFeedTagEntity", "WebFeedTagEntity")
-                        .WithMany("Posts")
-                        .HasForeignKey("WebFeedTagEntityId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("WebFeedPostEntity");
-
-                    b.Navigation("WebFeedTagEntity");
-                });
-
-            modelBuilder.Entity("Vortex.Database.Entities.Feed.WebFeedReactionEntity", b =>
-                {
-                    b.HasOne("Vortex.Database.Entities.Players.PlayerEntity", "PlayerEntity")
-                        .WithMany()
-                        .HasForeignKey("PlayerEntityId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("Vortex.Database.Entities.Feed.WebFeedPostEntity", "WebFeedPostEntity")
-                        .WithMany("Reactions")
-                        .HasForeignKey("WebFeedPostEntityId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("PlayerEntity");
-
-                    b.Navigation("WebFeedPostEntity");
-                });
-
             modelBuilder.Entity("Vortex.Database.Entities.Furniture.FurnitureEntity", b =>
                 {
                     b.HasOne("Vortex.Database.Entities.Furniture.FurnitureDefinitionEntity", "FurnitureDefinitionEntity")
@@ -8963,11 +7291,6 @@ namespace Vortex.Database.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("Vortex.Database.Entities.Furniture.FurnitureEntity", "RentableSpaceFurnitureEntity")
-                        .WithMany()
-                        .HasForeignKey("RentableSpaceFurnitureEntityId")
-                        .OnDelete(DeleteBehavior.SetNull);
-
                     b.HasOne("Vortex.Database.Entities.Room.RoomEntity", "RoomEntity")
                         .WithMany()
                         .HasForeignKey("RoomEntityId");
@@ -8975,8 +7298,6 @@ namespace Vortex.Database.Migrations
                     b.Navigation("FurnitureDefinitionEntity");
 
                     b.Navigation("PlayerEntity");
-
-                    b.Navigation("RentableSpaceFurnitureEntity");
 
                     b.Navigation("RoomEntity");
                 });
@@ -8990,61 +7311,6 @@ namespace Vortex.Database.Migrations
                         .IsRequired();
 
                     b.Navigation("FurnitureDefinitionEntity");
-                });
-
-            modelBuilder.Entity("Vortex.Database.Entities.Furniture.FurnitureTeleportLinkEntity", b =>
-                {
-                    b.HasOne("Vortex.Database.Entities.Furniture.FurnitureEntity", "FurnitureEntityOne")
-                        .WithMany()
-                        .HasForeignKey("FurnitureEntityOneId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("Vortex.Database.Entities.Furniture.FurnitureEntity", "FurnitureEntityTwo")
-                        .WithMany()
-                        .HasForeignKey("FurnitureEntityTwoId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("FurnitureEntityOne");
-
-                    b.Navigation("FurnitureEntityTwo");
-                });
-
-            modelBuilder.Entity("Vortex.Database.Entities.Furniture.RentableSpaceTermsEntity", b =>
-                {
-                    b.HasOne("Vortex.Database.Entities.Catalog.CurrencyTypeEntity", "CurrencyTypeEntity")
-                        .WithMany()
-                        .HasForeignKey("CurrencyTypeEntityId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("Vortex.Database.Entities.Furniture.FurnitureEntity", "FurnitureEntity")
-                        .WithMany()
-                        .HasForeignKey("FurnitureEntityId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("CurrencyTypeEntity");
-
-                    b.Navigation("FurnitureEntity");
-                });
-
-            modelBuilder.Entity("Vortex.Database.Entities.Furniture.RoomRentableSpaceEntity", b =>
-                {
-                    b.HasOne("Vortex.Database.Entities.Furniture.FurnitureEntity", "FurnitureEntity")
-                        .WithMany()
-                        .HasForeignKey("FurnitureEntityId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("Vortex.Database.Entities.Players.PlayerEntity", "RenterPlayerEntity")
-                        .WithMany()
-                        .HasForeignKey("RenterPlayerEntityId");
-
-                    b.Navigation("FurnitureEntity");
-
-                    b.Navigation("RenterPlayerEntity");
                 });
 
             modelBuilder.Entity("Vortex.Database.Entities.Groups.GroupBlockedMemberEntity", b =>
@@ -9217,34 +7483,45 @@ namespace Vortex.Database.Migrations
                     b.Navigation("PlayerEntity");
                 });
 
-            modelBuilder.Entity("Vortex.Database.Entities.Help.PlayerQuizEntity", b =>
+            modelBuilder.Entity("Vortex.Database.Entities.Loot.LootTableBindingEntity", b =>
                 {
+                    b.HasOne("Vortex.Database.Entities.Loot.LootTableEntity", "LootTableEntity")
+                        .WithMany()
+                        .HasForeignKey("LootTableEntityId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("LootTableEntity");
+                });
+
+            modelBuilder.Entity("Vortex.Database.Entities.Loot.LootTableEntryEntity", b =>
+                {
+                    b.HasOne("Vortex.Database.Entities.Loot.LootTableEntity", "LootTableEntity")
+                        .WithMany()
+                        .HasForeignKey("LootTableEntityId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("LootTableEntity");
+                });
+
+            modelBuilder.Entity("Vortex.Database.Entities.Loot.PlayerLootClaimEntity", b =>
+                {
+                    b.HasOne("Vortex.Database.Entities.Loot.LootTableEntity", "LootTableEntity")
+                        .WithMany()
+                        .HasForeignKey("LootTableEntityId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
                     b.HasOne("Vortex.Database.Entities.Players.PlayerEntity", "PlayerEntity")
                         .WithMany()
                         .HasForeignKey("PlayerEntityId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("Vortex.Database.Entities.Help.QuizEntity", "QuizEntity")
-                        .WithMany()
-                        .HasForeignKey("QuizEntityId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                    b.Navigation("LootTableEntity");
 
                     b.Navigation("PlayerEntity");
-
-                    b.Navigation("QuizEntity");
-                });
-
-            modelBuilder.Entity("Vortex.Database.Entities.Help.QuizQuestionEntity", b =>
-                {
-                    b.HasOne("Vortex.Database.Entities.Help.QuizEntity", "QuizEntity")
-                        .WithMany("Questions")
-                        .HasForeignKey("QuizEntityId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("QuizEntity");
                 });
 
             modelBuilder.Entity("Vortex.Database.Entities.Marketplace.MarketplaceOfferEntity", b =>
@@ -9547,25 +7824,6 @@ namespace Vortex.Database.Migrations
                     b.Navigation("PlayerEntity");
                 });
 
-            modelBuilder.Entity("Vortex.Database.Entities.Players.PlayerChatStyleOwnedEntity", b =>
-                {
-                    b.HasOne("Vortex.Database.Entities.Players.PlayerChatStyleEntity", "ChatStyle")
-                        .WithMany("OwnedChatStyles")
-                        .HasForeignKey("ChatStyleId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("Vortex.Database.Entities.Players.PlayerEntity", "PlayerEntity")
-                        .WithMany("PlayerOwnedChatStyles")
-                        .HasForeignKey("PlayerEntityId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("ChatStyle");
-
-                    b.Navigation("PlayerEntity");
-                });
-
             modelBuilder.Entity("Vortex.Database.Entities.Players.PlayerClothingEntity", b =>
                 {
                     b.HasOne("Vortex.Database.Entities.Players.PlayerEntity", "PlayerEntity")
@@ -9616,7 +7874,18 @@ namespace Vortex.Database.Migrations
                     b.Navigation("PlayerAccount");
                 });
 
-            modelBuilder.Entity("Vortex.Database.Entities.Players.PlayerKickbackEntity", b =>
+            modelBuilder.Entity("Vortex.Database.Entities.Players.PlayerMembershipEntity", b =>
+                {
+                    b.HasOne("Vortex.Database.Entities.Players.PlayerEntity", "PlayerEntity")
+                        .WithMany("PlayerMemberships")
+                        .HasForeignKey("PlayerEntityId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("PlayerEntity");
+                });
+
+            modelBuilder.Entity("Vortex.Database.Entities.Players.PlayerMembershipKickbackEntity", b =>
                 {
                     b.HasOne("Vortex.Database.Entities.Players.PlayerEntity", "PlayerEntity")
                         .WithMany()
@@ -9649,18 +7918,7 @@ namespace Vortex.Database.Migrations
                     b.Navigation("PlayerEntity");
                 });
 
-            modelBuilder.Entity("Vortex.Database.Entities.Players.PlayerSubscriptionEntity", b =>
-                {
-                    b.HasOne("Vortex.Database.Entities.Players.PlayerEntity", "PlayerEntity")
-                        .WithMany("PlayerSubscriptions")
-                        .HasForeignKey("PlayerEntityId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("PlayerEntity");
-                });
-
-            modelBuilder.Entity("Vortex.Database.Entities.Players.PlayerVaultIncomeRewardEntity", b =>
+            modelBuilder.Entity("Vortex.Database.Entities.Players.PlayerRewardVaultEntryEntity", b =>
                 {
                     b.HasOne("Vortex.Database.Entities.Players.PlayerEntity", "PlayerEntity")
                         .WithMany()
@@ -9682,58 +7940,6 @@ namespace Vortex.Database.Migrations
                     b.Navigation("PlayerEntity");
                 });
 
-            modelBuilder.Entity("Vortex.Database.Entities.Prizes.PlayerPrizeClaimEntity", b =>
-                {
-                    b.HasOne("Vortex.Database.Entities.Players.PlayerEntity", "PlayerEntity")
-                        .WithMany()
-                        .HasForeignKey("PlayerEntityId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("Vortex.Database.Entities.Prizes.PrizePoolEntity", "PrizePoolEntity")
-                        .WithMany()
-                        .HasForeignKey("PrizePoolEntityId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("PlayerEntity");
-
-                    b.Navigation("PrizePoolEntity");
-                });
-
-            modelBuilder.Entity("Vortex.Database.Entities.Prizes.PrizePoolBindingEntity", b =>
-                {
-                    b.HasOne("Vortex.Database.Entities.Prizes.PrizePoolEntity", "PrizePoolEntity")
-                        .WithMany()
-                        .HasForeignKey("PrizePoolEntityId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("PrizePoolEntity");
-                });
-
-            modelBuilder.Entity("Vortex.Database.Entities.Prizes.PrizePoolEntryEntity", b =>
-                {
-                    b.HasOne("Vortex.Database.Entities.Prizes.PrizePoolEntity", "PrizePoolEntity")
-                        .WithMany()
-                        .HasForeignKey("PrizePoolEntityId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("PrizePoolEntity");
-                });
-
-            modelBuilder.Entity("Vortex.Database.Entities.Quests.CommunityGoalLevelEntity", b =>
-                {
-                    b.HasOne("Vortex.Database.Entities.Quests.CommunityGoalEntity", "CommunityGoalEntity")
-                        .WithMany()
-                        .HasForeignKey("CommunityGoalEntityId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("CommunityGoalEntity");
-                });
-
             modelBuilder.Entity("Vortex.Database.Entities.Quests.DailyTaskRewardEntity", b =>
                 {
                     b.HasOne("Vortex.Database.Entities.Quests.DailyTaskEntity", "DailyTaskEntity")
@@ -9743,25 +7949,6 @@ namespace Vortex.Database.Migrations
                         .IsRequired();
 
                     b.Navigation("DailyTaskEntity");
-                });
-
-            modelBuilder.Entity("Vortex.Database.Entities.Quests.PlayerCommunityGoalContributionEntity", b =>
-                {
-                    b.HasOne("Vortex.Database.Entities.Quests.CommunityGoalEntity", "CommunityGoalEntity")
-                        .WithMany()
-                        .HasForeignKey("CommunityGoalEntityId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.HasOne("Vortex.Database.Entities.Players.PlayerEntity", "PlayerEntity")
-                        .WithMany()
-                        .HasForeignKey("PlayerEntityId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("CommunityGoalEntity");
-
-                    b.Navigation("PlayerEntity");
                 });
 
             modelBuilder.Entity("Vortex.Database.Entities.Quests.PlayerDailyTaskEntity", b =>
@@ -9944,17 +8131,6 @@ namespace Vortex.Database.Migrations
                     b.Navigation("RoomEntity");
                 });
 
-            modelBuilder.Entity("Vortex.Database.Entities.Room.RoomRaidProtectionEntity", b =>
-                {
-                    b.HasOne("Vortex.Database.Entities.Room.RoomEntity", "RoomEntity")
-                        .WithMany()
-                        .HasForeignKey("RoomEntityId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("RoomEntity");
-                });
-
             modelBuilder.Entity("Vortex.Database.Entities.Room.RoomRightEntity", b =>
                 {
                     b.HasOne("Vortex.Database.Entities.Players.PlayerEntity", "PlayerEntity")
@@ -10046,27 +8222,6 @@ namespace Vortex.Database.Migrations
                     b.Navigation("PlayerCurrencies");
                 });
 
-            modelBuilder.Entity("Vortex.Database.Entities.Feed.WebFeedPollChoiceEntity", b =>
-                {
-                    b.Navigation("Votes");
-                });
-
-            modelBuilder.Entity("Vortex.Database.Entities.Feed.WebFeedPostEntity", b =>
-                {
-                    b.Navigation("Children");
-
-                    b.Navigation("PollChoices");
-
-                    b.Navigation("Reactions");
-
-                    b.Navigation("Tags");
-                });
-
-            modelBuilder.Entity("Vortex.Database.Entities.Feed.WebFeedTagEntity", b =>
-                {
-                    b.Navigation("Posts");
-                });
-
             modelBuilder.Entity("Vortex.Database.Entities.Furniture.FurnitureDefinitionEntity", b =>
                 {
                     b.Navigation("Furnitures");
@@ -10084,11 +8239,6 @@ namespace Vortex.Database.Migrations
                     b.Navigation("Posts");
                 });
 
-            modelBuilder.Entity("Vortex.Database.Entities.Help.QuizEntity", b =>
-                {
-                    b.Navigation("Questions");
-                });
-
             modelBuilder.Entity("Vortex.Database.Entities.Navigator.NavigatorTopLevelContextEntity", b =>
                 {
                     b.Navigation("QuickLinks");
@@ -10104,11 +8254,6 @@ namespace Vortex.Database.Migrations
             modelBuilder.Entity("Vortex.Database.Entities.Players.PlayerAccountEntity", b =>
                 {
                     b.Navigation("Players");
-                });
-
-            modelBuilder.Entity("Vortex.Database.Entities.Players.PlayerChatStyleEntity", b =>
-                {
-                    b.Navigation("OwnedChatStyles");
                 });
 
             modelBuilder.Entity("Vortex.Database.Entities.Players.PlayerEntity", b =>
@@ -10131,9 +8276,7 @@ namespace Vortex.Database.Migrations
 
                     b.Navigation("PlayerCurrencies");
 
-                    b.Navigation("PlayerOwnedChatStyles");
-
-                    b.Navigation("PlayerSubscriptions");
+                    b.Navigation("PlayerMemberships");
 
                     b.Navigation("RoomBans");
 
