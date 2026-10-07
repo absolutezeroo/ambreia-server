@@ -3,9 +3,9 @@ using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Hosting;
 using Vortex.Primitives.Plugins;
 using Vortex.Primitives.Shop;
-using Vortex.Shop.Payments;
+using Vortex.WebApi.Shop.Payments;
 
-namespace Vortex.Shop;
+namespace Vortex.WebApi.Shop;
 
 /// <summary>
 /// Registers the paid shop: its configuration, its payment providers, and the service the website

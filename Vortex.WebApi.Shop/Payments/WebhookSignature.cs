@@ -4,7 +4,7 @@ using System.Globalization;
 using System.Security.Cryptography;
 using System.Text;
 
-namespace Vortex.Shop.Payments;
+namespace Vortex.WebApi.Shop.Payments;
 
 /// <summary>
 /// The one check that decides whether a webhook body is worth reading: an HMAC-SHA256 over a

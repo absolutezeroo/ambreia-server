@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace Vortex.Shop;
+namespace Vortex.WebApi.Shop;
 
 /// <summary>
 /// What an operator has to decide before the hotel may take money.

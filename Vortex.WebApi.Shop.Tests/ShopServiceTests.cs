@@ -9,7 +9,7 @@ using Vortex.Primitives.Players.Enums.Wallet;
 using Vortex.Primitives.Shop;
 using Xunit;
 
-namespace Vortex.Shop.Tests;
+namespace Vortex.WebApi.Shop.Tests;
 
 /// <summary>
 /// What the shop must not do. Each of these is a way a hotel's shop has actually been robbed, and

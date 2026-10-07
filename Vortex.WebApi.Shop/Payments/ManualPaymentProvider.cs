@@ -3,7 +3,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Vortex.Primitives.Shop;
 
-namespace Vortex.Shop.Payments;
+namespace Vortex.WebApi.Shop.Payments;
 
 /// <summary>
 /// The provider for a hotel that has no payment contract yet: an operator reads the order, collects

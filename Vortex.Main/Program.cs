@@ -40,10 +40,10 @@ using Vortex.Progression;
 using Vortex.Revisions.Extensions;
 using Vortex.Rooms;
 using Vortex.Runtime.AssemblyProcessing;
-using Vortex.Shop;
 using Vortex.Signals;
 using Vortex.Social;
 using Vortex.WebApi.Authentication;
+using Vortex.WebApi.Shop;
 
 namespace Vortex.Main;
 

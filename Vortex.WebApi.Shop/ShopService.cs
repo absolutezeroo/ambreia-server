@@ -19,9 +19,9 @@ using Vortex.Primitives.Players.Enums.Wallet;
 using Vortex.Primitives.Players.Grains;
 using Vortex.Primitives.Players.Wallet;
 using Vortex.Primitives.Shop;
-using Vortex.Shop.Payments;
+using Vortex.WebApi.Shop.Payments;
 
-namespace Vortex.Shop;
+namespace Vortex.WebApi.Shop;
 
 /// <summary>
 /// The shop, end to end. See <see cref="IShopService"/> for the five rules this is an implementation

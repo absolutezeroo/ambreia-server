@@ -287,7 +287,7 @@ internal sealed class WebApiWebHost(
         services.AddSingleton(rootServices.GetRequiredService<IAccountSafetyQuestionsService>());
         services.AddSingleton(rootServices.GetRequiredService<IAccountTrustedLocationService>());
 
-        // The shop. Resolved from the root because it lives in Vortex.Shop, which this project does
+        // The shop. Resolved from the root because it lives in Vortex.WebApi.Shop, which this project does
         // not reference and does not need to: the endpoints know only IShopService, and which payment
         // providers exist behind it is settled where the module is registered.
         services.AddSingleton(rootServices.GetRequiredService<IShopService>());

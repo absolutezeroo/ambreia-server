@@ -15,10 +15,10 @@ using Vortex.Primitives.Players.Enums;
 using Vortex.Primitives.Players.Grains;
 using Vortex.Primitives.Players.Wallet;
 using Vortex.Primitives.Shop;
-using Vortex.Shop.Payments;
 using Vortex.Tests.Support;
+using Vortex.WebApi.Shop.Payments;
 
-namespace Vortex.Shop.Tests;
+namespace Vortex.WebApi.Shop.Tests;
 
 /// <summary>
 /// A real <c>ShopService</c> over an in-memory database, with the two grains it can reach recorded

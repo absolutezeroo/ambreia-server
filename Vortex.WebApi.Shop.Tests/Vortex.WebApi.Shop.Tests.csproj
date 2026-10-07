@@ -14,7 +14,7 @@
     <PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Vortex.Shop\Vortex.Shop.csproj" />
+    <ProjectReference Include="..\Vortex.WebApi.Shop\Vortex.WebApi.Shop.csproj" />
     <ProjectReference Include="..\Vortex.Tests.Support\Vortex.Tests.Support.csproj" />
   </ItemGroup>
 </Project>

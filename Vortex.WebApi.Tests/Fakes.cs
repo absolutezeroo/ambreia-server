@@ -385,7 +385,7 @@ internal sealed class RecordingAuditSink : IAuditSink
 
 /// <summary>
 /// The shop, faked. What the real one does — the signature, the price snapshot, the replay guard —
-/// has its own tests in <c>Vortex.Shop.Tests</c> against the real service; what is left for the
+/// has its own tests in <c>Vortex.WebApi.Shop.Tests</c> against the real service; what is left for the
 /// endpoints is plumbing, so this answers the shapes and records what it was handed.
 /// </summary>
 internal sealed class FakeShopService : IShopService

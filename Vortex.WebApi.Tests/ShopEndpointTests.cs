@@ -16,7 +16,7 @@ namespace Vortex.WebApi.Tests;
 /// <remarks>
 /// The rule these are all about is that the catalogue and the webhook are anonymous, the orders
 /// belong to a session, and NOTHING reachable from a browser can move an order to paid. The
-/// verification itself is <c>Vortex.Shop.Tests</c>' subject; here the question is only which door
+/// verification itself is <c>Vortex.WebApi.Shop.Tests</c>' subject; here the question is only which door
 /// each request goes through.
 /// </remarks>
 public sealed class ShopEndpointTests

@@ -99,9 +99,9 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Vortex.Signals", "Vortex.Si
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Vortex.Signals.Tests", "Vortex.Signals.Tests\Vortex.Signals.Tests.csproj", "{3D8F1A64-2B57-4C90-A1E3-8F42B6D07C15}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Vortex.Shop", "Vortex.Shop\Vortex.Shop.csproj", "{FB27E696-5737-4715-BE0B-403D5FBC0E0A}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Vortex.WebApi.Shop", "Vortex.WebApi.Shop\Vortex.WebApi.Shop.csproj", "{FB27E696-5737-4715-BE0B-403D5FBC0E0A}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Vortex.Shop.Tests", "Vortex.Shop.Tests\Vortex.Shop.Tests.csproj", "{2A5B1C64-06D8-4998-876D-88959DD32969}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Vortex.WebApi.Shop.Tests", "Vortex.WebApi.Shop.Tests\Vortex.WebApi.Shop.Tests.csproj", "{2A5B1C64-06D8-4998-876D-88959DD32969}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Vortex.PacketHandlers.Tests", "Vortex.PacketHandlers.Tests\Vortex.PacketHandlers.Tests.csproj", "{9C5B46E1-5AB4-49D3-931D-29EF76FA8806}"
 EndProject
