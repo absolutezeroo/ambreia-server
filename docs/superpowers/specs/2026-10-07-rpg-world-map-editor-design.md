@@ -124,10 +124,11 @@ est son `id` dans le document (§4.1), pas le `RoomObjectId`.
   (`spawn_loups_nord`, `npc_intendant`). Les références internes (un trigger qui vise une zone, une
   case affectée à une zone) passent par cet id.
 - Coordonnées en cases ; hauteur en décimal (centièmes), comme le reste du moteur.
-- Un **meuble est désigné par son nom de classe Habbo** (`furniture_definitions.name`, ex.
-  `g_hween_c21_sofa`), stable d'un import de données de référence à l'autre, contrairement à l'id
-  numérique de la définition. *À vérifier pendant le plan : que `name` porte bien le nom de classe
-  sur toutes les lignes importées.*
+- Un **meuble est désigné par l'id de sa définition et son nom de classe** : `definition`
+  (`furniture_definitions.id`, égal au `sprite_id` Habbo, stable d'un import à l'autre) fait foi ;
+  `class` (`furniture_definitions.name`, ex. `throne`) sert à la lecture et à la vérification (un nom
+  différent est un avertissement). Mesuré le 2026-10-07 : 55 282 définitions pour 51 352 noms
+  distincts — le nom seul est ambigu.
 
 ### 4.2 Calques
 
@@ -137,7 +138,7 @@ est son `id` dans le document (§4.1), pas le `RoomObjectId`.
 | `floor` | largeur, longueur (≤ 64 × 64), cases : hauteur, marchable, trou, `zone` (id), note ; case et direction de la porte | taille ; porte sur une case existante ; zone référencée existe |
 | `walls` | murs actifs, hauteur, épaisseur, visibilité (réglages globaux de la room) | bornes |
 | `decor` | objets de sol : `id`, classe, x, y, z, rotation, état, surcharges de collision (§4.4), interaction, tag, verrouillé ; objets muraux : `id`, classe, mur gauche/droit, position murale, état | **la classe existe** et est du bon type (sol/mur) ; rotation permise pour ce meuble ; emprise dans la carte ; état < nombre d'états |
-| `entries` | points d'entrée nommés (`arrival`, `respawn`, `dungeon_return`…), case, direction | case marchable ; au moins un point `arrival` |
+| `entries` | points d'entrée nommés (`arrival`, `respawn`, `dungeon_return`…), case, direction ; l'entrée des joueurs reste la porte de `floor` en v1 | case marchable |
 | `passages` | téléporteurs et transitions : volume (cases ou polygone), destination (zone + entrée), fondu, conditions, coût, cooldown | géométrie ; destination existante (§5.2) |
 | `zones` | polygones logiques : `kind` (`Safe`, `PvP`, `Quest`, `Boss`, `Town`, `Custom`), nom affiché, priorité, musique, ambiance, niveau conseillé, tags, conditions | polygone fermé sur la grille ; ids uniques |
 | `npcs` | modèle, surcharges (nom, look), case, rotation, interactions (parler, boutique, quête, banque, téléportation), conditions d'apparition, animation, icône | case marchable ; modèle : **référence différée** (§5.3) |
@@ -202,12 +203,13 @@ Erreurs :
 - géométrie : carte > 64 × 64, élément hors carte, polygone non fermé, emprise de meuble hors carte ;
 - référence interne cassée (trigger, case, coffre qui vise un id absent) ;
 - meuble inconnu ou de mauvais type, rotation ou état impossible pour ce meuble ;
-- aucun point d'entrée `arrival`, ou point d'entrée sur une case non marchable ;
+- porte (`floor.door`) sur une case non marchable ;
 - passage vers une zone qui n'existe pas.
 
 Avertissements :
 - **accessibilité** : un spawn, un PNJ, une ressource ou un passage qu'on ne peut pas atteindre à pied
-  depuis l'entrée `arrival` (calcul avec le pathfinding du serveur sur la carte de la zone) ;
+  depuis la porte (parcours des cases marchables, pas de hauteur ≤ 1 ; le décor n'est pas encore
+  pris en compte, il le sera avec la carte de navigation) ;
 - passage vers une entrée qui n'existe pas encore dans la zone de destination ;
 - **budget** : plus de N objets de décor ou d'entités (N réglable, valeur initiale mesurée sur le
   client pendant le plan) ;
@@ -271,7 +273,9 @@ Deux capabilities, ajoutées à `Capabilities` et au rôle `owner` :
 Un gabarit est une zone ordinaire marquée `settings.template = true`. Créer une zone depuis un gabarit
 copie son document publié. Aucun système à part.
 
-### 6.6 Ticket de test
+### 6.6 Ticket de test — reporté à la spec 3
+
+*Reporté (plan du 2026-10-07) : il ne sert qu'au mode test de l'application.*
 
 Le mode test de l'éditeur (spec 3) obtient un ticket SSO pour un avatar de l'auteur, portant une room
 de destination (colonne nullable `security_tickets.target_room_id`, ajoutée avec les tables du §3.3).
@@ -283,10 +287,11 @@ a la même durée de vie que les autres.
 Après une publication, `ZonePublisher` appelle `RoomGrain.ReloadZoneAsync(version)` :
 - **room inactive** : rien ; la prochaine activation charge la version publiée ;
 - **room active, vide** : elle reconstruit sa carte et son décor ;
-- **room active, occupée** : elle reconstruit, replace chaque avatar sur sa case si elle est encore
-  marchable, sinon sur la case marchable la plus proche, sinon sur l'entrée `arrival`, puis envoie à
-  chaque occupant un `RoomForward` vers la même room. Le client recharge la room, ce qui donne le
-  fondu prévu par la spec unifiée, sans message nouveau.
+- **room active, occupée** : elle envoie à chaque occupant un `RoomForward` vers la même room et se
+  désactive ; la nouvelle activation charge la version publiée et chacun y rentre **par la porte**
+  (v1). Le client recharge la room, ce qui donne le fondu prévu par la spec unifiée, sans message
+  nouveau. Garder la case de chacun (ou la case marchable la plus proche) vient avec le runtime de
+  zone.
 
 ---
 
@@ -321,8 +326,7 @@ Après une publication, `ZonePublisher` appelle `RoomGrain.ReloadZoneAsync(versi
 
 ## 9. Questions ouvertes
 
-1. Nom de classe des meubles : confirmer que `furniture_definitions.name` est bien le nom de classe
-   Habbo pour toutes les lignes (sinon, ajouter la colonne au prochain import).
+1. ~~Nom de classe des meubles~~ : tranché (§4.1), référence par id + classe.
 2. Valeur initiale du budget d'objets par zone : à mesurer sur le client avec une zone chargée.
 3. La zone de développement (`scripts/sql/dev_zone.sql`) devient-elle la première zone publiée par la
    route, ou reste-t-elle une room classique ? Recommandation : la recréer en zone, pour que le
