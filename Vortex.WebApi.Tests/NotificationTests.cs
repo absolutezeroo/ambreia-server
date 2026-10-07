@@ -39,13 +39,13 @@ public sealed class NotificationTests
     /// the player was on and no packet that could have told them.
     /// </summary>
     [Fact]
-    public async Task AClubExpiryIsWaitingNextTimeILook()
+    public async Task AMembershipExpiryIsWaitingNextTimeILook()
     {
         await using WebApiTestFactory factory = new();
         await PlayerAsync(factory, 1, "Prodiigy");
 
-        await new ClubExpiredNotificationHandler(Sink(factory)).HandleAsync(
-            new ClubExpiredEvent(1, WasVip: true),
+        await new MembershipExpiredNotificationHandler(Sink(factory)).HandleAsync(
+            new MembershipExpiredEvent(1, WasVip: true),
             Context(),
             default
         );
@@ -54,7 +54,7 @@ public sealed class NotificationTests
 
         page.Unread.Should().Be(1);
         page.Items.Should().ContainSingle();
-        page.Items[0].Kind.Should().Be(NotificationKind.ClubExpired);
+        page.Items[0].Kind.Should().Be(NotificationKind.MembershipExpired);
         page.Items[0].Seen.Should().BeFalse();
 
         // Nobody did it, so nobody is named. The line is the hotel's, not a player's.
@@ -150,7 +150,7 @@ public sealed class NotificationTests
         await PlayerAsync(factory, 1, "Prodiigy");
         await PlayerAsync(factory, 2, "Autre");
 
-        await Sink(factory).NotifyAsync(2, NotificationKind.ClubPayday);
+        await Sink(factory).NotifyAsync(2, NotificationKind.MembershipPayday);
 
         (await Service(factory).GetAsync(1, 1, 0)).Items.Should().BeEmpty();
         (await Service(factory).GetAsync(2, 1, 0)).Items.Should().ContainSingle();
@@ -264,7 +264,7 @@ public sealed class NotificationTests
         using NotificationBroadcaster.Subscription tab = factory.Broadcast.Subscribe(1);
 
         await Sink(factory).NotifyAsync(1, NotificationKind.BadgeGranted);
-        await Sink(factory).NotifyAsync(1, NotificationKind.ClubPayday);
+        await Sink(factory).NotifyAsync(1, NotificationKind.MembershipPayday);
 
         // The channel is bounded at one and drops what was not read, so what a tab receives is
         // the LATEST count and never a backlog -- two writes, one value waiting, and it is 2.
@@ -283,7 +283,7 @@ public sealed class NotificationTests
 
         using NotificationBroadcaster.Subscription mine = factory.Broadcast.Subscribe(1);
 
-        await Sink(factory).NotifyAsync(2, NotificationKind.ClubPayday);
+        await Sink(factory).NotifyAsync(2, NotificationKind.MembershipPayday);
 
         mine.Reader.TryRead(out _).Should().BeFalse();
     }

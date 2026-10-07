@@ -38,11 +38,11 @@ internal static partial class DashboardEndpoints
             Capabilities.Dashboard.EconomyRead,
             TagEconomy
         );
-        MapReadGet<ClubSubscriptions>(
+        MapReadGet<Memberships>(
             app,
             ApiEconomy + "/subscriptions",
             (HttpContext ctx, EconomyReads reads, CancellationToken ct) =>
-                OkAsync(reads.ClubSubscriptionsAsync(ctx.QueryAsNameValues(), ct)),
+                OkAsync(reads.MembershipsAsync(ctx.QueryAsNameValues(), ct)),
             Capabilities.Dashboard.EconomyRead,
             TagEconomy
         );

@@ -328,14 +328,14 @@ public sealed partial class RoomGrain
     /// runs. That is the whole of <c>RecordOwedPayoutAsync</c>, which a quest reward and an
     /// achievement level reach by their own route (RSYS-PRIZE-050, PROG-REWARD-032).
     /// </remarks>
-    internal Task GrantConsumedPrizeAsync(
+    internal Task GrantConsumedLootAsync(
         PlayerId beneficiary,
         string detail,
         Func<CancellationToken, Task> grantAsync,
         CancellationToken ct
     ) =>
         _commerceJournal.RecordOwedPayoutAsync(
-            CommerceOperationKind.PrizeGrant,
+            CommerceOperationKind.LootGrant,
             (int)beneficiary,
             detail,
             grantAsync,

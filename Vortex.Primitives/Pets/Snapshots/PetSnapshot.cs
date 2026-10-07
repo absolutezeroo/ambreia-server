@@ -24,7 +24,7 @@ public sealed record PetSnapshot
     public required int Type { get; init; }
 
     [Id(5)]
-    public required int Race { get; init; }
+    public required int Skin { get; init; }
 
     [Id(6)]
     public required string Color { get; init; }

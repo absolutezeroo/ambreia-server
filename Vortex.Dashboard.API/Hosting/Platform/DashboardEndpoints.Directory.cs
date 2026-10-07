@@ -135,7 +135,7 @@ internal static partial class DashboardEndpoints
             app,
             ApiDirectory + "/club-gifts",
             (HttpContext ctx, SignalDirectoryReads signalDirectory, CancellationToken ct) =>
-                OkAsync(signalDirectory.ClubGiftsDirectoryAsync(ctx.QueryAsNameValues(), ct)),
+                OkAsync(signalDirectory.MembershipGiftsDirectoryAsync(ctx.QueryAsNameValues(), ct)),
             Capabilities.Dashboard.CatalogRead,
             TagDirectory
         );

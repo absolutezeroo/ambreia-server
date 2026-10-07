@@ -303,7 +303,7 @@ public sealed class ContentAdminItemTransferRefundTests
                 CostCurrency = 0,
                 CanGift = true,
                 CanBundle = false,
-                ClubLevel = 0,
+                MembershipLevel = 0,
                 Visible = true,
             };
 

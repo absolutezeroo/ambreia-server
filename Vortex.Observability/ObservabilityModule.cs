@@ -49,9 +49,9 @@ public sealed class ObservabilityModule : IHostPluginModule
         services.TryAddSingleton<IVortexContextAccessor, VortexContextAccessor>();
         services.TryAddSingleton<ILiveStatsAggregator, LiveStatsAggregator>();
         services.TryAddSingleton<IVortexMetrics, VortexMetrics>();
-        services.TryAddSingleton<ClubMetrics>();
+        services.TryAddSingleton<MembershipMetrics>();
         services.TryAddSingleton<ISignalMetrics, SignalMetrics>();
-        services.AddHostedService<ClubMetricsRefreshService>();
+        services.AddHostedService<MembershipMetricsRefreshService>();
         services.AddHostedService<ForensicsRetentionService>();
         services.AddSingleton<IForensicsPurgeService, ForensicsPurgeService>();
 

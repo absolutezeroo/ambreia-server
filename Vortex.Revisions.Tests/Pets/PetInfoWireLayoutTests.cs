@@ -98,7 +98,7 @@ public sealed class PetInfoWireLayoutTests
             RoomId = 10,
             Name = "Rex",
             Type = 0,
-            Race = 3,
+            Skin = 3,
             Color = "FFFFFF",
             Gender = AvatarGenderType.Male,
             Level = 4,

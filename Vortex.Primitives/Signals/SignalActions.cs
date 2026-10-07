@@ -189,10 +189,10 @@ public static class SignalActions
     public const string RedeemMarketplaceCredits = "redeem_marketplace_credits";
 
     /// <summary>Bought or renewed a club membership. (no Habbo artwork: this hotel's own signal)</summary>
-    public const string BuyClub = "buy_club";
+    public const string BuyMembership = "buy_club";
 
     /// <summary>Claimed a club gift. (no Habbo artwork: this hotel's own signal)</summary>
-    public const string ClaimClubGift = "claim_club_gift";
+    public const string ClaimMembershipGift = "claim_club_gift";
 
     /// <summary>Unwrapped a present. (no Habbo artwork: this hotel's own signal)</summary>
     public const string OpenPresent = "open_present";
@@ -201,7 +201,7 @@ public static class SignalActions
     public const string BuyGift = "buy_gift";
 
     /// <summary>Claimed vault income. (no Habbo artwork: this hotel's own signal)</summary>
-    public const string ClaimVaultIncome = "claim_vault_income";
+    public const string ClaimRewardVault = "claim_vault_income";
 
     /// <summary>
     /// Stood on a tile beside a piece of furniture, or on it. Carries which side, measured from the
@@ -266,11 +266,11 @@ public static class SignalActions
         ListOnMarketplace,
         BuyOnMarketplace,
         RedeemMarketplaceCredits,
-        BuyClub,
-        ClaimClubGift,
+        BuyMembership,
+        ClaimMembershipGift,
         OpenPresent,
         BuyGift,
-        ClaimVaultIncome,
+        ClaimRewardVault,
         StandNearFurni,
         ReceiveGift
     );

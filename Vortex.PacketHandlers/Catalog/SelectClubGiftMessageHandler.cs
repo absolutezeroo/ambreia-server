@@ -14,11 +14,11 @@ namespace Vortex.PacketHandlers.Catalog;
 
 public class SelectClubGiftMessageHandler(
     IGrainFactory grainFactory,
-    ICatalogClubGiftProvider clubGiftProvider
+    IMembershipGiftProvider membershipGiftProvider
 ) : IMessageHandler<SelectClubGiftMessage>
 {
     private readonly IGrainFactory _grainFactory = grainFactory;
-    private readonly ICatalogClubGiftProvider _clubGiftProvider = clubGiftProvider;
+    private readonly IMembershipGiftProvider _membershipGiftProvider = membershipGiftProvider;
 
     public async ValueTask HandleAsync(
         SelectClubGiftMessage message,
@@ -31,7 +31,9 @@ public class SelectClubGiftMessageHandler(
             return;
         }
 
-        CatalogOfferSnapshot? offer = _clubGiftProvider.FindByProductCode(message.ProductCode);
+        CatalogOfferSnapshot? offer = _membershipGiftProvider.FindByProductCode(
+            message.ProductCode
+        );
 
         if (offer is null)
         {
@@ -40,18 +42,16 @@ public class SelectClubGiftMessageHandler(
 
         IPlayerGrain playerGrain = _grainFactory.GetPlayerGrain(ctx.PlayerId);
 
-        ClubSubscriptionSnapshot sub = await playerGrain
-            .GetClubSubscriptionAsync(ct)
-            .ConfigureAwait(false);
+        MembershipSnapshot sub = await playerGrain.GetMembershipAsync(ct).ConfigureAwait(false);
 
         // A VIP-only gift cannot be claimed without an active VIP membership.
-        if (!sub.IsActive || (offer.ClubLevel > 1 && !sub.IsVip))
+        if (!sub.IsActive || (offer.MembershipLevel > 1 && !sub.IsVip))
         {
             return;
         }
 
         bool consumed = await playerGrain
-            .TryConsumeClubGiftAsync(message.ProductCode, ct)
+            .TryConsumeMembershipGiftAsync(message.ProductCode, ct)
             .ConfigureAwait(false);
 
         if (!consumed)

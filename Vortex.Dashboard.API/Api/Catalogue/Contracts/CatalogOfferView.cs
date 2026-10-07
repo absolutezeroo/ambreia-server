@@ -13,7 +13,7 @@ public sealed record CatalogOfferView(
     string? CurrencyName,
     bool CanGift,
     bool CanBundle,
-    int ClubLevel,
+    int MembershipLevel,
     int DiscountPercent,
     bool Visible
 );

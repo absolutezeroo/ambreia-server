@@ -73,7 +73,7 @@
     'Rooms',
     'Economy',
     'Progression',
-    'Prizes',
+    'Loot',
     'Content',
     'System',
   ];
@@ -109,7 +109,7 @@
     '/economy-extras': Store,
     '/player-rewards': Award,
     '/quests': Flag,
-    '/prize-pools': Gift,
+    '/loot-tables': Gift,
     '/config': SlidersHorizontal,
     '/performance': Gauge,
     // Every entry below used to fall through to the generic Activity icon, which made a dozen rows
@@ -127,7 +127,7 @@
   // which changes with $locale and would silently reset saved state on a language switch).
   // Persisted so a collapse choice survives reloads. The key carries a version: the v1 sets were
   // written against the old seven groups, and replaying one after the Content split would leave
-  // Progression and Prizes expanded for every returning operator (an id absent from the saved set
+  // Progression and Loot expanded for every returning operator (an id absent from the saved set
   // reads as "not collapsed"). Bumping it re-seeds instead.
   const COLLAPSE_STORAGE_KEY = 'vortex-dashboard-nav-collapsed.v2';
 
@@ -284,7 +284,7 @@
     Rooms: $t('nav.groupRooms'),
     Economy: $t('nav.groupEconomy'),
     Progression: $t('nav.groupProgression'),
-    Prizes: $t('nav.groupPrizes'),
+    Loot: $t('nav.groupLoot'),
     Content: $t('nav.groupContent'),
     System: $t('nav.groupSystem'),
   });

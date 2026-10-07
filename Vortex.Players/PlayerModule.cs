@@ -2,7 +2,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Vortex.Players.Configuration;
 using Vortex.Players.Providers;
-using Vortex.Players.Vault;
+using Vortex.Players.RewardVault;
 using Vortex.Primitives.Content;
 using Vortex.Primitives.Hosting;
 using Vortex.Primitives.Moderation;
@@ -19,7 +19,9 @@ public sealed class PlayerModule : IHostPluginModule
 
     public void ConfigureServices(IServiceCollection services, HostApplicationBuilder builder)
     {
-        services.Configure<ClubConfig>(builder.Configuration.GetSection(ClubConfig.SECTION_NAME));
+        services.Configure<MembershipConfig>(
+            builder.Configuration.GetSection(MembershipConfig.SECTION_NAME)
+        );
         services.Configure<PlayerPresenceConfig>(
             builder.Configuration.GetSection(PlayerPresenceConfig.SECTION_NAME)
         );
@@ -28,16 +30,16 @@ public sealed class PlayerModule : IHostPluginModule
         services.AddSingleton<IReferenceDataProvider>(sp =>
             (IReferenceDataProvider)sp.GetRequiredService<ICurrencyTypeProvider>()
         );
-        services.AddSingleton<IPetPaletteProvider, PetPaletteProvider>();
+        services.AddSingleton<IPetSkinProvider, PetSkinProvider>();
         services.AddSingleton<IReferenceDataProvider>(sp =>
-            (IReferenceDataProvider)sp.GetRequiredService<IPetPaletteProvider>()
+            (IReferenceDataProvider)sp.GetRequiredService<IPetSkinProvider>()
         );
         services.AddSingleton<IPetLevelProvider, PetLevelProvider>();
         services.AddSingleton<IReferenceDataProvider>(sp =>
             (IReferenceDataProvider)sp.GetRequiredService<IPetLevelProvider>()
         );
-        services.AddSingleton<IVaultRewardSettler, CurrencyVaultRewardSettler>();
-        services.AddSingleton<VaultRewardSettlerMap>();
+        services.AddSingleton<IRewardVaultSettler, CurrencyRewardVaultSettler>();
+        services.AddSingleton<RewardVaultSettlerMap>();
 
         // The admin services moved to the dashboard: authoring content is its job, not the
         // emulator's. A host without that module has no authoring path here, deliberately.

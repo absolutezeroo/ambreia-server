@@ -15,11 +15,11 @@ namespace Vortex.PacketHandlers.Catalog;
 
 public class GetClubOffersMessageHandler(
     IGrainFactory grainFactory,
-    ICatalogClubOfferProvider clubOfferProvider
+    IMembershipOfferProvider membershipOfferProvider
 ) : IMessageHandler<GetClubOffersMessage>
 {
     private readonly IGrainFactory _grainFactory = grainFactory;
-    private readonly ICatalogClubOfferProvider _clubOfferProvider = clubOfferProvider;
+    private readonly IMembershipOfferProvider _membershipOfferProvider = membershipOfferProvider;
 
     public async ValueTask HandleAsync(
         GetClubOffersMessage message,
@@ -32,16 +32,16 @@ public class GetClubOffersMessageHandler(
             return;
         }
 
-        ClubSubscriptionSnapshot sub = await _grainFactory
+        MembershipSnapshot sub = await _grainFactory
             .GetPlayerGrain(ctx.PlayerId)
-            .GetClubSubscriptionAsync(ct)
+            .GetMembershipAsync(ct)
             .ConfigureAwait(false);
 
         DateTime now = DateTime.UtcNow;
         DateTime baseDate = sub.IsActive && sub.ExpiresAt > now ? sub.ExpiresAt : now;
 
-        List<ClubOffer> personalizedOffers = new List<ClubOffer>();
-        foreach (ClubOffer offer in _clubOfferProvider.GetAll())
+        List<MembershipOffer> personalizedOffers = new List<MembershipOffer>();
+        foreach (MembershipOffer offer in _membershipOfferProvider.GetAll())
         {
             DateTime expiry = baseDate.AddMonths(offer.Months).AddDays(offer.ExtraDays);
             personalizedOffers.Add(

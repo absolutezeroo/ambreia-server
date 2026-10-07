@@ -30,7 +30,7 @@ public sealed class FurnitureDefinitionProvider(
     private readonly IVortexMetrics _metrics = metrics;
     private readonly ILogger<IFurnitureDefinitionProvider> _logger = logger;
 
-    // Stage 0: CatalogSnapshotProvider<T> and CatalogClubGiftProvider read furniture definitions
+    // Stage 0: CatalogSnapshotProvider<T> and MembershipGiftProvider read furniture definitions
     // during their own reload (see stage 1), so this must finish first.
     public int LoadStage => 0;
 

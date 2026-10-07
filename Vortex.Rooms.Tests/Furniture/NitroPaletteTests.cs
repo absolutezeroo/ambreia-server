@@ -18,7 +18,7 @@ namespace Vortex.Rooms.Tests.Furniture;
 /// <para>
 /// The real dog bundle says so plainly: 952 assets whose names carry a part, a direction and a
 /// frame and <b>no breed</b>, 856 of them flagged <c>usesPalette</c>, and twenty-five palettes —
-/// one per breed in the hotel's own <c>pet_palettes</c> seed.
+/// one per breed in the hotel's own <c>pet_skins</c> seed.
 /// </para>
 /// </remarks>
 public sealed class NitroPaletteTests

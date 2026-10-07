@@ -123,7 +123,7 @@
         <DoorOpen size={15} strokeWidth={2} aria-hidden="true" />
       {/snippet}
     </StatCard>
-    <StatCard accent label={$t('overview.club')} value={data?.activeClubSubscribers ?? '-'}>
+    <StatCard accent label={$t('overview.club')} value={data?.activeMembershipSubscribers ?? '-'}>
       {#snippet icon()}
         <Sparkles size={15} strokeWidth={2} aria-hidden="true" />
       {/snippet}

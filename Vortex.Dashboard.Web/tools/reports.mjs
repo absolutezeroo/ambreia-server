@@ -7,7 +7,7 @@
 //   npm run reports -- clear -- start a fresh list
 //
 // Grouped by source file rather than listed in arrival order, because a defect is fixed where
-// it lives: five reports that all resolve to SubscriptionsPage are one visit to one file, and
+// it lives: five reports that all resolve to MembershipsPage are one visit to one file, and
 // reading them together is what shows whether they are five defects or one.
 import { existsSync, readFileSync, writeFileSync } from 'node:fs';
 import { resolve, dirname } from 'node:path';

@@ -90,7 +90,7 @@ internal sealed class SignalDirectoryReads(
                 .Select(s => new FigureSetDirectoryRow(
                     s.Id,
                     s.Type,
-                    s.Club,
+                    s.Membership,
                     s.Gender,
                     assets.FigureSetImage(s.Type, s.Id, s.Colour)
                 )),
@@ -237,7 +237,7 @@ internal sealed class SignalDirectoryReads(
                 string term = (query["q"] ?? string.Empty).Trim();
 
                 List<int> types = await db
-                    .PetPalettes.AsNoTracking()
+                    .PetSkins.AsNoTracking()
                     .Select(p => p.PetType)
                     .Distinct()
                     .OrderBy(t => t)
@@ -273,14 +273,14 @@ internal sealed class SignalDirectoryReads(
         CancellationToken ct
     ) => DistinctCodesAsync(query, db => db.Quests.AsNoTracking().Select(q => q.CampaignCode), ct);
 
-    /// <summary>Club gifts, by product code.</summary>
-    public Task<DirectoryPage> ClubGiftsDirectoryAsync(
+    /// <summary>Membership gifts, by product code.</summary>
+    public Task<DirectoryPage> MembershipGiftsDirectoryAsync(
         NameValueCollection query,
         CancellationToken ct
     ) =>
         PickerPageAsync(
             query,
-            db => db.CatalogClubGifts.AsNoTracking(),
+            db => db.MembershipGifts.AsNoTracking(),
             (gifts, term, id) =>
                 gifts.Where(g => g.ProductCode.Contains(term) || (id != null && g.Id == id)),
             gifts => gifts.OrderBy(g => g.ProductCode),

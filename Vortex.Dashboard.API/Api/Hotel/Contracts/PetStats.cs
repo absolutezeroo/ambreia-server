@@ -7,7 +7,7 @@ public sealed record PetStats(
     ReportWindow Window,
     PetTotals Totals,
     IReadOnlyList<PetTypeCount> ByType,
-    IReadOnlyList<PetRaceCount> ByRace,
+    IReadOnlyList<PetSkinCount> BySkin,
     IReadOnlyList<PetGrowthPoint> Growth,
     IReadOnlyList<PetOwnerCount> TopOwners
 );

@@ -30,9 +30,7 @@ public class ScrGetUserInfoMessageHandler(IGrainFactory grainFactory)
 
         IPlayerGrain player = _grainFactory.GetPlayerGrain(ctx.PlayerId);
 
-        ClubSubscriptionSnapshot sub = await player
-            .GetClubSubscriptionAsync(ct)
-            .ConfigureAwait(false);
+        MembershipSnapshot sub = await player.GetMembershipAsync(ct).ConfigureAwait(false);
 
         await ctx.SendComposerAsync(BuildScrSendUserInfo(message.ProductName, sub), ct)
             .ConfigureAwait(false);
@@ -46,7 +44,7 @@ public class ScrGetUserInfoMessageHandler(IGrainFactory grainFactory)
 
     private static ScrSendUserInfoMessageComposer BuildScrSendUserInfo(
         string productName,
-        ClubSubscriptionSnapshot sub
+        MembershipSnapshot sub
     )
     {
         int daysLeft = sub.DaysLeft;
@@ -60,7 +58,7 @@ public class ScrGetUserInfoMessageHandler(IGrainFactory grainFactory)
             ResponseType = sub.IsActive ? 2 : 0,
             HasEverBeenMember = sub.TotalMonths > 0 || sub.IsActive,
             IsVIP = sub.IsActive,
-            PastClubDays = sub.PastClubDays,
+            PastMembershipDays = sub.PastMembershipDays,
             PastVipDays = sub.PastVipDays,
             MinutesUntilExpiration = sub.IsActive
                 ? (int)(sub.ExpiresAt - DateTime.UtcNow).TotalMinutes

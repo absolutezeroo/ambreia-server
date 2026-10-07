@@ -43,9 +43,9 @@ public class CatalogOfferEntity : VortexEntity
     [DefaultValue(true)]
     public required bool CanBundle { get; set; }
 
-    [Column("club_level")]
+    [Column("membership_level")]
     [DefaultValue(0)]
-    public required int ClubLevel { get; set; }
+    public required int MembershipLevel { get; set; }
 
     [Column("discount_percent")]
     [DefaultValue(0)]

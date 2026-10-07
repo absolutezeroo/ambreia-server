@@ -8,5 +8,8 @@ namespace Vortex.Revisions.Revision20260701.Parsers.Catalog;
 internal class GetClubOffersMessageParser : IParser
 {
     public IMessageEvent Parse(IClientPacket packet) =>
-        new GetClubOffersMessage { RequestSource = (ClubOfferRequestSourceType)packet.PopInt() };
+        new GetClubOffersMessage
+        {
+            RequestSource = (MembershipOfferRequestSourceType)packet.PopInt(),
+        };
 }

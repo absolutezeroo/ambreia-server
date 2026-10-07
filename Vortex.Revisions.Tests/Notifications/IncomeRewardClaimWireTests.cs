@@ -3,9 +3,9 @@ using System.Linq;
 using FluentAssertions;
 using Microsoft.Extensions.Options;
 using Vortex.Primitives.Packets;
-using Vortex.Primitives.Vault.Enums;
-using Vortex.Protocol.Messages.Incoming.Vault;
-using Vortex.Protocol.Messages.Outgoing.Vault;
+using Vortex.Primitives.RewardVault.Enums;
+using Vortex.Protocol.Messages.Incoming.RewardVault;
+using Vortex.Protocol.Messages.Outgoing.RewardVault;
 using Vortex.Revisions.Configuration;
 using Xunit;
 using Rev = Vortex.Revisions.Revision20260701.Revision20260701;
@@ -34,10 +34,10 @@ public sealed class IncomeRewardClaimWireTests
     }
 
     [Theory]
-    [InlineData(0xFF, VaultRewardCategoryType.All)]
-    [InlineData(0x02, VaultRewardCategoryType.Achievements)]
-    [InlineData(0x0D, VaultRewardCategoryType.Agency)]
-    public void Parser_ReadsTheCategorySigned(byte wire, VaultRewardCategoryType expected)
+    [InlineData(0xFF, RewardVaultCategoryType.All)]
+    [InlineData(0x02, RewardVaultCategoryType.Achievements)]
+    [InlineData(0x0D, RewardVaultCategoryType.Agency)]
+    public void Parser_ReadsTheCategorySigned(byte wire, RewardVaultCategoryType expected)
     {
         IncomeRewardClaimMessage message = (IncomeRewardClaimMessage)
             Revision.Parsers[IncomeRewardClaimMessageEvent].Parse(ClientPacketWithBody(wire));
@@ -46,14 +46,14 @@ public sealed class IncomeRewardClaimWireTests
     }
 
     [Theory]
-    [InlineData(VaultRewardCategoryType.All, "ff01")]
-    [InlineData(VaultRewardCategoryType.HabboClub, "0400")]
+    [InlineData(RewardVaultCategoryType.All, "ff01")]
+    [InlineData(RewardVaultCategoryType.Premium, "0400")]
     public void Response_WritesTheCategoryAsOneSignedByte(
-        VaultRewardCategoryType category,
+        RewardVaultCategoryType category,
         string expectedBody
     )
     {
-        bool result = category == VaultRewardCategoryType.All;
+        bool result = category == RewardVaultCategoryType.All;
 
         byte[] frame = Revision
             .Serializers[typeof(IncomeRewardClaimResponseMessageComposer)]

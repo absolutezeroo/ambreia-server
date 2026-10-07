@@ -16,11 +16,11 @@ namespace Vortex.PacketHandlers.Catalog;
 
 public class GetHabboClubExtendOfferMessageHandler(
     IGrainFactory grainFactory,
-    ICatalogClubOfferProvider clubOfferProvider
+    IMembershipOfferProvider membershipOfferProvider
 ) : IMessageHandler<GetHabboClubExtendOfferMessage>
 {
     private readonly IGrainFactory _grainFactory = grainFactory;
-    private readonly ICatalogClubOfferProvider _clubOfferProvider = clubOfferProvider;
+    private readonly IMembershipOfferProvider _membershipOfferProvider = membershipOfferProvider;
 
     public async ValueTask HandleAsync(
         GetHabboClubExtendOfferMessage message,
@@ -33,19 +33,19 @@ public class GetHabboClubExtendOfferMessageHandler(
             return;
         }
 
-        ClubSubscriptionSnapshot sub = await _grainFactory
+        MembershipSnapshot sub = await _grainFactory
             .GetPlayerGrain(ctx.PlayerId)
-            .GetClubSubscriptionAsync(ct)
+            .GetMembershipAsync(ct)
             .ConfigureAwait(false);
 
-        List<ClubOffer> offerPool = _clubOfferProvider
+        List<MembershipOffer> offerPool = _membershipOfferProvider
             .GetAll()
             .Where(x => x.IsVip == sub.IsVip)
             .ToList();
 
         // Keep the semantics of a 1-month renewal offer when possible, and fallback to the
         // first matching tier offer if that data is missing.
-        ClubOffer? baseOffer =
+        MembershipOffer? baseOffer =
             offerPool.FirstOrDefault(x => x.Months == 1) ?? offerPool.FirstOrDefault();
 
         if (baseOffer is null)
@@ -57,7 +57,7 @@ public class GetHabboClubExtendOfferMessageHandler(
         DateTime baseDate = sub.IsActive && sub.ExpiresAt > now ? sub.ExpiresAt : now;
         DateTime expiry = baseDate.AddMonths(baseOffer.Months).AddDays(baseOffer.ExtraDays);
 
-        ClubOffer personalizedOffer = baseOffer with
+        MembershipOffer personalizedOffer = baseOffer with
         {
             DaysLeftAfterPurchase = (int)(expiry - now).TotalDays,
             Year = expiry.Year,

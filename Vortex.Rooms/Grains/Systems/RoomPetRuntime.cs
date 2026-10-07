@@ -26,7 +26,7 @@ internal static class RoomPetRuntime
             RoomId = entity.RoomEntityId,
             Name = entity.Name,
             Type = entity.Type,
-            Race = entity.Race,
+            Skin = entity.Skin,
             Color = entity.Color,
             Gender = entity.Gender,
             Level = entity.Level,
@@ -185,5 +185,5 @@ internal static class RoomPetRuntime
         return best;
     }
 
-    private static string ToFigureString(PetSnapshot pet) => $"{pet.Type} {pet.Race} {pet.Color} 0";
+    private static string ToFigureString(PetSnapshot pet) => $"{pet.Type} {pet.Skin} {pet.Color} 0";
 }

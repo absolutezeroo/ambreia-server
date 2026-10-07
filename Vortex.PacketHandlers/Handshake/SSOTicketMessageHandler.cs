@@ -135,7 +135,7 @@ public class SSOTicketMessageHandler(
             IPlayerGrain player = _grainFactory.GetPlayerGrain(PlayerId.Parse(playerId));
             IPlayerWalletGrain wallet = _grainFactory.GetPlayerWalletGrain(playerId);
 
-            Task<ClubSubscriptionSnapshot> subTask = player.GetClubSubscriptionAsync(ct);
+            Task<MembershipSnapshot> subTask = player.GetMembershipAsync(ct);
             Task<PermissionSet> permissionsTask = _permissionService.ResolveForPlayerAsync(
                 playerId,
                 ct
@@ -184,11 +184,11 @@ public class SSOTicketMessageHandler(
                 )
                 .ConfigureAwait(false);
 
-            ClubSubscriptionSnapshot sub = await subTask.ConfigureAwait(false);
+            MembershipSnapshot sub = await subTask.ConfigureAwait(false);
 
-            ClubLevelType clubLevel = sub.IsActive
-                ? (sub.IsVip ? ClubLevelType.Vip : ClubLevelType.Club)
-                : ClubLevelType.None;
+            MembershipLevelType membershipLevel = sub.IsActive
+                ? (sub.IsVip ? MembershipLevelType.Vip : MembershipLevelType.Membership)
+                : MembershipLevelType.None;
 
             PermissionSet permissions = await permissionsTask.ConfigureAwait(false);
 
@@ -279,7 +279,7 @@ public class SSOTicketMessageHandler(
             await ctx.SendComposerAsync(
                     new UserRightsMessage
                     {
-                        ClubLevel = clubLevel,
+                        MembershipLevel = membershipLevel,
                         SecurityLevel = securityLevel,
                         IsAmbassador = false,
                     },
@@ -479,7 +479,7 @@ public class SSOTicketMessageHandler(
                 false
             ),
             ("MOUSE_ZOOM", PlayerPerkFlags.MouseZoom, "", true),
-            ("HABBO_CLUB_OFFER_BETA", PlayerPerkFlags.HabboClubOfferBeta, "", true),
+            ("HABBO_CLUB_OFFER_BETA", PlayerPerkFlags.MembershipOfferBeta, "", true),
             ("TRADE", PlayerPerkFlags.Trade, "requirement.unfulfilled.citizenship_level_3", true),
             ("CAMERA", PlayerPerkFlags.Camera, "", false),
             ("NAVIGATOR_PHASE_TWO_2014", PlayerPerkFlags.NavigatorPhaseTwo2014, "", true),
@@ -665,7 +665,7 @@ public class SSOTicketMessageHandler(
         }
     }
 
-    private static ScrSendUserInfoMessageComposer BuildScrSendUserInfo(ClubSubscriptionSnapshot sub)
+    private static ScrSendUserInfoMessageComposer BuildScrSendUserInfo(MembershipSnapshot sub)
     {
         int daysLeft = sub.DaysLeft;
         int rem = daysLeft % 31;
@@ -679,7 +679,7 @@ public class SSOTicketMessageHandler(
             ResponseType = 2,
             HasEverBeenMember = sub.TotalMonths > 0 || sub.IsActive,
             IsVIP = sub.IsVip,
-            PastClubDays = sub.PastClubDays,
+            PastMembershipDays = sub.PastMembershipDays,
             PastVipDays = sub.PastVipDays,
             MinutesUntilExpiration = sub.IsActive
                 ? (int)(sub.ExpiresAt - DateTime.UtcNow).TotalMinutes

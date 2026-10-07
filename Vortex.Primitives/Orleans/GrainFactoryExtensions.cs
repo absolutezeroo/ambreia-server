@@ -5,11 +5,11 @@ using Vortex.Primitives.Fishing.Grains;
 using Vortex.Primitives.FriendList.Grains;
 using Vortex.Primitives.Groups.Grains;
 using Vortex.Primitives.Inventory.Grains;
+using Vortex.Primitives.Loot.Grains;
 using Vortex.Primitives.Marketplace.Grains;
 using Vortex.Primitives.Moderation.Grains;
 using Vortex.Primitives.Players;
 using Vortex.Primitives.Players.Grains;
-using Vortex.Primitives.Prizes.Grains;
 using Vortex.Primitives.Quests.Grains;
 using Vortex.Primitives.Rooms;
 using Vortex.Primitives.Rooms.Grains;
@@ -142,15 +142,15 @@ public static class GrainFactoryExtensions
     public static IMarketplaceSearchGrain GetMarketplaceSearchGrain(this IGrainFactory factory) =>
         factory.GetGrain<IMarketplaceSearchGrain>(SingletonGrainId.GLOBAL);
 
-    public static IPlayerVaultGrain GetPlayerVaultGrain(
+    public static IPlayerRewardVaultGrain GetPlayerRewardVaultGrain(
         this IGrainFactory factory,
         PlayerId playerId
-    ) => factory.GetGrain<IPlayerVaultGrain>(playerId.Value);
+    ) => factory.GetGrain<IPlayerRewardVaultGrain>(playerId.Value);
 
-    public static IPlayerVaultGrain GetPlayerVaultGrain(
+    public static IPlayerRewardVaultGrain GetPlayerRewardVaultGrain(
         this IGrainFactory factory,
         long playerId
-    ) => factory.GetGrain<IPlayerVaultGrain>(playerId);
+    ) => factory.GetGrain<IPlayerRewardVaultGrain>(playerId);
 
     public static IMessengerGrain GetMessengerGrain(
         this IGrainFactory factory,
@@ -226,18 +226,16 @@ public static class GrainFactoryExtensions
         long playerId
     ) => factory.GetGrain<IPlayerDailyTaskGrain>(playerId);
 
-    public static IPrizePoolManagerGrain GetPrizePoolManagerGrain(this IGrainFactory factory) =>
-        factory.GetGrain<IPrizePoolManagerGrain>(SingletonGrainId.GLOBAL);
+    public static ILootTableManagerGrain GetLootTableManagerGrain(this IGrainFactory factory) =>
+        factory.GetGrain<ILootTableManagerGrain>(SingletonGrainId.GLOBAL);
 
-    public static IPlayerPrizeGrain GetPlayerPrizeGrain(
+    public static IPlayerLootGrain GetPlayerLootGrain(
         this IGrainFactory factory,
         PlayerId playerId
-    ) => factory.GetGrain<IPlayerPrizeGrain>(playerId.Value);
+    ) => factory.GetGrain<IPlayerLootGrain>(playerId.Value);
 
-    public static IPlayerPrizeGrain GetPlayerPrizeGrain(
-        this IGrainFactory factory,
-        long playerId
-    ) => factory.GetGrain<IPlayerPrizeGrain>(playerId);
+    public static IPlayerLootGrain GetPlayerLootGrain(this IGrainFactory factory, long playerId) =>
+        factory.GetGrain<IPlayerLootGrain>(playerId);
 
     public static IPlayerClothingGrain GetPlayerClothingGrain(
         this IGrainFactory factory,

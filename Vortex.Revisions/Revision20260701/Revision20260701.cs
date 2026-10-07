@@ -32,7 +32,7 @@ public sealed class Revision20260701(IOptions<ProtocolLimitsConfig> protocolLimi
             new SoundMap(),
             new TrackingMap(),
             new UsersMap(),
-            new VaultMap(),
+            new RewardVaultMap(),
             new AvailabilityMap(),
             new CallForHelpMap(),
             new PerkMap(),

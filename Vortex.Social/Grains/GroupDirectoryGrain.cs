@@ -256,7 +256,7 @@ internal sealed class GroupDirectoryGrain(
         int groupId = purchase.Reward;
 
         // Hook the spend into the catalog purchase path, exactly like CatalogPurchaseGrain: track
-        // the credit spend (Club payday) and raise CatalogPurchasedEvent so guild creation shows up
+        // the credit spend (Membership payday) and raise CatalogPurchasedEvent so guild creation shows up
         // in catalog purchase metrics/audit alongside every other purchase.
         await grainFactory
             .GetPlayerGrain(owner)

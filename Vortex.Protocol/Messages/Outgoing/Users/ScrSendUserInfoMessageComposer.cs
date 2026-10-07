@@ -28,7 +28,7 @@ public sealed record ScrSendUserInfoMessageComposer : IComposer
     public required bool IsVIP { get; init; }
 
     [Id(7)]
-    public required int PastClubDays { get; init; }
+    public required int PastMembershipDays { get; init; }
 
     [Id(8)]
     public required int PastVipDays { get; init; }

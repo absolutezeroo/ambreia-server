@@ -17,7 +17,7 @@ public partial interface ICatalogPurchaseGrain
     /// <exception cref="System.Exception">
     /// Throws <c>CatalogPurchaseException</c> with <see cref="CatalogPurchaseErrorType.OfferNotFound"/>
     /// for an unknown offer, <see cref="CatalogPurchaseErrorType.PurchaseFailed"/> when the offer is
-    /// not giftable, <see cref="CatalogPurchaseErrorType.RequiresHabboClub"/> when the buyer lacks the
+    /// not giftable, <see cref="CatalogPurchaseErrorType.RequiresMembership"/> when the buyer lacks the
     /// club level, or a balance error when they cannot pay.
     /// </exception>
     public Task<CatalogOfferSnapshot> PurchaseOfferAsGiftAsync(

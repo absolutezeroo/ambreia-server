@@ -13,13 +13,13 @@ internal static class PetFigureDataSerializer
     public static void Serialize(IServerPacket packet, PetSnapshot pet)
     {
         // The emulator identifies a pet by type, breed and colour. The client asks for a palette id
-        // and a breed id separately; both are the breed index here, which is what pet_palettes is
+        // and a breed id separately; both are the breed index here, which is what pet_skins is
         // keyed on.
         packet
             .WriteInteger(pet.Type)
-            .WriteInteger(pet.Race)
+            .WriteInteger(pet.Skin)
             .WriteString(pet.Color)
-            .WriteInteger(pet.Race);
+            .WriteInteger(pet.Skin);
 
         // Custom parts dress up seasonal pets. Nothing here creates them, so the count is zero
         // rather than a fabricated body.

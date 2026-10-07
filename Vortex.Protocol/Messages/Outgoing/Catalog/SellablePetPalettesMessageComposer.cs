@@ -12,5 +12,5 @@ public sealed record SellablePetPalettesMessageComposer : IComposer
     public required string ProductCode { get; init; }
 
     [Id(1)]
-    public required ImmutableArray<PetPaletteEntry> Palettes { get; init; }
+    public required ImmutableArray<PetSkinEntry> Palettes { get; init; }
 }

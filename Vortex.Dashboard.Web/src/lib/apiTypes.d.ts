@@ -428,7 +428,7 @@ export interface CatalogOfferRow {
   currencyName: string | null;
   canGift: boolean;
   canBundle: boolean;
-  clubLevel: number;
+  membershipLevel: number;
   discountPercent: number;
   visible: boolean;
   productCount: number;
@@ -457,7 +457,7 @@ export interface CatalogOfferView {
   currencyName: string | null;
   canGift: boolean;
   canBundle: boolean;
-  clubLevel: number;
+  membershipLevel: number;
   discountPercent: number;
   visible: boolean;
 }
@@ -655,7 +655,7 @@ export interface ChatlogWindow {
   until: string;
 }
 
-export interface ClubExpiringSubscription {
+export interface ExpiringMembership {
   playerId: number;
   playerName: string | null;
   type: string;
@@ -665,7 +665,7 @@ export interface ClubExpiringSubscription {
   remainingDays: number;
 }
 
-export interface ClubLifecyclePoint {
+export interface MembershipLifecyclePoint {
   bucket: string;
   label: string;
   purchases: number;
@@ -673,14 +673,14 @@ export interface ClubLifecyclePoint {
   expired: number;
 }
 
-export interface ClubLifecycleTotals {
+export interface MembershipLifecycleTotals {
   purchases: number;
   renewals: number;
   expired: number;
   renewalShare: number;
 }
 
-export interface ClubMonthsBreakdown {
+export interface MembershipMonthsBreakdown {
   months: number;
   total: number;
   purchases: number;
@@ -688,7 +688,7 @@ export interface ClubMonthsBreakdown {
   expired: number;
 }
 
-export interface ClubSubscriptionEventRow {
+export interface MembershipEventRow {
   occurredAt: string;
   action: string;
   actorPlayerId: number | null;
@@ -700,14 +700,14 @@ export interface ClubSubscriptionEventRow {
   isVip: boolean | null;
 }
 
-export interface ClubSubscriptionLifecycle {
-  totals: ClubLifecycleTotals;
-  byMonths: ClubMonthsBreakdown[];
-  recentEvents: ClubSubscriptionEventRow[];
-  timeline: ClubLifecyclePoint[];
+export interface MembershipLifecycle {
+  totals: MembershipLifecycleTotals;
+  byMonths: MembershipMonthsBreakdown[];
+  recentEvents: MembershipEventRow[];
+  timeline: MembershipLifecyclePoint[];
 }
 
-export interface ClubSubscriptionTotals {
+export interface MembershipTotals {
   totalSubscriptions: number;
   activeSubscriptions: number;
   inactiveSubscriptions: number;
@@ -716,7 +716,7 @@ export interface ClubSubscriptionTotals {
   activeRate: number;
 }
 
-export interface ClubSubscriptionTypeBreakdown {
+export interface MembershipTypeBreakdown {
   type: string;
   total: number;
   active: number;
@@ -725,12 +725,12 @@ export interface ClubSubscriptionTypeBreakdown {
   averageTotalMonths: number;
 }
 
-export interface ClubSubscriptions {
+export interface Memberships {
   window: ModerationWindow;
-  totals: ClubSubscriptionTotals;
-  byType: ClubSubscriptionTypeBreakdown[];
-  topExpiring: ClubExpiringSubscription[];
-  lifecycle: ClubSubscriptionLifecycle;
+  totals: MembershipTotals;
+  byType: MembershipTypeBreakdown[];
+  topExpiring: ExpiringMembership[];
+  lifecycle: MembershipLifecycle;
 }
 
 export interface CodeDirectoryPage {
@@ -859,7 +859,7 @@ export interface DashboardOverview {
   managedMemoryMb: number;
   activeSessions: number;
   activeRooms: number;
-  activeClubSubscribers: number;
+  activeMembershipSubscribers: number;
   incidents: IncidentDetectionSnapshot;
   live: OverviewLive;
   auditLastHourByCategory: AuditCategoryCount[];
@@ -1723,9 +1723,9 @@ export interface PetOwnerCount {
   petCount: number;
 }
 
-export interface PetRaceCount {
+export interface PetSkinCount {
   type: number;
-  race: number;
+  skin: number;
   count: number;
 }
 
@@ -1733,7 +1733,7 @@ export interface PetStats {
   window: ReportWindow;
   totals: PetTotals;
   byType: PetTypeCount[];
-  byRace: PetRaceCount[];
+  bySkin: PetSkinCount[];
   growth: PetGrowthPoint[];
   topOwners: PetOwnerCount[];
 }
@@ -1886,17 +1886,17 @@ export interface PlayerRewardTotals {
   wardrobeUsers: number;
 }
 
-export interface PrizeEntryDraws {
+export interface LootEntryDraws {
   entryId: number;
   draws: number;
 }
 
-export interface PrizePoolBindingList {
+export interface LootTableBindingList {
   count: number;
-  items: PrizePoolBindingRow[];
+  items: LootTableBindingRow[];
 }
 
-export interface PrizePoolBindingRow {
+export interface LootTableBindingRow {
   id: number;
   furnitureDefinitionId: number;
   pool: string;
@@ -1907,27 +1907,27 @@ export interface PrizePoolBindingRow {
   furnitureIconUrl: string | null;
 }
 
-export interface PrizePoolContent {
-  pools: PrizePoolList;
-  entries: PrizePoolEntryList;
-  totals: PrizePoolWeightTotal[];
-  bindings: PrizePoolBindingList;
+export interface LootTableContent {
+  pools: LootTableList;
+  entries: LootTableEntryList;
+  totals: LootTableWeightTotal[];
+  bindings: LootTableBindingList;
   productTypes: string[];
 }
 
-export interface PrizePoolDraws {
+export interface LootTableDraws {
   pool: string;
   draws: number;
-  entries: PrizeEntryDraws[];
-  sources: PrizeSourceDraws[];
+  entries: LootEntryDraws[];
+  sources: LootSourceDraws[];
 }
 
-export interface PrizePoolEntryList {
+export interface LootTableEntryList {
   count: number;
-  items: PrizePoolEntryRow[];
+  items: LootTableEntryRow[];
 }
 
-export interface PrizePoolEntryRow {
+export interface LootTableEntryRow {
   id: number;
   poolId: number;
   pool: string;
@@ -1941,12 +1941,12 @@ export interface PrizePoolEntryRow {
   furnitureIconUrl: string | null;
 }
 
-export interface PrizePoolList {
+export interface LootTableList {
   count: number;
-  items: PrizePoolRow[];
+  items: LootTableRow[];
 }
 
-export interface PrizePoolRow {
+export interface LootTableRow {
   id: number;
   code: string;
   name: string;
@@ -1955,20 +1955,20 @@ export interface PrizePoolRow {
   enabled: boolean;
 }
 
-export interface PrizePoolStats {
+export interface LootTableStats {
   days: number;
   totalDraws: number;
-  pools: PrizePoolDraws[];
+  pools: LootTableDraws[];
 }
 
-export interface PrizePoolWeightTotal {
+export interface LootTableWeightTotal {
   poolId: number;
   variant: string | null;
   totalWeight: number;
   entries: number;
 }
 
-export interface PrizeSourceDraws {
+export interface LootSourceDraws {
   source: string;
   draws: number;
 }

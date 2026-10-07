@@ -320,25 +320,25 @@ public sealed class WebApiPlayerService(
 
         DateTime now = DateTime.UtcNow;
 
-        List<PlayerSubscriptionEntity> subscriptions = await db
-            .PlayerSubscriptions.AsNoTracking()
+        List<PlayerMembershipEntity> subscriptions = await db
+            .PlayerMemberships.AsNoTracking()
             .Where(s => s.PlayerEntityId == playerId && s.ExpiresAt > now)
             .ToListAsync(ct)
             .ConfigureAwait(false);
 
-        PlayerSubscriptionEntity? club = subscriptions.Find(s =>
-            s.SubscriptionType == SubscriptionType.HabboClub
+        PlayerMembershipEntity? club = subscriptions.Find(s =>
+            s.MembershipType == MembershipType.Premium
         );
 
         // Rounded UP: a subscription with eight hours left is a day left, not zero days, which is
         // what the counter says everywhere else in the hotel.
-        int clubDays = club is null ? 0 : (int)Math.Ceiling((club.ExpiresAt - now).TotalDays);
+        int membershipDays = club is null ? 0 : (int)Math.Ceiling((club.ExpiresAt - now).TotalDays);
 
         return new PlayerPurse(
             balances.GetValueOrDefault(CurrencyType.Credits),
             balances.GetValueOrDefault(CurrencyType.Emeralds),
             balances.GetValueOrDefault(CurrencyType.Silver),
-            clubDays
+            membershipDays
         );
     }
 

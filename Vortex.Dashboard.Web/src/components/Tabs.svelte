@@ -10,7 +10,7 @@
   // the third thing -- NOT when they need to compare two sections side by side, which is the one
   // case tabs actively make worse.
   //
-  //   <Tabs tabs={[{ id: 'prizes', label: 'Prizes', icon: Gift, count: prizes.length }]} bind:active />
+  //   <Tabs tabs={[{ id: 'prizes', label: 'Loot', icon: Gift, count: prizes.length }]} bind:active />
   //   {#if active === 'prizes'} ... {/if}
 
   

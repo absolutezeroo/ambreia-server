@@ -160,7 +160,7 @@ public sealed class CatalogSnapshotProvider<TTag>(
                         CostSilver = 0,
                         CanGift = x.CanGift,
                         CanBundle = x.CanBundle,
-                        ClubLevel = x.ClubLevel,
+                        MembershipLevel = x.MembershipLevel,
                         Visible = x.Visible,
                         ProductIds = ids,
                         Products = products,

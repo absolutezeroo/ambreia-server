@@ -13,10 +13,10 @@ public sealed record AvatarInfo(
 );
 
 /// <summary>
-/// What the site's purse shows. The day count is what is LEFT of the Habbo Club subscription, not
+/// What the site's purse shows. The day count is what is LEFT of the Membership subscription, not
 /// how long it has run.
 /// </summary>
-public sealed record PlayerPurse(int Credits, int Diamonds, int Duckets, int HabboClubDays);
+public sealed record PlayerPurse(int Credits, int Diamonds, int Duckets, int MembershipDays);
 
 public interface IWebApiPlayerService
 {

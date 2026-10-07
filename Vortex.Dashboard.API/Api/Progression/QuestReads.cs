@@ -43,7 +43,7 @@ internal sealed class QuestReads(
         Vortex.Primitives.Quests.QuestTypes.TradeCompleted,
         Vortex.Primitives.Quests.QuestTypes.CreateGroup,
         Vortex.Primitives.Quests.QuestTypes.JoinGroup,
-        Vortex.Primitives.Quests.QuestTypes.BuyClub,
+        Vortex.Primitives.Quests.QuestTypes.BuyMembership,
         Vortex.Primitives.Quests.QuestTypes.PlaceItem,
     };
 

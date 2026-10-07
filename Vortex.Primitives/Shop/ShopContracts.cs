@@ -9,8 +9,8 @@ namespace Vortex.Primitives.Shop;
 /// how to grant.
 /// </summary>
 /// <remarks>
-/// Club and VIP are two members rather than one plus a boolean column because the level is the whole
-/// difference between them (<c>ApplyClubMonthsAsync</c> writes 1 or 2), and a boolean that only one
+/// Membership and VIP are two members rather than one plus a boolean column because the level is the whole
+/// difference between them (<c>ApplyMembershipMonthsAsync</c> writes 1 or 2), and a boolean that only one
 /// kind reads is a column every other row has to mean nothing by.
 /// </remarks>
 public enum ShopProductKind
@@ -19,11 +19,11 @@ public enum ShopProductKind
     Duckets = 1,
     Diamonds = 2,
 
-    /// <summary>Habbo Club. <c>Amount</c> is a number of months.</summary>
-    Club = 3,
+    /// <summary>Membership. <c>Amount</c> is a number of months.</summary>
+    Membership = 3,
 
-    /// <summary>Habbo Club at VIP level. <c>Amount</c> is a number of months.</summary>
-    ClubVip = 4,
+    /// <summary>Membership at VIP level. <c>Amount</c> is a number of months.</summary>
+    MembershipVip = 4,
 }
 
 /// <summary>

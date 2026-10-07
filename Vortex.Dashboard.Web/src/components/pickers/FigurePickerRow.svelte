@@ -27,7 +27,7 @@
     <strong>{typeLabel}</strong>
     <small>
       #{row.id}{row.gender && row.gender !== 'U' ? ` - ${row.gender}` : ''}{row.club
-        ? ` - ${$t('pickerModal.clubOnly')}`
+        ? ` - ${$t('pickerModal.membershipOnly')}`
         : ''}
     </small>
   </span>

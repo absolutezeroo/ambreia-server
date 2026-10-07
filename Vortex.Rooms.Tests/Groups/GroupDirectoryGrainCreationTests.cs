@@ -464,12 +464,12 @@ public sealed class GroupDirectoryGrainCreationTests
             throw new NotSupportedException();
         }
 
-        public Task<ClubSubscriptionSnapshot> GetClubSubscriptionAsync(CancellationToken ct)
+        public Task<MembershipSnapshot> GetMembershipAsync(CancellationToken ct)
         {
             throw new NotSupportedException();
         }
 
-        public Task<ClubPurchaseResult> PurchaseClubAsync(
+        public Task<MembershipPurchaseResult> PurchaseMembershipAsync(
             int months,
             bool isVip,
             int costCredits,
@@ -479,7 +479,7 @@ public sealed class GroupDirectoryGrainCreationTests
             throw new NotSupportedException();
         }
 
-        public Task<ClubPurchaseResult> GrantClubMonthsAsync(
+        public Task<MembershipPurchaseResult> GrantMembershipMonthsAsync(
             int months,
             bool isVip,
             CommerceOperationId operation,
@@ -489,7 +489,7 @@ public sealed class GroupDirectoryGrainCreationTests
             throw new NotSupportedException();
         }
 
-        public Task<bool> TryConsumeClubGiftAsync(string productCode, CancellationToken ct)
+        public Task<bool> TryConsumeMembershipGiftAsync(string productCode, CancellationToken ct)
         {
             throw new NotSupportedException();
         }

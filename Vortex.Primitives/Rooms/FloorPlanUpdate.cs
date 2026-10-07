@@ -3,7 +3,7 @@ using Orleans;
 namespace Vortex.Primitives.Rooms;
 
 /// <summary>
-/// A save from the Builders Club floor-plan editor.
+/// A save from the Builders Membership floor-plan editor.
 ///
 /// Every field but <see cref="Model" /> is optional on the wire — the client's composer sends the
 /// plan alone, six fields, or seven, depending on which of its own arguments were left at -1 — so

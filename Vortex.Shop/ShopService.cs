@@ -469,7 +469,7 @@ internal sealed class ShopService(
     {
         PlayerId player = new(order.PlayerEntityId);
 
-        if (order.Kind is ShopProductKind.Club or ShopProductKind.ClubVip)
+        if (order.Kind is ShopProductKind.Membership or ShopProductKind.MembershipVip)
         {
             // The club write takes the operation id now, so the months and the receipt for them
             // commit together and this is safe to repeat — the same property the wallet branch below
@@ -481,17 +481,17 @@ internal sealed class ShopService(
             // done, so a replayed webhook was answered "already granted" and FulfilAsync closed the
             // order as delivered. A paid order that was never delivered became indistinguishable
             // from one that was.
-            ClubPurchaseResult result = await grainFactory
+            MembershipPurchaseResult result = await grainFactory
                 .GetPlayerGrain(player)
-                .GrantClubMonthsAsync(
+                .GrantMembershipMonthsAsync(
                     order.Amount,
-                    order.Kind == ShopProductKind.ClubVip,
+                    order.Kind == ShopProductKind.MembershipVip,
                     operation,
                     ct
                 )
                 .ConfigureAwait(false);
 
-            return result == ClubPurchaseResult.Success;
+            return result == MembershipPurchaseResult.Success;
         }
 
         CurrencyKind currency = new() { CurrencyType = ToCurrencyType(order.Kind) };

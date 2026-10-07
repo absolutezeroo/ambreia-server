@@ -8619,7 +8619,7 @@ namespace Vortex.Database.Migrations
             migrationBuilder.Sql(SeedScripts.Read("achievement_client_level_caps.sql"));
             migrationBuilder.Sql(SeedScripts.Read("achievement_catalogue.sql"));
             migrationBuilder.Sql(SeedScripts.Read("pet_levels.sql"));
-            migrationBuilder.Sql(SeedScripts.Read("pet_palettes.sql"));
+            migrationBuilder.Sql(SeedScripts.Read("pet_skins.sql"));
             migrationBuilder.Sql(SeedScripts.Read("categorize_room_decorations.sql"));
             migrationBuilder.Sql(SeedScripts.Read("add_catalog_gift_wrappings.sql"));
         }

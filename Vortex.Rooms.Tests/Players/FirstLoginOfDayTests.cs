@@ -158,7 +158,7 @@ public sealed class FirstLoginOfDayTests
                     FakeProxy.Create<IGrainFactory>(_ => null),
                     FakeProxy.Create<IEventPublisher>(_ => null),
                     NullLogger<PlayerGrain>.Instance,
-                    Options.Create(new ClubConfig()),
+                    Options.Create(new MembershipConfig()),
                     // Nothing here buys anything; the grain simply needs one to be built.
                     FakeProxy.Create<ICommerceJournal>(_ => Task.CompletedTask),
                     // No roles: the grain resolves staff-ness once at load and nothing here cares

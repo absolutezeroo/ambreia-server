@@ -37,7 +37,7 @@ export const DIRECTORIES: Record<string, Directory> = {
   // so "Species 17" is all the text there is and the picture carries the recognition.
   petSpecies: { endpoint: '/api/v1/directory/pet-species', row: 'pet' },
   campaign: { endpoint: '/api/v1/directory/quest-campaigns', row: 'plain' },
-  clubGift: { endpoint: '/api/v1/directory/club-gifts', row: 'plain' },
+  membershipGift: { endpoint: '/api/v1/directory/club-gifts', row: 'plain' },
   thread: { endpoint: '/api/v1/directory/forum-threads', row: 'plain' },
   effect: { endpoint: '/api/v1/directory/avatar-effects', row: 'plain' },
   placedItem: { endpoint: '/api/v1/directory/placed-furniture', row: 'plain' },

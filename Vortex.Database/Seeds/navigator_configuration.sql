@@ -32,7 +32,7 @@ VALUES
     (6,  'Building and decoration', 1, 0, '', 'BUILDING', 0, 1, 6),
     (7,  'Help Centers',            1, 0, '', 'HELP',     0, 1, 7),
     (8,  'Fansite Square',          1, 0, '', 'FANSITE',  0, 1, 8),
-    -- 9 was Builders' Club, removed in M0.
+    -- 9 was Builders' Membership, removed in M0.
     -- Staff-only: a player must not be able to file their own room as a public room.
     (10, 'Public Rooms',            1, 0, '', 'OFFICIAL', 1, 1, 10);
 

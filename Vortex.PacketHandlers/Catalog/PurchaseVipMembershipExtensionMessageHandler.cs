@@ -18,11 +18,11 @@ namespace Vortex.PacketHandlers.Catalog;
 
 public class PurchaseVipMembershipExtensionMessageHandler(
     IGrainFactory grainFactory,
-    ICatalogClubOfferProvider clubOfferProvider
+    IMembershipOfferProvider membershipOfferProvider
 ) : IMessageHandler<PurchaseVipMembershipExtensionMessage>
 {
     private readonly IGrainFactory _grainFactory = grainFactory;
-    private readonly ICatalogClubOfferProvider _clubOfferProvider = clubOfferProvider;
+    private readonly IMembershipOfferProvider _membershipOfferProvider = membershipOfferProvider;
 
     public async ValueTask HandleAsync(
         PurchaseVipMembershipExtensionMessage message,
@@ -40,7 +40,7 @@ public class PurchaseVipMembershipExtensionMessageHandler(
             return;
         }
 
-        ClubOffer? offer = _clubOfferProvider.FindById(message.OfferId);
+        MembershipOffer? offer = _membershipOfferProvider.FindById(message.OfferId);
         if (offer is null || !offer.IsVip)
         {
             return;
@@ -48,25 +48,23 @@ public class PurchaseVipMembershipExtensionMessageHandler(
 
         IPlayerGrain playerGrain = _grainFactory.GetPlayerGrain(ctx.PlayerId);
 
-        ClubPurchaseResult result = await playerGrain
-            .PurchaseClubAsync(offer.Months, true, offer.PriceCredits, ct)
+        MembershipPurchaseResult result = await playerGrain
+            .PurchaseMembershipAsync(offer.Months, true, offer.PriceCredits, ct)
             .ConfigureAwait(false);
 
-        if (result != ClubPurchaseResult.Success)
+        if (result != MembershipPurchaseResult.Success)
         {
             await ctx.SendComposerAsync(new PurchaseErrorMessageComposer(), ct)
                 .ConfigureAwait(false);
             return;
         }
 
-        ClubSubscriptionSnapshot sub = await playerGrain
-            .GetClubSubscriptionAsync(ct)
-            .ConfigureAwait(false);
+        MembershipSnapshot sub = await playerGrain.GetMembershipAsync(ct).ConfigureAwait(false);
 
         await ctx.SendComposerAsync(
                 new UserRightsMessage
                 {
-                    ClubLevel = ClubLevelType.Vip,
+                    MembershipLevel = MembershipLevelType.Vip,
                     SecurityLevel = SecurityLevelType.None,
                     IsAmbassador = false,
                 },
@@ -88,7 +86,7 @@ public class PurchaseVipMembershipExtensionMessageHandler(
                         ResponseType = 2,
                         HasEverBeenMember = sub.TotalMonths > 0 || sub.IsActive,
                         IsVIP = true,
-                        PastClubDays = sub.PastClubDays,
+                        PastMembershipDays = sub.PastMembershipDays,
                         PastVipDays = sub.PastVipDays,
                         MinutesUntilExpiration = (int)
                             (sub.ExpiresAt - DateTime.UtcNow).TotalMinutes,

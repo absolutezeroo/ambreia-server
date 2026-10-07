@@ -16,7 +16,7 @@ internal class ScrSendUserInfoMessageSerializer(int header)
             .WriteInteger(message.ResponseType)
             .WriteBoolean(message.HasEverBeenMember)
             .WriteBoolean(message.IsVIP)
-            .WriteInteger(message.PastClubDays)
+            .WriteInteger(message.PastMembershipDays)
             .WriteInteger(message.PastVipDays)
             .WriteInteger(message.MinutesUntilExpiration)
             .WriteInteger(message.MinutesSinceLastModified);

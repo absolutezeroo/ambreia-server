@@ -3532,7 +3532,7 @@
           "credits",
           "diamonds",
           "duckets",
-          "habboClubDays"
+          "habboMembershipDays"
         ],
         "type": "object",
         "properties": {
@@ -3548,7 +3548,7 @@
             "type": "integer",
             "format": "int32"
           },
-          "habboClubDays": {
+          "habboMembershipDays": {
             "type": "integer",
             "format": "int32"
           }

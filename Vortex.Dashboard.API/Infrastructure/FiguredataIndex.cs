@@ -204,7 +204,7 @@ internal sealed class FiguredataIndex(DashboardAssetUrls assets, ILogger<Figured
     /// </summary>
     /// <remarks>
     /// <para>
-    /// Club colours are skipped because the picker is not selling anything, and the near-white and
+    /// Membership colours are skipped because the picker is not selling anything, and the near-white and
     /// near-black ends of a palette are skipped because they are where the detail goes: palette 3
     /// opens on <c>dddddd</c>, and a shirt drawn in it is the same pale shape the untinted sprite
     /// already was. The first colour inside the band is a mid tone — a skin tone for palette 1, a

@@ -22,13 +22,13 @@ public sealed class CatalogModule : IHostPluginModule
     {
         services.AddSingleton<ICatalogService, CatalogService>();
 
-        services.AddSingleton<ICatalogClubOfferProvider, CatalogClubOfferProvider>();
+        services.AddSingleton<IMembershipOfferProvider, MembershipOfferProvider>();
         services.AddSingleton<IReferenceDataProvider>(sp =>
-            (IReferenceDataProvider)sp.GetRequiredService<ICatalogClubOfferProvider>()
+            (IReferenceDataProvider)sp.GetRequiredService<IMembershipOfferProvider>()
         );
-        services.AddSingleton<ICatalogClubGiftProvider, CatalogClubGiftProvider>();
+        services.AddSingleton<IMembershipGiftProvider, MembershipGiftProvider>();
         services.AddSingleton<IReferenceDataProvider>(sp =>
-            (IReferenceDataProvider)sp.GetRequiredService<ICatalogClubGiftProvider>()
+            (IReferenceDataProvider)sp.GetRequiredService<IMembershipGiftProvider>()
         );
         services.AddSingleton<IGiftWrappingProvider, GiftWrappingProvider>();
         services.AddSingleton<IReferenceDataProvider>(sp =>

@@ -69,9 +69,9 @@ public interface IPlayerGrain : IGrainWithIntegerKey
         CancellationToken ct
     );
 
-    public Task<ClubSubscriptionSnapshot> GetClubSubscriptionAsync(CancellationToken ct);
+    public Task<MembershipSnapshot> GetMembershipAsync(CancellationToken ct);
 
-    public Task<ClubPurchaseResult> PurchaseClubAsync(
+    public Task<MembershipPurchaseResult> PurchaseMembershipAsync(
         int months,
         bool isVip,
         int costCredits,
@@ -79,7 +79,7 @@ public interface IPlayerGrain : IGrainWithIntegerKey
     );
 
     /// <summary>Extends the membership without taking payment -- a prize or a staff award. Applies
-    /// the same bookkeeping as <see cref="PurchaseClubAsync"/> (streak, gifts, badges, kickback).</summary>
+    /// the same bookkeeping as <see cref="PurchaseMembershipAsync"/> (streak, gifts, badges, kickback).</summary>
     /// <param name="operation">
     /// The operation the months belong to, or <see cref="CommerceOperationId.None"/> for a grant
     /// that answers to nobody. Named, the months and a receipt for them commit together, so the
@@ -88,14 +88,14 @@ public interface IPlayerGrain : IGrainWithIntegerKey
     /// the months owed with the step already marked done, which reads from the outside exactly like
     /// a delivery that happened.
     /// </param>
-    public Task<ClubPurchaseResult> GrantClubMonthsAsync(
+    public Task<MembershipPurchaseResult> GrantMembershipMonthsAsync(
         int months,
         bool isVip,
         CommerceOperationId operation,
         CancellationToken ct
     );
 
-    public Task<bool> TryConsumeClubGiftAsync(string productCode, CancellationToken ct);
+    public Task<bool> TryConsumeMembershipGiftAsync(string productCode, CancellationToken ct);
 
     /// <summary>
     /// Turns a perk on for this account, persisted. Returns false when the player already had it,

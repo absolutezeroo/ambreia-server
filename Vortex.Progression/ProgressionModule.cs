@@ -1,8 +1,8 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Vortex.Primitives.Hosting;
+using Vortex.Primitives.Loot;
 using Vortex.Primitives.Plugins;
-using Vortex.Primitives.Prizes;
 using Vortex.Primitives.Quests;
 using Vortex.Primitives.Signals;
 using Vortex.Progression.Achievements.Events;

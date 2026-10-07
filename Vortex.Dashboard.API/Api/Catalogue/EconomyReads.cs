@@ -311,22 +311,19 @@ internal sealed partial class EconomyReads(
             ct
         );
 
-    public Task<ClubSubscriptions> ClubSubscriptionsAsync(
-        NameValueCollection query,
-        CancellationToken ct
-    ) =>
-        QueryAsync<ClubSubscriptions>(
+    public Task<Memberships> MembershipsAsync(NameValueCollection query, CancellationToken ct) =>
+        QueryAsync<Memberships>(
             async db =>
             {
                 DateTime nowUtc = DateTime.UtcNow;
                 (DateTime since, DateTime until) = TimeWindow.Resolve(query, nowUtc);
 
                 var subscriptions = await db
-                    .PlayerSubscriptions.AsNoTracking()
+                    .PlayerMemberships.AsNoTracking()
                     .Select(s => new
                     {
                         playerId = s.PlayerEntityId,
-                        type = s.SubscriptionType,
+                        type = s.MembershipType,
                         level = s.Level,
                         s.ExpiresAt,
                         s.TotalMonths,
@@ -354,7 +351,7 @@ internal sealed partial class EconomyReads(
                         ? Math.Round((double)activeSubscriptions.Count / totalSubscriptions, 4)
                         : 0d;
 
-                List<ClubSubscriptionTypeBreakdown> byType = subscriptions
+                List<MembershipTypeBreakdown> byType = subscriptions
                     .GroupBy(s => s.type)
                     .Select(g =>
                     {
@@ -374,7 +371,7 @@ internal sealed partial class EconomyReads(
                             2
                         );
 
-                        return new ClubSubscriptionTypeBreakdown(
+                        return new MembershipTypeBreakdown(
                             g.Key.ToString(),
                             g.Count(),
                             activeByType.Count,
@@ -412,8 +409,8 @@ internal sealed partial class EconomyReads(
                 // ponytail: grouped in memory, and it has to be -- the numbers being summed live
                 // inside the audit event's JSON payload, not in a column the database can group
                 // by. The window bound above is what keeps it honest; the real fix is a column.
-                List<ClubSubscriptionEvent> clubEvents = events
-                    .Select(e => new ClubSubscriptionEvent(
+                List<MembershipEvent> membershipEvents = events
+                    .Select(e => new MembershipEvent(
                         e.OccurredAt,
                         e.Action,
                         e.ActorPlayerId,
@@ -422,17 +419,17 @@ internal sealed partial class EconomyReads(
                     .ToList();
 
                 List<int> actorIds = DisplayNameQueries.NormalizeIds(
-                    clubEvents.Select(e => e.ActorPlayerId)
+                    membershipEvents.Select(e => e.ActorPlayerId)
                 );
                 Dictionary<int, string> actorNames = await db.PlayerNamesAsync(actorIds, ct)
                     .ConfigureAwait(false);
 
-                List<ClubSubscriptionEventRow> enrichedEvents = clubEvents
+                List<MembershipEventRow> enrichedEvents = membershipEvents
                     .Select(e =>
                     {
-                        ClubSubscriptionPayload? payload = ParseClubSubscriptionPayload(e.Data);
+                        MembershipPayload? payload = ParseMembershipPayload(e.Data);
 
-                        return new ClubSubscriptionEventRow(
+                        return new MembershipEventRow(
                             e.OccurredAt,
                             e.Action,
                             DisplayNameQueries.ToPlayerId(e.ActorPlayerId),
@@ -450,26 +447,26 @@ internal sealed partial class EconomyReads(
                     .OrderByDescending(e => e.OccurredAt)
                     .ToList();
 
-                int purchases = clubEvents.Count(e => e.Action == "economy.hc.purchase");
-                int renewals = clubEvents.Count(e => e.Action == "economy.hc.renew");
-                int expired = clubEvents.Count(e => e.Action == "economy.hc.expired");
+                int purchases = membershipEvents.Count(e => e.Action == "economy.hc.purchase");
+                int renewals = membershipEvents.Count(e => e.Action == "economy.hc.renew");
+                int expired = membershipEvents.Count(e => e.Action == "economy.hc.expired");
                 double renewalShare =
                     purchases + renewals > 0
                         ? Math.Round((double)renewals / (purchases + renewals), 4)
                         : 0d;
 
                 TimeSpan bucketSize = TimeWindow.BucketSize(since, until);
-                List<ClubLifecyclePoint> lifecycle = BuildSubscriptionTimeline(
-                    clubEvents.Select(e => (e.OccurredAt, e.Action)).ToList(),
+                List<MembershipLifecyclePoint> lifecycle = BuildSubscriptionTimeline(
+                    membershipEvents.Select(e => (e.OccurredAt, e.Action)).ToList(),
                     since,
                     until,
                     bucketSize
                 );
 
-                List<ClubMonthsBreakdown> byMonths = enrichedEvents
+                List<MembershipMonthsBreakdown> byMonths = enrichedEvents
                     .Where(e => e.Months is not null)
                     .GroupBy(e => e.Months!.Value)
-                    .Select(g => new ClubMonthsBreakdown(
+                    .Select(g => new MembershipMonthsBreakdown(
                         g.Key,
                         g.Count(),
                         g.Count(e => e.Action == "economy.hc.purchase"),
@@ -479,13 +476,13 @@ internal sealed partial class EconomyReads(
                     .OrderBy(g => g.Months)
                     .ToList();
 
-                List<ClubSubscriptionEventRow> recentEvents = enrichedEvents.Take(30).ToList();
+                List<MembershipEventRow> recentEvents = enrichedEvents.Take(30).ToList();
 
-                List<ClubExpiringSubscription> topExpiring = activeSubscriptions
+                List<ExpiringMembership> topExpiring = activeSubscriptions
                     .Where(s => s.ExpiresAt <= nowUtc.AddDays(14))
                     .OrderBy(s => s.ExpiresAt)
                     .Take(10)
-                    .Select(s => new ClubExpiringSubscription(
+                    .Select(s => new ExpiringMembership(
                         s.playerId,
                         DisplayNameQueries.ResolvePlayerName(playerNames, s.playerId),
                         s.type.ToString(),
@@ -496,9 +493,9 @@ internal sealed partial class EconomyReads(
                     ))
                     .ToList();
 
-                return new ClubSubscriptions(
+                return new Memberships(
                     new ModerationWindow(since, until),
-                    new ClubSubscriptionTotals(
+                    new MembershipTotals(
                         totalSubscriptions,
                         activeSubscriptions.Count,
                         inactiveCount,
@@ -508,8 +505,8 @@ internal sealed partial class EconomyReads(
                     ),
                     byType,
                     topExpiring,
-                    new ClubSubscriptionLifecycle(
-                        new ClubLifecycleTotals(purchases, renewals, expired, renewalShare),
+                    new MembershipLifecycle(
+                        new MembershipLifecycleTotals(purchases, renewals, expired, renewalShare),
                         byMonths,
                         recentEvents,
                         lifecycle
@@ -519,14 +516,14 @@ internal sealed partial class EconomyReads(
             ct
         );
 
-    private sealed record ClubSubscriptionEvent(
+    private sealed record MembershipEvent(
         DateTime OccurredAt,
         string Action,
         long? ActorPlayerId,
         string? Data
     );
 
-    private sealed record ClubSubscriptionPayload(
+    private sealed record MembershipPayload(
         int? Months,
         int? TotalMonths,
         int? CreditCost,
@@ -534,7 +531,7 @@ internal sealed partial class EconomyReads(
         bool? IsRenewal
     );
 
-    private static List<ClubLifecyclePoint> BuildSubscriptionTimeline(
+    private static List<MembershipLifecyclePoint> BuildSubscriptionTimeline(
         IReadOnlyList<(DateTime OccurredAt, string Action)> events,
         DateTime since,
         DateTime until,
@@ -581,7 +578,7 @@ internal sealed partial class EconomyReads(
 
         return bucketMap
             .OrderBy(pair => pair.Key)
-            .Select(pair => new ClubLifecyclePoint(
+            .Select(pair => new MembershipLifecyclePoint(
                 pair.Key.ToString("O"),
                 TimeWindow.TimelineLabel(pair.Key, bucketSize),
                 pair.Value.purchases,
@@ -659,7 +656,7 @@ internal sealed partial class EconomyReads(
             .ToList();
     }
 
-    private static ClubSubscriptionPayload? ParseClubSubscriptionPayload(string? data)
+    private static MembershipPayload? ParseMembershipPayload(string? data)
     {
         if (string.IsNullOrWhiteSpace(data))
         {
@@ -671,7 +668,7 @@ internal sealed partial class EconomyReads(
             using JsonDocument doc = JsonDocument.Parse(data);
             JsonElement root = doc.RootElement;
 
-            return new ClubSubscriptionPayload(
+            return new MembershipPayload(
                 JsonValues.Int(root, "months"),
                 JsonValues.Int(root, "totalMonths"),
                 JsonValues.Int(root, "creditCost"),

@@ -9,10 +9,10 @@ public enum ProductType
     Effect = 2,
     Badge = 3,
     Robot = 4,
-    HabboClub = 5,
+    Premium = 5,
     Pet = 6,
 
-    // 7 was the chat bubble ("chat_style"), removed in M0 bis. 8 and 9 were the Builders Club days
+    // 7 was the chat bubble ("chat_style"), removed in M0 bis. 8 and 9 were the Builders Membership days
     // and furni add-ons, removed in M0. Not renumbered: the values are persisted.
 }
 
@@ -26,7 +26,7 @@ public static class ProductTypeEnumExtension
             ProductType.Effect => "e",
             ProductType.Badge => "b",
             ProductType.Robot => "r",
-            ProductType.HabboClub => "h",
+            ProductType.Premium => "h",
             ProductType.Pet => "p",
             _ => throw new ArgumentOutOfRangeException(nameof(productType), productType, null),
         };
@@ -39,7 +39,7 @@ public static class ProductTypeEnumExtension
             "e" => ProductType.Effect,
             "b" => ProductType.Badge,
             "r" => ProductType.Robot,
-            "h" => ProductType.HabboClub,
+            "h" => ProductType.Premium,
             "p" => ProductType.Pet,
             _ => throw new ArgumentOutOfRangeException(nameof(productType), productType, null),
         };

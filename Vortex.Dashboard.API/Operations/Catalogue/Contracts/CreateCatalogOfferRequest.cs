@@ -16,7 +16,7 @@ public sealed record CreateCatalogOfferRequest(
     int? CurrencyTypeId,
     bool CanGift,
     bool CanBundle,
-    int ClubLevel,
+    int MembershipLevel,
     int DiscountPercent,
     bool Visible,
     string Reason

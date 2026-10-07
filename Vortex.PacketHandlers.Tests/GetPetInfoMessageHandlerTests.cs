@@ -125,7 +125,7 @@ public sealed class GetPetInfoMessageHandlerTests : WordFilterHandlerFixture
             RoomId = RoomId,
             Name = "Comet",
             Type = 15,
-            Race = 0,
+            Skin = 0,
             Color = "FFFFFF",
             Gender = AvatarGenderType.Male,
             Level = 1,

@@ -52,7 +52,7 @@ public sealed partial class CatalogPurchaseGrain
 
         // The club gate and the discount follow the payer, not the recipient: gifting is a purchase
         // the buyer makes, so it cannot become a way around a club-only offer.
-        int discountPercent = await ResolveClubPricingAsync(offer, ct).ConfigureAwait(true);
+        int discountPercent = await ResolveMembershipPricingAsync(offer, ct).ConfigureAwait(true);
 
         // Gifting has no quantity on the wire -- the client sends one recipient and one offer.
         TryGetDebitRequests(offer, 1, discountPercent, out List<WalletDebitRequest> debitRequests);

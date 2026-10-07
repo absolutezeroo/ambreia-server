@@ -30,10 +30,10 @@ public class CanCreateRoomMessageHandler(
         // The limit is per club level, because the client's own answer to hitting it already is: a
         // VIP is told the plain limit, everyone else is shown ${navigator.createroom.vippromo},
         // "subscribe for more rooms". Read off the same IsVip the SSO handshake maps to the
-        // client's ClubLevelType.Vip, so the two sides cannot disagree about who is a subscriber.
-        ClubSubscriptionSnapshot sub = await _grainFactory
+        // client's MembershipLevelType.Vip, so the two sides cannot disagree about who is a subscriber.
+        MembershipSnapshot sub = await _grainFactory
             .GetPlayerGrain(ctx.PlayerId)
-            .GetClubSubscriptionAsync(ct)
+            .GetMembershipAsync(ct)
             .ConfigureAwait(false);
 
         int maxRooms = await _grainFactory

@@ -1,7 +1,7 @@
 using FluentAssertions;
 using Vortex.Primitives.Players.Enums.Wallet;
-using Vortex.Primitives.Vault;
-using Vortex.Primitives.Vault.Enums;
+using Vortex.Primitives.RewardVault;
+using Vortex.Primitives.RewardVault.Enums;
 using Vortex.Progression.Achievements;
 using Xunit;
 
@@ -28,7 +28,7 @@ public sealed class AchievementEarningTests
             LevelUp(level: 2, rewardType: 0, amount: 50)
         );
 
-        earning.Category.Should().Be(VaultRewardCategoryType.Achievements);
+        earning.Category.Should().Be(RewardVaultCategoryType.Achievements);
         earning.Amount.Should().Be(50);
         earning.SourceKey.Should().Be("achievement:12:level:2");
         earning.Currency.CurrencyType.Should().Be(CurrencyType.ActivityPoints);

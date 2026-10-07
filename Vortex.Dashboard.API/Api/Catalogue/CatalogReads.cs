@@ -138,7 +138,7 @@ internal sealed class CatalogReads(
                             .FirstOrDefault(),
                         o.CanGift,
                         o.CanBundle,
-                        o.ClubLevel,
+                        o.MembershipLevel,
                         o.DiscountPercent,
                         o.Visible,
                         productCount = db.CatalogProducts.Count(pr =>
@@ -206,7 +206,7 @@ internal sealed class CatalogReads(
                         o.currencyName,
                         o.CanGift,
                         o.CanBundle,
-                        o.ClubLevel,
+                        o.MembershipLevel,
                         o.DiscountPercent,
                         o.Visible,
                         o.productCount,
@@ -267,7 +267,7 @@ internal sealed class CatalogReads(
                             .FirstOrDefault(),
                         o.CanGift,
                         o.CanBundle,
-                        o.ClubLevel,
+                        o.MembershipLevel,
                         o.DiscountPercent,
                         o.Visible
                     ))

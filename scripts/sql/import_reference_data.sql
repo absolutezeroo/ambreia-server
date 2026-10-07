@@ -10,7 +10,7 @@
 --
 --   room_models, furniture_definitions, furniture_purchasable_clothing,
 --   catalog_pages, catalog_offers, catalog_products,
---   catalog_club_offers, catalog_club_gifts, catalog_frontpage_items   -- truncated, then reloaded
+--   membership_offers, membership_gifts, catalog_frontpage_items   -- truncated, then reloaded
 --   currency_types                                                    -- merged, see below
 --
 -- Only the columns both schemas share are copied, computed from information_schema at run time:
@@ -29,23 +29,24 @@
 
 SET SESSION group_concat_max_len = 1048576;
 
--- Builds, into @sql, `INSERT INTO <@t> (<shared columns>) SELECT <shared columns> FROM <@src>.<@t>`.
+-- Builds, into @sql, `INSERT INTO <@t> (<shared columns>) SELECT <shared columns> FROM <@src>.<@st>`.
+-- @st is the source's name for the table: the same as @t except where the fork renamed it.
 SET @gen = '
 SELECT CONCAT(''INSERT INTO `'', @t, ''` ('', GROUP_CONCAT(CONCAT(''`'', d.column_name, ''`'') ORDER BY d.ordinal_position),
               '') SELECT '', GROUP_CONCAT(CONCAT(''`'', d.column_name, ''`'') ORDER BY d.ordinal_position),
-              '' FROM `'', @src, ''`.`'', @t, ''`'')
+              '' FROM `'', @src, ''`.`'', @st, ''`'')
   INTO @sql
   FROM information_schema.columns d
   JOIN information_schema.columns s
-    ON s.table_schema = @src AND s.table_name = d.table_name AND s.column_name = d.column_name
+    ON s.table_schema = @src AND s.table_name = @st AND s.column_name = d.column_name
  WHERE d.table_schema = DATABASE() AND d.table_name = @t';
 PREPARE gen FROM @gen;
 
 SET FOREIGN_KEY_CHECKS = 0;
 
 TRUNCATE TABLE `catalog_frontpage_items`;
-TRUNCATE TABLE `catalog_club_gifts`;
-TRUNCATE TABLE `catalog_club_offers`;
+TRUNCATE TABLE `membership_gifts`;
+TRUNCATE TABLE `membership_offers`;
 TRUNCATE TABLE `catalog_products`;
 TRUNCATE TABLE `catalog_offers`;
 TRUNCATE TABLE `catalog_pages`;
@@ -53,15 +54,19 @@ TRUNCATE TABLE `furniture_purchasable_clothing`;
 TRUNCATE TABLE `furniture_definitions`;
 TRUNCATE TABLE `room_models`;
 
-SET @t = 'room_models';                    EXECUTE gen; PREPARE cp FROM @sql; EXECUTE cp;
-SET @t = 'furniture_definitions';          EXECUTE gen; PREPARE cp FROM @sql; EXECUTE cp;
-SET @t = 'furniture_purchasable_clothing'; EXECUTE gen; PREPARE cp FROM @sql; EXECUTE cp;
-SET @t = 'catalog_pages';                  EXECUTE gen; PREPARE cp FROM @sql; EXECUTE cp;
-SET @t = 'catalog_offers';                 EXECUTE gen; PREPARE cp FROM @sql; EXECUTE cp;
-SET @t = 'catalog_products';               EXECUTE gen; PREPARE cp FROM @sql; EXECUTE cp;
-SET @t = 'catalog_club_offers';            EXECUTE gen; PREPARE cp FROM @sql; EXECUTE cp;
-SET @t = 'catalog_club_gifts';             EXECUTE gen; PREPARE cp FROM @sql; EXECUTE cp;
-SET @t = 'catalog_frontpage_items';        EXECUTE gen; PREPARE cp FROM @sql; EXECUTE cp;
+SET @t = 'room_models';                    SET @st = @t; EXECUTE gen; PREPARE cp FROM @sql; EXECUTE cp;
+SET @t = 'furniture_definitions';          SET @st = @t; EXECUTE gen; PREPARE cp FROM @sql; EXECUTE cp;
+SET @t = 'furniture_purchasable_clothing'; SET @st = @t; EXECUTE gen; PREPARE cp FROM @sql; EXECUTE cp;
+SET @t = 'catalog_pages';                  SET @st = @t; EXECUTE gen; PREPARE cp FROM @sql; EXECUTE cp;
+SET @t = 'catalog_offers';                 SET @st = @t; EXECUTE gen; PREPARE cp FROM @sql; EXECUTE cp;
+SET @t = 'catalog_products';               SET @st = @t; EXECUTE gen; PREPARE cp FROM @sql; EXECUTE cp;
+SET @t = 'membership_offers';            SET @st = 'catalog_club_offers'; EXECUTE gen; PREPARE cp FROM @sql; EXECUTE cp;
+SET @t = 'membership_gifts';             SET @st = 'catalog_club_gifts'; EXECUTE gen; PREPARE cp FROM @sql; EXECUTE cp;
+SET @t = 'catalog_frontpage_items';        SET @st = @t; EXECUTE gen; PREPARE cp FROM @sql; EXECUTE cp;
+
+-- Columns the fork renamed, which the shared-column copy above skips.
+SET @sql = CONCAT('UPDATE `catalog_offers` d JOIN `', @src, '`.`catalog_offers` s ON s.`id` = d.`id` SET d.`membership_level` = s.`club_level`');
+PREPARE cp FROM @sql; EXECUTE cp;
 
 SET FOREIGN_KEY_CHECKS = 1;
 

@@ -8,7 +8,7 @@ namespace Vortex.Protocol.Messages.Outgoing.Catalog;
 public sealed record HabboClubExtendOfferMessageComposer : IComposer
 {
     [Id(0)]
-    public required ClubOffer Offer { get; init; }
+    public required MembershipOffer Offer { get; init; }
 
     [Id(1)]
     public int OriginalPricePerMonth { get; init; }

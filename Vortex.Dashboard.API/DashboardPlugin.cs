@@ -43,6 +43,7 @@ using Vortex.Primitives.Fishing;
 using Vortex.Primitives.Furniture;
 using Vortex.Primitives.Furniture.Providers;
 using Vortex.Primitives.Hosting;
+using Vortex.Primitives.Loot;
 using Vortex.Primitives.Moderation;
 using Vortex.Primitives.Moderation.WordFilter;
 using Vortex.Primitives.Navigator;
@@ -52,7 +53,6 @@ using Vortex.Primitives.Permissions;
 using Vortex.Primitives.Players.Providers;
 using Vortex.Primitives.Plugins;
 using Vortex.Primitives.Plugins.Exports;
-using Vortex.Primitives.Prizes;
 using Vortex.Primitives.Quests;
 
 namespace Vortex.Dashboard.API;
@@ -157,8 +157,8 @@ public sealed class DashboardPlugin : IVortexPlugin
         services.TryAddSingleton<FurnitureOperations>();
         services.TryAddSingleton<QuestReads>();
         services.TryAddSingleton<QuestOperations>();
-        services.TryAddSingleton<PrizePoolReads>();
-        services.TryAddSingleton<PrizePoolOperations>();
+        services.TryAddSingleton<LootTableReads>();
+        services.TryAddSingleton<LootTableOperations>();
         services.TryAddSingleton<StaffReads>();
         services.TryAddSingleton<StaffOperations>();
         services.TryAddSingleton<ContentOperations>();
@@ -201,7 +201,7 @@ public sealed class DashboardPlugin : IVortexPlugin
         services.TryAddSingleton<IGiftWrappingAdminService, GiftWrappingAdminService>();
         services.TryAddSingleton<INavigatorAdminService, NavigatorAdminService>();
         services.TryAddSingleton<IContentAdminService, ContentAdminService>();
-        services.TryAddSingleton<IPrizePoolAdminService, PrizePoolAdminService>();
+        services.TryAddSingleton<ILootTableAdminService, LootTableAdminService>();
         services.TryAddSingleton<IQuestAdminService, QuestAdminService>();
         services.TryAddSingleton<IQuestContentAdminService, QuestContentAdminService>();
         services.TryAddSingleton<IWebArticleAdminService, WebArticleAdminService>();
@@ -256,7 +256,7 @@ public sealed class DashboardPlugin : IVortexPlugin
         services.UseHostService<IInfrastructureHealthService>();
         services.UseHostService<RoomPerformanceAggregator>();
         services.UseHostService<ClientPerformanceMetrics>();
-        services.UseHostService<ClubMetrics>();
+        services.UseHostService<MembershipMetrics>();
         services.UseHostService<IForensicsPurgeService>();
 
         // Accounts and moderation.

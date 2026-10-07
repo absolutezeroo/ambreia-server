@@ -13,10 +13,10 @@ namespace Vortex.Database.Tests.Pets;
 /// <para>
 /// <c>SeedScripts</c> says so in its own summary — "the scripts use <c>INSERT IGNORE</c> and are
 /// therefore safe to run against a database that already holds some of the rows" — and
-/// <c>pet_palettes.sql</c> did not. It was a plain INSERT, written against the fresh install where
+/// <c>pet_skins.sql</c> did not. It was a plain INSERT, written against the fresh install where
 /// the table really is empty. The live hotel had been seeded by hand, so the first deployment
 /// carrying that migration died on the unique index over
-/// <c>(pet_type, breed_index, rare)</c>, the healthcheck never answered, and the release rolled
+/// <c>(pet_type, skin_index, rare)</c>, the healthcheck never answered, and the release rolled
 /// back.
 /// </para>
 /// <para>
@@ -29,7 +29,7 @@ namespace Vortex.Database.Tests.Pets;
 public sealed class PetSeedReRunnabilityTests
 {
     [Theory]
-    [InlineData("pet_palettes.sql")]
+    [InlineData("pet_skins.sql")]
     [InlineData("pet_levels.sql")]
     public void EveryInsertSurvivesATableThatIsAlreadyPopulated(string script)
     {

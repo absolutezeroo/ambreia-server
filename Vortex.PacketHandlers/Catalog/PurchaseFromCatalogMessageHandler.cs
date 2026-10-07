@@ -31,14 +31,14 @@ namespace Vortex.PacketHandlers.Catalog;
 public class PurchaseFromCatalogMessageHandler(
     IGrainFactory grainFactory,
     ICatalogService catalogService,
-    ICatalogClubOfferProvider clubOfferProvider,
+    IMembershipOfferProvider membershipOfferProvider,
     IWordFilter wordFilter
 ) : IMessageHandler<PurchaseFromCatalogMessage>
 {
     private readonly IWordFilter _wordFilter = wordFilter;
     private readonly IGrainFactory _grainFactory = grainFactory;
     private readonly ICatalogService _catalogService = catalogService;
-    private readonly ICatalogClubOfferProvider _clubOfferProvider = clubOfferProvider;
+    private readonly IMembershipOfferProvider _membershipOfferProvider = membershipOfferProvider;
 
     public async ValueTask HandleAsync(
         PurchaseFromCatalogMessage message,
@@ -60,25 +60,25 @@ public class PurchaseFromCatalogMessageHandler(
 
         if (
             snapshot.PagesById.TryGetValue(message.PageId, out CatalogPageSnapshot? page)
-            && page.Layout == CatalogPageLayout.ClubBuy
+            && page.Layout == CatalogPageLayout.MembershipBuy
         )
         {
-            await HandleClubPurchaseAsync(message, ctx, ct);
+            await HandleMembershipPurchaseAsync(message, ctx, ct);
             return;
         }
 
         await HandleCatalogPurchaseAsync(message, CatalogType.Normal, ctx, ct);
     }
 
-    private async ValueTask HandleClubPurchaseAsync(
+    private async ValueTask HandleMembershipPurchaseAsync(
         PurchaseFromCatalogMessage message,
         MessageContext ctx,
         CancellationToken ct
     )
     {
-        ClubOffer? clubOffer = _clubOfferProvider.FindById(message.OfferId);
+        MembershipOffer? membershipOffer = _membershipOfferProvider.FindById(message.OfferId);
 
-        if (clubOffer is null)
+        if (membershipOffer is null)
         {
             await ctx.SendComposerAsync(
                     new PurchaseNotAllowedMessageComposer
@@ -91,7 +91,7 @@ public class PurchaseFromCatalogMessageHandler(
             return;
         }
 
-        if (clubOffer.PriceCredits > 0)
+        if (membershipOffer.PriceCredits > 0)
         {
             IPlayerWalletGrain wallet = _grainFactory.GetPlayerWalletGrain(ctx.PlayerId);
             int credits = await wallet
@@ -101,7 +101,7 @@ public class PurchaseFromCatalogMessageHandler(
                 )
                 .ConfigureAwait(false);
 
-            if (credits < clubOffer.PriceCredits)
+            if (credits < membershipOffer.PriceCredits)
             {
                 await ctx.SendComposerAsync(
                         new NotEnoughBalanceMessageComposer
@@ -118,11 +118,16 @@ public class PurchaseFromCatalogMessageHandler(
         }
 
         IPlayerGrain playerGrain = _grainFactory.GetPlayerGrain(ctx.PlayerId);
-        ClubPurchaseResult purchaseResult = await playerGrain
-            .PurchaseClubAsync(clubOffer.Months, clubOffer.IsVip, clubOffer.PriceCredits, ct)
+        MembershipPurchaseResult purchaseResult = await playerGrain
+            .PurchaseMembershipAsync(
+                membershipOffer.Months,
+                membershipOffer.IsVip,
+                membershipOffer.PriceCredits,
+                ct
+            )
             .ConfigureAwait(false);
 
-        if (purchaseResult == ClubPurchaseResult.NotEnoughCredits)
+        if (purchaseResult == MembershipPurchaseResult.NotEnoughCredits)
         {
             await ctx.SendComposerAsync(
                     new NotEnoughBalanceMessageComposer
@@ -137,26 +142,24 @@ public class PurchaseFromCatalogMessageHandler(
             return;
         }
 
-        if (purchaseResult != ClubPurchaseResult.Success)
+        if (purchaseResult != MembershipPurchaseResult.Success)
         {
             await ctx.SendComposerAsync(new PurchaseErrorMessageComposer(), ct)
                 .ConfigureAwait(false);
             return;
         }
 
-        ClubSubscriptionSnapshot sub = await playerGrain
-            .GetClubSubscriptionAsync(ct)
-            .ConfigureAwait(false);
+        MembershipSnapshot sub = await playerGrain.GetMembershipAsync(ct).ConfigureAwait(false);
 
-        ClubLevelType clubLevel = sub.IsActive
-            ? (sub.IsVip ? ClubLevelType.Vip : ClubLevelType.Club)
-            : ClubLevelType.None;
+        MembershipLevelType membershipLevel = sub.IsActive
+            ? (sub.IsVip ? MembershipLevelType.Vip : MembershipLevelType.Membership)
+            : MembershipLevelType.None;
 
         DateTime now = DateTime.UtcNow;
         DateTime baseDate = sub.ExpiresAt > now ? sub.ExpiresAt : now;
 
-        List<ClubOffer> refreshedOffers = new List<ClubOffer>();
-        foreach (ClubOffer offer in _clubOfferProvider.GetAll())
+        List<MembershipOffer> refreshedOffers = new List<MembershipOffer>();
+        foreach (MembershipOffer offer in _membershipOfferProvider.GetAll())
         {
             DateTime expiry = baseDate.AddMonths(offer.Months).AddDays(offer.ExtraDays);
             refreshedOffers.Add(
@@ -173,7 +176,7 @@ public class PurchaseFromCatalogMessageHandler(
         await ctx.SendComposerAsync(
                 new UserRightsMessage
                 {
-                    ClubLevel = clubLevel,
+                    MembershipLevel = membershipLevel,
                     SecurityLevel = SecurityLevelType.None,
                     IsAmbassador = false,
                 },
@@ -195,7 +198,7 @@ public class PurchaseFromCatalogMessageHandler(
                         ResponseType = 2,
                         HasEverBeenMember = sub.TotalMonths > 0 || sub.IsActive,
                         IsVIP = sub.IsVip,
-                        PastClubDays = sub.PastClubDays,
+                        PastMembershipDays = sub.PastMembershipDays,
                         PastVipDays = sub.PastVipDays,
                         MinutesUntilExpiration = (int)
                             (sub.ExpiresAt - DateTime.UtcNow).TotalMinutes,
@@ -210,7 +213,7 @@ public class PurchaseFromCatalogMessageHandler(
                 new HabboClubOffersMessageComposer
                 {
                     Offers = refreshedOffers,
-                    Source = ClubOfferRequestSourceType.Unknown,
+                    Source = MembershipOfferRequestSourceType.Unknown,
                 },
                 ct
             )

@@ -52,16 +52,16 @@ public sealed class PlayerLiveState
     /// </summary>
     public bool IsModerator { get; set; }
 
-    public int ClubLevel { get; set; } = 0;
-    public DateTime ClubExpiresAt { get; set; } = DateTime.MinValue;
-    public int ClubTotalMonths { get; set; } = 0;
-    public int ClubGiftsAvailable { get; set; } = 0;
-    public DateTime? ClubNextGiftAt { get; set; } = null;
-    public int ClubPastClubDays { get; set; } = 0;
-    public int ClubPastVipDays { get; set; } = 0;
-    public DateTime? ClubFirstSubscribedAt { get; set; } = null;
-    public DateTime? ClubLastExpiredAt { get; set; } = null;
-    public bool ClubBadgeGranted { get; set; } = false;
+    public int MembershipLevel { get; set; } = 0;
+    public DateTime MembershipExpiresAt { get; set; } = DateTime.MinValue;
+    public int MembershipTotalMonths { get; set; } = 0;
+    public int MembershipGiftsAvailable { get; set; } = 0;
+    public DateTime? MembershipNextGiftAt { get; set; } = null;
+    public int MembershipPastMembershipDays { get; set; } = 0;
+    public int MembershipPastVipDays { get; set; } = 0;
+    public DateTime? MembershipFirstSubscribedAt { get; set; } = null;
+    public DateTime? MembershipLastExpiredAt { get; set; } = null;
+    public bool MembershipBadgeGranted { get; set; } = false;
 
     public DateTime? KickbackPaydayAt { get; set; } = null;
     public int KickbackCreditsSpent { get; set; } = 0;

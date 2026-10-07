@@ -68,8 +68,8 @@ SELECT 'furniture_purchasable_clothing', COUNT(*) FROM furniture_purchasable_clo
 SELECT 'catalog_pages', COUNT(*) FROM catalog_pages UNION ALL
 SELECT 'catalog_offers', COUNT(*) FROM catalog_offers UNION ALL
 SELECT 'catalog_products', COUNT(*) FROM catalog_products UNION ALL
-SELECT 'catalog_club_offers', COUNT(*) FROM catalog_club_offers UNION ALL
-SELECT 'catalog_club_gifts', COUNT(*) FROM catalog_club_gifts UNION ALL
+SELECT 'membership_offers', COUNT(*) FROM membership_offers UNION ALL
+SELECT 'membership_gifts', COUNT(*) FROM membership_gifts UNION ALL
 SELECT 'catalog_frontpage_items', COUNT(*) FROM catalog_frontpage_items UNION ALL
 SELECT 'currency_types', COUNT(*) FROM currency_types;"
 

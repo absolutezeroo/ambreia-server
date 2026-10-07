@@ -7,6 +7,7 @@ using Vortex.Database.Entities.Errors;
 using Vortex.Database.Entities.Fishing;
 using Vortex.Database.Entities.Furniture;
 using Vortex.Database.Entities.Groups;
+using Vortex.Database.Entities.Loot;
 using Vortex.Database.Entities.Marketplace;
 using Vortex.Database.Entities.Messenger;
 using Vortex.Database.Entities.Moderation;
@@ -14,7 +15,6 @@ using Vortex.Database.Entities.Navigator;
 using Vortex.Database.Entities.Permissions;
 using Vortex.Database.Entities.Pets;
 using Vortex.Database.Entities.Players;
-using Vortex.Database.Entities.Prizes;
 using Vortex.Database.Entities.Quests;
 using Vortex.Database.Entities.Room;
 using Vortex.Database.Entities.Security;
@@ -52,9 +52,9 @@ public class VortexDbContext(DbContextOptions<VortexDbContext> options)
 
     public DbSet<ItemEventEntity> ItemEvents { get; init; } = null!;
 
-    public DbSet<CatalogClubOfferEntity> CatalogClubOffers { get; init; } = null!;
+    public DbSet<MembershipOfferEntity> MembershipOffers { get; init; } = null!;
 
-    public DbSet<CatalogClubGiftEntity> CatalogClubGifts { get; init; } = null!;
+    public DbSet<MembershipGiftEntity> MembershipGifts { get; init; } = null!;
 
     public DbSet<CatalogGiftWrappingEntity> CatalogGiftWrappings { get; init; } = null!;
 
@@ -131,15 +131,15 @@ public class VortexDbContext(DbContextOptions<VortexDbContext> options)
     public DbSet<PlayerNavigatorPreferencesEntity> PlayerNavigatorPreferences { get; init; } =
         null!;
 
-    public DbSet<PlayerSubscriptionEntity> PlayerSubscriptions { get; init; } = null!;
+    public DbSet<PlayerMembershipEntity> PlayerMemberships { get; init; } = null!;
 
-    public DbSet<PlayerKickbackEntity> PlayerKickbacks { get; init; } = null!;
+    public DbSet<PlayerMembershipKickbackEntity> PlayerMembershipKickbacks { get; init; } = null!;
 
     public DbSet<ErrorGroupEntity> ErrorGroups { get; init; } = null!;
 
     public DbSet<ErrorOccurrenceEntity> ErrorOccurrences { get; init; } = null!;
 
-    public DbSet<PlayerVaultIncomeRewardEntity> PlayerVaultIncomeRewards { get; init; } = null!;
+    public DbSet<PlayerRewardVaultEntryEntity> PlayerRewardVaultEntries { get; init; } = null!;
 
     public DbSet<MarketplaceOfferEntity> MarketplaceOffers { get; init; } = null!;
 
@@ -209,7 +209,7 @@ public class VortexDbContext(DbContextOptions<VortexDbContext> options)
 
     public DbSet<PlayerClothingEntity> PlayerClothing { get; init; } = null!;
 
-    public DbSet<PetPaletteEntity> PetPalettes { get; init; } = null!;
+    public DbSet<PetSkinEntity> PetSkins { get; init; } = null!;
 
     public DbSet<PlayerAccountPreferencesEntity> PlayerAccountPreferences { get; init; } = null!;
 
@@ -243,13 +243,13 @@ public class VortexDbContext(DbContextOptions<VortexDbContext> options)
 
     public DbSet<PlayerDailyTaskEntity> PlayerDailyTasks { get; init; } = null!;
 
-    public DbSet<PrizePoolEntity> PrizePools { get; init; } = null!;
+    public DbSet<LootTableEntity> LootTables { get; init; } = null!;
 
-    public DbSet<PrizePoolEntryEntity> PrizePoolEntries { get; init; } = null!;
+    public DbSet<LootTableEntryEntity> LootTableEntries { get; init; } = null!;
 
-    public DbSet<PrizePoolBindingEntity> PrizePoolBindings { get; init; } = null!;
+    public DbSet<LootTableBindingEntity> LootTableBindings { get; init; } = null!;
 
-    public DbSet<PlayerPrizeClaimEntity> PlayerPrizeClaims { get; init; } = null!;
+    public DbSet<PlayerLootClaimEntity> PlayerLootClaims { get; init; } = null!;
 
     // The hotel's website (Vortex.WebApi serves the public read, the dashboard the editing). None of
     // this is game state: no grain owns it, and nothing on the game socket reads it.
@@ -374,36 +374,36 @@ public class VortexDbContext(DbContextOptions<VortexDbContext> options)
             .HasForeignKey(a => a.DailyTaskEntityId)
             .OnDelete(DeleteBehavior.Restrict);
 
-        // Prize entries carry a plain definition id (no FK) because effect and club prizes
+        // Loot entries carry a plain definition id (no FK) because effect and club prizes
         // legitimately leave it at 0. They do cascade with their pool: an entry outliving the pool
         // it is weighted against can never be drawn again.
-        mb.Entity<PrizePoolEntryEntity>()
-            .HasOne(e => e.PrizePoolEntity)
+        mb.Entity<LootTableEntryEntity>()
+            .HasOne(e => e.LootTableEntity)
             .WithMany()
-            .HasForeignKey(e => e.PrizePoolEntityId)
+            .HasForeignKey(e => e.LootTableEntityId)
             .OnDelete(DeleteBehavior.Cascade);
 
         // A binding to a deleted pool would leave the furniture drawing from nothing, so it goes
         // with it. The definition side carries no FK: a hotel may bind an id its furnidata has not
         // shipped yet, which the manager grain simply never matches.
-        mb.Entity<PrizePoolBindingEntity>()
-            .HasOne(b => b.PrizePoolEntity)
+        mb.Entity<LootTableBindingEntity>()
+            .HasOne(b => b.LootTableEntity)
             .WithMany()
-            .HasForeignKey(b => b.PrizePoolEntityId)
+            .HasForeignKey(b => b.LootTableEntityId)
             .OnDelete(DeleteBehavior.Cascade);
 
         // Claims cascade both ways: a deleted player takes their claims with them, and retiring a
         // pool clears the "already taken" marks so re-running the same event is possible.
-        mb.Entity<PlayerPrizeClaimEntity>()
+        mb.Entity<PlayerLootClaimEntity>()
             .HasOne(c => c.PlayerEntity)
             .WithMany()
             .HasForeignKey(c => c.PlayerEntityId)
             .OnDelete(DeleteBehavior.Cascade);
 
-        mb.Entity<PlayerPrizeClaimEntity>()
-            .HasOne(c => c.PrizePoolEntity)
+        mb.Entity<PlayerLootClaimEntity>()
+            .HasOne(c => c.LootTableEntity)
             .WithMany()
-            .HasForeignKey(c => c.PrizePoolEntityId)
+            .HasForeignKey(c => c.LootTableEntityId)
             .OnDelete(DeleteBehavior.Cascade);
     }
 }

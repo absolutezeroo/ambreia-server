@@ -60,7 +60,7 @@ public sealed record CatalogOfferCreateSpec(
     int? CurrencyTypeId,
     bool CanGift,
     bool CanBundle,
-    int ClubLevel,
+    int MembershipLevel,
     int DiscountPercent,
     bool Visible
 );
@@ -72,7 +72,7 @@ public sealed record CatalogOfferUpdateSpec(
     int? CurrencyTypeId,
     bool CanGift,
     bool CanBundle,
-    int ClubLevel,
+    int MembershipLevel,
     int DiscountPercent,
     bool Visible
 );

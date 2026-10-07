@@ -138,8 +138,8 @@ public static class Capabilities
         public const string FishingRead = "dashboard.fishing.read";
         public const string OpsFishingManage = "dashboard.ops.fishing.manage";
 
-        public const string PrizePoolsRead = "dashboard.prize_pools.read";
-        public const string OpsPrizePoolsManage = "dashboard.ops.prize_pools.manage";
+        public const string LootTablesRead = "dashboard.loot_tables.read";
+        public const string OpsLootTablesManage = "dashboard.ops.loot_tables.manage";
 
         public const string ConfigRead = "dashboard.config.read";
         public const string OpsConfigManage = "dashboard.ops.config.manage";
@@ -264,8 +264,8 @@ public static class Capabilities
             OpsGiftWrappingsManage,
             FishingRead,
             OpsFishingManage,
-            PrizePoolsRead,
-            OpsPrizePoolsManage,
+            LootTablesRead,
+            OpsLootTablesManage,
             ConfigRead,
             OpsConfigManage,
             PerformanceRead,

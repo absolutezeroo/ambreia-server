@@ -94,10 +94,10 @@ public sealed class CatalogGiftPurchaseTests
     }
 
     [Fact]
-    public async Task PurchaseOfferAsGiftAsync_ClubOnlyOffer_NonMemberIsRefusedBeforeAnyDebit()
+    public async Task PurchaseOfferAsGiftAsync_MembershipOnlyOffer_NonMemberIsRefusedBeforeAnyDebit()
     {
         CatalogPurchaseHarness harness = new CatalogPurchaseHarness(
-            CatalogOffers.New(OFFER_ID, costCredits: 50, clubLevel: 1),
+            CatalogOffers.New(OFFER_ID, costCredits: 50, membershipLevel: 1),
             BUYER_ID
         );
 
@@ -115,20 +115,20 @@ public sealed class CatalogGiftPurchaseTests
             await act.Should().ThrowAsync<CatalogPurchaseException>().ConfigureAwait(true)
         ).Which;
 
-        ex.ErrorType.Should().Be(CatalogPurchaseErrorType.RequiresHabboClub);
+        ex.ErrorType.Should().Be(CatalogPurchaseErrorType.RequiresMembership);
         harness.DebitRequests.Should().BeEmpty();
         harness.GrantedToPlayerIds.Should().BeEmpty();
     }
 
     [Fact]
-    public async Task PurchaseOfferAsGiftAsync_ClubMember_GetsTheOfferDiscount()
+    public async Task PurchaseOfferAsGiftAsync_MembershipMember_GetsTheOfferDiscount()
     {
         CatalogPurchaseHarness harness = new CatalogPurchaseHarness(
             CatalogOffers.New(OFFER_ID, costCredits: 100, discountPercent: 25),
             BUYER_ID
         )
         {
-            Club = new ClubSubscriptionSnapshot { IsActive = true, IsVip = false },
+            Membership = new MembershipSnapshot { IsActive = true, IsVip = false },
         };
 
         await harness

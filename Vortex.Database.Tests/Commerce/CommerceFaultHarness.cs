@@ -126,8 +126,8 @@ internal sealed class CommerceFaultHarness : IDisposable
         IPlayerGrain player = FakeProxy.Create<IPlayerGrain>(call =>
             call.Method.Name switch
             {
-                nameof(IPlayerGrain.GetClubSubscriptionAsync) => Task.FromResult(
-                    new ClubSubscriptionSnapshot { IsActive = false, IsVip = false }
+                nameof(IPlayerGrain.GetMembershipAsync) => Task.FromResult(
+                    new MembershipSnapshot { IsActive = false, IsVip = false }
                 ),
                 nameof(IPlayerGrain.TrackCreditSpendAsync) => Task.CompletedTask,
                 _ => null,
@@ -186,7 +186,7 @@ internal static class CatalogOffers
             CostSilver = 0,
             CanGift = true,
             CanBundle = false,
-            ClubLevel = 0,
+            MembershipLevel = 0,
             Visible = true,
             ProductIds = [.. products.Select(p => p.Id)],
             Products = [.. products],

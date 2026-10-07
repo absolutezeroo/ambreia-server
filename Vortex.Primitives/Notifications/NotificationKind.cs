@@ -24,10 +24,10 @@ namespace Vortex.Primitives.Notifications;
 /// </remarks>
 public enum NotificationKind
 {
-    // ---- Club, gifts and rewards -----------------------------------------------------------
-    ClubExpired = 0,
-    ClubPayday = 1,
-    ClubGiftToken = 2,
+    // ---- Membership, gifts and rewards -----------------------------------------------------------
+    MembershipExpired = 0,
+    MembershipPayday = 1,
+    MembershipGiftToken = 2,
 
     // 3 was RewardTrackCompleted, 4 the LTD raffle win and 5 the voucher redemption, removed in the
     // RPG fork (M0). Persisted: never reuse them.
@@ -70,7 +70,7 @@ public enum NotificationKind
     BadgeGranted = 42,
 
     // 43 was HabbiconCollectionCompleted, removed in the RPG fork (M0). Persisted: never reuse it.
-    PrizeAwarded = 44,
+    LootAwarded = 44,
 
     // 50-53 were the website feed's (mention, comment, repost, favourite), removed with the feed
     // (M0 bis). Persisted: never reuse them.

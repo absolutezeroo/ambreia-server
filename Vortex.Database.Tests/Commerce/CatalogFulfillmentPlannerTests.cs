@@ -160,7 +160,7 @@ public sealed class CatalogFulfillmentPlannerTests
         plan.Effects.Should().HaveCount(6);
     }
 
-    /// <summary>The pet's name, race and colour come from what the player typed, not from the offer.</summary>
+    /// <summary>The pet's name, skin and colour come from what the player typed, not from the offer.</summary>
     [Fact]
     public void APetProduct_TakesItsNameRaceAndColourFromThePurchase()
     {
@@ -173,7 +173,7 @@ public sealed class CatalogFulfillmentPlannerTests
 
         plan.Pets.Should().ContainSingle();
         plan.Pets[0].Name.Should().Be("Rex");
-        plan.Pets[0].Race.Should().Be(3);
+        plan.Pets[0].Skin.Should().Be(3);
         plan.Pets[0].Color.Should().Be("ff8800");
         plan.Pets[0].Type.Should().Be(1);
     }

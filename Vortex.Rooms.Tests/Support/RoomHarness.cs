@@ -462,7 +462,7 @@ internal sealed class RoomHarness
             RoomId = RoomIdValue,
             Name = "Rex",
             Type = 0,
-            Race = 0,
+            Skin = 0,
             Color = "FFFFFF",
             Gender = AvatarGenderType.Male,
             Level = 1,

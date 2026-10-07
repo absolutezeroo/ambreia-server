@@ -18,7 +18,7 @@ using Vortex.Primitives.Commerce;
 using Vortex.Primitives.Events;
 using Vortex.Primitives.Players.Grains;
 using Vortex.Primitives.Players.Snapshots;
-using Vortex.Primitives.Vault;
+using Vortex.Primitives.RewardVault;
 using Vortex.Progression.Configuration;
 using Vortex.Progression.Grains;
 using Vortex.Tests.Support;
@@ -205,7 +205,7 @@ public sealed class PlayerAchievementGrainTests
     /// key, a direct wallet grant is not.
     /// </summary>
     [Fact]
-    public async Task ALevelUpsReward_EarnsThroughTheVault_NotTheWalletDirectly()
+    public async Task ALevelUpsReward_EarnsThroughTheRewardVault_NotTheWalletDirectly()
     {
         Harness harness = await Harness
             .CreateAsync(rewardAmount: 10, rewardType: 0)
@@ -215,7 +215,7 @@ public sealed class PlayerAchievementGrainTests
             .Grain.ProgressAsync(RoomEntry, 5, CancellationToken.None)
             .ConfigureAwait(true);
 
-        IncomeEarning earning = harness.VaultEarnings.Should().ContainSingle().Subject;
+        IncomeEarning earning = harness.RewardVaultEarnings.Should().ContainSingle().Subject;
         earning.SourceKey.Should().Be($"achievement:{AchievementId}:level:1");
 
         harness.WalletCalls.Should().NotContain(nameof(IPlayerWalletGrain.GrantCurrencyAsync));
@@ -257,7 +257,7 @@ public sealed class PlayerAchievementGrainTests
             _options = options;
             Factory = factory;
             Published = published;
-            VaultEarnings = vaultEarnings;
+            RewardVaultEarnings = vaultEarnings;
             WalletCalls = walletCalls;
         }
 
@@ -267,7 +267,7 @@ public sealed class PlayerAchievementGrainTests
         public List<IEvent> Published { get; }
 
         /// <summary>Every earning the fake Earnings vault received, in order.</summary>
-        public List<IncomeEarning> VaultEarnings { get; }
+        public List<IncomeEarning> RewardVaultEarnings { get; }
 
         /// <summary>Every method the fake wallet grain was called with, in order.</summary>
         public List<string> WalletCalls { get; }
@@ -434,10 +434,10 @@ public sealed class PlayerAchievementGrainTests
             // await but a completed task. The fallback proxy below answers null for a Task-returning
             // method's *result*, which DispatchProxy still turns into Task.CompletedTask -- but this
             // one also needs to capture the argument, so it gets its own fake.
-            IPlayerVaultGrain vault = FakeProxy.Create<IPlayerVaultGrain>(call =>
+            IPlayerRewardVaultGrain vault = FakeProxy.Create<IPlayerRewardVaultGrain>(call =>
             {
                 if (
-                    call.Method.Name == nameof(IPlayerVaultGrain.EarnAsync)
+                    call.Method.Name == nameof(IPlayerRewardVaultGrain.EarnAsync)
                     && call.Args?[0] is IncomeEarning earning
                 )
                 {
@@ -459,7 +459,7 @@ public sealed class PlayerAchievementGrainTests
                     {
                         Type t when t == typeof(IAchievementManagerGrain) => manager,
                         Type t when t == typeof(IBadgeDirectoryGrain) => badges,
-                        Type t when t == typeof(IPlayerVaultGrain) => vault,
+                        Type t when t == typeof(IPlayerRewardVaultGrain) => vault,
                         Type t when t == typeof(IPlayerWalletGrain) => wallet,
                         Type t => FakeProxy.CreateFor(t, _ => null),
                     }

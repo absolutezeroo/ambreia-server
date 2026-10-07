@@ -56,7 +56,7 @@
     currencyTypeId: Num;
     canGift: boolean;
     canBundle: boolean;
-    clubLevel: Num;
+    membershipLevel: Num;
     discountPercent: Num;
     visible: boolean;
   };
@@ -122,7 +122,7 @@
   function emptyOfferForm(): OfferForm {
     return {
       localizationId: '', costCredits: 0, costCurrency: 0, currencyTypeId: '',
-      canGift: true, canBundle: true, clubLevel: 0, discountPercent: 0, visible: true,
+      canGift: true, canBundle: true, membershipLevel: 0, discountPercent: 0, visible: true,
     };
   }
 
@@ -383,7 +383,7 @@
     { key: 'currencyTypeId', label: translate('catalogAdmin.fieldCurrencyType') },
     { key: 'canGift', label: translate('catalogAdmin.fieldCanGift') },
     { key: 'canBundle', label: translate('catalogAdmin.fieldCanBundle') },
-    { key: 'clubLevel', label: translate('catalogAdmin.fieldClubLevel') },
+    { key: 'membershipLevel', label: translate('catalogAdmin.fieldMembershipLevel') },
     { key: 'discountPercent', label: translate('catalogAdmin.fieldDiscount') },
     { key: 'visible', label: translate('catalogAdmin.fieldVisible') },
   ];
@@ -553,7 +553,7 @@
         currencyTypeId,
         canGift: newOffer.canGift,
         canBundle: newOffer.canBundle,
-        clubLevel: Number(newOffer.clubLevel) || 0,
+        membershipLevel: Number(newOffer.membershipLevel) || 0,
         discountPercent: Number(newOffer.discountPercent) || 0,
         visible: newOffer.visible,
       },
@@ -580,7 +580,7 @@
       currencyTypeId: offer.currencyTypeId ?? '',
       canGift: offer.canGift,
       canBundle: offer.canBundle,
-      clubLevel: offer.clubLevel,
+      membershipLevel: offer.membershipLevel,
       discountPercent: offer.discountPercent,
       visible: offer.visible,
     };
@@ -606,7 +606,7 @@
         currencyTypeId,
         canGift: editOfferForm.canGift,
         canBundle: editOfferForm.canBundle,
-        clubLevel: Number(editOfferForm.clubLevel) || 0,
+        membershipLevel: Number(editOfferForm.membershipLevel) || 0,
         discountPercent: Number(editOfferForm.discountPercent) || 0,
         visible: editOfferForm.visible,
       },
@@ -952,7 +952,7 @@
                         fallbackIcon={Image}
                       />
                     {/if}
-                    <span class="catalog-row-id muted">#{offer.id}{offer.clubLevel > 0 ? ` - HC${offer.clubLevel}` : ''}{offer.discountPercent > 0 ? ` - -${offer.discountPercent}%` : ''}</span>
+                    <span class="catalog-row-id muted">#{offer.id}{offer.membershipLevel > 0 ? ` - HC${offer.membershipLevel}` : ''}{offer.discountPercent > 0 ? ` - -${offer.discountPercent}%` : ''}</span>
                     {#if offer.productCount === 1 && offer.singleProduct}
                       <span class="catalog-row-product">{offer.singleProduct.furnitureName || offer.singleProduct.productTypeLabel}</span>
                       <span class="op-chip" title={$t('common.quantityLabel')}>x{offer.singleProduct.quantity}</span>
@@ -1237,8 +1237,8 @@
         </select>
       </div>
       <div class="op-field">
-        <label for="new-offer-club-level">{$t('catalogAdmin.clubLevel')}</label>
-        <input autocomplete="off" spellcheck="false" id="new-offer-club-level" type="number" min="0" bind:value={newOffer.clubLevel} />
+        <label for="new-offer-club-level">{$t('catalogAdmin.membershipLevel')}</label>
+        <input autocomplete="off" spellcheck="false" id="new-offer-club-level" type="number" min="0" bind:value={newOffer.membershipLevel} />
       </div>
       <div class="op-field">
         <label for="new-offer-discount">{$t('catalogAdmin.discountPercent')}</label>
@@ -1288,8 +1288,8 @@
         </select>
       </div>
       <div class="op-field">
-        <label for={`edit-offer-club-${editOfferId}`}>{$t('catalogAdmin.clubLevel')}</label>
-        <input autocomplete="off" spellcheck="false" id={`edit-offer-club-${editOfferId}`} type="number" min="0" bind:value={editOfferForm.clubLevel} />
+        <label for={`edit-offer-club-${editOfferId}`}>{$t('catalogAdmin.membershipLevel')}</label>
+        <input autocomplete="off" spellcheck="false" id={`edit-offer-club-${editOfferId}`} type="number" min="0" bind:value={editOfferForm.membershipLevel} />
       </div>
       <div class="op-field">
         <label for={`edit-offer-discount-${editOfferId}`}>{$t('catalogAdmin.discountPercent')}</label>

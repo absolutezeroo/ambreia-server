@@ -28,14 +28,17 @@ public class ScrGetKickbackInfoMessageHandler(IGrainFactory grainFactory)
             return;
         }
 
-        ClubSubscriptionSnapshot sub = await _grainFactory
+        MembershipSnapshot sub = await _grainFactory
             .GetPlayerGrain(ctx.PlayerId)
-            .GetClubSubscriptionAsync(ct)
+            .GetMembershipAsync(ct)
             .ConfigureAwait(false);
 
         int kickbackPercent = await _grainFactory
             .GetServerConfigGrain()
-            .GetIntAsync(ClubConfig.KickbackPercentKey, ClubConfig.KickbackPercentDefault)
+            .GetIntAsync(
+                MembershipConfig.KickbackPercentKey,
+                MembershipConfig.KickbackPercentDefault
+            )
             .ConfigureAwait(false);
 
         DateTime now = DateTime.UtcNow;

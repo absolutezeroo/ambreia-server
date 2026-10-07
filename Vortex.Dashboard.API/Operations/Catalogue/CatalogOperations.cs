@@ -185,7 +185,7 @@ internal sealed class CatalogOperations(OperationRunner runner, ICatalogAdminSer
                             request.CurrencyTypeId,
                             request.CanGift,
                             request.CanBundle,
-                            request.ClubLevel,
+                            request.MembershipLevel,
                             request.DiscountPercent,
                             request.Visible
                         ),
@@ -231,7 +231,7 @@ internal sealed class CatalogOperations(OperationRunner runner, ICatalogAdminSer
                             request.CurrencyTypeId,
                             request.CanGift,
                             request.CanBundle,
-                            request.ClubLevel,
+                            request.MembershipLevel,
                             request.DiscountPercent,
                             request.Visible
                         ),

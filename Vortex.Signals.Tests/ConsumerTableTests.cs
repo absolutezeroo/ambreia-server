@@ -99,7 +99,7 @@ public sealed class ConsumerTableTests
                 SignalActions.CompleteTrade,
                 SignalActions.CreateGroup,
                 SignalActions.JoinGroup,
-                SignalActions.BuyClub,
+                SignalActions.BuyMembership,
                 SignalActions.Login,
                 SignalActions.BuyFromCatalogue,
                 SignalActions.PlaceItem,

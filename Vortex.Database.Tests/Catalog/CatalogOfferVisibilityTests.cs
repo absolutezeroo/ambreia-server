@@ -95,7 +95,7 @@ public sealed class CatalogOfferVisibilityTests
             CostCurrency = 0,
             CanGift = true,
             CanBundle = true,
-            ClubLevel = 0,
+            MembershipLevel = 0,
             Visible = visible,
         };
 

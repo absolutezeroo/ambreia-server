@@ -234,7 +234,7 @@ public sealed class PetSaddleTests
                     RoomEntityId = RoomHarness.RoomIdValue,
                     Name = "Comet",
                     Type = HorseType,
-                    Race = 0,
+                    Skin = 0,
                     Color = "FFFFFF",
                     Gender = AvatarGenderType.Male,
                     Level = 1,

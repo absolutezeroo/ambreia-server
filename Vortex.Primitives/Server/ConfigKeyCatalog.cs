@@ -206,39 +206,39 @@ public static class ConfigKeyCatalog
             "Messenger"
         ),
         new(
-            "club.gift_cycle_days",
+            "membership.gift_cycle_days",
             "31",
             ConfigValueKind.Int,
-            "Days per Habbo Club gift/payday cycle",
-            "Habbo Club"
+            "Days per Membership gift/payday cycle",
+            "Membership"
         ),
         new(
-            "club.streak_grace_days",
+            "membership.streak_grace_days",
             "7",
             ConfigValueKind.Int,
             "Grace days to keep the club streak after expiry",
-            "Habbo Club"
+            "Membership"
         ),
         new(
-            "club.kickback_percent",
+            "membership.kickback_percent",
             "10",
             ConfigValueKind.Int,
             "Percent of spend returned as club kickback",
-            "Habbo Club"
+            "Membership"
         ),
         new(
-            "club.badge_code",
+            "membership.badge_code",
             "HC1",
             ConfigValueKind.String,
             "Badge granted on first club purchase",
-            "Habbo Club"
+            "Membership"
         ),
         new(
-            "club.vip_badge_code",
+            "membership.vip_badge_code",
             "HC2",
             ConfigValueKind.String,
             "Badge granted while VIP",
-            "Habbo Club"
+            "Membership"
         ),
         // Earnings window routing. One switch per category with a live source — mirrors
         // Vortex.Players EarningsConfig / EarningsRoutingPolicy (duplicated here because
@@ -251,10 +251,10 @@ public static class ConfigKeyCatalog
             "Earnings"
         ),
         new(
-            "earnings.habbo_club.to_vault",
+            "earnings.membership.to_vault",
             "true",
             ConfigValueKind.Bool,
-            "The Habbo Club payday waits in the Earnings window until the player claims it. Off: it lands in the wallet on payday. Paydays already waiting stay claimable when this changes.",
+            "The Membership payday waits in the Earnings window until the player claims it. Off: it lands in the wallet on payday. Paydays already waiting stay claimable when this changes.",
             "Earnings"
         ),
         new(

@@ -97,15 +97,15 @@ public sealed class BadgeNotificationHandler(INotificationSink notifications)
 }
 
 /// <summary>A prize pool paid out to me.</summary>
-public sealed class PrizeNotificationHandler(INotificationSink notifications)
-    : IEventHandler<PrizeAwardedEvent>
+public sealed class LootNotificationHandler(INotificationSink notifications)
+    : IEventHandler<LootAwardedEvent>
 {
-    public async ValueTask HandleAsync(PrizeAwardedEvent e, EventContext ctx, CancellationToken ct)
+    public async ValueTask HandleAsync(LootAwardedEvent e, EventContext ctx, CancellationToken ct)
     {
         await notifications
             .NotifyAsync(
                 e.PlayerId,
-                NotificationKind.PrizeAwarded,
+                NotificationKind.LootAwarded,
                 targetId: e.ClassId,
                 data: JsonSerializer.Serialize(
                     new

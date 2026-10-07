@@ -6,8 +6,8 @@ public enum CatalogPageLayout
 {
     Default3x3,
     BadgeDisplay,
-    ClubBuy,
-    ClubGifts,
+    MembershipBuy,
+    MembershipGifts,
     Frontpage4,
     FrontpageFeatured,
     GuildCustomFurni,
@@ -42,8 +42,8 @@ public static class CatalogPageLayoutExtensions
     {
         [CatalogPageLayout.Default3x3] = "default_3x3",
         [CatalogPageLayout.BadgeDisplay] = "badge_display",
-        [CatalogPageLayout.ClubBuy] = "club_buy",
-        [CatalogPageLayout.ClubGifts] = "club_gifts",
+        [CatalogPageLayout.MembershipBuy] = "club_buy",
+        [CatalogPageLayout.MembershipGifts] = "club_gifts",
         [CatalogPageLayout.Frontpage4] = "frontpage4",
         [CatalogPageLayout.FrontpageFeatured] = "frontpage_featured",
         [CatalogPageLayout.GuildCustomFurni] = "guild_custom_furni",

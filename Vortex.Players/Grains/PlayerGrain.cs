@@ -13,8 +13,8 @@ using Vortex.Database.Context;
 using Vortex.Database.Entities.Commerce;
 using Vortex.Database.Entities.Players;
 using Vortex.Logging;
-using Vortex.Players.Club;
 using Vortex.Players.Configuration;
+using Vortex.Players.Membership;
 using Vortex.Primitives;
 using Vortex.Primitives.Commerce;
 using Vortex.Primitives.Events;
@@ -36,7 +36,7 @@ namespace Vortex.Players.Grains;
 
 internal sealed partial class PlayerGrain : Grain, IPlayerGrain
 {
-    private readonly ClubConfig _clubConfig;
+    private readonly MembershipConfig _membershipConfig;
     private readonly IDbContextFactory<VortexDbContext> _dbCtxFactory;
     private readonly IEventPublisher _events;
     private readonly IGrainFactory _grainFactory;
@@ -51,7 +51,7 @@ internal sealed partial class PlayerGrain : Grain, IPlayerGrain
         IGrainFactory grainFactory,
         IEventPublisher events,
         ILogger<PlayerGrain> logger,
-        IOptions<ClubConfig> clubConfig,
+        IOptions<MembershipConfig> membershipConfig,
         ICommerceJournal journal,
         IPermissionService permissions
     )
@@ -60,7 +60,7 @@ internal sealed partial class PlayerGrain : Grain, IPlayerGrain
         _grainFactory = grainFactory;
         _events = events;
         _logger = logger;
-        _clubConfig = clubConfig.Value;
+        _membershipConfig = membershipConfig.Value;
         _journal = journal;
         _permissions = permissions;
 
@@ -409,32 +409,32 @@ internal sealed partial class PlayerGrain : Grain, IPlayerGrain
         return seconds <= 0 ? 0 : (int)Math.Min(int.MaxValue, seconds);
     }
 
-    public Task<ClubSubscriptionSnapshot> GetClubSubscriptionAsync(CancellationToken ct)
+    public Task<MembershipSnapshot> GetMembershipAsync(CancellationToken ct)
     {
-        bool isActive = _state.ClubLevel > 0 && _state.ClubExpiresAt > DateTime.UtcNow;
-        int daysLeft = isActive ? (int)(_state.ClubExpiresAt - DateTime.UtcNow).TotalDays : 0;
+        bool isActive = _state.MembershipLevel > 0 && _state.MembershipExpiresAt > DateTime.UtcNow;
+        int daysLeft = isActive ? (int)(_state.MembershipExpiresAt - DateTime.UtcNow).TotalDays : 0;
 
         return Task.FromResult(
-            new ClubSubscriptionSnapshot
+            new MembershipSnapshot
             {
                 IsActive = isActive,
-                IsVip = isActive && _state.ClubLevel >= 2,
-                ExpiresAt = _state.ClubExpiresAt,
+                IsVip = isActive && _state.MembershipLevel >= 2,
+                ExpiresAt = _state.MembershipExpiresAt,
                 DaysLeft = daysLeft,
-                TotalMonths = _state.ClubTotalMonths,
-                GiftsAvailable = _state.ClubGiftsAvailable,
-                NextGiftAt = _state.ClubNextGiftAt,
+                TotalMonths = _state.MembershipTotalMonths,
+                GiftsAvailable = _state.MembershipGiftsAvailable,
+                NextGiftAt = _state.MembershipNextGiftAt,
                 PaydayAt = _state.KickbackPaydayAt,
                 CreditsSpentThisPeriod = _state.KickbackCreditsSpent,
                 TotalCreditsRewarded = _state.KickbackTotalRewarded,
                 TotalCreditsSpent = _state.KickbackTotalSpent,
-                PastClubDays = _state.ClubPastClubDays,
-                PastVipDays = _state.ClubPastVipDays,
+                PastMembershipDays = _state.MembershipPastMembershipDays,
+                PastVipDays = _state.MembershipPastVipDays,
             }
         );
     }
 
-    public async Task<ClubPurchaseResult> PurchaseClubAsync(
+    public async Task<MembershipPurchaseResult> PurchaseMembershipAsync(
         int months,
         bool isVip,
         int costCredits,
@@ -443,7 +443,7 @@ internal sealed partial class PlayerGrain : Grain, IPlayerGrain
     {
         if (months <= 0)
         {
-            return ClubPurchaseResult.Success;
+            return MembershipPurchaseResult.Success;
         }
 
         List<WalletDebitRequest> debitRequests =
@@ -463,7 +463,7 @@ internal sealed partial class PlayerGrain : Grain, IPlayerGrain
         await _journal
             .OpenAsync(
                 operation,
-                CommerceOperationKind.ClubPurchase,
+                CommerceOperationKind.MembershipPurchase,
                 (int)_state.PlayerId,
                 $"club months={months} vip={isVip} cost={costCredits}",
                 ct
@@ -473,7 +473,7 @@ internal sealed partial class PlayerGrain : Grain, IPlayerGrain
         // Applying the months writes subscription rows, grants badges and raises events, any of
         // which can throw. This used to sit after a bare debit, so a failure in there took the
         // player's credits and left them without the membership they paid for.
-        WalletPurchaseResult<ClubPurchaseResult> result = await _grainFactory
+        WalletPurchaseResult<MembershipPurchaseResult> result = await _grainFactory
             .GetPlayerWalletGrain(_state.PlayerId)
             .ExecutePurchaseAsync(
                 debitRequests,
@@ -490,7 +490,7 @@ internal sealed partial class PlayerGrain : Grain, IPlayerGrain
                         )
                         .ConfigureAwait(true);
 
-                    ClubPurchaseResult applied = await ApplyClubMonthsAsync(
+                    MembershipPurchaseResult applied = await ApplyMembershipMonthsAsync(
                             months,
                             isVip,
                             costCredits,
@@ -531,29 +531,29 @@ internal sealed partial class PlayerGrain : Grain, IPlayerGrain
                 )
                 .ConfigureAwait(true);
 
-            return ClubPurchaseResult.NotEnoughCredits;
+            return MembershipPurchaseResult.NotEnoughCredits;
         }
 
         return result.Reward!;
     }
 
-    public Task<ClubPurchaseResult> GrantClubMonthsAsync(
+    public Task<MembershipPurchaseResult> GrantMembershipMonthsAsync(
         int months,
         bool isVip,
         CommerceOperationId operation,
         CancellationToken ct
     ) =>
         months <= 0
-            ? Task.FromResult(ClubPurchaseResult.Success)
-            : ApplyClubMonthsAsync(months, isVip, costCredits: 0, operation, ct);
+            ? Task.FromResult(MembershipPurchaseResult.Success)
+            : ApplyMembershipMonthsAsync(months, isVip, costCredits: 0, operation, ct);
 
     /// <summary>
     /// Extends the membership and everything hanging off it (streak, gifts, badges, kickback, the
-    /// subscription row). Split out of <see cref="PurchaseClubAsync"/> so a free grant -- a mystery
+    /// subscription row). Split out of <see cref="PurchaseMembershipAsync"/> so a free grant -- a mystery
     /// box prize, a staff award -- reuses the exact same bookkeeping instead of a second, drifting
     /// copy of it. The caller is responsible for taking payment first, if any.
     /// </summary>
-    private async Task<ClubPurchaseResult> ApplyClubMonthsAsync(
+    private async Task<MembershipPurchaseResult> ApplyMembershipMonthsAsync(
         int months,
         bool isVip,
         int costCredits,
@@ -575,67 +575,70 @@ internal sealed partial class PlayerGrain : Grain, IPlayerGrain
                     .ConfigureAwait(true)
             )
             {
-                return ClubPurchaseResult.Success;
+                return MembershipPurchaseResult.Success;
             }
         }
 
         IServerConfigGrain config = this.GrainFactory.GetServerConfigGrain();
         int giftCycleDays = await config
-            .GetIntAsync(ClubConfig.GiftCycleDaysKey, ClubConfig.GiftCycleDaysDefault)
+            .GetIntAsync(MembershipConfig.GiftCycleDaysKey, MembershipConfig.GiftCycleDaysDefault)
             .ConfigureAwait(true);
         int streakGraceDays = await config
-            .GetIntAsync(ClubConfig.StreakGraceDaysKey, ClubConfig.StreakGraceDaysDefault)
+            .GetIntAsync(
+                MembershipConfig.StreakGraceDaysKey,
+                MembershipConfig.StreakGraceDaysDefault
+            )
             .ConfigureAwait(true);
 
         DateTime now = DateTime.UtcNow;
-        bool isRenewal = _state.ClubLevel > 0 && _state.ClubExpiresAt > now;
+        bool isRenewal = _state.MembershipLevel > 0 && _state.MembershipExpiresAt > now;
 
         // Streak (consecutive membership months) keeps running while active, and survives a short
         // lapse (grace window). A longer gap resets the streak so it starts over from this purchase.
         int newTotalMonths;
         if (isRenewal)
         {
-            newTotalMonths = _state.ClubTotalMonths + months;
+            newTotalMonths = _state.MembershipTotalMonths + months;
         }
         else
         {
-            bool hadPriorSub = _state.ClubExpiresAt > DateTime.MinValue;
+            bool hadPriorSub = _state.MembershipExpiresAt > DateTime.MinValue;
             double lapsedDays = hadPriorSub
-                ? (now - _state.ClubExpiresAt).TotalDays
+                ? (now - _state.MembershipExpiresAt).TotalDays
                 : double.MaxValue;
             newTotalMonths =
-                lapsedDays > streakGraceDays ? months : _state.ClubTotalMonths + months;
+                lapsedDays > streakGraceDays ? months : _state.MembershipTotalMonths + months;
         }
 
-        DateTime baseDate = isRenewal ? _state.ClubExpiresAt : now;
+        DateTime baseDate = isRenewal ? _state.MembershipExpiresAt : now;
         DateTime newExpiry = baseDate.AddMonths(months);
         int newLevel = isVip ? 2 : 1;
-        int newGiftsAvailable = _state.ClubGiftsAvailable + months;
+        int newGiftsAvailable = _state.MembershipGiftsAvailable + months;
 
         // First purchase or expired sub: gift cycle starts now + 31 days.
         // Renewal: keep existing cycle so the player doesn't lose their countdown.
         DateTime? newNextGiftAt =
-            isRenewal && _state.ClubNextGiftAt.HasValue
-                ? _state.ClubNextGiftAt
+            isRenewal && _state.MembershipNextGiftAt.HasValue
+                ? _state.MembershipNextGiftAt
                 : now.AddDays(giftCycleDays);
 
         // Lifetime membership days (never reset, VIP tracked separately) feed the club info window.
-        _state.ClubPastClubDays += months * giftCycleDays;
+        _state.MembershipPastMembershipDays += months * giftCycleDays;
         if (isVip)
         {
-            _state.ClubPastVipDays += months * giftCycleDays;
+            _state.MembershipPastVipDays += months * giftCycleDays;
         }
 
-        _state.ClubLevel = newLevel;
-        _state.ClubExpiresAt = newExpiry;
-        _state.ClubTotalMonths = newTotalMonths;
-        _state.ClubGiftsAvailable = newGiftsAvailable;
-        _state.ClubNextGiftAt = newNextGiftAt;
-        _state.ClubLastExpiredAt = null;
-        _state.ClubFirstSubscribedAt ??= now;
+        _state.MembershipLevel = newLevel;
+        _state.MembershipExpiresAt = newExpiry;
+        _state.MembershipTotalMonths = newTotalMonths;
+        _state.MembershipGiftsAvailable = newGiftsAvailable;
+        _state.MembershipNextGiftAt = newNextGiftAt;
+        _state.MembershipLastExpiredAt = null;
+        _state.MembershipFirstSubscribedAt ??= now;
 
         // Grant the membership badge(s) once active. Idempotent at the inventory layer.
-        await GrantClubBadgesAsync(isVip, ct).ConfigureAwait(true);
+        await GrantMembershipBadgesAsync(isVip, ct).ConfigureAwait(true);
 
         // Init payday on first subscription; renewals keep the existing cycle
         if (_state.KickbackPaydayAt is null)
@@ -645,10 +648,10 @@ internal sealed partial class PlayerGrain : Grain, IPlayerGrain
 
         await using VortexDbContext dbCtx = await _dbCtxFactory.CreateDbContextAsync(ct);
 
-        PlayerSubscriptionEntity? existing = await dbCtx.PlayerSubscriptions.FirstOrDefaultAsync(
+        PlayerMembershipEntity? existing = await dbCtx.PlayerMemberships.FirstOrDefaultAsync(
             x =>
                 x.PlayerEntityId == (int)_state.PlayerId
-                && x.SubscriptionType == SubscriptionType.HabboClub,
+                && x.MembershipType == MembershipType.Premium,
             ct
         );
 
@@ -659,11 +662,11 @@ internal sealed partial class PlayerGrain : Grain, IPlayerGrain
             existing.TotalMonths = newTotalMonths;
             existing.GiftsAvailable = newGiftsAvailable;
             existing.NextGiftAt = newNextGiftAt;
-            existing.PastClubDays = _state.ClubPastClubDays;
-            existing.PastVipDays = _state.ClubPastVipDays;
-            existing.FirstSubscribedAt = _state.ClubFirstSubscribedAt;
+            existing.PastMembershipDays = _state.MembershipPastMembershipDays;
+            existing.PastVipDays = _state.MembershipPastVipDays;
+            existing.FirstSubscribedAt = _state.MembershipFirstSubscribedAt;
             existing.LastExpiredAt = null;
-            existing.HcBadgeGranted = _state.ClubBadgeGranted;
+            existing.HcBadgeGranted = _state.MembershipBadgeGranted;
         }
         else
         {
@@ -671,20 +674,20 @@ internal sealed partial class PlayerGrain : Grain, IPlayerGrain
                 await dbCtx.Players.FindAsync([_state.PlayerId.Value], ct)
                 ?? throw new VortexException(VortexErrorCodeEnum.PlayerNotFound);
 
-            dbCtx.PlayerSubscriptions.Add(
-                new PlayerSubscriptionEntity
+            dbCtx.PlayerMemberships.Add(
+                new PlayerMembershipEntity
                 {
                     PlayerEntityId = _state.PlayerId,
-                    SubscriptionType = SubscriptionType.HabboClub,
+                    MembershipType = MembershipType.Premium,
                     Level = newLevel,
                     ExpiresAt = newExpiry,
                     TotalMonths = newTotalMonths,
                     GiftsAvailable = newGiftsAvailable,
                     NextGiftAt = newNextGiftAt,
-                    PastClubDays = _state.ClubPastClubDays,
-                    PastVipDays = _state.ClubPastVipDays,
-                    FirstSubscribedAt = _state.ClubFirstSubscribedAt,
-                    HcBadgeGranted = _state.ClubBadgeGranted,
+                    PastMembershipDays = _state.MembershipPastMembershipDays,
+                    PastVipDays = _state.MembershipPastVipDays,
+                    FirstSubscribedAt = _state.MembershipFirstSubscribedAt,
+                    HcBadgeGranted = _state.MembershipBadgeGranted,
                     PlayerEntity = playerEntity,
                 }
             );
@@ -713,7 +716,7 @@ internal sealed partial class PlayerGrain : Grain, IPlayerGrain
 
         await _events
             .PublishAsync(
-                new ClubPurchasedEvent(
+                new MembershipPurchasedEvent(
                     _state.PlayerId,
                     months,
                     isVip,
@@ -725,33 +728,33 @@ internal sealed partial class PlayerGrain : Grain, IPlayerGrain
             )
             .ConfigureAwait(true);
 
-        return ClubPurchaseResult.Success;
+        return MembershipPurchaseResult.Success;
     }
 
-    public async Task<bool> TryConsumeClubGiftAsync(string productCode, CancellationToken ct)
+    public async Task<bool> TryConsumeMembershipGiftAsync(string productCode, CancellationToken ct)
     {
-        if (_state.ClubGiftsAvailable <= 0)
+        if (_state.MembershipGiftsAvailable <= 0)
         {
             return false;
         }
 
-        _state.ClubGiftsAvailable--;
+        _state.MembershipGiftsAvailable--;
 
         await using VortexDbContext dbCtx = await _dbCtxFactory.CreateDbContextAsync(ct);
 
         await dbCtx
-            .PlayerSubscriptions.Where(x =>
+            .PlayerMemberships.Where(x =>
                 x.PlayerEntityId == (int)_state.PlayerId
-                && x.SubscriptionType == SubscriptionType.HabboClub
+                && x.MembershipType == MembershipType.Premium
             )
             .ExecuteUpdateAsync(
-                up => up.SetProperty(p => p.GiftsAvailable, _state.ClubGiftsAvailable),
+                up => up.SetProperty(p => p.GiftsAvailable, _state.MembershipGiftsAvailable),
                 ct
             )
             .ConfigureAwait(true);
 
         await _events
-            .PublishAsync(new ClubGiftClaimedEvent(_state.PlayerId, productCode), ct)
+            .PublishAsync(new MembershipGiftClaimedEvent(_state.PlayerId, productCode), ct)
             .ConfigureAwait(true);
 
         return true;
@@ -759,7 +762,7 @@ internal sealed partial class PlayerGrain : Grain, IPlayerGrain
 
     public async Task TrackCreditSpendAsync(int credits, CancellationToken ct)
     {
-        if (credits <= 0 || _state.ClubLevel == 0)
+        if (credits <= 0 || _state.MembershipLevel == 0)
         {
             return;
         }
@@ -943,7 +946,9 @@ internal sealed partial class PlayerGrain : Grain, IPlayerGrain
     {
         await HydrateAsync(ct);
 
-        TimeSpan maintenanceInterval = TimeSpan.FromMilliseconds(_clubConfig.MaintenanceIntervalMs);
+        TimeSpan maintenanceInterval = TimeSpan.FromMilliseconds(
+            _membershipConfig.MaintenanceIntervalMs
+        );
 
         this.RegisterGrainTimer<object?>(
             async (_, ct) => await RunMaintenanceAsync(ct),
@@ -968,7 +973,7 @@ internal sealed partial class PlayerGrain : Grain, IPlayerGrain
         {
             _logger.LogError(
                 ex,
-                "Club expiry check failed for player {PlayerId}",
+                "Membership expiry check failed for player {PlayerId}",
                 (int)_state.PlayerId
             );
         }
@@ -981,7 +986,7 @@ internal sealed partial class PlayerGrain : Grain, IPlayerGrain
         {
             _logger.LogError(
                 ex,
-                "Club gift grant failed for player {PlayerId}",
+                "Membership gift grant failed for player {PlayerId}",
                 (int)_state.PlayerId
             );
         }
@@ -992,7 +997,11 @@ internal sealed partial class PlayerGrain : Grain, IPlayerGrain
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Club payday failed for player {PlayerId}", (int)_state.PlayerId);
+            _logger.LogError(
+                ex,
+                "Membership payday failed for player {PlayerId}",
+                (int)_state.PlayerId
+            );
         }
     }
 
@@ -1004,23 +1013,23 @@ internal sealed partial class PlayerGrain : Grain, IPlayerGrain
 
     private async Task CheckAndGrantGiftTokensAsync(CancellationToken ct)
     {
-        if (_state.ClubLevel == 0 || _state.ClubExpiresAt <= DateTime.UtcNow)
+        if (_state.MembershipLevel == 0 || _state.MembershipExpiresAt <= DateTime.UtcNow)
         {
             return;
         }
 
-        if (_state.ClubNextGiftAt is null || _state.ClubNextGiftAt > DateTime.UtcNow)
+        if (_state.MembershipNextGiftAt is null || _state.MembershipNextGiftAt > DateTime.UtcNow)
         {
             return;
         }
 
         int giftCycleDays = await this
             .GrainFactory.GetServerConfigGrain()
-            .GetIntAsync(ClubConfig.GiftCycleDaysKey, ClubConfig.GiftCycleDaysDefault)
+            .GetIntAsync(MembershipConfig.GiftCycleDaysKey, MembershipConfig.GiftCycleDaysDefault)
             .ConfigureAwait(true);
 
         int tokensToGrant = 0;
-        DateTime nextGift = _state.ClubNextGiftAt.Value;
+        DateTime nextGift = _state.MembershipNextGiftAt.Value;
         DateTime now = DateTime.UtcNow;
 
         while (nextGift <= now)
@@ -1029,30 +1038,30 @@ internal sealed partial class PlayerGrain : Grain, IPlayerGrain
             nextGift = nextGift.AddDays(giftCycleDays);
         }
 
-        _state.ClubGiftsAvailable += tokensToGrant;
-        _state.ClubNextGiftAt = nextGift;
+        _state.MembershipGiftsAvailable += tokensToGrant;
+        _state.MembershipNextGiftAt = nextGift;
 
         await using VortexDbContext dbCtx = await _dbCtxFactory.CreateDbContextAsync(ct);
 
         await dbCtx
-            .PlayerSubscriptions.Where(x =>
+            .PlayerMemberships.Where(x =>
                 x.PlayerEntityId == (int)_state.PlayerId
-                && x.SubscriptionType == SubscriptionType.HabboClub
+                && x.MembershipType == MembershipType.Premium
             )
             .ExecuteUpdateAsync(
                 up =>
-                    up.SetProperty(p => p.GiftsAvailable, _state.ClubGiftsAvailable)
-                        .SetProperty(p => p.NextGiftAt, _state.ClubNextGiftAt),
+                    up.SetProperty(p => p.GiftsAvailable, _state.MembershipGiftsAvailable)
+                        .SetProperty(p => p.NextGiftAt, _state.MembershipNextGiftAt),
                 ct
             )
             .ConfigureAwait(true);
 
         await _events
             .PublishAsync(
-                new ClubGiftTokenGrantedEvent(
+                new MembershipGiftTokenGrantedEvent(
                     _state.PlayerId,
                     tokensToGrant,
-                    _state.ClubGiftsAvailable
+                    _state.MembershipGiftsAvailable
                 ),
                 ct
             )
@@ -1097,7 +1106,7 @@ internal sealed partial class PlayerGrain : Grain, IPlayerGrain
         // Staff-ness as a room sees it. Resolved here rather than per summary because the service
         // caches per account and the summary is fetched on every room entry and every look change.
         // A role change mid-session therefore does not reach an already-loaded grain — acceptable
-        // for the two things this drives (chat-flood exemption, the Builders Club guest check) and
+        // for the two things this drives (chat-flood exemption, the Builders Membership guest check) and
         // the same trade SafetyLocked above already makes.
         _state.IsModerator = (
             await _permissions.ResolveForPlayerAsync((int)_state.PlayerId, ct).ConfigureAwait(true)
@@ -1115,44 +1124,44 @@ internal sealed partial class PlayerGrain : Grain, IPlayerGrain
                     ?? string.Empty
                 : string.Empty;
 
-        PlayerSubscriptionEntity? sub = await dbCtx
-            .PlayerSubscriptions.AsNoTracking()
+        PlayerMembershipEntity? sub = await dbCtx
+            .PlayerMemberships.AsNoTracking()
             .FirstOrDefaultAsync(
                 x =>
                     x.PlayerEntityId == (int)_state.PlayerId
-                    && x.SubscriptionType == SubscriptionType.HabboClub,
+                    && x.MembershipType == MembershipType.Premium,
                 ct
             );
 
         if (sub is not null)
         {
             // Lifetime / streak bookkeeping is loaded regardless of active state.
-            _state.ClubTotalMonths = sub.TotalMonths;
-            _state.ClubPastClubDays = sub.PastClubDays;
-            _state.ClubPastVipDays = sub.PastVipDays;
-            _state.ClubFirstSubscribedAt = sub.FirstSubscribedAt;
-            _state.ClubLastExpiredAt = sub.LastExpiredAt;
-            _state.ClubBadgeGranted = sub.HcBadgeGranted;
-            _state.ClubExpiresAt = sub.ExpiresAt;
+            _state.MembershipTotalMonths = sub.TotalMonths;
+            _state.MembershipPastMembershipDays = sub.PastMembershipDays;
+            _state.MembershipPastVipDays = sub.PastVipDays;
+            _state.MembershipFirstSubscribedAt = sub.FirstSubscribedAt;
+            _state.MembershipLastExpiredAt = sub.LastExpiredAt;
+            _state.MembershipBadgeGranted = sub.HcBadgeGranted;
+            _state.MembershipExpiresAt = sub.ExpiresAt;
 
             if (sub.ExpiresAt > DateTime.UtcNow)
             {
-                _state.ClubLevel = sub.Level;
-                _state.ClubGiftsAvailable = sub.GiftsAvailable;
-                _state.ClubNextGiftAt = sub.NextGiftAt;
+                _state.MembershipLevel = sub.Level;
+                _state.MembershipGiftsAvailable = sub.GiftsAvailable;
+                _state.MembershipNextGiftAt = sub.NextGiftAt;
 
                 await CheckAndGrantGiftTokensAsync(ct);
             }
             else if (sub.Level > 0)
             {
                 // Membership lapsed while offline — surface the expiry once.
-                _state.ClubLevel = sub.Level;
+                _state.MembershipLevel = sub.Level;
                 await CheckExpirationAsync(ct);
             }
         }
 
-        PlayerKickbackEntity? kickback = await dbCtx
-            .PlayerKickbacks.AsNoTracking()
+        PlayerMembershipKickbackEntity? kickback = await dbCtx
+            .PlayerMembershipKickbacks.AsNoTracking()
             .FirstOrDefaultAsync(x => x.PlayerEntityId == (int)_state.PlayerId, ct);
 
         if (kickback is not null)
@@ -1191,7 +1200,7 @@ internal sealed partial class PlayerGrain : Grain, IPlayerGrain
         _state.LastUpdated = DateTime.UtcNow;
     }
 
-    private async Task GrantClubBadgesAsync(bool isVip, CancellationToken ct)
+    private async Task GrantMembershipBadgesAsync(bool isVip, CancellationToken ct)
     {
         try
         {
@@ -1200,17 +1209,19 @@ internal sealed partial class PlayerGrain : Grain, IPlayerGrain
             );
 
             IServerConfigGrain config = this.GrainFactory.GetServerConfigGrain();
-            string clubBadgeCode =
-                await config.GetValueAsync(ClubConfig.ClubBadgeCodeKey).ConfigureAwait(true)
-                ?? ClubConfig.ClubBadgeCodeDefault;
+            string membershipBadgeCode =
+                await config
+                    .GetValueAsync(MembershipConfig.MembershipBadgeCodeKey)
+                    .ConfigureAwait(true)
+                ?? MembershipConfig.MembershipBadgeCodeDefault;
             string vipBadgeCode =
-                await config.GetValueAsync(ClubConfig.VipBadgeCodeKey).ConfigureAwait(true)
-                ?? ClubConfig.VipBadgeCodeDefault;
+                await config.GetValueAsync(MembershipConfig.VipBadgeCodeKey).ConfigureAwait(true)
+                ?? MembershipConfig.VipBadgeCodeDefault;
 
-            if (!_state.ClubBadgeGranted)
+            if (!_state.MembershipBadgeGranted)
             {
-                await inventory.GrantBadgeAsync(clubBadgeCode, ct).ConfigureAwait(true);
-                _state.ClubBadgeGranted = true;
+                await inventory.GrantBadgeAsync(membershipBadgeCode, ct).ConfigureAwait(true);
+                _state.MembershipBadgeGranted = true;
             }
 
             if (isVip)
@@ -1230,45 +1241,45 @@ internal sealed partial class PlayerGrain : Grain, IPlayerGrain
 
     private async Task CheckExpirationAsync(CancellationToken ct)
     {
-        if (_state.ClubLevel == 0)
+        if (_state.MembershipLevel == 0)
         {
             return;
         }
 
-        if (_state.ClubExpiresAt > DateTime.UtcNow)
+        if (_state.MembershipExpiresAt > DateTime.UtcNow)
         {
             return;
         }
 
         // Already surfaced this exact expiry — avoid firing the event twice.
-        if (_state.ClubLastExpiredAt == _state.ClubExpiresAt)
+        if (_state.MembershipLastExpiredAt == _state.MembershipExpiresAt)
         {
             return;
         }
 
-        bool wasVip = _state.ClubLevel >= 2;
-        _state.ClubLastExpiredAt = _state.ClubExpiresAt;
-        _state.ClubLevel = 0;
+        bool wasVip = _state.MembershipLevel >= 2;
+        _state.MembershipLastExpiredAt = _state.MembershipExpiresAt;
+        _state.MembershipLevel = 0;
 
         await using VortexDbContext dbCtx = await _dbCtxFactory.CreateDbContextAsync(ct);
 
         await dbCtx
-            .PlayerSubscriptions.Where(x =>
+            .PlayerMemberships.Where(x =>
                 x.PlayerEntityId == (int)_state.PlayerId
-                && x.SubscriptionType == SubscriptionType.HabboClub
+                && x.MembershipType == MembershipType.Premium
             )
             .ExecuteUpdateAsync(
-                up => up.SetProperty(p => p.LastExpiredAt, _state.ClubLastExpiredAt),
+                up => up.SetProperty(p => p.LastExpiredAt, _state.MembershipLastExpiredAt),
                 ct
             )
             .ConfigureAwait(true);
 
         await _events
-            .PublishAsync(new ClubExpiredEvent(_state.PlayerId, wasVip), ct)
+            .PublishAsync(new MembershipExpiredEvent(_state.PlayerId, wasVip), ct)
             .ConfigureAwait(true);
 
         _logger.LogInformation(
-            "Club membership expired for player {PlayerId} (wasVip={WasVip})",
+            "Membership membership expired for player {PlayerId} (wasVip={WasVip})",
             (int)_state.PlayerId,
             wasVip
         );
@@ -1276,7 +1287,7 @@ internal sealed partial class PlayerGrain : Grain, IPlayerGrain
 
     private async Task CheckAndGrantPaydayAsync(CancellationToken ct)
     {
-        if (_state.ClubLevel == 0 || _state.ClubExpiresAt <= DateTime.UtcNow)
+        if (_state.MembershipLevel == 0 || _state.MembershipExpiresAt <= DateTime.UtcNow)
         {
             return;
         }
@@ -1288,10 +1299,13 @@ internal sealed partial class PlayerGrain : Grain, IPlayerGrain
 
         IServerConfigGrain config = this.GrainFactory.GetServerConfigGrain();
         int kickbackPercent = await config
-            .GetIntAsync(ClubConfig.KickbackPercentKey, ClubConfig.KickbackPercentDefault)
+            .GetIntAsync(
+                MembershipConfig.KickbackPercentKey,
+                MembershipConfig.KickbackPercentDefault
+            )
             .ConfigureAwait(true);
         int giftCycleDays = await config
-            .GetIntAsync(ClubConfig.GiftCycleDaysKey, ClubConfig.GiftCycleDaysDefault)
+            .GetIntAsync(MembershipConfig.GiftCycleDaysKey, MembershipConfig.GiftCycleDaysDefault)
             .ConfigureAwait(true);
 
         DateTime now = DateTime.UtcNow;
@@ -1300,22 +1314,22 @@ internal sealed partial class PlayerGrain : Grain, IPlayerGrain
         while (payday <= now)
         {
             int monthlyReward = (int)(_state.KickbackCreditsSpent * (kickbackPercent / 100.0));
-            int streakBonus = Math.Min(_state.ClubTotalMonths, giftCycleDays);
+            int streakBonus = Math.Min(_state.MembershipTotalMonths, giftCycleDays);
             int totalReward = monthlyReward + streakBonus;
 
             if (totalReward > 0)
             {
                 // Earned on payday, cashed from the Earnings window (or paid straight to the wallet
-                // when the operator routes Habbo Club direct). Keyed by the payday date, so a loop
+                // when the operator routes Membership direct). Keyed by the payday date, so a loop
                 // re-run after a failed UpsertKickbackAsync does not pay the same payday twice.
                 await _grainFactory
-                    .GetPlayerVaultGrain((int)this.GetPrimaryKeyLong())
-                    .EarnAsync(ClubPaydayEarning.For(payday, totalReward), ct)
+                    .GetPlayerRewardVaultGrain((int)this.GetPrimaryKeyLong())
+                    .EarnAsync(MembershipPaydayEarning.For(payday, totalReward), ct)
                     .ConfigureAwait(true);
                 _state.KickbackTotalRewarded += totalReward;
 
                 await _events
-                    .PublishAsync(new ClubPaydayEvent(_state.PlayerId, totalReward), ct)
+                    .PublishAsync(new MembershipPaydayEvent(_state.PlayerId, totalReward), ct)
                     .ConfigureAwait(true);
             }
 
@@ -1337,10 +1351,11 @@ internal sealed partial class PlayerGrain : Grain, IPlayerGrain
 
         await using VortexDbContext dbCtx = await _dbCtxFactory.CreateDbContextAsync(ct);
 
-        PlayerKickbackEntity? existing = await dbCtx.PlayerKickbacks.FirstOrDefaultAsync(
-            x => x.PlayerEntityId == (int)_state.PlayerId,
-            ct
-        );
+        PlayerMembershipKickbackEntity? existing =
+            await dbCtx.PlayerMembershipKickbacks.FirstOrDefaultAsync(
+                x => x.PlayerEntityId == (int)_state.PlayerId,
+                ct
+            );
 
         if (existing is not null)
         {
@@ -1355,8 +1370,8 @@ internal sealed partial class PlayerGrain : Grain, IPlayerGrain
                 await dbCtx.Players.FindAsync([(int)_state.PlayerId], ct)
                 ?? throw new VortexException(VortexErrorCodeEnum.PlayerNotFound);
 
-            dbCtx.PlayerKickbacks.Add(
-                new PlayerKickbackEntity
+            dbCtx.PlayerMembershipKickbacks.Add(
+                new PlayerMembershipKickbackEntity
                 {
                     PlayerEntityId = _state.PlayerId,
                     PaydayAt = _state.KickbackPaydayAt,

@@ -167,7 +167,7 @@ public sealed class RoomPersistenceLossWindowTests
     /// SQLite rather than the InMemory provider, which every other grain suite here uses. The
     /// removal is a conditional claim -- one UPDATE carrying its own guard -- and InMemory does not
     /// implement <c>ExecuteUpdate</c>: it applied nothing and said nothing, so the two removal tests
-    /// went green against a flush that had written no rows at all. A suite about a race between two
+    /// went green against a flush that had written no rows at all. A suite about a skin between two
     /// writers needs a provider that can express the write.
     /// </remarks>
     private sealed class Harness : IDisposable
@@ -260,7 +260,7 @@ public sealed class RoomPersistenceLossWindowTests
                 // and EnsureCreated leaves both NOT NULL without a default.
                 db.Database.ExecuteSqlRaw(
                     """
-                    INSERT INTO pets (id, player_id, room_id, name, type, race, color, gender,
+                    INSERT INTO pets (id, player_id, room_id, name, type, skin, color, gender,
                                       level, experience, energy, nutrition, thirst, respect,
                                       happiness, has_saddle, riding_permission, x, y, z, direction,
                                       created_at, updated_at)
@@ -347,7 +347,7 @@ public sealed class RoomPersistenceLossWindowTests
                 RoomId = (int)ROOM,
                 Name = "pet",
                 Type = 0,
-                Race = 0,
+                Skin = 0,
                 Color = "ffffff",
                 Gender = AvatarGenderType.Male,
                 Level = 1,

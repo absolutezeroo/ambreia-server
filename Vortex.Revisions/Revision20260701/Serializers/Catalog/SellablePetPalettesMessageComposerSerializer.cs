@@ -14,11 +14,11 @@ internal class SellablePetPalettesMessageComposerSerializer(int header)
     {
         packet.WriteString(message.ProductCode).WriteInteger(message.Palettes.Length);
 
-        foreach (PetPaletteEntry entry in message.Palettes)
+        foreach (PetSkinEntry entry in message.Palettes)
         {
             packet
                 .WriteInteger(entry.PetType)
-                .WriteInteger(entry.BreedIndex)
+                .WriteInteger(entry.SkinIndex)
                 .WriteInteger(entry.Color)
                 .WriteBoolean(entry.Sellable)
                 .WriteBoolean(entry.Rare);

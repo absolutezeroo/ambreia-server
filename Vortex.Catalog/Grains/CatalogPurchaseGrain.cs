@@ -69,7 +69,7 @@ public sealed partial class CatalogPurchaseGrain(
             throw new CatalogPurchaseException(CatalogPurchaseErrorType.OfferNotFound);
         }
 
-        int discountPercent = await ResolveClubPricingAsync(offer, ct).ConfigureAwait(true);
+        int discountPercent = await ResolveMembershipPricingAsync(offer, ct).ConfigureAwait(true);
 
         TryGetDebitRequests(
             offer,
@@ -240,28 +240,28 @@ public sealed partial class CatalogPurchaseGrain(
     /// for. Shared by every purchase entry point: gifting an offer is still the buyer's purchase, so
     /// a club-only offer has to stay club-only however the furniture is routed.
     /// </summary>
-    private async Task<int> ResolveClubPricingAsync(
+    private async Task<int> ResolveMembershipPricingAsync(
         CatalogOfferSnapshot offer,
         CancellationToken ct
     )
     {
         // Resolve membership once, and only when the offer either gates on club level or carries an
         // HC discount.
-        if (offer.ClubLevel <= 0 && offer.DiscountPercent <= 0)
+        if (offer.MembershipLevel <= 0 && offer.DiscountPercent <= 0)
         {
             return 0;
         }
 
-        ClubSubscriptionSnapshot sub = await _grainFactory
+        MembershipSnapshot sub = await _grainFactory
             .GetPlayerGrain(PlayerId.Parse((int)this.GetPrimaryKeyLong()))
-            .GetClubSubscriptionAsync(ct)
+            .GetMembershipAsync(ct)
             .ConfigureAwait(true);
 
-        int playerClubLevel = sub.IsActive ? (sub.IsVip ? 2 : 1) : 0;
+        int playerMembershipLevel = sub.IsActive ? (sub.IsVip ? 2 : 1) : 0;
 
-        if (playerClubLevel < offer.ClubLevel)
+        if (playerMembershipLevel < offer.MembershipLevel)
         {
-            throw new CatalogPurchaseException(CatalogPurchaseErrorType.RequiresHabboClub);
+            throw new CatalogPurchaseException(CatalogPurchaseErrorType.RequiresMembership);
         }
 
         // HC members get the offer's configured discount off the credit cost (0 = no discount).

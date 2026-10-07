@@ -115,7 +115,7 @@ internal sealed class InventoryReads(IDbContextFactory<VortexDbContext> dbContex
                             Row(
                                 "subscriptions",
                                 await db
-                                    .PlayerSubscriptions.CountAsync(s => s.DeletedAt == null, ct)
+                                    .PlayerMemberships.CountAsync(s => s.DeletedAt == null, ct)
                                     .ConfigureAwait(false),
                                 "/subscriptions"
                             ),
@@ -140,11 +140,11 @@ internal sealed class InventoryReads(IDbContextFactory<VortexDbContext> dbContex
                                 "/quests"
                             ),
                             Row(
-                                "prizePools",
+                                "lootTables",
                                 await db
-                                    .PrizePools.CountAsync(p => p.DeletedAt == null, ct)
+                                    .LootTables.CountAsync(p => p.DeletedAt == null, ct)
                                     .ConfigureAwait(false),
-                                "/prize-pools"
+                                "/loot-tables"
                             ),
                         ]
                     ),

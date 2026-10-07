@@ -13,7 +13,7 @@
 -- LIMIT OF THE METHOD, worth knowing before trusting this list: a logic that reads its state through
 -- the generic model controller names no StuffData class, so it cannot be derived this way.
 -- furniture_crackable is exactly that case, and it is deliberately absent here for a second reason:
--- a crackable also needs a prize_pool_bindings row for its hit count (furnidata does not carry it),
+-- a crackable also needs a loot_table_bindings row for its hit count (furnidata does not carry it),
 -- so flipping the format alone would leave 317 definitions as half-configured crackables. The
 -- crackables were removed in M0; those definitions stay on the legacy format and the default logic.
 --

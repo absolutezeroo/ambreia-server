@@ -201,19 +201,19 @@ public static class Facts
     );
 
     /// <summary>A club gift's product code.</summary>
-    public static readonly FactKey ClubGift = new(
+    public static readonly FactKey MembershipGift = new(
         "club_gift",
         FactKind.Text,
         "rewardTracks.fact_club_gift",
-        "Club gift"
+        "Membership gift"
     );
 
     /// <summary>A vault income category.</summary>
-    public static readonly FactKey VaultCategory = new(
+    public static readonly FactKey RewardVaultCategory = new(
         "vault_category",
         FactKind.Text,
         "rewardTracks.fact_vault_category",
-        "Vault category"
+        "RewardVault category"
     );
 
     /// <summary>A pet's species.</summary>
@@ -408,8 +408,8 @@ public static class Facts
         Price,
         Quantity,
         Campaign,
-        ClubGift,
-        VaultCategory,
+        MembershipGift,
+        RewardVaultCategory,
         PetType,
         GivenName,
         Effect,

@@ -60,8 +60,8 @@ internal sealed class CatalogPurchaseHarness
     /// <summary>What the flow told the journal. Enough to answer "did it journal at all".</summary>
     public Commerce.NullCommerceJournal Journal { get; } = new();
 
-    public ClubSubscriptionSnapshot Club { get; set; } =
-        new ClubSubscriptionSnapshot { IsActive = false, IsVip = false };
+    public MembershipSnapshot Membership { get; set; } =
+        new MembershipSnapshot { IsActive = false, IsVip = false };
 
     public bool GrantThrows { get; set; }
 
@@ -158,7 +158,7 @@ internal sealed class CatalogPurchaseHarness
         IPlayerGrain player = FakeProxy.Create<IPlayerGrain>(call =>
             call.Method.Name switch
             {
-                nameof(IPlayerGrain.GetClubSubscriptionAsync) => Task.FromResult(Club),
+                nameof(IPlayerGrain.GetMembershipAsync) => Task.FromResult(Membership),
                 nameof(IPlayerGrain.TrackCreditSpendAsync) => TrackAsync((int)call.Args![0]!),
                 _ => null,
             }
@@ -282,7 +282,7 @@ internal static class CatalogOffers
     public static CatalogOfferSnapshot New(
         int offerId,
         int costCredits,
-        int clubLevel = 0,
+        int membershipLevel = 0,
         int discountPercent = 0,
         bool canGift = true,
         int costSilver = 0,
@@ -301,7 +301,7 @@ internal static class CatalogOffers
             CostSilver = costSilver,
             CanGift = canGift,
             CanBundle = false,
-            ClubLevel = clubLevel,
+            MembershipLevel = membershipLevel,
             Visible = true,
             ProductIds = [],
             Products = [],

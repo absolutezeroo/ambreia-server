@@ -37,7 +37,7 @@ public sealed class PetInfoWireTests
                 RoomId = 25_267_807,
                 Name = "filou",
                 Type = 4,
-                Race = 1,
+                Skin = 1,
                 Color = "E4FEFF",
                 Gender = AvatarGenderType.Male,
                 Level = 8,

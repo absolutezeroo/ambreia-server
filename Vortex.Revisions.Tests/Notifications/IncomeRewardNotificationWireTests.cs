@@ -2,8 +2,8 @@ using System;
 using System.Linq;
 using FluentAssertions;
 using Microsoft.Extensions.Options;
-using Vortex.Primitives.Vault.Enums;
-using Vortex.Protocol.Messages.Outgoing.Vault;
+using Vortex.Primitives.RewardVault.Enums;
+using Vortex.Protocol.Messages.Outgoing.RewardVault;
 using Vortex.Revisions.Configuration;
 using Xunit;
 using Rev = Vortex.Revisions.Revision20260701.Revision20260701;
@@ -19,11 +19,11 @@ public sealed class IncomeRewardNotificationWireTests
     private static readonly Rev Revision = new(Options.Create(new ProtocolLimitsConfig()));
 
     [Theory]
-    [InlineData(VaultRewardCategoryType.Tutorial, "00")]
-    [InlineData(VaultRewardCategoryType.LevelProgression, "05")]
-    [InlineData(VaultRewardCategoryType.SnowStorm, "0a")]
+    [InlineData(RewardVaultCategoryType.Tutorial, "00")]
+    [InlineData(RewardVaultCategoryType.LevelProgression, "05")]
+    [InlineData(RewardVaultCategoryType.SnowStorm, "0a")]
     public void Serializer_WritesTheCategoryAsASingleByte(
-        VaultRewardCategoryType category,
+        RewardVaultCategoryType category,
         string expectedBody
     )
     {

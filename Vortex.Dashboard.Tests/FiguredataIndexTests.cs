@@ -77,7 +77,7 @@ public sealed class FiguredataIndexTests
     [InlineData(291, "sh")]
     // Its type has no palette at all -- the render-only parts nobody dresses in.
     [InlineData(1, "bd")]
-    // Club-only, unselectable and black: palette 9 offers nothing worth drawing in.
+    // Membership-only, unselectable and black: palette 9 offers nothing worth drawing in.
     [InlineData(1012, "ha")]
     public void A_set_with_no_colour_to_draw_it_in_names_none(int id, string type) =>
         Read(WithPalette).Single(s => s.Id == id && s.Type == type).Colour.Should().BeNull();
@@ -96,12 +96,12 @@ public sealed class FiguredataIndexTests
     }
 
     [Fact]
-    public void Club_is_anything_but_zero()
+    public void Membership_is_anything_but_zero()
     {
         ImmutableArray<FigureSet> sets = Read(TwoTypes);
 
-        sets.Single(s => s.Id == 3016).Club.Should().BeTrue();
-        sets.Single(s => s.Id == 290 && s.Type == "sh").Club.Should().BeFalse();
+        sets.Single(s => s.Id == 3016).Membership.Should().BeTrue();
+        sets.Single(s => s.Id == 290 && s.Type == "sh").Membership.Should().BeFalse();
     }
 
     [Fact]

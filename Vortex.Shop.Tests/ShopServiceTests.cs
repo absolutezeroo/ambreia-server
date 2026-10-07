@@ -324,10 +324,10 @@ public sealed class ShopServiceTests
     }
 
     [Fact]
-    public async Task Club_months_are_granted_once_across_a_replayed_notification()
+    public async Task Membership_months_are_granted_once_across_a_replayed_notification()
     {
         await using ShopTestHarness harness = new();
-        await harness.SeedProductAsync("hc-3", ShopProductKind.ClubVip, 3, 1450);
+        await harness.SeedProductAsync("hc-3", ShopProductKind.MembershipVip, 3, 1450);
 
         ShopOrder order = await OpenAsync(harness, "hc-3");
         ShopWebhookRequest notification = ShopTestHarness.Notify(order.Id, 1450);
@@ -335,9 +335,9 @@ public sealed class ShopServiceTests
         await harness.Service.HandleWebhookAsync(notification, CancellationToken.None);
         await harness.Service.HandleWebhookAsync(notification, CancellationToken.None);
 
-        harness.Club.Calls.Should().Be(1);
-        harness.Club.Months.Should().Be(3);
-        harness.Club.Vip.Should().BeTrue();
+        harness.Membership.Calls.Should().Be(1);
+        harness.Membership.Months.Should().Be(3);
+        harness.Membership.Vip.Should().BeTrue();
     }
 
     [Fact]

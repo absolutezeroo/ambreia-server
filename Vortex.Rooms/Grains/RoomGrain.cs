@@ -78,7 +78,7 @@ public sealed partial class RoomGrain : Grain, IRoomGrain
 
     /// <summary>
     /// Where a room's value-moving operations are recorded — today, the prize a consumed furni owes
-    /// (<see cref="GrantConsumedPrizeAsync"/>).
+    /// (<see cref="GrantConsumedLootAsync"/>).
     /// </summary>
     internal readonly ICommerceJournal _commerceJournal;
 

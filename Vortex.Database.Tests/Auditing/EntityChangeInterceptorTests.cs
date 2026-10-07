@@ -38,7 +38,7 @@ public sealed class EntityChangeInterceptorTests
             CurrencyTypeId = null,
             CanGift = true,
             CanBundle = true,
-            ClubLevel = 0,
+            MembershipLevel = 0,
             DiscountPercent = 0,
             Visible = true,
             Page = null!,

@@ -45,7 +45,7 @@ public sealed class PetAgeTests
             RoomId = 10,
             Name = "Rex",
             Type = 0,
-            Race = 0,
+            Skin = 0,
             Color = "FFFFFF",
             Gender = AvatarGenderType.Male,
             Level = 1,

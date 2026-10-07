@@ -10,7 +10,7 @@ internal class HabboClubOffersMessageComposerSerializer(int header)
     protected override void Serialize(IServerPacket packet, HabboClubOffersMessageComposer message)
     {
         packet.WriteInteger(message.Offers.Count);
-        foreach (ClubOffer offer in message.Offers)
+        foreach (MembershipOffer offer in message.Offers)
         {
             SerializeOffer(packet, offer);
         }
@@ -18,7 +18,7 @@ internal class HabboClubOffersMessageComposerSerializer(int header)
         packet.WriteInteger((int)message.Source);
     }
 
-    internal static void SerializeOffer(IServerPacket packet, ClubOffer offer)
+    internal static void SerializeOffer(IServerPacket packet, MembershipOffer offer)
     {
         packet.WriteInteger(offer.OfferId);
         packet.WriteString(offer.ProductCode);

@@ -6,12 +6,12 @@ using Vortex.Primitives.Rooms.Enums;
 namespace Vortex.Inventory.Fulfillment.Strategies;
 
 /// <summary>
-/// A pet. The product's extra param carries the type; the purchase's carries the name, race and
+/// A pet. The product's extra param carries the type; the purchase's carries the name, skin and
 /// colour the buyer chose in the dialog, newline-separated.
 /// </summary>
 /// <remarks>
 /// Every field defaults rather than refusing: a pet named nothing is named "Pet", an unparseable
-/// race is zero, a missing colour is white. The dialog is the only thing that fills these in, so a
+/// skin is zero, a missing colour is white. The dialog is the only thing that fills these in, so a
 /// shape this does not recognise is a client that sent something unexpected — and a plain pet is a
 /// better answer to that than a purchase that fails after the buyer named it.
 /// </remarks>
@@ -25,7 +25,7 @@ internal sealed class PetFulfillmentStrategy : IFulfillmentStrategy
 
         string[] parts = request.PurchaseExtraParam.Split('\n');
         string petName = parts.Length > 0 ? parts[0].Trim() : "Pet";
-        int race = parts.Length > 1 && int.TryParse(parts[1], out int r) ? r : 0;
+        int skin = parts.Length > 1 && int.TryParse(parts[1], out int r) ? r : 0;
         string color = parts.Length > 2 ? parts[2].Trim() : "ffffff";
 
         if (string.IsNullOrWhiteSpace(petName))
@@ -38,7 +38,7 @@ internal sealed class PetFulfillmentStrategy : IFulfillmentStrategy
             {
                 Name = petName,
                 Type = petType,
-                Race = race,
+                Skin = skin,
                 Color = color,
                 Gender = AvatarGenderType.Male,
             }

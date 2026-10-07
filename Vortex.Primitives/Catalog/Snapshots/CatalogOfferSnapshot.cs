@@ -37,7 +37,7 @@ public sealed record CatalogOfferSnapshot
     public required bool CanBundle { get; init; }
 
     [Id(10)]
-    public required int ClubLevel { get; init; }
+    public required int MembershipLevel { get; init; }
 
     [Id(11)]
     public required bool Visible { get; init; }

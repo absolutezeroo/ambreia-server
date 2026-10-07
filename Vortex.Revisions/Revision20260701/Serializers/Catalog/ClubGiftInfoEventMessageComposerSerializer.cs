@@ -26,7 +26,7 @@ internal class ClubGiftInfoEventMessageComposerSerializer(int header)
 
         packet.WriteInteger(message.GiftData.Count);
 
-        foreach (ClubGiftOfferData gift in message.GiftData)
+        foreach (MembershipGiftOfferData gift in message.GiftData)
         {
             packet
                 .WriteInteger(gift.OfferId)

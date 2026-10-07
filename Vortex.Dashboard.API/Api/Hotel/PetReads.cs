@@ -13,7 +13,7 @@ namespace Vortex.Dashboard.API.Api.Hotel;
 internal sealed class PetReads(IDbContextFactory<VortexDbContext> dbContextFactory)
     : DashboardReads(dbContextFactory)
 {
-    /// <summary>Read-only overview of the pets domain: population, type/race distribution and
+    /// <summary>Read-only overview of the pets domain: population, type/skin distribution and
     /// average level. There is no dedicated pet audit category today, so this reads straight off
     /// <c>PetEntity</c> rather than an audit trail.</summary>
     public Task<PetStats> PetsStatsAsync(NameValueCollection query, CancellationToken ct) =>
@@ -28,7 +28,7 @@ internal sealed class PetReads(IDbContextFactory<VortexDbContext> dbContextFacto
                     .Select(p => new PetStatsRow(
                         p.CreatedAt,
                         p.Type,
-                        p.Race,
+                        p.Skin,
                         p.Level,
                         p.OwnerPlayerEntityId
                     ))
@@ -43,8 +43,8 @@ internal sealed class PetReads(IDbContextFactory<VortexDbContext> dbContextFacto
                     .OrderByDescending(g => g.Count)
                     .ToList();
 
-                List<PetRaceCount> byRace = rows.GroupBy(r => new { r.Type, r.Race })
-                    .Select(g => new PetRaceCount(g.Key.Type, g.Key.Race, g.Count()))
+                List<PetSkinCount> bySkin = rows.GroupBy(r => new { r.Type, r.Skin })
+                    .Select(g => new PetSkinCount(g.Key.Type, g.Key.Skin, g.Count()))
                     .OrderByDescending(g => g.Count)
                     .Take(20)
                     .ToList();
@@ -103,7 +103,7 @@ internal sealed class PetReads(IDbContextFactory<VortexDbContext> dbContextFacto
                     new ReportWindow(since, until, granularity),
                     new PetTotals(totalPets, avgLevel),
                     byType,
-                    byRace,
+                    bySkin,
                     growth,
                     topOwnersWithNames
                 );
@@ -114,7 +114,7 @@ internal sealed class PetReads(IDbContextFactory<VortexDbContext> dbContextFacto
     private sealed record PetStatsRow(
         DateTime CreatedAt,
         int Type,
-        int Race,
+        int Skin,
         int Level,
         int OwnerPlayerEntityId
     );

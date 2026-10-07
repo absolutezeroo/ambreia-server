@@ -297,7 +297,7 @@ internal sealed class PlayerAchievementGrain(
     )
     {
         IInventoryGrain inventory = _grainFactory.GetInventoryGrain((long)PlayerId);
-        IPlayerVaultGrain vault = _grainFactory.GetPlayerVaultGrain((long)PlayerId);
+        IPlayerRewardVaultGrain vault = _grainFactory.GetPlayerRewardVaultGrain((long)PlayerId);
 
         string badgeHeldBefore =
             oldCompleted >= 1 ? definition.Levels[oldCompleted - 1].BadgeCode : string.Empty;

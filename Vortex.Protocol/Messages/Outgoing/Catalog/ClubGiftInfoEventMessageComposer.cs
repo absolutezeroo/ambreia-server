@@ -19,5 +19,5 @@ public sealed record ClubGiftInfoEventMessageComposer : IComposer
     public required IReadOnlyList<CatalogOfferSnapshot> Offers { get; init; }
 
     [Id(3)]
-    public required IReadOnlyList<ClubGiftOfferData> GiftData { get; init; }
+    public required IReadOnlyList<MembershipGiftOfferData> GiftData { get; init; }
 }

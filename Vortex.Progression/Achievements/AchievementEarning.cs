@@ -1,6 +1,6 @@
 using Vortex.Primitives.Players.Wallet;
-using Vortex.Primitives.Vault;
-using Vortex.Primitives.Vault.Enums;
+using Vortex.Primitives.RewardVault;
+using Vortex.Primitives.RewardVault.Enums;
 
 namespace Vortex.Progression.Achievements;
 
@@ -11,7 +11,7 @@ public static class AchievementEarning
     public static IncomeEarning For(int achievementId, AchievementLevelUp levelUp) =>
         new()
         {
-            Category = VaultRewardCategoryType.Achievements,
+            Category = RewardVaultCategoryType.Achievements,
             Currency = CurrencyRewardRules.KindFor(levelUp.RewardType),
             Amount = levelUp.RewardAmount,
             SourceKey = $"achievement:{achievementId}:level:{levelUp.Level}",

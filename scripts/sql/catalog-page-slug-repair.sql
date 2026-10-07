@@ -50,8 +50,8 @@ UPDATE catalog_pages SET localization = 'executive' WHERE id = 304;   -- was 'ex
 UPDATE catalog_pages SET localization = 'hc_executive' WHERE id = 354;   -- was 'executive', 'HC Executive'
 UPDATE catalog_pages SET localization = 'flooring_2' WHERE id = 612;   -- was 'floors', 'Flooring'
 UPDATE catalog_pages SET localization = 'floors' WHERE id = 837;   -- was 'floors', 'Floors'
-UPDATE catalog_pages SET localization = 'habbo_club' WHERE id = 1686;   -- was 'habbo_club', 'Habbo Club'
-UPDATE catalog_pages SET localization = 'habbo_club_2' WHERE id = 9429;   -- was 'habbo_club', 'Habbo Club'
+UPDATE catalog_pages SET localization = 'habbo_club' WHERE id = 1686;   -- was 'habbo_club', 'Membership'
+UPDATE catalog_pages SET localization = 'habbo_club_2' WHERE id = 9429;   -- was 'habbo_club', 'Membership'
 UPDATE catalog_pages SET localization = 'holo_s' WHERE id = 611;   -- was 'holos', "Holo's"
 UPDATE catalog_pages SET localization = 'holos' WHERE id = 957;   -- was 'holos', 'Holos'
 UPDATE catalog_pages SET localization = 'lighting' WHERE id = 16;   -- was 'lighting', 'Lighting'

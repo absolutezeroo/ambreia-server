@@ -53,7 +53,7 @@ export const foldSearch = (value: string | null | undefined): string =>
 //
 // No group may exceed ~8 entries. "Content" once held 14 -- quests, songs, fishing, collectibles,
 // gamedata and the furni definitions in one bucket -- which is not a group, it is the pile of
-// everything that did not fit elsewhere. Progression and Prizes were cut out of it; Social (2
+// everything that did not fit elsewhere. Progression and Loot were cut out of it; Social (2
 // entries) folded into Players, because a two-item group is a header you have to open to learn it
 // was not what you wanted.
 //
@@ -77,7 +77,7 @@ export const NAV = [
   { path: '/incidents', labelKey: 'nav.incidents', shortKey: 'nav.incidentsShort', group: 'Live', keywords: 'incident erreur error exception crash alerte alert signal panne', caps: ROUTE_PERMISSIONS.incidents, load: () => import('../pages/IncidentsPage.svelte') },
 
   { path: '/investigation', labelKey: 'nav.investigation', shortKey: 'nav.investigationShort', group: 'Players', keywords: 'joueur player compte account profil profile fiche inventaire inventory ip email mot de passe password sanction ban', caps: ROUTE_PERMISSIONS.investigation, load: () => import('../pages/InvestigationPage.svelte'), writes: true },
-  { path: '/subscriptions', labelKey: 'nav.subscriptions', shortKey: 'nav.subscriptionsShort', group: 'Players', keywords: 'hc habbo club abonnement subscription vip premium expiration', caps: ROUTE_PERMISSIONS.economy, load: () => import('../pages/SubscriptionsPage.svelte') },
+  { path: '/subscriptions', labelKey: 'nav.subscriptions', shortKey: 'nav.subscriptionsShort', group: 'Players', keywords: 'hc habbo club abonnement subscription vip premium expiration', caps: ROUTE_PERMISSIONS.economy, load: () => import('../pages/MembershipsPage.svelte') },
   { path: '/social', labelKey: 'nav.social', shortKey: 'nav.socialShort', group: 'Players', keywords: 'ami friend amitie relation message prive forum thread discussion', caps: ROUTE_PERMISSIONS.social, load: () => import('../pages/SocialPage.svelte'), writes: true },
   { path: '/groups-stats', labelKey: 'nav.groupsStats', shortKey: 'nav.groupsStatsShort', group: 'Players', keywords: 'guilde guild groupe group forum badge membre population', caps: ROUTE_PERMISSIONS.groupsStats, load: () => import('../pages/GroupsStatsPage.svelte') },
   { path: '/guilds', labelKey: 'nav.guilds', shortKey: 'nav.guildsShort', group: 'Players', keywords: 'guilde guild groupe group forum post thread message membre member demande request ban banni supprimer delete moderation', caps: ROUTE_PERMISSIONS.guilds, load: () => import('../pages/GuildsPage.svelte'), writes: true },
@@ -116,7 +116,7 @@ export const NAV = [
   // would only mean granting it to every role before anyone could open the page.
   { path: '/player-rewards', labelKey: 'nav.playerRewards', shortKey: 'nav.playerRewardsShort', group: 'Progression', keywords: 'badge effet effect recompense reward accorder grant donner give retirer', caps: ROUTE_PERMISSIONS.playerRewards, load: () => import('../pages/PlayerRewardsPage.svelte'), writes: true },
 
-  { path: '/prize-pools', labelKey: 'nav.prizePools', shortKey: 'nav.prizePoolsShort', group: 'Prizes', keywords: 'pool lot prize gain chance odds probabilite tirage roll rattachement', caps: ROUTE_PERMISSIONS.prizePools, load: () => import('../pages/PrizePoolsPage.svelte'), writes: true },
+  { path: '/loot-tables', labelKey: 'nav.lootTables', shortKey: 'nav.lootTablesShort', group: 'Loot', keywords: 'pool lot prize gain chance odds probabilite tirage roll rattachement', caps: ROUTE_PERMISSIONS.lootTables, load: () => import('../pages/LootTablesPage.svelte'), writes: true },
 
   { path: '/furniture-definitions', labelKey: 'nav.furnitureDefinitions', shortKey: 'nav.furnitureDefinitionsShort', group: 'Content', keywords: 'mobilier furni furniture meuble definition sprite logic logique physique classname interaction', caps: ROUTE_PERMISSIONS.furnitureDefinitions, load: () => import('../pages/FurnitureDefinitionsPage.svelte'), writes: true },
   { path: '/gift-wrappings', labelKey: 'nav.giftWrappings', shortKey: 'nav.giftWrappingsShort', group: 'Content', keywords: 'cadeau gift emballage wrapping paquet parcel boite box ruban ribbon present', caps: ROUTE_PERMISSIONS.giftWrappings, load: () => import('../pages/GiftWrappingsPage.svelte'), writes: true },

@@ -10,10 +10,10 @@ using Vortex.Protocol.Messages.Outgoing.Catalog;
 
 namespace Vortex.PacketHandlers.Catalog;
 
-public class GetSellablePetPalettesMessageHandler(IPetPaletteProvider petPaletteProvider)
+public class GetSellablePetPalettesMessageHandler(IPetSkinProvider petSkinProvider)
     : IMessageHandler<GetSellablePetPalettesMessage>
 {
-    private readonly IPetPaletteProvider _petPaletteProvider = petPaletteProvider;
+    private readonly IPetSkinProvider _petSkinProvider = petSkinProvider;
 
     public async ValueTask HandleAsync(
         GetSellablePetPalettesMessage message,
@@ -23,8 +23,8 @@ public class GetSellablePetPalettesMessageHandler(IPetPaletteProvider petPalette
     {
         int petType = ExtractPetTypeFromLocalizationId(message.LocalizationId);
 
-        ImmutableArray<PetPaletteEntry> palettes =
-            petType >= 0 ? _petPaletteProvider.GetPalettesForType(petType).ToImmutableArray() : [];
+        ImmutableArray<PetSkinEntry> palettes =
+            petType >= 0 ? _petSkinProvider.GetSkinsForType(petType).ToImmutableArray() : [];
 
         await ctx.SendComposerAsync(
                 new SellablePetPalettesMessageComposer

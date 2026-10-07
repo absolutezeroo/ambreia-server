@@ -30,7 +30,7 @@ internal class PetInfoMessageComposerSerializer(int header)
             .WriteInteger(pet.OwnerId.Value)
             .WriteInteger(message.Age)
             .WriteString(message.OwnerName)
-            .WriteInteger(pet.Race)
+            .WriteInteger(pet.Skin)
             .WriteBoolean(message.HasFreeSaddle)
             .WriteBoolean(message.IsRiding)
             .WriteInteger(message.SkillThresholds.Length);

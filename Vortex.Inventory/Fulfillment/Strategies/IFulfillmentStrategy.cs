@@ -43,7 +43,7 @@ internal interface IFulfillmentStrategy
 /// own count — ignoring the second collapsed every bundle to one of each item.
 /// </param>
 /// <param name="PurchaseExtraParam">
-/// What the buyer typed, not what the catalogue holds: a pet's name, race and colour. Newline-separated, and the strategy that needs it knows its own shape.
+/// What the buyer typed, not what the catalogue holds: a pet's name, skin and colour. Newline-separated, and the strategy that needs it knows its own shape.
 /// </param>
 /// <param name="GuildIdentity">
 /// Resolved by the caller because resolving it is a grain call, and this stays pure.

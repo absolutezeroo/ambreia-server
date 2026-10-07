@@ -17,11 +17,11 @@ namespace Vortex.PacketHandlers.Catalog;
 
 public class GetClubGiftInfoMessageHandler(
     IGrainFactory grainFactory,
-    ICatalogClubGiftProvider clubGiftProvider
+    IMembershipGiftProvider membershipGiftProvider
 ) : IMessageHandler<GetClubGiftInfoMessage>
 {
     private readonly IGrainFactory _grainFactory = grainFactory;
-    private readonly ICatalogClubGiftProvider _clubGiftProvider = clubGiftProvider;
+    private readonly IMembershipGiftProvider _membershipGiftProvider = membershipGiftProvider;
 
     public async ValueTask HandleAsync(
         GetClubGiftInfoMessage message,
@@ -34,12 +34,12 @@ public class GetClubGiftInfoMessageHandler(
             return;
         }
 
-        ClubSubscriptionSnapshot sub = await _grainFactory
+        MembershipSnapshot sub = await _grainFactory
             .GetPlayerGrain(ctx.PlayerId)
-            .GetClubSubscriptionAsync(ct)
+            .GetMembershipAsync(ct)
             .ConfigureAwait(false);
 
-        IReadOnlyList<CatalogOfferSnapshot> offers = _clubGiftProvider.GetAll();
+        IReadOnlyList<CatalogOfferSnapshot> offers = _membershipGiftProvider.GetAll();
 
         DateTime now = DateTime.UtcNow;
         int daysUntilNextGift =
@@ -47,11 +47,11 @@ public class GetClubGiftInfoMessageHandler(
                 ? (int)Math.Ceiling((sub.NextGiftAt.Value - now).TotalDays)
                 : 0;
 
-        List<ClubGiftOfferData> giftData = offers
+        List<MembershipGiftOfferData> giftData = offers
             .Select(o =>
             {
-                bool isVipGift = o.ClubLevel > 1;
-                return new ClubGiftOfferData
+                bool isVipGift = o.MembershipLevel > 1;
+                return new MembershipGiftOfferData
                 {
                     OfferId = o.Id,
                     IsVip = isVipGift,

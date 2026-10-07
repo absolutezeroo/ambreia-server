@@ -12,7 +12,7 @@ namespace Vortex.Players.Grains;
 
 internal sealed partial class PlayerGrain
 {
-    // The avatar editor exposes a fixed grid of slots (1..10, Club/VIP-gated client-side). Reject
+    // The avatar editor exposes a fixed grid of slots (1..10, Membership/VIP-gated client-side). Reject
     // anything outside a small guard band so a malformed or hostile client can't grow the table
     // without bound.
     private const int MaxWardrobeSlotId = 30;

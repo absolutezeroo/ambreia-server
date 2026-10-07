@@ -13,7 +13,7 @@ public sealed record PetCreateRequest
     public required int Type { get; init; }
 
     [Id(2)]
-    public required int Race { get; init; }
+    public required int Skin { get; init; }
 
     [Id(3)]
     public required string Color { get; init; }

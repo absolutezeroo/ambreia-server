@@ -11,8 +11,8 @@
 
 # Reference caches loaded once at startup: ReloadAsync reloads the calling process only.
 reference_data_providers:
-  - CatalogClubGiftProvider
-  - CatalogClubOfferProvider
+  - MembershipGiftProvider
+  - MembershipOfferProvider
   - GiftWrappingProvider
   - CatalogSnapshotProvider`1
   - CurrencyTypeProvider
@@ -22,7 +22,7 @@ reference_data_providers:
   - NavigatorProvider
   - PetCommandProvider
   - PetLevelProvider
-  - PetPaletteProvider
+  - PetSkinProvider
   - PetVocalProvider
   - AccountLevelProvider
   - RoomModelProvider

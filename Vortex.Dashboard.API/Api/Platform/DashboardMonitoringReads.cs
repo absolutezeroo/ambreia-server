@@ -38,7 +38,7 @@ internal sealed class DashboardMonitoringReads(
     ILiveStatsAggregator liveStats,
     IIncidentDetectionService incidentDetection,
     IInfrastructureHealthService infrastructureHealth,
-    ClubMetrics clubMetrics,
+    MembershipMetrics membershipMetrics,
     ClientPerformanceMetrics clientPerformanceMetrics,
     IVortexMetrics metrics,
     RoomPerformanceAggregator roomPerformance
@@ -52,7 +52,7 @@ internal sealed class DashboardMonitoringReads(
     private readonly ILiveStatsAggregator _liveStats = liveStats;
     private readonly IIncidentDetectionService _incidentDetection = incidentDetection;
     private readonly IInfrastructureHealthService _infrastructureHealth = infrastructureHealth;
-    private readonly ClubMetrics _clubMetrics = clubMetrics;
+    private readonly MembershipMetrics _membershipMetrics = membershipMetrics;
     private readonly ClientPerformanceMetrics _clientPerformanceMetrics = clientPerformanceMetrics;
     private readonly IVortexMetrics _metrics = metrics;
     private readonly RoomPerformanceAggregator _roomPerformance = roomPerformance;
@@ -138,7 +138,7 @@ internal sealed class DashboardMonitoringReads(
                 GC.GetTotalMemory(false) / 1024 / 1024,
                 _sessionGateway.GetActiveSessionCount(),
                 activeRooms.Length,
-                _clubMetrics.ActiveSubscribers,
+                _membershipMetrics.ActiveSubscribers,
                 incidents,
                 new OverviewLive(
                     Math.Round(live.PacketsPerSecond, 2),

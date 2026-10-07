@@ -15,7 +15,7 @@ public sealed record CatalogOfferRow(
     string? CurrencyName,
     bool CanGift,
     bool CanBundle,
-    int ClubLevel,
+    int MembershipLevel,
     int DiscountPercent,
     bool Visible,
     int ProductCount,

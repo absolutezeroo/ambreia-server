@@ -182,7 +182,7 @@ public sealed class FurnitureAdminServiceTests
                 CostCurrency = 0,
                 CanGift = true,
                 CanBundle = true,
-                ClubLevel = 0,
+                MembershipLevel = 0,
                 Visible = true,
             };
             db.CatalogOffers.Add(offer);

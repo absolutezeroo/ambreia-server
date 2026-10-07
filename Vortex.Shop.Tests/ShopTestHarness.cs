@@ -82,23 +82,23 @@ internal sealed class ShopTestHarness : IAsyncDisposable
 
     /// <summary>What the club grant was called with. <c>IPlayerGrain</c> has far too many members to
     /// hand-write, so only the one the shop reaches is answered.</summary>
-    public ClubRecorder Club { get; } = new();
+    public MembershipRecorder Membership { get; } = new();
 
     private IPlayerGrain PlayerGrain =>
         FakeProxy.Create<IPlayerGrain>(call =>
         {
-            if (call.Method.Name != nameof(IPlayerGrain.GrantClubMonthsAsync))
+            if (call.Method.Name != nameof(IPlayerGrain.GrantMembershipMonthsAsync))
             {
                 return null;
             }
 
-            Club.Record(
+            Membership.Record(
                 (int)call.Args![0]!,
                 (bool)call.Args[1]!,
                 (CommerceOperationId)call.Args[2]!
             );
 
-            return Task.FromResult(ClubPurchaseResult.Success);
+            return Task.FromResult(MembershipPurchaseResult.Success);
         });
 
     public async Task<ShopProductEntity> SeedProductAsync(
@@ -350,7 +350,7 @@ internal sealed class RecordingWallet : IPlayerWalletGrain
 }
 
 /// <summary>What the club grain was asked for, and how many times it actually applied it.</summary>
-internal sealed class ClubRecorder
+internal sealed class MembershipRecorder
 {
     private readonly HashSet<Guid> _applied = [];
 

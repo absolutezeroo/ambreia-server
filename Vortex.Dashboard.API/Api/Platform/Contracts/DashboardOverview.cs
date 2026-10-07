@@ -16,7 +16,7 @@ public sealed record DashboardOverview(
     long ManagedMemoryMb,
     int ActiveSessions,
     int ActiveRooms,
-    int ActiveClubSubscribers,
+    int ActiveMembershipSubscribers,
     IncidentDetectionSnapshot Incidents,
     OverviewLive Live,
     IReadOnlyList<AuditCategoryCount> AuditLastHourByCategory,

@@ -75,7 +75,7 @@ public sealed class CatalogDecorationExtraParamTests
                 CostCurrency = 0,
                 CanGift = true,
                 CanBundle = true,
-                ClubLevel = 0,
+                MembershipLevel = 0,
                 Visible = true,
             };
             seed.CatalogOffers.Add(offer);

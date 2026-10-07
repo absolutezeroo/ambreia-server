@@ -57,7 +57,7 @@ public sealed class QuestSignalConsumer(IGrainFactory grainFactory, ICommerceJou
         [SignalActions.CompleteTrade] = new(QuestTypes.TradeCompleted),
         [SignalActions.CreateGroup] = new(QuestTypes.CreateGroup),
         [SignalActions.JoinGroup] = new(QuestTypes.JoinGroup),
-        [SignalActions.BuyClub] = new(QuestTypes.BuyClub),
+        [SignalActions.BuyMembership] = new(QuestTypes.BuyMembership),
         // Once per calendar day.
         [SignalActions.Login] = new(QuestTypes.Login, Daily: true),
         // The only two that carry a target, and in both the value is the signal's own target: the

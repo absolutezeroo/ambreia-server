@@ -155,5 +155,5 @@ public class PlayerEntity : VortexEntity
     public List<RoomChatlogEntity>? RoomChatlogs { get; set; }
 
     [InverseProperty("PlayerEntity")]
-    public List<PlayerSubscriptionEntity>? PlayerSubscriptions { get; set; }
+    public List<PlayerMembershipEntity>? PlayerMemberships { get; set; }
 }

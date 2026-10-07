@@ -9,7 +9,7 @@ namespace Vortex.Fishing;
 /// <summary>
 /// Admin-editable config keys and defaults for the fishing system, served live from
 /// <see cref="IServerConfigGrain"/> — the same pattern as <c>FreezeConfig</c> / <c>GroupConfig</c> /
-/// <c>ClubConfig</c>. Each key's default is the fallback when no admin override is stored, and
+/// <c>MembershipConfig</c>. Each key's default is the fallback when no admin override is stored, and
 /// <see cref="ResolveAsync"/> reads the whole set in one round trip.
 /// </summary>
 /// <remarks>

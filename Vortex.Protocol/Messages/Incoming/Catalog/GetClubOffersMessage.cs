@@ -5,5 +5,5 @@ namespace Vortex.Protocol.Messages.Incoming.Catalog;
 
 public record GetClubOffersMessage : IMessageEvent
 {
-    public ClubOfferRequestSourceType RequestSource { get; init; }
+    public MembershipOfferRequestSourceType RequestSource { get; init; }
 }

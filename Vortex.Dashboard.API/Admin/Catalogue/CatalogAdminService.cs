@@ -244,7 +244,7 @@ internal sealed class CatalogAdminService(
             CurrencyTypeId = spec.CurrencyTypeId,
             CanGift = spec.CanGift,
             CanBundle = spec.CanBundle,
-            ClubLevel = spec.ClubLevel,
+            MembershipLevel = spec.MembershipLevel,
             DiscountPercent = spec.DiscountPercent,
             Visible = spec.Visible,
         };
@@ -286,7 +286,7 @@ internal sealed class CatalogAdminService(
         entity.CurrencyTypeId = spec.CurrencyTypeId;
         entity.CanGift = spec.CanGift;
         entity.CanBundle = spec.CanBundle;
-        entity.ClubLevel = spec.ClubLevel;
+        entity.MembershipLevel = spec.MembershipLevel;
         entity.DiscountPercent = spec.DiscountPercent;
         entity.Visible = spec.Visible;
 

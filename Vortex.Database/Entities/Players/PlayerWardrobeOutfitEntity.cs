@@ -6,7 +6,7 @@ namespace Vortex.Database.Entities.Players;
 
 /// <summary>
 /// One saved wardrobe outfit slot for a player (the avatar-editor wardrobe). The client shows a
-/// fixed grid of slots gated by Club/VIP, but the server just persists whatever figure/gender the
+/// fixed grid of slots gated by Membership/VIP, but the server just persists whatever figure/gender the
 /// client saves per slot and echoes them back on <c>GetWardrobe</c>.
 /// </summary>
 [Table("player_wardrobe_outfits")]

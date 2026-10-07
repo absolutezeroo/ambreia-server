@@ -102,7 +102,7 @@ public enum CommerceOperationKind
     MarketplaceRedeem = 6,
 
     // 7 was RentableSpaceRent, removed in M0 bis with rentable spaces. Persisted: never reuse it.
-    ClubPurchase = 8,
+    MembershipPurchase = 8,
 
     // 9 was the LTD raffle entry, removed in M0. Persisted: never reuse it.
 
@@ -118,7 +118,7 @@ public enum CommerceOperationKind
     /// <summary>A prize handed out for a furniture that was destroyed to get it — a crackable, a
     /// mystery trophy, a mystery box. The consumption is the pivot and it has already happened, so
     /// these operations are opened past it: they complete or they are owed.</summary>
-    PrizeGrant = 14,
+    LootGrant = 14,
 
     /// <summary>What a completed quest pays. The row is marked complete first, so the reward is
     /// owed from before the payout runs.</summary>
@@ -145,13 +145,13 @@ public enum CommerceOperationKind
     /// Cashing one Earnings row. The id is derived from the row, so a claim retried after a crash
     /// between the credit and the claimed mark finds its receipt and only marks.
     /// </summary>
-    VaultIncome = 22,
+    RewardVault = 22,
 
     /// <summary>
     /// An earning paid straight to the wallet — a currency the Earnings window cannot hold, or a
     /// category the operator routed direct. Derived from the player; the step is the source key.
     /// </summary>
-    VaultIncomeDirect = 23,
+    RewardVaultDirect = 23,
 }
 
 /// <summary>

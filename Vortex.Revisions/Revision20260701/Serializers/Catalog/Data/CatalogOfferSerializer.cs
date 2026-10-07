@@ -27,14 +27,14 @@ internal class CatalogOfferSerializer
         }
 
         packet
-            .WriteInteger(offer.ClubLevel)
+            .WriteInteger(offer.MembershipLevel)
             .WriteBoolean(offer.CanBundle)
             // Two fields we send constant because nothing here can fill them honestly yet.
             // The boolean is real and discriminating -- a 2026-09-18 capture of the official
             // server has it false on catalogue offers and true on every club-gift offer -- but it
             // is not exposed on the client's Offer class, so its meaning is still unknown and
             // guessing one would be worse than the constant. The preview image is a per-offer
-            // string the official server fills (the Builders' Club page sends
+            // string the official server fills (the Builders' Membership page sends
             // "c_images/mobile_external_include/bc_1.png"); we have no column for it, and adding
             // one no admin page can edit would only move the gap.
             .WriteBoolean(false)
@@ -58,6 +58,6 @@ internal class CatalogOfferSerializer
             CatalogProductSerializer.Serialize(packet, product);
         }
 
-        packet.WriteInteger(offer.ClubLevel).WriteBoolean(offer.CanBundle);
+        packet.WriteInteger(offer.MembershipLevel).WriteBoolean(offer.CanBundle);
     }
 }

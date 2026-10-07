@@ -27,8 +27,8 @@ public class PetEntity : VortexEntity
     [Column("type")]
     public required int Type { get; set; }
 
-    [Column("race")]
-    public required int Race { get; set; }
+    [Column("skin")]
+    public required int Skin { get; set; }
 
     [Column("color")]
     [MaxLength(12)]

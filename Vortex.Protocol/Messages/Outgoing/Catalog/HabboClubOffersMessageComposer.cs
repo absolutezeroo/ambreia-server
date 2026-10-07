@@ -10,8 +10,8 @@ namespace Vortex.Protocol.Messages.Outgoing.Catalog;
 public sealed record HabboClubOffersMessageComposer : IComposer
 {
     [Id(0)]
-    public required IReadOnlyList<ClubOffer> Offers { get; init; }
+    public required IReadOnlyList<MembershipOffer> Offers { get; init; }
 
     [Id(1)]
-    public required ClubOfferRequestSourceType Source { get; init; }
+    public required MembershipOfferRequestSourceType Source { get; init; }
 }
