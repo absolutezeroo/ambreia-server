@@ -27,9 +27,10 @@ $ErrorActionPreference = "Stop"
 
 $repoRoot = Split-Path -Parent $PSScriptRoot
 
-foreach ($name in $Source, $Target) {
-    if ($name -notmatch '^[A-Za-z0-9_]+$') { throw "Database name '$name' is not a plain identifier." }
-}
+# The source is spliced into SQL: plain identifier only. The target is only the mysql client's
+# database argument, so a hyphenated name (ambreia-database) is fine there.
+if ($Source -notmatch '^[A-Za-z0-9_]+$') { throw "Database name '$Source' is not a plain identifier." }
+if ($Target -notmatch '^[A-Za-z0-9_-]+$') { throw "Database name '$Target' is not a plain identifier." }
 if ($Source -eq $Target) { throw "Source and target are the same database." }
 
 $mysql = $env:VORTEX_MYSQL
