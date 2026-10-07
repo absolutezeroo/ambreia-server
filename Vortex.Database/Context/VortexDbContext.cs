@@ -5,6 +5,7 @@ using Vortex.Database.Entities.Furniture;
 using Vortex.Database.Entities.Permissions;
 using Vortex.Database.Entities.Players;
 using Vortex.Database.Entities.Room;
+using Vortex.Database.Entities.Rpg;
 using Vortex.Database.Entities.Security;
 using Vortex.Database.Entities.Server;
 using Vortex.Database.Entities.World;
@@ -51,4 +52,12 @@ public class VortexDbContext(DbContextOptions<VortexDbContext> options)
     public DbSet<ZoneEntity> Zones { get; init; } = null!;
 
     public DbSet<ZoneVersionEntity> ZoneVersions { get; init; } = null!;
+
+    public DbSet<RpgContentEntity> RpgContent { get; init; } = null!;
+
+    public DbSet<RpgContentPackEntity> RpgContentPacks { get; init; } = null!;
+
+    public DbSet<RpgContentMigrationEntity> RpgContentMigrations { get; init; } = null!;
+
+    public DbSet<RpgContentTextEntity> RpgContentTexts { get; init; } = null!;
 }

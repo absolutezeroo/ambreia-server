@@ -467,6 +467,80 @@ namespace Vortex.Database.Migrations
 
             migrationBuilder
                 .CreateTable(
+                    name: "rpg_content_packs",
+                    columns: table => new
+                    {
+                        id = table
+                            .Column<int>(type: "int", nullable: false)
+                            .Annotation(
+                                "MySql:ValueGenerationStrategy",
+                                MySqlValueGenerationStrategy.IdentityColumn
+                            ),
+                        account_id = table.Column<int>(type: "int", nullable: false),
+                        added = table.Column<int>(type: "int", nullable: false),
+                        changed = table.Column<int>(type: "int", nullable: false),
+                        removed = table.Column<int>(type: "int", nullable: false),
+                        created_at = table
+                            .Column<DateTime>(type: "datetime(6)", nullable: false)
+                            .Annotation(
+                                "MySql:ValueGenerationStrategy",
+                                MySqlValueGenerationStrategy.IdentityColumn
+                            ),
+                        updated_at = table
+                            .Column<DateTime>(type: "datetime(6)", nullable: false)
+                            .Annotation(
+                                "MySql:ValueGenerationStrategy",
+                                MySqlValueGenerationStrategy.ComputedColumn
+                            ),
+                        deleted_at = table.Column<DateTime>(type: "datetime(6)", nullable: true),
+                    },
+                    constraints: table =>
+                    {
+                        table.PrimaryKey("PK_rpg_content_packs", x => x.id);
+                    }
+                )
+                .Annotation("MySql:CharSet", "utf8mb4");
+
+            migrationBuilder
+                .CreateTable(
+                    name: "rpg_content_texts",
+                    columns: table => new
+                    {
+                        id = table
+                            .Column<int>(type: "int", nullable: false)
+                            .Annotation(
+                                "MySql:ValueGenerationStrategy",
+                                MySqlValueGenerationStrategy.IdentityColumn
+                            ),
+                        language = table
+                            .Column<string>(type: "varchar(8)", maxLength: 8, nullable: false)
+                            .Annotation("MySql:CharSet", "utf8mb4"),
+                        body = table
+                            .Column<string>(type: "longtext", maxLength: 512, nullable: false)
+                            .Annotation("MySql:CharSet", "utf8mb4"),
+                        created_at = table
+                            .Column<DateTime>(type: "datetime(6)", nullable: false)
+                            .Annotation(
+                                "MySql:ValueGenerationStrategy",
+                                MySqlValueGenerationStrategy.IdentityColumn
+                            ),
+                        updated_at = table
+                            .Column<DateTime>(type: "datetime(6)", nullable: false)
+                            .Annotation(
+                                "MySql:ValueGenerationStrategy",
+                                MySqlValueGenerationStrategy.ComputedColumn
+                            ),
+                        deleted_at = table.Column<DateTime>(type: "datetime(6)", nullable: true),
+                    },
+                    constraints: table =>
+                    {
+                        table.PrimaryKey("PK_rpg_content_texts", x => x.id);
+                    }
+                )
+                .Annotation("MySql:CharSet", "utf8mb4");
+
+            migrationBuilder
+                .CreateTable(
                     name: "server_config",
                     columns: table => new
                     {
@@ -737,6 +811,105 @@ namespace Vortex.Database.Migrations
                             name: "FK_role_permissions_roles_role_id",
                             column: x => x.role_id,
                             principalTable: "roles",
+                            principalColumn: "id",
+                            onDelete: ReferentialAction.Cascade
+                        );
+                    }
+                )
+                .Annotation("MySql:CharSet", "utf8mb4");
+
+            migrationBuilder
+                .CreateTable(
+                    name: "rpg_content",
+                    columns: table => new
+                    {
+                        id = table
+                            .Column<int>(type: "int", nullable: false)
+                            .Annotation(
+                                "MySql:ValueGenerationStrategy",
+                                MySqlValueGenerationStrategy.IdentityColumn
+                            ),
+                        content_id = table
+                            .Column<string>(type: "varchar(64)", maxLength: 64, nullable: false)
+                            .Annotation("MySql:CharSet", "utf8mb4"),
+                        kind = table
+                            .Column<string>(type: "varchar(32)", maxLength: 32, nullable: false)
+                            .Annotation("MySql:CharSet", "utf8mb4"),
+                        document = table
+                            .Column<string>(type: "longtext", maxLength: 512, nullable: false)
+                            .Annotation("MySql:CharSet", "utf8mb4"),
+                        hash = table
+                            .Column<string>(type: "char(64)", maxLength: 512, nullable: false)
+                            .Annotation("MySql:CharSet", "utf8mb4"),
+                        pack_id = table.Column<int>(type: "int", nullable: false),
+                        created_at = table
+                            .Column<DateTime>(type: "datetime(6)", nullable: false)
+                            .Annotation(
+                                "MySql:ValueGenerationStrategy",
+                                MySqlValueGenerationStrategy.IdentityColumn
+                            ),
+                        updated_at = table
+                            .Column<DateTime>(type: "datetime(6)", nullable: false)
+                            .Annotation(
+                                "MySql:ValueGenerationStrategy",
+                                MySqlValueGenerationStrategy.ComputedColumn
+                            ),
+                        deleted_at = table.Column<DateTime>(type: "datetime(6)", nullable: true),
+                    },
+                    constraints: table =>
+                    {
+                        table.PrimaryKey("PK_rpg_content", x => x.id);
+                        table.ForeignKey(
+                            name: "FK_rpg_content_rpg_content_packs_pack_id",
+                            column: x => x.pack_id,
+                            principalTable: "rpg_content_packs",
+                            principalColumn: "id",
+                            onDelete: ReferentialAction.Cascade
+                        );
+                    }
+                )
+                .Annotation("MySql:CharSet", "utf8mb4");
+
+            migrationBuilder
+                .CreateTable(
+                    name: "rpg_content_migrations",
+                    columns: table => new
+                    {
+                        id = table
+                            .Column<int>(type: "int", nullable: false)
+                            .Annotation(
+                                "MySql:ValueGenerationStrategy",
+                                MySqlValueGenerationStrategy.IdentityColumn
+                            ),
+                        from_content_id = table
+                            .Column<string>(type: "varchar(64)", maxLength: 64, nullable: false)
+                            .Annotation("MySql:CharSet", "utf8mb4"),
+                        action = table.Column<int>(type: "int", nullable: false, defaultValue: 0),
+                        to_content_id = table
+                            .Column<string>(type: "varchar(64)", maxLength: 64, nullable: true)
+                            .Annotation("MySql:CharSet", "utf8mb4"),
+                        pack_id = table.Column<int>(type: "int", nullable: false),
+                        created_at = table
+                            .Column<DateTime>(type: "datetime(6)", nullable: false)
+                            .Annotation(
+                                "MySql:ValueGenerationStrategy",
+                                MySqlValueGenerationStrategy.IdentityColumn
+                            ),
+                        updated_at = table
+                            .Column<DateTime>(type: "datetime(6)", nullable: false)
+                            .Annotation(
+                                "MySql:ValueGenerationStrategy",
+                                MySqlValueGenerationStrategy.ComputedColumn
+                            ),
+                        deleted_at = table.Column<DateTime>(type: "datetime(6)", nullable: true),
+                    },
+                    constraints: table =>
+                    {
+                        table.PrimaryKey("PK_rpg_content_migrations", x => x.id);
+                        table.ForeignKey(
+                            name: "FK_rpg_content_migrations_rpg_content_packs_pack_id",
+                            column: x => x.pack_id,
+                            principalTable: "rpg_content_packs",
                             principalColumn: "id",
                             onDelete: ReferentialAction.Cascade
                         );
@@ -1377,6 +1550,32 @@ namespace Vortex.Database.Migrations
             );
 
             migrationBuilder.CreateIndex(
+                name: "IX_rpg_content_content_id",
+                table: "rpg_content",
+                column: "content_id",
+                unique: true
+            );
+
+            migrationBuilder.CreateIndex(
+                name: "IX_rpg_content_pack_id",
+                table: "rpg_content",
+                column: "pack_id"
+            );
+
+            migrationBuilder.CreateIndex(
+                name: "IX_rpg_content_migrations_pack_id",
+                table: "rpg_content_migrations",
+                column: "pack_id"
+            );
+
+            migrationBuilder.CreateIndex(
+                name: "IX_rpg_content_texts_language",
+                table: "rpg_content_texts",
+                column: "language",
+                unique: true
+            );
+
+            migrationBuilder.CreateIndex(
                 name: "IX_security_tickets_player_id",
                 table: "security_tickets",
                 column: "player_id",
@@ -1451,6 +1650,12 @@ namespace Vortex.Database.Migrations
 
             migrationBuilder.DropTable(name: "room_rights");
 
+            migrationBuilder.DropTable(name: "rpg_content");
+
+            migrationBuilder.DropTable(name: "rpg_content_migrations");
+
+            migrationBuilder.DropTable(name: "rpg_content_texts");
+
             migrationBuilder.DropTable(name: "security_tickets");
 
             migrationBuilder.DropTable(name: "server_config");
@@ -1464,6 +1669,8 @@ namespace Vortex.Database.Migrations
             migrationBuilder.DropTable(name: "roles");
 
             migrationBuilder.DropTable(name: "rooms");
+
+            migrationBuilder.DropTable(name: "rpg_content_packs");
 
             migrationBuilder.DropTable(name: "players");
 

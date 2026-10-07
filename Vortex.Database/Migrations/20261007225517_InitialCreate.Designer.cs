@@ -12,7 +12,7 @@ using Vortex.Database.Context;
 namespace Vortex.Database.Migrations
 {
     [DbContext(typeof(VortexDbContext))]
-    [Migration("20261007154949_InitialCreate")]
+    [Migration("20261007225517_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -1297,6 +1297,220 @@ namespace Vortex.Database.Migrations
                     b.ToTable("room_rights");
                 });
 
+            modelBuilder.Entity("Vortex.Database.Entities.Rpg.RpgContentEntity", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasColumnName("id");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("ContentId")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("varchar(64)")
+                        .HasColumnName("content_id");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime(6)")
+                        .HasColumnName("created_at");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<DateTime>("CreatedAt"));
+
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("datetime(6)")
+                        .HasColumnName("deleted_at");
+
+                    b.Property<string>("Document")
+                        .IsRequired()
+                        .HasMaxLength(512)
+                        .HasColumnType("longtext")
+                        .HasColumnName("document");
+
+                    b.Property<string>("Hash")
+                        .IsRequired()
+                        .HasMaxLength(512)
+                        .HasColumnType("char(64)")
+                        .HasColumnName("hash");
+
+                    b.Property<string>("Kind")
+                        .IsRequired()
+                        .HasMaxLength(32)
+                        .HasColumnType("varchar(32)")
+                        .HasColumnName("kind");
+
+                    b.Property<int>("PackId")
+                        .HasColumnType("int")
+                        .HasColumnName("pack_id");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("datetime(6)")
+                        .HasColumnName("updated_at");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlComputedColumn(b.Property<DateTime>("UpdatedAt"));
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ContentId")
+                        .IsUnique();
+
+                    b.HasIndex("PackId");
+
+                    b.ToTable("rpg_content");
+                });
+
+            modelBuilder.Entity("Vortex.Database.Entities.Rpg.RpgContentMigrationEntity", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasColumnName("id");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("Action")
+                        .HasColumnType("int")
+                        .HasDefaultValue(0)
+                        .HasColumnName("action");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime(6)")
+                        .HasColumnName("created_at");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<DateTime>("CreatedAt"));
+
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("datetime(6)")
+                        .HasColumnName("deleted_at");
+
+                    b.Property<string>("FromContentId")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("varchar(64)")
+                        .HasColumnName("from_content_id");
+
+                    b.Property<int>("PackId")
+                        .HasColumnType("int")
+                        .HasColumnName("pack_id");
+
+                    b.Property<string>("ToContentId")
+                        .HasMaxLength(64)
+                        .HasColumnType("varchar(64)")
+                        .HasColumnName("to_content_id");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("datetime(6)")
+                        .HasColumnName("updated_at");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlComputedColumn(b.Property<DateTime>("UpdatedAt"));
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("PackId");
+
+                    b.ToTable("rpg_content_migrations");
+                });
+
+            modelBuilder.Entity("Vortex.Database.Entities.Rpg.RpgContentPackEntity", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasColumnName("id");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("AccountId")
+                        .HasColumnType("int")
+                        .HasColumnName("account_id");
+
+                    b.Property<int>("Added")
+                        .HasColumnType("int")
+                        .HasColumnName("added");
+
+                    b.Property<int>("Changed")
+                        .HasColumnType("int")
+                        .HasColumnName("changed");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime(6)")
+                        .HasColumnName("created_at");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<DateTime>("CreatedAt"));
+
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("datetime(6)")
+                        .HasColumnName("deleted_at");
+
+                    b.Property<int>("Removed")
+                        .HasColumnType("int")
+                        .HasColumnName("removed");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("datetime(6)")
+                        .HasColumnName("updated_at");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlComputedColumn(b.Property<DateTime>("UpdatedAt"));
+
+                    b.HasKey("Id");
+
+                    b.ToTable("rpg_content_packs");
+                });
+
+            modelBuilder.Entity("Vortex.Database.Entities.Rpg.RpgContentTextEntity", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasColumnName("id");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Body")
+                        .IsRequired()
+                        .HasMaxLength(512)
+                        .HasColumnType("longtext")
+                        .HasColumnName("body");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime(6)")
+                        .HasColumnName("created_at");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<DateTime>("CreatedAt"));
+
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("datetime(6)")
+                        .HasColumnName("deleted_at");
+
+                    b.Property<string>("Language")
+                        .IsRequired()
+                        .HasMaxLength(8)
+                        .HasColumnType("varchar(8)")
+                        .HasColumnName("language");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("datetime(6)")
+                        .HasColumnName("updated_at");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlComputedColumn(b.Property<DateTime>("UpdatedAt"));
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Language")
+                        .IsUnique();
+
+                    b.ToTable("rpg_content_texts");
+                });
+
             modelBuilder.Entity("Vortex.Database.Entities.Security.SecurityTicketEntity", b =>
                 {
                     b.Property<int>("Id")
@@ -1659,6 +1873,28 @@ namespace Vortex.Database.Migrations
                     b.Navigation("PlayerEntity");
 
                     b.Navigation("RoomEntity");
+                });
+
+            modelBuilder.Entity("Vortex.Database.Entities.Rpg.RpgContentEntity", b =>
+                {
+                    b.HasOne("Vortex.Database.Entities.Rpg.RpgContentPackEntity", "Pack")
+                        .WithMany()
+                        .HasForeignKey("PackId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Pack");
+                });
+
+            modelBuilder.Entity("Vortex.Database.Entities.Rpg.RpgContentMigrationEntity", b =>
+                {
+                    b.HasOne("Vortex.Database.Entities.Rpg.RpgContentPackEntity", "Pack")
+                        .WithMany()
+                        .HasForeignKey("PackId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Pack");
                 });
 
             modelBuilder.Entity("Vortex.Database.Entities.Security.SecurityTicketEntity", b =>
