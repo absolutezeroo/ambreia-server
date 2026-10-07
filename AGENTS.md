@@ -34,6 +34,8 @@ Architecture map: `docs/architecture.md` (read it when a task crosses projects).
 | A contract two layers share (snapshot, id, interface) | `Vortex.Primitives` — never a reference upward | `Orleans/Snapshots/Players/PlayerSummarySnapshot.cs` |
 | A table | an entity in `Vortex.Database/Entities` + regenerated `InitialCreate` | `Entities/Room/RoomEntity.cs` |
 | A web route | `Vortex.WebApi/Hosting/WebApiEndpoints.cs` + `Services/` | `/api/ssotoken` |
+| RPG content (a class, an item…) | a JSON file in `content/<kind>/`, its texts in `content/texts/fr.txt`; pushed with `driver.mjs content` | `content/item/rusted_sword.json` |
+| A new kind of content | an `IContentKind` in `Vortex.Rpg/Content/Kinds` + its record in `Definitions/`, declared in `RpgModule`; `UPDATE_CONTENT_SCHEMAS=1` for its schema | `Kinds/ItemKind.cs` |
 | An RPG system (character, combat, quests…) | its `Vortex.Rpg.*` project, Platform layer (spec §3.4, §4); add the project to `PLATFORM` in `check-architecture-walls.mjs` | none yet — ask before creating a project |
 | Host wiring, console commands | `Vortex.Main` | `Program.cs` |
 

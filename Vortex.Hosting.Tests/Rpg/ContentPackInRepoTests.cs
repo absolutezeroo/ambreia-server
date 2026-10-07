@@ -55,7 +55,7 @@ public sealed class ContentPackInRepoTests
             File.ReadAllText(migrations),
             Directory
                 .EnumerateFiles(Path.Combine(root, "texts"), "*.txt")
-                .ToDictionary(Path.GetFileNameWithoutExtension, File.ReadAllText)
+                .ToDictionary(f => Path.GetFileNameWithoutExtension(f), File.ReadAllText)
         );
     }
 }

@@ -67,6 +67,7 @@ node .claude/skills/run-vortex-emulator/driver.mjs smoke
 | `travel` | publishes `proof_a` and `proof_b`, then walks them on the socket: a closed door refuses the step until `UseFurniture` opens it, a sign speaks, a named area and its `EnterZone` trigger speak and open a gate, a passage forwards to `proof_b` and the player lands on the passage's entry |
 | `testmode` | the editor's test route: a ticket whose sign-in lands on `proof_b` (6,6); run `travel` first |
 | `dungeon` | publishes `proof_crypt` (type `Dungeon`), opens its room and expects a `RoomForward` to the player's own copy (id from 1 000 000 000), then enters the copy |
+| `content [dir]` | pushes the RPG content pack (`content/`, or a copy at `dir` relative to the repo) through `scripts/content/push.mjs` as the throwaway account, made owner on the target database. Prints every finding; exit 1 when the pack is refused. A second push of the same pack answers 0 added, 0 changed. By hand: `VORTEX_CONTENT_PASSWORD=… node scripts/content/push.mjs --email <owner>` |
 | `cleanup` | deletes the throwaway account and its players |
 
 State (pid file, console log) lives in `%TEMP%\vortex-run\`, never in the repo.

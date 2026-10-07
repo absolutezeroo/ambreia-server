@@ -8,7 +8,7 @@
 // Exit code 1 when the pack was refused or the server could not be reached.
 
 import { readFileSync, readdirSync, existsSync } from 'node:fs';
-import { join, relative, sep, dirname, basename } from 'node:path';
+import { join, relative, resolve, sep, dirname, basename } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const REPO = join(dirname(fileURLToPath(import.meta.url)), '..', '..');
@@ -68,7 +68,7 @@ const password = process.env[passwordEnv];
 if (!email) fail('No account: pass --email or set VORTEX_CONTENT_EMAIL.');
 if (!password) fail(`No password: set the environment variable ${passwordEnv}.`);
 
-const pack = readPack(join(REPO, option('dir', 'content')));
+const pack = readPack(resolve(REPO, option('dir', 'content')));
 console.log(`Pack: ${pack.files.length} file(s), ${Object.keys(pack.texts).length} language(s).`);
 
 let res;
@@ -88,15 +88,21 @@ let result;
 try {
   result = JSON.parse(text);
 } catch {
-  fail(`HTTP ${res.status}: ${text}`);
+  result = { imported: false, findings: [] };
+  console.error(`HTTP ${res.status}: ${text}`);
 }
 
 for (const f of result.findings ?? []) {
   console.log(`[${f.severity}] ${f.code} ${f.file ?? '-'} ${f.contentId ?? '-'} : ${f.message}`);
 }
 
-if (!result.imported) fail(`Refused (HTTP ${res.status}): nothing was written.`);
-
-console.log(
-  `Imported: version ${result.packVersion}, ${result.added} added, ${result.changed} changed, ${result.removed} removed.`,
-);
+// exitCode, not exit(): exiting while fetch still closes its socket aborts Node on Windows
+// (libuv UV_HANDLE_CLOSING assertion), and the exit code is lost.
+if (result.imported) {
+  console.log(
+    `Imported: version ${result.packVersion}, ${result.added} added, ${result.changed} changed, ${result.removed} removed.`,
+  );
+} else {
+  console.error(`Refused (HTTP ${res.status}): nothing was written.`);
+  process.exitCode = 1;
+}

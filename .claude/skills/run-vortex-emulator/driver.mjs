@@ -873,6 +873,23 @@ async function cmdSmoke() {
   log('\nSmoke OK.');
 }
 
+// The RPG content pack through scripts/content/push.mjs, as the throwaway account (made owner on the
+// target database, like `zone`). Its exit code is the import's: 1 when the pack is refused.
+async function cmdContent(dir = 'content') {
+  await webSession();
+  sql(`INSERT INTO player_account_roles (account_id, role_id)
+       SELECT a.id, r.id FROM player_accounts a, roles r
+       WHERE a.email='${PLAYER.email}' AND r.\`key\`='owner'
+         AND NOT EXISTS (SELECT 1 FROM player_account_roles x WHERE x.account_id=a.id AND x.role_id=r.id);`);
+
+  const out = spawnSync(
+    process.execPath,
+    [path.join(REPO, 'scripts', 'content', 'push.mjs'), '--base', `http://127.0.0.1:${WEBAPI}`, '--email', PLAYER.email, '--dir', dir],
+    { stdio: 'inherit', env: { ...process.env, VORTEX_CONTENT_PASSWORD: PLAYER.password } },
+  );
+  if (out.status !== 0) process.exit(out.status ?? 1);
+}
+
 // ---------------------------------------------------------------- dispatch
 
 const [cmd, ...args] = process.argv.slice(2);
@@ -890,6 +907,7 @@ const table = {
   travel: cmdTravel,
   testmode: cmdTestMode,
   dungeon: cmdDungeon,
+  content: () => cmdContent(args[0]),
   cleanup: cmdCleanup,
   smoke: cmdSmoke,
 };
@@ -911,6 +929,7 @@ if (!cmd || !table[cmd]) {
   travel    two proof zones: named area bubble, passage A -> B, arrival on the passage's entry
   testmode  the editor's test route: a ticket that signs in to proof_b on (6,6)
   dungeon   a Dungeon zone: its room forwards to the player's own copy, which is entered
+  content [dir]  push the RPG content pack (default content/) through scripts/content/push.mjs
   cleanup   delete the throwaway account and its players`);
   process.exit(cmd ? 1 : 0);
 }

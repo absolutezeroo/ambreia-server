@@ -8,6 +8,9 @@ single project, the code and `.claude/rules/` are enough.
 - Flow 1 — sign-in (web API → SSO → zone)
 - Flow 2 — entering a zone
 - Flow 3 — walking (the room tick)
+- Flow 4 — publishing a zone (map editor)
+- Flow 5 — a zone at run time
+- Flow 6 — RPG content
 - Persistence
 - Grains and their state
 - Plugins and the web API
@@ -96,6 +99,23 @@ and visit log it uses; the copy is released when its room deactivates. Proof: `d
 The map reads zone overrides through `RoomMapModule.CanWalkOn/CanSitOn/CanLayOn` (doors, decor
 collision). The editor's test mode: `POST /api/editor/zones/{key}/test` → `IZoneTestGrain` → the SSO
 handler forwards the tester's next sign-in to the zone. Proofs: `driver.mjs travel`, `testmode`.
+
+## Flow 6 — RPG content
+
+Classes, specializations, the XP curve and items are JSON documents in `content/`, one per file,
+checked against `schemas/content/*.schema.json` (spec `2026-10-08-rpg-content-design.md`).
+`scripts/content/push.mjs` (or `driver.mjs content`) sends the whole pack to
+`POST /api/content/import` (`content.publish`). `RpgContentService` validates it all
+(`ContentPackValidator`: one `IContentKind` per kind, declared in `RpgModule`), diffs it by hash
+against `rpg_content`, refuses a removal players still hold without a `replace` rule
+(`IContentReferences`), writes everything in one transaction with a new `rpg_content_packs` row
+(its id is the version), then reloads the registry. Imports run one at a time.
+
+`RpgContentRegistry` (`IRpgContent`) is a reference cache, stage 1 after the furniture catalogue:
+it reads the tables, validates them like an import and swaps its whole set; invalid stored content
+refuses the start, and a failed reload keeps the set it had. Every system reads content through
+`IRpgContent.Get<T>/All<T>` and listens to `ContentReloadedEvent`. Texts are served raw by
+`GET /api/public/content/texts/{language}`.
 
 ## Persistence
 
