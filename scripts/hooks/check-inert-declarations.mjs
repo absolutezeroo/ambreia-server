@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// One bug class, three seams.
+// One bug class, two seams.
 //
 // Every one of these is a place where a declaration on one side has to match an implementation on
 // the other, where the compiler sees neither side, and where a mismatch produces SILENCE rather
@@ -10,8 +10,6 @@
 //                               -> the client sends, PackageHandler logs "Incoming Unknown", done
 //   seam 4  outbound composers  a composer built and sent with no serializer mapped
 //                               -> PackageEncoder returns 0, SuperSocket writes nothing
-//   seam 5  runtime config      a key read from IServerConfigGrain but absent from ConfigKeyCatalog
-//                               -> the setting is real and no operator can find it
 //
 //   node scripts/hooks/check-inert-declarations.mjs           compare, exit 2 on a NEW gap
 //   node scripts/hooks/check-inert-declarations.mjs --update  accept the current gaps as baseline
@@ -128,26 +126,6 @@ for (const [composer, rel] of builtComposers)
   if (!mappedSerializers.has(composer))
     gap('outbound-composers', composer, 'built and sent with no serializer mapped: the packet is dropped at the encoder', rel);
 
-// ---- seam 5: a runtime setting no operator can see -------------------------------------------
-// ConfigKeyCatalog is what the dashboard's config editor renders. A key read from
-// IServerConfigGrain and absent from it is a setting that exists and cannot be reached.
-
-const catalogFile = 'Vortex.Primitives/Server/ConfigKeyCatalog.cs';
-const catalogKeys = new Set(
-  [...read(catalogFile).matchAll(/new\(\s*\n?\s*"([a-z0-9_.]+)"/g)].map((m) => m[1])
-);
-for (const rel of productionFiles) {
-  if (rel === catalogFile) continue;
-  const src = read(rel);
-  // Only files that actually talk to the config grain: a `const string ... Key` elsewhere is
-  // something else's key (a spec block name, a role) and not an operator setting.
-  if (!/IServerConfigGrain|ServerConfigValues|GetManyAsync|GetIntAsync|GetValueAsync|GetBoolAsync/.test(src))
-    continue;
-  for (const m of src.matchAll(/const\s+string\s+[A-Za-z0-9_]*Key\s*=\s*"([a-z0-9_]+(?:\.[a-z0-9_]+)+)"/g))
-    if (!catalogKeys.has(m[1]))
-      gap('config-catalog', m[1], 'read from IServerConfigGrain but absent from ConfigKeyCatalog: no operator can set it', rel);
-}
-
 // ---- report ----------------------------------------------------------------------------------
 
 gaps.sort((a, b) => a.seam.localeCompare(b.seam) || a.id.localeCompare(b.id));
@@ -194,7 +172,7 @@ if (fixed.length)
 if (!added.length) {
   console.error(
     `check-inert-declarations: OK (` +
-      `${handlers.size} handlers, ${builtComposers.size} composers, ${catalogKeys.size} config keys; ` +
+      `${handlers.size} handlers, ${builtComposers.size} composers; ` +
       `${gaps.length} known gap(s) baselined).`
   );
   process.exit(0);

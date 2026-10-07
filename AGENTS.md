@@ -32,7 +32,7 @@ Activate the relevant skill checklist before editing code in that domain:
   - Trigger: touching session gateway, presence flow, room routing, outbound composer fan-out.
   - Enforce: player outbound via `PlayerPresenceGrain.SendComposerAsync`; no direct handler socket sends.
 - `message-contracts`
-  - Trigger: editing `Vortex.Primitives/Messages/Incoming/**` or outgoing composer payload mappings.
+  - Trigger: editing `Vortex.Protocol/Messages/**` or outgoing composer payload mappings.
   - Enforce: explicit mandatory fields, no placeholder payloads when source data exists.
 - `revision-protocol` (cross-repo)
   - Trigger: changes referencing `Revision<id>` packet mappings for a revision other than the
@@ -76,7 +76,7 @@ Default output format:
 - Preserve cancellation and async flow where it already exists.
 - Handle failure paths explicitly; do not ship happy-path-only changes.
 - Avoid dead code, unused allocations, and broad catch blocks that hide errors (see **Orleans grain development rules** for specifics).
-- For revision compatibility work, prefer restoring/adding missing incoming message contracts in `Vortex.Primitives/Messages/Incoming/**` before mutating serializer/composer payload behavior.
+- For revision compatibility work, prefer restoring/adding missing incoming message contracts in `Vortex.Protocol/Messages/Incoming/**` before mutating serializer/composer payload behavior.
 - Do not alter serializer/composer behavior by replacing real payload writes with placeholder constants (for example, unconditional `WriteInteger(0)`) unless explicitly requested.
 - `Vortex.Revisions/Revision20260701/**` (including its `Parsers/` and `Serializers/` trees) is the
   **default revision embedded in core** so the emulator can run standalone without a plugin. Editing
@@ -97,7 +97,7 @@ If a cross-grain notification fails silently, state goes asymmetric and nobody k
 - **Forbidden**: bare `catch { }`, `catch (Exception) { }` without logging.
 
 ### Parallelize independent grain calls
-When checking status on N grains (e.g. online status for a friend list), do not `await` each one in a `foreach`.
+When checking status on N grains (e.g. online status for every avatar in a zone), do not `await` each one in a `foreach`.
 Grain calls to different grains can run concurrently with `Task.WhenAll`.
 - Sequential = O(n) round-trips. Parallel = O(1) wall time.
 - Apply everywhere: activation hydration, search results, batch accept/deny.
@@ -115,8 +115,8 @@ Follow the `RoomPersistenceGrain` pattern: queue dirty state, flush with `Regist
 Do not issue per-event DB writes that block the grain turn.
 
 ### Do not hardcode limits in grains
-Handlers already read configuration values (e.g. `Vortex:FriendList:UserFriendLimit`) from `IConfiguration` and pass them to grains.
-Magic numbers like `Take(50)`, `Take(20)`, or `maxIgnoreCapacity = 100` must come from configuration parameters on the grain interface method.
+Handlers read configuration values from `IConfiguration` (or the server config grain) and pass them to grains.
+Magic numbers like `Take(50)` or `Take(20)` must come from configuration parameters on the grain interface method.
 A 10,000 user hotel needs different tuning than a 10 player dev server.
 
 ### Use tracked deletes for atomicity
@@ -138,13 +138,13 @@ Each major domain component should operate in its own grain. When a grain needs 
 
 ### Use grain boundaries for thread safety
 Orleans grains are single-threaded by design. Use this for concurrency-sensitive operations by giving each user their own grain for the operation.
-- Example: each player gets a `CatalogPurchaseGrain` so catalog purchases are serialized per-player with no locks needed.
+- Example: each player gets a `PlayerGrain` so changes to their card (name, motto, look) are serialized per-player with no locks needed.
 - Do not add manual locking (`lock`, `SemaphoreSlim`) inside grains — that fights the actor model.
 
 ### Grains orchestrate their own outbound communication
-When grain state changes (e.g. wallet balance updates), the grain itself sends the snapshot to `PlayerPresenceGrain.SendComposerAsync`. The caller that triggered the change does not pass or send the composer — the grain owns that responsibility.
-- **Correct**: handler calls `grain.UpdateWalletAsync(...)` → grain updates state → grain calls `PlayerPresenceGrain.SendComposerAsync(...)`.
-- **Wrong**: handler calls `grain.UpdateWalletAsync(...)` → handler builds composer → handler sends composer to player.
+When grain state changes (e.g. a new look), the grain itself sends the snapshot to `PlayerPresenceGrain.SendComposerAsync`. The caller that triggered the change does not pass or send the composer — the grain owns that responsibility.
+- **Correct**: caller calls `grain.SetFigureAsync(...)` → grain updates state → grain notifies the presence grain, which sends the composer.
+- **Wrong**: caller calls `grain.SetFigureAsync(...)` → caller builds composer → caller sends composer to player.
 
 ### Do not mutate the database directly for grain-owned state
 Grains may hold cached or in-memory state that will not reflect direct DB changes. All mutations to grain-owned data must go through the grain's methods, even when the player is offline.
@@ -158,23 +158,19 @@ updated in the *same* method that persists the change, and hydrated from DB on g
 - **Real bug**: `RoomLiveState.PlayerIdsWithRights` was checked by `GetControllerLevelAsync` but never
   populated on room hydration nor updated by `AssignRightsAsync`/`RemoveRightsAsync`. Rights were persisted
   and shown in the UI list, but never actually granted live permissions — build and tests stayed green.
-- Applies to: room rights, moderation flags/mutes/bans, club/subscription tiers, or any permission-like
-  state cached on a grain.
+- Applies to: room rights, roles, or any permission-like state cached on a grain.
 - A DB write + a UI-notification composer is not proof the feature works. Verify the corresponding live
   check (e.g. `GetControllerLevelAsync`) reflects the change within the same session, not just after a
   grain reactivation.
 
 ## Layers (spec §3.4 bis)
-The solution is cut into four layers, and references only point down:
+The solution is cut into three layers, and references only point down:
 - **Core** — `Networking`, `Pipeline`, `Protocol`, `Messages`, `Revisions`, `PacketHandlers`,
   `Runtime`, `Crypto`, `Database`, `Events`, `Logging`, `Observability`, `Plugins`, `Primitives`.
-- **Platform** — the game's domains: `Rooms`, `Players`, `Inventory`, `Furniture`, `Social`,
-  `Marketplace`, `Signals`, `Progression`, `Fishing`, `Catalog`, `Permissions`, `Navigator`.
-- **Web** — `WebApi`, `WebApi.Authentication` (the site's accounts), `WebApi.Shop`.
-- **Operations** — `Dashboard.*`.
+- **Platform** — the game's domains: `Rooms`, `Players`, `Furniture`, `Permissions`.
+- **Web** — `WebApi`, `WebApi.Authentication` (registration, login, avatar, SSO ticket).
 
-Core references no Platform, Web or Operations project; Platform references neither Web nor
-Operations. `Vortex.Main` is the host and wires them all. A type two layers both need goes down
+Core references no Platform or Web project; Platform references no Web project. `Vortex.Main` is the host and wires them all. A type two layers both need goes down
 into `Vortex.Primitives` (interfaces, snapshots, config keys) — never a reference upward. Wall 8 of
 `scripts/hooks/check-architecture-walls.mjs` enforces it, inside the FastCheck.
 
@@ -188,7 +184,7 @@ into `Vortex.Primitives` (interfaces, snapshots, config keys) — never a refere
 - Do not use ad-hoc grain key strings in handlers when extension-based access exists.
 - Do not add silent `catch` blocks in handlers.
 - When snapshot fields are available, map them into composer payloads instead of TODO placeholders.
-- For incoming message records in `Vortex.Primitives/Messages/Incoming/**`, keep mandatory fields explicit (use `required` where appropriate) instead of default-fallback contracts.
+- For incoming message records in `Vortex.Protocol/Messages/Incoming/**`, keep mandatory fields explicit (use `required` where appropriate) instead of default-fallback contracts.
 
 ## Session and room routing constraints
 - Connection/session lifecycle starts in gateway flow; do not duplicate session registration in handlers.
@@ -210,11 +206,11 @@ When adding packet mappings in `Vortex.Revisions/Revision20260701`:
    - `Vortex.Revisions/Revision20260701/Parsers/<Domain>/*MessageParser.cs`
 3. Add serializer class under:
    - `Vortex.Revisions/Revision20260701/Serializers/<Domain>/*MessageComposerSerializer.cs`
-4. Register mappings in:
-   - `Vortex.Revisions/Revision20260701/Revision20260701.cs`
-   - incoming: `Parsers` dictionary with `MessageEvent` key
-   - outgoing: `Serializers` dictionary with composer type + `MessageComposer` id
-5. Ensure the required `using` directives are present in `Revision20260701.cs` for new parser/serializer namespaces.
+4. Register mappings in the domain's map, `Vortex.Revisions/Revision20260701/Maps/<Domain>Map.cs`:
+   - incoming: `builder.MapParser(MessageEvent.X, new XParser())`
+   - outgoing: `builder.MapSerializer(typeof(XComposer), new XComposerSerializer(MessageComposer.X))`
+5. A new map is listed in `Revision20260701.cs`; a packet with no parser is ignored with a warning,
+   not a disconnect.
 
 ## Task recipes
 
@@ -225,7 +221,7 @@ When adding packet mappings in `Vortex.Revisions/Revision20260701`:
   - `Vortex.Primitives/Orleans/GrainFactoryExtensions.cs`
 - Required references:
   - one handler in same domain under `Vortex.PacketHandlers/<Domain>/`
-  - related incoming message type under `Vortex.Primitives/Messages/Incoming/**`
+  - related incoming message type under `Vortex.Protocol/Messages/Incoming/**`
 - Forbidden changes:
   - no direct DB access in handler
   - no direct session/socket sends
@@ -255,8 +251,8 @@ When adding packet mappings in `Vortex.Revisions/Revision20260701`:
   - `CONTEXT.md`
   - neighboring message/composer classes
 - Required references:
-  - incoming message under `Vortex.Primitives/Messages/Incoming/**`
-  - outgoing composer under `Vortex.Primitives/Messages/Outgoing/**`
+  - incoming message under `Vortex.Protocol/Messages/Incoming/**`
+  - outgoing composer under `Vortex.Protocol/Messages/Outgoing/**`
   - handler using same message family
 - Forbidden changes:
   - no placeholder payload collections when source snapshot data exists
@@ -264,76 +260,6 @@ When adding packet mappings in `Vortex.Revisions/Revision20260701`:
 - Validation:
   - `dotnet build Vortex.Main/Vortex.Main.csproj -t:VortexCloudFastCheck`
   - `dotnet build Vortex.Main/Vortex.Main.csproj -t:VortexCloudQualityGate`
-
-### Add dashboard capability or admin page
-A dashboard capability string is duplicated across **four** files. The server half is now
-self-checking: `Capabilities.Dashboard.All` is the one list, the policy builder and the login gate
-both read it, and `CapabilityDeclarationTests` fails the build if a declared `dashboard.*` constant
-is missing from it. The client half is checked by `scripts/hooks/check-dashboard-capabilities.mjs`
-— nothing in `dotnet build`, `dotnet test` or `npm run build` looks at it, so that script is the only
-thing standing between a missed edit and a page that is silently hidden from every operator. It runs
-automatically after any edit to one of the four files (PostToolUse hook in `.claude/settings.json`),
-inside `VortexCloudFastCheck` so a commit from any author or tool is covered, and by hand at any
-time.
-- Required edits for every new capability:
-  1. `Vortex.Primitives/Permissions/Capabilities.cs` — the `const string` **and**
-     `Capabilities.Dashboard.All` (the test catches a miss; `Capabilities.All` picks it up from
-     there, and both `DashboardWebHost` and `DashboardAuthService` read it — do **not** reintroduce
-     a per-file copy, that duplication is what used to throw
-     `InvalidOperationException: The AuthorizationPolicy named '<capability>' was not found`)
-  2. `Vortex.Dashboard.Web/src/lib/dashboardPermissions.ts` — `CAPABILITIES` **and**
-     `ROUTE_PERMISSIONS`
-  3. `Vortex.Dashboard.Web/src/lib/routes.ts` — route row with a `load: () => import(...)` thunk
-     (pages are code-split; only the overview and access-denied fallback are imported eagerly, and
-     the import path must be a literal or Vite cannot split it)
-  4. `Vortex.Dashboard.Web/src/lib/locales/en.js` **and** `fr.js` — page block **and** `nav.*` labels
-     (the two files must stay structurally identical; `en.js` is every other locale's fallback)
-- Required context files:
-  - `docs/walkthroughs/add-a-dashboard-page.md` (full walkthrough, server + front end)
-  - an existing pair such as `DashboardEndpoints.Quests.cs` + `DashboardApiService.Quests.cs`
-- Any page that shows or selects furniture, a player, or a group MUST use the existing surfaces --
-  this has been missed on every new page so far and is not a detail, it is the difference between a
-  usable page and an unusable one:
-  - **Show the real artwork**, never a bare id: the read API adds
-    `furnitureIconUrl = BuildFurniIconUrl(name)` (see `DashboardApiService.Catalog.cs`) and the page
-    renders it with `<AssetImage src={...} />`. Same for avatars and guild badges via
-    `DashboardAssetUrls`.
-  - **Never make an operator type an id**: use `<PickerModal kind="furniture" />` (or `kind="user"`),
-    backed by `/api/v1/directory/furniture`. A number input alone means looking the id up elsewhere
-    first.
-- **Every create and every edit goes in `<Drawer>`. No exceptions, and never a form panel spliced
-  into the page.** This one is missed on almost every new page, including by people who had just
-  read the component: an inline form under the table pushes the list off screen, so you lose the
-  thing you were looking at when you decided to change a number, and a row's inline editor breaks
-  the grid around it. The drawer keeps the list beside the form and pins Save where it cannot scroll
-  away. Pattern: `let drawer = $state(null)`, a `New …` button in the `panel-head` that sets
-  `{ mode: 'create', form: empty() }`, a row action that sets `{ mode: 'edit', id, form: {...row} }`,
-  and `{#snippet actions()}` for the buttons. Modals stay for short confirmations
-  (`ConfirmReasonModal`) and pickers — those are answers, not editing.
-- **Filters get their own row above the table**, never the `panel-head` and never mixed in with the
-  page's actions. `<TableFilter bind:query shown total />` for a table already loaded in full; a
-  plain `<div class="filters">` with the inputs when the search is the server's. The heading says
-  what the table is; the filter row says what you are narrowing it to.
-- **Buttons: an add is `class="success"` (green), a destructive one `class="danger"`, a secondary one
-  `class="ghost-button"`, a refresh `class="warning"` — and none of them carry an icon.** Label only.
-  The colour is the affordance; a lucide glyph beside the word is noise this dashboard does not use.
-- Forbidden changes:
-  - no direct DB writes from `DashboardOperationsService`; route through an `I<Domain>AdminService`
-  - no admin write that skips reloading the manager-grain cache it feeds
-  - no new endpoint left unregistered in `DashboardEndpoints.cs`
-- Validation:
-  - `node scripts/hooks/check-dashboard-capabilities.mjs` — cross-checks `Capabilities.cs` against
-    `dashboardPermissions.ts`, every `ROUTE_PERMISSIONS` key and page import path named by
-    `routes.ts`, and `en.js`/`fr.js` structural parity including the `nav.*` keys
-  - `grep -rn "<an existing capability string>" --include=*.cs --include=*.ts --include=*.js .` and confirm the new
-    capability appears in the same set of files
-  - `cd Vortex.Dashboard.Web && npm run lint` — `npm run build` does not catch an undefined
-    identifier used in markup
-  - the SPA is built into `Vortex.Dashboard.API/Assets/`, which is **generated and gitignored**:
-    `dotnet build` runs Vite itself, so there is nothing to commit and nothing to hand-build
-  - `dotnet build Vortex.Main/Vortex.Main.csproj -t:VortexCloudQualityGate`
-  - restart the emulator — a running `Vortex.Main` holds its own DLLs, so a rebuilt binary is not
-    live until it is restarted
 
 ### Refactor lookup/cache logic
 - Required context files:
@@ -361,9 +287,8 @@ compiler sees. They are ordinary node scripts — run any of them alone while yo
 
 | Check | Target | Catches |
 |---|---|---|
-| `node scripts/hooks/check-dashboard-capabilities.mjs` | FastCheck | a hidden page, an undefined route guard, a chunk that 404s, a raw i18n key in the sidebar |
-| `node scripts/hooks/check-logic-groups.mjs` | FastCheck | a `[RoomObjectLogic("...")]` key the admin's furniture dropdown does not offer, so no operator can assign the behaviour. `--write` regenerates the block |
-| `cd Vortex.Dashboard.Web && npm run lint` | QualityGate | an undefined identifier in Svelte markup, which `npm run build` compiles and ships |
+| `node scripts/hooks/check-architecture-walls.mjs` | FastCheck | a handler reaching for the database, a protocol import in the contracts hub, a protocol-free project that starts referencing the protocol, a reference that points up the layers |
+| `node scripts/hooks/check-webapi-forwarding.mjs` | FastCheck | a `[FromServices]` type the web API's own container never receives — 500 per request, forever |
 | `node scripts/hooks/__test/run.mjs` | QualityGate | a hook that stopped blocking what it was written to block |
 
 ## Definition of done for AI changes

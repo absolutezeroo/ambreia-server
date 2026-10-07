@@ -319,7 +319,7 @@ w('entity-index.md', '\n'.join(lines) + '\n')
 ENDPOINT_TOKENS = ('MapGet(', 'MapPost(', 'MapPut(', 'MapDelete(', 'MapPatch(',
                    'MapReadGet(', 'MapGroup(')
 ep = set(e['path'].replace('\\', '/') for e in INV['symbols']['endpoint_files'])
-for host in ('Vortex.Dashboard.API', 'Vortex.WebApi', 'Vortex.Supervisor'):
+for host in ('Vortex.WebApi',):
     for d, _, fs in os.walk(host):
         if os.sep + 'obj' in d or os.sep + 'bin' in d:
             continue
@@ -335,11 +335,7 @@ lines = [
     '# Endpoint file index', '', HEADER, '',
     'Files that register HTTP endpoints, detected by any of `MapGet` / `MapPost` / `MapPut` / '
     '`MapDelete` / `MapPatch` / `MapReadGet` / `MapGroup` &mdash; the repo-local `MapReadGet` wrapper '
-    'is why a plain `MapGet` scan under-reports. Route-level detail, required capability and '
-    'live-state dependency live in '
-    '[`../08-dashboard/capabilities.md`](../08-dashboard/capabilities.md) and '
-    '[`../08-dashboard/operations.md`](../08-dashboard/operations.md); the authoritative route list '
-    'is the test-enforced `Vortex.Dashboard.Tests/Hosting/authorization-matrix.txt`.', '',
+    'is why a plain `MapGet` scan under-reports.', '',
     '| File | Host project |', '|---|---|',
 ]
 for p in sorted(ep):

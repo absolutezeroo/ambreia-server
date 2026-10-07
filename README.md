@@ -90,7 +90,6 @@ migrations once, then restart `vortex`.
 | 30000 | `vortex` | Game client, raw TCP socket (SuperSocket) |
 | 30001 | `vortex` | Game client, WebSocket socket (SuperSocket) |
 | 8080 | `vortex` | Vortex web API — Swagger UI at `http://localhost:8080/swagger` |
-| 9000 | `vortex` | Operator dashboard SPA + API — `http://localhost:9000`, Swagger at `/swagger` |
 | 3307 | `mysql` | MySQL 8 (3307 on the host to avoid a local MySQL already on 3306) |
 
 The Orleans silo (11111) and gateway (3000) ports are deliberately not published: the stack runs a
@@ -102,27 +101,26 @@ schema and `docker compose down -v` destroys it.
 ### The `ListenerSecurity` guard, and why the compose file opts in
 
 `Vortex.Primitives/Hosting/ListenerSecurity.cs` refuses to start an HTTP listener bound to a
-non-local address with HTTPS disabled, because both HTTP surfaces carry credentials and a session
+non-local address with HTTPS disabled, because the HTTP surface carries credentials and a session
 cookie. Its `IsLocalHost` treats `0.0.0.0`, `::`, `*` and `+` as **not** local — they accept
 traffic on every interface, which is precisely the remote-exposure case.
 
 Inside a container, a listener bound to `127.0.0.1` is unreachable: published ports are forwarded
 to the container's external interface. The listeners must bind `0.0.0.0`, so the guard fires.
 
-The compose file does not bypass or modify the guard. It sets the two opt-in keys the code already
+The compose file does not bypass or modify the guard. It sets the opt-in key the code already
 reads:
 
 | Configuration key | Declared in | Environment variable in `docker-compose.yml` |
 | --- | --- | --- |
 | `Vortex:WebApi:AllowInsecureRemoteHttp` | `Vortex.WebApi/Configuration/WebApiConfig.cs` | `VORTEX__Vortex__WebApi__AllowInsecureRemoteHttp` |
-| `Vortex:Observability:DashboardAllowInsecureRemoteHttp` | `Vortex.Observability/Configuration/ObservabilityConfig.cs` | `VORTEX__Vortex__Observability__DashboardAllowInsecureRemoteHttp` |
 
 With those set, `ValidateListener` returns `AllowedWithWarning` instead of `Refused`, and the
 warning is still logged on every start.
 
 **This is a local development setting only.** It is acceptable here because the published ports
 are meant to be reached from `localhost` on the developer's machine. Anywhere the ports are
-reachable from a network, remove those two variables and either enable HTTPS on the listeners or
+reachable from a network, remove that variable and either enable HTTPS on the listeners or
 bind them to a local address behind a TLS-terminating reverse proxy.
 
 Note that the two game sockets are configured through *unprefixed* variables
@@ -199,15 +197,16 @@ dotnet ef database update
 ```
 
 ### Importing reference data
-A freshly migrated database has no room model, furniture definition or catalogue. Copy them from an
-older Vortex/Turbo database (read only) with:
+A freshly migrated database has no room model or furniture definition. Copy them from an older
+Vortex/Turbo database (read only), and create the development zone, with:
 
 ```powershell
-scripts/import-reference-data.ps1 -Source turbo -Target vortex_m0_check
+scripts/import-reference-data.ps1 -Source turbo -Target vortex_noyau_check
 ```
 
-It copies the shared columns of the reference tables, then replays the seeds that only match once
-furniture definitions exist. Re-runnable; the header of `scripts/sql/import_reference_data.sql` says
+It copies the shared columns of `room_models` and `furniture_definitions`, replays the seeds that only
+match once furniture definitions exist, then runs `scripts/sql/dev_zone.sql`: one zone on `model_a`,
+and `world.start_room_id` pointing at it so every login lands there. Re-runnable; the header of `scripts/sql/import_reference_data.sql` says
 what a re-run replaces.
 
 ### Real secrets outside development
@@ -363,14 +362,13 @@ Canonical AI context files:
 - `docs/patterns/` (golden implementation examples)
 - `docs/walkthroughs/request-lifecycle.md` (one packet, socket to client — the real flow)
 - `docs/walkthroughs/add-a-feature.md` (adding a feature, layer by layer)
-- `docs/walkthroughs/add-a-dashboard-page.md` (dashboard admin surface — including the six files a capability string lives in)
 - `docs/patterns/vertical-slice.md` (handler + grain + test on a single feature)
 - `docs/glossary.md` (Habbo + Orleans terminology, each term mapped to its file)
 
 Planning & design references:
-- `ROADMAP.md` (completion plan: epics → stories → Definition of Done)
-- `DATA-MODEL.md` (authoritative schema + naming conventions; note that groups, rentable space and pets are implemented, not pending)
-- `PETS-DESIGN.md` (pet implementation: autonomous-agent behavior, state machine, persistence)
+- `docs/superpowers/specs/2026-10-05-habbo-rpg-design.md` (the RPG design)
+- `docs/superpowers/plans/2026-10-07-coupe-noyau.md` (the core cut this base comes from)
+- `DATA-MODEL.md` (schema + naming conventions)
 
 Tool-specific adapters:
 - `.github/copilot-instructions.md` (GitHub Copilot)

@@ -1,12 +1,10 @@
 #!/usr/bin/env node
-// Driver for the Vortex Cloud emulator. Launches Vortex.Main and pokes its three live surfaces:
-// the game socket (raw Habbo frames on :40000), the web API (:8080) and the operator dashboard
-// (:9000, SPA + API behind a session cookie).
+// Driver for the Vortex RPG emulator. Launches Vortex.Main and pokes its two live surfaces: the
+// game socket (raw Habbo frames on :40000) and the web API (:8080, registration and SSO tickets).
 //
-// Zero dependencies on purpose -- node:net, node:http, node:child_process and the global
-// WebSocket that Node 22+ ships (used to talk CDP to headless Edge for screenshots).
+// Zero dependencies on purpose -- node:net, node:http and node:child_process.
 //
-// Run state (pid file, console log, dashboard cookie, screenshots) lives in
+// Run state (pid file, console log) lives in
 // %TEMP%/vortex-run/ -- printed by `status`, never inside the repo.
 
 import { spawn, spawnSync, execFileSync } from 'node:child_process';
@@ -22,7 +20,6 @@ const REPO = path.resolve(SKILL_DIR, '../../..'); // .claude/skills/run-vortex-e
 const STATE = path.join(os.tmpdir(), 'vortex-run');
 const PID_FILE = path.join(STATE, 'vortex-main.pid');
 const LOG_FILE = path.join(STATE, 'vortex-main.log');
-const COOKIE_FILE = path.join(STATE, 'dash-cookie.txt');
 
 // appsettings.Development.json, when present, moves the game sockets off the 30000/30001 of
 // appsettings.json. VORTEX_GAME_PORT names the port when it was moved another way (the unprefixed
@@ -31,16 +28,6 @@ const GAME_TCP =
   Number(process.env.VORTEX_GAME_PORT) ||
   (fs.existsSync(path.join(REPO, 'appsettings.Development.json')) ? 40000 : 30000);
 const WEBAPI = 8080;
-// :9000 serves the copy of the SPA embedded in the assembly at its last build. While iterating on
-// the front end the live page is Vite's on :9001, and a cookie ignores the port, so the session
-// `login` writes works against either: VORTEX_DASH_PORT=9001 shoots the dev server.
-const DASH = Number(process.env.VORTEX_DASH_PORT) || 9000;
-
-// A throwaway owner used for the dashboard session. Kept at a fixed address so re-runs reuse the
-// row instead of littering player_accounts; `cleanup` deletes it.
-const OPERATOR = { email: 'run-skill@vortex.local', password: 'RunSkill!2026' };
-const OWNER_ROLE_ID = 5;
-
 const log = (...a) => console.log(...a);
 const die = (msg) => {
   console.error(msg);
@@ -196,7 +183,7 @@ async function cmdStart() {
     // Never stop it. It is the user's live-verification hotel, with activated RoomGrains and
     // connected sessions behind it.
     log(`Vortex.Main already running (pid ${foreign.join(', ')}) and NOT started by this driver.`);
-    log('Reusing it. Do not stop it -- drive it with `ping`, `health`, `api`.');
+    log('Reusing it. Do not stop it -- drive it with `ping`, `health`, `play`.');
     return;
   }
   if (runningPid()) return log(`Already started by this driver (pid ${runningPid()}).`);
@@ -217,15 +204,15 @@ async function cmdStart() {
   fs.writeFileSync(PID_FILE, String(child.pid));
   log(`Spawned Vortex.Main pid ${child.pid}; log -> ${LOG_FILE}`);
 
-  // Startup is slow: Orleans silo, ~160 tables of catalogue/furniture warm-up, plugin scan.
+  // Startup: Orleans silo, furniture definitions and room models warm-up, plugin scan.
   for (let i = 0; i < 180; i++) {
     await sleep(1000);
     if (!runningPid()) {
       log(fs.readFileSync(LOG_FILE, 'utf8').split(/\r?\n/).slice(-30).join('\n'));
       die('Vortex.Main exited during startup (log tail above).');
     }
-    if ((await portOpen(GAME_TCP)) && (await portOpen(DASH))) {
-      return log(`Ready after ~${i + 1}s: game :${GAME_TCP}, webapi :${WEBAPI}, dashboard :${DASH}`);
+    if ((await portOpen(GAME_TCP)) && (await portOpen(WEBAPI))) {
+      return log(`Ready after ~${i + 1}s: game :${GAME_TCP}, webapi :${WEBAPI}`);
     }
   }
   die('Timed out after 180s waiting for the listeners.');
@@ -240,7 +227,6 @@ async function cmdStatus() {
     ['mysql   ', 3306],
     ['game tcp', GAME_TCP],
     ['webapi  ', WEBAPI],
-    ['dash    ', DASH],
   ]) {
     log(`  ${name} :${port}  ${(await portOpen(port)) ? 'open' : 'closed'}`);
   }
@@ -265,53 +251,96 @@ function cmdLogs(n = 40) {
   log(fs.readFileSync(LOG_FILE, 'utf8').split(/\r?\n/).slice(-Number(n)).join('\n'));
 }
 
+
 // ---------------------------------------------------------------- game socket
 
 // Wire frame: [int32 BE length][int16 BE header][body]. `length` covers the header and the body.
-// Plaintext until the Diffie handshake runs -- SetupEncryption is what installs the RC4 engines,
-// so an unauthenticated probe never needs to encrypt anything.
-function frame(header, ints = []) {
-  const body = Buffer.alloc(2 + 4 * ints.length);
-  body.writeInt16BE(header, 0);
-  ints.forEach((v, i) => body.writeInt32BE(v, 2 + i * 4));
+// Plaintext until the Diffie handshake completes -- SetupEncryption is what installs the RC4
+// engines, so a session that never completes it never encrypts anything.
+function frame(header, ...fields) {
+  const parts = [];
+  for (const f of fields) {
+    if (typeof f === 'string') {
+      const s = Buffer.from(f, 'utf8');
+      const len = Buffer.alloc(2);
+      len.writeInt16BE(s.length, 0);
+      parts.push(len, s);
+    } else {
+      const n = Buffer.alloc(4);
+      n.writeInt32BE(f, 0);
+      parts.push(n);
+    }
+  }
+  const body = Buffer.concat([Buffer.from([(header >> 8) & 0xff, header & 0xff]), ...parts]);
   const out = Buffer.alloc(4 + body.length);
   out.writeInt32BE(body.length, 0);
   body.copy(out, 4);
   return out;
 }
 
-const LATENCY_PING_REQUEST = 544; // -> LatencyPingRequestMessageHandler
-const LATENCY_PING_RESPONSE = 188; // <- LatencyPingResponseMessageSerializer
+// Headers of Revision20260701 (Vortex.Revisions/Revision20260701/Headers.cs).
+const H = {
+  initDiffie: 2022, // -> InitDiffieHandshakeComposer
+  initDiffieReply: 3309,
+  sso: 882,
+  authOk: 230,
+  userRights: 3599,
+  roomForward: 3339,
+  openFlat: 3234,
+  cantConnect: 2430,
+  roomReady: 2349,
+  entryTile: 2792,
+  heightMap: 2260,
+  floorHeightMap: 2885,
+  users: 996,
+  userUpdate: 2613,
+  moveAvatar: 2364,
+};
 
-// The cheapest end-to-end proof the emulator is alive: it walks the socket, the pipeline filter,
-// the packet decoder, the revision parser map, the handler, the composer, the serializer and the
-// encoder -- and needs no login. A green build proves none of that.
-function cmdPing(requestId = 1234) {
-  return new Promise((resolve) => {
-    const id = Number(requestId);
+// A socket that collects every frame the server sends, as { header, body }.
+function gameSocket() {
+  return new Promise((resolve, reject) => {
     const s = net.connect({ port: GAME_TCP, host: '127.0.0.1' });
+    const frames = [];
     let buf = Buffer.alloc(0);
-    const fail = (m) => {
-      s.destroy();
-      die(m);
-    };
-    s.setTimeout(5000, () => fail(`No reply within 5s on :${GAME_TCP}.`));
-    s.on('error', (e) => fail(`Socket error on :${GAME_TCP}: ${e.message}`));
-    s.on('connect', () => s.write(frame(LATENCY_PING_REQUEST, [id])));
+    s.on('error', reject);
+    s.on('connect', () =>
+      resolve({
+        frames,
+        send: (b) => s.write(b),
+        close: () => s.destroy(),
+        // Waits until a frame with one of `headers` arrives after index `from`, or times out.
+        async wait(headers, from = 0, ms = 5000) {
+          for (let t = 0; t < ms; t += 50) {
+            const hit = frames.slice(from).find((f) => headers.includes(f.header));
+            if (hit) return hit;
+            await sleep(50);
+          }
+          return null;
+        },
+      }),
+    );
     s.on('data', (chunk) => {
       buf = Buffer.concat([buf, chunk]);
-      if (buf.length < 4) return;
-      const len = buf.readInt32BE(0);
-      if (buf.length < 4 + len) return;
-      const header = buf.readInt16BE(4);
-      const echoed = len >= 6 ? buf.readInt32BE(6) : null;
-      s.destroy();
-      if (header !== LATENCY_PING_RESPONSE) fail(`Expected header ${LATENCY_PING_RESPONSE}, got ${header}.`);
-      if (echoed !== id) fail(`Expected requestId ${id} echoed back, got ${echoed}.`);
-      log(`game socket OK: sent ${LATENCY_PING_REQUEST}(${id}) -> got ${header}(${echoed})`);
-      resolve();
+      while (buf.length >= 4 && buf.length >= 4 + buf.readInt32BE(0)) {
+        const len = buf.readInt32BE(0);
+        frames.push({ header: buf.readInt16BE(4), body: buf.subarray(6, 4 + len) });
+        buf = buf.subarray(4 + len);
+      }
     });
   });
+}
+
+// The cheapest end-to-end proof the socket is alive: one frame through the decoder, the revision
+// parser map, the handler, the serializer and the encoder -- no login needed. A green build proves
+// none of that.
+async function cmdPing() {
+  const g = await gameSocket().catch((e) => die(`Socket error on :${GAME_TCP}: ${e.message}`));
+  g.send(frame(H.initDiffie));
+  const reply = await g.wait([H.initDiffieReply]);
+  g.close();
+  if (!reply) die(`No ${H.initDiffieReply} within 5s for ${H.initDiffie} on :${GAME_TCP}.`);
+  log(`game socket OK: sent ${H.initDiffie} -> got ${reply.header}`);
 }
 
 // ---------------------------------------------------------------- http surfaces
@@ -321,198 +350,106 @@ async function cmdHealth() {
   log(`GET :${WEBAPI}/health -> ${health.status} ${health.body}`);
   const hello = await request(`http://127.0.0.1:${WEBAPI}/api/public/info/hello`);
   log(`GET :${WEBAPI}/api/public/info/hello -> ${hello.status} ${hello.body}`);
-  const metrics = await request(`http://127.0.0.1:${WEBAPI}/metrics`);
-  const gauges = metrics.body
-    .split('\n')
-    .filter((l) => /^Vortex_(sessions_active|players_online|rooms_active)/.test(l))
-    .join('  ');
-  log(`GET :${WEBAPI}/metrics -> ${metrics.status}  ${gauges || '(no Vortex_* gauges yet)'}`);
-  const dash = await request(`http://127.0.0.1:${DASH}/`);
-  log(`GET :${DASH}/ -> ${dash.status} (${dash.body.length} bytes of SPA shell)`);
 }
 
-// Registration mints the bcrypt hash, so no hand-crafted password SQL. The role grant is the one
-// step the HTTP surface does not expose -- the dashboard authorizes on capabilities, and role 5
-// (owner) is the one carrying `*`.
-async function cmdLogin() {
-  const reg = await request(`http://127.0.0.1:${WEBAPI}/api/public/registration/new`, {
+// A throwaway player, kept at a fixed address so re-runs reuse it; `cleanup` deletes it.
+const PLAYER = { email: 'run-skill@vortex.local', password: 'RunSkill!2026' };
+const WEB_COOKIE = 'habbo-web-session';
+
+function sessionCookie(res) {
+  const c = [].concat(res.headers['set-cookie'] || []).find((x) => x.startsWith(`${WEB_COOKIE}=`));
+  return c ? c.split(';')[0] : null;
+}
+
+// Registration (or login when the address exists), an avatar, then a single-use SSO ticket --
+// exactly what the site does before it opens the client.
+async function ssoTicket() {
+  const base = `http://127.0.0.1:${WEBAPI}`;
+  const json = (o) => JSON.stringify(o);
+  let res = await request(`${base}/api/public/registration/new`, {
     method: 'POST',
-    body: JSON.stringify({
-      email: OPERATOR.email,
-      password: OPERATOR.password,
-      passwordRepeated: OPERATOR.password,
-    }),
+    body: json({ email: PLAYER.email, password: PLAYER.password, passwordRepeated: PLAYER.password }),
   });
-  if (reg.status !== 200 && reg.status !== 409) die(`Registration failed: ${reg.status} ${reg.body}`);
-  log(reg.status === 200 ? `Registered ${OPERATOR.email}.` : `${OPERATOR.email} already exists, reusing.`);
+  if (res.status === 409) {
+    res = await request(`${base}/api/public/authentication/login`, {
+      method: 'POST',
+      body: json({ email: PLAYER.email, password: PLAYER.password }),
+    });
+  }
+  const cookie = sessionCookie(res);
+  if (!cookie) die(`No ${WEB_COOKIE} cookie: ${res.status} ${res.body}`);
+  const headers = { cookie };
 
-  const id = sql(`SELECT id FROM player_accounts WHERE email='${OPERATOR.email}' LIMIT 1;`);
-  if (!id) die('Account row not found after registration.');
-  sql(
-    `INSERT INTO player_account_roles (account_id, role_id, created_at, updated_at) ` +
-      `SELECT ${id}, ${OWNER_ROLE_ID}, NOW(6), NOW(6) FROM DUAL ` +
-      `WHERE NOT EXISTS (SELECT 1 FROM player_account_roles WHERE account_id=${id} AND role_id=${OWNER_ROLE_ID});`,
-  );
-
-  const res = await request(`http://127.0.0.1:${DASH}/api/login`, {
+  let avatars = JSON.parse((await request(`${base}/api/user/avatars`, { headers })).body);
+  if (!avatars.length) {
+    res = await request(`${base}/api/user/avatars`, {
+      method: 'POST',
+      headers,
+      body: json({ name: '', figure: 'hd-180-1.ch-210-66.lg-270-82.sh-290-80', gender: 'M' }),
+    });
+    if (res.status !== 200) die(`Avatar creation failed: ${res.status} ${res.body}`);
+    avatars = JSON.parse(res.body);
+  }
+  res = await request(`${base}/api/user/avatars/select`, {
     method: 'POST',
-    body: JSON.stringify({ email: OPERATOR.email, password: OPERATOR.password }),
+    headers,
+    body: json({ uniqueId: avatars[0].uniqueId }),
   });
-  if (res.status !== 200) die(`Dashboard login failed: ${res.status} ${res.body}`);
-  const setCookie = [].concat(res.headers['set-cookie'] || []).find((c) => c.startsWith('dash_session='));
-  if (!setCookie) die('No dash_session cookie in the login response.');
-  const cookie = setCookie.split(';')[0];
-  fs.writeFileSync(COOKIE_FILE, cookie);
-  log(`Dashboard session for account ${id} (role ${OWNER_ROLE_ID}) -> ${COOKIE_FILE}`);
+  if (res.status !== 200) die(`Avatar selection failed: ${res.status} ${res.body}`);
+  res = await request(`${base}/api/ssotoken`, { headers });
+  if (res.status !== 200) die(`SSO ticket refused: ${res.status} ${res.body}`);
+  log(`Player ${avatars[0].name} (id ${avatars[0].uniqueId}) holds an SSO ticket.`);
+  return JSON.parse(res.body).ssoToken;
 }
 
-function cookie() {
-  if (!fs.existsSync(COOKIE_FILE)) die('No session. Run: node .../driver.mjs login');
-  return fs.readFileSync(COOKIE_FILE, 'utf8').trim();
-}
+// The core loop, end to end: SSO -> AuthenticationOK, UserRights, RoomForward -> room entry ->
+// heightmap and avatars -> one step -> the step echoed back.
+async function cmdPlay() {
+  const ticket = await ssoTicket();
+  const g = await gameSocket().catch((e) => die(`Socket error on :${GAME_TCP}: ${e.message}`));
+  const fail = (m) => {
+    g.close();
+    die(m);
+  };
 
-async function cmdApi(p) {
-  if (!p) die('usage: api /api/<path>');
-  const res = await request(`http://127.0.0.1:${DASH}${p}`, { headers: { cookie: cookie() } });
-  log(`GET :${DASH}${p} -> ${res.status}`);
-  if (res.status === 401)
-    // Sessions live in a ConcurrentDictionary, not the database: a restart of the host voids every
-    // cookie, and the only symptom is a 401 on a path that worked a minute ago.
-    log('  (401 -- the emulator restarted since `login`. Re-run `login`.)');
-  log(res.body.length > 4000 ? res.body.slice(0, 4000) + `\n... (${res.body.length} bytes)` : res.body);
+  g.send(frame(H.sso, ticket, 0));
+  const forward = await g.wait([H.roomForward]);
+  const seen = g.frames.map((f) => f.header);
+  log(`SSO -> ${seen.join(', ')}`);
+  if (!seen.includes(H.authOk)) fail('No AuthenticationOK: the ticket was refused.');
+  if (!forward) fail('No RoomForward: is world.start_room_id set? (scripts/sql/dev_zone.sql)');
+  const roomId = forward.body.readInt32BE(0);
+
+  const before = g.frames.length;
+  g.send(frame(H.openFlat, roomId, '', -1));
+  const users = await g.wait([H.users, H.cantConnect], before, 10000);
+  if (!users || users.header === H.cantConnect) fail(`Room ${roomId} refused or silent.`);
+  const entry = g.frames.slice(before);
+  const has = (h) => entry.some((f) => f.header === h);
+  log(`room ${roomId} -> ${entry.map((f) => f.header).join(', ')}`);
+  if (!has(H.heightMap) || !has(H.floorHeightMap)) fail('No heightmap in the room entry.');
+
+  // One step off the door tile; the room's avatar tick answers with a UserUpdate.
+  const tile = entry.find((f) => f.header === H.entryTile);
+  const [x, y] = tile ? [tile.body.readInt32BE(0), tile.body.readInt32BE(4)] : [3, 5];
+  const step = g.frames.length;
+  g.send(frame(H.moveAvatar, x + 1, y));
+  const moved = await g.wait([H.userUpdate], step, 5000);
+  g.close();
+  if (!moved) die(`No UserUpdate after MoveAvatar to (${x + 1},${y}).`);
+  log(`MoveAvatar (${x + 1},${y}) -> UserUpdate. Zone OK.`);
 }
 
 function cmdCleanup() {
-  const id = sql(`SELECT id FROM player_accounts WHERE email='${OPERATOR.email}' LIMIT 1;`);
+  const id = sql(`SELECT id FROM player_accounts WHERE email='${PLAYER.email}' LIMIT 1;`);
   if (!id) return log('Nothing to clean up.');
+  const players = `SELECT id FROM players WHERE account_id=${id}`;
+  sql(`DELETE FROM security_tickets WHERE player_id IN (${players});`);
+  sql(`DELETE FROM room_entry_logs WHERE player_id IN (${players});`);
+  sql(`DELETE FROM players WHERE account_id=${id};`);
   sql(`DELETE FROM player_account_roles WHERE account_id=${id};`);
   sql(`DELETE FROM player_accounts WHERE id=${id};`);
-  fs.rmSync(COOKIE_FILE, { force: true });
-  log(`Deleted the throwaway operator account ${id}.`);
-}
-
-// ---------------------------------------------------------------- screenshots
-
-function edgeExe() {
-  const candidates = [
-    process.env.VORTEX_EDGE,
-    'C:\\Program Files (x86)\\Microsoft\\Edge\\Application\\msedge.exe',
-    'C:\\Program Files\\Microsoft\\Edge\\Application\\msedge.exe',
-  ].filter(Boolean);
-  return candidates.find((c) => fs.existsSync(c)) ?? null;
-}
-
-// Headless Edge driven over CDP. `--screenshot` alone cannot photograph a dashboard page: every
-// route but the login screen is behind dash_session, and a plain headless load only ever captures
-// the login form. Injecting the cookie needs a debugger connection, so that is what this does.
-async function cmdShot(route = '/', out = null) {
-  const exe = edgeExe();
-  if (!exe) die('Edge not found. Set VORTEX_EDGE to msedge.exe.');
-  const outFile = out ?? path.join(STATE, `shot${route.replace(/[^a-z0-9]+/gi, '-')}.png`);
-  const port = 9500 + Math.floor(Math.random() * 400);
-  const profile = path.join(STATE, `edge-profile-${port}`);
-
-  const edge = spawn(
-    exe,
-    [
-      '--headless=new',
-      '--disable-gpu',
-      '--hide-scrollbars',
-      '--window-size=1600,1000',
-      `--remote-debugging-port=${port}`,
-      `--user-data-dir=${profile}`,
-      'about:blank',
-    ],
-    { stdio: 'ignore' },
-  );
-
-  try {
-    let target = null;
-    for (let i = 0; i < 40 && !target; i++) {
-      await sleep(250);
-      try {
-        const list = JSON.parse((await request(`http://127.0.0.1:${port}/json/list`)).body);
-        target = list.find((t) => t.type === 'page');
-      } catch {
-        /* devtools not listening yet */
-      }
-    }
-    if (!target) die('Edge devtools endpoint never came up.');
-
-    const ws = new WebSocket(target.webSocketDebuggerUrl);
-    await new Promise((r, j) => {
-      ws.onopen = r;
-      ws.onerror = j;
-    });
-    let seq = 0;
-    const pending = new Map();
-    const events = new Map();
-    ws.onmessage = (m) => {
-      const msg = JSON.parse(m.data);
-      if (msg.id && pending.has(msg.id)) {
-        pending.get(msg.id)(msg.result);
-        pending.delete(msg.id);
-      } else if (msg.method && events.has(msg.method)) {
-        events.get(msg.method)();
-        events.delete(msg.method);
-      }
-    };
-    const send = (method, params = {}) =>
-      new Promise((r) => {
-        const id = ++seq;
-        pending.set(id, r);
-        ws.send(JSON.stringify({ id, method, params }));
-      });
-
-    await send('Network.enable');
-    await send('Page.enable');
-    if (fs.existsSync(COOKIE_FILE)) {
-      const raw = cookie();
-      const name = raw.slice(0, raw.indexOf('='));
-      const value = raw.slice(raw.indexOf('=') + 1);
-      // `url` rather than `domain`: with domain alone Edge accepts the call and stores nothing,
-      // and the only symptom is a screenshot of the login form. secure:false because the dashboard
-      // drops Secure when HTTPS is off, and this browser talks plain http to loopback.
-      const set = await send('Network.setCookie', {
-        name,
-        value,
-        url: `http://127.0.0.1:${DASH}/`,
-        path: '/',
-        secure: false,
-        sameSite: 'Lax',
-      });
-      if (!set.success) die('CDP refused the dash_session cookie; re-run `login`.');
-    }
-    // The theme is a localStorage preference, not an account setting, and a fresh profile has
-    // none -- so every screenshot came out in the default blue while the operator complaining
-    // about the page was looking at dark. Seed it before the SPA boots and reads it once.
-    if (process.env.VORTEX_DASH_THEME) {
-      await send('Page.addScriptToEvaluateOnNewDocument', {
-        source: `try { localStorage.setItem('turbo-dashboard-theme', ${JSON.stringify(process.env.VORTEX_DASH_THEME)}); } catch {}`,
-      });
-    }
-    const loaded = new Promise((r) => events.set('Page.loadEventFired', r));
-    await send('Page.navigate', { url: `http://127.0.0.1:${DASH}${route}` });
-    await loaded;
-    await sleep(2500); // the SPA hydrates and fetches after load; without this the shot is a skeleton
-    // Half the things worth photographing are behind a click -- an expanded row, an open editor --
-    // and they live in component state, not in the URL, so no route reaches them.
-    //   VORTEX_DASH_CLICK="[...document.querySelectorAll('button')].find(b => /Produits/i.test(b.textContent))?.click()"
-    if (process.env.VORTEX_DASH_CLICK) {
-      const r = await send('Runtime.evaluate', { expression: process.env.VORTEX_DASH_CLICK, awaitPromise: true, returnByValue: true });
-      // Logged, so the same hook answers "why is this button the wrong colour" with a
-      // getComputedStyle expression instead of another round of reading the stylesheet.
-      if (r?.result?.value !== undefined) log(`eval -> ${JSON.stringify(r.result.value)}`);
-      if (r?.exceptionDetails) log(`eval threw: ${r.exceptionDetails.text}`);
-      await sleep(1500);
-    }
-    const shot = await send('Page.captureScreenshot', { format: 'png' });
-    fs.writeFileSync(outFile, Buffer.from(shot.data, 'base64'));
-    ws.close();
-    log(`Screenshot -> ${outFile}`);
-  } finally {
-    edge.kill();
-  }
+  log(`Deleted the throwaway account ${id} and its players.`);
 }
 
 // ---------------------------------------------------------------- smoke
@@ -521,8 +458,7 @@ async function cmdSmoke() {
   await cmdStart();
   await cmdHealth();
   await cmdPing();
-  await cmdLogin();
-  await cmdApi('/api/v1/monitoring/overview');
+  await cmdPlay();
   log('\nSmoke OK.');
 }
 
@@ -537,9 +473,7 @@ const table = {
   logs: cmdLogs,
   ping: cmdPing,
   health: cmdHealth,
-  login: cmdLogin,
-  api: cmdApi,
-  shot: cmdShot,
+  play: cmdPlay,
   cleanup: cmdCleanup,
   smoke: cmdSmoke,
 };
@@ -547,19 +481,16 @@ const table = {
 if (!cmd || !table[cmd]) {
   log(`usage: node driver.mjs <command>
 
-  smoke              start + health + ping + login + one dashboard read
-  mysql              start Laragon MySQL if 3306 is closed
-  start              launch Vortex.Main (reuses one already running; never stops it)
-  status             pids and the four ports
-  stop               stop ONLY an emulator this driver started
-  logs [n]           tail the console log of the emulator this driver started
-  health             /health, /api/public/info/hello, /metrics, dashboard shell
-  ping [id]          raw Habbo frame on :${GAME_TCP} -- 544 out, 188 back
-  login              throwaway owner account + dashboard session cookie
-  api <path>         authenticated GET against the dashboard API
-  shot [route] [png] headless Edge screenshot of a dashboard route (uses the cookie).
-                     The SPA is HASH-routed: '#/rooms', not '/rooms'.
-  cleanup            delete the throwaway operator account`);
+  smoke     start + health + ping + play
+  mysql     start Laragon MySQL if 3306 is closed
+  start     launch Vortex.Main (reuses one already running; never stops it)
+  status    pids and the ports
+  stop      stop ONLY an emulator this driver started
+  logs [n]  tail the console log of the emulator this driver started
+  health    /health and /api/public/info/hello
+  ping      raw frame on :${GAME_TCP} -- ${H.initDiffie} out, ${H.initDiffieReply} back
+  play      throwaway player -> SSO -> start zone -> heightmap -> one step
+  cleanup   delete the throwaway account and its players`);
   process.exit(cmd ? 1 : 0);
 }
 

@@ -18,21 +18,11 @@ Use this as a starting map for update-mode impact detection. Refine using projec
 | paths containing `Wired` | wireds | rooms, protocol, persistence |
 | `Vortex.Players/**` | players/presence | auth, social, economy, rooms |
 | `Vortex.Authentication/**` | authentication | session startup, players |
-| `Vortex.Social/**` | social | players, presence |
-| `Vortex.Navigator/**` | navigator | rooms |
-| `Vortex.Catalog/**` | catalog/economy | inventory, currencies, marketplace |
-| `Vortex.Inventory/**` | inventory | catalog, rooms, marketplace |
-| `Vortex.Marketplace/**` | marketplace | inventory, currencies |
-| `Vortex.Collectibles/**` | collectibles | inventory/economy |
-| `Vortex.Progression/**` | progression | players/economy |
 | `Vortex.Database/**` | database | all domains touched by entities/migrations |
-| `Vortex.Dashboard.API/**` | dashboard API | auth, DB, grains, capabilities |
-| `Vortex.Dashboard.Web/**` | dashboard web | dashboard capability/route parity |
 | `Vortex.WebApi/**` | public/web API | auth, data/live operations |
 | `Vortex.Plugins/**` | plugins | runtime/extensibility/revisions |
 | `Vortex.Observability/**` | observability | operations |
 | `Vortex.Logging/**` | logging | operations |
-| `Vortex.Supervisor/**` | supervisor | operations/deployment |
 | `Vortex.LoadGen/**` | load testing | performance/testing |
 | `Vortex.Benchmark/**` | benchmarks | performance/testing |
 | `Directory.Build.*` | global architecture/build | overview, testing |

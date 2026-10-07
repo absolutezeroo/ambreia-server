@@ -66,15 +66,6 @@ public sealed record HealthResponse(
 /// </summary>
 public sealed record LoginResponse(bool RequiresOnboarding);
 
-/// <summary>How many sessions the password change ended — the caller's own included.</summary>
-public sealed record PasswordChangeResponse(int SessionsRevoked);
-
-/// <summary>
-/// The address the link went to, echoed as habbo.com's site shows it back ("un e-mail a été envoyé
-/// à …"). The same answer whether or not an account uses it.
-/// </summary>
-public sealed record ForgotPasswordResponse(string Email);
-
 /// <summary>The account id a registration created.</summary>
 public sealed record RegistrationResponse(int Id);
 
@@ -85,76 +76,8 @@ public sealed record SsoTicketResponse(string SsoToken);
 public sealed record NameCheckResponse(string Name, bool Valid);
 
 /// <summary>
-/// The preferences this hotel stores for the selected avatar. habbo.com's own privacy form carries
-/// six more — online status, follow, friend requests, the newsletter, the GDPR export — and every
-/// one of them would need a surface this emulator does not have: hiding an online status means
-/// hiding it on the game socket too, and a newsletter means an outbound mail path. One field is what
-/// can be honoured, so one field is what is offered.
-/// </summary>
-public sealed record PlayerPreferencesResponse(bool ProfileVisible);
-
-/// <summary>
-/// The address the account signs in with. <paramref name="Verified"/> is always false and says so
-/// rather than being left out: this hotel has no way to send to an address, so none has ever been
-/// confirmed, and the website shows that state instead of a "resend verification" button that would
-/// do nothing.
-/// </summary>
-public sealed record AccountEmailResponse(string Email, bool Verified);
-
-/// <summary>
-/// Whether the account's safety lock is on. While it is, the account cannot spend — no catalog
-/// purchase, no marketplace — and the server enforces that, not only the client.
-/// </summary>
-public sealed record SafetyLockResponse(bool Locked);
-
-/// <summary>
-/// The account's protection, as both the settings page and the challenge dialog need it.
-/// </summary>
-/// <param name="Configured">Whether the account has security questions at all.</param>
-/// <param name="Question1">
-/// The first question's NUMBER, 1 to 9, or 0 when there are none. Only the number travels: the
-/// wording is <c>IDENTITY_SAFETYQUESTION_&lt;n&gt;</c> in whichever language the reader is using, so
-/// freezing a sentence here would pin the account to one language.
-/// </param>
-/// <param name="Question2">The second question's number, or 0.</param>
-/// <param name="Trusted">
-/// Whether THIS session has cleared the challenge. Always true when there are no questions. The
-/// site reads it to know a risky action will be refused before it tries.
-/// </param>
-/// <param name="Locked">
-/// Whether the safety lock is on — the same flag <c>/api/user/safetylock</c> reports, repeated here
-/// so the page can say in one call what answering would lift.
-/// </param>
-public sealed record SafetyQuestionsResponse(
-    bool Configured,
-    int Question1,
-    int Question2,
-    bool Trusted,
-    bool Locked
-);
-
-/// <summary>How many trusted locations were forgotten.</summary>
-public sealed record TrustedLocationsResetResponse(int Forgotten);
-
-/// <summary>Whether the account has a confirmed second factor.</summary>
-public sealed record TwoFactorStatusResponse(bool Enabled);
-
-/// <summary>
-/// A secret and the <c>otpauth://</c> URI an authenticator reads, neither of them stored yet —
-/// enrolment is two steps precisely so that someone who walks away from the dialog has not locked
-/// themselves out of their own account.
-/// </summary>
-public sealed record TwoFactorEnrolmentResponse(string Secret, string Uri);
-
-/// <summary>
 /// The name the new-user step assigned. A name already taken is a 409 carrying
 /// <see cref="ApiErrorResponse"/> — the site's own comment claimed it was a 200 with an error in the
 /// body, which is not what this API has ever done.
 /// </summary>
 public sealed record NameSelectResponse(string Name);
-
-/// <summary>
-/// How many notifications the read swept up. Answered rather than an empty 200 so the page can
-/// zero its own counter without refetching the list it is already showing.
-/// </summary>
-public sealed record NotificationsReadResponse(int Read);

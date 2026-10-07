@@ -9,7 +9,6 @@
       "Bash(dotnet restore:*)",
       "Bash(dotnet tool restore:*)",
       "Bash(node scripts/hooks/:*)",
-      "Bash(npm run lint:*)",
       "Bash(git status:*)",
       "Bash(git diff:*)",
       "Bash(git log:*)",
@@ -25,7 +24,7 @@
             "type": "command",
             "command": "node",
             "args": ["scripts/hooks/post-edit.mjs"],
-            "statusMessage": "Verification dashboard/front-end",
+            "statusMessage": "Verification apres edition",
             "timeout": 60
           }
         ]

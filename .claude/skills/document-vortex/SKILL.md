@@ -17,13 +17,9 @@ Generate technical documentation for the **current Vortex Cloud codebase**. The 
 /document-vortex validate
 /document-vortex topic rooms
 /document-vortex topic protocol
-/document-vortex topic dashboard
-/document-vortex topic economy
-/document-vortex topic wireds
 /document-vortex topic orleans
 /document-vortex topic database
 /document-vortex topic networking
-/document-vortex topic moderation
 /document-vortex topic plugins
 /document-vortex full --docs-dir docs/internal/codebase
 ```
@@ -77,8 +73,6 @@ Produce documentation useful to a developer who needs to:
 - understand Orleans grain responsibilities and state ownership,
 - understand room lifecycle and room tick behavior,
 - understand persistence and EF Core mappings,
-- understand catalog/economy/inventory/marketplace flows,
-- understand dashboard API operations and their relationship to live grain state,
 - understand protocol revisions and specs,
 - identify extension/plugin points,
 - understand observability, startup, deployment and testing,
@@ -106,7 +100,7 @@ Inventory must cover at least:
 - outgoing composers/serializers,
 - revision parsers/serializers/header registries,
 - database contexts/entities/configurations/migrations,
-- Web API and Dashboard API endpoints,
+- Web API endpoints,
 - configuration keys,
 - tests and benchmarks,
 - plugins/extension registration,
@@ -125,9 +119,7 @@ Recommended agents:
 - `vortex-protocol-researcher`
 - `vortex-orleans-researcher`
 - `vortex-rooms-researcher`
-- `vortex-gameplay-economy-researcher`
 - `vortex-database-researcher`
-- `vortex-dashboard-api-researcher`
 - `vortex-plugins-observability-researcher`
 - `vortex-doc-validator`
 
@@ -288,25 +280,6 @@ For Wireds, document:
 
 Do not flatten distinct Wired abstractions into one generic "engine" unless the implementation does.
 
-### Economy and inventory
-
-Trace money/item ownership changes end-to-end. Cover, where present:
-
-- catalog purchase,
-- credits/currencies,
-- inventory insertion/removal,
-- furniture placement/pickup,
-- marketplace,
-- collectibles,
-- progression rewards,
-- limited items,
-- transaction boundaries,
-- concurrency serialization via grains,
-- DB writes and live-state synchronization,
-- outgoing wallet/inventory updates.
-
-Pages must identify the authoritative mutation path and not just the UI/handler entrypoint.
-
 ### Database
 
 Document:
@@ -322,21 +295,6 @@ Document:
 - write patterns and transaction boundaries.
 
 Do not generate a giant property dump as the main database documentation. Prefer bounded-context views, then generated indexes for exhaustive lists.
-
-### Dashboard API
-
-The Dashboard API is not merely CRUD documentation. For each capability, determine whether it:
-
-- queries database read models,
-- invokes Orleans grains,
-- mutates grain-owned state,
-- performs an operation/command,
-- relies on live runtime state,
-- emits audit events,
-- requires a permission/capability,
-- has a corresponding dashboard route/UI.
-
-Flag documentation when an admin operation could cause DB/live-state divergence if implemented incorrectly. Do not claim an endpoint is safe merely because it persists successfully.
 
 ### Plugins and revisions
 
@@ -361,12 +319,8 @@ A `full` run should reconstruct and document, if implemented:
 5. movement/tick update path,
 6. furniture placement/pickup,
 7. wired execution,
-8. catalog purchase -> wallet/inventory mutation,
-9. marketplace listing/purchase,
-10. friend/social action,
-11. dashboard admin mutation -> live system effect,
-12. persistence flush/deactivation,
-13. plugin/revision load.
+8. persistence flush/deactivation,
+9. plugin/revision load.
 
 If a flow is not implemented or cannot be proven, mark it accordingly.
 
@@ -407,28 +361,12 @@ docs/codebase/
 │   ├── furniture.md
 │   └── wireds.md
 ├── 05-gameplay/
-│   ├── players.md
-│   ├── social.md
-│   ├── navigator.md
-│   ├── progression.md
-│   └── collectibles.md
-├── 06-economy/
-│   ├── overview.md
-│   ├── catalog.md
-│   ├── inventory.md
-│   ├── marketplace.md
-│   └── transactions.md
+│   └── players.md
 ├── 07-database/
 │   ├── overview.md
 │   ├── ownership-boundaries.md
 │   ├── entities-and-relationships.md
 │   └── migrations.md
-├── 08-dashboard/
-│   ├── api-architecture.md
-│   ├── authentication-authorization.md
-│   ├── capabilities.md
-│   ├── read-models.md
-│   └── operations.md
 ├── 09-extensibility/
 │   ├── plugins.md
 │   └── protocol-revision-plugins.md
@@ -441,8 +379,7 @@ docs/codebase/
 │   ├── authentication.md
 │   ├── packet-roundtrip.md
 │   ├── room-entry.md
-│   ├── catalog-purchase.md
-│   └── dashboard-live-mutation.md
+│   └── room-entry-and-movement.md
 └── generated/
     ├── project-index.md
     ├── project-dependencies.md
@@ -562,7 +499,6 @@ Document only the selected domain plus the minimum neighboring systems necessary
 Examples:
 
 - `topic wireds`: rooms, relevant packets, furniture/wired model, persistence, revision serializers.
-- `topic dashboard`: Dashboard API, auth/capabilities, read models, grain operations, DB/live ownership.
 - `topic protocol`: networking/pipeline/messages/revisions/specs; do not expand all gameplay domains.
 - `topic orleans`: grain topology, ownership, persistence, routing, lifecycle, concurrency.
 

@@ -1,5 +1,9 @@
 # Walkthrough: Add a Feature End-to-End
 
+> **Coupe au noyau (2026-10-07).** Les exemples de ce guide citent des messages, systèmes ou
+> logiques retirés depuis (chat, expressions, dés…). La mécanique décrite reste juste ; les
+> exemples seront réécrits sur le noyau lors de la passe de guidage de l'IA.
+
 This is the project's "hello world." It shows how to add a brand-new client-driven
 feature across **every layer it must touch**, in the order you should touch them, using
 the real shapes that exist in the repository. Once you can do this, every other packet

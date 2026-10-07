@@ -1,5 +1,9 @@
 ﻿# Request Lifecycle: From Socket to Client
 
+> **Coupe au noyau (2026-10-07).** Les exemples de ce guide citent des messages, systèmes ou
+> logiques retirés depuis (chat, expressions, dés…). La mécanique décrite reste juste ; les
+> exemples seront réécrits sur le noyau lors de la passe de guidage de l'IA.
+
 This document traces **one real incoming packet** â€” a chat message â€” through every
 layer of Vortex Cloud, using the actual code that ships in the repository today. If
 you understand this one flow, you understand how the whole emulator is wired:

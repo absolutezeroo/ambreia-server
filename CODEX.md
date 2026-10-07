@@ -19,9 +19,6 @@ boundary, and the rule that the server and client roots must stay separate.
 - Do not query database contexts/repositories from packet handlers.
 - Do not send composers directly to sockets/sessions from handlers; route via `PlayerPresenceGrain.SendComposerAsync`.
 - For `Revision<id>` parser/serializer work, edit `../turbo-sample-plugin/TurboSamplePlugin/Revision/**`, not `vortex-cloud`.
-- A new dashboard capability must be added to **all six** files listed in `AGENTS.md`
-  ("Add dashboard capability or admin page"). Nothing in the build or the tests catches a missing
-  copy — it fails at runtime with `AuthorizationPolicy named '<capability>' was not found`.
 
 ## Validation commands
 ```bash

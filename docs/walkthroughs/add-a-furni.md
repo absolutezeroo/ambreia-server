@@ -1,5 +1,9 @@
 # Walkthrough: Add a furni that does something
 
+> **Coupe au noyau (2026-10-07).** Les exemples de ce guide citent des messages, systèmes ou
+> logiques retirés depuis (chat, expressions, dés…). La mécanique décrite reste juste ; les
+> exemples seront réécrits sur le noyau lors de la passe de guidage de l'IA.
+
 Most furniture needs no code. A sofa is a row in `furniture_definitions` with `can_sit` set, and the
 room already knows what to do with it. This is about the other kind: a box that reacts — a die that
 rolls, a gate that opens, a crackable egg, a teleport.

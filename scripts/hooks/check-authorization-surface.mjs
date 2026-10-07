@@ -118,7 +118,6 @@ for (const ifaceDir of ifaceRoots) {
 const impls = new Map();
 for (const f of [
   ...walk(join(root, 'Vortex.Rooms')),
-  ...walk(join(root, 'Vortex.Social')),
   ...walk(join(root, 'Vortex.Players')),
 ]) {
   const src = strip(readFileSync(f, 'utf8'));

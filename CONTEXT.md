@@ -2,6 +2,11 @@
 
 `Vortex.Cloud.sln` is the main emulator solution. `Vortex.Main` is the runtime host and composition root.
 
+This is the RPG fork cut to its core (2026-10-07, `docs/superpowers/plans/2026-10-07-coupe-noyau.md`):
+the network, sign-in, rooms as zones (heightmap, pathfinding, avatars, furniture) and nothing else.
+Chat, economy, social, navigator, progression, moderation and the dashboard are gone; the RPG
+systems come back on this base, one phase at a time (spec `docs/superpowers/specs/2026-10-05-habbo-rpg-design.md`).
+
 ## Core structure and responsibilities
 - `Vortex.Main/`
   - Host startup and wiring (`Program.cs`), configuration, lifetime, and console commands.
@@ -11,23 +16,23 @@
   - Incoming message handling orchestration and domain dispatch.
 - `Vortex.Events/`
   - Event behavior/handler pipeline registration and execution.
-- `Vortex.*` domain modules (`Rooms`, `Players`, `Catalog`, `Inventory`, etc.) — the Platform layer
-  - Domain services, snapshot providers, and Orleans grain orchestration.
+- `Vortex.Rooms/`, `Vortex.Players/`, `Vortex.Furniture/` — the Platform layer
+  - Zones (map, heightmap, pathfinding, avatars, furniture), the player's card and presence,
+    furniture definitions and stuff data.
 - `Vortex.Permissions/`
-  - Roles and capabilities, sanction presets, the call-for-help catalogue, the hotel-wide word filter.
-- `Vortex.WebApi/`, `Vortex.WebApi.Authentication/`, `Vortex.WebApi.Shop/` — the Web layer
-  - The public site's API, its accounts (passwords, second factors, e-mail), its shop.
-- `Vortex.Dashboard.*` — the Operations layer.
+  - Roles and capabilities.
+- `Vortex.WebApi/`, `Vortex.WebApi.Authentication/` — the Web layer
+  - Registration, login, avatar creation and the SSO ticket.
 - `Vortex.Database/`
   - EF Core context and persistence infrastructure.
 - `Vortex.Primitives/`
   - Cross-module contracts, identifiers, snapshots, and message types.
 
 ## Hard boundaries
-Four of these are no longer prose: `scripts/hooks/check-architecture-walls.mjs` fails the build on a
-packet handler that reaches for the database, a dashboard `SaveChanges` that bypasses the owning
-grain, a new wire-protocol import inside the contracts hub, and a reference that points up the
-layers (Core → Platform/Web/Operations, Platform → Web/Operations; see `AGENTS.md`, "Layers"). The rest still rely on review.
+Three of these are no longer prose: `scripts/hooks/check-architecture-walls.mjs` fails the build on a
+packet handler that reaches for the database, a new wire-protocol import inside the contracts hub,
+and a reference that points up the layers (Core → Platform/Web, Platform → Web; see `AGENTS.md`,
+"Layers"). The rest still rely on review.
 
 - Keep host composition and module registration in `Vortex.Main`; avoid leaking host concerns into domain modules.
 - Keep packet handlers focused on request/response orchestration, not persistence infrastructure wiring.
@@ -47,10 +52,9 @@ layers (Core → Platform/Web/Operations, Platform → Web/Operations; see `AGEN
   loudly on a second silo — they just go quietly stale. A second silo is refused at startup unless
   `Vortex:Orleans:MultiSiloReady` is set; that property's XML doc carries the current inventory of
   what has to become cluster-aware first, and is the one place it is kept.
-- Extended profile flow boundary:
-  - `Vortex.PacketHandlers/Users/*ExtendedProfile*Handler.cs` orchestrates lookup + response mapping only.
+- Player lookup boundary:
   - `Vortex.Players/Grains/PlayerDirectoryGrain.cs` owns username/id lookup semantics and cache coherence.
-  - `Vortex.Players/Grains/PlayerGrain.cs` exposes profile snapshots consumed by handlers.
+  - `Vortex.Players/Grains/PlayerGrain.cs` owns the player's card (name, motto, look) and its summary snapshot.
 
 ## Data and lookup semantics
 - Username-to-id lookup behavior is case-insensitive.
@@ -61,7 +65,9 @@ layers (Core → Platform/Web/Operations, Platform → Web/Operations; see `AGEN
 - Connection accepted:
   - session is added to gateway/session tracking.
 - After SSO success:
-  - session is registered to `PlayerPresenceGrain` for that player id.
+  - session is registered to `PlayerPresenceGrain` for that player id;
+  - the burst is `AuthenticationOK`, `UserRights`, then `RoomForward` to `world.start_room_id`
+    (server config; 0 = none). `scripts/sql/dev_zone.sql` creates the development zone and sets it.
 - Player outbound targeting:
   - resolve target player's presence grain
   - call `SendComposerAsync`
@@ -73,7 +79,7 @@ layers (Core → Platform/Web/Operations, Platform → Web/Operations; see `AGEN
 
 ## Grain runtime patterns
 - Every grain that does cross-grain calls or DB work must inject `ILogger<T>` and log caught exceptions. No bare `catch { }`.
-- Independent grain calls (e.g. checking online status for N friends) must use `Task.WhenAll`, not sequential `await` in a loop.
+- Independent grain calls (e.g. checking online status for N players) must use `Task.WhenAll`, not sequential `await` in a loop.
 - Identical grain calls must not repeat inside loops — hoist before the loop.
 - DB batch operations use single `WHERE ... IN (...)` queries, not per-entity `ExecuteDeleteAsync` loops.
 - Housekeeping writes (e.g. delivered flags) follow the timer-flush pattern: queue dirty state, flush with `RegisterGrainTimer`, flush on `OnDeactivateAsync`. See `RoomPersistenceGrain` for reference.
@@ -82,7 +88,7 @@ layers (Core → Platform/Web/Operations, Platform → Web/Operations; see `AGEN
 - Replace `.Ignore()` on grain tasks with a `LogAndForget` helper that logs faulted continuations.
 - In-memory collections that grow per-event (message history, queues) must have a configurable cap.
 - One grain per responsibility: isolate heavy I/O (DB writes, persistence) into secondary grains so the primary domain grain stays responsive (e.g. `RoomGrain` → `RoomPersistenceGrain`).
-- Use grain single-threading for concurrency safety: per-player `CatalogPurchaseGrain` for catalog buys. Do not add manual locks inside grains.
+- Use grain single-threading for concurrency safety: one `PlayerGrain` per player serializes changes to their card. Do not add manual locks inside grains.
 - Grains orchestrate their own outbound: when state changes, the grain sends the composer via `PlayerPresenceGrain.SendComposerAsync`. Callers do not build or send composers after calling a grain method.
 - All mutations to grain-owned data must go through grain methods. Do not update the database directly — grains may hold cached state that will not reflect raw DB changes.
 
@@ -95,15 +101,6 @@ layers (Core → Platform/Web/Operations, Platform → Web/Operations; see `AGEN
   - `Vortex.<Domain>/...` in the existing service/provider structure
 - New grain behavior:
   - `Vortex.<Domain>/Grains/...`
-- New dashboard admin surface:
-  - read API `Vortex.Dashboard.API/Api/DashboardApiService.<Domain>.cs`, writes
-    `Vortex.Dashboard.API/Operations/DashboardOperationsService.<Domain>.cs`, endpoints
-    `Vortex.Dashboard.API/Hosting/DashboardEndpoints.<Domain>.cs`, page
-    `Vortex.Dashboard.Web/src/pages/<Domain>Page.svelte`
-  - the capability string must be added to **four** files — see the checklist in `AGENTS.md`
-    ("Add dashboard capability or admin page") and `docs/walkthroughs/add-a-dashboard-page.md`.
-    Omitting the policy list throws `AuthorizationPolicy named '<capability>' was not found` at
-    runtime; nothing in the build or tests catches it.
 
 ## Pattern references
 Use and adapt these examples before inventing new structure:

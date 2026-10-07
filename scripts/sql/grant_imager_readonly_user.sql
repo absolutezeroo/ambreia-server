@@ -1,7 +1,7 @@
 -- Crée l'utilisateur MySQL en lecture seule de `vortex-imager`.
 --
 -- Pourquoi c'est nécessaire : l'imager est un service séparé, joignable depuis le réseau Docker, et
--- il ne fait que LIRE — vérifié table par table dans `packages/vortex-imager/src`, sept `FROM`/`JOIN`
+-- il ne fait que LIRE — vérifié table par table dans `packages/vortex-imager/src`, sept `FROM`/`JOIN` (cinq tables depuis la coupe au noyau)
 -- et aucun `INSERT`/`UPDATE`/`DELETE`. Lui donner le compte de l'émulateur lui donnerait le droit
 -- d'écrire partout, dont `players` et `furniture`, pour dessiner des avatars. Un compte dédié rend
 -- vrai ce qui n'était que supposé : même si le processus est compromis ou bogué, il ne peut rien
@@ -9,8 +9,6 @@
 --
 -- Ce qu'il lit, et rien d'autre :
 --   players               la figure derrière `?user=`
---   group_badge_parts     les pièces d'un badge de guilde
---   group_colors          leurs palettes
 --   rooms                 le rendu d'appartement
 --   room_models           le plan de la salle rendue
 --   furniture             les meubles qui s'y trouvent
@@ -30,14 +28,12 @@
 CREATE USER IF NOT EXISTS 'vortex_imager'@'%' IDENTIFIED BY '<MOT_DE_PASSE>';
 
 GRANT SELECT ON `development`.`players`               TO 'vortex_imager'@'%';
-GRANT SELECT ON `development`.`group_badge_parts`     TO 'vortex_imager'@'%';
-GRANT SELECT ON `development`.`group_colors`          TO 'vortex_imager'@'%';
 GRANT SELECT ON `development`.`rooms`                 TO 'vortex_imager'@'%';
 GRANT SELECT ON `development`.`room_models`           TO 'vortex_imager'@'%';
 GRANT SELECT ON `development`.`furniture`             TO 'vortex_imager'@'%';
 GRANT SELECT ON `development`.`furniture_definitions` TO 'vortex_imager'@'%';
 
--- Vérification. La liste doit tenir en sept `GRANT SELECT` plus le `GRANT USAGE` que MySQL ajoute
+-- Vérification. La liste doit tenir en cinq `GRANT SELECT` plus le `GRANT USAGE` que MySQL ajoute
 -- toujours : rien sur `*.*`, aucun `ALL PRIVILEGES`, aucun droit d'écriture.
 SHOW GRANTS FOR 'vortex_imager'@'%';
 
