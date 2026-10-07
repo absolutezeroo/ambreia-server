@@ -42,6 +42,9 @@ public static class GrainFactoryExtensions
     public static IZoneTestGrain GetZoneTestGrain(this IGrainFactory factory) =>
         factory.GetGrain<IZoneTestGrain>(0);
 
+    public static IZoneInstanceGrain GetZoneInstanceGrain(this IGrainFactory factory) =>
+        factory.GetGrain<IZoneInstanceGrain>(0);
+
     public static IRoomPersistenceGrain GetRoomPersistenceGrain(
         this IGrainFactory factory,
         RoomId roomId

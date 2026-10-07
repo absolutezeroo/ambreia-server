@@ -169,7 +169,7 @@ public sealed partial class RoomSecurityModule(RoomGrain roomGrain)
             List<RoomControllerSnapshot> result = await dbCtx
                 .RoomRights.AsNoTracking()
                 .Include(r => r.PlayerEntity)
-                .Where(r => r.RoomEntityId == _roomGrain._state.RoomId.Value && r.DeletedAt == null)
+                .Where(r => r.RoomEntityId == _roomGrain.RowId.Value && r.DeletedAt == null)
                 .Select(r => new RoomControllerSnapshot
                 {
                     PlayerId = r.PlayerEntityId,

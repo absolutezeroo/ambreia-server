@@ -76,6 +76,33 @@ internal sealed partial class RoomService(
             return;
         }
 
+        // A dungeon is played in the group's own copy (plan D21): the client is sent there, and
+        // asks for it in turn.
+        RoomId? target = await _grainFactory
+            .GetRoomZone(roomId)
+            .InstanceForAsync(playerId)
+            .ConfigureAwait(false);
+
+        if (target is null)
+        {
+            await playerPresence
+                .SendComposerAsync(
+                    new CantConnectMessageComposer { ErrorType = RoomConnectionErrorType.RoomFull }
+                )
+                .ConfigureAwait(false);
+
+            return;
+        }
+
+        if (target.Value != roomId)
+        {
+            await playerPresence
+                .SendComposerAsync(new RoomForwardMessageComposer { RoomId = target.Value })
+                .ConfigureAwait(false);
+
+            return;
+        }
+
         await playerPresence.ClearActiveRoomAsync(ct).ConfigureAwait(false);
 
         // Pending, not approved: the gates below have not run yet. Approval is granted in

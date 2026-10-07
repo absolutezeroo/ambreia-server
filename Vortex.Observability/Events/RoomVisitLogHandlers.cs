@@ -6,6 +6,8 @@ using Vortex.Database.Context;
 using Vortex.Database.Entities.Room;
 using Vortex.Events.Registry;
 using Vortex.Primitives.Events;
+using Vortex.Primitives.Rooms;
+using Vortex.Primitives.World;
 
 namespace Vortex.Observability.Events;
 
@@ -28,7 +30,12 @@ public sealed class RoomVisitLogEnteredHandler(IDbContextFactory<VortexDbContext
             .ConfigureAwait(false);
 
         dbCtx.RoomEntryLogs.Add(
-            new RoomEntryLogEntity { RoomEntityId = e.RoomId, PlayerEntityId = e.PlayerId }
+            new RoomEntryLogEntity
+            {
+                // A dungeon copy has no row: its visits are its template's.
+                RoomEntityId = ZoneInstanceIds.TemplateOf(new RoomId(e.RoomId)).Value,
+                PlayerEntityId = e.PlayerId,
+            }
         );
 
         await dbCtx.SaveChangesAsync(ct).ConfigureAwait(false);
@@ -51,7 +58,7 @@ public sealed class RoomVisitLogLeftHandler(IDbContextFactory<VortexDbContext> d
         RoomEntryLogEntity? openVisit = await dbCtx
             .RoomEntryLogs.Where(v =>
                 v.PlayerEntityId == e.PlayerId.Value
-                && v.RoomEntityId == e.RoomId
+                && v.RoomEntityId == ZoneInstanceIds.TemplateOf(new RoomId(e.RoomId)).Value
                 && v.ExitedAt == null
             )
             .OrderByDescending(v => v.CreatedAt)

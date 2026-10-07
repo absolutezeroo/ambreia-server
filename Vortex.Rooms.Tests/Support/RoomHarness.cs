@@ -41,6 +41,7 @@ using Vortex.Primitives.Rooms.Snapshots.Avatars;
 using Vortex.Primitives.Rooms.Snapshots.Mapping;
 using Vortex.Primitives.Server.Grains;
 using Vortex.Primitives.World;
+using Vortex.Primitives.World.Grains;
 using Vortex.Rooms.Configuration;
 using Vortex.Rooms.Grains;
 using Vortex.Rooms.Grains.Systems;
@@ -321,6 +322,12 @@ internal sealed class RoomHarness
 
     /// <summary>When set, every zone lookup answers when this completes: a slow database.</summary>
     public TaskCompletionSource<RoomId?>? ZoneLookup { get; set; }
+
+    /// <summary>The copy the instance directory hands out; null = every copy is taken.</summary>
+    public RoomId? InstanceToGive { get; set; }
+
+    /// <summary>Every copy asked for, as (template, group).</summary>
+    public List<(RoomId Template, string Group)> InstanceRequests { get; } = [];
 
     /// <summary>The zone rooms that answer "full" to an announced arrival.</summary>
     public HashSet<RoomId> FullZones { get; } = [];
@@ -626,6 +633,19 @@ internal sealed class RoomHarness
 
                 return FakeProxy.Create<IRoomZone>(inner =>
                 {
+                    if (inner.Method.Name == nameof(IRoomZone.ExpectArrivalAtAsync))
+                    {
+                        ExpectedArrivals.Add(
+                            (
+                                destination,
+                                (PlayerId)inner.Args![0]!,
+                                $"{inner.Args![1]},{inner.Args![2]}"
+                            )
+                        );
+
+                        return null;
+                    }
+
                     if (FullZones.Contains(destination))
                     {
                         return Task.FromResult(false);
@@ -636,6 +656,22 @@ internal sealed class RoomHarness
                     );
 
                     return Task.FromResult(true);
+                });
+            }
+
+            // The dungeon copies: whatever the test says is free, and who asked.
+            if (call.Method.GetGenericArguments()[0] == typeof(IZoneInstanceGrain))
+            {
+                return FakeProxy.Create<IZoneInstanceGrain>(inner =>
+                {
+                    if (inner.Method.Name != nameof(IZoneInstanceGrain.EnterAsync))
+                    {
+                        return null;
+                    }
+
+                    InstanceRequests.Add(((RoomId)inner.Args![0]!, (string)inner.Args![1]!));
+
+                    return Task.FromResult(InstanceToGive);
                 });
             }
 

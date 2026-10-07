@@ -700,6 +700,73 @@ async function cmdTravel() {
   log(`proof_b: arrived on (2,2), the passage's entry. Travel OK.`);
 }
 
+// A dungeon is played in the group's own copy: asking for the template's room forwards the player
+// to a copy (room id >= 1 000 000 000), and they land on the passage's dungeon entry there.
+async function cmdDungeon() {
+  const base = `http://127.0.0.1:${WEBAPI}`;
+  const headers = { cookie: (await webSession()).cookie };
+  sql(`INSERT INTO player_account_roles (account_id, role_id)
+       SELECT a.id, r.id FROM player_accounts a, roles r
+       WHERE a.email='${PLAYER.email}' AND r.\`key\`='owner'
+         AND NOT EXISTS (SELECT 1 FROM player_account_roles x WHERE x.account_id=a.id AND x.role_id=r.id);`);
+  const tiles = Array.from({ length: 100 }, () => ({ height: 0, walkable: true, hole: false }));
+  const doc = {
+    schemaVersion: 1,
+    settings: { id: 'proof_crypt', name: 'Crypte de preuve', type: 'Dungeon' },
+    floor: { width: 10, length: 10, tiles, door: { x: 0, y: 5 }, doorDirection: 2 },
+    entries: [{ id: 'crypt_gate', kind: 'dungeon_entry', cell: { x: 7, y: 7 } }],
+  };
+  let r = await request(`${base}/api/editor/zones`, { method: 'POST', headers, body: JSON.stringify({ key: 'proof_crypt', name: 'Crypte de preuve' }) });
+  if (r.status !== 200 && r.status !== 409) die(`Zone creation: ${r.status} ${r.body}`);
+  r = await request(`${base}/api/editor/zones/proof_crypt/lock`, { method: 'POST', headers });
+  if (r.status !== 200) die(`Lock: ${r.status} ${r.body}`);
+  r = await request(`${base}/api/editor/zones/proof_crypt/versions?comment=driver`, { method: 'POST', headers, body: JSON.stringify(doc) });
+  if (r.status !== 200) die(`Save: ${r.status} ${r.body}`);
+  const saved = JSON.parse(r.body);
+  if (!saved.published) {
+    r = await request(`${base}/api/editor/zones/proof_crypt/publish/${saved.version}`, { method: 'POST', headers });
+    if (r.status !== 200) die(`Publish: ${r.status} ${r.body}`);
+  }
+  const zones = JSON.parse((await request(`${base}/api/editor/zones`, { headers })).body);
+  const template = zones.find((z) => z.key === 'proof_crypt').roomId;
+  log(`Published proof_crypt (Dungeon) on room ${template}.`);
+
+  const ticket = await ssoTicket();
+  const g = await gameSocket().catch((e) => die(`Socket error on :${GAME_TCP}: ${e.message}`));
+  const fail = (m) => {
+    g.close();
+    die(m);
+  };
+  g.send(frame(H.sso, ticket, 0));
+  if (!(await g.wait([H.authOk]))) fail('No AuthenticationOK.');
+  // The sign-in's own RoomForward, to the start zone, comes first; the copy's is the next one.
+  await g.wait([H.roomForward]);
+
+  let before = g.frames.length;
+  g.send(frame(H.openFlat, template, '', -1));
+  const forward = await g.wait([H.roomForward, H.objects], before, 10000);
+  if (!forward || forward.header !== H.roomForward) fail('Entering the dungeon did not forward to a copy.');
+  const copy = forward.body.readInt32BE(0);
+  if (copy < 1000000000) fail(`Forwarded to ${copy}, not a copy.`);
+  log(`OpenFlat ${template} (template) -> RoomForward ${copy} (the player's copy)`);
+
+  before = g.frames.length;
+  g.send(frame(H.openFlat, copy, '', -1));
+  const burst = await g.wait([H.objects, H.cantConnect], before, 10000);
+  if (!burst || burst.header === H.cantConnect) fail(`Copy ${copy} refused or silent.`);
+  const own = await g.wait([H.users], g.frames.indexOf(burst) + 1, 5000);
+  if (!own) fail('No avatar announced in the copy.');
+  log(`Entered copy ${copy}: its floor and the avatar came.`);
+
+  // A copy id is easy to guess: one the player was not given must refuse them.
+  before = g.frames.length;
+  g.send(frame(H.openFlat, copy + 1, '', -1));
+  const refused = await g.wait([H.cantConnect, H.objects], before, 10000);
+  g.close();
+  if (!refused || refused.header !== H.cantConnect) die(`Copy ${copy + 1}, not the player's, let them in.`);
+  log(`OpenFlat ${copy + 1} (someone else's copy) -> CantConnect. Dungeon OK.`);
+}
+
 // The map editor's test mode: the route mints a ticket whose sign-in starts in the zone, on the
 // cell asked for, instead of the start zone. Run `travel` first: it publishes proof_b.
 async function cmdTestMode() {
@@ -811,6 +878,7 @@ const table = {
   enter: () => cmdEnter(args[0]),
   travel: cmdTravel,
   testmode: cmdTestMode,
+  dungeon: cmdDungeon,
   cleanup: cmdCleanup,
   smoke: cmdSmoke,
 };
@@ -831,6 +899,7 @@ if (!cmd || !table[cmd]) {
   enter <k> enter the published zone <k> and count the floor items it sends
   travel    two proof zones: named area bubble, passage A -> B, arrival on the passage's entry
   testmode  the editor's test route: a ticket that signs in to proof_b on (6,6)
+  dungeon   a Dungeon zone: its room forwards to the player's own copy, which is entered
   cleanup   delete the throwaway account and its players`);
   process.exit(cmd ? 1 : 0);
 }

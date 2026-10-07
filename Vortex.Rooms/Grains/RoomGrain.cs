@@ -151,6 +151,9 @@ public sealed partial class RoomGrain : Grain, IRoomGrain
 
     public RoomId RoomId => _state.RoomId;
 
+    /// <summary>The rooms row this room reads: its own, or its template's for a dungeon copy.</summary>
+    internal RoomId RowId => ZoneInstanceIds.TemplateOf(_state.RoomId);
+
     public Task DeactivateRoomAsync()
     {
         DeactivateOnIdle();
@@ -391,6 +394,12 @@ public sealed partial class RoomGrain : Grain, IRoomGrain
         {
             await FlushDirtyItemsAsync(ct);
 
+            // A closed copy is gone: its group starts a fresh run next time.
+            if (ZoneInstanceIds.IsInstance(_state.RoomId))
+            {
+                await _grainFactory.GetZoneInstanceGrain().ReleaseAsync(_state.RoomId);
+            }
+
             using (
                 _metrics.MeasureRoomDirectoryCall(nameof(IRoomDirectoryGrain.RemoveActiveRoomAsync))
             )
@@ -410,7 +419,8 @@ public sealed partial class RoomGrain : Grain, IRoomGrain
     /// </summary>
     internal async Task ApplyZoneAsync(CancellationToken ct)
     {
-        ZoneDocument? zone = await _zoneSource.GetPublishedAsync(_state.RoomId, ct);
+        // A dungeon copy runs its template's zone.
+        ZoneDocument? zone = await _zoneSource.GetPublishedAsync(RowId, ct);
 
         if (zone is null)
         {
@@ -441,7 +451,7 @@ public sealed partial class RoomGrain : Grain, IRoomGrain
                 await dbCtx
                     .Rooms.AsNoTracking()
                     .Include(e => e.PlayerEntity)
-                    .SingleOrDefaultAsync(e => e.Id == _state.RoomId.Value, ct)
+                    .SingleOrDefaultAsync(e => e.Id == RowId.Value, ct)
                 ?? throw new VortexException(VortexErrorCodeEnum.RoomNotFound);
 
             _state.Model = _roomModelProvider.GetModelById(entity.RoomModelEntityId);
@@ -450,7 +460,8 @@ public sealed partial class RoomGrain : Grain, IRoomGrain
 
             _state.RoomSnapshot = new RoomSnapshot
             {
-                RoomId = entity.Id,
+                // The copy's own id, not its template's: the client is in the copy.
+                RoomId = _state.RoomId,
                 Name = entity.Name ?? string.Empty,
                 Description = entity.Description ?? string.Empty,
                 OwnerId = entity.PlayerEntityId,

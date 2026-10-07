@@ -19,6 +19,13 @@ public interface IRoomZone : IGrainWithIntegerKey
     [AlwaysInterleave]
     public Task<bool> ExpectArrivalAsync(PlayerId playerId, string entryId);
 
+    /// <summary>
+    /// The room <paramref name="playerId"/> actually enters when they ask for this one: itself,
+    /// or for a dungeon their group's copy, made if needed and given whatever arrival was expected
+    /// here (plan D21). Null when every copy is taken.
+    /// </summary>
+    public Task<RoomId?> InstanceForAsync(PlayerId playerId);
+
     /// <summary>The same for a cell rather than an entry (the editor's test mode, plan D18).</summary>
     [AlwaysInterleave]
     public Task ExpectArrivalAtAsync(PlayerId playerId, int x, int y);

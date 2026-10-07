@@ -59,4 +59,7 @@ public class RoomConfig
 
     /// <summary>How long the editor's test mode waits for the tester's client to sign in (plan D18).</summary>
     public int ZoneTestEntryTimeoutMs { get; init; } = 120000;
+
+    /// <summary>Copies one dungeon can have at once (plan D23); at most ZoneInstanceIds.SlotsPerZone - 1.</summary>
+    public int MaxInstancesPerZone { get; init; } = 200;
 }

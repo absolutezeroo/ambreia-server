@@ -88,6 +88,11 @@ modules under `Vortex.Rooms/Grains/Zones` then answer, each for one thing:
 | `ZoneInteractionModule` + `Interactions/` | `UseFurniture`/`UseWallItem` on zone decor: one class per `interaction` | `RoomActionModule.UseItemByIdAsync` |
 | `ZoneTriggerModule` + `Triggers/` | triggers on the room event bus and the `zone-clock` tick step; one evaluator per condition, one executor per action | `RoomEventModule`, the room tick |
 
+A `Dungeon` zone is played in copies, one per group: `RoomService` asks the room
+`IRoomZone.InstanceForAsync` and forwards the player to the copy `IZoneInstanceGrain` hands out. A
+copy's room id (`ZoneInstanceIds`, from 1 000 000 000) names its template, whose row, zone, rights
+and visit log it uses; the copy is released when its room deactivates. Proof: `driver.mjs dungeon`.
+
 The map reads zone overrides through `RoomMapModule.CanWalkOn/CanSitOn/CanLayOn` (doors, decor
 collision). The editor's test mode: `POST /api/editor/zones/{key}/test` → `IZoneTestGrain` → the SSO
 handler forwards the tester's next sign-in to the zone. Proofs: `driver.mjs travel`, `testmode`.
