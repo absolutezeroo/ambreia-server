@@ -577,6 +577,7 @@ async function cmdTravel() {
         { id: 'start', kind: 'arrival', cell: { x: 8, y: 8 } },
         { id: 'gate', kind: 'respawn', cell: { x: 2, y: 2 } },
       ],
+      zones: [{ id: 'vault', kind: 'Restricted', name: 'Chambre forte', polygon: [{ x: 7, y: 0 }, { x: 9, y: 0 }, { x: 9, y: 9 }, { x: 7, y: 9 }] }],
     },
     proof_a: {
       schemaVersion: 1,
@@ -695,9 +696,19 @@ async function cmdTravel() {
   if (to !== rooms.proof_b) fail(`Forwarded to ${to}, expected ${rooms.proof_b}.`);
   log(`Passage -> RoomForward ${to}.`);
   const at = await enter(to);
+  if (at[0] !== 2 || at[1] !== 2) fail(`Arrived on (${at.join(',')}), expected the passage's entry (2,2).`);
+  log(`proof_b: arrived on (2,2), the passage's entry.`);
+
+  // The vault (columns 7 to 9) is Restricted with no condition: the walk stops at its edge.
+  mark = g.frames.length;
+  g.send(frame(H.moveAvatar, 8, 2));
+  await sleep(3500);
+  const intoVault = [7, 8, 9].some((x) => movesOnto(x, 2, mark));
+  const told = g.frames.slice(mark).some((f) => f.header === H.notificationDialog && f.body.includes('restreint'));
   g.close();
-  if (at[0] !== 2 || at[1] !== 2) die(`Arrived on (${at.join(',')}), expected the passage's entry (2,2).`);
-  log(`proof_b: arrived on (2,2), the passage's entry. Travel OK.`);
+  if (intoVault) die('Walked into the restricted vault.');
+  if (!told) die('No "Accès restreint" bubble at the vault.');
+  log('Walk into the restricted vault -> stopped at its edge, "Accès restreint". Travel OK.');
 }
 
 // A dungeon is played in the group's own copy: asking for the template's room forwards the player

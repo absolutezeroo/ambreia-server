@@ -209,6 +209,14 @@ public sealed class RoomAvatarTickSystem(RoomGrain roomGrain)
                 return;
             }
 
+            // A zone's Restricted area stops the walk at its edge for a player who may not enter.
+            if (!_roomGrain.ZoneAreas.MayStepOnto(avatar, nextX, nextY))
+            {
+                await _roomGrain.AvatarModule.StopWalkingAsync(avatar, ct);
+
+                return;
+            }
+
             RoomObjectId prevHighestItemId = _roomGrain._state.TileHighestFloorItems[prevTileId];
             // The item walked *onto*, which on a tile with two surfaces is not the one on top: step
             // under a platform and the walk-on trigger that fires is the floor's, not the roof's.

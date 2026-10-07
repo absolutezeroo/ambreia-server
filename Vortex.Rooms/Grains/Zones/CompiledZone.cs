@@ -59,21 +59,6 @@ public sealed class CompiledZone
     public IReadOnlyList<ZoneArea> AreasAt(int x, int y) =>
         Inside(x, y) ? _areasAt[y * Width + x] : [];
 
-    /// <summary>Plan D6: inside a Safe or NoCombat area, whatever lies under it.</summary>
-    public bool SafeAt(int x, int y) => RulingArea(x, y)?.Kind is "Safe" or "NoCombat";
-
-    /// <summary>Plan D6: a PvP area allows it, a safe one refuses it, else the zone decides.</summary>
-    public bool PvpAt(int x, int y) =>
-        RulingArea(x, y)?.Kind switch
-        {
-            "PvP" => true,
-            "Safe" or "NoCombat" => false,
-            _ => Document.Settings.PvpAllowed,
-        };
-
-    private ZoneArea? RulingArea(int x, int y) =>
-        AreasAt(x, y).FirstOrDefault(a => a.Kind is "Safe" or "NoCombat" or "PvP");
-
     public ZonePassage? PassageAt(int x, int y) => Inside(x, y) ? _passageAt[y * Width + x] : null;
 
     /// <summary>The room object id of the decor object with this document id.</summary>

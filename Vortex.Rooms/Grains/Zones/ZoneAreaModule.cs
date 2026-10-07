@@ -4,6 +4,8 @@ using System.Threading;
 using System.Threading.Tasks;
 using Vortex.Primitives.Players;
 using Vortex.Primitives.Rooms.Events.Zone;
+using Vortex.Primitives.Rooms.Object.Avatars;
+using Vortex.Primitives.World;
 using Vortex.Primitives.World.Layers;
 
 namespace Vortex.Rooms.Grains.Zones;
@@ -76,24 +78,78 @@ public sealed class ZoneAreaModule(RoomGrain roomGrain)
             );
         }
 
-        // One bubble per step: the highest named area just entered.
+        // One bubble per step: the highest named area just entered, with what it allows.
         if (!Moved(visitor, now) && entered.FirstOrDefault(a => a.Name.Length > 0) is { } named)
         {
-            string rule =
-                zone.Compiled.SafeAt(x, y) ? "Zone sûre"
-                : zone.Compiled.PvpAt(x, y) ? "Zone PvP"
-                : string.Empty;
+            string rules = Describe(ZoneRuleBook.At(zone, x, y));
 
             ZoneBubble.Show(
                 roomGrain,
                 playerId,
                 "zone.area",
-                rule.Length > 0
-                    ? $"Vous entrez : {named.Name}\n{rule}"
+                rules.Length > 0
+                    ? $"Vous entrez : {named.Name}\n{rules}"
                     : $"Vous entrez : {named.Name}"
             );
         }
     }
+
+    /// <summary>
+    /// Whether the player may step onto (x, y): a Restricted area they are not already in lets in
+    /// only a player who meets its conditions, and one with none lets in nobody until a trigger
+    /// switches it off. Refused, the player hears why.
+    /// </summary>
+    public bool MayStepOnto(IRoomAvatar avatar, int x, int y)
+    {
+        if (
+            roomGrain._state.ZoneRuntime is not { } zone
+            || avatar is not IRoomPlayer player
+            || player.PlayerId.Value <= 0
+        )
+        {
+            return true;
+        }
+
+        IReadOnlyList<ZoneArea> current = zone.Visitors.TryGetValue(
+            player.PlayerId,
+            out ZoneVisitor? visitor
+        )
+            ? visitor.Areas
+            : [];
+        ZoneArea? closed = zone.ActiveAreasAt(x, y)
+            .Where(a => a.Kind == ZoneAreaKinds.Restricted && !current.Contains(a))
+            .FirstOrDefault(a =>
+                a.Conditions.Count == 0
+                || !roomGrain.ZoneTriggers.ConditionsHold(a.Conditions, player.PlayerId)
+            );
+
+        if (closed is null)
+        {
+            return true;
+        }
+
+        ZoneBubble.Show(
+            roomGrain,
+            player.PlayerId,
+            "zone.restricted",
+            closed.Name.Length > 0 ? $"Accès restreint : {closed.Name}" : "Accès restreint"
+        );
+
+        return false;
+    }
+
+    private static string Describe(ZoneCellRules rules) =>
+        string.Join(
+            ", ",
+            new[]
+            {
+                rules.Safe ? "Zone sûre" : null,
+                rules.Pvp ? "Zone PvP" : null,
+                rules.Hostile ? "Zone hostile" : null,
+                rules.NoMount ? "Sans monture" : null,
+                rules.Restricted ? "Accès restreint" : null,
+            }.OfType<string>()
+        );
 
     /// <summary>
     /// A trigger set off by one of this step's events moved the player (a LeaveZone barrier that

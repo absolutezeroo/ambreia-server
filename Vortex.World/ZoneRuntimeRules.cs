@@ -82,6 +82,7 @@ internal static class ZoneRuntimeRules
             CheckInteraction(o, entries, passages, f);
         }
 
+        CheckAreas(d, f);
         CheckLoops(d, f);
         CheckOverlaps(d, f);
     }
@@ -321,14 +322,14 @@ internal static class ZoneRuntimeRules
         && next.Any(n => n == goal || seen.Add(n) && Reaches(edges, n, goal, seen));
 
     /// <summary>
-    /// Plan D5/D6: where a Safe area and a PvP area overlap at the same priority, the later one in
-    /// the document wins -- legal, but rarely meant.
+    /// Plan D5/D6/D24: where two areas that rule combat differently (safe, PvP, hostile) overlap at
+    /// the same priority, the later one in the document wins -- legal, but rarely meant.
     /// </summary>
     private static void CheckOverlaps(ZoneDocument d, List<ZoneFinding> f)
     {
         ZoneArea[] ruling =
         [
-            .. d.Zones.Where(a => a.Kind is "Safe" or "NoCombat" or "PvP" && a.Polygon.Count >= 3),
+            .. d.Zones.Where(a => CombatRule(a) is not null && a.Polygon.Count >= 3),
         ];
 
         for (int i = 0; i < ruling.Length; i++)
@@ -338,7 +339,7 @@ internal static class ZoneRuntimeRules
                 ZoneArea a = ruling[i];
                 ZoneArea b = ruling[j];
 
-                if (a.Priority != b.Priority || a.Kind == "PvP" == (b.Kind == "PvP"))
+                if (a.Priority != b.Priority || CombatRule(a) == CombatRule(b))
                 {
                     continue;
                 }
@@ -362,6 +363,40 @@ internal static class ZoneRuntimeRules
                         )
                     );
                 }
+            }
+        }
+    }
+
+    /// <summary>What an area says about combat, NoCombat being Safe; null for an area that says nothing.</summary>
+    private static string? CombatRule(ZoneArea area) =>
+        area.Kind switch
+        {
+            ZoneAreaKinds.Safe or ZoneAreaKinds.NoCombat => ZoneAreaKinds.Safe,
+            ZoneAreaKinds.PvP or ZoneAreaKinds.Hostile => area.Kind,
+            _ => null,
+        };
+
+    /// <summary>
+    /// An area's kind is one the server knows (plan D24); a Restricted one with no condition is
+    /// closed to everyone until a trigger switches it off -- allowed, but worth saying.
+    /// </summary>
+    private static void CheckAreas(ZoneDocument d, List<ZoneFinding> f)
+    {
+        foreach (ZoneArea a in d.Zones)
+        {
+            if (!ZoneAreaKinds.All.Contains(a.Kind))
+            {
+                f.Add(Error("UnknownAreaKind", a.Id, $"Unknown area kind '{a.Kind}'."));
+            }
+            else if (a.Kind == ZoneAreaKinds.Restricted && a.Conditions.Count == 0)
+            {
+                f.Add(
+                    Warning(
+                        "ClosedArea",
+                        a.Id,
+                        "This restricted area has no condition: nobody enters until a trigger switches it off."
+                    )
+                );
             }
         }
     }

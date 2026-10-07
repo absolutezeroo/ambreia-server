@@ -2,10 +2,11 @@ using System.Threading.Tasks;
 using Orleans;
 using Orleans.Concurrency;
 using Vortex.Primitives.Players;
+using Vortex.Primitives.World;
 
 namespace Vortex.Primitives.Rooms.Grains;
 
-/// <summary>What a published zone adds to its room: where a player is expected to arrive.</summary>
+/// <summary>What a published zone adds to its room: arrivals, dungeon copies, the rules of a cell.</summary>
 [Alias("Vortex.Primitives.Rooms.Grains.IRoomZone")]
 public interface IRoomZone : IGrainWithIntegerKey
 {
@@ -29,4 +30,10 @@ public interface IRoomZone : IGrainWithIntegerKey
     /// <summary>The same for a cell rather than an entry (the editor's test mode, plan D18).</summary>
     [AlwaysInterleave]
     public Task ExpectArrivalAtAsync(PlayerId playerId, int x, int y);
+
+    /// <summary>
+    /// What the cell (x, y) allows -- safe, PvP, hostile, mounts, restricted, level, music (plan
+    /// D24). Null when the room is not a zone. What combat and monsters ask before they act.
+    /// </summary>
+    public Task<ZoneCellRules?> GetRulesAtAsync(int x, int y);
 }

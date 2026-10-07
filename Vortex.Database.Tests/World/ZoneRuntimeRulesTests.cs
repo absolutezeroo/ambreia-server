@@ -245,6 +245,46 @@ public sealed class ZoneRuntimeRulesTests
             .Should()
             .BeEmpty();
 
+    [Fact]
+    public void SafeAndHostileOverlappingAtTheSamePriority_IsAWarning() =>
+        Codes(
+                ZoneSamples.Minimal() with
+                {
+                    Zones = [Area("camp", "Safe", 0, 3), Area("woods", "Hostile", 2, 5)],
+                }
+            )
+            .Should()
+            .Equal("AmbiguousOverlap");
+
+    [Fact]
+    public void ARestrictedAreaWithNoCondition_IsAWarning() =>
+        Codes(ZoneSamples.Minimal() with { Zones = [Area("vault", "Restricted", 2, 3)] })
+            .Should()
+            .Equal("ClosedArea");
+
+    [Fact]
+    public void ARestrictedAreaWithACondition_IsValid() =>
+        Validate(
+                ZoneSamples.Minimal() with
+                {
+                    Zones =
+                    [
+                        Area("vault", "Restricted", 2, 3) with
+                        {
+                            Conditions = [new TimeOfDayCondition(8, 20)],
+                        },
+                    ],
+                }
+            )
+            .Should()
+            .BeEmpty();
+
+    [Fact]
+    public void AnUnknownAreaKind_IsAnError() =>
+        Errors(ZoneSamples.Minimal() with { Zones = [Area("x", "Lava", 2, 3)] })
+            .Should()
+            .Equal("UnknownAreaKind");
+
     private static IReadOnlyList<ZoneFinding> Validate(ZoneDocument doc) =>
         new ZoneValidator(Definitions(), Options.Create(new WorldConfig())).Validate(doc, Known);
 
