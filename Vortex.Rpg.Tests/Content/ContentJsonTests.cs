@@ -85,4 +85,34 @@ public sealed class ContentJsonTests
             .Should()
             .Be((ClassRole.Tank, PrimaryStat.Strength, 120, 0));
     }
+
+    [Theory]
+    [InlineData("\"slot\": 42")]
+    [InlineData("\"slot\": \"42\"")]
+    public void AnEnumWrittenAsANumber_IsRefused(string slot) =>
+        FluentActions
+            .Invoking(() =>
+                ContentJson.Deserialize<ItemDefinition>(Sword.Replace("\"slot\": \"weapon\"", slot))
+            )
+            .Should()
+            .Throw<JsonException>();
+
+    [Fact]
+    public void ANullInAList_IsRefused() =>
+        FluentActions
+            .Invoking(() =>
+                ContentJson.Deserialize<ItemDefinition>(
+                    Sword.Replace("[\"class.warrior\"]", "[\"class.warrior\", null]")
+                )
+            )
+            .Should()
+            .Throw<JsonException>();
+
+    [Fact]
+    public void ADefinitionSerializedThroughItsBaseType_KeepsItsFields()
+    {
+        ContentDefinition sword = ContentJson.Deserialize<ItemDefinition>(Sword);
+
+        ContentJson.Serialize(sword).Should().Contain("\"sellValue\":4");
+    }
 }

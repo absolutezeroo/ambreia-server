@@ -18,8 +18,13 @@ public static class ContentJson
         RespectNullableAnnotations = true,
         RespectRequiredConstructorParameters = true,
         UnmappedMemberHandling = JsonUnmappedMemberHandling.Disallow,
-        // "on_pickup", "dungeon_entry": the spec's spelling of every enumerated value.
-        Converters = { new JsonStringEnumConverter(JsonNamingPolicy.SnakeCaseLower) },
+        // "on_pickup", "dungeon_entry": the spec's spelling of every enumerated value; never a
+        // number, which would read as a member that does not exist.
+        Converters =
+        {
+            new JsonStringEnumConverter(JsonNamingPolicy.SnakeCaseLower, allowIntegerValues: false),
+            new StrictStringListConverter(),
+        },
         WriteIndented = false,
     };
 
@@ -28,4 +33,9 @@ public static class ContentJson
     public static T Deserialize<T>(string json) =>
         JsonSerializer.Deserialize<T>(json, Options)
         ?? throw new JsonException("The document is null.");
+
+    /// <summary>Serializes by the runtime type: through <see cref="Definitions.ContentDefinition"/>
+    /// alone, only its own three fields would be written.</summary>
+    public static string Serialize(Definitions.ContentDefinition definition) =>
+        JsonSerializer.Serialize(definition, definition.GetType(), Options);
 }

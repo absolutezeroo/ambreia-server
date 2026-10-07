@@ -13,7 +13,7 @@
 ## Global Constraints
 
 - Id : `<sorte>.<segment>[.<segment>…]`, segments `[a-z0-9_]+`, séparés par `.`, 64 caractères au plus ; premier segment = sorte.
-- JSON strict comme `ZoneJson` : nombres stricts, champ inconnu refusé, `null` refusé, énumérations en texte camelCase.
+- JSON strict comme `ZoneJson` : nombres stricts, champ inconnu refusé, `null` refusé, énumérations en texte snake_case (`on_pickup`), jamais en nombre.
 - Un type par fichier (C# et TS), sans exception.
 - Import **tout ou rien** : une erreur → rien écrit, registre intact.
 - Le serveur n'envoie que des clés : `<id>.name`, `<id>.description` ; traductions dans `content/texts/<langue>.txt` (`fr` obligatoire), clé manquante = avertissement.
@@ -512,7 +512,7 @@ Déroulé (spec §6) : valider → erreurs : `Imported = false`, rien écrit. Co
 - `ContentPackInRepoTests.TheRepositoryPack_IsValid` : lit `content/` comme le script, le valide avec les 4 sortes et un faux catalogue qui connaît les meubles référencés → aucune erreur (§20 « cohérence » de la spec unifiée).
 - `push.mjs` : `node scripts/content/push.mjs [--base http://127.0.0.1:8080] [--email … --password-env VAR]` ; lit `content/**/*.json` (chemins relatifs à `content/`), `migrations.json`, `texts/*.txt` ; se connecte (`/api/public/authentication/login`, mot de passe lu dans une variable d'environnement, jamais affiché) ; `POST /api/content/import` ; affiche ajouts / modifications / retraits et chaque constat `[Error|Warning] code fichier id : message` ; code de sortie 1 si `Imported == false`.
 
-Contenu : les 4 classes de §5.3 de la spec unifiée (Guerrier FOR 1 case menace × 3, Archer AGI 6, Mage INT 5, Clerc INT 5) avec des valeurs de `base` / `perLevel` équilibrées (PV 120 / 90 / 80 / 100 au niveau 1), la courbe `progression.default` (19 valeurs croissantes, 100 au niveau 1 → 2), des objets couvrant chaque emplacement (au moins un par classe), un matériau empilable (`maxStack` 50), un objet de quête (`onPickup`), un meuble (`furnitureDefinition` 230, le trône), un objet `rare` lié à l'équipement ; `fr.txt` complet.
+Contenu : les 4 classes de §5.3 de la spec unifiée (Guerrier FOR 1 case menace × 3, Archer AGI 6, Mage INT 5, Clerc INT 5) avec des valeurs de `base` / `perLevel` équilibrées (PV 120 / 90 / 80 / 100 au niveau 1), la courbe `progression.default` (19 valeurs croissantes, 100 au niveau 1 → 2), des objets couvrant chaque emplacement (au moins un par classe), un matériau empilable (`maxStack` 50), un objet de quête (`on_pickup`), un meuble (`furnitureDefinition` 230, le trône), un objet `rare` lié à l'équipement ; `fr.txt` complet.
 
 - [ ] **Step 1:** écrire les deux tests de `Vortex.Hosting.Tests/Rpg` · **Step 2:** échec · **Step 3:** générer les schémas (`UPDATE_CONTENT_SCHEMAS=1 dotnet test Vortex.Hosting.Tests --filter ContentSchemaTests`), écrire `content/` et `push.mjs` · **Step 4:** `dotnet test Vortex.Hosting.Tests --filter "FullyQualifiedName~Rpg"` · Expected: PASS.
 - [ ] **Step 5: Commit** — `rpg : schémas, contenu de démonstration et script d'import`.
