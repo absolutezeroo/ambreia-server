@@ -70,6 +70,7 @@ public sealed record ProfileUser(
     bool ProfileVisible,
     bool Online,
     int AchievementScore,
+    // Always 0: figé, retiré avec le client -- respects were removed (M0 bis); the site still reads it.
     int RespectReceived,
     IReadOnlyList<ProfileBadge> SelectedBadges
 );

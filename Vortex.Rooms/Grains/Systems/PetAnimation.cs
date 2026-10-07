@@ -3,8 +3,8 @@ using System.Globalization;
 namespace Vortex.Rooms.Grains.Systems;
 
 /// <summary>
-/// What the client is told to draw around a pet: the postures its own asset declares, the status
-/// segments that carry them, and the empty hand the scratcher's avatar reaches out with.
+/// What the client is told to draw around a pet: the postures its own asset declares and the status
+/// segments that carry them.
 /// </summary>
 /// <remarks>
 /// Its own type because every value here is answerable only by the client — an asset's animation
@@ -26,24 +26,6 @@ internal static class PetAnimation
 
     /// <summary>Playing with a toy. Declared by the pet assets as `pla`.</summary>
     public const string PlayPosture = "pla";
-
-    /// <summary>
-    /// How a pet shows it liked being scratched: the gesture segment the official capture pushes
-    /// right after the experience (room-scratch-pet-official-001, UserUpdate "gst joy").
-    /// </summary>
-    /// <remarks>
-    /// Two pieces, so the client keeps it -- see <see cref="StatusWithHeight" />. It is a one-shot:
-    /// nothing takes it back, and the pet's next update carries whatever it is doing then.
-    /// </remarks>
-    public const string JoyStatus = "/gst joy/";
-
-    /// <summary>
-    /// The hand item that draws nothing. Above the client's CARRY_ITEM_LAST_CONSUMABLE it stops
-    /// being an object at all: <c>AvatarLogic.CARRY_ITEM_EMPTY_HAND</c> plays the reach-out gesture
-    /// for 1.5s and then clears itself, which is how a scratched pet gets an arm reaching for it.
-    /// Never route it through the hand-item module -- there is no item to hold or expire.
-    /// </summary>
-    public const int ScratchGestureItemType = 999_999_999;
 
     /// <summary>
     /// A status segment the client will actually keep.

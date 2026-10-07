@@ -53,14 +53,10 @@ public sealed class ConsumerTableTests
             [SignalActions.ChangeFigure] = (AchievementNames.AvatarLooks, false),
             [SignalActions.AcceptFriend] = (AchievementNames.FriendListSize, false),
             [SignalActions.PlaceItem] = (AchievementNames.RoomDecoFurniCount, false),
-            [SignalActions.GiveRespect] = (AchievementNames.RespectGiven, false),
-            [SignalActions.ReceiveRespect] = (AchievementNames.RespectEarned, false),
             [SignalActions.ChangeName] = (AchievementNames.Name, false),
             [SignalActions.BuyGift] = (AchievementNames.GiftGiver, false),
             [SignalActions.PetLevel] = (AchievementNames.PetLevelUp, false),
             [SignalActions.AdoptPet] = (AchievementNames.PetLover, false),
-            [SignalActions.RespectPet] = (AchievementNames.PetRespectGiver, false),
-            [SignalActions.PetRespected] = (AchievementNames.PetRespectReceiver, false),
             [SignalActions.ReceiveGift] = (AchievementNames.GiftReceiver, false),
         };
 
@@ -71,14 +67,13 @@ public sealed class ConsumerTableTests
     }
 
     [Fact]
-    public void Daily_tasks_map_the_seven_actions_their_handlers_did()
+    public void Daily_tasks_map_the_six_actions_their_handlers_did()
     {
         Dictionary<string, string> expected = new()
         {
             [SignalActions.EnterOtherUsersRoom] = QuestTypes.RoomEntry,
             [SignalActions.ChangeFigure] = QuestTypes.AvatarLooks,
             [SignalActions.ChangeMotto] = QuestTypes.MottoChange,
-            [SignalActions.GiveRespect] = QuestTypes.RespectGiven,
             [SignalActions.AcceptFriend] = QuestTypes.FriendListSize,
             [SignalActions.PlaceItem] = QuestTypes.PlaceItem,
             [SignalActions.BuyFromCatalogue] = QuestTypes.CatalogPurchase,
@@ -91,17 +86,16 @@ public sealed class ConsumerTableTests
     }
 
     [Fact]
-    public void Quests_map_the_twelve_actions_their_handlers_did()
+    public void Quests_map_the_ten_actions_their_handlers_did()
     {
-        // Twelve, not thirteen: QuestRoomVisitHandler is not a mapping and stays a handler.
+        // QuestRoomVisitHandler is not a mapping and stays a handler. The two respect actions left
+        // with respects (M0 bis).
         QuestSignalConsumer
             .Rules.Keys.Should()
             .BeEquivalentTo([
                 SignalActions.AcceptFriend,
                 SignalActions.ChangeFigure,
-                SignalActions.GiveRespect,
                 SignalActions.ChangeMotto,
-                SignalActions.ReceiveRespect,
                 SignalActions.CompleteTrade,
                 SignalActions.CreateGroup,
                 SignalActions.JoinGroup,

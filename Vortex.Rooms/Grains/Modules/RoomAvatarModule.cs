@@ -41,62 +41,6 @@ public sealed partial class RoomAvatarModule(RoomGrain roomGrain)
     /// </summary>
     private readonly Dictionary<int, Func<CancellationToken, Task>> _onWalkEnded = [];
 
-    /// <summary>
-    /// One player gives a respect point to another present in this room. Enforces the giver's daily
-    /// budget, increments the target's total, broadcasts the respect animation, and publishes the
-    /// respect events that feed achievements/quests.
-    /// </summary>
-    public async Task RespectPlayerAsync(
-        int giverPlayerId,
-        int targetPlayerId,
-        CancellationToken ct
-    )
-    {
-        if (giverPlayerId <= 0 || targetPlayerId <= 0 || giverPlayerId == targetPlayerId)
-        {
-            return;
-        }
-
-        bool targetPresent = _roomGrain
-            ._state.AvatarsByObjectId.Values.OfType<IRoomPlayer>()
-            .Any(a => (int)a.PlayerId == targetPlayerId);
-
-        if (!targetPresent)
-        {
-            return;
-        }
-
-        bool given = await _roomGrain
-            ._grainFactory.GetGrain<IPlayerGrain>((long)giverPlayerId)
-            .TryGiveRespectAsync(ct);
-
-        if (!given)
-        {
-            return;
-        }
-
-        int newTotal = await _roomGrain
-            ._grainFactory.GetGrain<IPlayerGrain>((long)targetPlayerId)
-            .AddRespectReceivedAsync(ct);
-
-        await _roomGrain.SendComposerToRoomAsync(
-            new RespectNotificationMessageComposer
-            {
-                UserId = targetPlayerId,
-                RespectTotal = newTotal,
-            }
-        );
-
-        await _roomGrain._events.PublishAsync(
-            new RespectGivenEvent(giverPlayerId, targetPlayerId),
-            ct
-        );
-        await _roomGrain._events.PublishAsync(
-            new RespectReceivedEvent(targetPlayerId, newTotal),
-            ct
-        );
-    }
-
     public async Task<IRoomAvatar> CreateAvatarFromPlayerAsync(
         ActionContext ctx,
         PlayerSummarySnapshot snapshot,

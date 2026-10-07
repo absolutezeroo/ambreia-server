@@ -164,14 +164,10 @@ public sealed class AchievementSeedLevelTests
             AchievementNames.AvatarLooks,
             AchievementNames.FriendListSize,
             AchievementNames.RoomDecoFurniCount,
-            AchievementNames.RespectGiven,
-            AchievementNames.RespectEarned,
             AchievementNames.Name,
             AchievementNames.GiftGiver,
             AchievementNames.PetLevelUp,
             AchievementNames.PetLover,
-            AchievementNames.PetRespectGiver,
-            AchievementNames.PetRespectReceiver,
             AchievementNames.GiftReceiver,
         ];
 

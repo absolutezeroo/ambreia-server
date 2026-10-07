@@ -23,14 +23,10 @@ public static class AchievementNames
 
     /// <summary>"For having visitors spend %limit% minutes in your rooms" — credited to the owner.</summary>
     public const string RoomDecoHosting = "RoomDecoHosting";
-    public const string RespectGiven = "RespectGiven";
-    public const string RespectEarned = "RespectEarned";
     public const string Name = "Name";
     public const string GiftGiver = "GiftGiver";
     public const string PetLevelUp = "PetLevelUp";
     public const string PetLover = "PetLover";
 
-    public const string PetRespectGiver = "PetRespectGiver";
-    public const string PetRespectReceiver = "PetRespectReceiver";
     public const string GiftReceiver = "GiftReceiver";
 }

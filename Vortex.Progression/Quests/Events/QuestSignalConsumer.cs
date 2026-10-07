@@ -52,9 +52,7 @@ public sealed class QuestSignalConsumer(IGrainFactory grainFactory, ICommerceJou
         // One signal per side, both in the same batch.
         [SignalActions.AcceptFriend] = new(QuestTypes.FriendListSize),
         [SignalActions.ChangeFigure] = new(QuestTypes.AvatarLooks),
-        [SignalActions.GiveRespect] = new(QuestTypes.RespectGiven),
         [SignalActions.ChangeMotto] = new(QuestTypes.MottoChange),
-        [SignalActions.ReceiveRespect] = new(QuestTypes.RespectReceived),
         // Both players, two signals.
         [SignalActions.CompleteTrade] = new(QuestTypes.TradeCompleted),
         [SignalActions.CreateGroup] = new(QuestTypes.CreateGroup),

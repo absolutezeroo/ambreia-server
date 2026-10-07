@@ -113,7 +113,7 @@ public static class Facts
         "Room model"
     );
 
-    /// <summary>Another player's id: the one respected, befriended, traded with.</summary>
+    /// <summary>Another player's id: the one befriended, traded with.</summary>
     public static readonly FactKey Player = new(
         "player",
         FactKind.PlayerId,

@@ -98,7 +98,6 @@ public sealed class PetToyAndTuningTests
         [
             PetTuning.HappinessDecayPerMinuteKey,
             PetTuning.HappinessRestGainPerMinuteKey,
-            PetTuning.RespectHappinessRewardKey,
             PetTuning.CommandHappinessRewardKey,
             PetTuning.CommandObeyBaseChancePercentKey,
             PetTuning.CommandObeyChancePerLevelPercentKey,

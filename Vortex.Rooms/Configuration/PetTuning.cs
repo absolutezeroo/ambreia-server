@@ -24,7 +24,6 @@ public sealed record PetTuning
 {
     public const string HappinessDecayPerMinuteKey = "pets.happiness_decay_per_minute";
     public const string HappinessRestGainPerMinuteKey = "pets.happiness_rest_gain_per_minute";
-    public const string RespectHappinessRewardKey = "pets.respect_happiness_reward";
     public const string CommandHappinessRewardKey = "pets.command_happiness_reward";
     public const string CommandObeyBaseChancePercentKey = "pets.command_obey_base_chance_percent";
     public const string CommandObeyChancePerLevelPercentKey =
@@ -41,7 +40,6 @@ public sealed record PetTuning
 
     public required double HappinessDecayPerMinute { get; init; }
     public required double HappinessRestGainPerMinute { get; init; }
-    public required int RespectHappinessReward { get; init; }
     public required int CommandHappinessReward { get; init; }
     public required int CommandObeyBaseChancePercent { get; init; }
     public required int CommandObeyChancePerLevelPercent { get; init; }
@@ -61,7 +59,6 @@ public sealed record PetTuning
         {
             HappinessDecayPerMinute = config.HappinessDecayPerMinute,
             HappinessRestGainPerMinute = config.HappinessRestGainPerMinute,
-            RespectHappinessReward = config.RespectHappinessReward,
             CommandHappinessReward = config.CommandHappinessReward,
             CommandObeyBaseChancePercent = config.CommandObeyBaseChancePercent,
             CommandObeyChancePerLevelPercent = config.CommandObeyChancePerLevelPercent,
@@ -84,9 +81,6 @@ public sealed record PetTuning
                 .ConfigureAwait(false),
             HappinessRestGainPerMinute = await config
                 .GetDoubleAsync(HappinessRestGainPerMinuteKey, defaults.HappinessRestGainPerMinute)
-                .ConfigureAwait(false),
-            RespectHappinessReward = await config
-                .GetIntAsync(RespectHappinessRewardKey, defaults.RespectHappinessReward)
                 .ConfigureAwait(false),
             CommandHappinessReward = await config
                 .GetIntAsync(CommandHappinessRewardKey, defaults.CommandHappinessReward)

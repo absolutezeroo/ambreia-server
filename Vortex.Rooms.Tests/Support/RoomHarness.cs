@@ -654,7 +654,6 @@ internal sealed class RoomHarness
                                 CreatedAt = DateTime.UtcNow.AddYears(-1),
                             }
                         ),
-                        nameof(IPlayerGrain.TryGivePetRespectAsync) => Task.FromResult(true),
                         _ => null,
                     }
                 );

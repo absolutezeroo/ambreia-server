@@ -36,7 +36,8 @@ public enum NotificationKind
     Blocked = 10,
     FriendRequestReceived = 11,
     FriendRequestAccepted = 12,
-    RespectReceived = 13,
+
+    // 13 was RespectReceived, removed with respects (M0 bis). Persisted: never reuse it.
     GroupMembershipAccepted = 14,
     GroupMembershipRejected = 15,
     GroupKicked = 16,

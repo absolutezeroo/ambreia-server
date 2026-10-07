@@ -31,14 +31,8 @@ public class InfoRetrieveMessageHandler(IGrainFactory grainFactory)
 
         IPlayerGrain player = _grainFactory.GetPlayerGrain(ctx.PlayerId);
         PlayerSummarySnapshot snapshot = await player.GetSummaryAsync(ct).ConfigureAwait(false);
-        // Read here rather than folded into the summary: the summary is fetched on every room
-        // entry, figure change and pet scratch, and these counters cost three config reads.
-        PlayerRespectSnapshot respect = await player.GetRespectStateAsync(ct).ConfigureAwait(false);
 
-        await ctx.SendComposerAsync(
-                new UserObjectMessage { Player = snapshot, Respect = respect },
-                ct
-            )
+        await ctx.SendComposerAsync(new UserObjectMessage { Player = snapshot }, ct)
             .ConfigureAwait(false);
     }
 }

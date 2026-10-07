@@ -97,7 +97,7 @@ public sealed class VocabularyGovernanceTests
         "teleport",
         "chat_with_someone",
         "request_friend",
-        "give_respect",
+        // "give_respect" was here, removed with respects (M0 bis).
         "send_messenger_message",
         "dance",
         "wave",
@@ -119,7 +119,7 @@ public sealed class VocabularyGovernanceTests
         "update_room_settings",
         "answer_doorbell",
         "accept_friend",
-        "receive_respect",
+        // "receive_respect" was here, removed with respects (M0 bis).
         "login",
         "change_name",
         "earn_badge",
@@ -150,8 +150,7 @@ public sealed class VocabularyGovernanceTests
         // "buy_targeted_offer", "enter_raffle", "win_raffle" and "redeem_voucher" were here, removed
         // with targeted offers, LTD raffles and vouchers (M0).
         "claim_vault_income",
-        "respect_pet",
-        "pet_respected",
+        // "respect_pet" and "pet_respected" were here, removed with pet respects (M0 bis).
         // "feed_pet" was here, removed with pet needs (M0).
         "command_pet",
         "stand_near_furni",

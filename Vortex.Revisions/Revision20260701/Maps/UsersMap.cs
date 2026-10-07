@@ -43,11 +43,6 @@ internal sealed class UsersMap : IRevisionMap
             MessageEvent.GetExtendedProfileMessageEvent,
             new GetExtendedProfileMessageParser()
         );
-        builder.MapParser(MessageEvent.RespectUserMessageEvent, new RespectUserMessageParser());
-        builder.MapParser(
-            MessageEvent.ReplenishRespectMessageEvent,
-            new ReplenishRespectMessageParser()
-        );
         builder.MapParser(
             MessageEvent.GetGuildCreationInfoMessageEvent,
             new GetGuildCreationInfoMessageParser()
@@ -295,18 +290,6 @@ internal sealed class UsersMap : IRevisionMap
         builder.MapSerializer(
             typeof(ScrSendUserInfoMessageComposer),
             new ScrSendUserInfoMessageSerializer(MessageComposer.ScrSendUserInfoComposer)
-        );
-        builder.MapSerializer(
-            typeof(RespectNotificationMessageComposer),
-            new RespectNotificationMessageComposerSerializer(
-                MessageComposer.RespectNotificationMessageComposer
-            )
-        );
-        builder.MapSerializer(
-            typeof(PetRespectNotificationEventMessageComposer),
-            new PetRespectNotificationEventMessageComposerSerializer(
-                MessageComposer.PetRespectNotificationComposer
-            )
         );
     }
 }

@@ -34,7 +34,6 @@ public interface IRoomPets : IGrainWithIntegerKey
     public Task<PetSnapshot?> PickUpPetAsync(ActionContext ctx, int petId, CancellationToken ct);
     public Task<PetSnapshot?> GetPlacedPetSnapshotAsync(int petId, CancellationToken ct);
     public Task<ImmutableArray<PetSnapshot>> GetPlacedPetSnapshotsAsync(CancellationToken ct);
-    public Task<PetSnapshot?> RespectPetAsync(ActionContext ctx, int petId, CancellationToken ct);
     public Task<PetSnapshot?> GrantPetCommandXpAsync(
         ActionContext ctx,
         int petId,

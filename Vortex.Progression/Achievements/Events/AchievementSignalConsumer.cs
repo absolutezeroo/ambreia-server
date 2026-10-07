@@ -58,9 +58,6 @@ public sealed class AchievementSignalConsumer(IGrainFactory grainFactory, IComme
         // the loop below credits each. The old handler's Task.WhenAll is gone with them.
         [SignalActions.AcceptFriend] = new(AchievementNames.FriendListSize),
         [SignalActions.PlaceItem] = new(AchievementNames.RoomDecoFurniCount),
-        [SignalActions.GiveRespect] = new(AchievementNames.RespectGiven),
-        // The signal's player is already the receiver; nothing here has to know that.
-        [SignalActions.ReceiveRespect] = new(AchievementNames.RespectEarned),
         [SignalActions.ChangeName] = new(AchievementNames.Name),
         // "For giving %limit% gifts to other Habbos": the signal is credited to the buyer, which is
         // the player this measures. Its GiftReceiver counterpart is NOT here — open_present credits
@@ -76,9 +73,6 @@ public sealed class AchievementSignalConsumer(IGrainFactory grainFactory, IComme
         // not be expressed here anyway; releasing a pet does not take the badge back in the hotel
         // either.
         [SignalActions.AdoptPet] = new(AchievementNames.PetLover),
-        // Both sides of one scratch.
-        [SignalActions.RespectPet] = new(AchievementNames.PetRespectGiver),
-        [SignalActions.PetRespected] = new(AchievementNames.PetRespectReceiver),
         [SignalActions.ReceiveGift] = new(AchievementNames.GiftReceiver),
     }.ToFrozenDictionary();
 

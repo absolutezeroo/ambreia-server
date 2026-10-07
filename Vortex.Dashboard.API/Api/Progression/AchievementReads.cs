@@ -41,8 +41,6 @@ internal sealed class AchievementReads(
         "AvatarLooks",
         "FriendListSize",
         "RoomDecoFurniCount",
-        "RespectGiven",
-        "RespectEarned",
     };
 
     /// <summary>Every achievement definition with its level ladder, total payout and how far the

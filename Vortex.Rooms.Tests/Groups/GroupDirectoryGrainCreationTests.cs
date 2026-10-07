@@ -451,31 +451,6 @@ public sealed class GroupDirectoryGrainCreationTests
             throw new NotSupportedException();
         }
 
-        public Task<bool> TryGiveRespectAsync(CancellationToken ct)
-        {
-            throw new NotSupportedException();
-        }
-
-        public Task<bool> TryGivePetRespectAsync(CancellationToken ct)
-        {
-            throw new NotSupportedException();
-        }
-
-        public Task<bool> ReplenishRespectAsync(CancellationToken ct)
-        {
-            throw new NotSupportedException();
-        }
-
-        public Task<PlayerRespectSnapshot> GetRespectStateAsync(CancellationToken ct)
-        {
-            throw new NotSupportedException();
-        }
-
-        public Task<int> AddRespectReceivedAsync(CancellationToken ct)
-        {
-            throw new NotSupportedException();
-        }
-
         public Task<PlayerSummarySnapshot> GetSummaryAsync(CancellationToken ct)
         {
             throw new NotSupportedException();

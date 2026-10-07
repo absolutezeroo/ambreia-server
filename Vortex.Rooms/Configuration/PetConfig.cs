@@ -26,20 +26,6 @@ public class PetConfig
 
     public int VocalIntervalMs { get; init; } = 14_000;
 
-    /// <summary>
-    /// How old an account must be, in days, before it may respect a pet. Habbo gates this; the
-    /// default of 0 leaves the gate open, so a hotel opts in rather than inheriting a rule it never
-    /// asked for.
-    /// </summary>
-    public int RespectMinimumAccountAgeDays { get; init; }
-
-    /// <summary>What a scratch pays. 10, measured on the live hotel (PetExperience/3712).</summary>
-    public int RespectXpReward { get; init; } = 10;
-
-    /// <summary>A scratch is also the main way a pet is cheered up: the live hotel raises the
-    /// happiness bar by 10 per scratch, measured twice on the same pet.</summary>
-    public int RespectHappinessReward { get; init; } = 10;
-
     public int CommandXpReward { get; init; } = 3;
 
     /// <summary>

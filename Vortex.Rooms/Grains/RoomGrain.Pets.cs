@@ -97,29 +97,6 @@ public sealed partial class RoomGrain
     public Task<ImmutableArray<PetSnapshot>> GetPlacedPetSnapshotsAsync(CancellationToken ct) =>
         PetSystem.GetPlacedPetSnapshotsAsync(ct);
 
-    public async Task<PetSnapshot?> RespectPetAsync(
-        ActionContext ctx,
-        int petId,
-        CancellationToken ct
-    )
-    {
-        try
-        {
-            return await PetSystem.RespectPetAsync(ctx, petId, ct);
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(
-                ex,
-                "Failed to respect pet {PetId} in room {RoomId}",
-                petId,
-                _state.RoomId
-            );
-
-            return null;
-        }
-    }
-
     public async Task<PetSnapshot?> GrantPetCommandXpAsync(
         ActionContext ctx,
         int petId,

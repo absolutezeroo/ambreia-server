@@ -94,52 +94,6 @@ public sealed class UserUnblockedAuditHandler(IAuditSink audit) : IEventHandler<
 }
 
 /// <summary>
-/// Respect is the one social currency a player spends on someone else, and it was the only such
-/// exchange leaving no trace. Both halves are recorded: the giver's line answers "who did they
-/// boost", the receiver's carries the running total a sudden jump shows up in.
-/// </summary>
-public sealed class RespectGivenAuditHandler(IAuditSink audit) : IEventHandler<RespectGivenEvent>
-{
-    public ValueTask HandleAsync(RespectGivenEvent e, EventContext ctx, CancellationToken ct)
-    {
-        audit.Emit(
-            new AuditEvent
-            {
-                Category = AuditCategory.Social,
-                Action = "social.respect_given",
-                Severity = AuditSeverity.Info,
-                Result = AuditResult.Success,
-                ActorPlayerId = e.ActorPlayerId,
-                TargetPlayerId = e.TargetPlayerId,
-            }
-        );
-
-        return ValueTask.CompletedTask;
-    }
-}
-
-public sealed class RespectReceivedAuditHandler(IAuditSink audit)
-    : IEventHandler<RespectReceivedEvent>
-{
-    public ValueTask HandleAsync(RespectReceivedEvent e, EventContext ctx, CancellationToken ct)
-    {
-        audit.Emit(
-            new AuditEvent
-            {
-                Category = AuditCategory.Social,
-                Action = "social.respect_received",
-                Severity = AuditSeverity.Info,
-                Result = AuditResult.Success,
-                ActorPlayerId = e.PlayerId,
-                Data = JsonSerializer.Serialize(new { total = e.RespectTotal }),
-            }
-        );
-
-        return ValueTask.CompletedTask;
-    }
-}
-
-/// <summary>
 /// The public half of an account's identity. Cheap to change, and the first thing changed when
 /// someone is impersonating a player or covering their tracks, so the old value is kept in the
 /// record rather than only the new one.

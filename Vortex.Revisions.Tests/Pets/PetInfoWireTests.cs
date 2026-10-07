@@ -79,7 +79,8 @@ public sealed class PetInfoWireTests
             .Should()
             .Be(
                 "00056320000566696C6F750000000800000014000007260000096000000104"
-                    + "000001040000001A000000640000003C00B8CDE00000171F0009636C6179746F"
+                    // respect (60 in the capture) is frozen at 0 since respects were removed (M0 bis).
+                    + "000001040000001A000000640000000000B8CDE00000171F0009636C6179746F"
                     + "6E7879000000010000000000000000000000000000000000FFFFFFFFFFFFFFFF"
                     + "FFFFFFFF01"
             );

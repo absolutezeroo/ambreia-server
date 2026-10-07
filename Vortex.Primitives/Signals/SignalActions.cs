@@ -66,9 +66,6 @@ public static class SignalActions
     /// <summary>Sent a friend request. (Introduction Track)</summary>
     public const string RequestFriend = "request_friend";
 
-    /// <summary>Gave respect to another player. (Introduction Track)</summary>
-    public const string GiveRespect = "give_respect";
-
     /// <summary>Sent a private message. (Introduction Track)</summary>
     public const string SendMessengerMessage = "send_messenger_message";
 
@@ -130,9 +127,6 @@ public static class SignalActions
 
     /// <summary>Accepted a friend request. The other half of request_friend. (no Habbo artwork: this hotel's own signal)</summary>
     public const string AcceptFriend = "accept_friend";
-
-    /// <summary>Was given respect by somebody else. (no Habbo artwork: this hotel's own signal)</summary>
-    public const string ReceiveRespect = "receive_respect";
 
     /// <summary>Logged in. (no Habbo artwork: this hotel's own signal)</summary>
     public const string Login = "login";
@@ -209,12 +203,6 @@ public static class SignalActions
     /// <summary>Claimed vault income. (no Habbo artwork: this hotel's own signal)</summary>
     public const string ClaimVaultIncome = "claim_vault_income";
 
-    /// <summary>Scratched somebody's pet.</summary>
-    public const string RespectPet = "respect_pet";
-
-    /// <summary>Had one of your own pets scratched. The other half of respect_pet.</summary>
-    public const string PetRespected = "pet_respected";
-
     /// <summary>A pet obeyed an order. Raised where it obeys, never where the words were typed.</summary>
     public const string CommandPet = "command_pet";
 
@@ -243,7 +231,6 @@ public static class SignalActions
         Teleport,
         ChatWithSomeone,
         RequestFriend,
-        GiveRespect,
         SendMessengerMessage,
         Dance,
         Wave,
@@ -262,7 +249,6 @@ public static class SignalActions
         UpdateRoomSettings,
         AnswerDoorbell,
         AcceptFriend,
-        ReceiveRespect,
         Login,
         ChangeName,
         EarnBadge,
@@ -288,8 +274,6 @@ public static class SignalActions
         OpenPresent,
         BuyGift,
         ClaimVaultIncome,
-        RespectPet,
-        PetRespected,
         CommandPet,
         StandNearFurni,
         ReceiveGift

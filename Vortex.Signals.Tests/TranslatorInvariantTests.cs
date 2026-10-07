@@ -40,7 +40,6 @@ public sealed class TranslatorInvariantTests
         "ItemPickedUpEvent",
         "PlayerWalkedOnFurniEvent",
         "FriendRequestSentEvent",
-        "RespectGivenEvent",
         "MessengerMessageSentEvent",
         "PlayerFigureChangedEvent",
         "PlayerMottoChangedEvent",

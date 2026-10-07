@@ -54,7 +54,6 @@ public sealed class DailyTaskSignalConsumer(IGrainFactory grainFactory, ICommerc
         [SignalActions.EnterOtherUsersRoom] = QuestTypes.RoomEntry,
         [SignalActions.ChangeFigure] = QuestTypes.AvatarLooks,
         [SignalActions.ChangeMotto] = QuestTypes.MottoChange,
-        [SignalActions.GiveRespect] = QuestTypes.RespectGiven,
         // One signal per side, so both players arrive in the same batch.
         [SignalActions.AcceptFriend] = QuestTypes.FriendListSize,
         [SignalActions.PlaceItem] = QuestTypes.PlaceItem,

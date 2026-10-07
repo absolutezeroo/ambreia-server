@@ -5,7 +5,7 @@ namespace Vortex.Progression.Configuration;
 /// <summary>
 /// Where each badge rarity tier ends, served live from <c>IServerConfigGrain</c> so an operator can
 /// retune them without a deploy. Declared as key/default pairs in the same shape as
-/// <c>RespectConfig</c>; the dashboard editor learns about them from <c>ConfigKeyCatalog</c>.
+/// the other live-config classes; the dashboard editor learns about them from <c>ConfigKeyCatalog</c>.
 /// </summary>
 /// <remarks>
 /// These are hotel policy, not protocol. The client never decides a rarity — it draws whatever the

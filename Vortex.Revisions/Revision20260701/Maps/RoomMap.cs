@@ -248,7 +248,6 @@ internal sealed class RoomMap : IRevisionMap
         );
         builder.MapParser(MessageEvent.GetPetInfoMessageEvent, new GetPetInfoMessageParser());
         builder.MapParser(MessageEvent.PetSelectedMessageEvent, new PetSelectedMessageParser());
-        builder.MapParser(MessageEvent.RespectPetMessageEvent, new RespectPetMessageParser());
 
         // Room Session
         builder.MapParser(
@@ -563,10 +562,6 @@ internal sealed class RoomMap : IRevisionMap
         builder.MapSerializer(
             typeof(PetPlacingErrorMessageComposer),
             new PetPlacingErrorMessageComposerSerializer(MessageComposer.PetPlacingErrorComposer)
-        );
-        builder.MapSerializer(
-            typeof(PetRespectFailedMessageComposer),
-            new PetRespectFailedMessageComposerSerializer(MessageComposer.PetRespectFailedComposer)
         );
         builder.MapSerializer(
             typeof(PetStatusUpdateMessageComposer),

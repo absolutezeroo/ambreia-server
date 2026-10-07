@@ -105,7 +105,8 @@ public sealed class NotificationTests
         await using WebApiTestFactory factory = new();
         await PlayerAsync(factory, 1, "Prodiigy");
 
-        await Sink(factory).NotifyAsync(1, NotificationKind.RespectReceived, actorPlayerId: 1);
+        await Sink(factory)
+            .NotifyAsync(1, NotificationKind.FriendRequestAccepted, actorPlayerId: 1);
 
         (await Service(factory).GetAsync(1, 1, 0)).Items.Should().BeEmpty();
     }

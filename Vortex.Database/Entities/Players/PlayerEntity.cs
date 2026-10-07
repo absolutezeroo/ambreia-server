@@ -63,33 +63,6 @@ public class PlayerEntity : VortexEntity
     [DefaultValue(0)]
     public int AchievementScore { get; set; }
 
-    /// <summary>Total respect points this player has received from others.</summary>
-    [Column("respect_received")]
-    [DefaultValue(0)]
-    public int RespectReceived { get; set; }
-
-    /// <summary>How many respects the player has given today (reset when <see cref="RespectResetDate"/>
-    /// is not today); bounds the daily give budget.</summary>
-    [Column("respect_given_today")]
-    [DefaultValue(0)]
-    public int RespectGivenToday { get; set; }
-
-    /// <summary>How many pets the player has scratched today. Shares
-    /// <see cref="RespectResetDate"/> with the give budget — both roll over on the same day.</summary>
-    [Column("pet_respect_given_today")]
-    [DefaultValue(0)]
-    public int PetRespectGivenToday { get; set; }
-
-    /// <summary>How many times the player has refilled their give budget today, against the
-    /// <c>respect.daily_replenishes</c> allowance. Same reset date as the other two.</summary>
-    [Column("respect_replenishes_used_today")]
-    [DefaultValue(0)]
-    public int RespectReplenishesUsedToday { get; set; }
-
-    /// <summary>The day <see cref="RespectGivenToday"/> applies to; a different day resets the budget.</summary>
-    [Column("respect_reset_date")]
-    public DateTime? RespectResetDate { get; set; }
-
     // The player's favourite guild, surfaced on the guild badge in the UI. Plain scalar (no FK
     // navigation) to avoid yet another circular relationship through groups/rooms.
     [Column("favourite_group_id")]

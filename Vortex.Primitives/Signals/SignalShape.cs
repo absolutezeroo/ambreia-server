@@ -19,7 +19,7 @@ namespace Vortex.Primitives.Signals;
 /// <param name="TargetKind">
 /// What <see cref="ProgressSignal.Target"/> is for this action, or null when the action has no
 /// target. It is what lets the editor offer a room picker for <c>create_room</c>'s target and a
-/// player picker for <c>give_respect</c>'s, from one virtual <c>target</c> fact.
+/// player picker for <c>request_friend</c>'s, from one virtual <c>target</c> fact.
 /// </param>
 public sealed record SignalShape(
     string Action,

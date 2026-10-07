@@ -24,13 +24,12 @@ internal class UserObjectMessageSerializer(int header)
         packet.WriteString(message.Player.Motto);
         packet.WriteString(message.Player.Name); // real name
         packet.WriteBoolean(false); // direct mail
-        // These three were 0 in hard code, which switched the whole respect feature off in the
-        // client: AvatarMenuView draws "respect" only for respectLeft > 0 and OwnPetMenuView draws
-        // the scratch button only for petRespectLeft > 0, and this message is the only thing that
-        // ever sets either (SessionDataManager.onUserObject).
-        packet.WriteInteger(message.Respect.Received);
-        packet.WriteInteger(message.Respect.Left);
-        packet.WriteInteger(message.Respect.PetLeft);
+        // respectTotal, respectLeft, petRespectLeft: figé, retiré avec le client -- respects were
+        // removed (M0 bis). Zero is also what keeps them off: AvatarMenuView draws "respect" only
+        // for respectLeft > 0 and OwnPetMenuView the scratch button only for petRespectLeft > 0.
+        packet.WriteInteger(0);
+        packet.WriteInteger(0);
+        packet.WriteInteger(0);
         packet.WriteBoolean(false); // stream publishing enabled
 
         // `lastAccessDate` on the client side. CurrentCulture made these bytes depend on the host's
@@ -49,7 +48,8 @@ internal class UserObjectMessageSerializer(int header)
         // here -- they are the toll for the replenish counters behind them.
         packet.WriteBoolean(false); // account trade locked
         packet.WriteString(string.Empty); // name colour
-        packet.WriteInteger(message.Respect.ReplenishesLeft);
-        packet.WriteInteger(message.Respect.MaxPerDay);
+        // respectReplenishesLeft, maxRespectPerDay: figé, retiré avec le client (M0 bis).
+        packet.WriteInteger(0);
+        packet.WriteInteger(0);
     }
 }

@@ -4,8 +4,8 @@ namespace Vortex.Rooms.Configuration;
 
 /// <summary>
 /// The room chat filter's three numbers, served live from <c>IServerConfigGrain</c> so an operator
-/// can change them without a deploy. Key/default pairs in the same shape as <see cref="RespectConfig"/>
-/// over in the players module; the dashboard editor learns about them from <c>ConfigKeyCatalog</c>.
+/// can change them without a deploy. Key/default pairs in the same shape as the other live-config
+/// classes; the dashboard editor learns about them from <c>ConfigKeyCatalog</c>.
 /// </summary>
 /// <remarks>
 /// The two limits are read where they are used, in the grain call an edit already makes. The

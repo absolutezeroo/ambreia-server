@@ -100,27 +100,6 @@ public static class ConfigKeyCatalog
             "Badges"
         ),
         new(
-            "respect.daily_limit",
-            "3",
-            ConfigValueKind.Int,
-            "Respects a player may give per day. The client draws the respect button only while this budget is above zero, so a zero here hides the feature.",
-            "Respect"
-        ),
-        new(
-            "respect.pet_daily_limit",
-            "3",
-            ConfigValueKind.Int,
-            "Pets a player may scratch per day, and the only limit on scratching. It is the number the client is handed at login and counts down from on its own, so a second rule of ours would make that count a lie.",
-            "Respect"
-        ),
-        new(
-            "respect.daily_replenishes",
-            "0",
-            ConfigValueKind.Int,
-            "How many times a day a player may refill an exhausted respect budget. Zero (the default) hides the refill button.",
-            "Respect"
-        ),
-        new(
             "friendlist.fragment_size",
             "500",
             ConfigValueKind.Int,

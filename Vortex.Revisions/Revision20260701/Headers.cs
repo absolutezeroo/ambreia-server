@@ -13,8 +13,6 @@ internal static class MessageEvent
 
     public const int BlockListInitEvent = 798; // AS3-verified (direct read): BlockedUsersManager.as:54 -> send(new _SafeCls_3511()) (no args) @798; was 2610, which has no entry in the WIN63 registry at all
     public const int BlockUserMessageEvent = 483; // AS3-verified (direct read): BlockedUsersManager.as:94 -> send(new _SafeCls_2856(userId)) @483; was 2371, which has no entry in the WIN63 registry at all
-    public const int ReplenishRespectMessageEvent = 426; // AS3-verified (direct read): SessionDataManager.as:889 -> send(new _SafeCls_1865()) (no args) @426; was 3323, which has no entry in the WIN63 registry at all
-    public const int RespectUserMessageEvent = 3770; // AS3-verified (direct read): SessionDataManager.as:882 -> send(new _SafeCls_1969(userId)) @3770. Its old value 3377 is Game2GetAccountGameStatus, whose name survives unobfuscated in the WIN63 registry (that message is not handled)
     public const int UnblockUserMessageEvent = 2512; // AS3-verified (direct read): BlockedUsersManager.as:99 -> send(new _SafeCls_2552(userId)) @2512; was 1231, which the WIN63 registry uses on the *incoming* side only (no composer at 1231)
 
     public const int ClaimDailyTaskEvent = 4101;
@@ -42,12 +40,6 @@ internal static class MessageEvent
     public const int CustomizePetWithFurniEvent = 2099; // AS3-verified (old-revision trace): _SafeCls_3494 -> useProductForPet() still exists in current revision at 2099
     public const int GetPetInfoMessageEvent = 3899; // AS3-verified (old-revision trace): _SafeCls_3258 -> requestPetInfo() still exists in current revision at 3899
     public const int PetSelectedMessageEvent = 2757; // AS3-verified (old-revision trace): _SafeCls_2740 -> handleGetPetInfoMessage() still exists in current revision at 2757
-
-    // AS3-verified: _composers[576] = _SafeCls_1909, and the client sends that one composer for
-    // BOTH buttons -- SessionDataManager.givePetRespect() and InfoStandWidgetHandler's
-    // RWUAM_TREAT_PET. One int, the pet id; the server tells the two apart by the pet's type,
-    // because a monsterplant is watered where an animal is scratched.
-    public const int RespectPetMessageEvent = 576;
 
     public const int GetCurrentTimingCodeMessageEvent = 1503;
 
@@ -692,7 +684,6 @@ internal static class MessageComposer
     public const int PetInfoMessageComposer = 3192;
     public const int PetLevelUpdateComposer = 3104; // AS3-verified (ghost fix): onPetLevelUpdate @ RoomUsersHandler
     public const int PetPlacingErrorComposer = 3195; // AS3-verified (ghost fix): onPetPlacingError @ RoomUsersHandler
-    public const int PetRespectFailedComposer = 31;
     public const int PetStatusUpdateComposer = 2753;
 
     public const int FigureSetIdsComposer = 1231;
@@ -744,9 +735,7 @@ internal static class MessageComposer
     public const int HabboUserBadgesMessageComposer = 1292;
     public const int IgnoredUsersMessageComposer = 191;
     public const int IgnoreResultMessageComposer = 253;
-    public const int PetRespectNotificationComposer = 1784;
     public const int RelationshipStatusInfoComposer = 3360;
-    public const int RespectNotificationMessageComposer = 2686;
     public const int ScrSendKickbackInfoMessageComposer = 3887;
     public const int ScrSendUserInfoComposer = 1097;
     public const int FavoriteMembershipUpdateMessageComposer = 1259; // AS3-verified (name-only): onFavoriteMembershipUpdate @ RoomUsersHandler

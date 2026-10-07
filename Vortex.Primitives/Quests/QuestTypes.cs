@@ -38,18 +38,12 @@ public static class QuestTypes
     /// <summary>The player played a room game (no trigger wired yet).</summary>
     public const string GamePlayed = "GamePlayed";
 
-    /// <summary>The player gave a respect to someone.</summary>
-    public const string RespectGiven = "RespectGiven";
-
     /// <summary>A catalog purchase. Pair with target <c>offer_id</c> = a catalog offer id to require a
     /// specific offer ("buy offer 12"); leave the quest's target empty for "buy anything".</summary>
     public const string CatalogPurchase = "CatalogPurchase";
 
     /// <summary>The player changed their motto.</summary>
     public const string MottoChange = "MottoChange";
-
-    /// <summary>The player received a respect from someone.</summary>
-    public const string RespectReceived = "RespectReceived";
 
     /// <summary>The player completed a trade.</summary>
     public const string TradeCompleted = "TradeCompleted";

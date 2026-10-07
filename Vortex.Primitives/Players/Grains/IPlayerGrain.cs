@@ -50,40 +50,6 @@ public interface IPlayerGrain : IGrainWithIntegerKey
     /// </summary>
     public Task<int> AddAchievementScoreAsync(int delta, CancellationToken ct);
 
-    /// <summary>
-    /// Consumes one of the player's daily respect points if any remain (resetting the budget on a new
-    /// day). Returns true if a respect could be given, false if the daily limit is reached.
-    /// </summary>
-    /// <remarks>
-    /// The limit is the grain's own (<c>respect.daily_limit</c>), not the caller's: the client is
-    /// told the budget once at login and counts down locally, so the only count that decides
-    /// anything is this one.
-    /// </remarks>
-    public Task<bool> TryGiveRespectAsync(CancellationToken ct);
-
-    /// <summary>
-    /// The same, for the separate daily budget of pet scratches (<c>respect.pet_daily_limit</c>).
-    /// The room's per-pet cap is a different rule and applies on top of this one.
-    /// </summary>
-    public Task<bool> TryGivePetRespectAsync(CancellationToken ct);
-
-    /// <summary>
-    /// Spends one of today's refills, putting the give budget back to full.
-    /// </summary>
-    /// <returns>False when the allowance is exhausted or switched off, in which case nothing is
-    /// written — the client has already refilled its own counter, and will correct itself the next
-    /// time it is told the truth.</returns>
-    public Task<bool> ReplenishRespectAsync(CancellationToken ct);
-
-    /// <summary>
-    /// The respect block of the user object: totals, what is left of each budget today, and the
-    /// numbers the client needs to count down from.
-    /// </summary>
-    public Task<PlayerRespectSnapshot> GetRespectStateAsync(CancellationToken ct);
-
-    /// <summary>Increments the player's total received respect and returns the new total.</summary>
-    public Task<int> AddRespectReceivedAsync(CancellationToken ct);
-
     public Task<PlayerSummarySnapshot> GetSummaryAsync(CancellationToken ct);
 
     /// <summary>

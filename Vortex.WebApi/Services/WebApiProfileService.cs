@@ -193,7 +193,8 @@ public sealed class WebApiProfileService(
             player.ProfileVisible,
             player.PlayerStatus == PlayerStatusType.Online,
             player.AchievementScore,
-            player.RespectReceived,
+            // respectReceived: figé, retiré avec le client -- respects were removed (M0 bis).
+            0,
             worn
         );
     }

@@ -33,10 +33,8 @@ using Xunit;
 namespace Vortex.Rooms.Tests.Pets;
 
 /// <summary>
-/// Caring for a pet — respecting it, giving it a command — both funnel into the same experience
-/// grant, and both are reachable by any player standing in the room. The
-/// rules that keep that from being farmable are the daily respect cap and the level caps; both live
-/// in config and neither is enforced by the client.
+/// Caring for a pet — giving it a command — funnels into the experience grant. Pet respects
+/// (scratching) were removed in M0 bis.
 /// </summary>
 public sealed class PetCareTests
 {
@@ -44,96 +42,6 @@ public sealed class PetCareTests
     private const int OwnerId = 1;
     private const int PetId = 500;
     private const int EnergyCap = 100;
-
-    [Fact]
-    public async Task RespectingAPet_RaisesItsRespectAndItsExperience()
-    {
-        Harness harness = new(Pet());
-
-        PetSnapshot? updated = await harness
-            .System.RespectPetAsync(harness.Context, PetId, CancellationToken.None)
-            .ConfigureAwait(true);
-
-        updated!.Respect.Should().Be(1);
-        updated.Experience.Should().Be(new PetConfig().RespectXpReward);
-    }
-
-    /// <summary>
-    /// Scratching is what the happiness bar is for, and it used to move nothing at all: a scratch
-    /// paid experience and respect and left the pet exactly as miserable as it was.
-    /// </summary>
-    [Fact]
-    public async Task RespectingAPet_CheersItUp()
-    {
-        PetConfig config = new();
-        Harness harness = new(Pet() with { Happiness = 20 });
-
-        PetSnapshot? updated = await harness
-            .System.RespectPetAsync(harness.Context, PetId, CancellationToken.None)
-            .ConfigureAwait(true);
-
-        updated!.Happiness.Should().Be(20 + config.RespectHappinessReward);
-    }
-
-    [Fact]
-    public async Task RespectingAnAlreadyHappyPet_StopsAtTheCap()
-    {
-        PetConfig config = new();
-        Harness harness = new(Pet() with { Happiness = config.HappinessCap });
-
-        PetSnapshot? updated = await harness
-            .System.RespectPetAsync(harness.Context, PetId, CancellationToken.None)
-            .ConfigureAwait(true);
-
-        updated!.Happiness.Should().Be(config.HappinessCap);
-    }
-
-    /// <summary>
-    /// The scratcher's own daily allowance is the only thing that limits scratching. The pet used to
-    /// carry a cap of its own, in two columns of its row; that made the count the client shows a
-    /// lie, because the client only knows about this one and counts down from it.
-    /// </summary>
-    [Fact]
-    public async Task AScratcherOutOfDailyPetRespects_ChangesNothing()
-    {
-        Harness harness = new(Pet(), scratcherHasBudgetLeft: false);
-
-        PetSnapshot? updated = await harness
-            .System.RespectPetAsync(harness.Context, PetId, CancellationToken.None)
-            .ConfigureAwait(true);
-
-        updated!.Respect.Should().Be(0);
-        updated.Experience.Should().Be(0, "a refused scratch must not pay experience either");
-    }
-
-    [Fact]
-    public async Task TheSamePetCanBeScratchedTwiceWhileTheScratcherHasBudget()
-    {
-        // What the per-pet cap used to refuse. The allowance belongs to the player now, so the
-        // room's answer is the same whether the second scratch lands on this pet or another.
-        Harness harness = new(Pet());
-
-        _ = await harness
-            .System.RespectPetAsync(harness.Context, PetId, CancellationToken.None)
-            .ConfigureAwait(true);
-        PetSnapshot? updated = await harness
-            .System.RespectPetAsync(harness.Context, PetId, CancellationToken.None)
-            .ConfigureAwait(true);
-
-        updated!.Respect.Should().Be(2);
-    }
-
-    [Fact]
-    public async Task RespectingAPetThatIsNotInTheRoom_DoesNothing()
-    {
-        Harness harness = new(Pet());
-
-        PetSnapshot? updated = await harness
-            .System.RespectPetAsync(harness.Context, PetId + 1, CancellationToken.None)
-            .ConfigureAwait(true);
-
-        updated.Should().BeNull();
-    }
 
     [Fact]
     public async Task ACommand_PaysItsOwnExperience()
@@ -150,12 +58,12 @@ public sealed class PetCareTests
     [Fact]
     public async Task EnoughExperience_LevelsThePetUp()
     {
-        // The stub levels a pet every ten points, so one scratch away from the threshold crosses it.
-        int respectXp = new PetConfig().RespectXpReward;
-        Harness harness = new(Pet(experience: 10 - respectXp + 1));
+        // The stub levels a pet every ten points, so one command away from the threshold crosses it.
+        int commandXp = new PetConfig().CommandXpReward;
+        Harness harness = new(Pet(experience: 10 - commandXp + 1));
 
         PetSnapshot? updated = await harness
-            .System.RespectPetAsync(harness.Context, PetId, CancellationToken.None)
+            .System.GrantPetCommandXpAsync(harness.Context, PetId, CancellationToken.None)
             .ConfigureAwait(true);
 
         updated!.Experience.Should().Be(11);
@@ -191,7 +99,7 @@ public sealed class PetCareTests
     /// </summary>
     private sealed class Harness
     {
-        public Harness(PetSnapshot pet, bool scratcherHasBudgetLeft = true)
+        public Harness(PetSnapshot pet)
         {
             RoomGrain grain = GrainActivationContext.CreateWithIntegerKey<RoomGrain>(
                 RoomId,
@@ -205,7 +113,7 @@ public sealed class PetCareTests
                 FakeProxy.Create<IRoomObjectLogicProvider>(_ => null),
                 FakeProxy.Create<IRoomAvatarProvider>(_ => null),
                 RoomGrainStubs.NoListeners(),
-                ScratcherGrainFactory(scratcherHasBudgetLeft),
+                PlayerGrainFactory(),
                 FakeProxy.Create<IEventPublisher>(_ => null),
                 RoomGrainStubs.NeverCancels(),
                 FakeProxy.Create<IPermissionService>(_ => null),
@@ -239,20 +147,12 @@ public sealed class PetCareTests
         public ActionContext Context { get; } =
             ActionContext.CreateForPlayer(new PlayerId(OwnerId), new RoomId(RoomId));
 
-        /// <summary>
-        /// Enough of a grain factory to answer the scratcher's own daily allowance — the third gate
-        /// on a scratch, after the pet's cap and the account-age rule, and the only one that lives
-        /// on the player rather than on the pet.
-        /// </summary>
-        private static IGrainFactory ScratcherGrainFactory(bool hasBudgetLeft) =>
+        /// <summary>A grain factory whose player grains answer nothing.</summary>
+        private static IGrainFactory PlayerGrainFactory() =>
             FakeProxy.Create<IGrainFactory>(call =>
                 call.Method.IsGenericMethod
                 && call.Method.GetGenericArguments()[0] == typeof(IPlayerGrain)
-                    ? FakeProxy.Create<IPlayerGrain>(inner =>
-                        inner.Method.Name == nameof(IPlayerGrain.TryGivePetRespectAsync)
-                            ? Task.FromResult(hasBudgetLeft)
-                            : null
-                    )
+                    ? FakeProxy.Create<IPlayerGrain>(_ => null)
                     : null
             );
 

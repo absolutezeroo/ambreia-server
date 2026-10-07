@@ -25,7 +25,8 @@ internal class PetInfoMessageComposerSerializer(int header)
             // never appear in this message at all -- they are the server's business.
             .WriteInteger(pet.Happiness)
             .WriteInteger(Math.Max(message.MaxHappiness, pet.Happiness))
-            .WriteInteger(pet.Respect)
+            // respect: figé, retiré avec le client -- pet respects were removed (M0 bis).
+            .WriteInteger(0)
             .WriteInteger(pet.OwnerId.Value)
             .WriteInteger(message.Age)
             .WriteString(message.OwnerName)

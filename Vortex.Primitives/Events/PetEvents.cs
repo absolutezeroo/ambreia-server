@@ -8,18 +8,11 @@ namespace Vortex.Primitives.Events;
 /// </summary>
 public sealed record PetAdoptedEvent(PlayerId OwnerId, int PetId, string Name, int Type) : IEvent;
 
-/// <summary>Somebody scratched a pet. <paramref name="ActorId"/> and <paramref name="OwnerId"/>
-/// are the two sides the hotel counts separately, and are often the same player.</summary>
-/// <remarks>
-/// <paramref name="Type"/> is on every one of these events for the same reason: the pet id names one
-/// animal in the hotel, and content is written about a species. "Scratch a pet" and "scratch a
-/// husky" were the same task until this was carried, because the only thing a filter could say was
-/// which individual pet it meant.
-/// </remarks>
-public sealed record PetRespectedEvent(PlayerId ActorId, PlayerId OwnerId, int PetId, int Type)
-    : IEvent;
-
 /// <summary>A pet was set down in a room.</summary>
+/// <remarks>
+/// The pet's type is on every one of these events for the same reason: the pet id names one animal
+/// in the hotel, and content is written about a species.
+/// </remarks>
 public sealed record PetPlacedEvent(PlayerId ActorId, int PetId, int Type, int RoomId) : IEvent;
 
 /// <summary>A pet was picked up out of a room and back into an inventory.</summary>

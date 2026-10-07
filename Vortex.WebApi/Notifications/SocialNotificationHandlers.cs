@@ -75,27 +75,3 @@ public sealed class FriendRequestAcceptedNotificationHandler(INotificationSink n
             .ConfigureAwait(false);
     }
 }
-
-/// <summary>
-/// Somebody respected me.
-/// </summary>
-/// <remarks>
-/// On <c>RespectGivenEvent</c> and not <c>RespectReceivedEvent</c>, although the latter is named
-/// for exactly this: the received one carries only a running total and no actor, so it can say
-/// "you were respected" and never by whom. The given one has both halves.
-/// </remarks>
-public sealed class RespectNotificationHandler(INotificationSink notifications)
-    : IEventHandler<RespectGivenEvent>
-{
-    public async ValueTask HandleAsync(RespectGivenEvent e, EventContext ctx, CancellationToken ct)
-    {
-        await notifications
-            .NotifyAsync(
-                e.TargetPlayerId,
-                NotificationKind.RespectReceived,
-                actorPlayerId: e.ActorPlayerId,
-                ct: ct
-            )
-            .ConfigureAwait(false);
-    }
-}
