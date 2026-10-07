@@ -49,6 +49,29 @@ public sealed class ConsoleCommandServiceTests
         }
     }
 
+    [Fact]
+    public async Task ACommandThatThrows_DoesNotEndTheConsole()
+    {
+        TextReader previous = System.Console.In;
+        System.Console.SetIn(new StringReader("boom\nnext\n"));
+
+        try
+        {
+            ThrowsOnce dispatcher = new();
+            ConsoleCommandService service = new(dispatcher);
+
+            service.Enable();
+
+            await WaitUntilStoppedAsync(service, TimeSpan.FromSeconds(5));
+
+            dispatcher.Received.Should().Equal("boom", "next");
+        }
+        finally
+        {
+            System.Console.SetIn(previous);
+        }
+    }
+
     private static async Task WaitUntilStoppedAsync(ConsoleCommandService service, TimeSpan timeout)
     {
         DateTime deadline = DateTime.UtcNow + timeout;
@@ -56,6 +79,24 @@ public sealed class ConsoleCommandServiceTests
         while (service.IsRunning && DateTime.UtcNow < deadline)
         {
             await Task.Delay(25).ConfigureAwait(false);
+        }
+    }
+
+    private sealed class ThrowsOnce : IConsoleCommandDispatcher
+    {
+        public List<string> Received { get; } = [];
+
+        public IReadOnlyList<ConsoleCommandDescriptor> Commands => [];
+
+        public ConsoleCommandDescriptor? Find(string name) => null;
+
+        public Task<bool> ExecuteAsync(string input, Action<string> write, CancellationToken ct)
+        {
+            Received.Add(input);
+
+            return Received.Count == 1
+                ? throw new InvalidOperationException("grain call timed out")
+                : Task.FromResult(true);
         }
     }
 

@@ -76,9 +76,18 @@ public class ConsoleCommandService(IConsoleCommandDispatcher dispatcher)
                 continue;
             }
 
-            await _dispatcher
-                .ExecuteAsync(input, System.Console.WriteLine, ct)
-                .ConfigureAwait(false);
+            // A command that throws (a grain call timing out, say) is reported to whoever typed
+            // it; letting it escape would fault this loop and silently end the console.
+            try
+            {
+                await _dispatcher
+                    .ExecuteAsync(input, System.Console.WriteLine, ct)
+                    .ConfigureAwait(false);
+            }
+            catch (Exception ex) when (ex is not OperationCanceledException)
+            {
+                System.Console.WriteLine($"Command failed: {ex.Message}");
+            }
         }
     }
 }

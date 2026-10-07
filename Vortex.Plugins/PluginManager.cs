@@ -144,9 +144,7 @@ public sealed class PluginManager(
         try
         {
             List<(PluginManifest manifest, string folder)> discovered = DiscoverPlugins();
-            IReadOnlyList<PluginManifest> manifests = PluginHelpers.SortManifests([
-                .. discovered.Select(d => d.manifest),
-            ]);
+            IReadOnlyList<PluginManifest> manifests = SortAndReportUnresolved(discovered);
             Dictionary<string, string> byKey = discovered.ToDictionary(
                 d => d.manifest.Key,
                 d => d.folder,
@@ -293,9 +291,11 @@ public sealed class PluginManager(
                 _live[env.Manifest.Key] = env;
             }
 
+            // "Removed" means gone from disk. A live plugin whose new build failed to load, or whose
+            // reload was refused, is still on disk and keeps running.
             if (unloadRemoved)
             {
-                await UnloadRemovedAsync(activated.Select(d => d.Key), ct).ConfigureAwait(false);
+                await UnloadRemovedAsync(byKey.Keys, ct).ConfigureAwait(false);
             }
 
             _logger.LogInformation("Loaded {Count} plugins", _live.Count);
@@ -313,9 +313,7 @@ public sealed class PluginManager(
         try
         {
             List<(PluginManifest manifest, string folder)> discovered = DiscoverPlugins();
-            IReadOnlyList<PluginManifest> manifests = PluginHelpers.SortManifests([
-                .. discovered.Select(d => d.manifest),
-            ]);
+            IReadOnlyList<PluginManifest> manifests = SortAndReportUnresolved(discovered);
             Dictionary<string, string> byKey = discovered.ToDictionary(
                 d => d.manifest.Key,
                 d => d.folder,
@@ -331,9 +329,13 @@ public sealed class PluginManager(
                 return;
             }
 
-            PluginManifest manifest = manifests.First(m =>
-                string.Equals(m.Key, key, StringComparison.OrdinalIgnoreCase)
-            );
+            PluginManifest manifest =
+                manifests.FirstOrDefault(m =>
+                    string.Equals(m.Key, key, StringComparison.OrdinalIgnoreCase)
+                )
+                ?? throw new InvalidOperationException(
+                    $"Cannot reload {key}; a dependency is missing or cyclic."
+                );
 
             SemaphoreSlim gate = GetKeyGate(key);
             await gate.WaitAsync(ct).ConfigureAwait(false);
@@ -580,6 +582,29 @@ public sealed class PluginManager(
             ServiceProvider = sp,
             Disposables = [sp],
         };
+    }
+
+    private IReadOnlyList<PluginManifest> SortAndReportUnresolved(
+        List<(PluginManifest manifest, string folder)> discovered
+    )
+    {
+        IReadOnlyList<PluginManifest> sorted = PluginHelpers.SortManifests([
+            .. discovered.Select(d => d.manifest),
+        ]);
+
+        foreach ((PluginManifest m, string folder) in discovered)
+        {
+            if (!sorted.Contains(m))
+            {
+                _logger.LogError(
+                    "Plugin {Key} in {Folder} is skipped: a dependency is missing or cyclic",
+                    m.Key,
+                    folder
+                );
+            }
+        }
+
+        return sorted;
     }
 
     private async Task UnloadRemovedAsync(IEnumerable<string> keys, CancellationToken ct)

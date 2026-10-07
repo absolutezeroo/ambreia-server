@@ -40,12 +40,9 @@ public sealed class PluginHotReloadService(
     private bool _pendingReload;
     private int _shutdownStarted;
 
-    public void Dispose()
-    {
-        Shutdown();
-        _reloadGate.Dispose();
-        _cts.Dispose();
-    }
+    // The gate and the token source are left to the GC: a reload queued by the debounce timer can
+    // still be starting when the host disposes this, and it reads both. Neither holds a handle.
+    public void Dispose() => Shutdown();
 
     public Task StartAsync(CancellationToken ct)
     {
@@ -175,9 +172,12 @@ public sealed class PluginHotReloadService(
             changedPath = _lastPath;
         }
 
+        bool acquired = false;
+
         try
         {
             await _reloadGate.WaitAsync(_cts.Token).ConfigureAwait(false);
+            acquired = true;
 
             _logger.LogInformation(
                 "Plugin reload started (trigger: {Path})",
@@ -218,7 +218,11 @@ public sealed class PluginHotReloadService(
         }
         finally
         {
-            _reloadGate.Release();
+            // A wait cancelled at shutdown never took the gate; releasing it anyway throws.
+            if (acquired)
+            {
+                _reloadGate.Release();
+            }
         }
     }
 

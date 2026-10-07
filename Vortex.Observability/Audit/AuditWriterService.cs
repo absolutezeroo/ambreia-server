@@ -116,8 +116,8 @@ public sealed class AuditWriterService : BackgroundService
         List<DurableRecord> batch
     )
     {
-        batch.Clear();
-
+        // Not cleared: a stop that cancels a flush mid-write leaves that batch here, and it must
+        // still reach the database or the dead-letter file.
         while (reader.TryRead(out DurableRecord? record))
         {
             batch.Add(record);

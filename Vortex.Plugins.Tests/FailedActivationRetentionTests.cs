@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
@@ -23,17 +24,14 @@ namespace Vortex.Plugins.Tests;
 /// </summary>
 /// <remarks>
 ///     <para>
-///     <c>PluginManager</c> waits five seconds for the context to be collected and then logs
-///     "Possible memory leak from retained type references". It has never been able to observe
-///     anything else: it waits from a frame that holds the context, so the answer is structurally
-///     "still alive" — see <c>UnloadAndWaitInstrumentTests</c>. That makes the warning unfalsifiable
-///     and the question it asks unanswered.
+///     Asked from a frame that never held the context: run the failed activation, let every frame
+///     involved go away, and only then drive the collection. Waiting from the frame that ran the
+///     load could only ever answer "still alive".
 ///     </para>
 ///     <para>
-///     This asks it properly, from a frame that never held the context: run the failed activation,
-///     let every frame involved go away, and only then drive the collection. A pass means the five
-///     second wait was buying nothing and there is no leak; a failure means the warning was right
-///     and the retention is real, which is a far more serious finding than a slow test.
+///     Only the context created by this load is watched. Other tests in the collection load the
+///     same plugin and never unload it, so "the first plugin context alive" is usually theirs, and
+///     waiting for it to be collected fails after a ten-second spin per row.
 ///     </para>
 /// </remarks>
 [Collection(TestPluginCollection.NAME)]
@@ -75,9 +73,12 @@ public sealed class FailedActivationRetentionTests : IDisposable
     {
         Environment.SetEnvironmentVariable(FAILURE_VARIABLE, failurePoint);
 
+        HashSet<AssemblyLoadContext> before = PluginContexts();
+
         await RunFailedLoadAsync();
 
-        WeakReference? context = FindPluginContext();
+        WeakReference? context = FindNewPluginContext(before);
+        before.Clear();
 
         // Already gone from AssemblyLoadContext.All is the strongest possible pass: the runtime
         // finished the unload before anything even looked.
@@ -114,14 +115,18 @@ public sealed class FailedActivationRetentionTests : IDisposable
     ///     survive into the polling loop.
     /// </remarks>
     [MethodImpl(MethodImplOptions.NoInlining)]
-    private static WeakReference? FindPluginContext()
+    private static WeakReference? FindNewPluginContext(HashSet<AssemblyLoadContext> before)
     {
         AssemblyLoadContext? plugin = AssemblyLoadContext.All.FirstOrDefault(c =>
-            c is ByteLoadingAlc
+            c is ByteLoadingAlc && !before.Contains(c)
         );
 
         return plugin is null ? null : new WeakReference(plugin);
     }
+
+    [MethodImpl(MethodImplOptions.NoInlining)]
+    private static HashSet<AssemblyLoadContext> PluginContexts() =>
+        [.. AssemblyLoadContext.All.Where(c => c is ByteLoadingAlc)];
 
     /// <summary>
     ///     Drives the collection from a frame that never held the context. Three collections per

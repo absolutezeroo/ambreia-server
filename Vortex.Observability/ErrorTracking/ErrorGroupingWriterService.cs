@@ -51,7 +51,7 @@ internal sealed class ErrorGroupingWriterService : BackgroundService
         _batchSize = Math.Max(1, options.Value.ErrorTrackingBatchSize);
         _retryAttempts = Math.Max(0, options.Value.ErrorTrackingWriteRetryAttempts);
         _retryDelayMs = Math.Max(0, options.Value.ErrorTrackingWriteRetryDelayMs);
-        _deadLetterPath = options.Value.AuditDeadLetterPath;
+        _deadLetterPath = options.Value.ErrorGroupingDeadLetterPath;
         _logger = logger;
     }
 
@@ -104,8 +104,8 @@ internal sealed class ErrorGroupingWriterService : BackgroundService
         List<ErrorGroupingRecord> batch
     )
     {
-        batch.Clear();
-
+        // Not cleared: a stop that cancels a flush mid-write leaves that batch here, and it must
+        // still reach the database or the dead-letter file.
         while (reader.TryRead(out ErrorGroupingRecord? record))
         {
             batch.Add(record);

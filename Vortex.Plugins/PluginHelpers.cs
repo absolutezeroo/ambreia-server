@@ -68,6 +68,11 @@ internal static class PluginHelpers
         }
     }
 
+    /// <summary>
+    /// Orders manifests so every plugin comes after its dependencies. A manifest whose dependency is
+    /// missing, or that sits on a cycle, is left out -- and so is everything depending on it -- rather
+    /// than failing the whole load: one bad folder must not keep every other plugin down.
+    /// </summary>
     public static IReadOnlyList<PluginManifest> SortManifests(
         IReadOnlyList<PluginManifest> manifests
     )
@@ -89,12 +94,13 @@ internal static class PluginHelpers
         {
             foreach (PluginDependency d in m.Dependencies)
             {
-                if (!byKey.ContainsKey(d.Key))
+                // A missing dependency still counts as an unmet edge, so the manifest never
+                // reaches in-degree 0 and is left out with its dependents.
+                if (byKey.ContainsKey(d.Key))
                 {
-                    throw new InvalidOperationException($"{m.Key} is missing dependency {d.Key}");
+                    graph[d.Key].Add(m.Key);
                 }
 
-                graph[d.Key].Add(m.Key);
                 indeg[m.Key]++;
             }
         }
@@ -114,11 +120,6 @@ internal static class PluginHelpers
                     q.Enqueue(n);
                 }
             }
-        }
-
-        if (order.Count != manifests.Count)
-        {
-            throw new InvalidOperationException("Cyclic plugin dependencies.");
         }
 
         return [.. order.Select(k => byKey[k])];

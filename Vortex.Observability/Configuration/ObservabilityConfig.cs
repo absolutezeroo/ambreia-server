@@ -65,6 +65,12 @@ public sealed class ObservabilityConfig
     /// <summary>Path to dead-letter file for batches that cannot be written to DB.</summary>
     public string AuditDeadLetterPath { get; init; } = "logs/audit-dead-letter.jsonl";
 
+    /// <summary>
+    /// Dead-letter file of the error-grouping writer. Its own file: two writers appending to one
+    /// path collide on the file lock and one of the batches is lost.
+    /// </summary>
+    public string ErrorGroupingDeadLetterPath { get; init; } = "logs/error-dead-letter.jsonl";
+
     /// <summary>Bounded capacity of the in-memory error-grouping queue.</summary>
     public int ErrorGroupingChannelCapacity { get; init; } = 10_000;
 
