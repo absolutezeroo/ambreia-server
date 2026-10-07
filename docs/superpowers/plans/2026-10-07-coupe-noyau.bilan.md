@@ -18,7 +18,7 @@ faire F4 (l'éditeur de cartes) tôt.
 | Attributs `[Fact]`/`[Theory]` | 1 788 | 520 |
 | Tests exécutés par le QualityGate | 2 604 | **662, 0 échec** |
 | Tables (InitialCreate) | 105 | 17 |
-| Headers entrants / sortants (`Headers.cs`) | 305 / 280 | 14 / 47 |
+| Headers entrants / sortants (`Headers.cs`) | 305 / 280 | 14 / 46 |
 | Fichiers parseurs / sérialiseurs | 292 / 297 | 14 / 54 (dont les sérialiseurs de données partagés) |
 
 | Projet de tests | Tests exécutés |
@@ -136,7 +136,7 @@ Rejouable : `node .claude/skills/run-vortex-emulator/driver.mjs smoke`.
    leurs requêtes (avertissement au journal, pas de déconnexion), mais leurs fenêtres restent vides.
 2. **Garder** la connexion (ticket SSO), le moteur de room, l'entrée en zone sur `RoomForward`, la marche
    et le regard. Le contrat réseau gardé est entièrement dans
-   `Vortex.Revisions/Revision20260701/Headers.cs` (14 entrants, 47 sortants).
+   `Vortex.Revisions/Revision20260701/Headers.cs` (14 entrants, 46 sortants).
 3. **Vérifier le parcours** inscription → avatar → ticket → client → zone de développement, dans le vrai
    client cette fois (le driver le fait en frames brutes).
 4. **Réaligner `appsettings.Development.json`** (local, ignoré par git) : il référence encore le plugin
