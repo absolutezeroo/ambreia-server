@@ -52,6 +52,7 @@
     <ProjectReference Include="..\Vortex.WebApi.Authentication\Vortex.WebApi.Authentication.csproj" />
     <ProjectReference Include="..\Vortex.Permissions\Vortex.Permissions.csproj" />
     <ProjectReference Include="..\Vortex.World\Vortex.World.csproj" />
+    <ProjectReference Include="..\Vortex.Rpg\Vortex.Rpg.csproj" />
     <ProjectReference Include="..\Vortex.Crypto\Vortex.Crypto.csproj" />
     <ProjectReference Include="..\Vortex.Database\Vortex.Database.csproj" />
     <ProjectReference Include="..\Vortex.Events\Vortex.Events.csproj" />

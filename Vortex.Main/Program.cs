@@ -33,6 +33,7 @@ using Vortex.Primitives.Hosting;
 using Vortex.Primitives.Orleans;
 using Vortex.Revisions.Extensions;
 using Vortex.Rooms;
+using Vortex.Rpg;
 using Vortex.Runtime.AssemblyProcessing;
 using Vortex.WebApi.Authentication;
 using Vortex.World;
@@ -127,6 +128,7 @@ internal class Program
         builder.Services.AddHostPlugin<WebApiAuthenticationModule>(builder);
         builder.Services.AddHostPlugin<FurnitureModule>(builder);
         builder.Services.AddHostPlugin<WorldModule>(builder);
+        builder.Services.AddHostPlugin<RpgModule>(builder);
         builder.Services.AddHostPlugin<PlayerModule>(builder);
         // No web API module here. It is a LOADABLE plugin, found in its folder by PluginManager
         // rather than compiled into this host — registering it here would mean referencing its

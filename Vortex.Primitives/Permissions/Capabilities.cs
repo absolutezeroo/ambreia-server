@@ -94,6 +94,15 @@ public static class Capabilities
         public static IReadOnlyList<string> All { get; } = [ZoneEdit, ZonePublish];
     }
 
+    /// <summary>The RPG content pipeline (<c>/api/content</c>, spec Contenu §6).</summary>
+    public static class Content
+    {
+        /// <summary>Import a whole content pack: what every player's classes and items read.</summary>
+        public const string Publish = "content.publish";
+
+        public static IReadOnlyList<string> All { get; } = [Publish];
+    }
+
     /// <summary>Every declared capability, for validation.</summary>
     public static IReadOnlyCollection<string> All { get; } =
     [
@@ -114,5 +123,6 @@ public static class Capabilities
         Economy.GrantItem,
         .. Server.All,
         .. World.All,
+        .. Content.All,
     ];
 }

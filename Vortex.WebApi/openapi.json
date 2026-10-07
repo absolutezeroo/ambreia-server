@@ -129,6 +129,76 @@
         }
       }
     },
+    "/api/content/import": {
+      "post": {
+        "tags": [
+          "Content"
+        ],
+        "operationId": "ContentImport",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ContentPack"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ContentImportResult"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ContentImportResult"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/public/content/texts/{language}": {
+      "get": {
+        "tags": [
+          "Content"
+        ],
+        "operationId": "ContentTexts",
+        "parameters": [
+          {
+            "name": "language",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/editor/zones": {
       "get": {
         "tags": [
@@ -925,6 +995,122 @@
         },
         "additionalProperties": false
       },
+      "ContentFile": {
+        "required": [
+          "path",
+          "text"
+        ],
+        "type": "object",
+        "properties": {
+          "path": {
+            "type": "string"
+          },
+          "text": {
+            "type": "string"
+          }
+        },
+        "additionalProperties": false
+      },
+      "ContentFinding": {
+        "required": [
+          "code",
+          "message",
+          "severity"
+        ],
+        "type": "object",
+        "properties": {
+          "severity": {
+            "$ref": "#/components/schemas/ContentSeverity"
+          },
+          "code": {
+            "type": "string"
+          },
+          "file": {
+            "type": "string",
+            "nullable": true
+          },
+          "contentId": {
+            "type": "string",
+            "nullable": true
+          },
+          "message": {
+            "type": "string"
+          }
+        },
+        "additionalProperties": false
+      },
+      "ContentImportResult": {
+        "required": [
+          "added",
+          "changed",
+          "findings",
+          "imported",
+          "packVersion",
+          "removed"
+        ],
+        "type": "object",
+        "properties": {
+          "imported": {
+            "type": "boolean"
+          },
+          "packVersion": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "added": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "changed": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "removed": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "findings": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ContentFinding"
+            }
+          }
+        },
+        "additionalProperties": false
+      },
+      "ContentPack": {
+        "required": [
+          "files",
+          "texts"
+        ],
+        "type": "object",
+        "properties": {
+          "files": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ContentFile"
+            }
+          },
+          "migrations": {
+            "type": "string",
+            "nullable": true
+          },
+          "texts": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string"
+            }
+          }
+        },
+        "additionalProperties": false
+      },
+      "ContentSeverity": {
+        "enum": [
+          "Error",
+          "Warning"
+        ],
+        "type": "string"
+      },
       "CreateAvatarRequest": {
         "required": [
           "isValid"
@@ -1382,6 +1568,9 @@
   "tags": [
     {
       "name": "Authentication"
+    },
+    {
+      "name": "Content"
     },
     {
       "name": "Editor"

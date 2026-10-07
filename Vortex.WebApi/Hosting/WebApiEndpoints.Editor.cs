@@ -557,10 +557,14 @@ internal static partial class WebApiEndpoints
         : result.Findings.Any(f => f.Code == "Conflict") ? TypedResults.Conflict(result)
         : TypedResults.BadRequest(result);
 
-    /// <summary>The raw document, or null when it is larger than <see cref="MaxDocumentBytes"/>.</summary>
-    private static async Task<string?> ReadDocumentAsync(HttpContext ctx, CancellationToken ct)
+    /// <summary>The raw document, or null when it is larger than <paramref name="maxBytes"/>.</summary>
+    private static async Task<string?> ReadDocumentAsync(
+        HttpContext ctx,
+        CancellationToken ct,
+        int maxBytes = MaxDocumentBytes
+    )
     {
-        if (ctx.Request.ContentLength > MaxDocumentBytes)
+        if (ctx.Request.ContentLength > maxBytes)
         {
             return null;
         }
@@ -568,7 +572,7 @@ internal static partial class WebApiEndpoints
         // The server stops reading past the limit, so the body is read once at its real size.
         if (ctx.Features.Get<IHttpMaxRequestBodySizeFeature>() is { IsReadOnly: false } limit)
         {
-            limit.MaxRequestBodySize = MaxDocumentBytes;
+            limit.MaxRequestBodySize = maxBytes;
         }
 
         try

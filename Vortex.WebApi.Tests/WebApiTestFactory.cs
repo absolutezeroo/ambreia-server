@@ -20,6 +20,7 @@ using Vortex.Primitives.Observability;
 using Vortex.Primitives.Permissions;
 using Vortex.Primitives.Players;
 using Vortex.Primitives.Rooms;
+using Vortex.Primitives.Rpg.Content;
 using Vortex.Primitives.World.Editing;
 using Vortex.Primitives.World.Grains;
 using Vortex.Tests.Support;
@@ -90,6 +91,7 @@ internal sealed class WebApiTestFactory : IAsyncDisposable
             new FakePermissionService(capabilities ?? [.. Capabilities.World.All])
         );
         builder.Services.AddSingleton<IZoneEditorService>(new FakeZoneEditorService());
+        builder.Services.AddSingleton<IRpgContentService>(new FakeRpgContentService());
         builder.Services.AddSingleton<IGrainFactory>(
             FakeProxy.Create<IGrainFactory>(call =>
                 call.Method.Name == nameof(IGrainFactory.GetGrain)

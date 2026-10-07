@@ -46,6 +46,7 @@ internal static partial class WebApiEndpoints
         MapUser(app);
         MapNewUser(app);
         MapEditor(app);
+        MapContent(app);
     }
 
     private static void MapPublic(WebApplication app)

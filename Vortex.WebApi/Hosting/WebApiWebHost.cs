@@ -18,6 +18,7 @@ using Vortex.Primitives.Crypto;
 using Vortex.Primitives.Hosting;
 using Vortex.Primitives.Observability;
 using Vortex.Primitives.Permissions;
+using Vortex.Primitives.Rpg.Content;
 using Vortex.Primitives.World.Editing;
 using Vortex.WebApi.Configuration;
 using Vortex.WebApi.Services;
@@ -266,6 +267,7 @@ internal sealed class WebApiWebHost(
         services.AddSingleton(rootServices.GetRequiredService<IWebApiPlayerService>());
         services.AddSingleton(rootServices.GetRequiredService<RequiredServiceGuard>());
         services.AddSingleton(rootServices.GetRequiredService<IZoneEditorService>());
+        services.AddSingleton(rootServices.GetRequiredService<IRpgContentService>());
         services.AddSingleton(rootServices.GetRequiredService<IPermissionService>());
         // The editor's test route reaches the zone test grain (plan D18).
         services.AddSingleton(rootServices.GetRequiredService<IGrainFactory>());
