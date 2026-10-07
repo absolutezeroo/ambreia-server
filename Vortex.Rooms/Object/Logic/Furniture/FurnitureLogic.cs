@@ -59,8 +59,6 @@ public abstract class FurnitureLogic<TObject, TSelf, TContext>
 
     public virtual bool CanToggle() => false;
 
-    public virtual bool CanRoll() => false;
-
     public virtual Altitude GetStackHeight() => 0;
 
     public virtual int GetState() => StuffData.GetState();

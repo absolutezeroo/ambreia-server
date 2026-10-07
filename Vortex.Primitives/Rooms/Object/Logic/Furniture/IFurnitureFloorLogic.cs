@@ -15,8 +15,7 @@ public interface IFurnitureFloorLogic<out TObject, out TLogic, out TContext>
 }
 
 public interface IFurnitureFloorLogic
-    : IFurnitureLogic<IRoomFloorItem, IFurnitureFloorLogic, IRoomFloorItemContext>,
-        IRollableObject
+    : IFurnitureLogic<IRoomFloorItem, IFurnitureFloorLogic, IRoomFloorItemContext>
 {
     new IRoomFloorItemContext Context { get; }
     public bool CanStack();

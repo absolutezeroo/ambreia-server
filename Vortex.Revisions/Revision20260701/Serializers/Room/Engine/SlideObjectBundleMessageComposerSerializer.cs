@@ -25,7 +25,9 @@ internal class SlideObjectBundleMessageComposerSerializer(int header)
             packet.WriteInteger(objectId).WriteString(prev.ToString()).WriteString(next.ToString());
         }
 
-        packet.WriteInteger(message.RollerItemId);
+        // rollerItemId: figé, retiré avec le client -- rollers were removed (M0 bis); a game slide
+        // was never caused by one.
+        packet.WriteInteger(0);
 
         if (message.Avatar is not null)
         {

@@ -1,9 +1,18 @@
 using System;
 using System.Linq;
 using System.Reflection;
+using System.Threading;
+using System.Threading.Tasks;
 using FluentAssertions;
+using Microsoft.Extensions.Logging.Abstractions;
+using Vortex.Primitives.Observability;
+using Vortex.Primitives.Rooms.Object;
+using Vortex.Primitives.Rooms.Object.Furniture.Floor;
 using Vortex.Primitives.Rooms.Object.Logic;
 using Vortex.Rooms.Object.Logic.Furniture.Floor;
+using Vortex.Rooms.Providers;
+using Vortex.Runtime.AssemblyProcessing;
+using Vortex.Tests.Support;
 using Xunit;
 
 namespace Vortex.Rooms.Tests.Furniture;
@@ -45,5 +54,62 @@ public sealed class RoomObjectLogicKeyTests
         // in as RedeemPurchasableClothing. Binding the name to anything but the plain floor logic
         // would be inventing behaviour the client never asks for.
         KeysOf<FurnitureFloorLogic>().Should().Contain("furniture_purchasable_clothing");
+    }
+
+    /// <summary>
+    /// Rollers were removed (M0 bis), but the catalogue still carries definitions whose logic is
+    /// <c>roller</c>. With nothing claiming the name they must load as the plain floor logic — a
+    /// definition that failed to load would take its room down with it.
+    /// </summary>
+    [Fact]
+    public void ARollerDefinition_LoadsAsDefaultLogic()
+    {
+        RoomObjectLogicProvider provider = new(
+            FakeProxy.Create<IServiceProvider>(_ => null),
+            FakeProxy.Create<IVortexMetrics>(_ => null),
+            NullLogger<RoomObjectLogicProvider>.Instance
+        );
+
+        // What RoomObjectLogicFeatureProcessor registers at startup, with a factory that only
+        // records which class the name resolved to.
+        foreach (
+            Type logic in AssemblyExplorer.FindAssignees(
+                typeof(FurnitureFloorLogic).Assembly,
+                typeof(IRoomObjectLogic)
+            )
+        )
+        {
+            foreach (
+                RoomObjectLogicAttribute attribute in logic.GetCustomAttributes<RoomObjectLogicAttribute>(
+                    false
+                )
+            )
+            {
+                provider.RegisterLogic(
+                    attribute.Key,
+                    logic,
+                    FakeProxy.Create<IServiceProvider>(_ => null),
+                    (_, _) => new ResolvedLogic(logic)
+                );
+            }
+        }
+
+        provider
+            .CreateLogicInstance("roller", FakeProxy.Create<IRoomFloorItemContext>(_ => null))
+            .Should()
+            .BeOfType<ResolvedLogic>()
+            .Which.Implementation.Should()
+            .Be<FurnitureFloorLogic>();
+    }
+
+    private sealed class ResolvedLogic(Type implementation) : IRoomObjectLogic
+    {
+        public Type Implementation { get; } = implementation;
+
+        public IRoomObjectContext Context { get; set; } = null!;
+
+        public Task OnAttachAsync(CancellationToken ct) => Task.CompletedTask;
+
+        public Task OnDetachAsync(CancellationToken ct) => Task.CompletedTask;
     }
 }

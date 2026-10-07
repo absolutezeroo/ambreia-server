@@ -36,7 +36,6 @@ const LABELS = {
   default_wall: 'Default (wall item)',
   default_avatar: 'Default (avatar)',
   gate: 'Gate (blocks/unblocks a tile)',
-  roller: 'Roller (conveyor belt)',
   dice: 'Dice',
   fireworks: 'Fireworks',
   room_invisible_click_tile: 'Invisible click tile',

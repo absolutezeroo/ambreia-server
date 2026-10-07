@@ -43,7 +43,7 @@ public class RoomConfig
     /// </para>
     /// <para>
     /// It costs nothing in pacing. Every system that cares about timing keeps its own wall-clock
-    /// boundary — avatars move on <see cref="AvatarTickMs"/>, rollers on <see cref="RollerTickMs"/>,
+    /// boundary — avatars move on <see cref="AvatarTickMs"/>, pets on their own tick,
     /// items flush on <see cref="DirtyItemsTickMs"/> — and this only decides how promptly a boundary
     /// that has come due gets noticed, so the error is bounded by one tick.
     /// </para>
@@ -58,7 +58,6 @@ public class RoomConfig
     /// </summary>
     public int HandItemDurationMs { get; init; } = 30_000;
     public PetConfig Pet { get; init; } = new();
-    public int RollerTickMs { get; init; } = 2000;
     public int DirtyItemsTickMs { get; init; } = 2000;
     public int MaxDirtyItemsPerFlush { get; init; } = 100;
     public int MaxTileHeightsPerFlush { get; init; } = 200;

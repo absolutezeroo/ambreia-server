@@ -63,7 +63,6 @@ export const LOGIC_GROUPS = [
       { value: 'fireworks', label: 'fireworks - Fireworks' },
       { value: 'gate', label: 'gate - Gate (blocks/unblocks a tile)' },
       { value: 'nest', label: 'nest' },
-      { value: 'roller', label: 'roller - Roller (conveyor belt)' },
       { value: 'room_invisible_click_tile', label: 'room_invisible_click_tile - Invisible click tile' },
       { value: 'vending', label: 'vending' },
       { value: 'vendingmachine', label: 'vendingmachine' },

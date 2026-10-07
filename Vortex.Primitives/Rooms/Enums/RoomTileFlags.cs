@@ -16,7 +16,6 @@ public enum RoomTileFlags : ushort
     Layable = 1 << 6,
     AvatarOccupied = 1 << 7,
     FurnitureOccupied = 1 << 8,
-    FurnitureWithRollersOccupied = 1 << 9,
     TileClickListener = 1 << 10,
 }
 

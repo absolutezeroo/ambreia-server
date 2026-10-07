@@ -158,28 +158,6 @@ public sealed partial class RoomFurniModule
                 {
                     return Task.FromResult(false);
                 }
-
-                if (bItem == tItem)
-                {
-                    continue;
-                }
-
-                if (bItem is not null && bItem != tItem)
-                {
-                    if (
-                        bItem.Logic is FurnitureRollerLogic
-                        && (
-                            tItem.Definition.Width > 1
-                            || tItem.Definition.Length > 1
-                            || tItem.Logic is FurnitureRollerLogic
-                        )
-                    )
-                    {
-                        return Task.FromResult(false);
-                    }
-
-                    // if is a stack helper, allow placement
-                }
             }
         }
 
@@ -209,16 +187,6 @@ public sealed partial class RoomFurniModule
             {
                 RoomTileFlags tileFlags = _roomGrain._state.TileFlags[id];
                 Altitude tileHeight = _roomGrain._state.TileHeights[id];
-                RoomObjectId highestItemId = _roomGrain._state.TileHighestFloorItems[id];
-                IRoomFloorItem? bItem = null;
-
-                if (
-                    _roomGrain._state.ItemsById.TryGetValue(highestItemId, out IRoomItem? item)
-                    && item is IRoomFloorItem floorItem
-                )
-                {
-                    bItem = floorItem;
-                }
 
                 if (
                     tileFlags.Has(RoomTileFlags.Disabled)
@@ -237,22 +205,6 @@ public sealed partial class RoomFurniModule
                 )
                 {
                     return Task.FromResult(false);
-                }
-
-                if (bItem is not null)
-                {
-                    if (
-                        bItem.Logic is FurnitureRollerLogic
-                        && (
-                            tItem.Definition.Width > 1
-                            || tItem.Definition.Length > 1
-                            || tItem.Logic is FurnitureRollerLogic
-                        )
-                    )
-                    {
-                        return Task.FromResult(false);
-                    }
-                    // if is a stack helper, allow placement
                 }
             }
         }

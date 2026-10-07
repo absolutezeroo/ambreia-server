@@ -21,8 +21,8 @@ public sealed record SlideObjectBundleMessageComposer : IComposer
     [Id(3)]
     public required int ToY { get; init; }
 
-    [Id(4)]
-    public required int RollerItemId { get; init; }
+    // [Id(4)] was the roller item id, retired with rollers (M0 bis): never reuse it. The wire field
+    // is written as 0 by the serializer.
 
     [Id(5)]
     public required ImmutableArray<(int, Altitude, Altitude)> FloorItemHeights { get; init; }

@@ -131,7 +131,7 @@ public interface IRoomGameContext
     /// <summary>Turns the player to face a coordinate and tells the room.</summary>
     Task FacePlayerAsync(PlayerId playerId, int targetX, int targetY);
 
-    /// <summary>Slides a component's furni one hop to another tile, as a roller would: the room's
+    /// <summary>Slides a component's furni one hop to another tile: the room's
     /// authoritative position changes first, then the client is told to animate it.</summary>
     Task SlideItemAsync(IGameComponent component, int toTileIdx);
 

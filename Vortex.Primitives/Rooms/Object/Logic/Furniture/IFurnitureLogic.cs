@@ -17,7 +17,7 @@ public interface IFurnitureLogic<out TObject, out TLogic, out TContext>
     new TContext Context { get; }
 }
 
-public interface IFurnitureLogic : IRoomObjectLogic, IRollableObject
+public interface IFurnitureLogic : IRoomObjectLogic
 {
     new IRoomItemContext Context { get; }
     public IStuffData StuffData { get; }

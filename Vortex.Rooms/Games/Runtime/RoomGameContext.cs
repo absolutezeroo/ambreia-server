@@ -30,7 +30,7 @@ namespace Vortex.Rooms.Games.Runtime;
 /// <para>
 /// The room's coordinates, pathfinding, occupancy and collision are used, never reimplemented: a
 /// teleport is the map module's own <c>RollAvatar</c>, a ball hop is the same <c>RollFloorItem</c>
-/// plus the slide bundle the rollers already send.
+/// plus the client's slide bundle.
 /// </para>
 /// </summary>
 internal sealed class RoomGameContext(
@@ -281,9 +281,6 @@ internal sealed class RoomGameContext(
                 FromY = fromY,
                 ToX = toX,
                 ToY = toY,
-                // Roller id 0: this hop was not caused by a roller. The client animates the slide
-                // either way; the id is only how it attributes the movement.
-                RollerItemId = 0,
                 FloorItemHeights = [(item.ObjectId, fromZ, toZ)],
                 Avatar = null,
             }

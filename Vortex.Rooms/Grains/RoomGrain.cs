@@ -109,7 +109,6 @@ public sealed partial class RoomGrain : Grain, IRoomGrain
     public readonly RoomPathingSystem PathingSystem;
     public readonly RoomPetSystem PetSystem;
     public readonly RoomBotSystem BotSystem;
-    public readonly RoomRollerSystem RollerSystem;
     public readonly RoomSecurityModule SecurityModule;
     public readonly RoomModerationSystem ModerationSystem;
     public readonly RoomRaidProtectionSystem RaidProtectionSystem;
@@ -182,7 +181,6 @@ public sealed partial class RoomGrain : Grain, IRoomGrain
         AvatarTickSystem = new RoomAvatarTickSystem(this);
         PetSystem = new RoomPetSystem(this);
         BotSystem = new RoomBotSystem(this);
-        RollerSystem = new RoomRollerSystem(this);
         ChatSystem = new RoomChatSystem(this);
         GameRuntime = new RoomGameRuntime(this);
         GameTimers = new GameTimerSystem(this);
@@ -200,7 +198,6 @@ public sealed partial class RoomGrain : Grain, IRoomGrain
         // One sink for every game's scoring, rather than progression plumbing inside each game.
         GameRuntime.AddSink(new GameProgressSink(RoomId.Value, PublishDetached));
 
-        EventModule.Register(RollerSystem);
         // The scoreboard adapter paints every game's score displays from the game events, so no game
         // refreshes a board by hand.
         EventModule.Register(ScoreboardPresenter);
@@ -290,7 +287,6 @@ public sealed partial class RoomGrain : Grain, IRoomGrain
             _state.NextAvatarBoundaryMs = AlignToNextBoundary(now, _roomConfig.AvatarTickMs);
             _state.NextPetBoundaryMs = AlignToNextBoundary(now, _roomConfig.Pet.TickMs);
             _state.NextBotBoundaryMs = now;
-            _state.NextRollerBoundaryMs = AlignToNextBoundary(now, _roomConfig.RollerTickMs);
         }
 
         await HydrateRoomStateAsync(ct);
@@ -298,7 +294,7 @@ public sealed partial class RoomGrain : Grain, IRoomGrain
 
         // Contributed listeners are attached here rather than in the constructor: they come from
         // scanned assemblies, and handing a half-built grain to outside code is how a plugin ends up
-        // reading state that does not exist yet. They go after the roller/scoreboard systems,
+        // reading state that does not exist yet. They go after the scoreboard presenter,
         // so an outside listener can slow a room down but never pre-empt what the room does with its
         // own events.
         foreach (IRoomEventListener listener in _eventListenerProvider.BuildListenersForRoom(this))
@@ -325,7 +321,7 @@ public sealed partial class RoomGrain : Grain, IRoomGrain
         // One-shot, re-armed at the end of every tick to the next epoch-aligned RoomTickMs
         // boundary. A *periodic* grain timer measures its period from the end of the previous
         // callback, so the phase drifted by the tick body's own duration each cycle and the
-        // avatar/roller boundaries -- all multiples of RoomTickMs from EpochMs -- were
+        // avatar/pet boundaries -- all multiples of RoomTickMs from EpochMs -- were
         // crossed late by a varying amount. What a client sees of that is choppy walking.
         _roomTimer = this.RegisterGrainTimer<object?>(
             async (state, ct) =>
@@ -372,7 +368,6 @@ public sealed partial class RoomGrain : Grain, IRoomGrain
         await RunTickStepAsync("avatars", () => AvatarTickSystem.ProcessAvatarsAsync(now, ct));
         await RunTickStepAsync("pets", () => PetSystem.ProcessPetsAsync(now, ct));
         await RunTickStepAsync("bots", () => BotSystem.ProcessBotsAsync(now, ct));
-        await RunTickStepAsync("rollers", () => RollerSystem.ProcessRollersAsync(now, ct));
         await RunTickStepAsync("game-timer", () => GameTimers.ProcessAsync(now, ct));
         // One step for every game the room hosts. The runtime isolates each game's failure and skips
         // the ones with nothing to do, so a room with no match running does no per-game work at all.

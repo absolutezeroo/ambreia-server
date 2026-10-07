@@ -8,15 +8,4 @@ public abstract class AvatarLogic<TObject, TSelf, TContext>(TContext ctx)
         IRoomAvatarLogic<TObject, TSelf, TContext>
     where TObject : IRoomAvatar<TObject, TSelf, TContext>
     where TContext : IRoomAvatarContext<TObject, TSelf, TContext>
-    where TSelf : IRoomAvatarLogic<TObject, TSelf, TContext>
-{
-    public bool CanRoll()
-    {
-        if (_ctx.RoomObject.IsWalking)
-        {
-            return false;
-        }
-
-        return true;
-    }
-}
+    where TSelf : IRoomAvatarLogic<TObject, TSelf, TContext> { }

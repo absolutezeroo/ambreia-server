@@ -63,12 +63,12 @@ public sealed class RoomPerformanceAggregatorTests
 
         metrics.RoomTickStepCompleted("pets", 75.0);
         metrics.RoomTickStepCompleted("wired", 20.0);
-        metrics.RoomTickStepCompleted("rollers", 5.0);
+        metrics.RoomTickStepCompleted("bots", 5.0);
 
         RoomPerformanceSnapshot snapshot = aggregator.GetSnapshot();
 
         // Ordered most expensive first -- that ordering is the point of the table.
-        snapshot.Steps.Select(s => s.Name).Should().Equal("pets", "wired", "rollers");
+        snapshot.Steps.Select(s => s.Name).Should().Equal("pets", "wired", "bots");
 
         // Share is of total step time, so the three add up to 100.
         snapshot

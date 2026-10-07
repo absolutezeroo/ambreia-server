@@ -61,8 +61,6 @@ public class FurnitureFloorLogic(IStuffDataFactory stuffDataFactory, IRoomFloorI
 
     public virtual bool CanLay() => _ctx.Definition.CanLay;
 
-    public override bool CanRoll() => true;
-
     public virtual Altitude GetPostureOffset()
     {
         if (CanSit())
