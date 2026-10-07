@@ -30,6 +30,10 @@ public sealed partial class RoomGrain
     {
         try
         {
+            // An entry is several calls, and the activation can go between them (a zone republished
+            // mid-entry): the avatar must not land in an activation that never built its map.
+            await EnsureRoomActiveAsync(ct);
+
             await AvatarModule.CreateAvatarFromPlayerAsync(ctx, snapshot, ct);
 
             await PublishRoomEventAsync(

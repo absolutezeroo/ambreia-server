@@ -106,7 +106,12 @@ function db() {
   const out = spawnSync('dotnet', ['user-secrets', 'list', '--project', path.join(REPO, 'Vortex.Main')], {
     encoding: 'utf8',
   });
-  const cs = (out.stdout || '').match(/Vortex:Database:ConnectionString = (.*)/)?.[1] ?? '';
+  // The emulator reads VORTEX__Vortex__Database__ConnectionString before user-secrets; so does this,
+  // or a run pointed at a scratch database would query the owner's.
+  const cs =
+    process.env.VORTEX__Vortex__Database__ConnectionString ??
+    (out.stdout || '').match(/Vortex:Database:ConnectionString = (.*)/)?.[1] ??
+    '';
   const part = (k) => cs.match(new RegExp(`(?:^|;)\\s*${k}=([^;]*)`, 'i'))?.[1];
   dbConn = { name: part('Database') ?? 'turbo', password: part('Password') ?? 'admin' };
   return dbConn;
@@ -294,6 +299,7 @@ const H = {
   heightMap: 2260,
   floorHeightMap: 2885,
   users: 996,
+  objects: 2104,
   userUpdate: 2613,
   moveAvatar: 2364,
 };
@@ -362,9 +368,8 @@ function sessionCookie(res) {
   return c ? c.split(';')[0] : null;
 }
 
-// Registration (or login when the address exists), an avatar, then a short-lived SSO ticket --
-// exactly what the site does before it opens the client.
-async function ssoTicket() {
+// Registration, or login when the address exists: the site's web session.
+async function webSession() {
   const base = `http://127.0.0.1:${WEBAPI}`;
   const json = (o) => JSON.stringify(o);
   let res = await request(`${base}/api/public/registration/new`, {
@@ -379,7 +384,16 @@ async function ssoTicket() {
   }
   const cookie = sessionCookie(res);
   if (!cookie) die(`No ${WEB_COOKIE} cookie: ${res.status} ${res.body}`);
-  const headers = { cookie };
+  return { cookie };
+}
+
+// The web session, an avatar, then a short-lived SSO ticket -- exactly what the site does before
+// it opens the client.
+async function ssoTicket() {
+  const base = `http://127.0.0.1:${WEBAPI}`;
+  const json = (o) => JSON.stringify(o);
+  const headers = { cookie: (await webSession()).cookie };
+  let res;
 
   let avatars = JSON.parse((await request(`${base}/api/user/avatars`, { headers })).body);
   if (!avatars.length) {
@@ -441,6 +455,96 @@ async function cmdPlay() {
   log(`MoveAvatar (${x + 1},${y}) -> UserUpdate. Zone OK.`);
 }
 
+// A zone published through the editor API, then played in: the decor arrives with the room, and a
+// second publication while the player stands in it forwards them back in (spec 2026-10-07 §6.7).
+const ZONE_KEY = 'proof_zone';
+const THRONE = 230;
+
+function zoneDocument(throneAt) {
+  const tiles = Array.from({ length: 100 }, () => ({ height: 0, walkable: true, hole: false }));
+  return JSON.stringify({
+    schemaVersion: 1,
+    settings: { id: ZONE_KEY, name: 'Zone de preuve' },
+    floor: { width: 10, length: 10, tiles, door: { x: 0, y: 5 }, doorDirection: 2 },
+    decor: [{ id: 'throne_1', definition: THRONE, class: 'throne', x: throneAt[0], y: throneAt[1] }],
+  });
+}
+
+async function cmdZone() {
+  const base = `http://127.0.0.1:${WEBAPI}`;
+  const headers = { cookie: (await webSession()).cookie };
+
+  // Building needs world.zone.edit/publish: the throwaway account gets the owner role on this
+  // (scratch) database, once.
+  sql(`INSERT INTO player_account_roles (account_id, role_id)
+       SELECT a.id, r.id FROM player_accounts a, roles r
+       WHERE a.email='${PLAYER.email}' AND r.\`key\`='owner'
+         AND NOT EXISTS (SELECT 1 FROM player_account_roles x WHERE x.account_id=a.id AND x.role_id=r.id);`);
+
+  let res = await request(`${base}/api/editor/zones`, {
+    method: 'POST',
+    headers,
+    body: JSON.stringify({ key: ZONE_KEY, name: 'Zone de preuve' }),
+  });
+  if (res.status !== 200 && res.status !== 409) die(`Zone creation: ${res.status} ${res.body}`);
+  res = await request(`${base}/api/editor/zones/${ZONE_KEY}/lock`, { method: 'POST', headers });
+  if (res.status !== 200) die(`Lock: ${res.status} ${res.body}`);
+
+  const publish = async (throneAt) => {
+    let r = await request(`${base}/api/editor/zones/${ZONE_KEY}/versions?comment=driver`, {
+      method: 'POST',
+      headers,
+      body: zoneDocument(throneAt),
+    });
+    if (r.status !== 200) die(`Save: ${r.status} ${r.body}`);
+    const saved = JSON.parse(r.body);
+    if (!saved.published) {
+      r = await request(`${base}/api/editor/zones/${ZONE_KEY}/publish/${saved.version}`, {
+        method: 'POST',
+        headers,
+      });
+      if (r.status !== 200) die(`Publish: ${r.status} ${r.body}`);
+    }
+    log(`Published ${ZONE_KEY} v${saved.version} (throne at ${throneAt}).`);
+  };
+
+  await publish([3, 3]);
+  const zones = JSON.parse((await request(`${base}/api/editor/zones`, { headers })).body);
+  const roomId = zones.find((z) => z.key === ZONE_KEY).roomId;
+
+  const ticket = await ssoTicket();
+  const g = await gameSocket().catch((e) => die(`Socket error on :${GAME_TCP}: ${e.message}`));
+  const fail = (m) => {
+    g.close();
+    die(m);
+  };
+  g.send(frame(H.sso, ticket, 0));
+  if (!(await g.wait([H.authOk]))) fail('No AuthenticationOK.');
+
+  const enter = async () => {
+    const before = g.frames.length;
+    g.send(frame(H.openFlat, roomId, '', -1));
+    const users = await g.wait([H.users, H.cantConnect], before, 10000);
+    if (!users || users.header === H.cantConnect) fail(`Zone room ${roomId} refused or silent.`);
+    const objects = await g.wait([H.objects], before, 5000);
+    if (!objects) fail('No Objects in the zone entry: the decor did not load.');
+    // The player's own avatar is announced after the entry burst; until then the room does not
+    // count them as an occupant, and a republication would not forward them.
+    const own = await g.wait([H.users], g.frames.indexOf(objects) + 1, 5000);
+    if (!own) fail('The avatar was never announced in the zone.');
+    log(`zone room ${roomId} -> Objects (${objects.body.length} bytes), avatar in`);
+  };
+
+  await enter();
+  const before = g.frames.length;
+  await publish([4, 4]);
+  if (!(await g.wait([H.roomForward], before, 5000))) fail('No RoomForward after republishing.');
+  log('Republished while inside -> RoomForward.');
+  await enter();
+  g.close();
+  log('Zone OK.');
+}
+
 function cmdCleanup() {
   const id = sql(`SELECT id FROM player_accounts WHERE email='${PLAYER.email}' LIMIT 1;`);
   if (!id) return log('Nothing to clean up.');
@@ -475,6 +579,7 @@ const table = {
   ping: cmdPing,
   health: cmdHealth,
   play: cmdPlay,
+  zone: cmdZone,
   cleanup: cmdCleanup,
   smoke: cmdSmoke,
 };
@@ -491,6 +596,7 @@ if (!cmd || !table[cmd]) {
   health    /health and /api/public/info/hello
   ping      raw frame on :${GAME_TCP} -- ${H.initDiffie} out, ${H.initDiffieReply} back
   play      throwaway player -> SSO -> start zone -> heightmap -> one step
+  zone      publish a zone through /api/editor, enter it, republish while inside
   cleanup   delete the throwaway account and its players`);
   process.exit(cmd ? 1 : 0);
 }

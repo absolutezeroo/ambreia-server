@@ -6,7 +6,6 @@ using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Vortex.Database.Context;
@@ -304,18 +303,12 @@ public sealed partial class ZoneEditorService(
                 return new ZoneSaveResult(true, version, false, findings);
             }
 
-            await using (
-                IDbContextTransaction tx = await ctx
-                    .Database.BeginTransactionAsync(ct)
-                    .ConfigureAwait(false)
-            )
-            {
-                zone.PublishedVersion = version;
-                row.Status = ZoneVersionStatus.Published;
+            // One SaveChanges is one transaction: the pointer and the status move together. A
+            // hand-opened transaction is refused by Pomelo's retrying execution strategy.
+            zone.PublishedVersion = version;
+            row.Status = ZoneVersionStatus.Published;
 
-                await ctx.SaveChangesAsync(ct).ConfigureAwait(false);
-                await tx.CommitAsync(ct).ConfigureAwait(false);
-            }
+            await ctx.SaveChangesAsync(ct).ConfigureAwait(false);
 
             roomId = new RoomId(zone.RoomEntityId);
         }

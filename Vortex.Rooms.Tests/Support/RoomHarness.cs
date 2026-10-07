@@ -109,7 +109,15 @@ internal sealed class RoomHarness
                         ? LogicFactory?.Invoke()
                         : null
                 ),
-                FakeProxy.Create<IRoomAvatarProvider>(_ => null),
+                FakeProxy.Create<IRoomAvatarProvider>(call =>
+                    call.Method.Name == nameof(IRoomAvatarProvider.CreateAvatarFromPlayerSnapshot)
+                        ? new RoomPlayerAvatar
+                        {
+                            ObjectId = (RoomObjectId)call.Args![0]!,
+                            PlayerId = ((PlayerSummarySnapshot)call.Args![1]!).PlayerId,
+                        }
+                        : null
+                ),
                 FakeProxy.Create<IRoomEventListenerProvider>(_ =>
                     Array.Empty<IRoomEventListener>()
                 ),

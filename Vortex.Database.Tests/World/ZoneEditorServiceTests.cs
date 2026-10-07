@@ -34,7 +34,12 @@ public sealed class ZoneEditorServiceTests : IAsyncLifetime
 
     public async Task InitializeAsync()
     {
-        (_conn, _options) = await SqliteTestDb.OpenAsync();
+        (_conn, _) = await SqliteTestDb.OpenAsync();
+
+        // Production runs Pomelo's retrying strategy, which refuses hand-opened transactions.
+        _options = new DbContextOptionsBuilder<VortexDbContext>()
+            .UseSqlite(_conn, sqlite => sqlite.ExecutionStrategy(d => new RetryingStrategy(d)))
+            .Options;
 
         await using VortexDbContext db = new(_options);
         await db.Database.ExecuteSqlRawAsync(

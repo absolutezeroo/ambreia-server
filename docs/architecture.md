@@ -63,6 +63,15 @@ The room clock is a one-shot grain timer re-armed every `RoomTickMs` (50 ms); av
 and fires furniture `OnWalkOn/Off` hooks. Each tick step is isolated: one failing step is logged and
 the rest of the tick still runs.
 
+## Flow 4 — publishing a zone (map editor)
+
+`/api/editor/*` (web API, `WebApiEndpoints.Editor.cs`, capability `world.zone.edit`/`publish`) →
+`IZoneEditorService` (`Vortex.World`): the JSON document is validated (`ZoneValidator`), stored as a
+new row of `zone_versions`, then `zones.published_version` moves → `RoomGrain.ReloadZoneAsync`
+forwards occupants back in and deactivates. On activation `RoomGrain` asks `IZoneRoomSource`: a zone's
+map is compiled from `floor`, its decor built from `decor` (no `furniture` rows, never flushed).
+Proof: `driver.mjs zone`. Schema: `schemas/zone.schema.json` (exported from the records, test-checked).
+
 ## Persistence
 
 | State | Owner | Written |
