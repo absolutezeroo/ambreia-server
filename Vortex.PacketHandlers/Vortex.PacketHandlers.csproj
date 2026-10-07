@@ -6,8 +6,8 @@
     <PackageReference Include="Microsoft.Extensions.Hosting" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Vortex.Catalog\Vortex.Catalog.csproj" />
     <ProjectReference Include="..\Vortex.Crypto\Vortex.Crypto.csproj" />
+    <ProjectReference Include="..\Vortex.Events\Vortex.Events.csproj" />
     <!--
       Deliberately NO reference to Vortex.Database: AGENTS.md/CONTEXT.md forbid handlers from
       querying database contexts or repositories directly. Keeping the reference out makes the
@@ -18,8 +18,5 @@
     <ProjectReference Include="..\Vortex.Messages\Vortex.Messages.csproj" />
     <ProjectReference Include="..\Vortex.Primitives\Vortex.Primitives.csproj" />
     <ProjectReference Include="..\Vortex.Protocol\Vortex.Protocol.csproj" />
-    <ProjectReference Include="..\Vortex.Players\Vortex.Players.csproj" />
-    <ProjectReference Include="..\Vortex.Progression\Vortex.Progression.csproj" />
-    <ProjectReference Include="..\Vortex.Social\Vortex.Social.csproj" />
   </ItemGroup>
 </Project>

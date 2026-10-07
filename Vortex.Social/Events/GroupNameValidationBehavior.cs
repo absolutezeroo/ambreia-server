@@ -7,7 +7,6 @@ using Vortex.Primitives.Events;
 using Vortex.Primitives.Groups;
 using Vortex.Primitives.Orleans;
 using Vortex.Primitives.Server.Grains;
-using Vortex.Social.Configuration;
 
 namespace Vortex.Social.Events;
 

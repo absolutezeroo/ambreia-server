@@ -1,9 +1,9 @@
 using System.Threading;
 using System.Threading.Tasks;
 using Orleans;
-using Vortex.Catalog.Exceptions;
 using Vortex.Messages.Registry;
 using Vortex.PacketHandlers.Moderation;
+using Vortex.Primitives.Catalog;
 using Vortex.Primitives.Catalog.Enums;
 using Vortex.Primitives.Catalog.Snapshots;
 using Vortex.Primitives.Moderation.WordFilter;

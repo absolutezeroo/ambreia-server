@@ -1,8 +1,7 @@
 using System;
-using Vortex.Primitives.Catalog;
 using Vortex.Primitives.Catalog.Enums;
 
-namespace Vortex.Catalog.Exceptions;
+namespace Vortex.Primitives.Catalog;
 
 public sealed class CatalogPurchaseException(
     CatalogPurchaseErrorType errorType,

@@ -3,9 +3,9 @@ using System.Threading;
 using System.Threading.Tasks;
 using Orleans;
 using Vortex.Messages.Registry;
-using Vortex.Players.Configuration;
 using Vortex.Primitives.Orleans;
 using Vortex.Primitives.Orleans.Snapshots.Players;
+using Vortex.Primitives.Players;
 using Vortex.Primitives.Server.Grains;
 using Vortex.Protocol.Messages.Incoming.Users;
 using Vortex.Protocol.Messages.Outgoing.Users;
@@ -36,8 +36,8 @@ public class ScrGetKickbackInfoMessageHandler(IGrainFactory grainFactory)
         int kickbackPercent = await _grainFactory
             .GetServerConfigGrain()
             .GetIntAsync(
-                MembershipConfig.KickbackPercentKey,
-                MembershipConfig.KickbackPercentDefault
+                MembershipConfigKeys.KickbackPercentKey,
+                MembershipConfigKeys.KickbackPercentDefault
             )
             .ConfigureAwait(false);
 

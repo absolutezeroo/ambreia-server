@@ -9,7 +9,6 @@ using FluentAssertions;
 using Microsoft.Extensions.Logging.Abstractions;
 using Orleans;
 using Orleans.Runtime;
-using Vortex.Catalog.Exceptions;
 using Vortex.Catalog.Grains;
 using Vortex.Primitives.Catalog;
 using Vortex.Primitives.Catalog.Enums;

@@ -5,7 +5,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Orleans;
-using Vortex.Catalog.Exceptions;
 using Vortex.Events.Registry;
 using Vortex.Primitives.Catalog;
 using Vortex.Primitives.Catalog.Enums;

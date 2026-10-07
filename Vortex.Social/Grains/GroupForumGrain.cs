@@ -10,13 +10,13 @@ using Vortex.Database.Context;
 using Vortex.Database.Entities.Groups;
 using Vortex.Database.Entities.Players;
 using Vortex.Primitives.Events;
+using Vortex.Primitives.Groups;
 using Vortex.Primitives.Groups.Enums;
 using Vortex.Primitives.Groups.Grains;
 using Vortex.Primitives.Groups.Snapshots;
 using Vortex.Primitives.Orleans;
 using Vortex.Primitives.Players;
 using Vortex.Primitives.Server.Grains;
-using Vortex.Social.Configuration;
 
 namespace Vortex.Social.Grains;
 

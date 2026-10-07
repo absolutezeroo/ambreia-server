@@ -14,7 +14,6 @@ using Vortex.Primitives.Groups.Enums;
 using Vortex.Primitives.Orleans;
 using Vortex.Primitives.Players;
 using Vortex.Primitives.Server.Grains;
-using Vortex.Social.Configuration;
 
 namespace Vortex.Social.Grains;
 

@@ -95,9 +95,29 @@ fs.writeFileSync(
   )
 );
 
+// Le mur 8 (couches) : une reference Coeur -> Plateforme, la seule sonde en place pour ce cas.
+const layerProject = path.join(root, 'Vortex.Crypto', 'Vortex.Crypto.csproj');
+const layerProjectOriginal = fs.readFileSync(layerProject, 'utf8');
+const restoreWallProbes = () => {
+  fs.rmSync(wallProbe, { force: true });
+  fs.writeFileSync(freeProject, freeProjectOriginal);
+};
+const probeLayers = () => {
+  restoreWallProbes();
+  fs.writeFileSync(
+    layerProject,
+    layerProjectOriginal.replace(
+      /<\/Project>\s*$/,
+      '<ItemGroup>\n<ProjectReference Include="..\\Vortex.Rooms\\Vortex.Rooms.csproj" />\n</ItemGroup>\n</Project>\n'
+    )
+  );
+};
+const restoreLayers = () => fs.writeFileSync(layerProject, layerProjectOriginal);
+
 const direct = [
   ['check-architecture-walls.mjs', [], 2, 'fuite protocole + reference rendue a un projet protege'],
-  ['check-architecture-walls.mjs', [], 0, 'murs archi : les sept tiennent'],
+  ['check-architecture-walls.mjs', [], 2, 'reference Coeur -> Plateforme bloquee', {}, probeLayers],
+  ['check-architecture-walls.mjs', [], 0, 'murs archi : les huit tiennent', {}, restoreLayers],
 ];
 
 let failed = 0;
@@ -109,11 +129,9 @@ for (const [script, payload, want, label] of cases) {
   if (!ok && r.stderr) console.log('     ' + r.stderr.trim().split('\n').slice(0, 4).join('\n     '));
 }
 
-for (const [script, argv, want, label, env] of direct) {
-  if (script === 'check-architecture-walls.mjs' && want === 0) {
-    fs.rmSync(wallProbe, { force: true });
-    fs.writeFileSync(freeProject, freeProjectOriginal);
-  }
+for (const [script, argv, want, label, env, setup] of direct) {
+  if (setup) setup();
+  if (script === 'check-architecture-walls.mjs' && want === 0) restoreWallProbes();
   const r = spawnSync(process.execPath, [path.join('scripts', 'hooks', script), ...argv], {
     encoding: 'utf8',
     env: { ...process.env, ...env },
@@ -129,5 +147,6 @@ fs.rmSync(csProbe, { force: true });
 fs.rmSync(csProbeClean, { force: true });
 fs.rmSync(wallProbe, { force: true });
 fs.writeFileSync(freeProject, freeProjectOriginal);
+restoreLayers();
 console.log(failed ? `\n${failed} test(s) en echec.` : '\nTous les hooks se comportent comme attendu.');
 process.exit(failed ? 1 : 0);

@@ -1,7 +1,7 @@
 using System.Threading;
 using System.Threading.Tasks;
-using Vortex.Catalog.Exceptions;
 using Vortex.Messages.Registry;
+using Vortex.Primitives.Catalog;
 using Vortex.Protocol.Messages.Outgoing.Catalog;
 
 namespace Vortex.PacketHandlers.Catalog;

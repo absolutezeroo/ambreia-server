@@ -9,6 +9,5 @@
     <ProjectReference Include="..\Vortex.Database\Vortex.Database.csproj" />
     <ProjectReference Include="..\Vortex.Inventory\Vortex.Inventory.csproj" />
     <ProjectReference Include="..\Vortex.Primitives\Vortex.Primitives.csproj" />
-    <ProjectReference Include="..\Vortex.Players\Vortex.Players.csproj" />
   </ItemGroup>
 </Project>

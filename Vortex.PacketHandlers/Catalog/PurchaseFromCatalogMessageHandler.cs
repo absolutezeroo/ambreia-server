@@ -4,7 +4,6 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Orleans;
-using Vortex.Catalog.Exceptions;
 using Vortex.Messages.Registry;
 using Vortex.PacketHandlers.Moderation;
 using Vortex.Primitives.Catalog;

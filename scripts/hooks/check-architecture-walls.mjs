@@ -259,6 +259,54 @@ if (schedulerEscapes.length > 0) {
   ]);
 }
 
+// ---------------------------------------------------------------------------------------------
+// Wall 8 -- the layers point one way.
+//
+// The RPG spec (§3.4 bis) cuts the solution into Core (network, protocol, persistence, plumbing),
+// Platform (the game's domains), Web and Operations. Core references no Platform, Web or Operations
+// project; Platform references neither Web nor Operations. Vortex.Main is the host and wires them
+// all, so it is exempt, and so are test projects. A project outside the four lists is not judged
+// until it is given a layer.
+// ---------------------------------------------------------------------------------------------
+const CORE = [
+  'Networking', 'Pipeline', 'Protocol', 'Messages', 'Revisions', 'PacketHandlers', 'Runtime',
+  'Crypto', 'Database', 'Events', 'Logging', 'Observability', 'Plugins', 'Primitives',
+];
+const PLATFORM = [
+  'Rooms', 'Players', 'Inventory', 'Furniture', 'Social', 'Marketplace', 'Signals', 'Progression',
+  'Fishing', 'Catalog', 'Permissions', 'Navigator',
+];
+const layerOf = (project) => {
+  const name = project.replace(/^Vortex\./, '');
+  if (CORE.includes(name)) return 'Core';
+  if (PLATFORM.includes(name)) return 'Platform';
+  if (name.startsWith('WebApi')) return 'Web';
+  if (name.startsWith('Dashboard.')) return 'Operations';
+  return null;
+};
+const FORBIDDEN = { Core: ['Platform', 'Web', 'Operations'], Platform: ['Web', 'Operations'] };
+
+const layerBreaches = fs
+  .readdirSync(root, { withFileTypes: true })
+  .filter((e) => e.isDirectory() && e.name.startsWith('Vortex.') && !e.name.endsWith('.Tests'))
+  .filter((e) => fs.existsSync(path.join(root, e.name, `${e.name}.csproj`)))
+  .flatMap((e) => {
+    const from = layerOf(e.name);
+    if (!from || !FORBIDDEN[from]) return [];
+    const csproj = fs.readFileSync(path.join(root, e.name, `${e.name}.csproj`), 'utf8');
+    return [...csproj.matchAll(/<ProjectReference\s+Include="[^"]*?(Vortex\.[\w.]+)\.csproj"/g)]
+      .map((m) => m[1])
+      .filter((to) => FORBIDDEN[from].includes(layerOf(to)))
+      .map((to) => `${e.name} (${from}) -> ${to} (${layerOf(to)})`);
+  });
+if (layerBreaches.length > 0) {
+  failures.push([
+    'A project references a layer above its own. Core knows no game domain, and no domain knows '
+      + 'the web or the dashboard -- move the shared type down into Vortex.Primitives instead.',
+    layerBreaches,
+  ]);
+}
+
 if (update) {
   const free = fs
     .readdirSync(root, { withFileTypes: true })
@@ -292,7 +340,7 @@ if (newLeak.length > 0) {
 if (failures.length === 0) {
   const healed = baseline.filter((f) => !leakFiles.includes(f));
   const note = healed.length > 0 ? ` (${healed.length} baselined leak(s) now gone -- --update)` : '';
-  console.log(`Architecture walls hold: 7 checked, ${leakFiles.length} baselined leak(s)${note}.`);
+  console.log(`Architecture walls hold: 8 checked, ${leakFiles.length} baselined leak(s)${note}.`);
   process.exit(0);
 }
 

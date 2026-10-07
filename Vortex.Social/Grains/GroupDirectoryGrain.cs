@@ -13,6 +13,7 @@ using Vortex.Database.Entities.Players;
 using Vortex.Database.Entities.Room;
 using Vortex.Events.Registry;
 using Vortex.Primitives.Events;
+using Vortex.Primitives.Groups;
 using Vortex.Primitives.Groups.Enums;
 using Vortex.Primitives.Groups.Grains;
 using Vortex.Primitives.Groups.Providers;
@@ -22,7 +23,6 @@ using Vortex.Primitives.Players;
 using Vortex.Primitives.Players.Enums.Wallet;
 using Vortex.Primitives.Players.Wallet;
 using Vortex.Primitives.Server.Grains;
-using Vortex.Social.Configuration;
 
 namespace Vortex.Social.Grains;
 

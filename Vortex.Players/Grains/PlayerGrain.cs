@@ -581,12 +581,15 @@ internal sealed partial class PlayerGrain : Grain, IPlayerGrain
 
         IServerConfigGrain config = this.GrainFactory.GetServerConfigGrain();
         int giftCycleDays = await config
-            .GetIntAsync(MembershipConfig.GiftCycleDaysKey, MembershipConfig.GiftCycleDaysDefault)
+            .GetIntAsync(
+                MembershipConfigKeys.GiftCycleDaysKey,
+                MembershipConfigKeys.GiftCycleDaysDefault
+            )
             .ConfigureAwait(true);
         int streakGraceDays = await config
             .GetIntAsync(
-                MembershipConfig.StreakGraceDaysKey,
-                MembershipConfig.StreakGraceDaysDefault
+                MembershipConfigKeys.StreakGraceDaysKey,
+                MembershipConfigKeys.StreakGraceDaysDefault
             )
             .ConfigureAwait(true);
 
@@ -1025,7 +1028,10 @@ internal sealed partial class PlayerGrain : Grain, IPlayerGrain
 
         int giftCycleDays = await this
             .GrainFactory.GetServerConfigGrain()
-            .GetIntAsync(MembershipConfig.GiftCycleDaysKey, MembershipConfig.GiftCycleDaysDefault)
+            .GetIntAsync(
+                MembershipConfigKeys.GiftCycleDaysKey,
+                MembershipConfigKeys.GiftCycleDaysDefault
+            )
             .ConfigureAwait(true);
 
         int tokensToGrant = 0;
@@ -1211,12 +1217,14 @@ internal sealed partial class PlayerGrain : Grain, IPlayerGrain
             IServerConfigGrain config = this.GrainFactory.GetServerConfigGrain();
             string membershipBadgeCode =
                 await config
-                    .GetValueAsync(MembershipConfig.MembershipBadgeCodeKey)
+                    .GetValueAsync(MembershipConfigKeys.MembershipBadgeCodeKey)
                     .ConfigureAwait(true)
-                ?? MembershipConfig.MembershipBadgeCodeDefault;
+                ?? MembershipConfigKeys.MembershipBadgeCodeDefault;
             string vipBadgeCode =
-                await config.GetValueAsync(MembershipConfig.VipBadgeCodeKey).ConfigureAwait(true)
-                ?? MembershipConfig.VipBadgeCodeDefault;
+                await config
+                    .GetValueAsync(MembershipConfigKeys.VipBadgeCodeKey)
+                    .ConfigureAwait(true)
+                ?? MembershipConfigKeys.VipBadgeCodeDefault;
 
             if (!_state.MembershipBadgeGranted)
             {
@@ -1300,12 +1308,15 @@ internal sealed partial class PlayerGrain : Grain, IPlayerGrain
         IServerConfigGrain config = this.GrainFactory.GetServerConfigGrain();
         int kickbackPercent = await config
             .GetIntAsync(
-                MembershipConfig.KickbackPercentKey,
-                MembershipConfig.KickbackPercentDefault
+                MembershipConfigKeys.KickbackPercentKey,
+                MembershipConfigKeys.KickbackPercentDefault
             )
             .ConfigureAwait(true);
         int giftCycleDays = await config
-            .GetIntAsync(MembershipConfig.GiftCycleDaysKey, MembershipConfig.GiftCycleDaysDefault)
+            .GetIntAsync(
+                MembershipConfigKeys.GiftCycleDaysKey,
+                MembershipConfigKeys.GiftCycleDaysDefault
+            )
             .ConfigureAwait(true);
 
         DateTime now = DateTime.UtcNow;
