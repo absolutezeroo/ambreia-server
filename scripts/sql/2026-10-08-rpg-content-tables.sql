@@ -57,4 +57,4 @@ CREATE TABLE IF NOT EXISTS `rpg_content_migrations` (
 
 UPDATE `__EFMigrationsHistory`
 SET `MigrationId` = '20261007225517_InitialCreate'
-WHERE `MigrationId` LIKE '%\_InitialCreate' AND `MigrationId` <> '20261007225517_InitialCreate';
+WHERE `MigrationId` = '20261007154949_InitialCreate';

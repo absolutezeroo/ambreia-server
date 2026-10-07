@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
@@ -42,6 +43,9 @@ public sealed class RpgContentRegistryTests : IAsyncLifetime
         """;
 
     private readonly List<IEvent> _events = [];
+
+    /// <summary>Runs inside validation, between a reload's reads and its swap.</summary>
+    private Action _onFurnitureLookup = () => { };
     private SqliteConnection _conn = null!;
     private DbContextOptions<VortexDbContext> _options = null!;
     private RpgContentRegistry _registry = null!;
@@ -52,14 +56,23 @@ public sealed class RpgContentRegistryTests : IAsyncLifetime
 
         IFurnitureDefinitionProvider furniture = FakeProxy.Create<IFurnitureDefinitionProvider>(
             call =>
-                call.Method.Name == nameof(IFurnitureDefinitionProvider.TryGetDefinition)
-                && (int)call.Args![0]! == Throne
+            {
+                _onFurnitureLookup();
+
+                return
+                    call.Method.Name == nameof(IFurnitureDefinitionProvider.TryGetDefinition)
+                    && (int)call.Args![0]! == Throne
                     ? TestDefinitions.Floor(Throne, "throne", 1, 1)
-                    : null
+                    : null;
+            }
         );
         IEventPublisher events = FakeProxy.Create<IEventPublisher>(call =>
         {
-            _events.Add((IEvent)call.Args![0]!);
+            lock (_events)
+            {
+                _events.Add((IEvent)call.Args![0]!);
+            }
+
             return null;
         });
 
@@ -172,6 +185,59 @@ public sealed class RpgContentRegistryTests : IAsyncLifetime
             .OfType<ContentReloadedEvent>()
             .Should()
             .Equal(new ContentReloadedEvent(1, 2, 0, 0), new ContentReloadedEvent(1, 0, 1, 0));
+    }
+
+    [Fact]
+    public async Task TwoReloadsAtOnce_AreSerialized()
+    {
+        await StoreAsync(("item.furniture.throne", ThroneItem));
+        using ManualResetEventSlim firstInside = new();
+        using ManualResetEventSlim release = new();
+        int lookups = 0;
+        _onFurnitureLookup = () =>
+        {
+            if (Interlocked.Increment(ref lookups) == 1)
+            {
+                firstInside.Set();
+                release.Wait(TimeSpan.FromSeconds(10));
+            }
+        };
+
+        // The first reload has read version 1 and is validating it; version 2 lands meanwhile.
+        Task first = Task.Run(() => _registry.ReloadAsync(CancellationToken.None));
+        firstInside.Wait(TimeSpan.FromSeconds(10)).Should().BeTrue();
+        await using (VortexDbContext db = new(_options))
+        {
+            RpgContentPackEntity pack = new()
+            {
+                AccountId = 1,
+                Added = 1,
+                Changed = 0,
+                Removed = 0,
+            };
+            db.RpgContentPacks.Add(pack);
+            await db.SaveChangesAsync();
+            db.RpgContent.Add(
+                new RpgContentEntity
+                {
+                    ContentId = "item.furniture.chair",
+                    Kind = "item",
+                    Document = ThroneItem.Replace("item.furniture.throne", "item.furniture.chair"),
+                    Hash = new string('0', 64),
+                    PackId = pack.Id,
+                }
+            );
+            await db.SaveChangesAsync();
+        }
+
+        Task second = Task.Run(() => _registry.ReloadAsync(CancellationToken.None));
+        // Unserialized, the second reload swaps version 2 in here, and the first then puts 1 back.
+        await Task.WhenAny(second, Task.Delay(300));
+        release.Set();
+        await Task.WhenAll(first, second);
+
+        _registry.Version.Should().Be(2);
+        _registry.Get<ItemDefinition>("item.furniture.chair").Should().NotBeNull();
     }
 
     private async Task StoreAsync(params (string Id, string Json)[] rows)

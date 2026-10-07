@@ -34,6 +34,7 @@ public sealed class RpgContentRegistry(
 ) : IRpgContent, IReferenceDataProvider
 {
     private readonly ContentPackValidator _validator = new(kinds);
+    private readonly SemaphoreSlim _reloading = new(1, 1);
     private ContentSet _set = ContentSet.Empty;
 
     // Stage 1: an item names a furniture definition, so the catalogue (stage 0) loads first.
@@ -50,7 +51,23 @@ public sealed class RpgContentRegistry(
     public IReadOnlyList<T> All<T>()
         where T : ContentDefinition => Volatile.Read(ref _set).All<T>();
 
+    /// <summary>One reload at a time: two overlapping (a console reload during an import) would
+    /// otherwise let the one that read first swap its older set in last.</summary>
     public async Task ReloadAsync(CancellationToken ct)
+    {
+        await _reloading.WaitAsync(ct);
+
+        try
+        {
+            await ReloadOneAsync(ct);
+        }
+        finally
+        {
+            _reloading.Release();
+        }
+    }
+
+    private async Task ReloadOneAsync(CancellationToken ct)
     {
         long started = Stopwatch.GetTimestamp();
 
