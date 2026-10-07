@@ -129,6 +129,322 @@
         }
       }
     },
+    "/api/editor/zones": {
+      "get": {
+        "tags": [
+          "Editor"
+        ],
+        "operationId": "EditorListZones",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ZoneSummary"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Editor"
+        ],
+        "operationId": "EditorCreateZone",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateZoneRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ZoneSummary"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/editor/zones/{key}/versions": {
+      "get": {
+        "tags": [
+          "Editor"
+        ],
+        "operationId": "EditorZoneVersions",
+        "parameters": [
+          {
+            "name": "key",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ZoneVersionInfo"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Editor"
+        ],
+        "operationId": "EditorSaveZone",
+        "parameters": [
+          {
+            "name": "key",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "comment",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ZoneSaveResult"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ZoneSaveResult"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/editor/zones/{key}/document": {
+      "get": {
+        "tags": [
+          "Editor"
+        ],
+        "operationId": "EditorZoneDocument",
+        "parameters": [
+          {
+            "name": "key",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "version",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/editor/zones/{key}/validate": {
+      "post": {
+        "tags": [
+          "Editor"
+        ],
+        "operationId": "EditorValidateZone",
+        "parameters": [
+          {
+            "name": "key",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ZoneFinding"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/editor/zones/{key}/publish/{version}": {
+      "post": {
+        "tags": [
+          "Editor"
+        ],
+        "operationId": "EditorPublishZone",
+        "parameters": [
+          {
+            "name": "key",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "version",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ZoneSaveResult"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ZoneSaveResult"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/editor/zones/{key}/lock": {
+      "post": {
+        "tags": [
+          "Editor"
+        ],
+        "operationId": "EditorLockZone",
+        "parameters": [
+          {
+            "name": "key",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "force",
+            "in": "query",
+            "schema": {
+              "type": "boolean"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Editor"
+        ],
+        "operationId": "EditorUnlockZone",
+        "parameters": [
+          {
+            "name": "key",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/editor/furniture": {
+      "get": {
+        "tags": [
+          "Editor"
+        ],
+        "operationId": "EditorFurniturePalette",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/FurniturePaletteEntry"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/newuser/name/check": {
       "post": {
         "tags": [
@@ -588,8 +904,82 @@
         },
         "additionalProperties": false
       },
+      "CreateZoneRequest": {
+        "required": [
+          "isValid"
+        ],
+        "type": "object",
+        "properties": {
+          "key": {
+            "type": "string",
+            "nullable": true
+          },
+          "name": {
+            "type": "string",
+            "nullable": true
+          },
+          "fromTemplate": {
+            "type": "string",
+            "nullable": true
+          },
+          "isValid": {
+            "type": "boolean",
+            "readOnly": true
+          }
+        },
+        "additionalProperties": false
+      },
       "EmptyResponse": {
         "type": "object",
+        "additionalProperties": false
+      },
+      "FurniturePaletteEntry": {
+        "required": [
+          "canSit",
+          "canWalk",
+          "class",
+          "definition",
+          "length",
+          "stackHeight",
+          "states",
+          "wall",
+          "width"
+        ],
+        "type": "object",
+        "properties": {
+          "definition": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "class": {
+            "type": "string"
+          },
+          "wall": {
+            "type": "boolean"
+          },
+          "width": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "length": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "states": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "canWalk": {
+            "type": "boolean"
+          },
+          "canSit": {
+            "type": "boolean"
+          },
+          "stackHeight": {
+            "type": "number",
+            "format": "double"
+          }
+        },
         "additionalProperties": false
       },
       "HealthResponse": {
@@ -797,12 +1187,142 @@
           }
         },
         "additionalProperties": false
+      },
+      "ZoneFinding": {
+        "required": [
+          "code",
+          "message",
+          "severity"
+        ],
+        "type": "object",
+        "properties": {
+          "severity": {
+            "$ref": "#/components/schemas/ZoneSeverity"
+          },
+          "code": {
+            "type": "string"
+          },
+          "elementId": {
+            "type": "string",
+            "nullable": true
+          },
+          "message": {
+            "type": "string"
+          }
+        },
+        "additionalProperties": false
+      },
+      "ZoneSaveResult": {
+        "required": [
+          "findings",
+          "published",
+          "saved"
+        ],
+        "type": "object",
+        "properties": {
+          "saved": {
+            "type": "boolean"
+          },
+          "version": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          },
+          "published": {
+            "type": "boolean"
+          },
+          "findings": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ZoneFinding"
+            }
+          }
+        },
+        "additionalProperties": false
+      },
+      "ZoneSeverity": {
+        "enum": [
+          0,
+          1
+        ],
+        "type": "integer",
+        "format": "int32"
+      },
+      "ZoneSummary": {
+        "required": [
+          "key",
+          "latestVersion",
+          "name",
+          "roomId"
+        ],
+        "type": "object",
+        "properties": {
+          "key": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "roomId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "publishedVersion": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          },
+          "latestVersion": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "lockedByAccountId": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "ZoneVersionInfo": {
+        "required": [
+          "authorAccountId",
+          "comment",
+          "createdAt",
+          "published",
+          "version"
+        ],
+        "type": "object",
+        "properties": {
+          "version": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "authorAccountId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "published": {
+            "type": "boolean"
+          },
+          "comment": {
+            "type": "string"
+          }
+        },
+        "additionalProperties": false
       }
     }
   },
   "tags": [
     {
       "name": "Authentication"
+    },
+    {
+      "name": "Editor"
     },
     {
       "name": "NewUser"

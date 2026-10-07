@@ -16,6 +16,8 @@ using Vortex.Primitives.Authentication;
 using Vortex.Primitives.Crypto;
 using Vortex.Primitives.Hosting;
 using Vortex.Primitives.Observability;
+using Vortex.Primitives.Permissions;
+using Vortex.Primitives.World.Editing;
 using Vortex.WebApi.Configuration;
 using Vortex.WebApi.Services;
 using Vortex.WebApi.Session;
@@ -262,6 +264,8 @@ internal sealed class WebApiWebHost(
         services.AddSingleton(rootServices.GetRequiredService<IWebApiAuthService>());
         services.AddSingleton(rootServices.GetRequiredService<IWebApiPlayerService>());
         services.AddSingleton(rootServices.GetRequiredService<RequiredServiceGuard>());
+        services.AddSingleton(rootServices.GetRequiredService<IZoneEditorService>());
+        services.AddSingleton(rootServices.GetRequiredService<IPermissionService>());
 
         services.AddSingleton(
             rootServices.GetRequiredService<IDbContextFactory<VortexDbContext>>()

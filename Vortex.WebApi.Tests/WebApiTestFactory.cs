@@ -15,6 +15,8 @@ using Vortex.Database.Context;
 using Vortex.Primitives.Authentication;
 using Vortex.Primitives.Hosting;
 using Vortex.Primitives.Observability;
+using Vortex.Primitives.Permissions;
+using Vortex.Primitives.World.Editing;
 using Vortex.WebApi.Configuration;
 using Vortex.WebApi.Hosting;
 using Vortex.WebApi.Services;
@@ -43,7 +45,11 @@ internal sealed class WebApiTestFactory : IAsyncDisposable
     /// <c>Connection.RemoteIpAddress</c> null, which no real Kestrel request ever is, and endpoints
     /// that gate on loopback need it to be something.
     /// </param>
-    public WebApiTestFactory(Action<WebApiConfig>? configure = null, IPAddress? remoteIp = null)
+    public WebApiTestFactory(
+        Action<WebApiConfig>? configure = null,
+        IPAddress? remoteIp = null,
+        string[]? capabilities = null
+    )
     {
         WebApiConfig config = new WebApiConfig
         {
@@ -74,6 +80,10 @@ internal sealed class WebApiTestFactory : IAsyncDisposable
         builder.Services.AddSingleton(Sessions);
         builder.Services.AddSingleton<IWebApiAuthService>(new FakeAuthService(Sessions));
         builder.Services.AddSingleton<IWebApiPlayerService>(new FakePlayerService());
+        builder.Services.AddSingleton<IPermissionService>(
+            new FakePermissionService(capabilities ?? [.. Capabilities.World.All])
+        );
+        builder.Services.AddSingleton<IZoneEditorService>(new FakeZoneEditorService());
         builder.Services.AddSingleton<IOptions<WebApiConfig>>(Options.Create(config));
 
         builder.Services.AddSingleton<RequiredServiceGuard>();

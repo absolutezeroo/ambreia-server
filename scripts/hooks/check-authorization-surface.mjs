@@ -162,6 +162,8 @@ const HTTP_GATES = [
   ['account-id', /\.AccountId\s*\(/],
   ['selected-player', /SelectedPlayerAsync\s*\(/],
   ['anonymous', /\.AllowAnonymous\s*\(/],
+  // A session, then a capability from IPermissionService (WebApiEndpoints.Editor.cs).
+  ['capability', /\bDenyAsync\s*\(/],
 ];
 
 for (const f of walk(root)) {

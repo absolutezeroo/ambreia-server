@@ -14,8 +14,10 @@ using Vortex.Primitives.Crypto;
 using Vortex.Primitives.Events;
 using Vortex.Primitives.Hosting;
 using Vortex.Primitives.Observability;
+using Vortex.Primitives.Permissions;
 using Vortex.Primitives.Plugins;
 using Vortex.Primitives.Plugins.Exports;
+using Vortex.Primitives.World.Editing;
 using Vortex.WebApi.Configuration;
 using Vortex.WebApi.Hosting;
 using Vortex.WebApi.Services;
@@ -104,6 +106,10 @@ public sealed class WebApiPlugin : IVortexPlugin
 
         // Accounts.
         services.UseHostService<IAccountAuthenticator>();
+
+        // The map editor's routes: zones live in Vortex.World, rights in Vortex.Permissions.
+        services.UseHostService<IZoneEditorService>();
+        services.UseHostService<IPermissionService>();
     }
 
     /// <summary>Nothing to publish: the host needs nothing back from the website.</summary>

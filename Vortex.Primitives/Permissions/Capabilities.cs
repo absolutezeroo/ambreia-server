@@ -82,6 +82,18 @@ public static class Capabilities
         public static IReadOnlyList<string> All { get; } = [ConfigManage, Control];
     }
 
+    /// <summary>Building the world with the map editor (<c>/api/editor</c>).</summary>
+    public static class World
+    {
+        /// <summary>Read, validate and save zone drafts; take a zone's edit lock.</summary>
+        public const string ZoneEdit = "world.zone.edit";
+
+        /// <summary>Publish a version (players get it), roll back, force someone else's lock.</summary>
+        public const string ZonePublish = "world.zone.publish";
+
+        public static IReadOnlyList<string> All { get; } = [ZoneEdit, ZonePublish];
+    }
+
     /// <summary>Every declared capability, for validation.</summary>
     public static IReadOnlyCollection<string> All { get; } =
     [
@@ -101,5 +113,6 @@ public static class Capabilities
         Economy.GrantActivityPoints,
         Economy.GrantItem,
         .. Server.All,
+        .. World.All,
     ];
 }
