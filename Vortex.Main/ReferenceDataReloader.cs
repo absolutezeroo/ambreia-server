@@ -15,17 +15,15 @@ namespace Vortex.Main;
 /// they share no code on purpose — see <see cref="IReferenceDataReloader"/> for why.
 /// </summary>
 /// <remarks>
-/// It exists because content written outside an admin service — a SQL script, a restore, another
-/// tool — is invisible until the cache that holds it is read again, and until now the only ways
-/// were to restart the hotel or to save an unrelated row through the dashboard so its admin service
-/// happened to reload. Four domains had each grown their own reload button; this is the one they
-/// were each reinventing.
+/// It exists because content written behind the emulator's back — a SQL script, a restore, another
+/// tool — is invisible until the cache that holds it is read again, and the only other way is to
+/// restart the hotel.
 /// </remarks>
 /// <param name="extra">
-/// Caches that are not <see cref="IReferenceDataProvider"/> singletons because they live inside a
-/// grain — fishing definitions, mystery box pools. They were each reachable only through their own
-/// console command, which is how the hotel ended up with three words for one idea. Composed in
-/// <c>Program.cs</c> rather than known about here, so this class stays a loop over names.
+/// Caches that are not <see cref="IReferenceDataProvider"/> singletons, for instance because they
+/// live inside a grain, so they answer to the same <c>reload</c> command rather than one of their
+/// own. Composed in <c>Program.cs</c> rather than known about here, so this class stays a loop over
+/// names; none is registered today.
 /// </param>
 public sealed class ReferenceDataReloader(
     IEnumerable<IReferenceDataProvider> providers,
@@ -96,10 +94,9 @@ public sealed class ReferenceDataReloader(
     /// </summary>
     /// <remarks>
     /// <c>Type.Name</c> alone renders every closed generic as its open form — two closed
-    /// <c>CatalogSnapshotProvider&lt;T&gt;</c> both came back as <c>CatalogSnapshotProvider`1</c>.
-    /// They then collided in the table below and the second silently replaced the first, which
-    /// left the normal catalogue — the one every player reads — reachable by no name at all, while
-    /// `reload` looked like it had covered it.
+    /// <c>Provider&lt;T&gt;</c> would both come back as <c>Provider`1</c>. They would then collide
+    /// in the table below and one of them would be reachable by no name at all, while `reload`
+    /// looked like it had covered it.
     /// </remarks>
     private static string NameOf(Type type)
     {
@@ -118,7 +115,7 @@ public sealed class ReferenceDataReloader(
     /// Names every cache, using the provider's type name.
     /// </summary>
     /// <remarks>
-    /// Rather than a key property added to twenty-nine classes. The name is already what each one is
+    /// Rather than a key property added to every provider. The name is already what each one is
     /// called in the logs and in the code, so an operator reading "Failed to reload the
     /// RoomModelProvider" and an operator typing <c>RoomModelProvider</c> are looking at one thing.
     /// </remarks>
@@ -137,8 +134,8 @@ public sealed class ReferenceDataReloader(
         {
             string name = NameOf(provider.GetType());
 
-            // Two different caches under one name is how the catalogue became unreachable, and
-            // nothing said so: the table just kept the last one. Naming both is the only way an
+            // Two different caches under one name leaves one of them unreachable, and nothing
+            // would say so if the table just kept the last one. Naming both is the only way an
             // operator can tell the list is lying to them.
             if (builder.ContainsKey(name))
             {

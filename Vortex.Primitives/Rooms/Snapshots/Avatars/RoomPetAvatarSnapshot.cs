@@ -14,7 +14,7 @@ public sealed record RoomPetAvatarSnapshot : RoomAvatarSnapshot
     [Id(14)]
     public required string OwnerName { get; init; }
 
-    // 16 and 19 to 22 were the monsterplant rarity and the breed, harvest and revive flags, removed
+    // 15 was never assigned. 16 and 19 to 22 were the monsterplant rarity and the breed, harvest and revive flags, removed
     // in M0. The serializer still writes them, as constants.
 
     [Id(17)]

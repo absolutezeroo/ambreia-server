@@ -12,15 +12,14 @@ namespace Vortex.WebApi.Session;
 public readonly record struct WebSessionState(int? SelectedPlayer);
 
 /// <summary>
-/// Authenticated web sessions, keyed by the cookie id, remembering which avatar the visitor picked
-/// and whether they have cleared the account's security questions. Cleared on server restart.
+/// Authenticated web sessions, keyed by the cookie id, remembering which avatar the visitor picked.
+/// Cleared on server restart.
 ///
 /// <para>
-/// The mechanics are <see cref="AccountSessionStore{TState}" />, shared with the dashboard. They used
-/// to be a second implementation here, and it had drifted: a GUID rather than 256 cryptographic
-/// bits, a day hard-coded rather than configured, expired entries dropped only if someone happened
-/// to ask, no way to revoke an account's sessions at all, and a selected-avatar read that answered
-/// for sessions that had already expired.
+/// The mechanics are <see cref="AccountSessionStore{TState}" />. They used to be a second
+/// implementation here, and it had drifted: a GUID rather than 256 cryptographic bits, a day
+/// hard-coded rather than configured, expired entries dropped only if someone happened to ask, and
+/// a selected-avatar read that answered for sessions that had already expired.
 /// </para>
 /// </summary>
 public sealed class WebApiSessionStore

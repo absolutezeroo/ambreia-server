@@ -15,7 +15,7 @@ namespace Vortex.Rooms.Tests.Support;
 /// An item exists in a room three times over: in <c>ItemsById</c>, on the tiles of its footprint,
 /// and in the logic index. Every mutation has to move all three, and when one is missed nothing
 /// fails — the room keeps serving, and the disagreement shows up later as a tile nobody can walk
-/// on, a game acting on furniture that left, or an item that cannot be placed again.
+/// on, a logic lookup returning furniture that left, or an item that cannot be placed again.
 /// </para>
 /// <para>
 /// This deliberately shares no arithmetic with the code it checks. It never calls
@@ -92,7 +92,7 @@ internal static class RoomFurnitureInvariants
     }
 
     /// <summary>An index bucket that kept an item the room dropped keeps answering ItemsOf&lt;T&gt;()
-    /// for it, so a game or a wired selector acts on furniture that is no longer in the room.</summary>
+    /// for it, so whoever asks acts on furniture that is no longer in the room.</summary>
     private static void CheckIndexHoldsOnlyLiveItems(RoomLiveState state, List<string> violations)
     {
         foreach (IRoomItem indexed in state.ItemIndex.IndexedItems())

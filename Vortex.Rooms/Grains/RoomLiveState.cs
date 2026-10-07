@@ -21,7 +21,7 @@ public sealed class RoomLiveState
     public Dictionary<RoomObjectId, IRoomItem> ItemsById { get; } = [];
 
     /// <summary>Items indexed by attached-logic type; kept in lockstep with
-    /// <see cref="ItemsById"/> by the object module and the two other removal sites.</summary>
+    /// <see cref="ItemsById"/> by the object module.</summary>
     public RoomItemIndex ItemIndex { get; } = new();
     public Dictionary<RoomObjectId, IRoomAvatar> AvatarsByObjectId { get; } = [];
     public Dictionary<PlayerId, RoomObjectId> AvatarsByPlayerId { get; } = [];

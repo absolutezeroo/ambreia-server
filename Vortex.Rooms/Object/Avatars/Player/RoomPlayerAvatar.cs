@@ -28,10 +28,8 @@ public sealed class RoomPlayerAvatar
     /// with only ObjectId/PlayerId and then calls <see cref="UpdateWithPlayer"/> — so every avatar
     /// in every room serialised a hard 0 and the client's infostand showed 0 for a player whose
     /// extended profile, built from the same snapshot field, showed the real score. Assigned in
-    /// UpdateWithPlayer, which is both the entry path and the player-updated path, so a gain made
-    /// during the visit also reaches the room's own readers (the wired
-    /// <c>UserAchievementScoreVariable</c>, the clothing booth) rather than only the UserChange
-    /// broadcast.
+    /// UpdateWithPlayer, which is both the entry path and the player-updated path, so a change made
+    /// during the visit reaches the avatar as well as the UserChange broadcast.
     /// </summary>
     public int ActivityPoints { get; private set; }
 

@@ -17,9 +17,9 @@ public sealed class PlayerModule : IHostPluginModule
     public void ConfigureServices(IServiceCollection services, HostApplicationBuilder builder)
     {
         // The game's sign-in: the SSO ticket the client presents. Bound here, with its validator,
-        // because the ticket rules are the game's; the web accounts and the owner bootstrap read the
-        // same section (IpHashSecret, BootstrapOwnerAccountId). Outside Development a placeholder secret
-        // still refuses to start.
+        // because the ticket rules are the game's; the owner bootstrap (BootstrapOwnerAccountId, read
+        // by the permission seeder) shares the section. Outside Development a placeholder
+        // IpHashSecret still refuses to start.
         services
             .AddOptions<AuthenticationConfig>()
             .Bind(builder.Configuration.GetSection(AuthenticationConfig.SECTION_NAME))
@@ -33,8 +33,5 @@ public sealed class PlayerModule : IHostPluginModule
         services.Configure<PlayerPresenceConfig>(
             builder.Configuration.GetSection(PlayerPresenceConfig.SECTION_NAME)
         );
-
-        // The admin services moved to the dashboard: authoring content is its job, not the
-        // emulator's. A host without that module has no authoring path here, deliberately.
     }
 }

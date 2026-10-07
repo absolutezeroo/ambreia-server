@@ -20,9 +20,9 @@ namespace Vortex.Rooms.Object.Logic.Furniture.Floor;
 /// <c>roomObject.getLocation().z</c>, not stuff data — so the height has exactly one home and the
 /// dialog cannot disagree with the room.
 /// <para>
-/// Registering the name matters beyond behaviour: without it these tiles resolve through the
-/// provider's fallback to <see cref="FurnitureFloorLogic"/>, and the handler has no way to tell a
-/// magic tile from any other furni the client might name in the packet.
+/// No packet handler sets the height or <see cref="MultiWalk"/> since the cut of 2026-10-07; only
+/// tests call <see cref="SetMultiWalk"/>. Registering the name still keeps these tiles from
+/// resolving through the provider's fallback to <see cref="FurnitureFloorLogic"/>.
 /// </para>
 /// </remarks>
 [RoomObjectLogic("furniture_custom_stack_height")]

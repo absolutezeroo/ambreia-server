@@ -28,7 +28,7 @@ namespace Vortex.Players.Tests.Presence;
 /// <c>OnDeactivateAsync</c>, which unregisters the session observer and walks the player out of
 /// their room. A connected player who went quiet for two minutes -- a backgrounded tab, a sleeping
 /// laptop, a cable pulled without a FIN -- came back a ghost: still connected, gone from the room,
-/// offline to their friends, and mute, because the fresh activation has no observer and every reply
+/// and mute, because the fresh activation has no observer and every reply
 /// queues behind one that is never drained. Only a new SSO ticket put it right.
 /// </para>
 /// <para>

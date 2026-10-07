@@ -19,14 +19,13 @@ namespace Vortex.Rooms.Tests.Grains;
 /// <para>
 /// This used to be the write-behind tick's job, as a side effect of writing positions: every
 /// snapshot marked player_id and room_id modified, so a batch queued before an item left could put
-/// it back in the room and back on its old owner, over a trade that had already taken it.
+/// it back in the room and back on its old owner, after something else had already moved it.
 /// </para>
 /// <para>
 /// It moves at the moment it moves now, and it moves conditionally. The half that shows up for
-/// players is the release: six paths decide an item is free-standing by asking whether room_id is
-/// null — a trade, a wired chest, a jukebox, a marketplace listing, a wired settlement — and while
-/// the pickup waited for the tick, all six refused an item the client had already put in the
-/// player's hand.
+/// players is the release: anything that decides an item is free-standing asks whether room_id is
+/// null, and while the pickup waited for the tick it refused an item the client had already put in
+/// the player's hand.
 /// </para>
 /// </remarks>
 public sealed class RoomFurnitureLocationStoreTests : IAsyncLifetime

@@ -2,9 +2,9 @@
 --
 -- stuff_data_type tells StuffDataFactory which shape a furni's state travels in. It shipped as 0
 -- (LegacyKey) for all ~55 000 definitions. Where a logic actually needs a richer shape, the state
--- silently never round-trips: the grant/stamp path checks the type and skips, the reader hands back
--- a freshly defaulted instance, and the furni renders with the client's defaults. That is the bug
--- that made every guild furni white.
+-- silently never round-trips: the (since removed) grant path checked the type and skipped, the
+-- reader hands back a freshly defaulted instance, and the furni renders with the client's defaults.
+-- That is the bug that made every guild furni white.
 --
 -- Derived, not guessed: each client logic class was read for the StuffData class it casts to, and
 -- the ids come from the client's own factory (0 legacy, 1 map, 2 string array, 3 vote, 4 empty,

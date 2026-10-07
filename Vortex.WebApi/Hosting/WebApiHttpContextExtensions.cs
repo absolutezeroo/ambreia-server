@@ -28,9 +28,8 @@ internal static class WebApiHttpContextExtensions
         sessions.GetAccountId(ctx.SessionId());
 
     /// <summary>
-    /// The raw <c>Accept-Language</c> header, used as the language of last resort when the caller did
-    /// not ask for one explicitly. Returned unparsed: the article service already splits a tag list
-    /// and strips region subtags, and a second parser here would be a second thing to keep in step.
+    /// The raw <c>Accept-Language</c> header, unparsed, or null when absent. No endpoint reads it any
+    /// more.
     /// </summary>
     public static string? AcceptedLanguages(this HttpContext ctx)
     {
@@ -44,9 +43,7 @@ internal static class WebApiHttpContextExtensions
         ctx.Connection.RemoteIpAddress?.ToString() ?? "127.0.0.1";
 
     /// <summary>
-    /// The raw <c>User-Agent</c>, which joins the address to identify a trusted location. Raw and
-    /// unparsed on purpose: it is hashed and never read back, and normalising it here would only
-    /// make two visits from the same browser stop matching after a version bump.
+    /// The raw <c>User-Agent</c>, unparsed. No endpoint reads it any more.
     /// </summary>
     public static string UserAgent(this HttpContext ctx) =>
         ctx.Request.Headers.UserAgent.ToString();
@@ -86,8 +83,7 @@ internal static class WebApiHttpContextExtensions
         );
 
     /// <summary>
-    /// Drops the session cookie. Logout and a password change both end with the browser holding a
-    /// token that no longer resolves; the two used to spell that out separately.
+    /// Drops the session cookie once logout has made the token stop resolving.
     /// </summary>
     public static void ClearSessionCookie(this HttpContext ctx) =>
         ctx.Response.Cookies.Delete(SessionCookieName, new CookieOptions { Path = "/" });

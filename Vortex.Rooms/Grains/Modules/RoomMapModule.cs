@@ -69,8 +69,7 @@ public sealed partial class RoomMapModule(RoomGrain roomGrain)
     }
 
     /// <summary>The first floor item on the tile whose logic is a <typeparamref name="TLogic"/>, or
-    /// null. Bounds-checks the index, so callers can pass a raw <see cref="ToIdx"/> result. This is
-    /// the game systems' "is my arena furni here?" primitive — one body instead of a per-game copy.</summary>
+    /// null. Bounds-checks the index, so callers can pass a raw <see cref="ToIdx"/> result.</summary>
     public TLogic? FirstLogicOnTile<TLogic>(int tileIdx)
         where TLogic : class, IRoomObjectLogic
     {
@@ -435,7 +434,8 @@ public sealed partial class RoomMapModule(RoomGrain roomGrain)
     }
 
     /// <summary>
-    /// The tiles the floor-plan editor must treat as reserved. Read off the live flags rather than
+    /// The tiles furniture occupies, for a future map editor to treat as reserved; nothing calls it
+    /// yet. Read off the live flags rather than
     /// recomputed from item footprints, so a two-by-two rug reserves all four of its tiles and a
     /// rotated item reserves the tiles it actually covers — the room engine already worked that out
     /// when the item was placed.
@@ -479,7 +479,7 @@ public sealed partial class RoomMapModule(RoomGrain roomGrain)
     /// The range is the *array's*, not <c>InBounds()</c>'s. Those two are not the same thing and the
     /// difference is not theoretical: InBounds() asks the model's dimensions, while these arrays are
     /// allocated by EnsureMapBuiltAsync(), so a room whose model is loaded and whose map is not yet
-    /// built passes the first test and throws on the second. Bots walk in exactly that window.
+    /// built passes the first test and throws on the second.
     /// </summary>
     public RoomTileSection GetTopSection(int tileId)
     {
@@ -508,9 +508,9 @@ public sealed partial class RoomMapModule(RoomGrain roomGrain)
     /// this considers every item on it — so the floor *under* a raised platform is an answer, and a
     /// tile is no longer walkable-or-not but walkable-at-some-height.
     ///
-    /// Nothing calls it yet. It is the query the pathfinder will ask once its nodes carry a height,
-    /// and it is written now because the arithmetic behind it is the part worth getting wrong
-    /// alone, with tests, rather than inside an A* rewrite.
+    /// The best surface only: asked to settle an avatar's height, to tell a clicked tile's surfaces
+    /// apart, and by the step check between tiles. The pathfinder wants
+    /// every surface and asks <see cref="FindSections" />.
     /// </summary>
     public RoomTileSection? FindSection(int tileId, Altitude fromZ, Altitude maxStep)
     {

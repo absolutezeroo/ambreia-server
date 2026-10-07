@@ -2,8 +2,8 @@ using System.Collections.Immutable;
 
 namespace Vortex.Primitives.Orleans.Snapshots.Room;
 
-/// <summary>Shared Tag1/Tag2 (RoomEntity) -&gt; Tags (RoomInfoSnapshot) mapping so navigator search
-/// results and the live room snapshot never drift on how blank/whitespace tags are handled.</summary>
+/// <summary>Tag1/Tag2 (RoomEntity) -&gt; Tags mapping for the live room snapshot: blank or whitespace
+/// tags are dropped, the rest trimmed.</summary>
 public static class RoomTagMapper
 {
     public static ImmutableArray<string> ToTags(string? tag1, string? tag2)

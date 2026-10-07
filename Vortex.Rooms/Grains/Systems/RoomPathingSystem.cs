@@ -67,11 +67,10 @@ public sealed class RoomPathingSystem(RoomGrain roomGrain)
     /// <summary>
     /// The flat search, for callers that have no height model.
     ///
-    /// Pets and bots take this. Each has its own rule about which tiles it may occupy and never had
-    /// a step-height test at all, and neither has anywhere to remember which surface it is standing
-    /// on — so giving them the avatars' three-dimensional search would change what they are, not
-    /// just how they move. Every step lands on the tile's top surface, which is exactly where they
-    /// landed before, and their own predicates are passed through untouched.
+    /// Nothing calls it yet. It is for a walker with its own rule about which tiles it may occupy
+    /// and nowhere to remember which surface it is standing on, for which the avatars'
+    /// three-dimensional search does not fit. Every step lands on the tile's top surface, and the
+    /// caller's predicates are passed through untouched.
     /// </summary>
     public IReadOnlyList<(int X, int Y)> FindPath(
         (int X, int Y) start,

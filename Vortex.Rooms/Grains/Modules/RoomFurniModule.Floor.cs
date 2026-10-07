@@ -34,12 +34,11 @@ public sealed partial class RoomFurniModule
         }
 
         // Position before attach, not after. AttatchObjectAsync registers the item's footprint from
-        // the coordinates it is carrying, and an item just materialised out of an inventory snapshot
+        // the coordinates it is carrying, and an item just built from a FurnitureItemSnapshot
         // has none -- so attaching first stamped the footprint at (0, 0), then the real position was
         // applied and registered a second time. Nothing ever took the first one back: RemoveFloorItem
         // clears the footprint the item is standing on, and (0, 0) kept the id, its height and its
-        // FurnitureOccupied flag for the life of the activation. RoomGrain.Furni.Edit.cs already
-        // orders the swap path this way, for this reason.
+        // FurnitureOccupied flag for the life of the activation.
         _roomGrain.MapModule.PositionFloorItem(item, tileIdx, rot);
 
         if (!await _roomGrain.ObjectModule.AttatchObjectAsync(item, ct))
@@ -77,7 +76,7 @@ public sealed partial class RoomFurniModule
         int prevIdx = _roomGrain.MapModule.ToIdx(item.X, item.Y);
         int nextIdx = _roomGrain.MapModule.ToIdx(x, y);
 
-        // Only a player's move comes through here; wired turns go to the map directly.
+        // Only a player's move comes through here.
         if (!_roomGrain.MapModule.MoveFloorItem(floor, nextIdx, z, rot, restackInPlace: true))
         {
             return false;

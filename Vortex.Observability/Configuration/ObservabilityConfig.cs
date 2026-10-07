@@ -31,7 +31,7 @@ public sealed class ObservabilityConfig
 
     /// <summary>
     /// How long the audit trail is kept, in days. 0 keeps it for ever. This is what a dispute is
-    /// settled with months later, so it outlives the privacy-bearing tables below by design.
+    /// settled with months later, so it outlives the privacy-bearing room visit history below by design.
     /// </summary>
     public int AuditRetentionDays { get; init; } = 180;
 

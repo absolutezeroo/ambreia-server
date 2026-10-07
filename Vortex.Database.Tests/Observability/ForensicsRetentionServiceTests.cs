@@ -17,7 +17,7 @@ using Xunit;
 namespace Vortex.Database.Tests.Observability;
 
 /// <summary>
-/// The sweep decides what is deleted from the tables the moderation tooling reads live, so the two
+/// The sweep decides what is deleted from the forensic tables for good, so the two
 /// things worth pinning are the cutoff (nothing inside the window is ever touched) and the opt-out
 /// (a retention of 0 means keep, not delete everything).
 /// </summary>

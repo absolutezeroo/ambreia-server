@@ -6,9 +6,9 @@ namespace Vortex.Database.Seeds;
 
 /// <summary>
 /// Loads the reference-data seed scripts embedded from <c>Vortex.Database/Seeds/*.sql</c>, so a
-/// migration can apply one with <c>migrationBuilder.Sql(SeedScripts.Read("x.sql"))</c>. The scripts
-/// use <c>INSERT IGNORE</c> and are therefore safe to run against a database that already holds
-/// some of the rows.
+/// migration can apply one with <c>migrationBuilder.Sql(SeedScripts.Read("x.sql"))</c>. Each runs
+/// once, inside <c>InitialCreate</c>, against a fresh database; the furniture-dependent ones are
+/// replayed by <c>scripts/import-reference-data.ps1</c> and are written to be re-runnable.
 /// </summary>
 public static class SeedScripts
 {

@@ -18,15 +18,13 @@ public sealed class RoomAvatarProvider : IRoomAvatarProvider
             ObjectId = objectId,
             PlayerId = snapshot.PlayerId,
             // Staff-ness is fixed for the visit, so it is set here rather than in
-            // UpdateWithPlayer: the property stays init-only and the chat-flood tests can keep
-            // building an avatar straight from an object initialiser. It was never assigned at
-            // all before, which left every staff member flood-gated like a stranger and made the
-            // Builders Club guest check treat them as an outsider.
+            // UpdateWithPlayer: the property stays init-only and a test can keep building an
+            // avatar straight from an object initialiser.
             IsModerator = snapshot.IsModerator,
         };
 
-        // UpdateWithPlayer also stamps the favourite-guild badge from the snapshot, so the avatar
-        // enters the room already wearing it rather than staying unbadged until a manual toggle.
+        // UpdateWithPlayer stamps name, motto, figure, gender and score from the snapshot, so the
+        // avatar enters the room with them rather than waiting for a player update.
         avatar.UpdateWithPlayer(snapshot);
 
         return avatar;

@@ -15,8 +15,8 @@ namespace Vortex.Rooms.Tests.Mapping;
 /// The click carries two raw ints off the wire on the most-sent packet of the game, and the room
 /// used to flatten them into an array index without asking whether they named a tile at all. Out of
 /// range that threw; in the fold — x equal to the room width lands on the first tile of the next row
-/// — it published a click the player never made, from wherever they happened to be standing. A wired
-/// tile trigger reads that event, so the fold was a way to fire somebody else's wired.
+/// — it published a click the player never made, from wherever they happened to be standing. Any
+/// listener on that event would have fired on a tile nobody clicked.
 /// </summary>
 public sealed class RoomTileClickBoundsTests
 {

@@ -55,12 +55,12 @@ public sealed class PluginManager(
     ///     Through the same registry the plugins use, so a host-side consumer and a plugin-side one
     ///     see the same slot and the same swap.
     ///     </para>
-    /// </remarks>
     ///     <para>
     ///     A new wrapper per call rather than a cached one: <see cref="PluginCatalog" /> holds no
     ///     state of its own, the registry behind it is the shared thing, and a property with no
     ///     backing field cannot race. DI asks once anyway.
     ///     </para>
+    /// </remarks>
     public IPluginCatalog Catalog => new PluginCatalog(_exports);
 
     private readonly ConcurrentDictionary<string, SemaphoreSlim> _keyLocks = new(

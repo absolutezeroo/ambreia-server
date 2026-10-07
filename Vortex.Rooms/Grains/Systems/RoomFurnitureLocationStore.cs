@@ -14,16 +14,15 @@ namespace Vortex.Rooms.Grains.Systems;
 /// <para>
 /// A room's write-behind flush writes where furniture sits. It used to write who owns it and which
 /// room it is in as well, which made every position tick an assertion of ownership: a batch queued
-/// before an item left could put it back in the room, and back on its old owner, over a trade that
-/// had already taken it.
+/// before an item left could put it back in the room, and back on its old owner, after something
+/// else had already moved it.
 /// </para>
 /// <para>
-/// So location moves at the moment it happens, and it moves conditionally -- the same shape the
-/// trade and the marketplace use. The tick is left with the one thing it is for.
+/// So location moves at the moment it happens, and it moves conditionally. The tick is left with
+/// the one thing it is for.
 /// </para>
 /// <para>
-/// The predicates are the inventory loader's own: a row is free-standing when it belongs to the
-/// player and sits in no room. <c>DeletedAt</c> is absent from both
+/// A row is free-standing when it belongs to the player and sits in no room. <c>DeletedAt</c> is absent from both
 /// because the global soft-delete query filter supplies it.
 /// </para>
 /// </remarks>
@@ -53,8 +52,8 @@ internal static class RoomFurnitureLocationStore
     /// </summary>
     /// <remarks>
     /// The owner moves with it because a pickup can hand the item to someone other than whoever
-    /// owned it -- clearing a room gives each piece back to its owner, while a rights-holder
-    /// tidying up keeps what they picked up, and the caller has already decided which.
+    /// owned it -- the pickup type decides whether a piece goes back to its owner or to whoever
+    /// picked it up, and the caller has already decided which.
     /// </remarks>
     /// <returns>1 when the row moved, 0 when it was no longer this room's to give.</returns>
     public static Task<int> ReleaseFromRoomAsync(

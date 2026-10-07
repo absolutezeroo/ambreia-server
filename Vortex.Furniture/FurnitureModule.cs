@@ -24,7 +24,5 @@ public sealed class FurnitureModule : IHostPluginModule
             (IReferenceDataProvider)sp.GetRequiredService<IFurnitureDefinitionProvider>()
         );
         services.AddSingleton<IStuffDataFactory, StuffDataFactory>();
-        // The admin services moved to the dashboard: authoring content is its job, not the
-        // emulator's. A host without that module has no authoring path here, deliberately.
     }
 }

@@ -16,8 +16,8 @@ public sealed class StuffDataFactory : IStuffDataFactory
     /// <see cref="ExtraDataWriter"/> serializes sections with <see cref="JsonNamingPolicy.CamelCase"/>,
     /// so a stored section reads <c>{"data":"..."}</c> while the stuff-data classes declare
     /// <c>Data</c>. Deserializing with the default (case-sensitive) options silently matched nothing
-    /// and handed back a freshly defaulted instance, which is why saved furni state — a dice face, a
-    /// gate's open flag, a guild furni's badge — came back as "0" after a reload.
+    /// and handed back a freshly defaulted instance, which is why saved furni state — a multistate
+    /// furni's state, a gate's open flag — came back as "0" after a reload.
     /// </summary>
     private static readonly JsonSerializerOptions ReadOptions = new()
     {

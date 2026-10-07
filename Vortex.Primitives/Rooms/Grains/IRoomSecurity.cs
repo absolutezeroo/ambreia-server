@@ -8,8 +8,7 @@ using Vortex.Primitives.Rooms.Enums;
 
 namespace Vortex.Primitives.Rooms.Grains;
 
-/// <summary>Who may do what in the room: effective controller level and the guild-derived rights
-/// that feed it.</summary>
+/// <summary>Who may do what in the room: its effective controller level.</summary>
 [Alias("Vortex.Primitives.Rooms.Grains.IRoomSecurity")]
 public interface IRoomSecurity : IGrainWithIntegerKey
 {

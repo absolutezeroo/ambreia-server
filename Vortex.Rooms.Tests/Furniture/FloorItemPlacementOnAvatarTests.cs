@@ -9,7 +9,7 @@ using Xunit;
 namespace Vortex.Rooms.Tests.Furniture;
 
 /// <summary>
-/// Placing an item from the inventory onto a tile somebody is standing on.
+/// Placing an item onto a tile somebody is standing on.
 /// </summary>
 /// <remarks>
 /// The item being placed has no logic yet — the provider hands it one during the attach, after the

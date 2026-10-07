@@ -19,9 +19,8 @@ public enum ProductType
 public static class ProductTypeEnumExtension
 {
     /// <summary>
-    /// Whether something still grants this type. A robot (player-owned bots, removed in M0 bis) and
-    /// any retired value would be skipped by the fulfilment planner after the debit, so the catalogue
-    /// does not sell them at all.
+    /// Whether something still grants this type: not a robot (player-owned bots, removed in M0 bis),
+    /// nor any retired value. Nothing calls it since the catalogue left with the cut of 2026-10-07.
     /// </summary>
     public static bool IsSold(this ProductType productType) =>
         productType

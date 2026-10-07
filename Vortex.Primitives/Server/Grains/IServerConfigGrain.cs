@@ -5,7 +5,7 @@ using Orleans;
 namespace Vortex.Primitives.Server.Grains;
 
 /// <summary>
-/// Cluster-wide singleton (grain key <c>SingletonGrainId.GLOBAL</c>) serving admin-editable server
+/// Cluster-wide singleton (grain key <c>SingletonGrainId.GLOBAL</c>) serving runtime-tunable server
 /// configuration as typed key/value pairs. Writes go through <see cref="SetValueAsync"/>
 /// (write-through: DB + in-memory cache), so every read is immediately consistent without a reload —
 /// the reason tunable gameplay config lives here rather than in a boot-cached provider or (for
@@ -36,7 +36,7 @@ public interface IServerConfigGrain : IGrainWithStringKey
 
     /// <summary>
     /// All requested keys that are currently set, in one round trip — the way a subsystem resolves a
-    /// whole settings group (a game's balance, a feature's knobs) without N sequential grain calls to
+    /// whole settings group (a feature's knobs) without N sequential grain calls to
     /// this cluster singleton. Missing keys are simply absent; parse with the
     /// <c>ServerConfigValues</c> readers so fallbacks apply per key.
     /// </summary>

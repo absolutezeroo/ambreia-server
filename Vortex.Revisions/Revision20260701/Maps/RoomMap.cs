@@ -24,10 +24,6 @@ internal sealed class RoomMap : IRevisionMap
         // Room Avatar
         builder.MapParser(MessageEvent.LookToMessageEvent, new LookToMessageParser());
 
-        // Room Bots
-
-        // Room Chat
-
         // Room Engine
         builder.MapParser(
             MessageEvent.GetFurnitureAliasesMessageEvent,
@@ -38,8 +34,6 @@ internal sealed class RoomMap : IRevisionMap
         // Room Furniture
 
         // Room Layout
-
-        // Room Pets
 
         // Room Session
         builder.MapParser(
@@ -61,10 +55,6 @@ internal sealed class RoomMap : IRevisionMap
             typeof(DanceMessageComposer),
             new DanceMessageComposerSerializer(MessageComposer.DanceMessageComposer)
         );
-
-        // Room Bots
-
-        // Room Chat
 
         // Room Engine
         builder.MapSerializer(
@@ -195,8 +185,6 @@ internal sealed class RoomMap : IRevisionMap
             typeof(YouAreOwnerMessageComposer),
             new YouAreOwnerMessageComposerSerializer(MessageComposer.YouAreOwnerMessageComposer)
         );
-
-        // Room Pets
 
         // Room Session
         builder.MapSerializer(

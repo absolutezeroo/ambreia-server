@@ -25,7 +25,7 @@ namespace Vortex.Rooms.Tests.Furniture;
 /// </summary>
 /// <remarks>
 /// <para>
-/// An item coming out of an inventory snapshot is materialised without coordinates, and placement
+/// An item built from a <c>FurnitureItemSnapshot</c> is materialised without coordinates, and placement
 /// used to attach it first: <c>AttatchObjectAsync</c> registers the footprint from the coordinates
 /// the item is carrying, so every new floor item was registered at (0, 0) before the real position
 /// was applied and registered a second time. Nothing took the first one back — removal clears the
@@ -33,8 +33,7 @@ namespace Vortex.Rooms.Tests.Furniture;
 /// and its <c>FurnitureOccupied</c> flag, for the life of the activation.
 /// </para>
 /// <para>
-/// The fix is the order, which is the order the furniture-swap path already used for this reason.
-/// The assertion is the invariant rather than the ordering: the tiles holding an item's id are
+/// The fix is the order. The assertion is the invariant rather than the ordering: the tiles holding an item's id are
 /// exactly its footprint, and nowhere else.
 /// </para>
 /// </remarks>

@@ -14,8 +14,9 @@ public enum AuditCategory
     System,
 
     /// <summary>
-    /// Player progression: achievements, quests, badges. The player-life events that are neither
-    /// social nor economic, and that an investigation reads as "what did this account actually do".
+    /// Player progression: the player-life events that are neither social nor economic, and that an
+    /// investigation reads as "what did this account actually do". Nothing records it since the cut
+    /// of 2026-10-07 removed achievements, quests and badges; rows already written may carry it.
     /// Stored as a string, so appending here needs no migration.
     /// </summary>
     Progression,

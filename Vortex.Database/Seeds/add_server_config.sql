@@ -1,4 +1,5 @@
--- The message of the day. From the AddServerConfig migration.
+-- The message of the day, read by ServerConfigGrain.GetMotdAsync (nothing sends it to the client
+-- since the core cut).
 
 INSERT INTO `server_config` (`config_key`, `config_value`, `description`)
 VALUES ('motd.lines', '["Welcome to Vortex! Have fun and be nice to each other."]', 'Message-of-the-day lines (JSON array)');

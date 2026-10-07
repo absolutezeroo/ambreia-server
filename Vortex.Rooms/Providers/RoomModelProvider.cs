@@ -149,10 +149,9 @@ public sealed class RoomModelProvider(
                 {
                     // A model character is a tile height in WHOLE units: '0'-'9' are 0..9 and 'a'-'z'
                     // continue at 10..35. Altitude.FromInt() is the hundredths converter that pairs
-                    // with Altitude.ToInt() (see RoomGrain.Furni.Edit's Altitude.FromInt(ZHundredths)),
-                    // so feeding it the raw tile height divided every model by 100 — a height-2 tile
-                    // became 0.02 and every room was effectively flat. Avatars and the HeightMap
-                    // composer both read these values, which is why players and pet placement ignored
+                    // with Altitude.ToInt(), so feeding it the raw tile height divided every model by
+                    // 100 — a height-2 tile became 0.02 and every room was effectively flat. Avatars
+                    // and the HeightMap composer both read these values, which is why players ignored
                     // the relief while the floor itself still rendered correctly: the client decodes
                     // the model string on its own for the floor planes.
                     int heightIndex = "abcdefghijklmnopqrstuvwxyz".IndexOf(ch);

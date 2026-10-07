@@ -4,7 +4,7 @@ namespace Vortex.Primitives.Permissions;
 
 /// <summary>
 /// The canonical, code-declared set of authorization capabilities. Capabilities are fine-grained,
-/// namespaced strings — the unit of authorization across both the game and the dashboard. Roles (in
+/// namespaced strings — the unit of authorization. Roles (in
 /// the database) map to sets of these; an account's effective rights are the union of its roles'
 /// capabilities. New features declare their own capability here so the set stays discoverable and
 /// typo-safe instead of being scattered rank checks.
@@ -68,12 +68,12 @@ public static class Capabilities
     }
 
     /// <summary>
-    /// Running the server itself, from its console: following it, editing its live config, and the
-    /// graceful quit. Held apart from each other because ending the session is felt by every player.
+    /// Running the server itself, from its console: reloading what it caches, and the graceful quit.
+    /// Held apart from each other because ending the session is felt by every player.
     /// </summary>
     public static class Server
     {
-        /// <summary>Edit and reload the live server config.</summary>
+        /// <summary>Reload plugins and reference caches (<c>reload</c>, <c>reload-plugin(s)</c>).</summary>
         public const string ConfigManage = "server.config.manage";
 
         /// <summary>Stop or restart the emulator (the graceful <c>quit</c> command).</summary>

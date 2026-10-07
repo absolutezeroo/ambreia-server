@@ -70,7 +70,7 @@ public class VortexEmulator(
     ///     The clustering configuration can form a multi-silo cluster; the application semantics
     ///     cannot yet (see <see cref="OrleansHostConfig.MultiSiloReady"/> for what exactly goes
     ///     stale). Nothing about that failure mode is loud — the hotel keeps serving, with one node
-    ///     handing out furniture definitions an admin replaced hours ago — so the second silo is
+    ///     handing out furniture definitions another node reloaded hours ago — so the second silo is
     ///     stopped here instead, where it is a startup error somebody reads.
     /// </summary>
     private async Task RefuseAnUndeclaredSecondSiloAsync(CancellationToken ct)

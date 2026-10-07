@@ -110,9 +110,8 @@ internal sealed class FakePlayerService : IWebApiPlayerService
 }
 
 /// <summary>
-/// Collects what the endpoints emit instead of persisting it. The real sink enqueues onto a
-/// channel drained by a background writer, so a test asserting against the database would be
-/// asserting against a race; what the endpoint is responsible for is the record it hands over.
+/// Collects what it is handed instead of persisting it. Nothing in the web API writes to the audit
+/// trail at the moment, so no test uses it.
 /// </summary>
 internal sealed class RecordingAuditSink : IAuditSink
 {

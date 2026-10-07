@@ -5,9 +5,8 @@ using Xunit;
 namespace Vortex.Hosting.Tests;
 
 /// <summary>
-/// Both HTTP surfaces carry credentials — the web API takes registrations and logins, the dashboard
-/// hands out a cookie that grants <c>dashboard.*</c> capabilities. Binding either to a non-local
-/// address without TLS puts all of that on the wire in cleartext, and it used to be a one-line
+/// The HTTP surface carries credentials — the web API takes registrations and logins. Binding it
+/// to a non-local address without TLS puts all of that on the wire in cleartext, and it used to be a one-line
 /// config change with nothing to stop it.
 /// </summary>
 public sealed class ListenerSecurityTests

@@ -18,11 +18,11 @@ namespace Vortex.Observability.Runtime;
 /// </summary>
 /// <remarks>
 /// Deletes in bounded batches rather than one statement per table: a single unqualified DELETE over
-/// months of history locks the table for as long as it takes, and the tables it walks are the ones
-/// the moderation tooling reads live.
+/// months of history locks the table for as long as it takes, and the tables it walks are written
+/// to live, on every room entry and every audited action.
 /// <para>
-/// Retention is per-table because the tables answer different questions. Chat and room visits are
-/// the privacy-bearing ones and expire soonest; the audit trail and item provenance are what a
+/// Retention is per-table because the tables answer different questions. Room visits are the
+/// privacy-bearing one and expire soonest; the audit trail and item provenance are what a
 /// dispute is settled with months later, so they keep longer. A retention of 0 disables ageing for
 /// that table, which is the default for item provenance -- an item's history is the item.
 /// </para>

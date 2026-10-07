@@ -81,7 +81,8 @@ public sealed class AuthenticationService(
                 return 0;
             }
 
-            // `IsLocked` tickets are persistent/CMS-managed and intentionally never touched here
+            // `IsLocked` tickets are persistent ones written outside the emulator (the web API only
+            // mints unlocked ones) and intentionally never touched here
             // (no slide, no single-use deletion, no expiry) — they are a separate mechanism from the
             // one-ticket-per-login-attempt flow this method otherwise implements.
             if (!entity.IsLocked)
@@ -97,8 +98,8 @@ public sealed class AuthenticationService(
                 {
                     // Refresh the expiry so the client can reconnect after a disconnect without a
                     // new ticket, while keeping the replay window bounded per use. Left default
-                    // (TicketSingleUse = false) for compatibility with CMS integrations that reuse
-                    // one ticket across reconnects.
+                    // (TicketSingleUse = false) because the client re-reads its ticket from ?sso= on
+                    // a page reload.
                     DateTime slidExpiry =
                         _ticketTtlSeconds > 0
                             ? now.AddSeconds(_ticketTtlSeconds)

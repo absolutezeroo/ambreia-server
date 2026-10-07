@@ -23,7 +23,7 @@ namespace Vortex.Plugins.Tests;
 /// <remarks>
 /// <para>
 /// A plugin's container is built empty on purpose, but that made anything substantial impossible to
-/// package as one: the dashboard alone constructor-injects some thirty services the host owns, and
+/// package as one: a plugin like the web API constructor-injects services the host owns, and
 /// rewriting every constructor to reach through <c>IHostServices</c> by hand is not a boundary, only
 /// a tax. <c>UseHostService&lt;T&gt;</c> is how a plugin borrows one and then injects it normally.
 /// </para>

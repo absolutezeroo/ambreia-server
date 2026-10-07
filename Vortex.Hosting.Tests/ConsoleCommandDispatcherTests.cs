@@ -18,7 +18,7 @@ namespace Vortex.Hosting.Tests;
 /// The operator commands used to be a private switch writing straight to <c>System.Console</c>,
 /// reachable only by typing into the process's stdin — untestable, and unusable from anywhere else.
 /// They now sit behind <see cref="IConsoleCommandDispatcher"/> with a caller-supplied output sink,
-/// which is what lets the dashboard console reach the same set under a capability check.
+/// which is what makes them testable here, and each declares the capability a caller would need.
 /// </summary>
 public sealed class ConsoleCommandDispatcherTests
 {
@@ -69,7 +69,7 @@ public sealed class ConsoleCommandDispatcherTests
 
     /// <summary>
     /// A capability that is not in the canonical list has no authorization policy behind it, so the
-    /// endpoint gating on it would throw at runtime rather than deny — the exact failure mode
+    /// caller gating on it would throw at runtime rather than deny — the exact failure mode
     /// <c>Capabilities.Server.All</c> exists to prevent.
     /// </summary>
     [Fact]

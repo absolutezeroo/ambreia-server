@@ -17,10 +17,10 @@ namespace Vortex.Rooms.Tests.Furniture;
 
 /// <summary>
 /// A furniture's stuff data format comes from its definition, and the room has to agree with the
-/// inventory about that. It did not: FurnitureLogic hardcoded the legacy format and no logic class
+/// database about that. It did not: FurnitureLogic hardcoded the legacy format and no logic class
 /// ever overrode it, so a crackable arrived in the room as a legacy bag and its counters had
 /// nowhere to live -- the room logged "does not carry crackable stuff data" on every click while
-/// the database said format 7 and the inventory honoured it.
+/// the database said format 7.
 /// </summary>
 public sealed class FurnitureLogicStuffDataTypeTests
 {

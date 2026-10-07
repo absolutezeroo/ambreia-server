@@ -9,7 +9,7 @@ namespace Vortex.Database.Backup;
 
 /// <summary>
 /// Takes a dump every <see cref="DatabaseBackupConfig.IntervalHours"/>, starting one interval after
-/// boot rather than at boot: a hotel that restarts repeatedly would otherwise spend its startup
+/// boot rather than at boot: a server that restarts repeatedly would otherwise spend its startup
 /// dumping, and push the useful history out of the retention window while doing it.
 /// </summary>
 public sealed class DatabaseBackupScheduler(

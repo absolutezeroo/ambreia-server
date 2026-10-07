@@ -25,7 +25,7 @@ public sealed class AuthenticationConfig
     /// <summary>
     /// Fallback TTL (seconds) applied when a ticket has no <c>expires_at</c> column value.
     /// Tickets older than this are rejected as expired. Set to 0 to disable the fallback and
-    /// accept null-expiry tickets unconditionally (legacy / external CMS compatibility).
+    /// accept null-expiry tickets unconditionally.
     /// Default: 30 seconds — tight enough to prevent replay, long enough for slow connections.
     /// </summary>
     public int TicketTtlSeconds { get; init; } = 30;

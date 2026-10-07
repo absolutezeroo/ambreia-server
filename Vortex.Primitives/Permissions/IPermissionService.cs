@@ -4,14 +4,14 @@ using System.Threading.Tasks;
 namespace Vortex.Primitives.Permissions;
 
 /// <summary>
-/// Single authorization choke point shared by the game and the dashboard. Resolves a subject's
+/// Single authorization choke point. Resolves a subject's
 /// effective <see cref="PermissionSet"/> (account roles -&gt; capabilities), with caching and explicit
 /// invalidation when roles change. Callers ask the returned set whether it holds a capability rather
 /// than testing ranks.
 /// </summary>
 public interface IPermissionService
 {
-    /// <summary>Effective permissions for an account (the dashboard/login subject).</summary>
+    /// <summary>Effective permissions for an account.</summary>
     Task<PermissionSet> ResolveForAccountAsync(int accountId, CancellationToken ct = default);
 
     /// <summary>Effective permissions for a player's owning account (the in-game subject).</summary>

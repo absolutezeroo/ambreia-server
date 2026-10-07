@@ -120,8 +120,7 @@ public sealed partial class RoomFurniModule(RoomGrain roomGrain)
 
         await item.Logic.OnUseAsync(ctx, param, ct);
 
-        // A player-driven "use" feeds the wired "furni is used" (USE_STUFF) trigger. Distinct from
-        // RoomItemStateChangedEvent, which fires for any state change and carries no using player.
+        // A player-driven "use", for room event listeners. Distinct from RoomItemStateChangedEvent, which fires for any state change and carries no using player.
         await _roomGrain.PublishRoomEventAsync(
             new RoomItemUsedEvent
             {

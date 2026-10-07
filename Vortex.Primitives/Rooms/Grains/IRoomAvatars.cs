@@ -11,7 +11,7 @@ using Vortex.Primitives.Rooms.Snapshots.Avatars;
 
 namespace Vortex.Primitives.Rooms.Grains;
 
-/// <summary>Avatars present in the room: their lifecycle, movement, posture and chat.</summary>
+/// <summary>Avatars present in the room: their lifecycle, movement and posture.</summary>
 [Alias("Vortex.Primitives.Rooms.Grains.IRoomAvatars")]
 public interface IRoomAvatars : IGrainWithIntegerKey
 {

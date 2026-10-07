@@ -10,9 +10,8 @@ using Vortex.Primitives.Events;
 namespace Vortex.Observability.Events;
 
 /// <summary>
-/// Persists the structured room-visit history the staff moderation tool's
-/// GetRoomVisitsMessageHandler/GetRoomChatlogMessageHandler need (a real append-only log, not
-/// something to reconstruct by parsing the generic <see cref="Vortex.Primitives.Observability.AuditEvent"/>
+/// Persists the structured room-visit history: who entered which room and when they left (a real
+/// append-only log, not something to reconstruct by parsing the generic <see cref="Vortex.Primitives.Observability.AuditEvent"/>
 /// JSON blob that <see cref="SessionLifecycleAuditHandlers"/> also writes from these same events).
 /// </summary>
 public sealed class RoomVisitLogEnteredHandler(IDbContextFactory<VortexDbContext> dbCtxFactory)

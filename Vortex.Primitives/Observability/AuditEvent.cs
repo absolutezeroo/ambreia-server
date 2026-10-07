@@ -10,7 +10,7 @@ public readonly record struct AuditEvent
 {
     public required AuditCategory Category { get; init; }
 
-    /// <summary>Stable action key, for example "auth.login.failed" or "staff.ban".</summary>
+    /// <summary>Stable action key, for example "auth.login.failed" or "session.connected".</summary>
     public required string Action { get; init; }
 
     public CorrelationId CorrelationId { get; init; }

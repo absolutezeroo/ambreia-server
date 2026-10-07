@@ -31,8 +31,8 @@ public abstract class FurnitureLogic<TObject, TSelf, TContext>
     /// <para>
     /// This used to be a hardcoded <see cref="StuffDataType.LegacyKey"/> that nothing ever
     /// overrode, so a definition's <c>stuff_data_type</c> decided the format everywhere except in
-    /// the room: the inventory built a crackable's data from the column while the room handed the
-    /// same furniture a legacy bag, and the crackable logic then found no counters to write to.
+    /// the room: the room handed every furniture a legacy bag, and a logic expecting another format
+    /// then found nothing of its own to write to.
     /// Note how close this reads to <see cref="_stuffPersistanceType"/> above -- overriding that one
     /// and believing the format had been set with it is exactly how the two came apart.
     /// </para>
@@ -71,9 +71,9 @@ public abstract class FurnitureLogic<TObject, TSelf, TContext>
     /// </summary>
     /// <remarks>
     /// <see cref="SetStateAsync"/> writes the new state <i>over</i> the legacy string, so cycling a
-    /// furni whose data is not a state does not merely misread it — it destroys it. A photo's json, a
-    /// sticky's text and colour: one click and the wall item is the string "1", persisted and
-    /// broadcast, with the original gone. Empty counts as a state on purpose, because a multistate
+    /// furni whose data is not a state does not merely misread it — it destroys it. A json payload,
+    /// a free text: one click and the item is the string "1", persisted and broadcast, with the
+    /// original gone. Empty counts as a state on purpose, because a multistate
     /// furni nobody has used yet is exactly that and still has to toggle to 1.
     /// </remarks>
     protected bool CarriesAState()
@@ -137,9 +137,8 @@ public abstract class FurnitureLogic<TObject, TSelf, TContext>
     /// <remarks>
     /// The first line is not a formality. <see cref="StuffDataBase.GetSnapshot" /> caches, and
     /// <c>IMapStuffData.Data</c> / <c>INumberStuffData.Data</c> hand out the live collection — so
-    /// every caller that writes a key and then persists (the wired chest's settings, a mannequin's
-    /// figure and name, a toner's colours) saved the new value to the database and broadcast the
-    /// *previous* snapshot. The furni came back one edit behind, for everyone, and nothing threw.
+    /// every caller that writes a key and then persists (a map or number stuff data edited in
+    /// place) saved the new value to the database and broadcast the *previous* snapshot. The furni came back one edit behind, for everyone, and nothing threw.
     /// Marking dirty here rather than in each of those callers is the point: this method is what
     /// "the stuff data changed" already means, and the next writer gets it for free.
     /// </remarks>

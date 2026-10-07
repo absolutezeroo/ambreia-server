@@ -230,8 +230,8 @@ public sealed partial class RoomAvatarModule(RoomGrain roomGrain)
         int? targetZKey = null
     )
     {
-        // A frozen avatar (wired freeze-user box, a Freeze hit) starts no walk. The in-flight walk
-        // was already stopped by whoever set the lock.
+        // A movement-locked avatar starts no walk. Nothing sets the lock yet; whoever does is
+        // expected to stop the in-flight walk itself.
         if (avatar.IsMovementLocked)
         {
             return false;
@@ -372,7 +372,7 @@ public sealed partial class RoomAvatarModule(RoomGrain roomGrain)
     /// Cancels an avatar's walk outright: clears its queued path, goal and move status without taking
     /// the pending step <see cref="StopWalkingAsync"/> would apply first.
     /// <para>
-    /// Used when something relocates an avatar instantly (a wired teleport / move-user). The walk tick
+    /// For something that relocates an avatar instantly (a teleport); nothing calls it yet. The walk tick
     /// consumes <c>TilePath[0]</c> each step, and that path was computed from the tile the avatar just
     /// left — so leaving it in place makes the avatar walk straight back towards its old goal, which
     /// looks exactly like the teleport being undone.
@@ -532,7 +532,7 @@ public sealed partial class RoomAvatarModule(RoomGrain roomGrain)
     /// room only ever learns about a dance through <see cref="DanceMessageComposer"/> — without
     /// this the other clients keep rendering the dance of someone who has sat down, and see
     /// nothing when they stand back up. Call it after any posture change with the dance the avatar
-    /// had beforehand.
+    /// had beforehand. No packet starts a dance yet; the state is kept for when one does.
     /// </summary>
     /// <remarks>
     /// This was <c>BroadcastDanceIfCleared</c> and returned early when the previous dance was

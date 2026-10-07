@@ -7,16 +7,15 @@ namespace Vortex.Database.Backup;
 ///
 /// <para>
 /// Bootstrap configuration rather than an admin-editable table on purpose: a backup that can be
-/// turned off, redirected or starved of retention from the same dashboard whose mistakes it exists
-/// to undo is not a safety net. The one thing an operator can do from the dashboard is ask for an
-/// extra backup now.
+/// turned off, redirected or starved of retention from the same admin surface whose mistakes it
+/// exists to undo is not a safety net.
 /// </para>
 /// </summary>
 public sealed class DatabaseBackupConfig
 {
     public const string SECTION_NAME = "Vortex:Database:Backup";
 
-    /// <summary>Off unless a hotel opts in — a dump needs a writable disk and a mysqldump binary,
+    /// <summary>Off unless a deployment opts in — a dump needs a writable disk and a mysqldump binary,
     /// neither of which can be assumed.</summary>
     public bool Enabled { get; set; }
 
@@ -27,8 +26,8 @@ public sealed class DatabaseBackupConfig
     /// <summary>Directory the dumps are written to. Created if missing.</summary>
     public string OutputDirectory { get; set; } = "backups";
 
-    /// <summary>Hours between scheduled dumps. Zero disables the schedule while leaving the manual
-    /// trigger usable.</summary>
+    /// <summary>Hours between scheduled dumps. Zero disables the schedule, and with it every dump:
+    /// nothing else triggers one.</summary>
     [Range(0, 24 * 30)]
     public int IntervalHours { get; set; } = 24;
 

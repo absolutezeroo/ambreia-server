@@ -9,11 +9,11 @@ namespace Vortex.Primitives.Events;
 /// </param>
 /// <param name="LogicName">The definition's logic key, e.g. <c>furniture_floor_hole</c>.</param>
 /// <param name="KindsInRoom">
-/// Distinct definitions in the room after the placement — "a room with %limit% different furni".
+/// Distinct definitions in the room after the placement.
 /// </param>
 /// <param name="SameLogicInRoom">
-/// Items in the room sharing <paramref name="LogicName"/>, this one included — "%limit% floor hole
-/// furni". Counts only the room knows, so they ride on the event.
+/// Items in the room sharing <paramref name="LogicName"/>, this one included. Counts only the room
+/// knows, so they ride on the event; nothing reads either today.
 /// </param>
 public sealed record ItemPlacedEvent(
     int ItemId,
@@ -36,9 +36,9 @@ public sealed record RoomDecoratedEvent(int PlayerId, int RoomId, string Propert
 /// A player stepped onto a piece of floor furniture.
 /// </summary>
 /// <remarks>
-/// Published from the base floor logic, so every floor item raises it. It fires very often -- once
-/// per tile walked onto -- which is why the reward-track bridge checks its action index before it
-/// does anything at all: with no content listening, this costs one hash lookup.
+/// Published from the room's walk tick, so every floor item raises it, for players only. It fires
+/// very often -- once per tile walked onto -- and nothing subscribes today, so it is a publish into
+/// an empty handler list. A subscriber added later must stay that cheap.
 /// </remarks>
 public sealed record PlayerWalkedOnFurniEvent(
     int PlayerId,
@@ -52,22 +52,20 @@ public sealed record PlayerWalkedOnFurniEvent(
 /// </summary>
 /// <remarks>
 /// <para>
-/// One per piece of furniture around the tile, so a step in a furnished room raises several. That
-/// is affordable for exactly one reason: like <see cref="PlayerWalkedOnFurniEvent"/>, the tile is
-/// only scanned at all once the interest gate has said some content names the action. With none,
-/// a step costs one hash lookup and no scan happens.
+/// One per piece of furniture around the tile, so a step in a furnished room raises several. The
+/// tile is scanned on every step; like <see cref="PlayerWalkedOnFurniEvent"/>, it stays affordable
+/// only because nothing subscribes today.
 /// </para>
 /// <para>
 /// <paramref name="Relation"/> is measured from the furniture, never from the room — see
-/// <c>RelativePositions</c>. <paramref name="Figure"/> rides along because the whole point of
-/// answering this in one signal is that everything it claims is true at the same instant: "barefoot,
-/// in front of the television" written as two steps is two moments, and the shoes can go back on in
-/// between.
+/// <c>RelativePositions</c>. <paramref name="Figure"/> rides along so that everything this one
+/// signal claims is true at the same instant: "barefoot, in front of the television" read from two
+/// signals is two moments, and the shoes can go back on in between.
 /// </para>
 /// <para>
-/// <paramref name="Posture"/> rides along for exactly that reason. "Seated in front of it" is the
-/// shape Habbo's own events ask for, and split across two steps it stops being one: a player can
-/// sit down, stand up and walk over, and satisfy both.
+/// <paramref name="Posture"/> rides along for exactly that reason. "Seated in front of it" split
+/// across two signals stops being one: a player can sit down, stand up and walk over, and satisfy
+/// both.
 /// </para>
 /// </remarks>
 public sealed record PlayerStoodNearFurniEvent(

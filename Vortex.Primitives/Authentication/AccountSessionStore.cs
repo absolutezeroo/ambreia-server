@@ -6,23 +6,17 @@ using System.Threading;
 namespace Vortex.Primitives.Authentication;
 
 /// <summary>
-/// In-memory table of authenticated sessions, keyed by an opaque token. Two of these existed --
-/// one for the dashboard, one for the player-facing web API -- and they had drifted apart in every
-/// way that matters: one minted 256 cryptographic bits and the other a GUID, one took its lifetime
-/// from configuration and the other hard-coded a day, one swept expired entries and the other only
-/// dropped them if someone happened to ask. That is the same duplication that let a second factor
-/// guard one login and not the other, one layer up.
+/// In-memory table of authenticated sessions, keyed by an opaque token of 256 cryptographic bits.
+/// The web API's session store sits on top of it.
 ///
 /// <para>
-/// So the mechanics live here once and the two stores keep their own shapes on top: what a session
-/// carries besides an account id is <typeparamref name="TState" />, and how long it lasts is the
-/// caller's to choose. Sessions do not survive a restart, which is deliberate -- nothing persistent
-/// means no token to steal from a table.
+/// What a session carries besides an account id is <typeparamref name="TState" />, and how long it
+/// lasts is the caller's to choose. Sessions do not survive a restart, which is deliberate --
+/// nothing persistent means no token to steal from a table.
 /// </para>
 /// </summary>
 /// <typeparam name="TState">
-/// What the session remembers besides the account: the operator's email for the dashboard, the
-/// selected avatar for the web API.
+/// What the session remembers besides the account: the selected avatar, for the web API.
 /// </typeparam>
 public sealed class AccountSessionStore<TState>
 {
@@ -144,9 +138,9 @@ public sealed class AccountSessionStore<TState>
     }
 
     /// <summary>
-    /// Drops every session of an account and reports how many. This is what a password change, a
-    /// ban or a cleared second factor needs: revoking the credential is only half of it while the
-    /// sessions it already opened keep answering.
+    /// Drops every session of an account and reports how many. This is what revoking a credential
+    /// needs: revoking it is only half of it while the sessions it already opened keep answering.
+    /// Nothing calls it today.
     /// </summary>
     public int RemoveAllForAccount(int accountId)
     {
@@ -171,7 +165,7 @@ public sealed class AccountSessionStore<TState>
         }
     }
 
-    /// <summary>Live session count. Exposed for the dashboard's own operator-session view.</summary>
+    /// <summary>Live session count.</summary>
     public int Count
     {
         get

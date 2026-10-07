@@ -15,13 +15,13 @@ using Vortex.Tests.Support;
 namespace Vortex.Rooms.Tests.Support;
 
 /// <summary>
-/// Places a real game component on a real tile of the harness room: the item lands in
+/// Places a real logic component on a real tile of the harness room: the item lands in
 /// <c>ItemsById</c>, on the tile's floor stack and in the item index, which is exactly the three
 /// places <c>RoomObjectModule</c> puts it in production.
 /// <para>
-/// It exists because a game's rules are only half the story — the other half is that the runtime
-/// finds the furniture through the arena and the map, and a test that hand-fed a component to a
-/// module would never exercise either.
+/// A test that hand-fed a component to a module would never exercise how the runtime finds the
+/// furniture through the item index and the map. Nothing uses this helper since the games were
+/// removed in the cut of 2026-10-07.
 /// </para>
 /// </summary>
 internal static class GameFurni
@@ -69,9 +69,8 @@ internal static class GameFurni
         IExtraData extraData = new ExtraData(null);
         object? logicRef = null;
 
-        // The position is mutable, because the room really does move some of this furniture: a
-        // football is slid tile by tile through the map module, and a fake with a fixed X would make
-        // every movement assertion pass by accident.
+        // The position is mutable, because the room can move furniture through the map module, and
+        // a fake with a fixed X would make every movement assertion pass by accident.
         int[] position = [x, y];
 
         IRoomFloorItem item = FakeProxy.Create<IRoomFloorItem>(call =>
@@ -106,7 +105,7 @@ internal static class GameFurni
                 "get_RoomObject" => item,
                 "get_ObjectId" => objectId,
                 "get_RoomId" => harness.Grain.RoomId,
-                // The room itself, through the two narrow contracts a component may use.
+                // The room itself, through the narrow contracts a component may use.
                 "get_Game" => harness.Grain,
                 "get_Map" => harness.Grain,
                 "get_Lookup" => harness.Grain,
@@ -131,8 +130,7 @@ internal static class GameFurni
         return logic;
     }
 
-    /// <summary>Takes a component back out again — the pickup path, for the tests that check what a
-    /// match does when its arena is dismantled underneath it.</summary>
+    /// <summary>Takes a component back out again — the pickup path.</summary>
     public static void Remove(RoomHarness harness, IRoomItem item, int x, int y)
     {
         harness.Grain._state.ItemsById.Remove(item.ObjectId);

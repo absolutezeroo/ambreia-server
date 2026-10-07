@@ -13,9 +13,8 @@ namespace Vortex.Rooms.Events;
 
 /// <summary>
 /// The fifth extension point: an assembly can contribute <see cref="IRoomEventListener" />s and so
-/// observe what happens inside a room. Without it the in-room event stream was reachable only from
-/// the three systems <c>RoomGrain</c> attaches by hand, and a plugin could not see a chat line, a
-/// click, or a wired stack firing at all.
+/// observe what happens inside a room. It is the only way in: <c>RoomGrain</c> attaches no
+/// listener of its own, so without it a plugin could not see a furni use or a state change at all.
 /// </summary>
 internal sealed class RoomEventListenerFeatureProcessor(
     IRoomEventListenerProvider roomEventListenerProvider,

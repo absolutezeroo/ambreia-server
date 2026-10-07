@@ -27,9 +27,13 @@ namespace Vortex.Rooms.Object.Logic.Furniture.Wall;
 /// (<c>parseInt(fields[0]) - 1</c> in <c>dispatchColorUpdateEvent</c>), so an off lamp writes 1 and
 /// an on lamp 2; writing 0/1 there leaves the client showing an off lamp for both.
 /// <para>
-/// The other two presets are not on that string at all — the client only learns them from
-/// <c>RoomDimmerPresets</c> when the dialog opens — so they live in the item's own extra-data
-/// section and never touch stuff data.
+/// The other two presets are not on that string at all — the client only learns them from the
+/// presets packet when its dialog opens — so they live in the item's own extra-data section and
+/// never touch stuff data.
+/// </para>
+/// <para>
+/// The dimmer dialog's packets have no handler since the cut of 2026-10-07: only tests call
+/// <see cref="TogglePowerAsync"/> and <see cref="SavePresetAsync"/>.
 /// </para>
 /// </remarks>
 [RoomObjectLogic("furniture_roomdimmer")]

@@ -20,9 +20,9 @@ namespace Vortex.WebApi.Http;
 /// WITH a body: <c>TypedResults.Unauthorized()</c> and <c>Forbid()</c> write no content.
 /// </para>
 /// <para>
-/// The body at 401 is load-bearing here: the second-factor prompt is a 401 carrying
-/// <c>pocket.auth.mfa_required</c>, and the site tells it apart from a wrong password by that string
-/// alone. <c>TypedResults.Json(…, statusCode: 401)</c> would compile, but
+/// The body at 401 is load-bearing here: the site tells a wrong password
+/// (<c>pocket.auth.invalid_login</c>) apart from a missing session by that string alone.
+/// <c>TypedResults.Json(…, statusCode: 401)</c> would compile, but
 /// <c>JsonHttpResult&lt;T&gt;</c> reports its status to the API explorer as 200 — the document would
 /// claim a 200 that never happens and omit the 401 that does.
 /// </para>
@@ -66,7 +66,7 @@ public abstract class ApiErrorResult : IResult, IStatusCodeHttpResult
     }
 }
 
-/// <summary>401 — no session, a bad password, or the second factor still owed.</summary>
+/// <summary>401 — no session, or a bad password.</summary>
 public sealed class UnauthorizedError(string errorCode)
     : ApiErrorResult(errorCode),
         IEndpointMetadataProvider

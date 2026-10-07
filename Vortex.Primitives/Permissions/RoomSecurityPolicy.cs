@@ -11,6 +11,7 @@ namespace Vortex.Primitives.Permissions;
 /// <see cref="Capabilities.Room.BuildAny"/> reaches owner so build/pickup checks pass regardless of the
 /// room owner. Guild standing layers on top of — and never displaces — the classic per-room rights
 /// fallback: a rights-holder in a guild room keeps at least <see cref="RoomControllerType.Rights"/>.
+/// Guilds left with the cut of 2026-10-07, so the room always passes <see cref="RoomGroupContext.None"/>.
 /// </summary>
 public static class RoomSecurityPolicy
 {

@@ -17,9 +17,8 @@ public interface ISessionGateway
     /// Whether one player is connected.
     /// </summary>
     /// <remarks>
-    /// The question the dashboard's player profile asks, and it used to be answered by copying every
-    /// online player id into an array and scanning it. On a full hotel that is an allocation
-    /// proportional to the population, per lookup, for a boolean.
+    /// One map lookup, where copying <see cref="GetOnlinePlayerIds"/> and scanning it would allocate
+    /// in proportion to the population, per lookup, for a boolean.
     /// </remarks>
     public bool IsOnline(PlayerId playerId);
 
@@ -29,9 +28,8 @@ public interface ISessionGateway
     /// <remarks>
     /// Not the same as <see cref="GetActiveSessionCount"/>, which counts sockets: a player with two
     /// windows open is one player and two sessions. Separate from
-    /// <see cref="GetOnlinePlayerIds"/> because three callers only ever wanted the number — the
-    /// concurrent-users quest, its reward, and the connection gauge, which is read on every metrics
-    /// scrape and was allocating the whole list to call <c>.Count</c> on it.
+    /// <see cref="GetOnlinePlayerIds"/> because the connection gauge only wants the number, and it is
+    /// read on every metrics scrape: allocating the whole list to call <c>.Count</c> on it was waste.
     /// </remarks>
     public int GetOnlinePlayerCount();
 

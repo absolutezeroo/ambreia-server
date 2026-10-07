@@ -14,9 +14,8 @@ using Vortex.WebApi.Services;
 namespace Vortex.WebApi.Hosting;
 
 /// <summary>
-/// Serves the hotel's website off this same listener when
-/// <see cref="WebApiConfig.SiteRoot"/> points at its built <c>dist/</c>, and adds the one server-side
-/// page the site cannot produce for itself: the share URL that carries Open Graph tags.
+/// Serves the website off this same listener when <see cref="WebApiConfig.SiteRoot"/> points at its
+/// built <c>dist/</c>: static files, plus an <c>index.html</c> fallback for the SPA's routes.
 /// </summary>
 /// <remarks>
 /// Same origin as <c>/api</c> is the whole point. The session is an HttpOnly cookie; a site served

@@ -14,10 +14,10 @@ using Vortex.Primitives.Server.Grains;
 namespace Vortex.Players.Grains;
 
 /// <summary>
-/// Single-activation config store. Caches all rows in memory on activation and keeps the cache
-/// authoritative via write-through in <see cref="SetValueAsync"/>, so an admin edit is live for
-/// every reader immediately (no reload dance) — including across a multi-node cluster, since Orleans
-/// guarantees one activation.
+/// Single-activation config store. Caches all rows in memory on activation; <see cref="SetValueAsync"/>
+/// writes through (DB then cache), so a write is live for every reader at once, across a cluster
+/// too, since Orleans guarantees one activation. Nothing calls it today: a row edited in the
+/// database is picked up on the next activation or by <see cref="ReloadAsync"/>.
 /// </summary>
 internal sealed class ServerConfigGrain(
     IDbContextFactory<VortexDbContext> dbCtxFactory,

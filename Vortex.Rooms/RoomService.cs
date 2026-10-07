@@ -67,8 +67,8 @@ internal sealed partial class RoomService(
             .ConfigureAwait(false);
 
         // Only an entry still in flight is a duplicate worth dropping. Once the player is in, the
-        // same room id means a reload -- the navigator forwards to the room you are standing in as
-        // readily as to any other -- and by the time this arrives RoomSessionManager.createSession
+        // same room id means a reload -- the client asks for the room you are standing in as
+        // readily as for any other -- and by the time this arrives RoomSessionManager.createSession
         // has already disposed the session and purged the room content. Returning early there left
         // the client on a black screen with nothing left to ask for.
         if (pendingRoom.RoomId == roomId && !pendingRoom.Approved)
@@ -78,15 +78,12 @@ internal sealed partial class RoomService(
 
         await playerPresence.ClearActiveRoomAsync(ct).ConfigureAwait(false);
 
-        // Pending, not approved: the gates below have not run yet. This used to claim approval here
-        // and never take it back on the doorbell path, where the request legitimately stays pending
-        // while the room is asked -- so a ringer who asked for the entry payload without waiting
-        // for an answer was handed it and walked in. Approval is granted in CompleteRoomEntryAsync,
-        // the one place every admission passes through.
+        // Pending, not approved: the gates below have not run yet. Approval is granted in
+        // CompleteRoomEntryAsync, the one place every admission passes through.
         await playerPresence.SetPendingRoomAsync(roomId, false).ConfigureAwait(false);
 
         // Room entry is the one flow that legitimately spans the room: core activation, the
-        // security gate and the avatar list take part. This is what the
+        // controller level and the avatar list take part. This is what the
         // IRoomGrain aggregate is for -- narrowing it here would mean four references, not less
         // coupling.
         IRoomGrain room = _grainFactory.GetRoomGrain(roomId);
@@ -145,10 +142,9 @@ internal sealed partial class RoomService(
     {
         IPlayerPresenceGrain playerPresence = _grainFactory.GetPlayerPresenceGrain(playerId);
 
-        // The last gate, and the only one outside code can add. Placed here rather than in
-        // OpenRoomForPlayerIdAsync so it also covers the doorbell path: a player let in by an owner
-        // arrives through this method and nowhere else. Nothing has been sent to the client yet, so
-        // a refusal here looks exactly like a locked door refusing.
+        // The last gate, and the only one outside code can add. Placed here, the one place every
+        // admission passes through. Nothing has been sent to the client yet, so a refusal here
+        // looks exactly like a locked door refusing.
         EventContext entering = await _cancellableEvents
             .PublishCancellableAsync(new PlayerEnteringRoomEvent(playerId, roomId.Value), ct)
             .ConfigureAwait(false);
@@ -173,7 +169,7 @@ internal sealed partial class RoomService(
         }
 
         // Builds the whole entry payload -- core, security, avatars, map and furni. Deliberately
-        // the aggregate; see EnterRoomAsync above.
+        // the aggregate; see OpenRoomForPlayerIdAsync above.
         IRoomGrain room = _grainFactory.GetRoomGrain(roomId);
 
         RoomSnapshot snapshot = await room.GetSnapshotAsync().ConfigureAwait(false);
@@ -237,9 +233,8 @@ internal sealed partial class RoomService(
                 new FloorHeightMapMessageComposer
                 {
                     ScaleType = _roomConfig.DefaultRoomScale,
-                    // The room's own, as its floor plan editor saved it. This was the config's 0
-                    // for every room -- fixed walls at the lowest height -- so a height picked in
-                    // the editor was stored, read back nowhere, and gone on the next entry.
+                    // The room's own, from its row. This was the config's 0 for every room --
+                    // fixed walls at the lowest height -- so a stored height was read back nowhere.
                     FixedWallsHeight = snapshot.WallHeight,
                     ModelData = mapSnapshot.ModelData,
                     AreaHideData = [],
@@ -270,8 +265,8 @@ internal sealed partial class RoomService(
             .ConfigureAwait(false);
 
         // None of a dance, a worn effect or a hand item is part of the Users payload, so each one
-        // has to be replayed for the player walking in. Bots dance too, and their dance is as
-        // absent from that payload as a player's.
+        // has to be replayed for the player walking in. A bot's dance is as absent from that
+        // payload as a player's.
         IComposer[] replayComposers =
         [
             .. avatarSnapshots
@@ -373,8 +368,7 @@ internal sealed partial class RoomService(
 
         // Approved only once the player is genuinely in. Every gate above answered, the payload is
         // sent and the avatar exists, so the flag means exactly one thing: this player was admitted
-        // here. Granting it any earlier reopens the hole it closes -- a request stays pending for as
-        // long as a locked room's doorbell rings.
+        // here. Granting it any earlier approves a request a gate above may still refuse.
         await playerPresence.SetPendingRoomAsync(roomId, true).ConfigureAwait(false);
     }
 

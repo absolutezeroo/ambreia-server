@@ -118,9 +118,8 @@ public sealed class ReferenceDataReloaderTests
     [Fact]
     public async Task A_grain_held_cache_is_reloadable_under_the_same_word()
     {
-        // Fishing definitions and mystery box pools live in a grain rather than in a provider
-        // singleton, which is the only reason each had its own console command. They are named
-        // caches here so `reload` is one word for the whole idea.
+        // A cache held by a grain rather than by a provider singleton is passed in as a named
+        // cache, so `reload` stays one word for the whole idea. The key is only a sample name.
         int calls = 0;
         ReferenceDataReloader reloader = Reloader(
             [],
@@ -149,7 +148,7 @@ public sealed class ReferenceDataReloaderTests
     [Fact]
     public void Providers_are_listed_in_a_stable_order()
     {
-        // Read by a human choosing one of twenty-nine names.
+        // Read by a human choosing one of the names.
         Reloader([new BrokenProvider(), new FakeProvider()])
             .Providers.Should()
             .ContainInOrder(nameof(BrokenProvider), nameof(FakeProvider));
@@ -159,11 +158,10 @@ public sealed class ReferenceDataReloaderTests
     /// Two closed generics of one open type are two separate caches and must answer to two names.
     /// </summary>
     /// <remarks>
-    /// This is the catalogue bug. <c>Type.Name</c> renders both
-    /// <c>GenericProvider&lt;NormalTag&gt;</c> and <c>GenericProvider&lt;OtherTag&gt;</c> as
-    /// <c>GenericProvider`1</c>, they collided in the name table, and the second replaced the
-    /// first — so the normal catalogue, which every player reads, could not be reloaded by any
-    /// name while `reload` still listed something that looked like it.
+    /// <c>Type.Name</c> renders both <c>GenericProvider&lt;NormalTag&gt;</c> and
+    /// <c>GenericProvider&lt;OtherTag&gt;</c> as <c>GenericProvider`1</c>; named that way they
+    /// would collide in the name table, and one cache could not be reloaded by any name while
+    /// `reload` still listed something that looked like it.
     /// </remarks>
     [Fact]
     public async Task Two_closed_generics_of_one_type_get_one_name_each()
@@ -191,7 +189,7 @@ public sealed class ReferenceDataReloaderTests
     [Fact]
     public void A_non_generic_provider_keeps_its_plain_type_name()
     {
-        // The other twenty-eight. Nobody should have to type angle brackets for those.
+        // Nobody should have to type angle brackets for a provider that is not generic.
         Reloader([new FakeProvider()]).Providers.Should().Equal(nameof(FakeProvider));
     }
 

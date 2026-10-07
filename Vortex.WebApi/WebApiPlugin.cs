@@ -29,22 +29,20 @@ namespace Vortex.WebApi;
 /// </summary>
 /// <remarks>
 /// <para>
-/// <b>A LOADABLE plugin, not a compiled-in module</b> — the same conversion the dashboard went
-/// through. It used to be an <c>IHostPluginModule</c> that <c>Vortex.Main</c> referenced and
-/// registered at startup; as an <see cref="IVortexPlugin"/> it is a folder with a
-/// <c>manifest.json</c> that PluginManager loads, and can unload and reload while the hotel runs.
+/// <b>A LOADABLE plugin, not a compiled-in module</b>. It used to be an <c>IHostPluginModule</c>
+/// that <c>Vortex.Main</c> referenced and registered at startup; as an <see cref="IVortexPlugin"/>
+/// it is a folder with a <c>manifest.json</c> that PluginManager loads, and can unload and reload
+/// while the server runs.
 /// </para>
 /// <para>
-/// The two rules the dashboard's remarks spell out hold here unchanged. <b>Nothing in the host may
-/// reference this assembly</b>, or <c>ByteLoadingAlc</c> hands it to the default context and it can
-/// never unload. And <b>nothing in the host may hold one of its objects</b>: the session store used
-/// to be registered in the host as an <see cref="IAccountSessionRevoker"/>, and now goes out through
-/// <see cref="BindExportsAsync"/> instead.
+/// Two rules keep it unloadable. <b>Nothing in the host may reference this assembly</b>, or
+/// <c>ByteLoadingAlc</c> hands it to the default context and it can never unload. And <b>nothing in
+/// the host may hold one of its objects</b>: anything the host needs back would go out through
+/// <see cref="BindExportsAsync"/>, which today publishes nothing.
 /// </para>
 /// <para>
-/// Unloading it drops every web session — they live in <see cref="WebApiSessionStore"/>, in memory —
-/// and closes every notification stream. The game is untouched: the client talks to the emulator's
-/// own socket, not to this.
+/// Unloading it drops every web session — they live in <see cref="WebApiSessionStore"/>, in memory.
+/// The game is untouched: the client talks to the emulator's own socket, not to this.
 /// </para>
 /// </remarks>
 public sealed class WebApiPlugin : IVortexPlugin
@@ -70,8 +68,8 @@ public sealed class WebApiPlugin : IVortexPlugin
 
         services.AddSingleton<IValidateOptions<WebApiConfig>, WebApiConfigValidator>();
 
-        // Its own rather than the host's, as the dashboard does: a guard object with no shared state.
-        // `Required` still takes the hotel down — the guard stops the borrowed host lifetime.
+        // Its own rather than the host's: a guard object with no shared state.
+        // `Required` still takes the server down — the guard stops the borrowed host lifetime.
         services.TryAddSingleton<RequiredServiceGuard>();
 
         services.TryAddSingleton<WebApiSessionStore>();
@@ -83,10 +81,10 @@ public sealed class WebApiPlugin : IVortexPlugin
     }
 
     /// <summary>
-    /// Everything the web API needs from the hotel, declared once.
+    /// Everything the web API needs from the host, declared once.
     /// </summary>
     /// <remarks>
-    /// This list is the contract between the web API and the hotel: every constructor parameter of
+    /// This list is the contract between the web API and the host: every constructor parameter of
     /// the types registered above, plus every service <c>WebApiWebHost.ForwardSingletons</c> hands
     /// the Kestrel app, that the plugin does not register itself. PluginManager checks each entry at
     /// activation, and <c>WebApiPluginContainerTests</c> fails on a miss before anything ships.
@@ -98,7 +96,7 @@ public sealed class WebApiPlugin : IVortexPlugin
         services.UseHostService<IHostEnvironment>();
         services.UseHostService<IHostApplicationLifetime>();
 
-        // Data and the live hotel.
+        // Data and the live server.
         services.UseHostService<IDbContextFactory<VortexDbContext>>();
         services.UseHostService<IGrainFactory>();
         services.UseHostService<IEventPublisher>();

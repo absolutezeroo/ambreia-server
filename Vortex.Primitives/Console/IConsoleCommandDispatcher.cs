@@ -6,16 +6,14 @@ using System.Threading.Tasks;
 namespace Vortex.Primitives.Console;
 
 /// <summary>
-/// One operator command: the word that invokes it, how to call it, and the dashboard capability a
-/// caller needs <i>on top of</i> the console capability itself.
+/// One operator command: the word that invokes it, how to call it, and the capability it declares.
 /// </summary>
 /// <param name="Name">The lowercase word that selects this command.</param>
 /// <param name="Usage">A one-line usage string, shown by <c>help</c>.</param>
 /// <param name="Description">What the command does, shown by <c>help</c>.</param>
 /// <param name="RequiredCapability">
-///     The capability gating this specific command, or <see langword="null"/> when holding the
-///     console capability is enough. Reusing the existing capability of whatever the command acts
-///     on keeps one grant meaning the same thing whether it is exercised from a page or from here.
+///     The capability this command declares, or <see langword="null"/> for none. Declared, not
+///     enforced: the stdin loop is the only front-end and its operator runs every command.
 /// </param>
 /// <param name="Aliases">Alternate words that select the same command.</param>
 public sealed record ConsoleCommandDescriptor(
@@ -29,10 +27,9 @@ public sealed record ConsoleCommandDescriptor(
 /// <summary>
 /// Runs operator commands and writes their output to a caller-supplied sink.
 /// <para>
-/// The emulator's stdin loop and the dashboard console are two front-ends onto this one dispatcher,
-/// so a command behaves identically whichever way it is reached — and, unlike piping a line into a
-/// process's stdin, the caller is known, the command is a typed lookup rather than a blind string,
-/// and it can be refused per <see cref="ConsoleCommandDescriptor.RequiredCapability"/>.
+/// The emulator's stdin loop is the only front-end today. A command is a typed lookup rather than a
+/// blind string, and declares a <see cref="ConsoleCommandDescriptor.RequiredCapability"/> that a
+/// front-end with an untrusted caller would check.
 /// </para>
 /// </summary>
 public interface IConsoleCommandDispatcher

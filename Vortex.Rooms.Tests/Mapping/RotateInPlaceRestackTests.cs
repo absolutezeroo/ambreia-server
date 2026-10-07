@@ -12,8 +12,8 @@ namespace Vortex.Rooms.Tests.Mapping;
 /// <summary>
 /// Turning an item where it stands. A player's turn measures the tile once the item is off it, so
 /// the foot of a stack lands on top, as the hotel does; it used to keep its own height and stay
-/// underneath. A wired turn keeps the height, or a rotating piece at the foot of a build would climb
-/// it on every firing.
+/// underneath. A turn not made by a player, straight on the map, keeps the height, or a piece turned
+/// repeatedly at the foot of a build would climb it on every turn.
 /// </summary>
 public sealed class RotateInPlaceRestackTests
 {

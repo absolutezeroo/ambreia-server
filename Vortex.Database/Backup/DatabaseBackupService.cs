@@ -32,10 +32,9 @@ public interface IDatabaseBackupService
 /// Runs <c>mysqldump</c> and prunes what is older than the retention window.
 ///
 /// <para>
-/// This is the coarse net, complementary to the audit's per-row before/after: that one tells you
-/// what a single write replaced, this one is what you reach for when something got past everything
-/// else. Restoring a dump undoes every change since it was taken, which is precisely why it is the
-/// last resort rather than the undo button.
+/// This is the coarse net, what you reach for when something got past everything else. Restoring a
+/// dump undoes every change since it was taken, which is precisely why it is the last resort rather
+/// than the undo button.
 /// </para>
 /// </summary>
 public sealed class DatabaseBackupService(
@@ -51,7 +50,7 @@ public sealed class DatabaseBackupService(
     private readonly DatabaseConfig _database = databaseConfig.Value;
 
     // Two dumps of the same database at once would compete for disk and produce a half-written file
-    // under one of the two names. The scheduler and the dashboard button share this.
+    // under one of the two names. Every caller of CreateAsync shares this.
     private readonly SemaphoreSlim _gate = new(1, 1);
 
     public bool IsConfigured =>

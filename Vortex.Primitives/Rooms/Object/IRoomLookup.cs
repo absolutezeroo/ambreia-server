@@ -36,7 +36,7 @@ public interface IRoomLookup
     /// <summary>Every item in the room. Live view -- do not hold it across an await.</summary>
     IReadOnlyCollection<IRoomItem> Items { get; }
 
-    /// <summary>Every avatar in the room, players and pets alike. Live view.</summary>
+    /// <summary>Every avatar in the room. Live view.</summary>
     IReadOnlyCollection<IRoomAvatar> Avatars { get; }
 
     /// <summary>How many players are in the room.</summary>

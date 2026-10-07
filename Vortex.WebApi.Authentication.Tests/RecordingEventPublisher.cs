@@ -6,9 +6,8 @@ using Vortex.Primitives.Events;
 namespace Vortex.WebApi.Authentication.Tests;
 
 /// <summary>
-/// Collects what the services under test raise. The account services publish password and
-/// second-factor changes for the audit trail; these tests are about the write itself, so the
-/// publisher only has to exist and remember.
+/// Collects what the services under test raise: the publisher only has to exist and remember. No
+/// test in this project uses it at the moment.
 /// </summary>
 internal sealed class RecordingEventPublisher : IEventPublisher
 {

@@ -16,8 +16,8 @@ using Xunit;
 namespace Vortex.Rooms.Tests.Furniture;
 
 /// <summary>
-/// Furniture whose interesting state is data rather than a state number — a mannequin's outfit, a
-/// sticky note's text — has no <c>SetStateAsync</c> to ride on, so it writes into
+/// Furniture whose interesting state is data rather than a state number — a figure and a name in a
+/// map, a free text — has no <c>SetStateAsync</c> to ride on, so it writes into
 /// <c>StuffData</c> directly and then has to ask for that write to be persisted. If
 /// <c>PersistStuffDataAsync</c> does not copy the data into the item's STUFF section, the change
 /// lives in memory until the room grain deactivates and then vanishes with no error anywhere.

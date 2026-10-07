@@ -74,7 +74,7 @@ public sealed class WebApiCredentialHardeningTests
         return await db.PlayerAccounts.CountAsync();
     }
 
-    // --- the password rule the change path already had, and registration did not -------------------
+    // --- the password minimum, which registration used to skip -------------------------------------
 
     [Theory]
     [InlineData("a")]
@@ -172,7 +172,7 @@ public sealed class WebApiCredentialHardeningTests
     public void CreateAvatarRequest_IsInvalidForALookWiderThanItsColumn() =>
         new CreateAvatarRequest(null, new string('a', 256), "M").IsValid.Should().BeFalse();
 
-    // --- the name shape the in-game rename enforces, on the HTTP routes that bypassed it -----------
+    // --- the player-name shape, on the HTTP routes that used to bypass it --------------------------
 
     [Theory]
     [InlineData("Habbo")]

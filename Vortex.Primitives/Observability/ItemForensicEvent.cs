@@ -25,7 +25,7 @@ public readonly record struct ItemForensicEvent
 
     public required ItemEventType EventType { get; init; }
 
-    /// <summary>Player who caused the event (purchaser, mover, staff actor, ...).</summary>
+    /// <summary>Player who caused the event (placer, mover, picker, ...).</summary>
     public long? ActorPlayerId { get; init; }
 
     public long? FromOwnerId { get; init; }

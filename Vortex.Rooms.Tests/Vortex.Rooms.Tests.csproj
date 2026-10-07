@@ -13,7 +13,7 @@
     <PackageReference Include="FluentAssertions" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" />
     <!-- The in-memory provider does not implement ExecuteUpdate, and the guarded updates that move
-         furniture between an inventory and a jukebox are exactly what has to be run for real. -->
+         furniture into and out of a room are exactly what has to be run for real. -->
     <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" />
     <PackageReference Include="Microsoft.Orleans.TestingHost" />
   </ItemGroup>

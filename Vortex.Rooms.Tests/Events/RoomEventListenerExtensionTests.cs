@@ -19,9 +19,9 @@ using Xunit;
 namespace Vortex.Rooms.Tests.Events;
 
 /// <summary>
-/// The in-room event stream — chat, clicks, an avatar stepping onto a furni, a wired stack firing —
-/// used to reach only the three systems <c>RoomGrain</c> attaches by hand, because nothing scanned
-/// for <see cref="IRoomEventListener" />. A plugin could not observe a room at all.
+/// The in-room event stream — clicks, uses, an avatar stepping onto a furni — reaches a plugin only
+/// because something scans for <see cref="IRoomEventListener" />. Without it a plugin could not
+/// observe a room at all.
 /// </summary>
 public sealed class RoomEventListenerExtensionTests
 {

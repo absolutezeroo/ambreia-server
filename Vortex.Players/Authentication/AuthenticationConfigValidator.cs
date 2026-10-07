@@ -11,9 +11,8 @@ namespace Vortex.Players.Authentication;
 /// <para>
 /// Outside Development a placeholder <see cref="AuthenticationConfig.IpHashSecret" /> makes the
 /// hashed IPs recorded in auth events trivially reversible — the hash is only as secret as its key,
-/// and the defaults are in the repository. This carries the check that used to live inline in
-/// <c>AuthenticationModule.ConfigureServices</c>, so every sensitive option is now validated the
-/// same way (<c>ValidateOnStart</c>) instead of one module hand-rolling its own fail-fast.
+/// and the defaults are in the repository. <see cref="PlayerModule" /> registers it with
+/// <c>ValidateOnStart</c>, so a bad option refuses to start the host.
 /// </para>
 /// </summary>
 public sealed class AuthenticationConfigValidator(IHostEnvironment environment)
@@ -51,8 +50,8 @@ public sealed class AuthenticationConfigValidator(IHostEnvironment environment)
         // Neither bound set is the one combination that lets an observed ticket be replayed for as
         // long as somebody keeps using it: the sliding branch pushes the expiry forward on EVERY
         // successful use, so the TTL never runs out, and the absolute cap that would stop it is off
-        // by default. Each option is individually reasonable -- single-use is deliberately off for
-        // CMS integrations that reuse one ticket across reconnects -- which is exactly why nothing
+        // by default. Each option is individually reasonable -- single-use is deliberately off because
+        // the client re-reads its ticket from ?sso= on a page reload -- which is exactly why nothing
         // noticed that turning both off leaves no bound at all (SEC-15).
         //
         // Development is exempt so a fresh clone still runs; anywhere else this is a refusal to

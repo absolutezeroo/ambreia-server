@@ -16,13 +16,13 @@ namespace Vortex.WebApi.Tests;
 
 /// <summary>
 /// The plugin's container starts empty: everything the web API needs is either registered by
-/// <see cref="WebApiPlugin"/> or borrowed from the hotel in its <c>BorrowFromHost</c>. A dependency
+/// <see cref="WebApiPlugin"/> or borrowed from the host in its <c>BorrowFromHost</c>. A dependency
 /// on neither compiles and passes every test that goes through <see cref="WebApiTestFactory"/> —
 /// which builds its own container — and then fails the whole web API at startup.
 /// </summary>
 /// <remarks>
 /// The host is faked by answering every borrowed type with a stand-in, so what is measured is the
-/// plugin's own wiring, not the hotel's: a borrow the real host lacks is PluginManager's activation
+/// plugin's own wiring, not the host's: a borrow the real host lacks is PluginManager's activation
 /// check to catch.
 /// </remarks>
 public sealed class WebApiPluginContainerTests

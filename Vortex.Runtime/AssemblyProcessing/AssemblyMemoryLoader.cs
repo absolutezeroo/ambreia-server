@@ -80,8 +80,7 @@ public static class AssemblyMemoryLoader
     ///     Nothing is waited for here because nothing useful can be: a context is collected once the
     ///     frames that used it unwind, which by definition has not happened yet in the caller.
     ///     Whether the contexts actually come back out is a question for a test whose frame never
-    ///     held them — <c>FailedActivationRetentionTests</c> and <c>DashboardUnloadabilityTests</c>
-    ///     ask it, and answer yes.
+    ///     held them — <c>FailedActivationRetentionTests</c> asks it, and answers yes.
     ///     </para>
     ///     <para>
     ///     Never inlined: inlined into its caller, these locals would share that frame and keep the

@@ -251,9 +251,8 @@ public sealed class NetworkManager(
     ///     Chrome freezes the page; it is not gone, and closing it there is precisely the disconnect
     ///     this was meant to prevent.
     ///
-    ///     Note this lives here rather than in <c>UsePingPong()</c>: that extension only covers the
-    ///     TCP listener (and is disabled at its call site), while the WebSocket listener builds its
-    ///     sessions through <c>UseSessionHandler</c> and never went through it.
+    ///     Only the WebSocket listener runs it (from its <c>UseSessionHandler</c>); TCP sessions get
+    ///     no server heartbeat.
     /// </summary>
     private async Task RunWsHeartbeatAsync(WebSocketSessionContext session, CancellationToken ct)
     {
@@ -335,7 +334,7 @@ public sealed class NetworkManager(
         // Forwarded from the parent container so PackageHandler/PackageEncoder resolve these as
         // required dependencies in the TCP host's own child container too, instead of silently
         // getting null (see NET-01): a missing observability sink must be a startup error, not an
-        // invisible gap in the dashboard's error grouping.
+        // invisible gap in error grouping.
         services.AddSingleton(_contextAccessor);
         services.AddSingleton(_errorSink);
         services.AddSingleton(_metrics);

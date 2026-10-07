@@ -23,7 +23,7 @@
 
 -- `'%'` et non une IP : l'imager appelle depuis un conteneur du réseau Docker, dont l'adresse change
 -- à chaque recréation. La base n'est pas exposée publiquement, et ce compte ne peut de toute façon
--- que lire sept tables. Pour resserrer davantage, remplacer par le sous-réseau réel du serveur
+-- que lire cinq tables. Pour resserrer davantage, remplacer par le sous-réseau réel du serveur
 -- (`'172.16.%'` sur l'installation Coolify qui a servi de référence).
 CREATE USER IF NOT EXISTS 'vortex_imager'@'%' IDENTIFIED BY '<MOT_DE_PASSE>';
 

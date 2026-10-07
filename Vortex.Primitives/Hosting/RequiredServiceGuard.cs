@@ -24,7 +24,7 @@ public enum ServiceFailureAction
 
 /// <summary>
 /// Central decision + reporting point for optional-vs-required auxiliary web services (the client
-/// web API, the admin dashboard).
+/// web API).
 /// <para>
 /// These run as background services inside the Orleans host. Historically a build or start failure
 /// was logged and then swallowed, so the emulator carried on announcing itself as started while a

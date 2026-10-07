@@ -33,9 +33,8 @@ public abstract class RoomObjectContext<TObject, TLogic, TSelf>(
         where TFacet : IAddressable => (TFacet)(object)_roomGrain;
 
     // The room's in-process capabilities. RoomGrain implements each explicitly, so these are the
-    // same activation seen through narrow, non-grain contracts. There is ONE game contract however
-    // many games the room hosts: a per-game property here is what made adding a game an edit to the
-    // core, and there must never be another one.
+    // same activation seen through narrow, non-grain contracts. A per-feature property here makes
+    // adding a feature an edit to the core: keep the contracts generic.
     public IRoomLookup Lookup => _roomGrain;
     public IRoomMapAccess Map => _roomGrain;
 

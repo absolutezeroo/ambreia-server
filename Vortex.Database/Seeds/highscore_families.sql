@@ -1,10 +1,10 @@
 -- High-score boards: the stuff-data format their logic reads.
 --
 -- The twelve scoreboards (highscore_classic, highscore_mostwin, highscore_perteam, four variants
--- each) carry `wf_highscore`, the Arcturus interaction_type, which is the key FurnitureHighScoreLogic
--- is registered under. The logic reads HighScoreData (format 6), and StuffDataSnapshotSerializer
--- writes that shape in the order the client parses it; a board left on the legacy format has
--- nowhere to keep its rows.
+-- each) carry `wf_highscore`, the Arcturus interaction_type, which was the key FurnitureHighScoreLogic
+-- was registered under. That logic is gone, so the boards resolve to the floor default; the format
+-- stays. HighScoreData is format 6, and StuffDataSnapshotSerializer writes that shape in the order
+-- the client parses it; a board left on the legacy format has nowhere to keep its rows.
 --
 -- Extracted from crackable_and_highscore_families.sql when the crackables were removed (M0). That
 -- file also renamed the logic to `furniture_high_score`, the client's name, which nothing on the

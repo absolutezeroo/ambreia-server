@@ -31,8 +31,10 @@ public sealed record RoomSnapshot : RoomInfoSnapshot
     [Id(7)]
     public required int MaxVisitorsLimit { get; init; }
 
-    // The four 701 toggles. Not `required`: every existing construction site predates them, and the
-    // defaults here are the ones the serializer used to write as constants.
+    // The four 701 toggles (door-tile exit, idle sleep, idle autokick, pet mute) and the two
+    // timeouts. Not `required`: every existing construction site predates them, and the defaults here
+    // are the ones the serializer used to write as constants. Copied from the row; nothing reads
+    // them today.
     [Id(8)]
     public bool LeaveOnDoorTile { get; init; }
 

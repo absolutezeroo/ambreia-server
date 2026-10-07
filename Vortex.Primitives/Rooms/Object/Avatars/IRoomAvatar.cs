@@ -36,9 +36,9 @@ public interface IRoomAvatar : IRoomObject
     public long NextMoveUpdateAtMs { get; set; }
     public long PendingStopAtMs { get; set; }
 
-    /// <summary>The avatar's currently worn effect id (0 = none). Sourced from the effect inventory (worn
-    /// selection), wired give-effect, or a game team aura; broadcast via <c>AvatarEffectMessageComposer</c>
-    /// and re-synced to late joiners at room entry.</summary>
+    /// <summary>The avatar's currently worn effect id (0 = none). Broadcast via
+    /// <c>AvatarEffectMessageComposer</c> and re-synced to late joiners at room entry. Nothing calls
+    /// <see cref="SetEffect"/> since the effect inventory, wired and games left with the cut.</summary>
     public int CurrentEffectId { get; }
 
     /// <summary>
@@ -53,11 +53,11 @@ public interface IRoomAvatar : IRoomObject
 
     /// <summary>Arc height of the avatar's next slide (0 = flat). Broadcast on every
     /// <c>UserUpdateMessageComposer</c>; the client applies it only while the avatar is moving.
-    /// Nothing sets it yet — the gameplay behind it is a mounted pet clearing a jump obstacle.</summary>
+    /// Nothing sets it yet.</summary>
     public int JumpPower { get; }
 
-    /// <summary>True while the avatar may not start walking — a wired freeze-user box or a Freeze
-    /// hit holds it. Activation-scoped, so it dies with the avatar and can never leak between
+    /// <summary>True while the avatar may not start walking. Nothing sets it since wired and Freeze
+    /// left with the cut. Activation-scoped, so it dies with the avatar and can never leak between
     /// rooms or sessions.</summary>
     public bool IsMovementLocked { get; }
 

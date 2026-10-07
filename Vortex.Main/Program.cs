@@ -126,10 +126,9 @@ internal class Program
         builder.Services.AddHostPlugin<WebApiAuthenticationModule>(builder);
         builder.Services.AddHostPlugin<FurnitureModule>(builder);
         builder.Services.AddHostPlugin<PlayerModule>(builder);
-        // No dashboard or web API module here any more. Both are LOADABLE plugins, found in their
-        // folders by PluginManager rather than compiled into this host — registering either here
-        // would mean referencing its assembly, which is exactly what makes a plugin impossible to
-        // unload.
+        // No web API module here. It is a LOADABLE plugin, found in its folder by PluginManager
+        // rather than compiled into this host — registering it here would mean referencing its
+        // assembly, which is exactly what makes a plugin impossible to unload.
         builder.Services.AddHostPlugin<RoomModule>(builder);
         builder.Services.AddHostPlugin<PacketHandlersModule>(builder);
 

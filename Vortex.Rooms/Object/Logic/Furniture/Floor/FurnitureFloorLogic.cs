@@ -31,10 +31,9 @@ namespace Vortex.Rooms.Object.Logic.Furniture.Floor;
 /// <c>furniture_purchasable_clothing</c> — 2 862 definitions, the largest single name still falling
 /// back — belongs here rather than in a class of its own, and the client says why: its logic extends
 /// <c>FurnitureMultiStateLogic</c> and overrides <c>useObject()</c> to raise a confirmation dialog
-/// instead of sending anything. No use ever reaches the server for one of these; the redemption
-/// arrives as <c>RedeemPurchasableClothing</c> naming the room object, which
-/// <c>RedeemPurchasableClothingMessageHandler</c> already serves. So the server-side behaviour that
-/// was missing is exactly the plain floor furni's, and the only thing the fallback cost was a
+/// instead of sending anything. No use ever reaches the server for one of these, and the
+/// redemption packet it would send has no handler since the cut of 2026-10-07. So the server-side
+/// behaviour is exactly the plain floor furni's, and the only thing the fallback cost was a
 /// warning per placement.
 /// </para>
 /// </remarks>

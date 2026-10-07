@@ -8,7 +8,7 @@ public sealed class PacketHandlersModule : IHostPluginModule
 {
     public string Key => "turbo-packet-handlers";
 
-    // Tunable moderation/friend-list limits moved to IServerConfigGrain (runtime-editable); nothing
-    // left to bind here.
+    // Handlers are discovered by scanning and their tunables live in IServerConfigGrain: nothing
+    // to bind here.
     public void ConfigureServices(IServiceCollection services, HostApplicationBuilder builder) { }
 }

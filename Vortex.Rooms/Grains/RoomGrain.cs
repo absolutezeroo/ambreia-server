@@ -243,7 +243,7 @@ public sealed partial class RoomGrain : Grain, IRoomGrain
         // One-shot, re-armed at the end of every tick to the next epoch-aligned RoomTickMs
         // boundary. A *periodic* grain timer measures its period from the end of the previous
         // callback, so the phase drifted by the tick body's own duration each cycle and the
-        // avatar/pet boundaries -- all multiples of RoomTickMs from EpochMs -- were
+        // avatar boundaries -- all multiples of RoomTickMs from EpochMs -- were
         // crossed late by a varying amount. What a client sees of that is choppy walking.
         _roomTimer = this.RegisterGrainTimer<object?>(
             async (state, ct) =>
@@ -284,7 +284,7 @@ public sealed partial class RoomGrain : Grain, IRoomGrain
         long now = NowMs();
 
         // Each step is isolated. Run bare, one throw -- a single malformed item, one
-        // pet with a broken path -- aborted the whole tick, and since the two flushes are
+        // avatar with a broken path -- aborted the whole tick, and since the two flushes are
         // last, the room also stopped persisting furniture and tile changes for as long as
         // the fault lasted.
         await RunTickStepAsync("avatars", () => AvatarTickSystem.ProcessAvatarsAsync(now, ct));
@@ -478,18 +478,17 @@ public sealed partial class RoomGrain : Grain, IRoomGrain
     /// <remarks>
     /// <para>
     /// <c>EventRegistry</c> runs handlers in parallel, but <c>PublishAsync</c> is awaited, so the
-    /// room waits for the slowest of them. On the furniture events that is a cross-grain call per
-    /// subscriber — quest progress, achievement progress, the daily task — and it happens on every
-    /// click of a build session: placing a sofa held the room, and everyone standing in it, until
-    /// the placer's own grains had answered (INFRA-EVENT-058).
+    /// room waits for the slowest of them. The furniture and walk events fire on every click of a
+    /// build session and every step: a subscriber making a cross-grain call there held the room,
+    /// and everyone standing in it, until that grain had answered (INFRA-EVENT-058).
     /// </para>
     /// <para>
-    /// Only for events that <b>no handler answers back into this room with</b>. The three furniture
-    /// ones qualify: their subscribers write forensics into an in-memory buffer and call the
-    /// <em>player's</em> grains, never the room's, so nothing detached here can re-enter the
-    /// activation it was published from. That is the question INFRA-AWAIT-059 leaves open in
-    /// general, and it has to be answered per event rather than assumed — which is why this is a
-    /// named method used at five sites, not the default for <c>_events</c>.
+    /// Only for events that <b>no handler answers back into this room with</b>. The ones published
+    /// here qualify: their subscribers, where there are any, write forensics into an in-memory buffer and never call the
+    /// room, so nothing detached here can re-enter the activation it was published from. That is
+    /// the question INFRA-AWAIT-059 leaves open in general, and it has to be answered per event
+    /// rather than assumed — which is why this is a named method, not the default for
+    /// <c>_events</c>.
     /// </para>
     /// <para>
     /// Published on no cancellation token: the caller's token belongs to a turn that is about to

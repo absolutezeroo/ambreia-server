@@ -49,9 +49,8 @@ public class PlayerEntity : VortexEntity
     [DatabaseGenerated(DatabaseGeneratedOption.None)]
     public required PlayerPerkFlags PlayerPerks { get; set; }
 
-    /// <summary>Denormalised total achievement score (sum of completed levels' score points),
-    /// surfaced on the profile without activating the achievement grain. Kept in sync by
-    /// <c>PlayerAchievementGrain</c> on progression.</summary>
+    /// <summary>The score the client shows on the avatar (sent on every user change). Nothing writes
+    /// it since achievements were removed: it is read as stored, 0 for every new player.</summary>
     [Column("achievement_score")]
     [DefaultValue(0)]
     public int AchievementScore { get; set; }

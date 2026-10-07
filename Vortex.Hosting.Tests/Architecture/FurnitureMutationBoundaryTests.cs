@@ -14,11 +14,10 @@ namespace Vortex.Hosting.Tests.Architecture;
 /// </summary>
 /// <remarks>
 /// <para>
-/// That was already true of five of the six, by convention. The sixth was the wired save: six
-/// handlers — action, addon, condition, selector, trigger, variable — funnelling into one method
-/// that checked the item existed and was wired, and nothing else, so any visitor could rewrite the
-/// room's wired and be answered with a success. It was not visible in a build, a test, or a grep;
-/// it was visible by reading the method next to the one above it.
+/// That used to hold by convention only, and one entry point (since removed with its feature)
+/// broke it: it checked that the item existed and nothing else, so any visitor could rewrite the
+/// item's configuration and be answered with a success. It was not visible in a build, a test, or
+/// a grep; it was visible by reading the method next to the one above it.
 /// </para>
 /// <para>
 /// A facade class would not have caught it — a method added to a facade skips a check exactly as

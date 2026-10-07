@@ -19,7 +19,8 @@ namespace Vortex.Rooms.Grains;
 /// <summary>
 /// Room decorations: the client sends RequestRoomPropertySet with the inventory item id when a
 /// category 2/3/4 item is "placed" (AS3 <c>FurniModel.as</c>), and the item is consumed into the
-/// room's wallpaper, floor or landscape instead of being put down as furni.
+/// room's wallpaper, floor or landscape instead of being put down as furni. That packet has no
+/// handler since the cut of 2026-10-07, so nothing calls this yet.
 /// </summary>
 public sealed partial class RoomGrain
 {
@@ -34,7 +35,7 @@ public sealed partial class RoomGrain
 
         // "0" is LegacyStuffData's default, not a pattern: an item bought before decorations kept
         // their code reads back as "0", and applying it consumed the item and painted nothing (the
-        // client treats "0" as "no pattern"). Refuse it and leave the item in the inventory.
+        // client treats "0" as "no pattern"). Refuse it and leave the item where it is.
         if (
             key is null
             || string.IsNullOrWhiteSpace(code)
@@ -60,7 +61,7 @@ public sealed partial class RoomGrain
                 .Rooms.FirstOrDefaultAsync(r => r.Id == _state.RoomId.Value, ct)
                 .ConfigureAwait(true);
 
-            // In the inventory, still owned by the actor: a stale or forged id deletes nothing.
+            // Free-standing, still owned by the actor: a stale or forged id deletes nothing.
             FurnitureEntity? furniture = await dbCtx
                 .Furnitures.FirstOrDefaultAsync(
                     f =>

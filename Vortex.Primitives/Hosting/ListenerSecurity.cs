@@ -18,8 +18,8 @@ public readonly record struct ListenerSecurityResult(bool IsAllowed, string? Mes
 }
 
 /// <summary>
-/// Guards the HTTP listeners (client web API, admin dashboard) against being exposed off-box in
-/// cleartext. Both surfaces authenticate with credentials and carry session cookies, so a non-local
+/// Guards the HTTP listener (the client web API) against being exposed off-box in cleartext. It
+/// authenticates with credentials and carries session cookies, so a non-local
 /// bind without TLS leaks those to anyone on the path. Binding to a non-local address over plain HTTP
 /// is therefore refused unless the operator explicitly opts in.
 /// </summary>

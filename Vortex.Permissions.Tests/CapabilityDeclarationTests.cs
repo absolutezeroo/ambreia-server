@@ -9,13 +9,10 @@ using Xunit;
 namespace Vortex.Permissions.Tests;
 
 /// <summary>
-/// Guards the capability declaration itself. A capability is a string that has to appear in several
-/// places at once to work end to end, and until now nothing in the build or the test suite noticed
-/// when one of them was missed: the dashboard registered one authorization policy per entry of a
-/// hand-copied list, so a capability declared as a constant and used by an endpoint but absent from
-/// that list compiled green and then threw
-/// <c>AuthorizationPolicy named '&lt;capability&gt;' was not found</c> the first time an operator
-/// opened the page. The duplicate lists are gone — these tests keep the remaining single list honest.
+/// Guards the capability declaration itself. A capability is a constant that also has to appear in
+/// its <c>All</c> list, and nothing else in the build notices when one is missed: a capability left
+/// out of the list compiles green and is simply unknown to whatever enumerates it. These tests keep
+/// that single list honest.
 /// </summary>
 public sealed class CapabilityDeclarationTests
 {

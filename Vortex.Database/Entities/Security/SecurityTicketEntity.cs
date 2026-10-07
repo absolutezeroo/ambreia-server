@@ -25,8 +25,9 @@ public class SecurityTicketEntity : VortexEntity
     public bool IsLocked { get; set; }
 
     /// <summary>
-    /// UTC timestamp after which this ticket is no longer valid. Null means no expiration
-    /// (e.g. tickets issued before this column existed, or locked/persistent tickets).
+    /// UTC timestamp after which this ticket is no longer valid, slid forward on each use of an
+    /// unlocked ticket. Null until the first use: the ticket then expires the configured TTL after
+    /// <c>CreatedAt</c> (never, when the TTL is 0).
     /// </summary>
     [Column("expires_at")]
     public DateTime? ExpiresAt { get; set; }

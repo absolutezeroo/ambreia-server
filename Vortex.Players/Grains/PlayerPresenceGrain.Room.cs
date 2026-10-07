@@ -133,7 +133,7 @@ internal sealed partial class PlayerPresenceGrain
         // The room call is best-effort: if it fails or is cancelled (this also runs from
         // OnDeactivateAsync, whose token is cancelled once the grace period elapses), the player must
         // still stop counting as an occupant here and in the directory, or they linger as a ghost in
-        // the navigator and cannot cleanly re-enter.
+        // the room's occupant count and cannot cleanly re-enter.
         try
         {
             await roomGrain.RemoveAvatarFromPlayerAsync(ctx, ctx.PlayerId, ct);

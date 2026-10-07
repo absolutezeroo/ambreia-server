@@ -12,14 +12,12 @@ namespace Vortex.Hosting.Tests.Architecture;
 /// </summary>
 /// <remarks>
 /// <para>
-/// The gates that decide who may enter — the room ban, the population cap, the password, the
-/// doorbell, raid protection and the cancellable entry event — all live in <c>RoomService</c>, while
-/// the state they protect lives in the room grain. Nothing stopped a caller from skipping the first
-/// and calling the second, and two did. <c>FollowFriend</c> called
-/// <c>SetActiveRoomAsync</c> straight off the friend's location, so a friend in a locked, passworded
-/// or full room could be joined by anyone on their friend list — and without an entry payload, so
-/// the server had an avatar standing in a room the client did not know it was in. A second handler,
-/// since deleted, did the same off a pending request that a ringing doorbell leaves set.
+/// The gates that decide who may enter — the population cap, the locked door, the password and the
+/// cancellable entry event — all live in <c>RoomService</c>, while the state they protect lives in
+/// the room grain. Nothing stopped a caller from skipping the first and calling the second, and two
+/// handlers (both since deleted) did: they called <c>SetActiveRoomAsync</c> directly, so a locked,
+/// passworded or full room could be joined past every gate — and without an entry payload, so the
+/// server had an avatar standing in a room the client did not know it was in.
 /// </para>
 /// <para>
 /// Neither was visible in a build, a test or a grep for something wrong; both were visible only by
@@ -58,10 +56,10 @@ public sealed class RoomEntryBoundaryTests
     }
 
     /// <summary>
-    /// The pending request is what a ringing doorbell leaves behind, so the flag that says it was
-    /// answered has exactly one writer: the end of <c>CompleteRoomEntryAsync</c>, after the player is
-    /// actually in. It used to be set optimistically before any gate ran and never taken back on the
-    /// doorbell path, which made "pending" and "admitted" the same state.
+    /// The pending request is set before any gate runs, so the flag that says it was approved has
+    /// exactly one writer: the end of <c>CompleteRoomEntryAsync</c>, after the player is actually
+    /// in. It used to be set optimistically before any gate ran and never taken back on a path where
+    /// the request stayed pending, which made "pending" and "admitted" the same state.
     /// </summary>
     [Fact]
     public void OnlyRoomService_ApprovesAPendingEntry()
@@ -78,7 +76,8 @@ public sealed class RoomEntryBoundaryTests
                 Path.Combine("Vortex.Players", "Grains", "PlayerPresenceGrain.Room.cs"),
                 Path.Combine("Vortex.Rooms", "RoomService.cs"),
                 Path.Combine("Vortex.Rooms", "RoomService.Doorbell.cs"),
-                // Clears it on the doorbell timeout sweep; cannot grant, only revoke.
+                // This entry and the one above name files deleted with the doorbell (cut of
+                // 2026-10-07); they no longer match anything.
                 Path.Combine("Vortex.Rooms", "Grains", "RoomGrain.Doorbell.cs"),
             ]
         );

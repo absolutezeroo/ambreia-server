@@ -20,14 +20,11 @@ using Xunit;
 namespace Vortex.Rooms.Tests.Rooms;
 
 /// <summary>
-/// <c>rooms.users_now</c> is written once, at creation, with a 0 — and the navigator orders
-/// <em>and pages</em> on it in SQL.
+/// <c>rooms.users_now</c> is written once, at creation, with a 0.
 /// </summary>
 /// <remarks>
-/// That made every room list in the hotel rank by rating alone, and a busy room the database still
-/// believed was empty did not merely sort low: it fell out of the page. The category visitor counts,
-/// which are a <c>SUM</c> of the same column, read 0 forever. The room directory is the only thing
-/// that knows the real headcount, so it is the only thing that can tell the database.
+/// The room directory is the only thing that knows the real headcount, so it is the only thing that
+/// can tell the database.
 /// <para>
 /// Sqlite rather than the in-memory provider: the flush is built out of <c>ExecuteUpdate</c>, which
 /// in-memory does not implement.

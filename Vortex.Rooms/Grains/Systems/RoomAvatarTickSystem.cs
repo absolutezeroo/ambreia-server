@@ -72,9 +72,9 @@ public sealed class RoomAvatarTickSystem(RoomGrain roomGrain)
                     _dirtySnapshots.Add(avatar.GetSnapshot());
                 }
 
-                // A sign is a one-shot: it has been on the wire by now (either in the update above or
-                // in the immediate broadcast the sign handler sent), so drop it. Without this the
-                // avatar holds the sign up forever.
+                // A sign is a one-shot: it has been on the wire by now (in the update above at the
+                // latest), so drop it. Without this the avatar holds the sign up forever. No packet
+                // raises a sign yet.
                 if (avatar.HasStatus(AvatarStatusType.Sign))
                 {
                     avatar.RemoveStatus(AvatarStatusType.Sign);
@@ -112,6 +112,7 @@ public sealed class RoomAvatarTickSystem(RoomGrain roomGrain)
     /// <summary>
     /// Takes a held item out of the hand once its time is up. Habbo hand items are shown for a
     /// while and then gone; without this one drink would be held for the rest of the session.
+    /// Nothing hands an avatar an item yet.
     /// </summary>
     private void ExpireHandItem(IRoomAvatar avatar, long now)
     {
@@ -243,11 +244,10 @@ public sealed class RoomAvatarTickSystem(RoomGrain roomGrain)
                     ct
                 );
 
-                // Onto the domain bus as well, so progression can hear a step without the room
-                // knowing what a reward track is. Detached and index-gated on the other side: with
-                // no content naming walk_on_furni this is a publish into an empty handler list, and
-                // it fires once per tile walked onto by every avatar in the hotel.
-                // Players only: a bot walking over a tile is not someone's progress.
+                // Onto the domain bus as well, so another system can hear a step without the room
+                // knowing about it. Detached: nothing subscribes yet, so this is a publish into an
+                // empty handler list, and it fires once per tile walked onto by every avatar in the
+                // hotel. Players only.
                 if (avatar is IRoomPlayer walker && walker.PlayerId.Value > 0)
                 {
                     _roomGrain.PublishDetached(
@@ -297,9 +297,9 @@ public sealed class RoomAvatarTickSystem(RoomGrain roomGrain)
     /// </summary>
     /// <remarks>
     /// <para>
-    /// The most expensive thing on the walk path, and affordable for one reason only: the detached
-    /// publish reaches an index-gated consumer, so with no content naming <c>stand_near_furni</c>
-    /// each of these is a hash lookup into an empty handler list. The scan itself is nine array
+    /// The most expensive thing on the walk path, and affordable for one reason only: nothing
+    /// subscribes to the detached publish yet, so each of these is a lookup into an empty handler
+    /// list. A subscriber added later must stay that cheap. The scan itself is nine array
     /// reads and allocates nothing until a piece is actually found.
     /// </para>
     /// <para>

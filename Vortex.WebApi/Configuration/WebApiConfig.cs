@@ -118,9 +118,8 @@ public sealed class WebApiConfig
 
     /// <summary>
     /// Absolute path to the website's built <c>dist/</c> folder. Set it and this listener also serves
-    /// the site: static files, an <c>index.html</c> fallback for the SPA's routes, and the share URL
-    /// <c>/article/{slug}</c> that carries the Open Graph tags. Empty (the default) serves the API
-    /// only.
+    /// the site: static files and an <c>index.html</c> fallback for the SPA's routes. Empty (the
+    /// default) serves the API only.
     /// </summary>
     /// <remarks>
     /// Serving the site from here rather than from a separate web server is what keeps it on the same
@@ -131,28 +130,21 @@ public sealed class WebApiConfig
 
     /// <summary>
     /// Absolute base URL of the asset host serving <c>c_images</c> (e.g.
-    /// <c>http://vortex-assets.local</c>). Used for one thing: turning an article's stored relative
-    /// picture path into the absolute URL an Open Graph tag requires. Empty means shared links carry
-    /// no preview image — a link with a title and no picture, not a broken one.
+    /// <c>http://vortex-assets.local</c>). Nothing reads it any more: the Open Graph article page it
+    /// fed is gone. Kept only so existing configuration still binds.
     /// </summary>
     public string AssetBaseUrl { get; set; } = string.Empty;
 
     /// <summary>
-    /// The hotel's name as a shared link should announce it ("Vortex Hotel"). Fills
-    /// <c>og:site_name</c>, which is the line a preview card prints above the title. Empty means the
-    /// tag is omitted — the card then shows the bare domain, which is a worse card, not a broken one.
+    /// The site's display name (e.g. "Vortex Hotel"). Nothing reads it any more: the Open Graph
+    /// article page it fed is gone. Kept only so existing configuration still binds.
     /// </summary>
     public string SiteName { get; set; } = string.Empty;
 
     /// <summary>
-    /// Absolute base URL of the website (e.g. <c>https://vortex-hotel.online</c>). Used to build the
-    /// password-reset link mailed to a player. Empty means no reset mail is sent.
+    /// Absolute base URL of the website (e.g. <c>https://vortex-hotel.online</c>). Nothing reads it
+    /// any more: no password-reset mail is sent. Kept only so existing configuration still binds.
     /// </summary>
-    /// <remarks>
-    /// Configured rather than taken from the request, which is what <c>og:url</c> does one file
-    /// over: a deployment that puts the API on its own hostname — <c>webapi.</c>something — would
-    /// otherwise mail that hostname as the hotel's address.
-    /// </remarks>
     public string PublicSiteUrl { get; set; } = string.Empty;
 
     /// <summary>Fixed-window rate limit applied to <c>POST /api/public/authentication/login</c>.</summary>

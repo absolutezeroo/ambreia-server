@@ -18,15 +18,12 @@ public sealed record PlayerDisconnectedEvent(
 /// <summary>
 /// Raised before a player is let into a room, and published cancellably: a behaviour that sets
 /// <c>Cancel</c> refuses the entry, and the client is told the same way a locked door tells it.
-/// Every other check the room does — ban, capacity, password, doorbell — has already passed.
+/// Every other check the room does — capacity, locked door, password — has already passed.
 /// </summary>
 public sealed record PlayerEnteringRoomEvent(PlayerId PlayerId, int RoomId) : IEvent;
 
-/// <summary>Player entered a room for a tracked user journey.</summary>
-/// <param name="OwnerId">
-/// Who owns the room. Carried so that "join their flat" is expressible without a follow event: a
-/// reward-track step can match this against the player an earlier step captured.
-/// </param>
+/// <summary>Player entered a room (room visit log and session audit).</summary>
+/// <param name="OwnerId">Who owns the room. Nothing reads it today.</param>
 public sealed record PlayerEnteredRoomEvent(
     PlayerId PlayerId,
     int RoomId,
@@ -34,7 +31,7 @@ public sealed record PlayerEnteredRoomEvent(
     int OwnerId = 0
 ) : IEvent;
 
-/// <summary>Player left a room for a tracked user journey.</summary>
+/// <summary>Player left a room (room visit log and session audit).</summary>
 public sealed record PlayerLeftRoomEvent(
     PlayerId PlayerId,
     int RoomId,

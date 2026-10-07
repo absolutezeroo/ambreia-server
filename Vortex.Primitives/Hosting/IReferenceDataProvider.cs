@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 namespace Vortex.Primitives.Hosting;
 
 /// <summary>
-/// A cache of reference data (furniture definitions, catalog snapshots, pet palettes, ...) loaded
+/// A cache of reference data (furniture definitions, room models, ...) loaded
 /// once at startup and reloadable on demand. Implemented by a provider's existing concrete class
 /// alongside its specific interface so <c>VortexEmulator</c> can discover and load every provider
 /// through <see cref="System.Collections.Generic.IEnumerable{T}"/> instead of a fixed constructor

@@ -1,20 +1,14 @@
-// Where a DTO lives, because the API has forty of them across six files and the rule had never been
-// written down — which is how a file like this one becomes a drawer:
+// Where a DTO lives, so that a file like this one does not become a drawer:
 //
 //   a shape a SERVICE returns          lives with its service interface
-//                                      (ProfileUser, RoomSummary, PlayerPurse, ArticleFeed …)
+//                                      (AvatarInfo)
 //   a shape only the ENDPOINT builds   lives here
 //                                      (LoginResponse, SsoTicketResponse, HealthResponse …)
 //
-// The test is one question: could this record exist without an HTTP route? `PlayerProfile` is what
-// reading a profile means and would survive the website being deleted, so it belongs to the service.
-// `LoginResponse` is "did that POST leave you with an avatar to pick" — a fact about one endpoint's
-// answer, nothing else.
-//
-// One record bends it on purpose. `TwoFactorEnrolmentResponse` mirrors `MfaEnrolment`, which the
-// service already returns, rather than exposing it: that type is shared with the dashboard, and a
-// field the dashboard needs one day would otherwise land in the website's generated types by
-// accident. A copy of two strings is cheaper than that coupling.
+// The test is one question: could this record exist without an HTTP route? `AvatarInfo` is what
+// listing an account's avatars means and would survive the website being deleted, so it belongs to
+// the service. `LoginResponse` is "did that POST leave you with an avatar to pick" — a fact about
+// one endpoint's answer, nothing else.
 
 namespace Vortex.WebApi.Http;
 
@@ -39,8 +33,8 @@ public sealed record ApiErrorResponse(string Error);
 /// the website had to describe it by hand.
 /// </summary>
 /// <remarks>
-/// <c>{}</c> is a real answer here and not an oversight: logout, avatar selection and the new-user
-/// room step all say "done, nothing to tell you". It has a name so a handler can declare it.
+/// <c>{}</c> is a real answer here and not an oversight: logout and avatar selection both say
+/// "done, nothing to tell you". It has a name so a handler can declare it.
 /// </remarks>
 public sealed record EmptyResponse
 {

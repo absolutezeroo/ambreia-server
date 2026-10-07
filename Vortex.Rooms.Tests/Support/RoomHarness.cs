@@ -48,8 +48,7 @@ using Vortex.Tests.Support;
 namespace Vortex.Rooms.Tests.Support;
 
 /// <summary>
-/// A room grain built outside a silo: an open floor to walk on, one bot standing in it, the room
-/// broadcast swapped for a recorder and room events collected. Shared, because standing a room up
+/// A room grain built outside a silo: an open floor to walk on, the room broadcast swapped for a recorder and room events collected. Shared, because standing a room up
 /// is most of the work in any test that needs one.
 /// </summary>
 internal sealed class RoomHarness
@@ -61,7 +60,7 @@ internal sealed class RoomHarness
     /// <summary>Room enough for a walk with a turn in it.</summary>
     private const int MapSize = 12;
 
-    /// <summary>The room's bot tick, which is what a simulated tick has to advance past.</summary>
+    /// <summary>A simulated tick's length. Unused since the bot tick was removed.</summary>
     private const long TickMs = 1_000;
 
     public static readonly PlayerId Owner = new(101);
@@ -181,7 +180,7 @@ internal sealed class RoomHarness
             MaxVisitorsLimit = 25,
         };
 
-        // A room with no model has no tiles, and a bot with nowhere to step cannot be seen to walk.
+        // A room with no model has no tiles, and an avatar with nowhere to step cannot be seen to walk.
         // An open square is the smallest map that lets walking be observed at all.
         Grain._state.Model = new RoomModelSnapshot
         {
@@ -220,8 +219,8 @@ internal sealed class RoomHarness
 
         if (canManipulate)
         {
-            // Build rights in this room, which is what lets somebody clear up furniture — and now
-            // bots — that is not theirs.
+            // Build rights in this room, which is what lets somebody move furniture that is not
+            // theirs.
             Grain._state.PlayerIdsWithRights.Add(Stranger);
         }
 
@@ -248,7 +247,7 @@ internal sealed class RoomHarness
 
     public RoomGrain Grain { get; }
 
-    /// <summary>Who the grain pushed an inventory composer at — the point of the ownership tests.</summary>
+    /// <summary>Who the grain pushed a composer at, in order.</summary>
     public List<PlayerId> ComposersSentTo { get; } = [];
 
     /// <summary>The same sends with the composer attached, for a test that asserts what was in it
@@ -266,7 +265,7 @@ internal sealed class RoomHarness
     /// <summary>Everything the room put on the global event bus, in order.</summary>
     public List<IEvent> PublishedEvents { get; } = [];
 
-    /// <summary>Every furniture definition granted to a player's inventory, in order.</summary>
+    /// <summary>Every furniture definition granted to a player, in order.</summary>
     public List<(PlayerId Owner, int DefinitionId)> FurnitureGranted { get; } = [];
 
     /// <summary>Stands in for the behaviours a plugin would register: return true for an event and
@@ -336,13 +335,13 @@ internal sealed class RoomHarness
             .ConfigureAwait(true);
     }
 
-    /// <summary>Closes a tile, which is what furniture standing on one amounts to for a bot.</summary>
+    /// <summary>Closes a tile, which is what furniture standing on one amounts to for a walker.</summary>
     public void BlockTile(int x, int y) =>
         Grain._state.TileFlags[Grain.MapModule.ToIdx(x, y)] = RoomTileFlags.Closed;
 
     /// <summary>
-    /// Stands the owner in the room wearing a given look. Dressing a bot up reads the avatar on
-    /// screen rather than the stored figure, so there has to be one to read.
+    /// Stands the owner in the room wearing a given look, for a test that reads the avatar on
+    /// screen rather than the stored figure.
     /// </summary>
     public void PutOwnerInRoomWearing(string figure, AvatarGenderType gender) =>
         PutPlayerInRoom(Owner, 0, 0, figure, gender);
@@ -366,7 +365,7 @@ internal sealed class RoomHarness
 
     /// <summary>
     /// The same, but also on the tile's avatar stack — which is what the room means by "somebody is
-    /// standing here", and what a blast radius or a rolling ball asks.
+    /// standing here".
     /// </summary>
     public RoomPlayerAvatar PutRealPlayerOnTile(PlayerId playerId, int x, int y)
     {
@@ -381,7 +380,7 @@ internal sealed class RoomHarness
         return avatar;
     }
 
-    /// <summary>An avatar standing on a tile, which is what a following bot walks towards.</summary>
+    /// <summary>An avatar standing on a tile.</summary>
     public void PutPlayerInRoom(
         PlayerId playerId,
         int x,
@@ -431,8 +430,8 @@ internal sealed class RoomHarness
                 return null;
             }
 
-            // The bot avatar carries its owner's name, which the room resolves through the
-            // directory when it is not already cached.
+            // An item carries its owner's name, which the room resolves through the directory
+            // when it is not already cached.
             if (call.Method.GetGenericArguments()[0] == typeof(IPlayerDirectoryGrain))
             {
                 return FakeProxy.Create<IPlayerDirectoryGrain>(inner =>
@@ -470,9 +469,8 @@ internal sealed class RoomHarness
                 );
             }
 
-            // The two answers pet care asks of the scratcher: how old the account is (the scratch
-            // has a minimum age) and whether the day's allowance is spent. An old-enough account
-            // with allowance left, so a test about the scratch is not a test about its gates.
+            // A summary for whichever player is asked about: a year-old account under the owner's
+            // name and look.
             if (call.Method.GetGenericArguments()[0] == typeof(IPlayerGrain))
             {
                 PlayerId scratcher = new((int)(long)call.Args![0]!);

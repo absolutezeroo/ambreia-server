@@ -37,7 +37,7 @@ public sealed class PermissionSet
         HasAny((IReadOnlyCollection<string>)capabilities);
 
     /// <summary>
-    /// Overload for the declared capability sets (<see cref="Capabilities.Dashboard.All"/> and
+    /// Overload for the declared capability sets (<see cref="Capabilities.Server.All"/> and
     /// friends), which are exposed as read-only collections rather than arrays so no caller can
     /// mutate the canonical list.
     /// </summary>

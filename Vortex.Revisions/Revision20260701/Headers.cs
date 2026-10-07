@@ -51,10 +51,6 @@ internal static class MessageComposer
     public const int CarryObjectMessageComposer = 2850;
     public const int DanceMessageComposer = 2217;
 
-    // Was 2802, which the WIN63 registry assigns to Game2WeeklyFriendsLeaderboardEvent -- the check
-    // result went out under a leaderboard header and no client ever routed it. The real id is 382:
-    // registry _SafeCls_2046.as `_events[382] = _SafeCls_3600`, the parser NameChangeDialog and
-    // NameChangeController both listen on.
     public const int FigureUpdateComposer = 132;
 
     public const int AuthenticationOKMessageComposer = 230;

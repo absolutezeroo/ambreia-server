@@ -130,7 +130,7 @@ public sealed class RoomPersistenceGrain(
             // Where the furniture sits, and nothing else. This used to mark player_id and room_id
             // modified too, which made every position tick an assertion of ownership: a batch queued
             // before an item left could put it back in this room, and back on its old owner, over a
-            // trade or a placement that had already taken it (ROOM-PER-005, ECON-ITM-004). Location
+            // pickup or a placement that had already taken it (ROOM-PER-005, ECON-ITM-004). Location
             // moves at the moment it moves now, as a conditional claim -- see
             // RoomFurnitureLocationStore -- so a snapshot arriving two seconds late has no opinion
             // about where the item lives.
@@ -164,7 +164,7 @@ public sealed class RoomPersistenceGrain(
             {
                 if (!stillHere.Contains(item.ObjectId.Value))
                 {
-                    // Gone to another room, to an inventory, or deleted. Whatever holds it now owns
+                    // Gone to another room, back to a player's hand, or deleted. Whatever holds it now owns
                     // its position; this snapshot is a memory of somewhere else.
                     continue;
                 }

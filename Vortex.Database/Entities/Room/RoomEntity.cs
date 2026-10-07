@@ -172,8 +172,8 @@ public class RoomEntity : VortexEntity
 
     /// <summary>1-based position in the hotel's top-rated-rooms table, 0 when the room is outside
     /// it. The client labels it "Top rated rooms rank:" (<c>navigator.roomranking</c>) and hides the
-    /// field entirely when it is not positive, so 0 is the honest "unranked" value. Derived from
-    /// <see cref="Score"/> by <c>RoomDirectoryGrain</c>'s flush, never edited by hand.</summary>
+    /// field entirely when it is not positive, so 0 is the honest "unranked" value. Nothing computes
+    /// it since the navigator was removed: it is read as stored.</summary>
     [Column("ranking")]
     [DefaultValue(0)]
     public int Ranking { get; set; }

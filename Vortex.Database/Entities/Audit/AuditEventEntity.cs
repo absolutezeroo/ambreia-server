@@ -65,13 +65,10 @@ public class AuditEventEntity : VortexEntity
     [MaxLength(64)]
     public string? IpHash { get; set; }
 
-    /// <summary>Optional structured (JSON) payload with action-specific detail.</summary>
     /// <summary>
-    /// The number this event is about, when it is about one: credits spent, months bought, seconds
-    /// of a sanction. It used to live only inside <see cref="Data" />, which meant every read that
-    /// wanted to sum it had to pull the whole window into memory and parse JSON -- inside the game
-    /// process. Null on the events that have no such number, and on every row written before this
-    /// column existed.
+    /// The number this event is about, when it is about one. A column of its own rather than a field
+    /// inside <see cref="Data" />, so a read that wants to sum it does not have to pull the whole
+    /// window into memory and parse JSON. Null on the events that have no such number.
     /// </summary>
     [Column("amount")]
     public long? Amount { get; set; }
@@ -80,6 +77,7 @@ public class AuditEventEntity : VortexEntity
     [Column("quantity")]
     public int? Quantity { get; set; }
 
+    /// <summary>Optional structured (JSON) payload with action-specific detail.</summary>
     [Column("data", TypeName = "text")]
     public string? Data { get; set; }
 }

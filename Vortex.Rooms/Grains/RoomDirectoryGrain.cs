@@ -170,9 +170,8 @@ public class RoomDirectoryGrain(
     /// Writes the occupancy the hotel has actually been living with back to <c>rooms.users_now</c>.
     /// </summary>
     /// <remarks>
-    /// The column was set to 0 when a room was created and never written again, so every navigator
-    /// list — all of which order and page on it in SQL — ranked the whole hotel by rating alone, and
-    /// the category visitor counts, which are a <c>SUM</c> of it, read 0 forever.
+    /// The column was set to 0 when a room was created and never written again. Nothing in-game
+    /// reads it yet; it is kept for a future zone list or web API.
     /// <para>
     /// The pending set is drained before the first await so this grain's own state is consistent
     /// for the whole write, and the writes are grouped by headcount: distinct headcounts in one

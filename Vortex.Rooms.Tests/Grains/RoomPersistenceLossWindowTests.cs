@@ -231,7 +231,7 @@ public sealed class RoomPersistenceLossWindowTests
             );
 
         /// <summary>Another room getting there first, and taking the owner with it — which is what a
-        /// trade or a placement elsewhere leaves behind while this room's tick is still queued.</summary>
+        /// pickup or a placement elsewhere leaves behind while this room's tick is still queued.</summary>
         public void ClaimByAnotherRoom(int objectId, int room, int owner = 55)
         {
             using VortexDbContext db = new(_options);

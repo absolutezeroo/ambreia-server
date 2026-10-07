@@ -8,7 +8,7 @@ using Xunit;
 namespace Vortex.WebApi.Authentication.Tests;
 
 /// <summary>
-/// The session table both front doors now share. It replaced two implementations that had drifted,
+/// The session table behind the web API. It replaced two implementations that had drifted,
 /// so what is asserted here is the behaviour each of them was missing: a token nobody can guess,
 /// expiry that holds on every read path rather than just the one someone remembered, revocation of
 /// an account's sessions, and a table that does not grow forever because visitors never come back.
@@ -106,8 +106,8 @@ public sealed class AccountSessionStoreTests
     }
 
     /// <summary>
-    /// What a password change needs: revoking the credential is half the job while the sessions it
-    /// already opened keep answering.
+    /// What revoking an account's credential would need: that is half the job while the sessions it
+    /// already opened keep answering. Nothing calls it at the moment.
     /// </summary>
     [Fact]
     public void RevokesEverySessionOfOneAccountAndReportsHowMany()

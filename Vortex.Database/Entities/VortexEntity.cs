@@ -7,8 +7,8 @@ namespace Vortex.Database.Entities;
 public class VortexEntity
 {
     /// <summary>
-    /// Cap for a short, human-written content identifier that takes part in an index — a prize id,
-    /// a campaign code.
+    /// Cap for a short, human-written content identifier that takes part in an index. No entity
+    /// uses it at the moment.
     /// </summary>
     /// <remarks>
     /// An uncapped string becomes <c>varchar(512)</c> in utf8mb4, which is 2048 bytes, and MySQL

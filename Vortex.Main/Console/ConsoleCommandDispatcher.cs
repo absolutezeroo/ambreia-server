@@ -15,9 +15,9 @@ namespace Vortex.Main.Console;
 
 /// <summary>
 /// The operator command set, independent of where the command came from. <see
-/// cref="ConsoleCommandService"/> feeds it stdin; the dashboard console feeds it a typed request
-/// from an authenticated staff member. Output goes to the caller's sink rather than straight to
-/// <c>System.Console</c>, which is what lets the same command answer both.
+/// cref="ConsoleCommandService"/> feeds it stdin, and is today its only caller. Output goes to the
+/// caller's sink rather than straight to <c>System.Console</c>, so another front-end could reach
+/// the same set without a change here.
 /// </summary>
 public sealed class ConsoleCommandDispatcher(IServiceProvider services) : IConsoleCommandDispatcher
 {
@@ -51,14 +51,9 @@ public sealed class ConsoleCommandDispatcher(IServiceProvider services) : IConso
             "Reload a single plugin by key.",
             Capabilities.Server.ConfigManage
         ),
-        // `reload-fishing` was here. It reloaded a grain rather than an IReferenceDataProvider, which
-        // is the only reason it was a separate word for the same idea; the grain is now a named
-        // cache under `reload`, composed in Program.cs.
-        //
-        // The general form of that command, and of every reload button four domains grew
-        // separately. Content written outside an admin service -- a SQL script, a restore -- is
-        // invisible until the cache holding it is read again, and this is the way to do that
-        // without restarting the hotel.
+        // One command for every reference cache. Content written behind the emulator's back -- a
+        // SQL script, a restore -- is invisible until the cache holding it is read again, and this
+        // is the way to do that without restarting the hotel.
         new(
             "reload",
             "reload [provider]",
@@ -165,7 +160,7 @@ public sealed class ConsoleCommandDispatcher(IServiceProvider services) : IConso
                     services.GetRequiredService<IReferenceDataReloader>();
 
                 // With no argument it lists rather than doing anything: the names are type names,
-                // nobody remembers twenty-nine of them, and a reload is not something to guess at.
+                // nobody remembers them, and a reload is not something to guess at.
                 if (args.Length == 0)
                 {
                     write("Reloadable reference caches:");

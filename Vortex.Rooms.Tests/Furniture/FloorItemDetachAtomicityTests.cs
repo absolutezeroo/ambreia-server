@@ -22,12 +22,12 @@ namespace Vortex.Rooms.Tests.Furniture;
 /// <para>
 /// A detach takes the footprint off the map, tells the room, runs the item's own hooks, and only
 /// then drops the identity and the index entry. The hooks are two awaits wide and they are
-/// behaviour code — a wired box rewrites its <c>ExtraData</c> and announces its pile changed, a
-/// mystery box ends a session — so any of them can throw.
+/// behaviour code — a logic can rewrite its <c>ExtraData</c> or tell the room its pile changed —
+/// so any of them can throw.
 /// </para>
 /// <para>
-/// When one did, the item was off the map and still in <c>ItemsById</c> and the logic index. A game
-/// or a wired selector holding that bucket kept acting on furniture that was no longer anywhere,
+/// When one did, the item was off the map and still in <c>ItemsById</c> and the logic index.
+/// Anything holding that bucket kept acting on furniture that was no longer anywhere,
 /// and the tile it had stood on had already forgotten it. This is the detach half of the same
 /// finding as <see cref="FloorItemAttachAtomicityTests" />, and it outlived the attach fix.
 /// </para>
@@ -74,9 +74,8 @@ public sealed class FloorItemDetachAtomicityTests
     }
 
     /// <summary>
-    /// The failure has to reach the caller. <c>RemoveItemByIdAsync</c> credits an inventory after
-    /// this returns, and a detach whose hooks did not finish must not be reported as a clean pickup
-    /// — the row still says this room, so a reload brings the item back rather than losing it.
+    /// The failure has to reach the caller. <c>RemoveItemByIdAsync</c> publishes the pickup after
+    /// this returns, and a detach whose hooks did not finish must not be reported as a clean pickup.
     /// </summary>
     [Fact]
     public async Task AFailedDetach_IsStillReportedAsAFailure()

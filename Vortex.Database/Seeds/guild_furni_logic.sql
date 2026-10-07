@@ -1,8 +1,13 @@
 -- Guild-customized furniture: logic binding and stuff-data format.
 --
+-- Guilds were removed in the 2026-10-07 core cut. None of the logic names written below is a
+-- registered Vortex logic any more, so these furni resolve to the family default; the stuff-data
+-- format still decides how their stored state is parsed.
+--
 -- Every classname below was read out of the shipped assets: each `<classname>.nitro` embeds a JSON
 -- part whose `logicType` names the client logic that renders it. Regenerate this file by scanning
--- the furni pack rather than by hand -- see tools/catalog_converter/README.md ("guild logic seed").
+-- the furni pack rather than by hand (the scanner, tools/catalog_converter, is no longer in this
+-- repository).
 --
 -- Two things are being repaired here, and they must land together:
 --
@@ -12,8 +17,8 @@
 --
 --   * `stuff_data_type` shipped as 0 (LegacyKey). The client logic reads a StringArrayStuffData --
 --     guild id, badge code and both recolours at indices 1..4 -- so the format has to be 2
---     (StringKey). While it stayed 0, InventoryGrain.GrantCatalogOfferAsync refused to stamp the
---     guild identity at all (it gates on StuffDataType.StringKey), which is why guild furni rendered
+--     (StringKey). While it stayed 0, the (since removed) catalog grant path refused to stamp the
+--     guild identity at all (it gated on StuffDataType.StringKey), which is why guild furni rendered
 --     with the client's default colours: white.
 --
 -- Flipping `stuff_data_type` rewrites how existing rows are parsed: a stored legacy `{"data":"5"}`
@@ -150,8 +155,9 @@ UPDATE `furniture_definitions`
 
 -- gld_gate deliberately diverges from the asset, which declares 'furniture_guild_customized' like
 -- every other guild furni: the Flash client derives blocking from the visualization, whereas Vortex
--- resolves walkability server-side and so needs a gate logic. Folding it back into the shared logic
--- would force gate rules onto guild carpets and tiles -- see FurnitureGuildGateLogic.
+-- resolves walkability server-side and so needed a gate logic. Folding it back into the shared logic
+-- would have forced gate rules onto guild carpets and tiles. FurnitureGuildGateLogic went with the
+-- guilds: 'furniture_guild_gate' is unregistered and resolves to the family default.
 UPDATE `furniture_definitions`
    SET `logic` = 'furniture_guild_gate',
        `stuff_data_type` = 2

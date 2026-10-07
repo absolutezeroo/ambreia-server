@@ -11,8 +11,8 @@ namespace Vortex.Hosting.Tests;
 /// The host must name the shared frameworks its plugins run on.
 /// </summary>
 /// <remarks>
-/// The dashboard and the web API are byte-loaded plugins; every Microsoft.AspNetCore.* assembly
-/// they need is resolved by the default context, which holds only the frameworks listed in
+/// The web API is a byte-loaded plugin; every Microsoft.AspNetCore.* assembly it needs is
+/// resolved by the default context, which holds only the frameworks listed in
 /// Vortex.Main.runtimeconfig.json. When the web API stopped being a project reference, nothing in
 /// the host's graph named Microsoft.AspNetCore.App any more, and production started with
 /// "Loaded 0 plugins" and no port 8080. No other test sees it: every test host carries its own

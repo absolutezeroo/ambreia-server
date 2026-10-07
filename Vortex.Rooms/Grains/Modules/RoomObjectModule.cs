@@ -146,13 +146,13 @@ public sealed partial class RoomObjectModule(RoomGrain roomGrain)
     /// </summary>
     /// <remarks>
     /// These three lines were written out by hand at each place an item leaves a room -- a pickup,
-    /// a definition swap -- in the same order every time, which is copies of one invariant and no
-    /// way to notice when one drifts. Nothing here
+    /// a rolled-back attach -- in the same order every time, which is copies of one invariant and
+    /// no way to notice when one drifts. Nothing here
     /// awaits, so no other turn can see the room holding an item in two of the three.
     ///
     /// The spatial removal is deliberately not folded in: each caller runs it at a different point
-    /// relative to its own hooks, and a wired box's <c>OnPickupAsync</c> resolves its pile from the
-    /// tile it used to sit on, so moving that step would change what those hooks see.
+    /// relative to its own hooks, and a logic's <c>OnPickupAsync</c> may read the tile it used to
+    /// sit on, so moving that step would change what those hooks see.
     /// </remarks>
     public void DetachItemFromLiveState(IRoomItem item)
     {
@@ -184,14 +184,13 @@ public sealed partial class RoomObjectModule(RoomGrain roomGrain)
                 // and that gap is two awaits wide. They are behaviour code -- a logic can rewrite its
                 // ExtraData or tell the room its pile changed -- so any of them can throw, and when
                 // one did the item was left off the map but still in ItemsById and still in the
-                // logic index. A game holding the index bucket kept
+                // logic index. Anything holding the index bucket kept
                 // acting on furniture that was no longer anywhere, and the tile it used to stand on
                 // had already forgotten it.
                 //
                 // Whatever the hooks do, the three representations end up agreeing. The exception
-                // still reaches the caller, which is what stops the pickup crediting an inventory
-                // for an item whose hooks did not finish -- and the row still says this room, so a
-                // reload brings it back rather than losing it.
+                // still reaches the caller, which is what stops the pickup publishing its event for
+                // an item whose hooks did not finish.
                 try
                 {
                     await item.Logic.OnDetachAsync(ct);

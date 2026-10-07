@@ -30,7 +30,7 @@ public interface IVortexMetrics
 
     /// <summary>
     /// One step of a room tick finished. <paramref name="step"/> is the fixed step name declared in
-    /// the tick loop ("pets", "wired", ...) — a bounded dimension, so it is safe as a tag.
+    /// the tick loop ("avatars", "flush-tiles", ...) — a bounded dimension, so it is safe as a tag.
     /// </summary>
     void RoomTickStepCompleted(string step, double elapsedMilliseconds);
 
@@ -49,7 +49,7 @@ public interface IVortexMetrics
     /// <summary>
     /// A furniture definition asked for a logic nobody registered and got the family default. The
     /// warning that used to be the only signal is the to-do list for implementing behaviour; a
-    /// counter is how a hotel finds out how much of its catalogue is on it.
+    /// counter is how a hotel finds out how many of its definitions are on it.
     /// </summary>
     void FurnitureLogicFallback(string logicName, string family);
 
@@ -66,8 +66,7 @@ public interface IVortexMetrics
     /// <para>
     /// The control-plane note calls an alert on this priority-one, and it is the only counter here
     /// that is not about performance: a privileged mutation that went unaudited is not slow, it is
-    /// unaccounted for. Not named <c>dashboard.*</c> on purpose — one pipeline carries the game's
-    /// audit too, and a name that claimed otherwise would send an operator looking in one half of it.
+    /// unaccounted for.
     /// </para>
     /// </summary>
     void AuditWriteFailed(string stage);

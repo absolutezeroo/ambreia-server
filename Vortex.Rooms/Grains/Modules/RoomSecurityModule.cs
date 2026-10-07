@@ -27,9 +27,7 @@ public sealed partial class RoomSecurityModule(RoomGrain roomGrain)
 
     public async Task<bool> CanManipulateFurniAsync(ActionContext ctx)
     {
-        // Rights is the floor for building anywhere. In a guild room the group standing is already
-        // folded into the resolved level (GroupRights/GroupAdmin), so guild members and classic
-        // rights-holders are both covered without a separate guild branch here.
+        // Rights is the floor for building anywhere.
         RoomControllerType controllerLevel = await GetControllerLevelAsync(ctx);
 
         return controllerLevel >= RoomControllerType.Rights;
@@ -86,8 +84,8 @@ public sealed partial class RoomSecurityModule(RoomGrain roomGrain)
 
     /// <summary>
     /// Owner-or-rights, answered from live state alone: no permission resolution and no grain call.
-    /// For the paths that run on every single chat line, where
-    /// <see cref="GetControllerLevelAsync"/>'s permission lookup would be paid per message.
+    /// For a hot path where <see cref="GetControllerLevelAsync"/>'s permission lookup would be paid
+    /// per call; nothing calls it yet.
     /// </summary>
     public bool HasExplicitRights(PlayerId playerId) =>
         _roomGrain._state.RoomSnapshot.OwnerId == playerId

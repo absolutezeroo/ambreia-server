@@ -7,8 +7,8 @@ namespace Vortex.Main.Console;
 
 /// <summary>
 /// The stdin front-end onto <see cref="IConsoleCommandDispatcher"/>: reads lines from the operator's
-/// terminal and prints whatever the command writes. The commands themselves live in the dispatcher
-/// so the dashboard console reaches the same set.
+/// terminal and prints whatever the command writes. The commands themselves live in the dispatcher,
+/// which takes an output sink rather than writing to the terminal itself.
 /// </summary>
 public class ConsoleCommandService(IConsoleCommandDispatcher dispatcher)
 {

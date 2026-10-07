@@ -5,7 +5,7 @@ using Vortex.Protocol.Messages.Outgoing.Room.Engine;
 namespace Vortex.Revisions.Revision20260701.Serializers.Room.Engine;
 
 /// <summary>
-///     The client reads nine fields here, not five. After the achievement score it takes a string,
+///     The client reads eight fields here, not five. After the achievement score it takes a string,
 ///     then a length-prefixed list of int triplets, then the badge rank — and it discards all three
 ///     without looking at them, which is why their meaning is not recoverable from the client and
 ///     why the last two are written empty below.

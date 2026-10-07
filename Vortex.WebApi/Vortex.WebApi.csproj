@@ -11,8 +11,8 @@
   <ItemGroup>
     <!--
       What makes the build output a plugin FOLDER: PluginManager reads manifest.json from a directory
-      and byte-loads the assembly it names. Same arrangement as Vortex.Dashboard.API — see its csproj.
-      Vortex.Main must not reference this project; see its csproj.
+      and byte-loads the assembly it names. Vortex.Main must not reference this project; see its
+      csproj.
     -->
     <Content Include="manifest.json" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>

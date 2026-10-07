@@ -131,12 +131,10 @@ public sealed partial class RoomMapModule
             }
 
             // RoomSnapshot.AllowBlocking is misnamed, and the name is what made this wrong: the
-            // column is `allow_blocking` but what is stored in it is the client's *allowWalkThrough*
-            // -- SaveRoomSettingsMessageHandler assigns message.AllowWalkThrough straight into it
-            // and the outgoing serializer writes it straight back out, so the round trip is
-            // consistent and only the reading of it was not. Tested as though it meant "blocking",
-            // it did the exact opposite of the setting: a room with walk-through switched off, the
-            // default, let everyone walk through everyone.
+            // column is `allow_blocking` but what is stored in it is the client's
+            // *allowWalkThrough*, as the room settings packet wrote it. Tested as though it meant
+            // "blocking", it did the exact opposite of the setting: a room with walk-through
+            // switched off, the default, let everyone walk through everyone.
             //
             // ponytail: occupancy is per tile, not per section, so two avatars on two levels of the
             // same tile block each other. Splitting TileAvatarStacks by surface is the next thing to
@@ -174,18 +172,6 @@ public sealed partial class RoomMapModule
         return true;
     }
 
-    /// <summary>
-    /// Whether a step from one tile to the next is walkable, and onto which surface.
-    ///
-    /// <paramref name="fromZ" /> is where the foot is now, and it is what makes this three
-    /// dimensional: the destination is no longer "the tile" but whichever of the tile's surfaces is
-    /// within a step of that altitude with room to stand. On a tile with a raised platform, an
-    /// avatar walking along the floor is offered the floor and one walking along the platform is
-    /// offered the platform — the same tile, two answers.
-    ///
-    /// The step-height limit lives inside that search rather than as a separate test: a surface out
-    /// of reach is simply not returned, so a path that is planned is a path that can be walked.
-    /// </summary>
     /// <summary>
     /// Every surface of the next tile this avatar may step onto from <paramref name="fromZ" />.
     ///
@@ -234,6 +220,18 @@ public sealed partial class RoomMapModule
             || CanAvatarWalk(avatar, ToIdx(fromX, toY), true, true);
     }
 
+    /// <summary>
+    /// Whether a step from one tile to the next is walkable, and onto which surface.
+    ///
+    /// <paramref name="fromZ" /> is where the foot is now, and it is what makes this three
+    /// dimensional: the destination is no longer "the tile" but whichever of the tile's surfaces is
+    /// within a step of that altitude with room to stand. On a tile with a raised platform, an
+    /// avatar walking along the floor is offered the floor and one walking along the platform is
+    /// offered the platform — the same tile, two answers.
+    ///
+    /// The step-height limit lives inside that search rather than as a separate test: a surface out
+    /// of reach is simply not returned, so a path that is planned is a path that can be walked.
+    /// </summary>
     public bool CanAvatarWalkBetween(
         IRoomAvatar avatar,
         int pTileIdx,
@@ -387,14 +385,6 @@ public sealed partial class RoomMapModule
     }
 
     /// <summary>
-    /// How high an avatar stands on a tile: the surface, less whatever the item under it sinks the
-    /// pose by (a chair seats you below its own top).
-    ///
-    /// Asked of the tile's section rather than of the flat arrays. One section today, so the same
-    /// answer; when a tile has several this becomes "which surface", and every caller already
-    /// passes a tile it means rather than a height it guessed.
-    /// </summary>
-    /// <summary>
     /// How high an avatar stands on a *given* surface: the surface itself, less whatever the item
     /// forming it sinks the pose by — a chair seats you below its own top.
     ///
@@ -415,6 +405,14 @@ public sealed partial class RoomMapModule
         return section.Height;
     }
 
+    /// <summary>
+    /// How high an avatar stands on a tile: the surface, less whatever the item under it sinks the
+    /// pose by (a chair seats you below its own top).
+    ///
+    /// Asked of the tile's section rather than of the flat arrays. One section today, so the same
+    /// answer; when a tile has several this becomes "which surface", and every caller already
+    /// passes a tile it means rather than a height it guessed.
+    /// </summary>
     public Altitude GetTileHeightForAvatar(int tileId)
     {
         try

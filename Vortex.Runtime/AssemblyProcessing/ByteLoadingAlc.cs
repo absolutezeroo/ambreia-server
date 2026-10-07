@@ -31,8 +31,8 @@ public sealed class ByteLoadingAlc(
     /// host must agree on are not only the ones this project wrote.
     /// </para>
     /// <para>
-    /// The dashboard is what proved it. It publishes <c>Microsoft.EntityFrameworkCore</c> beside
-    /// itself, like any project with that package reference; the prefix test let that copy be
+    /// A plugin with an EF Core package reference is what proved it. It publishes
+    /// <c>Microsoft.EntityFrameworkCore</c> beside itself; the prefix test let that copy be
     /// byte-loaded, so the plugin got its own <c>DbContext</c> type while <c>VortexDbContext</c>
     /// still derived from the host's. Registering <c>IDbContextFactory&lt;VortexDbContext&gt;</c>
     /// then failed with "violates the constraint of type parameter 'TContext'" — a constraint that

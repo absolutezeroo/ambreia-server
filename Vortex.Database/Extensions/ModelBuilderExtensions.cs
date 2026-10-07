@@ -18,8 +18,8 @@ public static class ModelBuilderExtensions
     /// Applies a global <c>DeletedAt == null</c> query filter to every mapped <see cref="VortexEntity"/>,
     /// so soft-deleted rows are excluded from every LINQ query by default instead of relying on each
     /// call site remembering to add <c>.Where(x =&gt; x.DeletedAt == null)</c>. Call sites that must
-    /// still see soft-deleted rows (e.g. reviving a previously soft-deleted ban/mute on re-application)
-    /// opt out per query with <c>.IgnoreQueryFilters()</c>.
+    /// still see soft-deleted rows (e.g. to revive one) opt out per query with
+    /// <c>.IgnoreQueryFilters()</c>.
     /// </summary>
     public static void ApplySoftDeleteQueryFilter(this ModelBuilder mb)
     {

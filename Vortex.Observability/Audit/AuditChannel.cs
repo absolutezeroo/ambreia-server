@@ -6,8 +6,8 @@ namespace Vortex.Observability.Audit;
 
 /// <summary>
 /// Bounded, in-process queue decoupling durable-observability emission (hot path, many producers)
-/// from persistence (single background writer). It carries every durable record family — audit,
-/// economy ledger and item forensics. Bounded so a database stall can never grow memory without
+/// from persistence (single background writer). It carries every durable record family — audit
+/// and item forensics. Bounded so a database stall can never grow memory without
 /// limit; producers never block — a full channel drops the write and is surfaced as a log by the
 /// emitting sink.
 /// </summary>

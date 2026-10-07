@@ -17,13 +17,11 @@ public class RoomConfig
     public int RoomDeactivationDelayMs { get; init; } = 1800000;
 
     /// <summary>
-    /// How often live room occupancy is written back to <c>rooms.users_now</c>, and the top-rated
-    /// ranking recomputed with it.
+    /// How often live room occupancy is written back to <c>rooms.users_now</c>.
     /// <para>
-    /// It cannot ride on <see cref="RoomCheckMs"/>: that sweep is the deactivation clock and runs
-    /// every five minutes, which is far too stale for the navigator, whose room lists are ordered
-    /// and <em>truncated</em> in SQL on this column — a busy room the database still believes is
-    /// empty does not merely sort low, it falls out of the page entirely.
+    /// It does not ride on <see cref="RoomCheckMs"/>: that sweep is the deactivation clock and runs
+    /// every five minutes, which is far too stale for any room list ordered on this column. Nothing
+    /// in-game reads the column yet; it is kept for a future zone list or web API.
     /// </para>
     /// </summary>
     public int RoomPopulationFlushMs { get; init; } = 30000;
@@ -39,8 +37,7 @@ public class RoomConfig
     /// </para>
     /// <para>
     /// It costs nothing in pacing. Every system that cares about timing keeps its own wall-clock
-    /// boundary — avatars move on <see cref="AvatarTickMs"/>, pets on their own tick,
-    /// items flush on <see cref="DirtyItemsTickMs"/> — and this only decides how promptly a boundary
+    /// boundary — avatars move on <see cref="AvatarTickMs"/>, items flush on <see cref="DirtyItemsTickMs"/> — and this only decides how promptly a boundary
     /// that has come due gets noticed, so the error is bounded by one tick.
     /// </para>
     /// </summary>

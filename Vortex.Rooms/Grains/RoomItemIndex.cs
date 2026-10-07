@@ -9,21 +9,18 @@ namespace Vortex.Rooms.Grains;
 /// Incrementally maintained index of the room's items by the type of their attached logic — the
 /// concrete type, every base class, and every interface it implements — so
 /// <c>ItemsOf&lt;SomeFamilyBaseLogic&gt;()</c> finds a whole family and
-/// <c>ItemsOf&lt;IArenaTileComponent&gt;()</c> finds everything playing that role, whichever class
-/// happens to provide it. It replaces the "walk all of <c>ItemsById</c> and pattern-match the logic"
-/// scans that every game system used to carry — those ran on the hot path (the game-timer one on
-/// every 50 ms frame).
+/// <c>ItemsOf&lt;ISomeRole&gt;()</c> finds everything playing that role, whichever class
+/// happens to provide it, without walking all of <c>ItemsById</c> and pattern-matching the logic.
 /// <para>
-/// Interfaces are indexed because that is what capability-based game furniture asks for: a game
+/// Interfaces are indexed because that is what capability-based furniture asks for: a caller
 /// wants "the goals in this room", not "every subclass of a goal base class". The extra buckets are
 /// a handful of references per item and are built once, at attach.
 /// </para>
 /// <para>
 /// Invariant: an item is in the index if and only if it is in <see cref="RoomLiveState.ItemsById"/>
-/// with its logic attached. The places an item leaves the live state (pickup/removal in
-/// <c>RoomObjectModule.RemoveObjectAsync</c>, the definition swap in <c>RoomGrain.Furni.Edit.cs</c>)
-/// and the one place logic attaches
-/// (<c>RoomObjectModule.AttatchLogicAsync</c>) all notify it — a new mutation path for
+/// with its logic attached. The one place an item leaves the live state (pickup/removal in
+/// <c>RoomObjectModule.RemoveObjectAsync</c>) and the one place logic attaches
+/// (<c>RoomObjectModule.AttatchLogicAsync</c>) both notify it — a new mutation path for
 /// <c>ItemsById</c> MUST do the same or the index silently goes stale.
 /// </para>
 /// All access happens inside the room grain's single-threaded turn, so no locking.
@@ -87,8 +84,8 @@ public sealed class RoomItemIndex
         where TLogic : class, IRoomObjectLogic =>
         _itemsByLogicType.TryGetValue(typeof(TLogic), out HashSet<IRoomItem>? bucket) ? bucket : [];
 
-    /// <summary>How many items play <typeparamref name="TLogic"/>'s role. O(1) — what arena
-    /// validation counts with instead of materialising a list it throws away.</summary>
+    /// <summary>How many items play <typeparamref name="TLogic"/>'s role. O(1) — counts without
+    /// materialising a list it throws away.</summary>
     public int CountOf<TLogic>()
         where TLogic : class, IRoomObjectLogic =>
         _itemsByLogicType.TryGetValue(typeof(TLogic), out HashSet<IRoomItem>? bucket)

@@ -13,8 +13,9 @@ namespace Vortex.Rooms.Object.Logic.Furniture.Floor;
 /// Four numbers in one array, read by position on the client's side — state, hue, saturation,
 /// lightness — which is why these three definitions are the catalogue's only number-array furni.
 /// The toner's on/off is the ordinary state at index 0, not a separate concept: its widget sends a
-/// plain <c>UseFurniture</c> for the switch and this packet only for the colour, so the inherited
-/// toggle is exactly right and is deliberately left alone.
+/// plain <c>UseFurniture</c> for the switch and a separate packet only for the colour, so the
+/// inherited toggle is exactly right and is deliberately left alone. The colour packet has no
+/// handler since the cut of 2026-10-07; nothing calls <see cref="SetColorAsync"/> yet.
 /// </remarks>
 [RoomObjectLogic("furniture_background_color")]
 public class FurnitureBackgroundColorLogic(
@@ -28,7 +29,8 @@ public class FurnitureBackgroundColorLogic(
     private const int FieldCount = 4;
 
     /// <summary>Hue is a full turn, the other two are percentages — the widget's own slider ranges.
-    /// Clamped rather than trusted: the sliders stay in range but the packet is four bare ints.</summary>
+    /// Clamped rather than trusted: the sliders stay in range but the client's packet is four bare
+    /// ints.</summary>
     public Task SetColorAsync(int hue, int saturation, int lightness)
     {
         if (StuffData is not INumberStuffData numbers)

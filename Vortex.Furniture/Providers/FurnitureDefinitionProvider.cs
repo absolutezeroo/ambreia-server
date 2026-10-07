@@ -30,19 +30,17 @@ public sealed class FurnitureDefinitionProvider(
     private readonly IVortexMetrics _metrics = metrics;
     private readonly ILogger<IFurnitureDefinitionProvider> _logger = logger;
 
-    // Stage 0: CatalogSnapshotProvider<T> and MembershipGiftProvider read furniture definitions
-    // during their own reload (see stage 1), so this must finish first.
+    // Stage 0: loaded with the first batch, since it depends on no other provider.
     public int LoadStage => 0;
 
     /// <summary>
     /// Both indexes and the version they were built at, published as one object.
     /// </summary>
     /// <remarks>
-    /// They used to be two fields assigned one after the other, so an admin reload had a window in
+    /// They used to be two fields assigned one after the other, so a reload had a window in
     /// which a reader could see the new definitions by id and the old ones by name. Small window,
     /// rare event, and a bug that would have been extremely hard to recognise from its symptoms —
     /// which is exactly the argument for closing it while it costs one object.
-    /// <c>CatalogSnapshotProvider</c> already publishes this way; this is the provider that did not.
     /// </remarks>
     private sealed record FurnitureDefinitionSet
     {
