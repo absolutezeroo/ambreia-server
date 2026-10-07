@@ -9,17 +9,6 @@ namespace Vortex.Primitives.Rooms;
 
 public partial interface IRoomService
 {
-    Task<(RoomId RoomId, string Name)> CreateRoomAsync(
-        string name,
-        string description,
-        string modelName,
-        int categoryId,
-        int maxPlayers,
-        RoomTradeModeType tradeType,
-        PlayerId playerId,
-        CancellationToken ct
-    );
-
     public Task OpenRoomForPlayerIdAsync(
         ActionContext ctx,
         PlayerId playerId,

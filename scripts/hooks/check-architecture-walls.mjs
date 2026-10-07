@@ -240,10 +240,7 @@ const CORE = [
   'Networking', 'Pipeline', 'Protocol', 'Messages', 'Revisions', 'PacketHandlers', 'Runtime',
   'Crypto', 'Database', 'Events', 'Logging', 'Observability', 'Plugins', 'Primitives',
 ];
-const PLATFORM = [
-  'Rooms', 'Players', 'Inventory', 'Furniture', 'Social', 'Marketplace', 'Signals', 'Progression',
-  'Fishing', 'Catalog', 'Permissions', 'Navigator',
-];
+const PLATFORM = ['Rooms', 'Players', 'Furniture', 'Permissions'];
 const layerOf = (project) => {
   const name = project.replace(/^Vortex\./, '');
   if (CORE.includes(name)) return 'Core';

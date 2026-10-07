@@ -1,8 +1,6 @@
 using System;
 using System.Collections.Generic;
-using Vortex.Primitives.Groups.Enums;
 using Vortex.Primitives.Orleans.Snapshots.Room;
-using Vortex.Primitives.Pets.Snapshots;
 using Vortex.Primitives.Players;
 using Vortex.Primitives.Rooms;
 using Vortex.Primitives.Rooms.Enums;
@@ -38,16 +36,6 @@ public sealed class RoomLiveState
     public HashSet<RoomObjectId>[] TileAvatarStacks { get; internal set; } = [];
 
     public HashSet<PlayerId> PlayerIdsWithRights { get; } = [];
-
-    /// <summary>Member ranks for the guild that owns this room, keyed by player id. Empty when the
-    /// room has no guild. Hydrated on room load and kept in sync by
-    /// <c>RoomGrain.RefreshGroupMembershipAsync</c> — <see cref="Modules.RoomSecurityModule"/> reads
-    /// it for every controller-level check, so it must never go stale while the room is active.</summary>
-    public Dictionary<PlayerId, GroupMemberRank> GroupMemberRanks { get; } = [];
-
-    /// <summary>Mirrors the owning guild's <c>admin_only_decoration</c> setting: when true, plain
-    /// guild members get no build rights in the base room.</summary>
-    public bool GroupAdminOnlyDecoration { get; internal set; } = false;
 
     public Dictionary<string, string> RoomProperties { get; } = [];
 

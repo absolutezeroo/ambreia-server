@@ -10,10 +10,8 @@ using Microsoft.Extensions.Options;
 using Orleans;
 using Vortex.Database.Context;
 using Vortex.Database.Entities.Furniture;
-using Vortex.Database.Entities.Pets;
 using Vortex.Primitives.Furniture.Enums;
 using Vortex.Primitives.Furniture.Snapshots.StuffData;
-using Vortex.Primitives.Pets.Snapshots;
 using Vortex.Primitives.Players;
 using Vortex.Primitives.Rooms;
 using Vortex.Primitives.Rooms.Enums;
@@ -132,37 +130,6 @@ public sealed class RoomPersistenceLossWindowTests
         h.OwnerOf(1).Should().Be(55, "and the owner it was traded to keeps it");
     }
 
-    /// <summary>
-    /// PET-TICK-044: the pet stats used to be written by the room itself, from inside its tick.
-    /// They come here now, on the clock that already writes the furniture.
-    /// </summary>
-    [Fact]
-    public async Task EnqueuedPets_AreWrittenOnTheSameFlush()
-    {
-        using Harness h = new(maxPerFlush: 100);
-
-        await h.EnqueuePetAsync(petId: 1, experience: 42);
-        await h.DeactivateAsync();
-
-        h.PetExperience(1).Should().Be(42);
-    }
-
-    [Fact]
-    public async Task APetTheDatabaseRefused_IsKeptForTheNextFlush()
-    {
-        using Harness h = new(maxPerFlush: 100) { Fail = true };
-
-        await h.EnqueuePetAsync(petId: 1, experience: 42);
-        await h.DeactivateAsync();
-
-        h.PetExperience(1).Should().Be(0, "the save never happened");
-
-        h.Fail = false;
-        await h.DeactivateAsync();
-
-        h.PetExperience(1).Should().Be(42, "and the queue still had it");
-    }
-
     /// <remarks>
     /// SQLite rather than the InMemory provider, which every other grain suite here uses. The
     /// removal is a conditional claim -- one UPDATE carrying its own guard -- and InMemory does not
@@ -251,40 +218,6 @@ public sealed class RoomPersistenceLossWindowTests
         /// </summary>
         public Task DeactivateAsync() => _grain.OnDeactivateAsync(Reason(), CancellationToken.None);
 
-        /// <summary>Seeds a pet row and hands the grain a snapshot of it with new stats.</summary>
-        public async Task EnqueuePetAsync(int petId, int experience)
-        {
-            using (VortexDbContext db = new(_options))
-            {
-                // Raw SQL for the same reason the furniture rows are: EF writes neither timestamp
-                // and EnsureCreated leaves both NOT NULL without a default.
-                db.Database.ExecuteSqlRaw(
-                    """
-                    INSERT INTO pets (id, player_id, room_id, name, type, skin, color, gender,
-                                      level, experience, has_saddle, riding_permission, x, y, z,
-                                      direction, created_at, updated_at)
-                    VALUES ({0}, 1, NULL, 'pet', 0, 0, 'ffffff', 0,
-                            1, 0, 0, 0, 0, 0, 0,
-                            0, datetime('now'), datetime('now'))
-                    """,
-                    petId
-                );
-            }
-
-            await _grain.EnqueueDirtyPetsAsync(
-                new RoomId((int)ROOM),
-                [PetSnapshotWith(petId, experience)],
-                CancellationToken.None
-            );
-        }
-
-        public int PetExperience(int petId)
-        {
-            using VortexDbContext db = new(_options);
-
-            return db.Pets.Single(pet => pet.Id == petId).Experience;
-        }
-
         /// <summary>
         /// The room's own tick path: one batch of snapshots of items that are in the room. Separate
         /// from <see cref="EnqueueAsync" /> because it is a separate method on the grain, and the
@@ -336,25 +269,6 @@ public sealed class RoomPersistenceLossWindowTests
 
             return db.Set<FurnitureEntity>().Count(f => f.X == f.Id);
         }
-
-        private static PetSnapshot PetSnapshotWith(int petId, int experience) =>
-            new()
-            {
-                PetId = petId,
-                OwnerId = new PlayerId(1),
-                RoomId = (int)ROOM,
-                Name = "pet",
-                Type = 0,
-                Skin = 0,
-                Color = "ffffff",
-                Gender = AvatarGenderType.Male,
-                Level = 1,
-                Experience = experience,
-                X = 0,
-                Y = 0,
-                Z = 0,
-                Direction = Rotation.South,
-            };
 
         private static DeactivationReason Reason() =>
             new(DeactivationReasonCode.ShuttingDown, "test");

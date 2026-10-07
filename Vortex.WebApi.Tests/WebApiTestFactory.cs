@@ -14,7 +14,6 @@ using Microsoft.Extensions.Options;
 using Vortex.Database.Context;
 using Vortex.Primitives.Authentication;
 using Vortex.Primitives.Hosting;
-using Vortex.Primitives.Moderation.WordFilter;
 using Vortex.Primitives.Observability;
 using Vortex.WebApi.Configuration;
 using Vortex.WebApi.Hosting;
@@ -87,10 +86,6 @@ internal sealed class WebApiTestFactory : IAsyncDisposable
 
         builder.Services.AddSingleton<IDbContextFactory<VortexDbContext>>(DbContexts);
 
-        // Forwarded in production (WebApiWebHost.ForwardSingletons) — the same instance the grains
-        // filter with. Registered here so check-webapi-forwarding.mjs finds the three lists agree.
-        builder.Services.AddSingleton<IWordFilter>(WordFilter);
-
         WebApiAppConfigurator.ConfigureServices(builder.Services, config);
 
         _app = builder.Build();
@@ -118,12 +113,6 @@ internal sealed class WebApiTestFactory : IAsyncDisposable
     }
 
     public WebApiSessionStore Sessions { get; }
-
-    /// <summary>
-    /// The hotel-wide word filter the routes see. Passes everything unless
-    /// a test sets its <see cref="FakeWordFilter.Answer"/>.
-    /// </summary>
-    public FakeWordFilter WordFilter { get; } = new();
 
     /// <summary>The in-memory database behind the app, so a test can seed the rows it is about.</summary>
     public IDbContextFactory<VortexDbContext> DbContexts { get; }

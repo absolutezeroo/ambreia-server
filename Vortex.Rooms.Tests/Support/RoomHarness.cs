@@ -17,7 +17,6 @@ using Vortex.Primitives.Action;
 using Vortex.Primitives.Commerce;
 using Vortex.Primitives.Events;
 using Vortex.Primitives.Furniture.Providers;
-using Vortex.Primitives.Inventory.Grains;
 using Vortex.Primitives.Navigator.Enums;
 using Vortex.Primitives.Networking;
 using Vortex.Primitives.Observability;
@@ -25,8 +24,6 @@ using Vortex.Primitives.Orleans.Snapshots.Players;
 using Vortex.Primitives.Orleans.Snapshots.Room;
 using Vortex.Primitives.Orleans.Snapshots.Room.Settings;
 using Vortex.Primitives.Permissions;
-using Vortex.Primitives.Pets.Providers;
-using Vortex.Primitives.Pets.Snapshots;
 using Vortex.Primitives.Players;
 using Vortex.Primitives.Players.Grains;
 using Vortex.Primitives.Rooms;
@@ -441,26 +438,8 @@ internal sealed class RoomHarness
                 return FakeProxy.Create<IRoomPersistenceGrain>(_ => null);
             }
 
-            // Furniture handed back to a player -- a saddle taken off a pet. Recorded so a test can
-            // count what reached the inventory; the inventory grain has a suite of its own.
-            if (call.Method.GetGenericArguments()[0] == typeof(IInventoryGrain))
-            {
-                PlayerId holder = new((int)(long)call.Args![0]!);
-
-                return FakeProxy.Create<IInventoryGrain>(inner =>
-                {
-                    if (inner.Method.Name == nameof(IInventoryGrain.GrantFurnitureDefinitionAsync))
-                    {
-                        FurnitureGranted.Add((holder, (int)inner.Args![0]!));
-                    }
-
-                    return null;
-                });
-            }
-
-            // Games read their live balance from the server config on every round start. An empty
-            // batch snapshot (and the caller's own fallback for single reads) gives them the compiled
-            // defaults, which is what a hotel with no admin overrides runs on anyway.
+            // An empty batch snapshot (and the caller's own fallback for single reads) gives the
+            // compiled defaults, which is what a hotel with no admin overrides runs on anyway.
             if (call.Method.GetGenericArguments()[0] == typeof(IServerConfigGrain))
             {
                 return FakeProxy.Create<IServerConfigGrain>(inner =>

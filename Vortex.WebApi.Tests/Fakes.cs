@@ -9,7 +9,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using Vortex.Primitives.Authentication;
 using Vortex.Primitives.Events;
-using Vortex.Primitives.Moderation.WordFilter;
 using Vortex.Primitives.Observability;
 using Vortex.WebApi.Services;
 using Vortex.WebApi.Session;
@@ -108,32 +107,6 @@ internal sealed class FakePlayerService : IWebApiPlayerService
 
     public Task<bool> SetNameAsync(int playerId, string name, CancellationToken ct) =>
         Task.FromResult(name != TakenName);
-
-    public Task<bool> SaveFigureAsync(
-        int playerId,
-        string figureString,
-        string gender,
-        CancellationToken ct
-    ) => Task.FromResult(playerId > 0);
-
-    public Task<AvatarInfo?> GetAvatarAsync(int playerId, CancellationToken ct) =>
-        Task.FromResult<AvatarInfo?>(null);
-
-    public Task<PlayerPurse?> GetPurseAsync(int playerId, CancellationToken ct) =>
-        Task.FromResult<PlayerPurse?>(new PlayerPurse(12480, 36, 2145, 27));
-
-    // Private to start with, like the column's default, so a test that saves can tell it moved.
-    private readonly Dictionary<int, bool> _visible = [];
-
-    public Task<bool?> GetProfileVisibleAsync(int playerId, CancellationToken ct) =>
-        Task.FromResult<bool?>(_visible.GetValueOrDefault(playerId));
-
-    public Task<bool> SetProfileVisibleAsync(int playerId, bool visible, CancellationToken ct)
-    {
-        _visible[playerId] = visible;
-
-        return Task.FromResult(true);
-    }
 }
 
 /// <summary>
@@ -148,34 +121,4 @@ internal sealed class RecordingAuditSink : IAuditSink
     public IReadOnlyCollection<AuditEvent> Events => _events.ToArray();
 
     public void Emit(in AuditEvent auditEvent) => _events.Enqueue(auditEvent);
-}
-
-/// <summary>
-/// The hotel-wide word filter, answering whatever the test says. An empty list by default: every
-/// text comes back untouched, which is what every test that is not about the filter needs.
-/// </summary>
-/// <remarks>
-/// The matching itself is tested where it lives (<c>Vortex.Hosting.Tests/WordFilter</c>); what is
-/// worth testing here is what the web API does with each answer.
-/// </remarks>
-internal sealed class FakeWordFilter : IWordFilter
-{
-    public Func<string, WordFilterResult> Answer { get; set; } =
-        text => new WordFilterResult(text, false, false);
-
-    /// <summary>Every <see cref="Apply"/> call, in order — the ones that would be journaled.</summary>
-    public List<(string Text, WordFilterSource Source, int PlayerId)> Applied { get; } = [];
-
-    public string RefusedMessage => WordFilterConfig.RefusedMessageDefault;
-
-    public WordFilterResult Apply(string text, WordFilterSource source, int playerId)
-    {
-        Applied.Add((text, source, playerId));
-
-        return Answer(text);
-    }
-
-    public WordFilterResult Test(string text) => Answer(text);
-
-    public Task ReloadAsync(CancellationToken ct) => Task.CompletedTask;
 }

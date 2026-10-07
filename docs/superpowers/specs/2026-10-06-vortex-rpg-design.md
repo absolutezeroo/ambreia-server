@@ -662,11 +662,17 @@ dégât entre joueurs. Champs de bataille et classement : OUVERT.
 
 ### 16.1 Organisation — APPROUVÉ
 
-Une feature par domaine dans `vortex-engine/src/habbo/rpg/` (`combat`, `character`, `skills`,
-`quests`, `professions`, `group`, `shop`…), chacune avec ses messages, son état et ses fenêtres. Les
-features communiquent par events client (`CombatTargetChanged`, `PlayerStatsUpdated`,
-`QuestProgressUpdated`…), jamais par références directes. Les fenêtres sont des layouts XML Glaze
-`vortex-client/src/vortex-layouts/vortex_rpg_*_xml.xml`.
+**Détaillée par** `vortex-rpg-client/docs/superpowers/specs/2026-10-07-client-architecture-design.md`
+(2026-10-07), qui découpe le client en paquets (`@vortex/common`, `net`, `avatar`, `iso`, `ui`,
+`kernel`, `protocol`, `game`) ; en cas de conflit, elle prévaut pour le client.
+
+Une feature par domaine dans `@vortex/game` (`features/combat`, `character`, `skills`, `quests`,
+`professions`, `group`, `shop`…), chacune déclarée par `defineFeature` avec ses messages
+(Incoming / Outgoing / Parser / Serializer / Handler / Map, en miroir du serveur), sa section de
+config, son état, ses fenêtres et ses layouts XML Glaze `vortex_rpg_*_xml.xml`. Les features
+communiquent par events client (`CombatTargetChanged`, `PlayerStatsUpdated`,
+`QuestProgressUpdated`…), jamais par références directes. Les numéros de messages du client sont
+générés depuis `Vortex.Revisions/Revision20260701/Headers.cs`.
 
 ### 16.2 Fenêtres et onglets — APPROUVÉ
 

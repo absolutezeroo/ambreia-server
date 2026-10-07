@@ -25,10 +25,4 @@ public interface IRoomPlayer : IRoomAvatar<IRoomPlayer, IRoomPlayerLogic, IRoomP
     public string GroupName { get; }
     public bool UpdateWithPlayer(PlayerSummarySnapshot snapshot);
     public bool SetDance(AvatarDanceType danceType = AvatarDanceType.None);
-
-    /// <summary>
-    /// Points the avatar's guild badge at <paramref name="groupId"/>; 0 or less clears it. Returns
-    /// true only when something changed, so a no-op favourite toggle costs no room broadcast.
-    /// </summary>
-    public bool SetFavouriteGroup(int groupId, string groupName);
 }

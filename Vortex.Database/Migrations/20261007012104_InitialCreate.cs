@@ -6985,31 +6985,13 @@ namespace Vortex.Database.Migrations
             // Reference data, in the order the squashed migrations applied it (M0). Each file is
             // under Vortex.Database/Seeds and SeedCatalogTests checks every embedded one is here.
             migrationBuilder.Sql(SeedScripts.Read("seed_world_owner.sql"));
-            migrationBuilder.Sql(SeedScripts.Read("add_marketplace_settings.sql"));
-            migrationBuilder.Sql(SeedScripts.Read("add_achievements.sql"));
-            migrationBuilder.Sql(SeedScripts.Read("seed_more_achievements_fix_categories.sql"));
-            migrationBuilder.Sql(SeedScripts.Read("add_quests.sql"));
-            migrationBuilder.Sql(SeedScripts.Read("add_daily_quests.sql"));
-            migrationBuilder.Sql(SeedScripts.Read("add_seasonal_quest.sql"));
             migrationBuilder.Sql(SeedScripts.Read("add_server_config.sql"));
-            migrationBuilder.Sql(SeedScripts.Read("group_badge_parts.sql"));
-            migrationBuilder.Sql(SeedScripts.Read("group_colors.sql"));
-            migrationBuilder.Sql(SeedScripts.Read("catalog_pet_products.sql"));
             migrationBuilder.Sql(SeedScripts.Read("guild_furni_logic.sql"));
             migrationBuilder.Sql(SeedScripts.Read("furni_logic_bindings.sql"));
             migrationBuilder.Sql(SeedScripts.Read("furni_stuff_data_types.sql"));
             migrationBuilder.Sql(SeedScripts.Read("highscore_families.sql"));
-            migrationBuilder.Sql(SeedScripts.Read("navigator_configuration.sql"));
-            migrationBuilder.Sql(SeedScripts.Read("currencies.sql"));
-            migrationBuilder.Sql(SeedScripts.Read("purchasable_clothing.sql"));
-            migrationBuilder.Sql(SeedScripts.Read("fishing.sql"));
             migrationBuilder.Sql(SeedScripts.Read("furni_logic_self_named_rebind.sql"));
-            migrationBuilder.Sql(SeedScripts.Read("achievement_client_level_caps.sql"));
-            migrationBuilder.Sql(SeedScripts.Read("achievement_catalogue.sql"));
-            migrationBuilder.Sql(SeedScripts.Read("pet_levels.sql"));
-            migrationBuilder.Sql(SeedScripts.Read("pet_skins.sql"));
             migrationBuilder.Sql(SeedScripts.Read("categorize_room_decorations.sql"));
-            migrationBuilder.Sql(SeedScripts.Read("add_catalog_gift_wrappings.sql"));
         }
 
         /// <inheritdoc />

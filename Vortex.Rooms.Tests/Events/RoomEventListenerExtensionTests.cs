@@ -88,7 +88,7 @@ public sealed class RoomEventListenerExtensionTests
 
         await harness
             .Grain.PublishRoomEventAsync(
-                new PeriodicRoomEvent { RoomId = harness.Grain.RoomId },
+                new ProbeRoomEvent { RoomId = harness.Grain.RoomId },
                 CancellationToken.None
             )
             .ConfigureAwait(true);
@@ -145,3 +145,6 @@ public sealed class UnmarkedListener : IRoomEventListener
 {
     public Task OnRoomEventAsync(RoomEvent evt, CancellationToken ct) => Task.CompletedTask;
 }
+
+/// <summary>A room event of the test's own: the periodic one it borrowed left with the cut.</summary>
+internal sealed record ProbeRoomEvent : RoomEvent;

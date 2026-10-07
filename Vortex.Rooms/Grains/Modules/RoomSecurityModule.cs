@@ -9,7 +9,6 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Vortex.Database.Context;
 using Vortex.Primitives.Action;
-using Vortex.Primitives.Groups.Enums;
 using Vortex.Primitives.Orleans;
 using Vortex.Primitives.Orleans.Snapshots.Room;
 using Vortex.Primitives.Permissions;
@@ -76,34 +75,6 @@ public sealed partial class RoomSecurityModule(RoomGrain roomGrain)
         return FurniturePickupType.None;
     }
 
-    /// <summary>
-    /// Whether the subject holds the staff capability for <paramref name="action"/> (or the
-    /// room-wide moderate-any / wildcard). Kept separate from the controller level because staff
-    /// moderation must not imply build rights — see <see cref="RoomModerationPolicy.CanModerate"/>.
-    /// </summary>
-    public async Task<bool> HasStaffModerationCapabilityAsync(
-        ActionContext ctx,
-        ModerationAction action
-    )
-    {
-        // An unfilled context is nobody and moderates nothing. Everything else that is not a player
-        // -- system, wired, a bot, a plugin -- is the server acting on its own behalf and carries no
-        // capabilities to resolve.
-        if (ctx.Origin == ActionOrigin.None)
-        {
-            return false;
-        }
-
-        if (ctx.Origin != ActionOrigin.Player)
-        {
-            return true;
-        }
-
-        PermissionSet permissions = await ResolvePermissionsAsync(ctx);
-
-        return ModerationPolicy.IsAllowed(permissions, action);
-    }
-
     public async Task<bool> GetIsRoomOwnerAsync(ActionContext ctx)
     {
         bool isExplicitOwner = _roomGrain._state.RoomSnapshot.OwnerId == ctx.PlayerId;
@@ -139,31 +110,7 @@ public sealed partial class RoomSecurityModule(RoomGrain roomGrain)
             permissions,
             isExplicitOwner,
             hasExplicitRights,
-            ResolveGroupContext(ctx.PlayerId)
-        );
-    }
-
-    /// <summary>
-    /// The subject's standing in the guild that owns this room, read from the live membership cache
-    /// hydrated on room load. Returns <see cref="RoomGroupContext.None"/> for non-guild rooms and for
-    /// players who hold no membership row.
-    /// </summary>
-    private RoomGroupContext ResolveGroupContext(PlayerId playerId)
-    {
-        if (_roomGrain._state.RoomSnapshot.GroupId is null)
-        {
-            return RoomGroupContext.None;
-        }
-
-        if (!_roomGrain._state.GroupMemberRanks.TryGetValue(playerId, out GroupMemberRank rank))
-        {
-            return RoomGroupContext.None;
-        }
-
-        return new RoomGroupContext(
-            IsMember: true,
-            IsAdmin: rank == GroupMemberRank.Admin,
-            MembersCanDecorate: !_roomGrain._state.GroupAdminOnlyDecoration
+            RoomGroupContext.None
         );
     }
 
@@ -175,30 +122,6 @@ public sealed partial class RoomSecurityModule(RoomGrain roomGrain)
         }
 
         return _roomGrain._permissionService.ResolveForPlayerAsync(ctx.PlayerId);
-    }
-
-    /// <summary>
-    /// Whether a hotel-wide capability holds for this player, for the grain methods that answer to a
-    /// staff power rather than to an in-room controller level.
-    /// </summary>
-    /// <remarks>
-    /// Those methods used to leave the check to their packet handler. A handler is not a security
-    /// boundary: the method is a member of a public grain interface, callable by anything in the
-    /// cluster that can name the room (ROOMG-GATE-038). The handler keeps its own check — it answers
-    /// the client without waking a room — and this is the one that decides.
-    /// </remarks>
-    public async Task<bool> HasCapabilityAsync(PlayerId actor, string capability)
-    {
-        if (actor <= 0)
-        {
-            return false;
-        }
-
-        PermissionSet permissions = await _roomGrain
-            ._permissionService.ResolveForPlayerAsync(actor)
-            .ConfigureAwait(true);
-
-        return permissions.Has(capability);
     }
 
     public async Task RefreshControllerLevelForPlayerAsync(PlayerId playerId, CancellationToken ct)
@@ -264,52 +187,6 @@ public sealed partial class RoomSecurityModule(RoomGrain roomGrain)
             _roomGrain._logger.LogError(
                 ex,
                 "Failed to load controllers for room {RoomId}.",
-                _roomGrain._state.RoomId
-            );
-
-            return [];
-        }
-    }
-
-    /// <summary>
-    /// The room's bans that have not yet expired. Unchecked, same contract as
-    /// <see cref="LoadControllersAsync"/>.
-    /// </summary>
-    public async Task<ImmutableArray<RoomControllerSnapshot>> LoadBannedUsersAsync(
-        CancellationToken ct
-    )
-    {
-        try
-        {
-            await using VortexDbContext dbCtx = await _roomGrain
-                ._dbCtxFactory.CreateDbContextAsync(ct)
-                .ConfigureAwait(true);
-
-            DateTime now = DateTime.UtcNow;
-
-            List<RoomControllerSnapshot> result = await dbCtx
-                .RoomBans.AsNoTracking()
-                .Include(b => b.PlayerEntity)
-                .Where(b =>
-                    b.RoomEntityId == _roomGrain._state.RoomId.Value
-                    && b.DeletedAt == null
-                    && b.DateExpires > now
-                )
-                .Select(b => new RoomControllerSnapshot
-                {
-                    PlayerId = b.PlayerEntityId,
-                    Name = b.PlayerEntity.Name,
-                })
-                .ToListAsync(ct)
-                .ConfigureAwait(true);
-
-            return [.. result];
-        }
-        catch (Exception ex)
-        {
-            _roomGrain._logger.LogError(
-                ex,
-                "Failed to load banned users for room {RoomId}.",
                 _roomGrain._state.RoomId
             );
 

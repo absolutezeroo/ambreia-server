@@ -10,8 +10,6 @@ using Microsoft.Extensions.Options;
 using Orleans;
 using Vortex.Database.Context;
 using Vortex.Database.Entities.Furniture;
-using Vortex.Database.Entities.Pets;
-using Vortex.Primitives.Pets.Snapshots;
 using Vortex.Primitives.Rooms;
 using Vortex.Primitives.Rooms.Grains;
 using Vortex.Primitives.Rooms.Object;
@@ -29,7 +27,6 @@ public sealed class RoomPersistenceGrain(
     private readonly IDbContextFactory<VortexDbContext> _dbCtxFactory = dbCtxFactory;
 
     private readonly Dictionary<long, RoomItemSnapshot> _dirtyItems = [];
-    private readonly Dictionary<int, PetSnapshot> _dirtyPets = [];
     private readonly ILogger<IRoomPersistenceGrain> _logger = logger;
     private readonly RoomConfig _roomConfig = roomConfig.Value;
     private IDisposable? _timer;
@@ -68,22 +65,6 @@ public sealed class RoomPersistenceGrain(
         return Task.CompletedTask;
     }
 
-    public Task EnqueueDirtyPetsAsync(
-        RoomId roomId,
-        List<PetSnapshot> snapshots,
-        CancellationToken ct
-    )
-    {
-        // Keyed by pet, so a pet that moves twice between flushes costs one write and the later
-        // stats win -- the same bargain the furniture queue above makes.
-        foreach (PetSnapshot snapshot in snapshots)
-        {
-            _dirtyPets[snapshot.PetId] = snapshot;
-        }
-
-        return Task.CompletedTask;
-    }
-
     public override Task OnActivateAsync(CancellationToken ct)
     {
         _timer = this.RegisterGrainTimer<object?>(
@@ -92,7 +73,6 @@ public sealed class RoomPersistenceGrain(
                 RoomPersistenceGrain grain = (RoomPersistenceGrain)self!;
 
                 await grain.FlushDirtyItemsAsync(ct);
-                await grain.FlushDirtyPetsAsync(ct);
             },
             this,
             TimeSpan.FromMilliseconds(_roomConfig.DirtyItemsTickMs),
@@ -123,8 +103,6 @@ public sealed class RoomPersistenceGrain(
                 break;
             }
         }
-
-        await FlushDirtyPetsAsync(ct);
     }
 
     private async Task FlushDirtyItemsAsync(CancellationToken ct)
@@ -232,70 +210,6 @@ public sealed class RoomPersistenceGrain(
             _logger.LogError(
                 ex,
                 "Failed to flush {Count} dirty furniture items for room {RoomId}",
-                batch.Length,
-                this.GetPrimaryKeyLong()
-            );
-        }
-    }
-
-    /// <summary>
-    /// Writes the pet stats the room has handed over since the last pass.
-    /// </summary>
-    /// <remarks>
-    /// The room used to do this itself, from inside its tick (PET-TICK-044). It is the same write,
-    /// moved to the grain that already owns the room's write-behind, and it keeps the same rule as
-    /// the furniture flush above: the queue is cleared after the save, so a database that refuses
-    /// one pass costs a delay rather than the stats.
-    /// </remarks>
-    private async Task FlushDirtyPetsAsync(CancellationToken ct)
-    {
-        if (_dirtyPets.Count == 0)
-        {
-            return;
-        }
-
-        PetSnapshot[] batch = _dirtyPets
-            .Take(_roomConfig.MaxDirtyItemsPerFlush)
-            .Select(x => x.Value)
-            .ToArray();
-
-        int[] ids = [.. batch.Select(pet => pet.PetId)];
-
-        try
-        {
-            using VortexDbContext dbCtx = await _dbCtxFactory.CreateDbContextAsync(ct);
-
-            Dictionary<int, PetEntity> rows = await dbCtx
-                .Pets.Where(pet => ids.Contains(pet.Id) && pet.DeletedAt == null)
-                .ToDictionaryAsync(pet => pet.Id, ct);
-
-            foreach (PetSnapshot pet in batch)
-            {
-                if (!rows.TryGetValue(pet.PetId, out PetEntity? entity))
-                {
-                    continue;
-                }
-
-                entity.Experience = pet.Experience;
-                entity.Level = pet.Level;
-                entity.X = pet.X;
-                entity.Y = pet.Y;
-                entity.Z = pet.Z;
-                entity.Direction = (int)pet.Direction;
-            }
-
-            await dbCtx.SaveChangesAsync(ct);
-
-            foreach (PetSnapshot pet in batch)
-            {
-                _dirtyPets.Remove(pet.PetId);
-            }
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(
-                ex,
-                "Failed to flush {Count} dirty pets for room {RoomId}",
                 batch.Length,
                 this.GetPrimaryKeyLong()
             );

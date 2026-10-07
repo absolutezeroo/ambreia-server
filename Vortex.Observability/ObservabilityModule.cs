@@ -9,10 +9,8 @@ using Vortex.Observability.Context;
 using Vortex.Observability.ErrorTracking;
 using Vortex.Observability.Metrics;
 using Vortex.Observability.Runtime;
-using Vortex.Primitives.Moderation.WordFilter;
 using Vortex.Primitives.Observability;
 using Vortex.Primitives.Plugins;
-using Vortex.Primitives.Signals;
 
 namespace Vortex.Observability;
 
@@ -38,10 +36,7 @@ public sealed class ObservabilityModule : IHostPluginModule
         services.TryAddSingleton<ILiveStatsAggregator, LiveStatsAggregator>();
         services.TryAddSingleton<IVortexMetrics, VortexMetrics>();
         services.TryAddSingleton<MembershipMetrics>();
-        services.TryAddSingleton<ISignalMetrics, SignalMetrics>();
-        services.AddHostedService<MembershipMetricsRefreshService>();
         services.AddHostedService<ForensicsRetentionService>();
-        services.AddSingleton<IForensicsPurgeService, ForensicsPurgeService>();
 
         // Hosted only so the container instantiates it — its gauges observe the session gateway on
         // scrape and it has no work of its own to start.
@@ -68,13 +63,8 @@ public sealed class ObservabilityModule : IHostPluginModule
         // Durable audit pipeline: one bounded channel -> single background writer (no DB on the hot path).
         services.AddSingleton<AuditChannel>();
         services.TryAddSingleton<IAuditSink, ChannelAuditSink>();
-        services.TryAddSingleton<IEconomyLedger, ChannelEconomyLedger>();
         services.TryAddSingleton<IItemForensics, ChannelItemForensics>();
         services.AddHostedService<AuditWriterService>();
-
-        // The hotel-wide word filter's journal rides the channel above. The filter itself is
-        // registered by the permissions module.
-        services.TryAddSingleton<IWordFilterJournal, ChannelWordFilterJournal>();
 
         // Orleans resolves all registered IIncomingGrainCallFilter instances from the container.
         services.AddSingleton<IIncomingGrainCallFilter, ObservabilityGrainCallFilter>();

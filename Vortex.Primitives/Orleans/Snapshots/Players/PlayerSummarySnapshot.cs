@@ -29,27 +29,8 @@ public sealed record PlayerSummarySnapshot
     [Id(6)]
     public required DateTime CreatedAt { get; init; }
 
-    /// <summary>Guild whose badge the avatar displays, or 0 when the player has no favourite.</summary>
-    [Id(7)]
-    public int FavouriteGroupId { get; init; }
-
-    [Id(8)]
-    public string FavouriteGroupName { get; init; } = string.Empty;
-
-    /// <summary>
-    /// Hotel-wide mute expiry, or null when not muted. Carried on the entry snapshot the room
-    /// already fetches so a room can enforce a staff mute without a grain call per chat line.
-    /// </summary>
-    [Id(9)]
-    public DateTime? MutedUntilUtc { get; init; }
-
-    /// <summary>
-    /// The owning account's safety lock. It rides the summary because the user object is built from
-    /// it: the client is told at login, and again by its own message when the lock moves
-    /// mid-session.
-    /// </summary>
-    [Id(10)]
-    public bool SafetyLocked { get; init; }
+    // [Id(7)]-[Id(10)] are retired (favourite group, hotel mute, safety lock; the cut of
+    // 2026-10-07). Never reuse them: a silo still running the old shape would read them back.
 
     /// <summary>
     /// Whether the player holds <c>room.moderate.any</c>. It rides the summary because the room

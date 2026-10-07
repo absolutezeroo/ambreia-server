@@ -160,21 +160,10 @@ internal class Program
 
         // The runtime half of reference-data loading. VortexEmulator is the startup half and shares
         // nothing with it: their error policies are opposites.
-        //
-        // The two grain-held caches are composed in here rather than known about by the reloader.
-        // They are not IReferenceDataProvider singletons -- they live inside a grain and reload on a
-        // grain call -- which is why each had grown its own console command. Naming them here makes
-        // `reload` the one word for the whole idea.
         builder.Services.AddSingleton<IReferenceDataReloader>(sp => new ReferenceDataReloader(
             sp.GetServices<IReferenceDataProvider>(),
             sp.GetRequiredService<ILogger<ReferenceDataReloader>>(),
             new Dictionary<string, Func<CancellationToken, Task>>(StringComparer.Ordinal)
-            {
-                ["FishingDefinitions"] = ct =>
-                    sp.GetRequiredService<IGrainFactory>()
-                        .GetFishingDefinitionsGrain()
-                        .ReloadAsync(ct),
-            }
         ));
         builder.Services.AddSingleton<ConsoleCommandService>();
 

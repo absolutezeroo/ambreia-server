@@ -46,14 +46,6 @@ internal sealed class HandshakeMap : IRevisionMap
             new InitDiffieHandshakeMessageSerializer(MessageComposer.InitDiffieHandshakeComposer)
         );
         builder.MapSerializer(
-            typeof(IsFirstLoginOfDayMessage),
-            new IsFirstLoginOfDayMessageSerializer(MessageComposer.IsFirstLoginOfDayComposer)
-        );
-        builder.MapSerializer(
-            typeof(NoobnessLevelMessage),
-            new NoobnessLevelMessageSerializer(MessageComposer.NoobnessLevelMessageComposer)
-        );
-        builder.MapSerializer(
             typeof(PingMessage),
             new PingMessageSerializer(MessageComposer.PingMessageComposer)
         );

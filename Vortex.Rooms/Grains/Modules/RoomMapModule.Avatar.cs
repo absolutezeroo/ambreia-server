@@ -5,7 +5,6 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Vortex.Logging;
 using Vortex.Primitives;
-using Vortex.Primitives.Pets.Snapshots;
 using Vortex.Primitives.Rooms.Enums;
 using Vortex.Primitives.Rooms.Mapping;
 using Vortex.Primitives.Rooms.Object;

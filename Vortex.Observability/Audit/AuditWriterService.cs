@@ -12,7 +12,6 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Vortex.Database.Context;
 using Vortex.Database.Entities.Audit;
-using Vortex.Database.Entities.Moderation;
 using Vortex.Observability.Configuration;
 using Vortex.Observability.Diagnostics;
 using Vortex.Primitives.Observability;
@@ -256,7 +255,7 @@ public sealed class AuditWriterService : BackgroundService
     }
 
     // Internal for DurableRecordDeadLetterTests: a record type added to MapEntity and not here
-    // loses the WHOLE batch it sits in, ledger rows included, exactly when the database is down.
+    // loses the WHOLE batch it sits in exactly when the database is down.
     internal static object MapDeadLetterPayload(DurableRecord record)
     {
         return record switch
@@ -268,26 +267,12 @@ public sealed class AuditWriterService : BackgroundService
                 correlationId = audit.CorrelationId,
                 audit = audit.Event,
             },
-            LedgerRecord ledger => new
-            {
-                kind = nameof(LedgerRecord),
-                occurredAt = ledger.OccurredAt,
-                correlationId = ledger.CorrelationId,
-                ledger = ledger.Event,
-            },
             ItemRecord item => new
             {
                 kind = nameof(ItemRecord),
                 occurredAt = item.OccurredAt,
                 correlationId = item.CorrelationId,
                 item = item.Event,
-            },
-            WordFilterHitRecord hit => new
-            {
-                kind = nameof(WordFilterHitRecord),
-                occurredAt = hit.OccurredAt,
-                correlationId = hit.CorrelationId,
-                hit = hit.Hit,
             },
             _ => throw new ArgumentOutOfRangeException(nameof(record), record.GetType().Name, null),
         };
@@ -307,9 +292,7 @@ public sealed class AuditWriterService : BackgroundService
         return record switch
         {
             AuditRecord audit => MapAudit(audit),
-            LedgerRecord ledger => MapLedger(ledger),
             ItemRecord item => MapItem(item),
-            WordFilterHitRecord hit => MapWordFilterHit(hit),
             _ => throw new ArgumentOutOfRangeException(
                 nameof(record),
                 record.GetType().Name,
@@ -339,22 +322,6 @@ public sealed class AuditWriterService : BackgroundService
         };
     }
 
-    private static EconomyLedgerEntity MapLedger(LedgerRecord record)
-    {
-        return new EconomyLedgerEntity
-        {
-            OccurredAt = record.OccurredAt,
-            PlayerId = record.Event.PlayerId,
-            Currency = record.Event.Currency,
-            ActivityPointType = record.Event.ActivityPointType,
-            Delta = record.Event.Delta,
-            BalanceAfter = record.Event.BalanceAfter,
-            Reason = record.Event.Reason,
-            CorrelationId = record.CorrelationId,
-            RefId = record.Event.RefId,
-        };
-    }
-
     private static ItemEventEntity MapItem(ItemRecord record)
     {
         return new ItemEventEntity
@@ -368,19 +335,6 @@ public sealed class AuditWriterService : BackgroundService
             RoomId = record.Event.RoomId,
             CorrelationId = record.CorrelationId,
             Data = record.Event.Data,
-        };
-    }
-
-    private static WordFilterHitEntity MapWordFilterHit(WordFilterHitRecord record)
-    {
-        return new WordFilterHitEntity
-        {
-            PlayerEntityId = record.Hit.PlayerId,
-            Source = record.Hit.Source,
-            WordId = record.Hit.WordId,
-            Action = record.Hit.Action,
-            OriginalText = record.Hit.OriginalText,
-            OccurredAt = record.OccurredAt,
         };
     }
 }

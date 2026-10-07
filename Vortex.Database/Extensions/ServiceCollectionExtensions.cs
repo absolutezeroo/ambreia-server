@@ -3,13 +3,10 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
-using Vortex.Database.Auditing;
 using Vortex.Database.Backup;
-using Vortex.Database.Commerce;
 using Vortex.Database.Configuration;
 using Vortex.Database.Context;
 using Vortex.Database.Delegates;
-using Vortex.Primitives.Commerce;
 using Vortex.Primitives.Plugins;
 
 namespace Vortex.Database.Extensions;
@@ -53,29 +50,12 @@ public static class ServiceCollectionExtensions
                         options.EnableRetryOnFailure(maxRetryCount: 3);
                     }
                 );
-
-                // Records what an admin write replaced, read from EF's own original values. Inert
-                // unless an EntityChangeCapture is armed, which only the dashboard's operation
-                // envelope does -- the game's write path never enters the body of the interceptor.
-                options.AddInterceptors(new EntityChangeInterceptor());
             }
         );
 
         services
             .AddOptions<DatabaseBackupConfig>()
             .Bind(builder.Configuration.GetSection(DatabaseBackupConfig.SECTION_NAME));
-
-        // The durable record every value-moving flow writes its progress to. Stateless over the
-        // context factory, so a singleton.
-        services.AddSingleton<ICommerceJournal, CommerceJournal>();
-
-        services
-            .AddOptions<CommerceRecoveryConfig>()
-            .Bind(builder.Configuration.GetSection(CommerceRecoveryConfig.SECTION_NAME));
-
-        // Publishes the critical events completed operations still owe, and escalates anything that
-        // has been stuck past its pivot. Finds nothing on a healthy hotel, which is the point.
-        services.AddHostedService<CommerceRelayService>();
 
         services.AddSingleton<IDatabaseBackupService, DatabaseBackupService>();
         services.AddHostedService<DatabaseBackupScheduler>();

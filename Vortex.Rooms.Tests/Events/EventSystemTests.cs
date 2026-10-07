@@ -17,14 +17,14 @@ public sealed class EventSystemTests
     public async Task PublishCancellableAsync_ReturnsCancelledContext_AndSkipsHandlers()
     {
         EventTestHarness harness = new EventTestHarness(CORRELATION_ID);
-        CancellingGroupCreatingBehavior behavior = new CancellingGroupCreatingBehavior();
-        CountingGroupCreatingHandler handler = new CountingGroupCreatingHandler();
-        harness.RegisterBehavior<GroupCreatingEvent>(behavior);
-        harness.RegisterHandler<GroupCreatingEvent>(handler);
+        CancellingProbeBehavior behavior = new CancellingProbeBehavior();
+        CountingProbeHandler handler = new CountingProbeHandler();
+        harness.RegisterBehavior<ProbeEvent>(behavior);
+        harness.RegisterHandler<ProbeEvent>(handler);
 
         EventContext context = await harness
             .System.PublishCancellableAsync(
-                new GroupCreatingEvent(1, "Blocked", 10, 10),
+                new ProbeEvent(1, "Blocked", 10, 10),
                 CancellationToken.None
             )
             .ConfigureAwait(true);
@@ -40,13 +40,13 @@ public sealed class EventSystemTests
     public async Task ThrowingBehavior_IsReported_AndDoesNotCancelOrSkipHandlers()
     {
         EventTestHarness harness = new EventTestHarness(CORRELATION_ID);
-        CountingGroupCreatingHandler handler = new CountingGroupCreatingHandler();
-        harness.RegisterBehavior<GroupCreatingEvent>(new ThrowingGroupCreatingBehavior());
-        harness.RegisterHandler<GroupCreatingEvent>(handler);
+        CountingProbeHandler handler = new CountingProbeHandler();
+        harness.RegisterBehavior<ProbeEvent>(new ThrowingProbeBehavior());
+        harness.RegisterHandler<ProbeEvent>(handler);
 
         EventContext context = await harness
             .System.PublishCancellableAsync(
-                new GroupCreatingEvent(1, "Allowed", 10, 10),
+                new ProbeEvent(1, "Allowed", 10, 10),
                 CancellationToken.None
             )
             .ConfigureAwait(true);
@@ -57,12 +57,12 @@ public sealed class EventSystemTests
         harness.ErrorSink.LastSource.Should().Be("event-registry.behavior-invoke");
     }
 
-    private sealed class CancellingGroupCreatingBehavior : IEventBehavior<GroupCreatingEvent>
+    private sealed class CancellingProbeBehavior : IEventBehavior<ProbeEvent>
     {
         public string? CorrelationId { get; private set; }
 
         public async ValueTask InvokeAsync(
-            GroupCreatingEvent env,
+            ProbeEvent env,
             EventContext ctx,
             Func<ValueTask> next,
             CancellationToken ct
@@ -75,10 +75,10 @@ public sealed class EventSystemTests
         }
     }
 
-    private sealed class ThrowingGroupCreatingBehavior : IEventBehavior<GroupCreatingEvent>
+    private sealed class ThrowingProbeBehavior : IEventBehavior<ProbeEvent>
     {
         public ValueTask InvokeAsync(
-            GroupCreatingEvent env,
+            ProbeEvent env,
             EventContext ctx,
             Func<ValueTask> next,
             CancellationToken ct
@@ -88,15 +88,18 @@ public sealed class EventSystemTests
         }
     }
 
-    private sealed class CountingGroupCreatingHandler : IEventHandler<GroupCreatingEvent>
+    private sealed class CountingProbeHandler : IEventHandler<ProbeEvent>
     {
         public int Count { get; private set; }
 
-        public ValueTask HandleAsync(GroupCreatingEvent env, EventContext ctx, CancellationToken ct)
+        public ValueTask HandleAsync(ProbeEvent env, EventContext ctx, CancellationToken ct)
         {
             Count++;
 
             return ValueTask.CompletedTask;
         }
     }
+
+    /// <summary>A cancellable event of the test's own: the hotel ones it borrowed left with the cut.</summary>
+    private sealed record ProbeEvent(int ActorPlayerId, string Name, int RoomId, int Cost) : IEvent;
 }

@@ -9,36 +9,13 @@ public sealed class Revision20260701(IOptions<ProtocolLimitsConfig> protocolLimi
     : RevisionBase(
         new IRevisionMap[]
         {
-            new AdvertisementMap(),
             new AvatarMap(),
-            new CatalogMap(),
-            new CollectiblesMap(),
-            new FriendListMap(protocolLimits.Value),
-            new GroupForumsMap(),
             new HandshakeMap(),
-            new HelpMap(),
-            new InventoryMap(protocolLimits.Value),
-            new MarketplaceMap(protocolLimits.Value),
-            new ModeratorMap(),
             new NavigatorMap(),
-            new NewNavigatorMap(),
             new NotificationsMap(),
-            new NuxMap(),
-            new PreferencesMap(),
-            new QuestMap(),
-            new RegisterMap(),
             new RoomMap(),
             new RoomSettingsMap(protocolLimits.Value),
-            new SoundMap(),
-            new TrackingMap(),
-            new UsersMap(),
-            new RewardVaultMap(),
             new AvailabilityMap(),
-            new CallForHelpMap(),
-            new PerkMap(),
-            // Vortex-specific: the fishing system. Ids come from the 8000-8999 band, which appears in
-            // no client registry — see Headers.cs and the client's docs/vortex-original/fishing.md.
-            new FishingMap(),
         }
     )
 {

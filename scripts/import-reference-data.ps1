@@ -1,8 +1,8 @@
-# Fills a fork database with the hotel's reference content (room models, furniture definitions,
-# catalogue, base currencies) copied from an older Vortex/Turbo database, then re-applies the seeds
-# that only match rows once furniture definitions exist.
+# Fills a fork database with the hotel's reference content (room models, furniture definitions)
+# copied from an older Vortex/Turbo database, re-applies the seeds that only match rows once
+# furniture definitions exist, then creates the development zone (scripts/sql/dev_zone.sql).
 #
-#   scripts/import-reference-data.ps1                                  # turbo -> vortex_m0_check
+#   scripts/import-reference-data.ps1                                  # turbo -> vortex_noyau_check
 #   scripts/import-reference-data.ps1 -Source turbo -Target vortex
 #
 # The source is only read. The target must already carry the InitialCreate migration
@@ -16,7 +16,7 @@
 
 param(
     [string]$Source = "turbo",
-    [string]$Target = "vortex_m0_check",
+    [string]$Target = "vortex_noyau_check",
     [string]$Server = "127.0.0.1",
     [int]$Port = 3306,
     [string]$User = "root"
@@ -50,12 +50,10 @@ if (-not $hadPassword) {
 # Applied by InitialCreate on an empty furniture_definitions, where they matched nothing. Same order
 # as InitialCreate. Each is keyed on name or outcome, so replaying them is safe.
 $seeds = @(
-    "catalog_pet_products.sql",
     "guild_furni_logic.sql",
     "furni_logic_bindings.sql",
     "furni_stuff_data_types.sql",
     "highscore_families.sql",
-    "purchasable_clothing.sql",
     "furni_logic_self_named_rebind.sql",
     "categorize_room_decorations.sql"
 )
@@ -65,15 +63,7 @@ $batch += $seeds | ForEach-Object { "source Vortex.Database/Seeds/$_" }
 # After the models: the development zone needs model_a, and writes world.start_room_id.
 $batch += "source scripts/sql/dev_zone.sql"
 $batch += "SELECT 'room_models', COUNT(*) FROM room_models UNION ALL
-SELECT 'furniture_definitions', COUNT(*) FROM furniture_definitions UNION ALL
-SELECT 'furniture_purchasable_clothing', COUNT(*) FROM furniture_purchasable_clothing UNION ALL
-SELECT 'catalog_pages', COUNT(*) FROM catalog_pages UNION ALL
-SELECT 'catalog_offers', COUNT(*) FROM catalog_offers UNION ALL
-SELECT 'catalog_products', COUNT(*) FROM catalog_products UNION ALL
-SELECT 'membership_offers', COUNT(*) FROM membership_offers UNION ALL
-SELECT 'membership_gifts', COUNT(*) FROM membership_gifts UNION ALL
-SELECT 'catalog_frontpage_items', COUNT(*) FROM catalog_frontpage_items UNION ALL
-SELECT 'currency_types', COUNT(*) FROM currency_types;"
+SELECT 'furniture_definitions', COUNT(*) FROM furniture_definitions;"
 
 Push-Location $repoRoot  # `source` paths are relative to the client's working directory
 try {

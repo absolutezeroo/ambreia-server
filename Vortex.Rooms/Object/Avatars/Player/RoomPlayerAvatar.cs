@@ -1,5 +1,4 @@
 using System.Text;
-using Vortex.Primitives.Groups.Enums;
 using Vortex.Primitives.Orleans.Snapshots.Players;
 using Vortex.Primitives.Players;
 using Vortex.Primitives.Rooms.Enums;
@@ -17,9 +16,10 @@ public sealed class RoomPlayerAvatar
     /// <summary>The client's "no guild badge" sentinel.</summary>
     private const int NoGroup = -1;
 
-    public int GroupId { get; private set; } = NoGroup;
-    public int GroupStatus { get; private set; } = NoGroup;
-    public string GroupName { get; private set; } = string.Empty;
+    // Frozen wire fields: guilds left with the cut of 2026-10-07, the avatar block still carries them.
+    public int GroupId { get; } = NoGroup;
+    public int GroupStatus { get; } = NoGroup;
+    public string GroupName { get; } = string.Empty;
     public string SwimFigure { get; init; } = string.Empty;
 
     /// <summary>
@@ -42,78 +42,13 @@ public sealed class RoomPlayerAvatar
     public AvatarGenderType Gender { get; private set; } = AvatarGenderType.Male;
     public AvatarDanceType DanceType { get; private set; } = AvatarDanceType.None;
 
-    /// <summary>
-    /// The look this player had before a clothing-change booth dressed them, or null when no booth
-    /// has.
-    /// <para>
-    /// It lives on the avatar and is never persisted, which is the whole of "the kit comes off when
-    /// you leave": the avatar dies with the visit, so a player who walks out still wearing one is
-    /// simply themselves again the next time a room draws them. The reference emulator needs a
-    /// session cache and three event handlers for the same guarantee, because over there the
-    /// override IS the saved look.
-    /// </para>
-    /// </summary>
-    private string? _lookBeforeBooth;
-
     public bool UpdateWithPlayer(PlayerSummarySnapshot snapshot)
     {
         Name = snapshot.Name;
         Motto = snapshot.Motto;
-        // The player saved a new look, so the booth's memory of the old one is now a look that no
-        // longer exists anywhere. Dropping it here is what stops a later step off the booth putting
-        // them back into a look they have already replaced.
-        _lookBeforeBooth = null;
         Figure = snapshot.Figure;
         Gender = snapshot.Gender;
         ActivityPoints = snapshot.AchievementScore;
-
-        SetFavouriteGroup(snapshot.FavouriteGroupId, snapshot.FavouriteGroupName);
-
-        return true;
-    }
-
-    /// <summary>Puts the booth's outfit on, remembering the look underneath the first time.</summary>
-    public void WearBoothOutfit(string figure)
-    {
-        _lookBeforeBooth ??= Figure;
-        Figure = figure;
-    }
-
-    /// <summary>Puts the wearer back in their own look. False when no booth had dressed them, which
-    /// is what tells a booth to dress rather than undress.</summary>
-    public bool RemoveBoothOutfit()
-    {
-        if (_lookBeforeBooth is null)
-        {
-            return false;
-        }
-
-        Figure = _lookBeforeBooth;
-        _lookBeforeBooth = null;
-
-        return true;
-    }
-
-    /// <summary>
-    /// Points the avatar's guild badge at <paramref name="groupId"/> (0 or less clears it). Returns
-    /// true when something actually changed, so callers can skip a pointless room broadcast.
-    /// </summary>
-    public bool SetFavouriteGroup(int groupId, string groupName)
-    {
-        int resolvedId = groupId > 0 ? groupId : NoGroup;
-        int resolvedStatus = groupId > 0 ? (int)GroupMembershipStatus.Member : NoGroup;
-        string resolvedName = groupId > 0 ? groupName : string.Empty;
-
-        if (GroupId == resolvedId && GroupStatus == resolvedStatus && GroupName == resolvedName)
-        {
-            return false;
-        }
-
-        GroupId = resolvedId;
-        GroupStatus = resolvedStatus;
-        GroupName = resolvedName;
-
-        _snapshot = null;
 
         return true;
     }
@@ -123,8 +58,7 @@ public sealed class RoomPlayerAvatar
     /// <see cref="AvatarDanceType.None"/> when the posture interrupted nothing.
     /// </summary>
     /// <remarks>
-    /// Same shape as <see cref="_lookBeforeBooth"/> above and for the same reason: the avatar is
-    /// the only thing that knows what was true a moment ago, and it dies with the visit, so a
+    /// The avatar is the only thing that knows what was true a moment ago, and it dies with the visit, so a
     /// dance is never resumed in a later session. Without it the dance was dropped and gone —
     /// sitting cancelled it, standing had nothing to put back.
     /// </remarks>

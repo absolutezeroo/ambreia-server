@@ -9,12 +9,6 @@ internal sealed class AvailabilityMap : IRevisionMap
     public void RegisterInto(IRevisionMapBuilder builder)
     {
         builder.MapSerializer(
-            typeof(AvailabilityStatusMessageComposer),
-            new AvailabilityStatusMessageComposerSerializer(
-                MessageComposer.AvailabilityStatusMessageComposer
-            )
-        );
-        builder.MapSerializer(
             typeof(MaintenanceStatusMessageComposer),
             new MaintenanceStatusMessageComposerSerializer(
                 MessageComposer.MaintenanceStatusMessageComposer

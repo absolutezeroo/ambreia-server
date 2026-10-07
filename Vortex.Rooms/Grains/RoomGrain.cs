@@ -13,7 +13,6 @@ using Orleans;
 using Orleans.Runtime;
 using Orleans.Streams;
 using Vortex.Database.Context;
-using Vortex.Database.Entities.Groups;
 using Vortex.Database.Entities.Room;
 using Vortex.Events.Registry;
 using Vortex.Logging;
@@ -21,7 +20,6 @@ using Vortex.Logging.Extensions;
 using Vortex.Primitives;
 using Vortex.Primitives.Events;
 using Vortex.Primitives.Furniture.Providers;
-using Vortex.Primitives.Groups.Enums;
 using Vortex.Primitives.Networking;
 using Vortex.Primitives.Observability;
 using Vortex.Primitives.Orleans;
@@ -381,7 +379,6 @@ public sealed partial class RoomGrain : Grain, IRoomGrain
             RoomEntity entity =
                 await dbCtx
                     .Rooms.AsNoTracking()
-                    .Include(e => e.GroupEntity)
                     .Include(e => e.PlayerEntity)
                     .SingleOrDefaultAsync(e => e.Id == _state.RoomId.Value, ct)
                 ?? throw new VortexException(VortexErrorCodeEnum.RoomNotFound);
@@ -408,14 +405,11 @@ public sealed partial class RoomGrain : Grain, IRoomGrain
                 TradeType = entity.TradeType,
                 Score = entity.Score,
                 Ranking = entity.Ranking,
-                CategoryId = entity.NavigatorCategoryEntityId ?? -1,
+                CategoryId = -1,
                 Tags = RoomTagMapper.ToTags(entity.Tag1, entity.Tag2),
                 AllowBlocking = entity.AllowBlocking,
                 AllowPets = entity.AllowPets,
                 AllowPetsEat = entity.AllowPetsEat,
-                GroupId = entity.GroupEntityId,
-                GroupName = entity.GroupEntity?.Name,
-                GroupBadge = entity.GroupEntity?.Badge,
                 PaintWall = entity.PaintWall ?? string.Empty,
                 PaintFloor = entity.PaintFloor ?? string.Empty,
                 PaintLandscape = entity.PaintLandscape ?? string.Empty,
@@ -464,8 +458,6 @@ public sealed partial class RoomGrain : Grain, IRoomGrain
             {
                 _state.PlayerIdsWithRights.Add(playerId);
             }
-
-            await HydrateGroupMembershipAsync(dbCtx, entity.GroupEntityId, ct).ConfigureAwait(true);
         }
         finally
         {
@@ -479,50 +471,6 @@ public sealed partial class RoomGrain : Grain, IRoomGrain
     /// </summary>
     private static string DecorationOrDefault(string? value) =>
         string.IsNullOrWhiteSpace(value) ? "0" : value;
-
-    /// <summary>
-    /// Loads the owning guild's membership roster and decoration policy into live state so
-    /// <see cref="Modules.RoomSecurityModule"/> can resolve group controller levels without a DB hit
-    /// per check. A no-op (and a full reset) for rooms that are not a guild base.
-    /// </summary>
-    private async Task HydrateGroupMembershipAsync(
-        VortexDbContext dbCtx,
-        int? groupId,
-        CancellationToken ct
-    )
-    {
-        _state.GroupMemberRanks.Clear();
-        _state.GroupAdminOnlyDecoration = false;
-
-        if (groupId is not int id)
-        {
-            return;
-        }
-
-        _state.GroupAdminOnlyDecoration = await dbCtx
-            .Groups.AsNoTracking()
-            .Where(g => g.Id == id && g.DeletedAt == null)
-            .Select(g => g.AdminOnlyDecoration)
-            .FirstOrDefaultAsync(ct)
-            .ConfigureAwait(true);
-
-        // Two columns, not the row. The roster is read for one question -- what rank does this
-        // player hold here -- and a guild base for a large guild was pulling every column of every
-        // membership row, foreign keys and timestamps included, into the room's activation
-        // (PERS-HYD-014). It is still every member: trimming the list would quietly take a rank
-        // away from whoever fell off the end.
-        List<GroupMemberRankRow> members = await dbCtx
-            .GroupMembers.AsNoTracking()
-            .Where(m => m.GroupEntityId == id && m.DeletedAt == null)
-            .Select(m => new GroupMemberRankRow(m.PlayerEntityId, m.Rank))
-            .ToListAsync(ct)
-            .ConfigureAwait(true);
-
-        foreach (GroupMemberRankRow member in members)
-        {
-            _state.GroupMemberRanks[member.PlayerId] = member.Rank;
-        }
-    }
 
     /// <summary>
     /// Publishes an event without holding the room's turn open for its handlers.
@@ -591,7 +539,4 @@ public sealed partial class RoomGrain : Grain, IRoomGrain
         // the boundary it just fired, or the same tick runs again.
         return aligned == now ? now + tickMs : aligned;
     }
-
-    /// <summary>The two columns of a membership row the room actually reads.</summary>
-    private readonly record struct GroupMemberRankRow(int PlayerId, GroupMemberRank Rank);
 }

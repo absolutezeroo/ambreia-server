@@ -13,7 +13,6 @@ using Vortex.Primitives.Authentication;
 using Vortex.Primitives.Crypto;
 using Vortex.Primitives.Events;
 using Vortex.Primitives.Hosting;
-using Vortex.Primitives.Moderation.WordFilter;
 using Vortex.Primitives.Observability;
 using Vortex.Primitives.Plugins;
 using Vortex.Primitives.Plugins.Exports;
@@ -103,8 +102,6 @@ public sealed class WebApiPlugin : IVortexPlugin
         services.UseHostService<IDbContextFactory<VortexDbContext>>();
         services.UseHostService<IGrainFactory>();
         services.UseHostService<IEventPublisher>();
-        // The very instance the grains filter with: one compiled list, one reload.
-        services.UseHostService<IWordFilter>();
         services.UseHostService<IAuditSink>();
 
         // Accounts.

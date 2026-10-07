@@ -4,8 +4,6 @@ using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using Microsoft.EntityFrameworkCore;
-using Vortex.Database.Entities.Groups;
-using Vortex.Database.Entities.Navigator;
 using Vortex.Database.Entities.Players;
 using Vortex.Primitives.Navigator.Enums;
 using Vortex.Primitives.Rooms.Enums;
@@ -13,11 +11,6 @@ using Vortex.Primitives.Rooms.Enums;
 namespace Vortex.Database.Entities.Room;
 
 [Table("rooms")]
-// Enforces "a room hosts at most one guild". Lives here rather than on groups.room_id because this
-// column is nullable — MySQL allows repeated NULLs in a unique index, so dissolving a guild (which
-// nulls this column) frees the room for a new one, while a unique constraint on the guild side
-// would be blocked forever by the soft-deleted row.
-[Index(nameof(GroupEntityId), IsUnique = true)]
 public class RoomEntity : VortexEntity
 {
     [Column("name")]
@@ -39,14 +32,6 @@ public class RoomEntity : VortexEntity
 
     [Column("model_id")]
     public required int RoomModelEntityId { get; set; }
-
-    [Column("category_id")]
-    public int? NavigatorCategoryEntityId { get; set; }
-
-    // Group this room is the home room of, if any. Forms a circular link with groups.room_id;
-    // both sides are configured OnDelete non-cascade in VortexDbContext (DATA-MODEL §2.7).
-    [Column("group_id")]
-    public int? GroupEntityId { get; set; }
 
     [Column("users_now")]
     [DefaultValue(0)]
@@ -199,20 +184,6 @@ public class RoomEntity : VortexEntity
     [ForeignKey(nameof(RoomModelEntityId))]
     public required RoomModelEntity RoomModelEntity { get; set; }
 
-    [ForeignKey(nameof(NavigatorCategoryEntityId))]
-    public NavigatorFlatCategoryEntity? NavigatorFlatCategoryEntity { get; set; }
-
-    public GroupEntity? GroupEntity { get; set; }
-
-    [InverseProperty("RoomEntity")]
-    public List<RoomBanEntity>? RoomBans { get; set; }
-
-    [InverseProperty("RoomEntity")]
-    public List<RoomMuteEntity>? RoomMutes { get; set; }
-
     [InverseProperty("RoomEntity")]
     public List<RoomRightEntity>? RoomRights { get; set; }
-
-    [InverseProperty("RoomEntity")]
-    public List<RoomChatlogEntity>? RoomChats { get; set; }
 }

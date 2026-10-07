@@ -15,7 +15,6 @@ using Vortex.Database.Context;
 using Vortex.Primitives.Authentication;
 using Vortex.Primitives.Crypto;
 using Vortex.Primitives.Hosting;
-using Vortex.Primitives.Moderation.WordFilter;
 using Vortex.Primitives.Observability;
 using Vortex.WebApi.Configuration;
 using Vortex.WebApi.Services;
@@ -262,8 +261,6 @@ internal sealed class WebApiWebHost(
         services.AddSingleton(rootServices.GetRequiredService<WebApiSessionStore>());
         services.AddSingleton(rootServices.GetRequiredService<IWebApiAuthService>());
         services.AddSingleton(rootServices.GetRequiredService<IWebApiPlayerService>());
-        // The very instance the grains filter with: one compiled list, one reload.
-        services.AddSingleton(rootServices.GetRequiredService<IWordFilter>());
         services.AddSingleton(rootServices.GetRequiredService<RequiredServiceGuard>());
 
         services.AddSingleton(

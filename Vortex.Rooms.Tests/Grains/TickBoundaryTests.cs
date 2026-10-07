@@ -11,7 +11,6 @@ using Vortex.Primitives.Events;
 using Vortex.Primitives.Furniture.Providers;
 using Vortex.Primitives.Observability;
 using Vortex.Primitives.Permissions;
-using Vortex.Primitives.Pets.Providers;
 using Vortex.Primitives.Rooms;
 using Vortex.Primitives.Rooms.Grains;
 using Vortex.Primitives.Rooms.Providers;

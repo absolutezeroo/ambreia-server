@@ -1,29 +1,16 @@
 using Vortex.Primitives.Networking.Revisions;
 using Vortex.Protocol.Messages.Outgoing.Room.Action;
-using Vortex.Protocol.Messages.Outgoing.Room.Bots;
-using Vortex.Protocol.Messages.Outgoing.Room.Chat;
 using Vortex.Protocol.Messages.Outgoing.Room.Engine;
-using Vortex.Protocol.Messages.Outgoing.Room.Furniture;
 using Vortex.Protocol.Messages.Outgoing.Room.Layout;
 using Vortex.Protocol.Messages.Outgoing.Room.Permissions;
-using Vortex.Protocol.Messages.Outgoing.Room.Pets;
 using Vortex.Protocol.Messages.Outgoing.Room.Session;
-using Vortex.Revisions.Revision20260701.Parsers.Room.Action;
 using Vortex.Revisions.Revision20260701.Parsers.Room.Avatar;
-using Vortex.Revisions.Revision20260701.Parsers.Room.Chat;
 using Vortex.Revisions.Revision20260701.Parsers.Room.Engine;
-using Vortex.Revisions.Revision20260701.Parsers.Room.Furniture;
-using Vortex.Revisions.Revision20260701.Parsers.Room.Layout;
-using Vortex.Revisions.Revision20260701.Parsers.Room.Pets;
 using Vortex.Revisions.Revision20260701.Parsers.Room.Session;
 using Vortex.Revisions.Revision20260701.Serializers.Room.Action;
-using Vortex.Revisions.Revision20260701.Serializers.Room.Bots;
-using Vortex.Revisions.Revision20260701.Serializers.Room.Chat;
 using Vortex.Revisions.Revision20260701.Serializers.Room.Engine;
-using Vortex.Revisions.Revision20260701.Serializers.Room.Furniture;
 using Vortex.Revisions.Revision20260701.Serializers.Room.Layout;
 using Vortex.Revisions.Revision20260701.Serializers.Room.Permissions;
-using Vortex.Revisions.Revision20260701.Serializers.Room.Pets;
 using Vortex.Revisions.Revision20260701.Serializers.Room.Session;
 
 namespace Vortex.Revisions.Revision20260701.Maps;
@@ -33,181 +20,26 @@ internal sealed class RoomMap : IRevisionMap
     public void RegisterInto(IRevisionMapBuilder builder)
     {
         // Room Action
-        builder.MapParser(MessageEvent.AssignRightsMessageEvent, new AssignRightsMessageParser());
-        builder.MapParser(
-            MessageEvent.BanUserWithDurationMessageEvent,
-            new BanUserWithDurationMessageParser()
-        );
-        builder.MapParser(MessageEvent.KickUserMessageEvent, new KickUserMessageParser());
-        builder.MapParser(MessageEvent.LetUserInMessageEvent, new LetUserInMessageParser());
-        builder.MapParser(MessageEvent.MuteAllInRoomEvent, new MuteAllInRoomMessageParser());
-        builder.MapParser(MessageEvent.MuteUserMessageEvent, new MuteUserMessageParser());
-        builder.MapParser(
-            MessageEvent.RemoveAllRightsMessageEvent,
-            new RemoveAllRightsMessageParser()
-        );
-        builder.MapParser(MessageEvent.RemoveRightsMessageEvent, new RemoveRightsMessageParser());
-        builder.MapParser(
-            MessageEvent.UnbanUserFromRoomMessageEvent,
-            new UnbanUserFromRoomMessageParser()
-        );
-        builder.MapParser(MessageEvent.UnmuteUserMessageEvent, new UnmuteUserMessageParser());
 
         // Room Avatar
-        builder.MapParser(
-            MessageEvent.AvatarExpressionMessageEvent,
-            new AvatarExpressionMessageParser()
-        );
-        builder.MapParser(MessageEvent.ChangeMottoMessageEvent, new ChangeMottoMessageParser());
-        builder.MapParser(MessageEvent.ChangePostureMessageEvent, new ChangePostureMessageParser());
-        builder.MapParser(MessageEvent.DanceMessageEvent, new DanceMessageParser());
-        builder.MapParser(MessageEvent.DropCarryItemMessageEvent, new DropCarryItemMessageParser());
         builder.MapParser(MessageEvent.LookToMessageEvent, new LookToMessageParser());
-        builder.MapParser(MessageEvent.PassCarryItemMessageEvent, new PassCarryItemMessageParser());
-        builder.MapParser(MessageEvent.SignMessageEvent, new SignMessageParser());
 
         // Room Bots
 
         // Room Chat
-        builder.MapParser(MessageEvent.CancelTypingMessageEvent, new CancelTypingMessageParser());
-        builder.MapParser(MessageEvent.ChatMessageEvent, new ChatMessageParser());
-        builder.MapParser(MessageEvent.ShoutMessageEvent, new ShoutMessageParser());
-        builder.MapParser(MessageEvent.StartTypingMessageEvent, new StartTypingMessageParser());
-        builder.MapParser(MessageEvent.WhisperMessageEvent, new WhisperMessageParser());
 
         // Room Engine
-        builder.MapParser(MessageEvent.ClickCharacterEvent, new ClickCharacterMessageParser());
-        builder.MapParser(MessageEvent.ClickFurniMessageEvent, new ClickFurniMessageParser());
         builder.MapParser(
             MessageEvent.GetFurnitureAliasesMessageEvent,
             new GetFurnitureAliasesMessageParser()
         );
-        builder.MapParser(MessageEvent.GetItemDataMessageEvent, new GetItemDataMessageParser());
-        builder.MapParser(MessageEvent.MountPetMessageEvent, new MountPetMessageParser());
         builder.MapParser(MessageEvent.MoveAvatarMessageEvent, new MoveAvatarMessageParser());
-        builder.MapParser(MessageEvent.MoveObjectMessageEvent, new MoveObjectMessageParser());
-        builder.MapParser(MessageEvent.MovePetMessageEvent, new MovePetMessageParser());
-        builder.MapParser(MessageEvent.MoveWallItemMessageEvent, new MoveWallItemMessageParser());
-        builder.MapParser(
-            MessageEvent.VortexGetFurniEditorDataMessageEvent,
-            new VortexGetFurniEditorDataMessageParser()
-        );
-        builder.MapParser(
-            MessageEvent.VortexApplyFurniEditMessageEvent,
-            new VortexApplyFurniEditMessageParser()
-        );
-        builder.MapParser(
-            MessageEvent.VortexGetFurniDefinitionMessageEvent,
-            new VortexGetFurniDefinitionMessageParser()
-        );
-        builder.MapParser(
-            MessageEvent.VortexApplyFurniDefinitionMessageEvent,
-            new VortexApplyFurniDefinitionMessageParser()
-        );
-        builder.MapParser(MessageEvent.PickupObjectMessageEvent, new PickupObjectMessageParser());
-        builder.MapParser(MessageEvent.PlaceObjectMessageEvent, new PlaceObjectMessageParser());
-        builder.MapParser(MessageEvent.PlacePetMessageEvent, new PlacePetMessageParser());
-        builder.MapParser(MessageEvent.RemoveItemMessageEvent, new RemoveItemMessageParser());
-        builder.MapParser(
-            MessageEvent.RemovePetFromFlatMessageEvent,
-            new RemovePetFromFlatMessageParser()
-        );
-        builder.MapParser(
-            MessageEvent.RemoveSaddleFromPetMessageEvent,
-            new RemoveSaddleFromPetMessageParser()
-        );
-        builder.MapParser(
-            MessageEvent.SetClothingChangeDataMessageEvent,
-            new SetClothingChangeDataMessageParser()
-        );
-        builder.MapParser(MessageEvent.SetItemDataMessageEvent, new SetItemDataMessageParser());
-        builder.MapParser(MessageEvent.SetObjectDataMessageEvent, new SetObjectDataMessageParser());
-        builder.MapParser(
-            MessageEvent.TogglePetRidingPermissionMessageEvent,
-            new TogglePetRidingPermissionMessageParser()
-        );
-        builder.MapParser(MessageEvent.UseFurnitureMessageEvent, new UseFurnitureMessageParser());
-        builder.MapParser(MessageEvent.UseWallItemMessageEvent, new UseWallItemMessageParser());
 
         // Room Furniture
-        builder.MapParser(
-            MessageEvent.AddSpamWallPostItMessageEvent,
-            new AddSpamWallPostItMessageParser()
-        );
-        builder.MapParser(
-            MessageEvent.CreditFurniRedeemMessageEvent,
-            new CreditFurniRedeemMessageParser()
-        );
-        builder.MapParser(MessageEvent.DiceOffMessageEvent, new DiceOffMessageParser());
-        builder.MapParser(
-            MessageEvent.EnterOneWayDoorMessageEvent,
-            new EnterOneWayDoorMessageParser()
-        );
-        builder.MapParser(
-            MessageEvent.GetGuildFurniContextMenuInfoMessageEvent,
-            new GetGuildFurniContextMenuInfoMessageParser()
-        );
-        builder.MapParser(MessageEvent.PlacePostItMessageEvent, new PlacePostItMessageParser());
-        builder.MapParser(MessageEvent.PresentOpenMessageEvent, new PresentOpenMessageParser());
-        builder.MapParser(
-            MessageEvent.RoomDimmerChangeStateMessageEvent,
-            new RoomDimmerChangeStateMessageParser()
-        );
-        builder.MapParser(
-            MessageEvent.RoomDimmerGetPresetsMessageEvent,
-            new RoomDimmerGetPresetsMessageParser()
-        );
-        builder.MapParser(
-            MessageEvent.RoomDimmerSavePresetMessageEvent,
-            new RoomDimmerSavePresetMessageParser()
-        );
-        builder.MapParser(
-            MessageEvent.SetAdjacentCustomStackingHeightEvent,
-            new SetAdjacentCustomStackingHeightMessageParser()
-        );
-        builder.MapParser(
-            MessageEvent.SetCustomStackingHeightEvent,
-            new SetCustomStackingHeightMessageParser()
-        );
-        builder.MapParser(
-            MessageEvent.SetMannequinFigureEvent,
-            new SetMannequinFigureMessageParser()
-        );
-        builder.MapParser(MessageEvent.SetMannequinNameEvent, new SetMannequinNameMessageParser());
-        builder.MapParser(
-            MessageEvent.SetRandomStateMessageEvent,
-            new SetRandomStateMessageParser()
-        );
-        builder.MapParser(
-            MessageEvent.SetRoomBackgroundColorDataEvent,
-            new SetRoomBackgroundColorDataMessageParser()
-        );
-        builder.MapParser(
-            MessageEvent.SpinWheelOfFortuneMessageEvent,
-            new SpinWheelOfFortuneMessageParser()
-        );
-        builder.MapParser(MessageEvent.ThrowDiceMessageEvent, new ThrowDiceMessageParser());
 
         // Room Layout
-        builder.MapParser(
-            MessageEvent.GetOccupiedTilesMessageEvent,
-            new GetOccupiedTilesMessageParser()
-        );
-        builder.MapParser(
-            MessageEvent.GetRoomEntryTileMessageEvent,
-            new GetRoomEntryTileMessageParser()
-        );
-        builder.MapParser(
-            MessageEvent.UpdateFloorPropertiesMessageEvent,
-            new UpdateFloorPropertiesMessageParser()
-        );
 
         // Room Pets
-        builder.MapParser(
-            MessageEvent.CustomizePetWithFurniEvent,
-            new CustomizePetWithFurniMessageParser()
-        );
-        builder.MapParser(MessageEvent.GetPetInfoMessageEvent, new GetPetInfoMessageParser());
 
         // Room Session
         builder.MapParser(
@@ -229,70 +61,12 @@ internal sealed class RoomMap : IRevisionMap
             typeof(DanceMessageComposer),
             new DanceMessageComposerSerializer(MessageComposer.DanceMessageComposer)
         );
-        builder.MapSerializer(
-            typeof(ExpressionMessageComposer),
-            new ExpressionMessageComposerSerializer(MessageComposer.ExpressionMessageComposer)
-        );
-        builder.MapSerializer(
-            typeof(SleepMessageComposer),
-            new SleepMessageComposerSerializer(MessageComposer.SleepMessageComposer)
-        );
 
         // Room Bots
-        builder.MapSerializer(
-            typeof(BotSkillListUpdateMessageComposer),
-            new BotSkillListUpdateMessageComposerSerializer(
-                MessageComposer.BotSkillListUpdateComposer
-            )
-        );
 
         // Room Chat
-        builder.MapSerializer(
-            typeof(ChatMessageComposer),
-            new ChatMessageComposerSerializer(MessageComposer.ChatMessageComposer)
-        );
-        builder.MapSerializer(
-            typeof(FloodControlMessageComposer),
-            new FloodControlMessageComposerSerializer(MessageComposer.FloodControlMessageComposer)
-        );
-        builder.MapSerializer(
-            typeof(RemainingMutePeriodMessageComposer),
-            new RemainingMutePeriodMessageComposerSerializer(
-                MessageComposer.RemainingMutePeriodComposer
-            )
-        );
-        builder.MapSerializer(
-            typeof(RoomChatSettingsMessageComposer),
-            new RoomChatSettingsMessageComposerSerializer(
-                MessageComposer.RoomChatSettingsMessageComposer
-            )
-        );
-        builder.MapSerializer(
-            typeof(RoomFilterSettingsMessageComposer),
-            new RoomFilterSettingsMessageComposerSerializer(
-                MessageComposer.RoomFilterSettingsMessageComposer
-            )
-        );
-        builder.MapSerializer(
-            typeof(ShoutMessageComposer),
-            new ShoutMessageComposerSerializer(MessageComposer.ShoutMessageComposer)
-        );
-        builder.MapSerializer(
-            typeof(UserTypingMessageComposer),
-            new UserTypingMessageComposerSerializer(MessageComposer.UserTypingMessageComposer)
-        );
-        builder.MapSerializer(
-            typeof(WhisperMessageComposer),
-            new WhisperMessageComposerSerializer(MessageComposer.WhisperMessageComposer)
-        );
 
         // Room Engine
-        builder.MapSerializer(
-            typeof(FavoriteMembershipUpdateMessageComposer),
-            new FavoriteMembershipUpdateMessageComposerSerializer(
-                MessageComposer.FavoriteMembershipUpdateMessageComposer
-            )
-        );
         builder.MapSerializer(
             typeof(FloorHeightMapMessageComposer),
             new FloorHeightMapMessageComposerSerializer(
@@ -366,24 +140,6 @@ internal sealed class RoomMap : IRevisionMap
             new ObjectUpdateMessageComposerSerializer(MessageComposer.ObjectUpdateMessageComposer)
         );
         builder.MapSerializer(
-            typeof(VortexFurniEditorDataMessageComposer),
-            new VortexFurniEditorDataMessageComposerSerializer(
-                MessageComposer.VortexFurniEditorDataMessageComposer
-            )
-        );
-        builder.MapSerializer(
-            typeof(VortexFurniEditorRightsMessageComposer),
-            new VortexFurniEditorRightsMessageComposerSerializer(
-                MessageComposer.VortexFurniEditorRightsMessageComposer
-            )
-        );
-        builder.MapSerializer(
-            typeof(VortexFurniDefinitionMessageComposer),
-            new VortexFurniDefinitionMessageComposerSerializer(
-                MessageComposer.VortexFurniDefinitionMessageComposer
-            )
-        );
-        builder.MapSerializer(
             typeof(RoomEntryInfoMessageComposer),
             new RoomEntryInfoMessageComposerSerializer(MessageComposer.RoomEntryInfoMessageComposer)
         );
@@ -395,12 +151,6 @@ internal sealed class RoomMap : IRevisionMap
             typeof(RoomVisualizationSettingsMessageComposer),
             new RoomVisualizationSettingsMessageComposerSerializer(
                 MessageComposer.RoomVisualizationSettingsComposer
-            )
-        );
-        builder.MapSerializer(
-            typeof(SlideObjectBundleMessageComposer),
-            new SlideObjectBundleMessageComposerSerializer(
-                MessageComposer.SlideObjectBundleMessageComposer
             )
         );
         builder.MapSerializer(
@@ -421,39 +171,11 @@ internal sealed class RoomMap : IRevisionMap
         );
 
         // Room Furniture
-        builder.MapSerializer(
-            typeof(GuildFurniContextMenuInfoMessageComposer),
-            new GuildFurniContextMenuInfoMessageComposerSerializer(
-                MessageComposer.GuildFurniContextMenuInfoMessageComposer
-            )
-        );
-        builder.MapSerializer(
-            typeof(OneWayDoorStatusMessageComposer),
-            new OneWayDoorStatusMessageComposerSerializer(
-                MessageComposer.OneWayDoorStatusMessageComposer
-            )
-        );
-        builder.MapSerializer(
-            typeof(PresentOpenedMessageComposer),
-            new PresentOpenedMessageComposerSerializer(MessageComposer.PresentOpenedMessageComposer)
-        );
-        builder.MapSerializer(
-            typeof(RoomDimmerPresetsMessageComposer),
-            new RoomDimmerPresetsMessageComposerSerializer(
-                MessageComposer.RoomDimmerPresetsMessageComposer
-            )
-        );
 
         // Room Layout
         builder.MapSerializer(
             typeof(RoomEntryTileMessageComposer),
             new RoomEntryTileMessageComposerSerializer(MessageComposer.RoomEntryTileMessageComposer)
-        );
-        builder.MapSerializer(
-            typeof(RoomOccupiedTilesMessageComposer),
-            new RoomOccupiedTilesMessageComposerSerializer(
-                MessageComposer.RoomOccupiedTilesMessageComposer
-            )
         );
 
         // Room Permissions
@@ -475,30 +197,6 @@ internal sealed class RoomMap : IRevisionMap
         );
 
         // Room Pets
-        builder.MapSerializer(
-            typeof(PetExperienceMessageComposer),
-            new PetExperienceMessageComposerSerializer(MessageComposer.PetExperienceComposer)
-        );
-        builder.MapSerializer(
-            typeof(PetFigureUpdateMessageComposer),
-            new PetFigureUpdateMessageComposerSerializer(MessageComposer.PetFigureUpdateComposer)
-        );
-        builder.MapSerializer(
-            typeof(PetInfoMessageComposer),
-            new PetInfoMessageComposerSerializer(MessageComposer.PetInfoMessageComposer)
-        );
-        builder.MapSerializer(
-            typeof(PetLevelUpdateMessageComposer),
-            new PetLevelUpdateMessageComposerSerializer(MessageComposer.PetLevelUpdateComposer)
-        );
-        builder.MapSerializer(
-            typeof(PetPlacingErrorMessageComposer),
-            new PetPlacingErrorMessageComposerSerializer(MessageComposer.PetPlacingErrorComposer)
-        );
-        builder.MapSerializer(
-            typeof(PetStatusUpdateMessageComposer),
-            new PetStatusUpdateMessageComposerSerializer(MessageComposer.PetStatusUpdateComposer)
-        );
 
         // Room Session
         builder.MapSerializer(
@@ -509,18 +207,6 @@ internal sealed class RoomMap : IRevisionMap
             typeof(CloseConnectionMessageComposer),
             new CloseConnectionMessageComposerSerializer(
                 MessageComposer.CloseConnectionMessageComposer
-            )
-        );
-        builder.MapSerializer(
-            typeof(FlatAccessibleMessageComposer),
-            new FlatAccessibleMessageComposerSerializer(
-                MessageComposer.FlatAccessibleMessageComposer
-            )
-        );
-        builder.MapSerializer(
-            typeof(GamePlayerValueMessageComposer),
-            new GamePlayerValueMessageComposerSerializer(
-                MessageComposer.GamePlayerValueMessageComposer
             )
         );
         builder.MapSerializer(
@@ -542,12 +228,6 @@ internal sealed class RoomMap : IRevisionMap
         builder.MapSerializer(
             typeof(RoomReadyMessageComposer),
             new RoomReadyMessageComposerSerializer(MessageComposer.RoomReadyMessageComposer)
-        );
-        builder.MapSerializer(
-            typeof(YouArePlayingGameMessageComposer),
-            new YouArePlayingGameMessageComposerSerializer(
-                MessageComposer.YouArePlayingGameMessageComposer
-            )
         );
     }
 }

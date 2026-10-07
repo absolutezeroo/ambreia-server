@@ -9,10 +9,8 @@ using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 using Vortex.Database.Context;
 using Vortex.Database.Entities.Audit;
-using Vortex.Database.Entities.Commerce;
 using Vortex.Observability.Configuration;
 using Vortex.Observability.Runtime;
-using Vortex.Primitives.Commerce;
 using Vortex.Primitives.Observability;
 using Xunit;
 
@@ -68,98 +66,6 @@ public sealed class ForensicsRetentionServiceTests : IAsyncLifetime
         (await db.AuditEvents.CountAsync())
             .Should()
             .Be(1, "0 means keep for ever; deleting on 0 would silently erase the whole trail");
-    }
-
-    /// <summary>
-    /// PERS-RCP-013: nothing aged the commerce journal, and every purchase, prize and settlement
-    /// writes to it. What ages out is an operation that finished uneventfully, and its receipts go
-    /// with it — they carry no foreign key, so an operation deleted alone leaves rows nothing will
-    /// ever collect.
-    /// </summary>
-    [Fact]
-    public async Task AFinishedOperation_AgesOutWithItsReceipts()
-    {
-        await SeedOperationAsync(CommerceOperationState.Completed, ageInDays: 200);
-        await SeedOperationAsync(CommerceOperationState.Completed, ageInDays: 10);
-
-        await RunSweepAsync(new ObservabilityConfig { CommerceRetentionDays = 180 });
-
-        await using VortexDbContext db = new(_options);
-
-        (await db.CommerceOperations.CountAsync()).Should().Be(1, "one was inside the window");
-        (await db.CommerceReceipts.CountAsync()).Should().Be(1, "and so was its receipt");
-    }
-
-    [Fact]
-    public async Task AnOperationNeedingIntervention_IsNeverSwept()
-    {
-        // It is the operator's work list. Ageing it out is deleting the only record that somebody
-        // is owed something.
-        await SeedOperationAsync(CommerceOperationState.NeedsIntervention, ageInDays: 5_000);
-        await SeedOperationAsync(CommerceOperationState.Pivoted, ageInDays: 5_000);
-
-        await RunSweepAsync(new ObservabilityConfig { CommerceRetentionDays = 1 });
-
-        await using VortexDbContext db = new(_options);
-
-        (await db.CommerceOperations.CountAsync())
-            .Should()
-            .Be(2, "neither a work item nor an operation still in flight is finished");
-    }
-
-    [Fact]
-    public async Task AnOperationStillOwingItsEvent_IsKept()
-    {
-        // The operation row is the outbox. Deleting one before the relay has published loses the
-        // event, and with it the quest progress and the daily task it feeds.
-        await SeedOperationAsync(
-            CommerceOperationState.Completed,
-            ageInDays: 5_000,
-            relayType: "PurchaseCompletedEvent"
-        );
-
-        await RunSweepAsync(new ObservabilityConfig { CommerceRetentionDays = 1 });
-
-        await using VortexDbContext db = new(_options);
-
-        (await db.CommerceOperations.CountAsync()).Should().Be(1);
-    }
-
-    private async Task SeedOperationAsync(
-        CommerceOperationState state,
-        int ageInDays,
-        string? relayType = null
-    )
-    {
-        await using VortexDbContext db = new(_options);
-
-        Guid id = Guid.CreateVersion7();
-        DateTime at = DateTime.UtcNow.AddDays(-ageInDays);
-
-        db.CommerceOperations.Add(
-            new CommerceOperationEntity
-            {
-                Id = id,
-                Kind = CommerceOperationKind.CatalogPurchase,
-                PlayerId = 1,
-                State = state,
-                RelayType = relayType,
-                RelayPayload = relayType is null ? null : "{}",
-                CreatedAt = at,
-                UpdatedAt = at,
-            }
-        );
-
-        db.CommerceReceipts.Add(
-            new CommerceReceiptEntity
-            {
-                OperationId = id,
-                StepKey = CommerceStepKeys.DEBIT,
-                CreatedAt = at,
-            }
-        );
-
-        await db.SaveChangesAsync();
     }
 
     /// <summary>

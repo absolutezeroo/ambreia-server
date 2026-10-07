@@ -40,7 +40,7 @@ internal class UserObjectMessageSerializer(int header)
             message.Player.CreatedAt.ToString(LastAccessDateFormat, CultureInfo.InvariantCulture)
         );
         packet.WriteBoolean(false); // can name change
-        packet.WriteBoolean(message.Player.SafetyLocked); // account safety locked
+        packet.WriteBoolean(false); // account safety locked (frozen: the lock left with the cut)
 
         // Two optional groups, each behind its own `bytesAvailable > 0` in the parser
         // (unknowns/_SafePkg_1820/_SafeCls_1819.parse). The second cannot be reached without the

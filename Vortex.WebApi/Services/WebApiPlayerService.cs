@@ -9,10 +9,8 @@ using Microsoft.Extensions.Options;
 using Orleans;
 using Vortex.Database.Context;
 using Vortex.Database.Entities.Players;
-using Vortex.Primitives.Moderation.WordFilter;
 using Vortex.Primitives.Orleans;
 using Vortex.Primitives.Players.Enums;
-using Vortex.Primitives.Players.Enums.Wallet;
 using Vortex.Primitives.Rooms.Enums;
 using Vortex.WebApi.Configuration;
 using Vortex.WebApi.Http;
@@ -22,14 +20,12 @@ namespace Vortex.WebApi.Services;
 public sealed class WebApiPlayerService(
     IDbContextFactory<VortexDbContext> dbCtxFactory,
     IGrainFactory grainFactory,
-    IWordFilter wordFilter,
     IOptions<WebApiConfig> options,
     ILogger<WebApiPlayerService> logger
 ) : IWebApiPlayerService
 {
     private readonly IDbContextFactory<VortexDbContext> _db = dbCtxFactory;
     private readonly IGrainFactory _grainFactory = grainFactory;
-    private readonly IWordFilter _wordFilter = wordFilter;
     private readonly WebApiConfig _config = options.Value;
     private readonly ILogger<WebApiPlayerService> _logger = logger;
 
@@ -80,14 +76,6 @@ public sealed class WebApiPlayerService(
             // collide with anything a player is allowed to pick, and the onboarding rename replaces
             // it through SetNameAsync, which does enforce the policy.
             _logger.LogWarning("Avatar creation refused: name '{Name}' is not well formed", name);
-            return (false, 0, "pocket.auth.name_not_valid");
-        }
-        // Test, not Apply: there is no player yet, and the journal reads its player column as a
-        // player — an account id there would name an unrelated player who holds the same number.
-        // Any hit refuses a name. The same answer as a malformed name, because to the page a
-        // forbidden name is a name it cannot have.
-        else if (_wordFilter.Test(name).Hit)
-        {
             return (false, 0, "pocket.auth.name_not_valid");
         }
 
@@ -151,13 +139,6 @@ public sealed class WebApiPlayerService(
 
     public async Task<bool> NameAvailableAsync(string name, CancellationToken ct)
     {
-        // Test, not Apply: the page probes while the player types, like the in-game check does, and
-        // journaling every probe would bury the journal. The claim is what journals.
-        if (_wordFilter.Test(name).Hit)
-        {
-            return false;
-        }
-
         await using VortexDbContext db = await _db.CreateDbContextAsync(ct).ConfigureAwait(false);
         return !await db.Players.AnyAsync(p => p.Name == name, ct).ConfigureAwait(false);
     }
@@ -169,10 +150,7 @@ public sealed class WebApiPlayerService(
         // with no lock on it. A name is public identity — whisper, gifting, friend requests and
         // LetUserIn all resolve by exact string — so one that the client's own dialog would refuse
         // is a working impersonation.
-        if (
-            !NameShape.IsWellFormed(name)
-            || _wordFilter.Apply(name, WordFilterSource.Username, playerId).Refused
-        )
+        if (!NameShape.IsWellFormed(name))
         {
             return false;
         }
@@ -201,145 +179,6 @@ public sealed class WebApiPlayerService(
 
         await _grainFactory.GetPlayerGrain(playerId).SetNameAsync(name, ct).ConfigureAwait(false);
         return true;
-    }
-
-    public async Task<bool> SaveFigureAsync(
-        int playerId,
-        string figureString,
-        string gender,
-        CancellationToken ct
-    )
-    {
-        await using VortexDbContext db = await _db.CreateDbContextAsync(ct).ConfigureAwait(false);
-
-        bool exists = await db
-            .Players.AsNoTracking()
-            .AnyAsync(p => p.Id == playerId, ct)
-            .ConfigureAwait(false);
-
-        if (!exists)
-        {
-            return false;
-        }
-
-        AvatarGenderType genderType = AvatarGenderTypeExtensions.FromLegacyString(gender);
-
-        await _grainFactory
-            .GetPlayerGrain(playerId)
-            .SetFigureAsync(figureString, genderType, ct)
-            .ConfigureAwait(false);
-
-        return true;
-    }
-
-    public async Task<AvatarInfo?> GetAvatarAsync(int playerId, CancellationToken ct)
-    {
-        await using VortexDbContext db = await _db.CreateDbContextAsync(ct).ConfigureAwait(false);
-
-        PlayerEntity? player = await db
-            .Players.AsNoTracking()
-            .FirstOrDefaultAsync(p => p.Id == playerId, ct)
-            .ConfigureAwait(false);
-
-        return player is null ? null : ToAvatarInfo(player);
-    }
-
-    public async Task<bool?> GetProfileVisibleAsync(int playerId, CancellationToken ct)
-    {
-        await using VortexDbContext db = await _db.CreateDbContextAsync(ct).ConfigureAwait(false);
-
-        return await db
-            .Players.AsNoTracking()
-            .Where(p => p.Id == playerId && p.DeletedAt == null)
-            .Select(p => (bool?)p.ProfileVisible)
-            .FirstOrDefaultAsync(ct)
-            .ConfigureAwait(false);
-    }
-
-    public async Task<bool> SetProfileVisibleAsync(int playerId, bool visible, CancellationToken ct)
-    {
-        await using VortexDbContext db = await _db.CreateDbContextAsync(ct).ConfigureAwait(false);
-
-        // Written straight to the column rather than through the player's grain, unlike the rename
-        // next to it: nothing in the game reads this — a room shows who is in it either way — so
-        // there is no live state to keep in step, and waking a grain to set a web preference would
-        // be load for nothing. The grain's own writes are targeted `ExecuteUpdate`s on the columns
-        // it owns, so neither side can overwrite the other.
-        int rows = await db
-            .Players.Where(p => p.Id == playerId && p.DeletedAt == null)
-            .ExecuteUpdateAsync(up => up.SetProperty(p => p.ProfileVisible, visible), ct)
-            .ConfigureAwait(false);
-
-        return rows > 0;
-    }
-
-    public async Task<PlayerPurse?> GetPurseAsync(int playerId, CancellationToken ct)
-    {
-        await using VortexDbContext db = await _db.CreateDbContextAsync(ct).ConfigureAwait(false);
-
-        bool exists = await db
-            .Players.AsNoTracking()
-            .AnyAsync(p => p.Id == playerId && p.DeletedAt == null, ct)
-            .ConfigureAwait(false);
-
-        if (!exists)
-        {
-            return null;
-        }
-
-        // A currency row only exists once the player has held that currency, so the wallet is read
-        // as a dictionary and missing rows are zero rather than an absent counter.
-        //
-        // Only the THREE this purse shows, and that narrowing IS the fix for a 500 this route
-        // answered on any hotel carrying more than one activity-point currency. A wallet is keyed
-        // by <see cref="CurrencyKind" />, the PAIR (CurrencyType, ActivityPointType) — so
-        // <c>CurrencyType.ActivityPoints</c> is a FAMILY and not a currency: duckets, diamonds and
-        // every seasonal currency each get their own <c>currency_types</c> row under it. This read
-        // keyed on <c>CurrencyType</c> alone, collapsed the whole family onto one key, and
-        // <c>ToDictionaryAsync</c> threw "An item with the same key has already been added" — while
-        // building an entry for a value the purse does not display.
-        //
-        // `Max` and not `Sum` for the three that remain: the wallet grain spends from ONE row per
-        // kind (<c>PlayerWalletGrain.ResolveCurrencyRowAsync</c> resolves a single id), so adding
-        // two rows together would print a balance the game will not let the player spend.
-        Dictionary<CurrencyType, int> balances = await db
-            .PlayerCurrencies.AsNoTracking()
-            .Where(c =>
-                c.PlayerEntityId == playerId
-                && c.CurrencyTypeEntity != null
-                && (
-                    c.CurrencyTypeEntity.CurrencyType == CurrencyType.Credits
-                    || c.CurrencyTypeEntity.CurrencyType == CurrencyType.Silver
-                    || c.CurrencyTypeEntity.CurrencyType == CurrencyType.Emeralds
-                )
-            )
-            .GroupBy(c => c.CurrencyTypeEntity!.CurrencyType)
-            .Select(group => new { Kind = group.Key, Amount = group.Max(c => c.Amount) })
-            .ToDictionaryAsync(row => row.Kind, row => row.Amount, ct)
-            .ConfigureAwait(false);
-
-        DateTime now = DateTime.UtcNow;
-
-        List<PlayerMembershipEntity> subscriptions = await db
-            .PlayerMemberships.AsNoTracking()
-            .Where(s => s.PlayerEntityId == playerId && s.ExpiresAt > now)
-            .ToListAsync(ct)
-            .ConfigureAwait(false);
-
-        PlayerMembershipEntity? club = subscriptions.Find(s =>
-            s.MembershipType == MembershipType.Premium
-        );
-
-        // Rounded UP: a subscription with eight hours left is a day left, not zero days, which is
-        // what the counter says everywhere else in the hotel.
-        int membershipDays = club is null ? 0 : (int)Math.Ceiling((club.ExpiresAt - now).TotalDays);
-
-        return new PlayerPurse(
-            balances.GetValueOrDefault(CurrencyType.Credits),
-            balances.GetValueOrDefault(CurrencyType.Emeralds),
-            balances.GetValueOrDefault(CurrencyType.Silver),
-            membershipDays
-        );
     }
 
     private static AvatarInfo ToAvatarInfo(PlayerEntity p) =>

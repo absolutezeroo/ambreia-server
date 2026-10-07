@@ -5,7 +5,6 @@ using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using Microsoft.EntityFrameworkCore;
 using Vortex.Database.Entities.Furniture;
-using Vortex.Database.Entities.Messenger;
 using Vortex.Database.Entities.Room;
 using Vortex.Database.Entities.Security;
 using Vortex.Primitives.Players.Avatar;
@@ -110,31 +109,7 @@ public class PlayerEntity : VortexEntity
     public bool ProfileVisible { get; set; }
 
     [InverseProperty("PlayerEntity")]
-    public List<PlayerBadgeEntity>? PlayerBadges { get; set; }
-
-    [InverseProperty("PlayerEntity")]
-    public List<PlayerCurrencyEntity>? PlayerCurrencies { get; set; }
-
-    [InverseProperty("PlayerEntity")]
     public List<FurnitureEntity>? Furniture { get; set; }
-
-    [InverseProperty("PlayerEntity")]
-    public List<MessengerCategoryEntity>? MessengerCategories { get; set; }
-
-    [InverseProperty("PlayerEntity")]
-    public List<MessengerFriendEntity>? MessengerFriends { get; set; }
-
-    [InverseProperty("RequestedPlayerEntity")]
-    public List<MessengerRequestEntity>? MessengerRequests { get; set; }
-
-    [InverseProperty("PlayerEntity")]
-    public List<MessengerRequestEntity>? MessengerRequestsSent { get; set; }
-
-    [InverseProperty("PlayerEntity")]
-    public List<MessengerBlockedEntity>? MessengerBlocked { get; set; }
-
-    [InverseProperty("PlayerEntity")]
-    public List<MessengerIgnoredEntity>? MessengerIgnored { get; set; }
 
     [InverseProperty("PlayerEntity")]
     public List<SecurityTicketEntity>? SecurityTickets { get; set; }
@@ -143,17 +118,5 @@ public class PlayerEntity : VortexEntity
     public List<RoomEntity>? Rooms { get; set; }
 
     [InverseProperty("PlayerEntity")]
-    public List<RoomBanEntity>? RoomBans { get; set; }
-
-    [InverseProperty("PlayerEntity")]
-    public List<RoomMuteEntity>? RoomMutes { get; set; }
-
-    [InverseProperty("PlayerEntity")]
     public List<RoomRightEntity>? RoomRights { get; set; }
-
-    [InverseProperty("PlayerEntity")]
-    public List<RoomChatlogEntity>? RoomChatlogs { get; set; }
-
-    [InverseProperty("PlayerEntity")]
-    public List<PlayerMembershipEntity>? PlayerMemberships { get; set; }
 }

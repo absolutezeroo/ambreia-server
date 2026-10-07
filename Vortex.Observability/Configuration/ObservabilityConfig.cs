@@ -47,24 +47,8 @@ public sealed class ObservabilityConfig
     /// </summary>
     public int ItemEventRetentionDays { get; init; }
 
-    /// <summary>How long room chat is kept, in days. 0 keeps it for ever.</summary>
-    public int ChatRetentionDays { get; init; } = 90;
-
     /// <summary>How long room visit history is kept, in days. 0 keeps it for ever.</summary>
     public int RoomVisitRetentionDays { get; init; } = 90;
-
-    /// <summary>
-    /// How long a finished commerce operation and its receipts are kept, in days. 0 keeps them for
-    /// ever. Matches the audit trail, because an operation is the same kind of evidence: what a
-    /// dispute about a purchase is settled with.
-    /// <para>
-    /// Only operations that finished uneventfully age out — <c>Completed</c> and
-    /// <c>FailedBeforePivot</c>, with no event still owed. Anything <c>NeedsIntervention</c> is an
-    /// operator's work list and is never swept; anything short of terminal is either in flight or
-    /// stuck, and a stuck operation is precisely what somebody is meant to find (PERS-RCP-013).
-    /// </para>
-    /// </summary>
-    public int CommerceRetentionDays { get; init; } = 180;
 
     /// <summary>Hours between retention sweeps. Minimum one hour.</summary>
     public int RetentionSweepIntervalHours { get; init; } = 24;

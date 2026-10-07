@@ -106,20 +106,6 @@ public class RoomDirectoryGrain(
         return Task.CompletedTask;
     }
 
-    public Task SetRaidIncidentAsync(RoomId roomId, bool active)
-    {
-        if (active)
-        {
-            _raidIncidents.Add(roomId);
-        }
-        else
-        {
-            _raidIncidents.Remove(roomId);
-        }
-
-        return Task.CompletedTask;
-    }
-
     public async Task AddPlayerToRoomAsync(PlayerId playerId, RoomId roomId, CancellationToken ct)
     {
         if (!_roomPlayers.TryGetValue(roomId, out HashSet<PlayerId>? playerIds))

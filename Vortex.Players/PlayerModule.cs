@@ -3,14 +3,10 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
 using Vortex.Players.Authentication;
 using Vortex.Players.Configuration;
-using Vortex.Players.Providers;
 using Vortex.Primitives.Authentication;
-using Vortex.Primitives.Content;
 using Vortex.Primitives.Hosting;
 using Vortex.Primitives.Moderation;
-using Vortex.Primitives.Pets.Providers;
 using Vortex.Primitives.Players;
-using Vortex.Primitives.Players.Providers;
 using Vortex.Primitives.Plugins;
 
 namespace Vortex.Players;
@@ -37,15 +33,6 @@ public sealed class PlayerModule : IHostPluginModule
 
         services.Configure<PlayerPresenceConfig>(
             builder.Configuration.GetSection(PlayerPresenceConfig.SECTION_NAME)
-        );
-
-        services.AddSingleton<IPetSkinProvider, PetSkinProvider>();
-        services.AddSingleton<IReferenceDataProvider>(sp =>
-            (IReferenceDataProvider)sp.GetRequiredService<IPetSkinProvider>()
-        );
-        services.AddSingleton<IPetLevelProvider, PetLevelProvider>();
-        services.AddSingleton<IReferenceDataProvider>(sp =>
-            (IReferenceDataProvider)sp.GetRequiredService<IPetLevelProvider>()
         );
 
         // The admin services moved to the dashboard: authoring content is its job, not the

@@ -76,11 +76,11 @@ const cases = [
 // prouve plus rien : il faut une vraie violation. La sonde est un fichier de contrats qui importe le
 // protocole -- exactement ce que le mur existe pour refuser. Elle est retiree avant le cas passant.
 const wallProbe = path.join(root, 'Vortex.Primitives', 'Rooms', '__WallProbe.cs');
-fs.writeFileSync(wallProbe, 'using Vortex.Protocol.Messages.Incoming.Catalog;\n');
+fs.writeFileSync(wallProbe, 'using Vortex.Protocol.Messages.Incoming.Handshake;\n');
 
 // Le mur 4 garde un gain de build mesure (74s -> 17s), que rendre est invisible : la compilation
 // redevient simplement plus lente. La sonde rend vraiment la reference a un projet protege.
-const freeProject = path.join(root, 'Vortex.Marketplace', 'Vortex.Marketplace.csproj');
+const freeProject = path.join(root, 'Vortex.Furniture', 'Vortex.Furniture.csproj');
 const freeProjectOriginal = fs.readFileSync(freeProject, 'utf8');
 fs.writeFileSync(
   freeProject,

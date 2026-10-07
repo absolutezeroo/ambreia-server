@@ -19,9 +19,7 @@ using Vortex.Primitives.Rooms.Object;
 using Vortex.Primitives.Rooms.Object.Avatars;
 using Vortex.Primitives.Rooms.Snapshots.Avatars;
 using Vortex.Protocol.Messages.Outgoing.Room.Action;
-using Vortex.Protocol.Messages.Outgoing.Room.Chat;
 using Vortex.Protocol.Messages.Outgoing.Room.Engine;
-using Vortex.Protocol.Messages.Outgoing.Users;
 
 namespace Vortex.Rooms.Grains.Modules;
 
@@ -527,42 +525,6 @@ public sealed partial class RoomAvatarModule(RoomGrain roomGrain)
         return Task.FromResult(true);
     }
 
-    public Task<bool> SetAvatarDanceAsync(
-        RoomObjectId objectId,
-        AvatarDanceType danceType,
-        CancellationToken ct
-    )
-    {
-        if (
-            objectId <= 0
-            || !_roomGrain._state.AvatarsByObjectId.TryGetValue(
-                objectId.Value,
-                out IRoomAvatar? avatar
-            )
-            || avatar is not IRoomPlayer player
-            || !player.SetDance(danceType)
-        )
-        {
-            return Task.FromResult(false);
-        }
-
-        _roomGrain
-            .SendComposerToRoomAsync(
-                new DanceMessageComposer
-                {
-                    ObjectId = avatar.ObjectId,
-                    DanceType = player.DanceType,
-                }
-            )
-            .LogAndForget(
-                _roomGrain._logger,
-                "Failed to publish avatar update for room {RoomId}",
-                _roomGrain._state.RoomId
-            );
-
-        return Task.FromResult(true);
-    }
-
     /// <summary>
     /// Sitting or laying cancels a dance on the avatar itself and standing up resumes it, but the
     /// room only ever learns about a dance through <see cref="DanceMessageComposer"/> — without
@@ -596,153 +558,6 @@ public sealed partial class RoomAvatarModule(RoomGrain roomGrain)
                 "Failed to publish avatar update for room {RoomId}",
                 _roomGrain._state.RoomId
             );
-    }
-
-    public Task<bool> SetAvatarEffectAsync(
-        RoomObjectId objectId,
-        int effectId,
-        CancellationToken ct
-    )
-    {
-        if (
-            objectId <= 0
-            || !_roomGrain._state.AvatarsByObjectId.TryGetValue(
-                objectId.Value,
-                out IRoomAvatar? avatar
-            )
-            || !avatar.SetEffect(effectId)
-        )
-        {
-            return Task.FromResult(false);
-        }
-
-        _roomGrain
-            .SendComposerToRoomAsync(
-                new AvatarEffectMessageComposer
-                {
-                    UserId = avatar.ObjectId,
-                    EffectId = effectId,
-                    DelayMilliseconds = 0,
-                }
-            )
-            .LogAndForget(
-                _roomGrain._logger,
-                "Failed to publish avatar effect for room {RoomId}",
-                _roomGrain._state.RoomId
-            );
-
-        return Task.FromResult(true);
-    }
-
-    public Task<bool> SetAvatarExpressionAsync(
-        RoomObjectId objectId,
-        AvatarExpressionType expressionType,
-        CancellationToken ct
-    )
-    {
-        if (
-            objectId <= 0
-            || !_roomGrain._state.AvatarsByObjectId.TryGetValue(
-                objectId.Value,
-                out IRoomAvatar? avatar
-            )
-        )
-        {
-            return Task.FromResult(false);
-        }
-
-        _roomGrain
-            .SendComposerToRoomAsync(
-                new ExpressionMessageComposer
-                {
-                    ObjectId = avatar.ObjectId,
-                    ExpressionType = expressionType,
-                }
-            )
-            .LogAndForget(
-                _roomGrain._logger,
-                "Failed to publish avatar update for room {RoomId}",
-                _roomGrain._state.RoomId
-            );
-
-        return Task.FromResult(true);
-    }
-
-    public Task<bool> SetAvatarPostureAsync(
-        RoomObjectId objectId,
-        AvatarPostureType postureType,
-        CancellationToken ct
-    )
-    {
-        if (
-            objectId <= 0
-            || !_roomGrain._state.AvatarsByObjectId.TryGetValue(
-                objectId.Value,
-                out IRoomAvatar? avatar
-            )
-        )
-        {
-            return Task.FromResult(false);
-        }
-
-        // The client sends the posture it wants (stand/sit), so honour it instead of toggling —
-        // a toggle desyncs as soon as the client and the room disagree on the current posture.
-        AvatarDanceType previousDanceType =
-            (avatar as IRoomPlayer)?.DanceType ?? AvatarDanceType.None;
-
-        switch (postureType)
-        {
-            case AvatarPostureType.Sit:
-                avatar.Sit(true);
-                break;
-            case AvatarPostureType.Stand:
-                avatar.Sit(false);
-                break;
-            default:
-                return Task.FromResult(false);
-        }
-
-        BroadcastDanceIfChanged(avatar, previousDanceType);
-
-        _roomGrain
-            .SendComposerToRoomAsync(
-                new UserUpdateMessageComposer { Avatars = [avatar.GetSnapshot()] }
-            )
-            .LogAndForget(
-                _roomGrain._logger,
-                "Failed to publish avatar update for room {RoomId}",
-                _roomGrain._state.RoomId
-            );
-
-        return Task.FromResult(true);
-    }
-
-    public Task<bool> SetAvatarSignAsync(RoomObjectId objectId, int signId, CancellationToken ct)
-    {
-        if (
-            objectId <= 0
-            || !_roomGrain._state.AvatarsByObjectId.TryGetValue(
-                objectId.Value,
-                out IRoomAvatar? avatar
-            )
-        )
-        {
-            return Task.FromResult(false);
-        }
-
-        avatar.AddStatus(AvatarStatusType.Sign, signId.ToString());
-
-        _roomGrain
-            .SendComposerToRoomAsync(
-                new UserUpdateMessageComposer { Avatars = [avatar.GetSnapshot()] }
-            )
-            .LogAndForget(
-                _roomGrain._logger,
-                "Failed to publish avatar update for room {RoomId}",
-                _roomGrain._state.RoomId
-            );
-
-        return Task.FromResult(true);
     }
 
     public Task<bool> LookToAvatarAsync(
@@ -790,35 +605,5 @@ public sealed partial class RoomAvatarModule(RoomGrain roomGrain)
             );
 
         return Task.FromResult(true);
-    }
-
-    public Task SetAvatarTypingAsync(RoomObjectId objectId, bool isTyping, CancellationToken ct)
-    {
-        if (
-            objectId <= 0
-            || !_roomGrain._state.AvatarsByObjectId.TryGetValue(
-                objectId.Value,
-                out IRoomAvatar? avatar
-            )
-        )
-        {
-            return Task.CompletedTask;
-        }
-
-        _roomGrain
-            .SendComposerToRoomAsync(
-                new UserTypingMessageComposer
-                {
-                    UserId = avatar.ObjectId.Value,
-                    IsTyping = isTyping,
-                }
-            )
-            .LogAndForget(
-                _roomGrain._logger,
-                "Failed to publish avatar update for room {RoomId}",
-                _roomGrain._state.RoomId
-            );
-
-        return Task.CompletedTask;
     }
 }
