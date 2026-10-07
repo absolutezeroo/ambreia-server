@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 using Vortex.Primitives.Rpg.Content;
 using Vortex.Rpg.Content.Definitions;
 using Vortex.Rpg.Content.Validation;
@@ -19,6 +20,21 @@ public sealed class ItemKind : ContentKind<ItemDefinition>
         if (i.RequiredLevel < 1)
         {
             yield return Error("BadLevel", i.Id, $"Required level {i.RequiredLevel}: at least 1.");
+        }
+
+        int maxLevel = check
+            .All<ProgressionDefinition>()
+            .Select(p => p.MaxLevel)
+            .DefaultIfEmpty(int.MaxValue)
+            .Max();
+
+        if (i.RequiredLevel > maxLevel)
+        {
+            yield return Error(
+                "RequiredLevelAboveMax",
+                i.Id,
+                $"Required level {i.RequiredLevel}: nobody goes past level {maxLevel}."
+            );
         }
 
         if (i.MaxDurability < 0 || i.SellValue < 0)

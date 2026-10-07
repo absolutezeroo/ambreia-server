@@ -27,13 +27,25 @@ public sealed class ContentPackValidator(IEnumerable<IContentKind> kinds)
         List<ContentFinding> findings = [];
         Dictionary<string, ContentDefinition> definitions = new(StringComparer.Ordinal);
         Dictionary<string, string> paths = new(StringComparer.Ordinal);
+        Dictionary<string, IContentKind> kindOf = new(StringComparer.Ordinal);
 
-        foreach (ContentFile file in pack.Files)
+        // The pack arrives from the web: a null the type does not allow is still possible. No file
+        // list is not an empty pack, which would remove every definition.
+        if (pack.Files is null)
         {
-            (ContentDefinition? definition, ContentFinding? finding) = ContentParser.Parse(
-                file,
-                _kinds
-            );
+            findings.Add(Error("Json", null, null, "The pack has no file list."));
+        }
+
+        foreach (ContentFile? file in pack.Files ?? [])
+        {
+            if (file is null)
+            {
+                findings.Add(Error("Json", null, null, "A file of the pack is null."));
+                continue;
+            }
+
+            (ContentDefinition? definition, IContentKind? kind, ContentFinding? finding) =
+                ContentParser.Parse(file, _kinds);
 
             if (finding is not null)
             {
@@ -54,6 +66,7 @@ public sealed class ContentPackValidator(IEnumerable<IContentKind> kinds)
             {
                 definitions[definition.Id] = definition;
                 paths[definition.Id] = file.Path;
+                kindOf[definition.Id] = kind!;
             }
         }
 
@@ -62,7 +75,7 @@ public sealed class ContentPackValidator(IEnumerable<IContentKind> kinds)
         foreach (ContentDefinition definition in definitions.Values)
         {
             findings.AddRange(
-                _kinds[definition.Kind]
+                kindOf[definition.Id]
                     .Check(definition, check)
                     .Select(f => f with { File = paths[definition.Id] })
             );
@@ -73,10 +86,9 @@ public sealed class ContentPackValidator(IEnumerable<IContentKind> kinds)
             definitions,
             findings
         );
-        Dictionary<string, IReadOnlyDictionary<string, string>> texts = pack.Texts.ToDictionary(
-            t => t.Key,
-            t => ContentTexts.Parse(t.Value)
-        );
+        Dictionary<string, IReadOnlyDictionary<string, string>> texts = (
+            pack.Texts ?? new Dictionary<string, string>()
+        ).ToDictionary(t => t.Key, t => ContentTexts.Parse(t.Value ?? string.Empty));
 
         CheckTexts(texts, definitions, findings);
 
@@ -89,16 +101,18 @@ public sealed class ContentPackValidator(IEnumerable<IContentKind> kinds)
         List<ContentFinding> findings
     )
     {
+        json = json?.TrimStart(ContentParser.Bom);
+
         if (string.IsNullOrWhiteSpace(json))
         {
             return [];
         }
 
-        List<ContentMigrationRule> rules;
+        List<ContentMigrationRule?> rules;
 
         try
         {
-            rules = ContentJson.Deserialize<List<ContentMigrationRule>>(json.TrimStart('﻿'));
+            rules = ContentJson.Deserialize<List<ContentMigrationRule?>>(json);
         }
         catch (JsonException e)
         {
@@ -106,9 +120,15 @@ public sealed class ContentPackValidator(IEnumerable<IContentKind> kinds)
             return [];
         }
 
-        foreach (ContentMigrationRule rule in rules)
+        foreach (ContentMigrationRule? rule in rules)
         {
-            if (!ContentIds.IsValid(rule.From) || rule.To is { } to && !ContentIds.IsValid(to))
+            if (rule is null)
+            {
+                findings.Add(
+                    Error("BrokenMigration", MigrationsFile, null, "A rule is an object.")
+                );
+            }
+            else if (!ContentIds.IsValid(rule.From) || rule.To is { } to && !ContentIds.IsValid(to))
             {
                 findings.Add(
                     Error("BrokenMigration", MigrationsFile, rule.From, "A rule names valid ids.")
@@ -144,7 +164,7 @@ public sealed class ContentPackValidator(IEnumerable<IContentKind> kinds)
             }
         }
 
-        return rules;
+        return [.. rules.OfType<ContentMigrationRule>()];
     }
 
     private static void CheckTexts(
@@ -155,6 +175,12 @@ public sealed class ContentPackValidator(IEnumerable<IContentKind> kinds)
     {
         if (!texts.TryGetValue(French, out IReadOnlyDictionary<string, string>? fr))
         {
+            // An empty database starts with an empty registry (spec Contenu §6).
+            if (definitions.Count == 0)
+            {
+                return;
+            }
+
             findings.Add(
                 Error("NoFrenchTexts", "texts/fr.txt", null, "French is the reference language.")
             );
@@ -187,7 +213,7 @@ public sealed class ContentPackValidator(IEnumerable<IContentKind> kinds)
         }
     }
 
-    private static ContentFinding Error(string code, string file, string? id, string message) =>
+    private static ContentFinding Error(string code, string? file, string? id, string message) =>
         new(ContentSeverity.Error, code, file, id, message);
 
     private static ContentFinding Warning(string code, string file, string? id, string message) =>

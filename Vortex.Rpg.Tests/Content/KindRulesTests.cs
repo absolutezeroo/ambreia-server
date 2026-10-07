@@ -231,6 +231,12 @@ public sealed class KindRulesTests
         Codes(new ItemKind(), Sword with { RequiredLevel = 0 }, Warrior).Should().Equal("BadLevel");
 
     [Fact]
+    public void ALevelAboveTheMaxLevel_IsAnError() =>
+        Codes(new ItemKind(), Sword with { RequiredLevel = 4 }, Warrior, Curve)
+            .Should()
+            .Equal("RequiredLevelAboveMax");
+
+    [Fact]
     public void AValidCurve_HasNoFinding() =>
         Codes(new ProgressionKind(), Curve).Should().BeEmpty();
 

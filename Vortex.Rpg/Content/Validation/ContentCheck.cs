@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using Vortex.Rpg.Content.Definitions;
 
 namespace Vortex.Rpg.Content.Validation;
@@ -18,6 +19,10 @@ public sealed class ContentCheck(
     /// <summary>Whether this id names a definition of this type.</summary>
     public bool Is<T>(string id)
         where T : ContentDefinition => Get<T>(id) is not null;
+
+    /// <summary>Every definition of this type in the pack.</summary>
+    public IEnumerable<T> All<T>()
+        where T : ContentDefinition => all.Values.OfType<T>();
 
     public bool FurnitureExists(int definition) => furnitureExists(definition);
 }

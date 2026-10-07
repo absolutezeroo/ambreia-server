@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using System.Text.Json;
 using System.Text.Json.Nodes;
@@ -8,26 +7,36 @@ using Vortex.Rpg.Content.Kinds;
 
 namespace Vortex.Rpg.Content.Validation;
 
-/// <summary>One file → its definition, or the finding that stops it (spec Contenu §9, level 1).</summary>
+/// <summary>One file → its definition and the kind that read it, or the finding that stops it
+/// (spec Contenu §9, level 1).</summary>
 internal static class ContentParser
 {
-    public static (ContentDefinition? Definition, ContentFinding? Finding) Parse(
-        ContentFile file,
-        IReadOnlyDictionary<string, IContentKind> kinds
-    )
+    public const char Bom = (char)0xFEFF;
+
+    private static readonly JsonDocumentOptions Strict = new() { AllowDuplicateProperties = false };
+
+    public static (
+        ContentDefinition? Definition,
+        IContentKind? Kind,
+        ContentFinding? Finding
+    ) Parse(ContentFile file, IReadOnlyDictionary<string, IContentKind> kinds)
     {
+        if (file.Text is null)
+        {
+            return (null, null, Error("Json", file, null, "The file is empty."));
+        }
+
         JsonObject document;
 
         try
         {
-            // A repeated key throws ArgumentException here instead of keeping the last value.
             document =
-                JsonNode.Parse(file.Text.TrimStart('﻿')) as JsonObject
+                JsonNode.Parse(file.Text.TrimStart(Bom), documentOptions: Strict) as JsonObject
                 ?? throw new JsonException("A document is a JSON object.");
         }
-        catch (Exception e) when (e is JsonException or ArgumentException)
+        catch (JsonException e)
         {
-            return (null, Error("Json", file, null, e.Message));
+            return (null, null, Error("Json", file, null, e.Message));
         }
 
         // Editor autocompletion only (spec Contenu §4.2): never part of the definition.
@@ -38,12 +47,16 @@ internal static class ContentParser
             || !kindValue.TryGetValue(out string? kindName)
         )
         {
-            return (null, Error("NoKind", file, null, "The document has no \"kind\"."));
+            return (null, null, Error("NoKind", file, null, "The document has no \"kind\"."));
         }
 
         if (!kinds.TryGetValue(kindName, out IContentKind? kind))
         {
-            return (null, Error("UnknownKind", file, null, $"Kind '{kindName}' does not exist."));
+            return (
+                null,
+                null,
+                Error("UnknownKind", file, null, $"Kind '{kindName}' does not exist.")
+            );
         }
 
         ContentDefinition definition;
@@ -54,12 +67,13 @@ internal static class ContentParser
         }
         catch (JsonException e)
         {
-            return (null, Error("Json", file, null, e.Message));
+            return (null, null, Error("Json", file, null, e.Message));
         }
 
         if (!ContentIds.IsValid(definition.Id))
         {
             return (
+                null,
                 null,
                 Error(
                     "BadId",
@@ -74,6 +88,7 @@ internal static class ContentParser
         {
             return (
                 null,
+                null,
                 Error(
                     "IdKindMismatch",
                     file,
@@ -83,7 +98,7 @@ internal static class ContentParser
             );
         }
 
-        return (definition, null);
+        return (definition, kind, null);
     }
 
     private static ContentFinding Error(

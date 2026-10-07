@@ -14,6 +14,10 @@ public static class ContentJson
     {
         // The schema exporter refuses options without an explicit resolver.
         TypeInfoResolver = new DefaultJsonTypeInfoResolver(),
+        // The Web defaults match names case-insensitively and keep the last of a repeated key: a
+        // contract spells each field once, exactly.
+        PropertyNameCaseInsensitive = false,
+        AllowDuplicateProperties = false,
         NumberHandling = JsonNumberHandling.Strict,
         RespectNullableAnnotations = true,
         RespectRequiredConstructorParameters = true,

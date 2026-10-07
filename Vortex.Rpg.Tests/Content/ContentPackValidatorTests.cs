@@ -159,4 +159,62 @@ public sealed class ContentPackValidatorTests
         Run(F("class/warrior.json", Warrior))
             .Findings.Should()
             .Contain(f => f.Code == "BrokenReference" && f.File == "class/warrior.json");
+
+    // Review 3-4: inputs that made Validate throw (an import would answer 500).
+
+    [Fact]
+    public void ARepeatedKey_IsAJsonError() =>
+        Run(F("class/warrior.json", Warrior.Replace("{ \"id\"", "{ \"id\": \"class.x\", \"id\"")))
+            .Findings.Should()
+            .Contain(f => f.Code == "Json" && f.File == "class/warrior.json");
+
+    [Fact]
+    public void AKindFieldInAnotherCase_IsAJsonError() =>
+        Run(
+            F("class/warrior.json", Warrior.Replace("{ \"id\"", "{ \"Kind\": \"item\", \"id\"")),
+            F("specialization/guardian.json", Guardian)
+        )
+            .Findings.Select(f => f.Code)
+            .Should()
+            .Contain("Json");
+
+    [Fact]
+    public void ANullMigrationRule_IsABrokenMigration() =>
+        RunWarrior(Fr, "[null]").Findings.Select(f => f.Code).Should().Contain("BrokenMigration");
+
+    [Fact]
+    public void ARetireRule_NeedsNoTo() =>
+        RunWarrior(Fr, """[{ "from": "item.old", "action": "retire" }]""")
+            .HasErrors.Should()
+            .BeFalse();
+
+    [Fact]
+    public void AnEmptyPack_WithoutTexts_HasNoError() =>
+        Validator()
+            .Validate(new ContentPack([], null, new Dictionary<string, string>()), _ => true)
+            .HasErrors.Should()
+            .BeFalse();
+
+    [Fact]
+    public void NullsFromTheWire_AreFindings()
+    {
+        ValidatedPack pack = Validator()
+            .Validate(
+                new ContentPack(
+                    [null!, F("class/warrior.json", null!)],
+                    null,
+                    new Dictionary<string, string> { ["fr"] = null! }
+                ),
+                _ => true
+            );
+
+        pack.Findings.Select(f => f.Code).Should().Contain("Json");
+    }
+
+    [Fact]
+    public void ANullPack_IsAFinding() =>
+        Validator()
+            .Validate(new ContentPack(null!, null, null!), _ => true)
+            .HasErrors.Should()
+            .BeTrue();
 }
