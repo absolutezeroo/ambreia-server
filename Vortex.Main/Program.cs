@@ -34,8 +34,8 @@ using Vortex.Primitives.Orleans;
 using Vortex.Revisions.Extensions;
 using Vortex.Rooms;
 using Vortex.Runtime.AssemblyProcessing;
-using Vortex.World;
 using Vortex.WebApi.Authentication;
+using Vortex.World;
 
 namespace Vortex.Main;
 
