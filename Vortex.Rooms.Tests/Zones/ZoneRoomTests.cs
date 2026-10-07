@@ -2,6 +2,8 @@ using System.Linq;
 using System.Threading.Tasks;
 using FluentAssertions;
 using Vortex.Primitives.Rooms.Enums;
+using Vortex.Primitives.Rooms.Object.Furniture.Wall;
+using Vortex.Primitives.Rooms.Object.Logic.Furniture;
 using Vortex.Primitives.World;
 using Vortex.Primitives.World.Layers;
 using Vortex.Rooms.Tests.Support;
@@ -78,6 +80,42 @@ public sealed class ZoneRoomTests
 
         harness.Grain._state.IsFurniLoaded.Should().BeTrue();
         harness.Grain._state.ItemsById.Should().BeEmpty();
+    }
+
+    [Theory]
+    [InlineData(ZoneWallSide.Left, ":w=2,0 l=7,31 l")]
+    [InlineData(ZoneWallSide.Right, ":w=2,0 l=7,31 r")]
+    public async Task AWallObject_KeepsItsSideAndBothOffsets(ZoneWallSide side, string expected)
+    {
+        ZoneDocument doc = ZoneSamples.Minimal() with
+        {
+            WallDecor =
+            [
+                new ZoneWallDecorObject
+                {
+                    Id = "poster_1",
+                    Definition = ZoneSamples.Poster,
+                    Class = "poster",
+                    Side = side,
+                    X = 2,
+                    Y = 0,
+                    OffsetX = 7,
+                    OffsetY = 31,
+                },
+            ],
+        };
+        RoomHarness harness = await RoomHarness.CreateZoneAsync(doc);
+        harness.LogicFactory = () => FakeProxy.Create<IFurnitureWallLogic>(_ => null);
+
+        await harness.Grain.FurniModule.EnsureFurniLoadedAsync(default);
+
+        harness
+            .Grain._state.ItemsById.Values.OfType<IRoomWallItem>()
+            .Should()
+            .ContainSingle()
+            .Which.ConvertWallPositionToString()
+            .Should()
+            .Be(expected);
     }
 
     [Fact]

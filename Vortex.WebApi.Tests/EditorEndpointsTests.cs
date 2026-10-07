@@ -108,6 +108,41 @@ public sealed class EditorEndpointsTests
             .Contain("\"class\":\"throne\"");
     }
 
+    [Fact]
+    public async Task SavingToAnUnknownZone_IsNotFound()
+    {
+        await using WebApiTestFactory f = new();
+
+        (await PostJsonAsync(f, "/api/editor/zones/moon/versions", "{}"))
+            .StatusCode.Should()
+            .Be(HttpStatusCode.NotFound);
+    }
+
+    [Fact]
+    public async Task ASaveThatLostTheRace_IsAConflict()
+    {
+        await using WebApiTestFactory f = new();
+
+        (await PostJsonAsync(f, "/api/editor/zones/busy/versions", "{}"))
+            .StatusCode.Should()
+            .Be(HttpStatusCode.Conflict);
+    }
+
+    [Fact]
+    public async Task TheLatestDraft_CanBeReopened()
+    {
+        await using WebApiTestFactory f = new();
+
+        (
+            await (
+                await f.CreateAuthenticatedClient()
+                    .GetAsync("/api/editor/zones/village/document?version=latest")
+            ).Content.ReadAsStringAsync()
+        )
+            .Should()
+            .Contain("\"draft\":true");
+    }
+
     private static async Task<HttpResponseMessage> PostJsonAsync(
         WebApiTestFactory f,
         string url,

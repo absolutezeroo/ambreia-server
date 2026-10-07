@@ -9,6 +9,7 @@ namespace Vortex.Tests.Support;
 public static class ZoneSamples
 {
     public const int Throne = 230;
+    public const int Poster = 4001;
 
     public static ZoneDocument Minimal(string id = "village") =>
         new()

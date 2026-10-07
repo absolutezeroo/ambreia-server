@@ -1,11 +1,13 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Routing;
 using Vortex.Primitives.Permissions;
 using Vortex.Primitives.World;
@@ -93,6 +95,12 @@ internal static partial class WebApiEndpoints
                                 .ConfigureAwait(false)
                         );
                     }
+                    catch (KeyNotFoundException)
+                    {
+                        return TypedResults.NotFound(
+                            new ApiErrorResponse("editor.template_not_found")
+                        );
+                    }
                     catch (ArgumentException)
                     {
                         return TypedResults.BadRequest(
@@ -132,7 +140,7 @@ internal static partial class WebApiEndpoints
                 async Task<IResult> (
                     HttpContext ctx,
                     string key,
-                    int? version,
+                    string? version,
                     WebApiSessionStore sessions,
                     IPermissionService permissions,
                     IZoneEditorService zones,
@@ -153,9 +161,22 @@ internal static partial class WebApiEndpoints
                         return denied;
                     }
 
-                    string? json = await zones
-                        .GetDocumentAsync(key, version, ct)
-                        .ConfigureAwait(false);
+                    string? json;
+
+                    if (version == "latest")
+                    {
+                        json = await zones.GetLatestDocumentAsync(key, ct).ConfigureAwait(false);
+                    }
+                    else if (version is null || int.TryParse(version, out _))
+                    {
+                        json = await zones
+                            .GetDocumentAsync(key, version is null ? null : int.Parse(version), ct)
+                            .ConfigureAwait(false);
+                    }
+                    else
+                    {
+                        return TypedResults.BadRequest(new ApiErrorResponse("invalid_request"));
+                    }
 
                     return json is null
                         ? TypedResults.NotFound()
@@ -236,17 +257,24 @@ internal static partial class WebApiEndpoints
                         return TooLarge();
                     }
 
-                    ZoneSaveResult result = await zones
-                        .SaveAsync(
-                            key,
-                            json,
-                            ctx.AccountId(sessions)!.Value,
-                            comment ?? string.Empty,
-                            ct
-                        )
-                        .ConfigureAwait(false);
+                    try
+                    {
+                        ZoneSaveResult result = await zones
+                            .SaveAsync(
+                                key,
+                                json,
+                                ctx.AccountId(sessions)!.Value,
+                                comment ?? string.Empty,
+                                ct
+                            )
+                            .ConfigureAwait(false);
 
-                    return result.Saved ? TypedResults.Ok(result) : TypedResults.BadRequest(result);
+                        return SaveOutcome(result, result.Saved);
+                    }
+                    catch (KeyNotFoundException)
+                    {
+                        return TypedResults.NotFound();
+                    }
                 }
             )
             .WithName("EditorSaveZone")
@@ -280,13 +308,18 @@ internal static partial class WebApiEndpoints
                         return denied;
                     }
 
-                    ZoneSaveResult result = await zones
-                        .PublishAsync(key, version, ct)
-                        .ConfigureAwait(false);
+                    try
+                    {
+                        ZoneSaveResult result = await zones
+                            .PublishAsync(key, version, ct)
+                            .ConfigureAwait(false);
 
-                    return result.Published
-                        ? TypedResults.Ok(result)
-                        : TypedResults.BadRequest(result);
+                        return SaveOutcome(result, result.Published);
+                    }
+                    catch (KeyNotFoundException)
+                    {
+                        return TypedResults.NotFound();
+                    }
                 }
             )
             .WithName("EditorPublishZone")
@@ -319,9 +352,18 @@ internal static partial class WebApiEndpoints
                         return denied;
                     }
 
-                    bool locked = await zones
-                        .TryLockAsync(key, ctx.AccountId(sessions)!.Value, force == true, ct)
-                        .ConfigureAwait(false);
+                    bool locked;
+
+                    try
+                    {
+                        locked = await zones
+                            .TryLockAsync(key, ctx.AccountId(sessions)!.Value, force == true, ct)
+                            .ConfigureAwait(false);
+                    }
+                    catch (KeyNotFoundException)
+                    {
+                        return TypedResults.NotFound();
+                    }
 
                     return locked
                         ? TypedResults.Ok(EmptyResponse.Instance)
@@ -406,6 +448,15 @@ internal static partial class WebApiEndpoints
         return granted.Has(capability) ? null : new ForbiddenError("editor.forbidden");
     }
 
+    /// <summary>
+    /// 200 when it went through; 409 when another save took the version number; 400 with the
+    /// findings otherwise.
+    /// </summary>
+    private static IResult SaveOutcome(ZoneSaveResult result, bool succeeded) =>
+        succeeded ? TypedResults.Ok(result)
+        : result.Findings.Any(f => f.Code == "Conflict") ? TypedResults.Conflict(result)
+        : TypedResults.BadRequest(result);
+
     /// <summary>The raw document, or null when it is larger than <see cref="MaxDocumentBytes"/>.</summary>
     private static async Task<string?> ReadDocumentAsync(HttpContext ctx, CancellationToken ct)
     {
@@ -414,11 +465,22 @@ internal static partial class WebApiEndpoints
             return null;
         }
 
-        using StreamReader reader = new(ctx.Request.Body, Encoding.UTF8);
-        char[] buffer = new char[MaxDocumentBytes + 1];
-        int read = await reader.ReadBlockAsync(buffer.AsMemory(), ct).ConfigureAwait(false);
+        // The server stops reading past the limit, so the body is read once at its real size.
+        if (ctx.Features.Get<IHttpMaxRequestBodySizeFeature>() is { IsReadOnly: false } limit)
+        {
+            limit.MaxRequestBodySize = MaxDocumentBytes;
+        }
 
-        return read > MaxDocumentBytes ? null : new string(buffer, 0, read);
+        try
+        {
+            using StreamReader reader = new(ctx.Request.Body, Encoding.UTF8);
+
+            return await reader.ReadToEndAsync(ct).ConfigureAwait(false);
+        }
+        catch (BadHttpRequestException)
+        {
+            return null;
+        }
     }
 
     private static IResult TooLarge() =>

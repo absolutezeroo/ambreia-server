@@ -349,6 +349,10 @@ internal sealed class RoomHarness
             1,
             1
         );
+        harness.Definitions[ZoneSamples.Poster] = TestDefinitions.Wall(
+            ZoneSamples.Poster,
+            "poster"
+        );
         harness.LogicFactory ??= TestFloorItems.WorkingLogic;
 
         await harness.Grain.ApplyZoneAsync(CancellationToken.None).ConfigureAwait(true);

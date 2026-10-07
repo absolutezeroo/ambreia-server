@@ -61,6 +61,12 @@ public sealed class ZoneValidator(
             return f;
         }
 
+        if (floor.Tiles.Any(t => t is null))
+        {
+            f.Add(Error("FloorTileCount", null, "The floor has a null tile."));
+            return f;
+        }
+
         for (int i = 0; i < floor.Tiles.Count; i++)
         {
             if (floor.Tiles[i].Height is < 0 or > ZoneDocument.MaxTileHeight)
@@ -82,6 +88,7 @@ public sealed class ZoneValidator(
 
         CheckIds(doc, f);
         CheckDecor(doc, f);
+        CheckPlacement(doc, f);
         CheckInternalReferences(doc, f);
 
         foreach (ZonePassage p in doc.Passages.Where(p => !knownZones.Contains(p.DestinationZone)))
@@ -178,7 +185,7 @@ public sealed class ZoneValidator(
                 ? (def.Length, def.Width)
                 : (def.Width, def.Length);
 
-            if (o.X < 0 || o.Y < 0 || o.X + w > d.Floor.Width || o.Y + l > d.Floor.Length)
+            if (o.X < 0 || o.Y < 0 || o.X > d.Floor.Width - w || o.Y > d.Floor.Length - l)
             {
                 f.Add(
                     Error(
@@ -201,6 +208,89 @@ public sealed class ZoneValidator(
                         "UnknownFurniture",
                         o.Id,
                         $"No wall furniture {o.Definition} ({o.Class})."
+                    )
+                );
+            }
+        }
+    }
+
+    private static void CheckPlacement(ZoneDocument d, List<ZoneFinding> f)
+    {
+        ZoneFloor floor = d.Floor;
+
+        void Cell(string id, ZoneCell c)
+        {
+            if (!Inside(floor, c))
+            {
+                f.Add(
+                    Error(
+                        "OutOfFloor",
+                        id,
+                        $"({c.X},{c.Y}) is off the {floor.Width}×{floor.Length} floor."
+                    )
+                );
+            }
+        }
+
+        void Cells(string id, IEnumerable<ZoneCell> cells)
+        {
+            foreach (ZoneCell c in cells)
+            {
+                Cell(id, c);
+            }
+        }
+
+        foreach (ZoneWallDecorObject o in d.WallDecor)
+        {
+            Cell(o.Id, new ZoneCell(o.X, o.Y));
+        }
+
+        foreach (ZoneEntry e in d.Entries)
+        {
+            Cell(e.Id, e.Cell);
+        }
+
+        foreach (ZoneNpc n in d.Npcs)
+        {
+            Cell(n.Id, n.Cell);
+        }
+
+        foreach (ZoneResource r in d.Resources.Where(r => r.Cell is not null))
+        {
+            Cell(r.Id, r.Cell!.Value);
+        }
+
+        foreach (ZonePassage p in d.Passages)
+        {
+            Cells(p.Id, p.Area);
+        }
+
+        foreach (ZoneSpawn s in d.Spawns)
+        {
+            Cells(s.Id, s.Area);
+        }
+
+        foreach (ZoneEvent e in d.Events)
+        {
+            Cells(e.Id, e.Area);
+        }
+
+        foreach (ZoneBoss b in d.Bosses)
+        {
+            Cells(b.Id, [.. b.Arena, b.Spawn, .. b.Adds]);
+        }
+
+        foreach (ZoneArea a in d.Zones)
+        {
+            Cells(a.Id, a.Polygon);
+
+            if (a.Polygon.Count < 3)
+            {
+                f.Add(
+                    Error(
+                        "BadPolygon",
+                        a.Id,
+                        $"An area needs at least three points, not {a.Polygon.Count}."
                     )
                 );
             }

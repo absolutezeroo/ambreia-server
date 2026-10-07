@@ -11,6 +11,13 @@ public static class ZoneJson
     {
         // The schema exporter refuses options without an explicit resolver.
         TypeInfoResolver = new DefaultJsonTypeInfoResolver(),
+        // The web defaults read "12" as 12; a zone document is a contract, and the editor's types
+        // are generated from its schema, so a number is a number.
+        NumberHandling = JsonNumberHandling.Strict,
+        // JSON objects have no order: an editor may write a condition's "kind" after its fields.
+        AllowOutOfOrderMetadataProperties = true,
+        // "decor": null is a malformed document, refused here rather than crashing the validator.
+        RespectNullableAnnotations = true,
         Converters = { new JsonStringEnumConverter() },
         RespectRequiredConstructorParameters = true,
         UnmappedMemberHandling = JsonUnmappedMemberHandling.Disallow,

@@ -87,6 +87,14 @@ public sealed partial class ZoneEditorService(
             throw new InvalidOperationException($"Zone '{key}' already exists.");
         }
 
+        // Resolved first: a missing template must not leave a half-created zone behind.
+        ZoneDocument? template = fromTemplate is null
+            ? null
+            : await LoadPublishedAsync(ctx, fromTemplate, ct).ConfigureAwait(false)
+                ?? throw new KeyNotFoundException(
+                    $"Template '{fromTemplate}' does not exist or is not published."
+                );
+
         // The same minimal insert as scripts/sql/dev_zone.sql: every other column has a default,
         // and a zone's room only needs an owner and a model to exist. The model is never read for
         // a zone (the map comes from the document); the description marks the row as this zone's.
@@ -118,9 +126,9 @@ public sealed partial class ZoneEditorService(
         ctx.Zones.Add(zone);
         await ctx.SaveChangesAsync(ct).ConfigureAwait(false);
 
-        if (fromTemplate is not null)
+        if (template is not null)
         {
-            await CopyTemplateAsync(ctx, zone, fromTemplate, name, accountId, ct)
+            await CopyTemplateAsync(ctx, zone, template, fromTemplate!, name, accountId, ct)
                 .ConfigureAwait(false);
         }
 
@@ -144,6 +152,26 @@ public sealed partial class ZoneEditorService(
         return await ctx
             .ZoneVersions.AsNoTracking()
             .Where(v => v.ZoneEntityId == zone.Id && v.Version == wanted)
+            .Select(v => v.Document)
+            .FirstOrDefaultAsync(ct)
+            .ConfigureAwait(false);
+    }
+
+    public async Task<string?> GetLatestDocumentAsync(string key, CancellationToken ct)
+    {
+        await using VortexDbContext ctx = await db.CreateDbContextAsync(ct).ConfigureAwait(false);
+
+        ZoneEntity? zone = await FindAsync(ctx, key, ct).ConfigureAwait(false);
+
+        if (zone is null)
+        {
+            return null;
+        }
+
+        return await ctx
+            .ZoneVersions.AsNoTracking()
+            .Where(v => v.ZoneEntityId == zone.Id)
+            .OrderByDescending(v => v.Version)
             .Select(v => v.Document)
             .FirstOrDefaultAsync(ct)
             .ConfigureAwait(false);
@@ -203,7 +231,7 @@ public sealed partial class ZoneEditorService(
         {
             ZoneEntity zone =
                 await FindTrackedAsync(ctx, key, ct).ConfigureAwait(false)
-                ?? throw new InvalidOperationException($"Zone '{key}' does not exist.");
+                ?? throw new KeyNotFoundException($"Zone '{key}' does not exist.");
 
             if (LockHolder(zone) != accountId)
             {
@@ -253,7 +281,30 @@ public sealed partial class ZoneEditorService(
             );
             zone.LockedAt = DateTime.UtcNow;
 
-            await ctx.SaveChangesAsync(ct).ConfigureAwait(false);
+            try
+            {
+                await ctx.SaveChangesAsync(ct).ConfigureAwait(false);
+            }
+            catch (DbUpdateException ex)
+            {
+                // Another save took this version number first (a double submit): nothing of this
+                // one was written, and the editor can simply save again.
+                logger.LogWarning(
+                    ex,
+                    "Zone {Key} version {Version} was saved concurrently",
+                    key,
+                    version
+                );
+
+                return Refused(
+                    new ZoneFinding(
+                        ZoneSeverity.Error,
+                        "Conflict",
+                        null,
+                        $"Version {version} was saved by another request; save again."
+                    )
+                );
+            }
 
             if (!_config.PublishOnSave)
             {
@@ -273,7 +324,7 @@ public sealed partial class ZoneEditorService(
         {
             ZoneEntity zone =
                 await FindTrackedAsync(ctx, key, ct).ConfigureAwait(false)
-                ?? throw new InvalidOperationException($"Zone '{key}' does not exist.");
+                ?? throw new KeyNotFoundException($"Zone '{key}' does not exist.");
             ZoneVersionEntity? row = await ctx
                 .ZoneVersions.FirstOrDefaultAsync(
                     v => v.ZoneEntityId == zone.Id && v.Version == version,
@@ -345,7 +396,7 @@ public sealed partial class ZoneEditorService(
 
         ZoneEntity zone =
             await FindTrackedAsync(ctx, key, ct).ConfigureAwait(false)
-            ?? throw new InvalidOperationException($"Zone '{key}' does not exist.");
+            ?? throw new KeyNotFoundException($"Zone '{key}' does not exist.");
         int? holder = LockHolder(zone);
 
         if (holder is not null && holder != accountId && !force)
@@ -416,7 +467,7 @@ public sealed partial class ZoneEditorService(
         {
             doc = ZoneJson.Deserialize(json);
         }
-        catch (JsonException ex)
+        catch (Exception ex) when (ex is JsonException or NotSupportedException)
         {
             return (null, [new ZoneFinding(ZoneSeverity.Error, "Json", null, ex.Message)]);
         }
@@ -446,28 +497,39 @@ public sealed partial class ZoneEditorService(
         return (doc, findings);
     }
 
-    private async Task CopyTemplateAsync(
+    private static async Task<ZoneDocument?> LoadPublishedAsync(
+        VortexDbContext ctx,
+        string key,
+        CancellationToken ct
+    )
+    {
+        ZoneEntity? source = await FindAsync(ctx, key, ct).ConfigureAwait(false);
+
+        if (source?.PublishedVersion is not int published)
+        {
+            return null;
+        }
+
+        string? json = await ctx
+            .ZoneVersions.AsNoTracking()
+            .Where(v => v.ZoneEntityId == source.Id && v.Version == published)
+            .Select(v => v.Document)
+            .FirstOrDefaultAsync(ct)
+            .ConfigureAwait(false);
+
+        return json is null ? null : ZoneJson.Deserialize(json);
+    }
+
+    private static async Task CopyTemplateAsync(
         VortexDbContext ctx,
         ZoneEntity zone,
+        ZoneDocument doc,
         string template,
         string name,
         int accountId,
         CancellationToken ct
     )
     {
-        ZoneEntity source =
-            await FindAsync(ctx, template, ct).ConfigureAwait(false)
-            ?? throw new InvalidOperationException($"Template '{template}' does not exist.");
-        string json =
-            await ctx
-                .ZoneVersions.AsNoTracking()
-                .Where(v => v.ZoneEntityId == source.Id && v.Version == source.PublishedVersion)
-                .Select(v => v.Document)
-                .FirstOrDefaultAsync(ct)
-                .ConfigureAwait(false)
-            ?? throw new InvalidOperationException($"Template '{template}' is not published.");
-        ZoneDocument doc = ZoneJson.Deserialize(json);
-
         ctx.ZoneVersions.Add(
             new ZoneVersionEntity
             {

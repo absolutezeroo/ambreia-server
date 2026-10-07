@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
@@ -163,7 +164,10 @@ public sealed class ZoneEditorServiceTests : IAsyncLifetime
     {
         ZoneSummary zone = await _service.CreateAsync("village", "Village", Author, null, default);
         await _service.TryLockAsync("village", Author, false, default);
-        ZoneRoomSource source = new(new Factory(_options), NullLogger<ZoneRoomSource>.Instance);
+        ZoneRoomSource source = new(
+            new OptionsDbContextFactory(_options),
+            NullLogger<ZoneRoomSource>.Instance
+        );
 
         (await source.GetPublishedAsync(new RoomId(zone.RoomId), default)).Should().BeNull();
 
@@ -189,9 +193,58 @@ public sealed class ZoneEditorServiceTests : IAsyncLifetime
             await db.Database.ExecuteSqlRawAsync("DROP TABLE zones");
         }
 
-        ZoneRoomSource source = new(new Factory(_options), NullLogger<ZoneRoomSource>.Instance);
+        ZoneRoomSource source = new(
+            new OptionsDbContextFactory(_options),
+            NullLogger<ZoneRoomSource>.Instance
+        );
 
         (await source.GetPublishedAsync(new RoomId(1), default)).Should().BeNull();
+    }
+
+    [Fact]
+    public async Task SavingToAnUnknownZone_IsNotFound()
+    {
+        Func<Task> save = () => _service.SaveAsync("moon", Json(), Author, "", default);
+
+        await save.Should().ThrowAsync<KeyNotFoundException>();
+    }
+
+    [Fact]
+    public async Task AMissingTemplate_CreatesNothing()
+    {
+        Func<Task> create = () => _service.CreateAsync("copy", "Copie", Author, "nowhere", default);
+
+        await create.Should().ThrowAsync<KeyNotFoundException>();
+        (await _service.ListAsync(default)).Should().BeEmpty();
+    }
+
+    [Fact]
+    public async Task ASaveThatLosesTheRaceForItsVersion_IsAConflictFinding()
+    {
+        await CreateLockedAsync();
+        _options = new DbContextOptionsBuilder<VortexDbContext>()
+            .UseSqlite(_conn, sqlite => sqlite.ExecutionStrategy(d => new RetryingStrategy(d)))
+            .AddInterceptors(new ConflictingVersionInterceptor())
+            .Options;
+        UseConfig(new WorldConfig());
+
+        ZoneSaveResult result = await _service.SaveAsync("village", Json(), Author, "", default);
+
+        result.Saved.Should().BeFalse();
+        result.Findings.Should().Contain(f => f.Code == "Conflict");
+    }
+
+    [Fact]
+    public async Task ANullTile_IsAFindingNotACrash()
+    {
+        await CreateLockedAsync();
+        string json = Json().Replace("\"tiles\":[{", "\"tiles\":[null,{");
+
+        ZoneSaveResult result = await _service.SaveAsync("village", json, Author, "", default);
+
+        json.Should().Contain("\"tiles\":[null,");
+        result.Saved.Should().BeFalse();
+        result.Findings.Should().Contain(f => f.Severity == ZoneSeverity.Error);
     }
 
     private async Task CreateLockedAsync()
@@ -220,7 +273,7 @@ public sealed class ZoneEditorServiceTests : IAsyncLifetime
         );
 
         _service = new ZoneEditorService(
-            new Factory(_options),
+            new OptionsDbContextFactory(_options),
             new ZoneValidator(defs, Options.Create(config)),
             defs,
             Options.Create(config),
@@ -231,14 +284,5 @@ public sealed class ZoneEditorServiceTests : IAsyncLifetime
             }),
             NullLogger<ZoneEditorService>.Instance
         );
-    }
-
-    private sealed class Factory(DbContextOptions<VortexDbContext> options)
-        : IDbContextFactory<VortexDbContext>
-    {
-        public VortexDbContext CreateDbContext() => new(options);
-
-        public Task<VortexDbContext> CreateDbContextAsync(CancellationToken ct = default) =>
-            Task.FromResult(CreateDbContext());
     }
 }

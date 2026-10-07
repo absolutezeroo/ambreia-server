@@ -22,6 +22,9 @@ public interface IZoneEditorService
     /// <summary>A version's JSON; <paramref name="version"/> null = the published one.</summary>
     Task<string?> GetDocumentAsync(string key, int? version, CancellationToken ct);
 
+    /// <summary>The newest version's JSON, draft or published: what the editor reopens.</summary>
+    Task<string?> GetLatestDocumentAsync(string key, CancellationToken ct);
+
     Task<IReadOnlyList<ZoneVersionInfo>> GetVersionsAsync(string key, CancellationToken ct);
 
     Task<IReadOnlyList<ZoneFinding>> ValidateAsync(string key, string json, CancellationToken ct);

@@ -1,15 +1,8 @@
 {
-  "type": [
-    "object",
-    "null"
-  ],
+  "type": "object",
   "properties": {
     "schemaVersion": {
-      "type": [
-        "string",
-        "integer"
-      ],
-      "pattern": "^-?(?:0|[1-9]\\d*)$"
+      "type": "integer"
     },
     "settings": {
       "type": "object",
@@ -34,18 +27,10 @@
           ]
         },
         "capacity": {
-          "type": [
-            "string",
-            "integer"
-          ],
-          "pattern": "^-?(?:0|[1-9]\\d*)$"
+          "type": "integer"
         },
         "recommendedLevel": {
-          "type": [
-            "string",
-            "integer"
-          ],
-          "pattern": "^-?(?:0|[1-9]\\d*)$"
+          "type": "integer"
         },
         "pvpAllowed": {
           "type": "boolean"
@@ -70,33 +55,18 @@
       "type": "object",
       "properties": {
         "width": {
-          "type": [
-            "string",
-            "integer"
-          ],
-          "pattern": "^-?(?:0|[1-9]\\d*)$"
+          "type": "integer"
         },
         "length": {
-          "type": [
-            "string",
-            "integer"
-          ],
-          "pattern": "^-?(?:0|[1-9]\\d*)$"
+          "type": "integer"
         },
         "tiles": {
           "type": "array",
           "items": {
-            "type": [
-              "object",
-              "null"
-            ],
+            "type": "object",
             "properties": {
               "height": {
-                "type": [
-                  "string",
-                  "integer"
-                ],
-                "pattern": "^-?(?:0|[1-9]\\d*)$"
+                "type": "integer"
               },
               "walkable": {
                 "type": "boolean"
@@ -124,28 +94,16 @@
           "type": "object",
           "properties": {
             "x": {
-              "type": [
-                "string",
-                "integer"
-              ],
-              "pattern": "^-?(?:0|[1-9]\\d*)$"
+              "type": "integer"
             },
             "y": {
-              "type": [
-                "string",
-                "integer"
-              ],
-              "pattern": "^-?(?:0|[1-9]\\d*)$"
+              "type": "integer"
             }
           },
           "additionalProperties": false
         },
         "doorDirection": {
-          "type": [
-            "string",
-            "integer"
-          ],
-          "pattern": "^-?(?:0|[1-9]\\d*)$"
+          "type": "integer"
         }
       },
       "required": [
@@ -163,18 +121,10 @@
           "type": "boolean"
         },
         "height": {
-          "type": [
-            "string",
-            "integer"
-          ],
-          "pattern": "^-?(?:0|[1-9]\\d*)$"
+          "type": "integer"
         },
         "thickness": {
-          "type": [
-            "string",
-            "integer"
-          ],
-          "pattern": "^-?(?:0|[1-9]\\d*)$"
+          "type": "integer"
         }
       },
       "additionalProperties": false
@@ -182,58 +132,31 @@
     "decor": {
       "type": "array",
       "items": {
-        "type": [
-          "object",
-          "null"
-        ],
+        "type": "object",
         "properties": {
           "id": {
             "type": "string"
           },
           "definition": {
-            "type": [
-              "string",
-              "integer"
-            ],
-            "pattern": "^-?(?:0|[1-9]\\d*)$"
+            "type": "integer"
           },
           "class": {
             "type": "string"
           },
           "x": {
-            "type": [
-              "string",
-              "integer"
-            ],
-            "pattern": "^-?(?:0|[1-9]\\d*)$"
+            "type": "integer"
           },
           "y": {
-            "type": [
-              "string",
-              "integer"
-            ],
-            "pattern": "^-?(?:0|[1-9]\\d*)$"
+            "type": "integer"
           },
           "z": {
-            "type": [
-              "string",
-              "number"
-            ],
-            "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d\u002B)?(?:[eE][\u002B-]?\\d\u002B)?$"
+            "type": "number"
           },
           "rotation": {
-            "type": [
-              "string",
-              "integer"
-            ],
-            "pattern": "^-?(?:0|[1-9]\\d*)$"
+            "type": "integer"
           },
           "state": {
-            "type": [
-              "string",
-              "integer"
-            ],
-            "pattern": "^-?(?:0|[1-9]\\d*)$"
+            "type": "integer"
           },
           "collision": {
             "type": [
@@ -255,11 +178,9 @@
               },
               "height": {
                 "type": [
-                  "string",
                   "number",
                   "null"
-                ],
-                "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d\u002B)?(?:[eE][\u002B-]?\\d\u002B)?$"
+                ]
               },
               "seat": {
                 "type": [
@@ -299,20 +220,13 @@
     "wallDecor": {
       "type": "array",
       "items": {
-        "type": [
-          "object",
-          "null"
-        ],
+        "type": "object",
         "properties": {
           "id": {
             "type": "string"
           },
           "definition": {
-            "type": [
-              "string",
-              "integer"
-            ],
-            "pattern": "^-?(?:0|[1-9]\\d*)$"
+            "type": "integer"
           },
           "class": {
             "type": "string"
@@ -324,39 +238,19 @@
             ]
           },
           "x": {
-            "type": [
-              "string",
-              "integer"
-            ],
-            "pattern": "^-?(?:0|[1-9]\\d*)$"
+            "type": "integer"
           },
           "y": {
-            "type": [
-              "string",
-              "integer"
-            ],
-            "pattern": "^-?(?:0|[1-9]\\d*)$"
+            "type": "integer"
           },
           "offsetX": {
-            "type": [
-              "string",
-              "integer"
-            ],
-            "pattern": "^-?(?:0|[1-9]\\d*)$"
+            "type": "integer"
           },
           "offsetY": {
-            "type": [
-              "string",
-              "integer"
-            ],
-            "pattern": "^-?(?:0|[1-9]\\d*)$"
+            "type": "integer"
           },
           "state": {
-            "type": [
-              "string",
-              "integer"
-            ],
-            "pattern": "^-?(?:0|[1-9]\\d*)$"
+            "type": "integer"
           }
         },
         "required": [
@@ -373,10 +267,7 @@
     "entries": {
       "type": "array",
       "items": {
-        "type": [
-          "object",
-          "null"
-        ],
+        "type": "object",
         "properties": {
           "id": {
             "type": "string"
@@ -388,28 +279,16 @@
             "type": "object",
             "properties": {
               "x": {
-                "type": [
-                  "string",
-                  "integer"
-                ],
-                "pattern": "^-?(?:0|[1-9]\\d*)$"
+                "type": "integer"
               },
               "y": {
-                "type": [
-                  "string",
-                  "integer"
-                ],
-                "pattern": "^-?(?:0|[1-9]\\d*)$"
+                "type": "integer"
               }
             },
             "additionalProperties": false
           },
           "direction": {
-            "type": [
-              "string",
-              "integer"
-            ],
-            "pattern": "^-?(?:0|[1-9]\\d*)$"
+            "type": "integer"
           }
         },
         "required": [
@@ -423,10 +302,7 @@
     "passages": {
       "type": "array",
       "items": {
-        "type": [
-          "object",
-          "null"
-        ],
+        "type": "object",
         "properties": {
           "id": {
             "type": "string"
@@ -437,18 +313,10 @@
               "type": "object",
               "properties": {
                 "x": {
-                  "type": [
-                    "string",
-                    "integer"
-                  ],
-                  "pattern": "^-?(?:0|[1-9]\\d*)$"
+                  "type": "integer"
                 },
                 "y": {
-                  "type": [
-                    "string",
-                    "integer"
-                  ],
-                  "pattern": "^-?(?:0|[1-9]\\d*)$"
+                  "type": "integer"
                 }
               },
               "additionalProperties": false
@@ -464,26 +332,15 @@
             "type": "boolean"
           },
           "cost": {
-            "type": [
-              "string",
-              "integer"
-            ],
-            "pattern": "^-?(?:0|[1-9]\\d*)$"
+            "type": "integer"
           },
           "cooldownSeconds": {
-            "type": [
-              "string",
-              "integer"
-            ],
-            "pattern": "^-?(?:0|[1-9]\\d*)$"
+            "type": "integer"
           },
           "conditions": {
             "type": "array",
             "items": {
-              "type": [
-                "object",
-                "null"
-              ],
+              "type": "object",
               "required": [
                 "kind"
               ],
@@ -494,18 +351,10 @@
                       "const": "PlayerLevel"
                     },
                     "min": {
-                      "type": [
-                        "string",
-                        "integer"
-                      ],
-                      "pattern": "^-?(?:0|[1-9]\\d*)$"
+                      "type": "integer"
                     },
                     "max": {
-                      "type": [
-                        "string",
-                        "integer"
-                      ],
-                      "pattern": "^-?(?:0|[1-9]\\d*)$"
+                      "type": "integer"
                     }
                   },
                   "required": [
@@ -538,18 +387,10 @@
                       "const": "TimeOfDay"
                     },
                     "from": {
-                      "type": [
-                        "string",
-                        "integer"
-                      ],
-                      "pattern": "^-?(?:0|[1-9]\\d*)$"
+                      "type": "integer"
                     },
                     "to": {
-                      "type": [
-                        "string",
-                        "integer"
-                      ],
-                      "pattern": "^-?(?:0|[1-9]\\d*)$"
+                      "type": "integer"
                     }
                   },
                   "required": [
@@ -567,11 +408,7 @@
                       "type": "string"
                     },
                     "count": {
-                      "type": [
-                        "string",
-                        "integer"
-                      ],
-                      "pattern": "^-?(?:0|[1-9]\\d*)$"
+                      "type": "integer"
                     }
                   },
                   "required": [
@@ -624,10 +461,7 @@
     "zones": {
       "type": "array",
       "items": {
-        "type": [
-          "object",
-          "null"
-        ],
+        "type": "object",
         "properties": {
           "id": {
             "type": "string"
@@ -645,29 +479,18 @@
             }
           },
           "priority": {
-            "type": [
-              "string",
-              "integer"
-            ],
-            "pattern": "^-?(?:0|[1-9]\\d*)$"
+            "type": "integer"
           },
           "music": {
             "type": "string"
           },
           "recommendedLevel": {
-            "type": [
-              "string",
-              "integer"
-            ],
-            "pattern": "^-?(?:0|[1-9]\\d*)$"
+            "type": "integer"
           },
           "tags": {
             "type": "array",
             "items": {
-              "type": [
-                "string",
-                "null"
-              ]
+              "type": "string"
             }
           },
           "conditions": {
@@ -688,10 +511,7 @@
     "npcs": {
       "type": "array",
       "items": {
-        "type": [
-          "object",
-          "null"
-        ],
+        "type": "object",
         "properties": {
           "id": {
             "type": "string"
@@ -715,36 +535,21 @@
             "type": "object",
             "properties": {
               "x": {
-                "type": [
-                  "string",
-                  "integer"
-                ],
-                "pattern": "^-?(?:0|[1-9]\\d*)$"
+                "type": "integer"
               },
               "y": {
-                "type": [
-                  "string",
-                  "integer"
-                ],
-                "pattern": "^-?(?:0|[1-9]\\d*)$"
+                "type": "integer"
               }
             },
             "additionalProperties": false
           },
           "rotation": {
-            "type": [
-              "string",
-              "integer"
-            ],
-            "pattern": "^-?(?:0|[1-9]\\d*)$"
+            "type": "integer"
           },
           "interactions": {
             "type": "array",
             "items": {
-              "type": [
-                "string",
-                "null"
-              ]
+              "type": "string"
             }
           },
           "animation": {
@@ -777,10 +582,7 @@
     "spawns": {
       "type": "array",
       "items": {
-        "type": [
-          "object",
-          "null"
-        ],
+        "type": "object",
         "properties": {
           "id": {
             "type": "string"
@@ -795,53 +597,25 @@
             "type": "string"
           },
           "min": {
-            "type": [
-              "string",
-              "integer"
-            ],
-            "pattern": "^-?(?:0|[1-9]\\d*)$"
+            "type": "integer"
           },
           "max": {
-            "type": [
-              "string",
-              "integer"
-            ],
-            "pattern": "^-?(?:0|[1-9]\\d*)$"
+            "type": "integer"
           },
           "respawnSeconds": {
-            "type": [
-              "string",
-              "integer"
-            ],
-            "pattern": "^-?(?:0|[1-9]\\d*)$"
+            "type": "integer"
           },
           "wanderRadius": {
-            "type": [
-              "string",
-              "integer"
-            ],
-            "pattern": "^-?(?:0|[1-9]\\d*)$"
+            "type": "integer"
           },
           "aggroRadius": {
-            "type": [
-              "string",
-              "integer"
-            ],
-            "pattern": "^-?(?:0|[1-9]\\d*)$"
+            "type": "integer"
           },
           "levelMin": {
-            "type": [
-              "string",
-              "integer"
-            ],
-            "pattern": "^-?(?:0|[1-9]\\d*)$"
+            "type": "integer"
           },
           "levelMax": {
-            "type": [
-              "string",
-              "integer"
-            ],
-            "pattern": "^-?(?:0|[1-9]\\d*)$"
+            "type": "integer"
           },
           "aoiActivation": {
             "type": "boolean"
@@ -870,10 +644,7 @@
     "resources": {
       "type": "array",
       "items": {
-        "type": [
-          "object",
-          "null"
-        ],
+        "type": "object",
         "properties": {
           "id": {
             "type": "string"
@@ -891,18 +662,10 @@
             ],
             "properties": {
               "x": {
-                "type": [
-                  "string",
-                  "integer"
-                ],
-                "pattern": "^-?(?:0|[1-9]\\d*)$"
+                "type": "integer"
               },
               "y": {
-                "type": [
-                  "string",
-                  "integer"
-                ],
-                "pattern": "^-?(?:0|[1-9]\\d*)$"
+                "type": "integer"
               }
             },
             "additionalProperties": false
@@ -917,18 +680,10 @@
             ]
           },
           "level": {
-            "type": [
-              "string",
-              "integer"
-            ],
-            "pattern": "^-?(?:0|[1-9]\\d*)$"
+            "type": "integer"
           },
           "respawnSeconds": {
-            "type": [
-              "string",
-              "integer"
-            ],
-            "pattern": "^-?(?:0|[1-9]\\d*)$"
+            "type": "integer"
           }
         },
         "required": [
@@ -941,10 +696,7 @@
     "chests": {
       "type": "array",
       "items": {
-        "type": [
-          "object",
-          "null"
-        ],
+        "type": "object",
         "properties": {
           "id": {
             "type": "string"
@@ -956,11 +708,7 @@
             "type": "string"
           },
           "respawnSeconds": {
-            "type": [
-              "string",
-              "integer"
-            ],
-            "pattern": "^-?(?:0|[1-9]\\d*)$"
+            "type": "integer"
           },
           "perPlayer": {
             "type": "boolean"
@@ -983,10 +731,7 @@
     "interactives": {
       "type": "array",
       "items": {
-        "type": [
-          "object",
-          "null"
-        ],
+        "type": "object",
         "properties": {
           "id": {
             "type": "string"
@@ -1009,10 +754,7 @@
     "bosses": {
       "type": "array",
       "items": {
-        "type": [
-          "object",
-          "null"
-        ],
+        "type": "object",
         "properties": {
           "id": {
             "type": "string"
@@ -1030,18 +772,10 @@
             "type": "object",
             "properties": {
               "x": {
-                "type": [
-                  "string",
-                  "integer"
-                ],
-                "pattern": "^-?(?:0|[1-9]\\d*)$"
+                "type": "integer"
               },
               "y": {
-                "type": [
-                  "string",
-                  "integer"
-                ],
-                "pattern": "^-?(?:0|[1-9]\\d*)$"
+                "type": "integer"
               }
             },
             "additionalProperties": false
@@ -1055,10 +789,7 @@
           "doors": {
             "type": "array",
             "items": {
-              "type": [
-                "string",
-                "null"
-              ]
+              "type": "string"
             }
           }
         },
@@ -1074,10 +805,7 @@
     "events": {
       "type": "array",
       "items": {
-        "type": [
-          "object",
-          "null"
-        ],
+        "type": "object",
         "properties": {
           "id": {
             "type": "string"
@@ -1092,18 +820,10 @@
             "type": "string"
           },
           "durationSeconds": {
-            "type": [
-              "string",
-              "integer"
-            ],
-            "pattern": "^-?(?:0|[1-9]\\d*)$"
+            "type": "integer"
           },
           "cooldownSeconds": {
-            "type": [
-              "string",
-              "integer"
-            ],
-            "pattern": "^-?(?:0|[1-9]\\d*)$"
+            "type": "integer"
           }
         },
         "required": [
@@ -1117,10 +837,7 @@
     "triggers": {
       "type": "array",
       "items": {
-        "type": [
-          "object",
-          "null"
-        ],
+        "type": "object",
         "properties": {
           "id": {
             "type": "string"
@@ -1152,10 +869,7 @@
           "actions": {
             "type": "array",
             "items": {
-              "type": [
-                "object",
-                "null"
-              ],
+              "type": "object",
               "required": [
                 "kind"
               ],
@@ -1280,11 +994,7 @@
             }
           },
           "cooldownMs": {
-            "type": [
-              "string",
-              "integer"
-            ],
-            "pattern": "^-?(?:0|[1-9]\\d*)$"
+            "type": "integer"
           },
           "active": {
             "type": "boolean"
@@ -1307,11 +1017,7 @@
           "type": "string"
         },
         "brightness": {
-          "type": [
-            "string",
-            "integer"
-          ],
-          "pattern": "^-?(?:0|[1-9]\\d*)$"
+          "type": "integer"
         },
         "dayNight": {
           "type": "boolean"
@@ -1319,10 +1025,7 @@
         "lights": {
           "type": "array",
           "items": {
-            "type": [
-              "object",
-              "null"
-            ],
+            "type": "object",
             "properties": {
               "id": {
                 "type": "string"
@@ -1331,18 +1034,10 @@
                 "type": "object",
                 "properties": {
                   "x": {
-                    "type": [
-                      "string",
-                      "integer"
-                    ],
-                    "pattern": "^-?(?:0|[1-9]\\d*)$"
+                    "type": "integer"
                   },
                   "y": {
-                    "type": [
-                      "string",
-                      "integer"
-                    ],
-                    "pattern": "^-?(?:0|[1-9]\\d*)$"
+                    "type": "integer"
                   }
                 },
                 "additionalProperties": false
@@ -1351,11 +1046,7 @@
                 "type": "string"
               },
               "radius": {
-                "type": [
-                  "string",
-                  "integer"
-                ],
-                "pattern": "^-?(?:0|[1-9]\\d*)$"
+                "type": "integer"
               }
             },
             "required": [
@@ -1370,10 +1061,7 @@
         "sounds": {
           "type": "array",
           "items": {
-            "type": [
-              "object",
-              "null"
-            ],
+            "type": "object",
             "properties": {
               "id": {
                 "type": "string"
@@ -1382,18 +1070,10 @@
                 "type": "object",
                 "properties": {
                   "x": {
-                    "type": [
-                      "string",
-                      "integer"
-                    ],
-                    "pattern": "^-?(?:0|[1-9]\\d*)$"
+                    "type": "integer"
                   },
                   "y": {
-                    "type": [
-                      "string",
-                      "integer"
-                    ],
-                    "pattern": "^-?(?:0|[1-9]\\d*)$"
+                    "type": "integer"
                   }
                 },
                 "additionalProperties": false
@@ -1402,18 +1082,10 @@
                 "type": "string"
               },
               "radius": {
-                "type": [
-                  "string",
-                  "integer"
-                ],
-                "pattern": "^-?(?:0|[1-9]\\d*)$"
+                "type": "integer"
               },
               "volume": {
-                "type": [
-                  "string",
-                  "integer"
-                ],
-                "pattern": "^-?(?:0|[1-9]\\d*)$"
+                "type": "integer"
               },
               "loop": {
                 "type": "boolean"
@@ -1433,10 +1105,7 @@
         "effects": {
           "type": "array",
           "items": {
-            "type": [
-              "object",
-              "null"
-            ],
+            "type": "object",
             "properties": {
               "id": {
                 "type": "string"
@@ -1445,18 +1114,10 @@
                 "type": "object",
                 "properties": {
                   "x": {
-                    "type": [
-                      "string",
-                      "integer"
-                    ],
-                    "pattern": "^-?(?:0|[1-9]\\d*)$"
+                    "type": "integer"
                   },
                   "y": {
-                    "type": [
-                      "string",
-                      "integer"
-                    ],
-                    "pattern": "^-?(?:0|[1-9]\\d*)$"
+                    "type": "integer"
                   }
                 },
                 "additionalProperties": false
@@ -1465,18 +1126,10 @@
                 "type": "string"
               },
               "scale": {
-                "type": [
-                  "string",
-                  "number"
-                ],
-                "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d\u002B)?(?:[eE][\u002B-]?\\d\u002B)?$"
+                "type": "number"
               },
               "radius": {
-                "type": [
-                  "string",
-                  "integer"
-                ],
-                "pattern": "^-?(?:0|[1-9]\\d*)$"
+                "type": "integer"
               }
             },
             "required": [
@@ -1495,20 +1148,13 @@
     "prefabs": {
       "type": "array",
       "items": {
-        "type": [
-          "object",
-          "null"
-        ],
+        "type": "object",
         "properties": {
           "prefab": {
             "type": "string"
           },
           "version": {
-            "type": [
-              "string",
-              "integer"
-            ],
-            "pattern": "^-?(?:0|[1-9]\\d*)$"
+            "type": "integer"
           }
         },
         "required": [

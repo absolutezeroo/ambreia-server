@@ -20,7 +20,11 @@ public sealed class ZoneSchemaTests
     public void TheCommittedSchema_MatchesTheRecords()
     {
         string exported = JsonSchemaExporter
-            .GetJsonSchemaAsNode(ZoneJson.Options, typeof(ZoneDocument))
+            .GetJsonSchemaAsNode(
+                ZoneJson.Options,
+                typeof(ZoneDocument),
+                new JsonSchemaExporterOptions { TreatNullObliviousAsNonNullable = true }
+            )
             .ToJsonString(new JsonSerializerOptions { WriteIndented = true })
             .ReplaceLineEndings("\n");
         string path = Path.Combine(RepositoryPaths.Root(), "schemas", "zone.schema.json");
@@ -44,6 +48,35 @@ public sealed class ZoneSchemaTests
 
         ZoneJson.Serialize(ZoneJson.Deserialize(json)).Should().Be(json);
         json.Should().Contain("\"kind\":\"PlayerLevel\"").And.Contain("\"type\":\"World\"");
+    }
+
+    /// <summary>JSON objects have no order: an editor may well write "kind" last.</summary>
+    [Fact]
+    public void AKindWrittenLast_StillParses()
+    {
+        string json = ZoneJson
+            .Serialize(ZoneSamples.EveryLayer())
+            .Replace(
+                "{\"kind\":\"ActivateZone\",\"zone\":\"z_safe\"}",
+                "{\"zone\":\"z_safe\",\"kind\":\"ActivateZone\"}"
+            );
+
+        json.Should().Contain("{\"zone\":\"z_safe\",\"kind\":\"ActivateZone\"}");
+        ZoneJson.Deserialize(json).Triggers.Should().ContainSingle();
+    }
+
+    /// <summary>A null where the document declares a value is a parse error, not a later crash.</summary>
+    [Fact]
+    public void AnExplicitNullLayer_DoesNotParse()
+    {
+        string json = ZoneJson
+            .Serialize(ZoneSamples.Minimal())
+            .Replace("\"decor\":[]", "\"decor\":null");
+
+        Action parse = () => ZoneJson.Deserialize(json);
+
+        json.Should().Contain("\"decor\":null");
+        parse.Should().Throw<JsonException>();
     }
 
     [Fact]

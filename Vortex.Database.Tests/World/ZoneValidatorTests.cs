@@ -139,6 +139,72 @@ public sealed class ZoneValidatorTests
             .Contain("UnknownZone");
 
     [Fact]
+    public void AWallObjectOffTheFloor_IsAnError() =>
+        Errors(
+                ZoneSamples.Minimal() with
+                {
+                    WallDecor =
+                    [
+                        new ZoneWallDecorObject
+                        {
+                            Id = "w",
+                            Definition = ZoneSamples.Poster,
+                            Class = "poster",
+                            Side = ZoneWallSide.Left,
+                            X = 9,
+                            Y = 0,
+                        },
+                    ],
+                }
+            )
+            .Should()
+            .Contain("OutOfFloor");
+
+    [Fact]
+    public void AnEntryOffTheFloor_IsAnError() =>
+        Errors(
+                ZoneSamples.Minimal() with
+                {
+                    Entries =
+                    [
+                        new ZoneEntry
+                        {
+                            Id = "e",
+                            Kind = "arrival",
+                            Cell = new ZoneCell(7, 7),
+                        },
+                    ],
+                }
+            )
+            .Should()
+            .Contain("OutOfFloor");
+
+    [Fact]
+    public void AnAreaOfTwoPoints_IsAnError() =>
+        Errors(
+                ZoneSamples.Minimal() with
+                {
+                    Zones =
+                    [
+                        new ZoneArea
+                        {
+                            Id = "z",
+                            Kind = "Safe",
+                            Polygon = [new(0, 0), new(1, 1)],
+                        },
+                    ],
+                }
+            )
+            .Should()
+            .Contain("BadPolygon");
+
+    [Fact]
+    public void AFootprintThatOverflows_IsStillOutOfFloor() =>
+        Errors(ZoneSamples.Minimal() with { Decor = [Decor(Sofa, "sofa_silo", int.MaxValue, 0)] })
+            .Should()
+            .Contain("OutOfFloor");
+
+    [Fact]
     public void ASpawnWalledOffFromTheDoor_IsAWarning()
     {
         ZoneDocument doc = ZoneSamples.EveryLayer();
@@ -213,6 +279,7 @@ public sealed class ZoneValidatorTests
         {
             [ZoneSamples.Throne] = TestDefinitions.Floor(ZoneSamples.Throne, "throne", 1, 1),
             [Sofa] = TestDefinitions.Floor(Sofa, "sofa_silo", 2, 1),
+            [ZoneSamples.Poster] = TestDefinitions.Wall(ZoneSamples.Poster, "poster"),
         };
 
         return FakeProxy.Create<IFurnitureDefinitionProvider>(call =>

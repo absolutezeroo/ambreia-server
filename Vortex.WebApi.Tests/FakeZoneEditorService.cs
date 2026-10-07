@@ -33,6 +33,9 @@ internal sealed class FakeZoneEditorService : IZoneEditorService
     public Task<string?> GetDocumentAsync(string key, int? version, CancellationToken ct) =>
         Task.FromResult<string?>(key == "village" ? "{\"schemaVersion\":1}" : null);
 
+    public Task<string?> GetLatestDocumentAsync(string key, CancellationToken ct) =>
+        Task.FromResult<string?>(key == "village" ? "{\"draft\":true}" : null);
+
     public Task<IReadOnlyList<ZoneVersionInfo>> GetVersionsAsync(
         string key,
         CancellationToken ct
@@ -52,6 +55,23 @@ internal sealed class FakeZoneEditorService : IZoneEditorService
         CancellationToken ct
     )
     {
+        if (key == "moon")
+        {
+            throw new KeyNotFoundException(key);
+        }
+
+        if (key == "busy")
+        {
+            return Task.FromResult(
+                new ZoneSaveResult(
+                    false,
+                    null,
+                    false,
+                    [new ZoneFinding(ZoneSeverity.Error, "Conflict", null, "raced")]
+                )
+            );
+        }
+
         IReadOnlyList<ZoneFinding> findings = Check(json);
 
         return Task.FromResult(

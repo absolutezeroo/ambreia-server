@@ -145,8 +145,10 @@ internal static class ZoneRoomLoader
                 Definition = def,
             };
 
+            // The wall position reads ":w=X,Y l=OffsetX,Z l|r": South is the left wall.
             item.SetPosition(o.X, o.Y);
-            item.SetRotation(o.Side == ZoneWallSide.Left ? Rotation.East : Rotation.South);
+            item.SetPositionZ(o.OffsetY);
+            item.SetRotation(o.Side == ZoneWallSide.Left ? Rotation.South : Rotation.East);
             item.SetWallOffset(o.OffsetX);
             item.SetExtraData(o.State.ToString(CultureInfo.InvariantCulture));
             wall.Add(item);
