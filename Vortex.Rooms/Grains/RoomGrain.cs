@@ -19,18 +19,15 @@ using Vortex.Events.Registry;
 using Vortex.Logging;
 using Vortex.Logging.Extensions;
 using Vortex.Primitives;
-using Vortex.Primitives.Commerce;
 using Vortex.Primitives.Events;
 using Vortex.Primitives.Furniture.Providers;
 using Vortex.Primitives.Groups.Enums;
-using Vortex.Primitives.Moderation.WordFilter;
 using Vortex.Primitives.Networking;
 using Vortex.Primitives.Observability;
 using Vortex.Primitives.Orleans;
 using Vortex.Primitives.Orleans.Snapshots.Room;
 using Vortex.Primitives.Orleans.Snapshots.Room.Settings;
 using Vortex.Primitives.Permissions;
-using Vortex.Primitives.Pets.Providers;
 using Vortex.Primitives.Rooms;
 using Vortex.Primitives.Rooms.Enums;
 using Vortex.Primitives.Rooms.Events;
@@ -38,9 +35,6 @@ using Vortex.Primitives.Rooms.Grains;
 using Vortex.Primitives.Rooms.Providers;
 using Vortex.Primitives.Rooms.Snapshots;
 using Vortex.Rooms.Configuration;
-using Vortex.Rooms.Games.Presentation;
-using Vortex.Rooms.Games.Progression;
-using Vortex.Rooms.Games.Runtime;
 using Vortex.Rooms.Grains.Modules;
 using Vortex.Rooms.Grains.Systems;
 using Vortex.Rooms.Providers;
@@ -68,7 +62,6 @@ public sealed partial class RoomGrain : Grain, IRoomGrain
     internal readonly IRoomItemsProvider _itemsLoader;
     internal readonly ILogger<IRoomGrain> _logger;
     internal readonly IRoomObjectLogicProvider _logicProvider;
-    internal readonly IRoomModerationStore _moderationStore;
     internal readonly IVortexMetrics _metrics;
     internal readonly IPermissionService _permissionService;
     internal readonly RoomConfig _roomConfig;
@@ -76,27 +69,10 @@ public sealed partial class RoomGrain : Grain, IRoomGrain
 
     internal readonly RoomLiveState _state;
 
-    /// <summary>
-    /// Where a room's value-moving operations are recorded — today, the prize a consumed furni owes
-    /// (<see cref="GrantConsumedLootAsync"/>).
-    /// </summary>
-    internal readonly ICommerceJournal _commerceJournal;
-
-    /// <summary>The hotel-wide word filter, asked before the room's own on every player chat line.</summary>
-    internal readonly IWordFilter _wordFilter;
-
     internal readonly IRoomEventListenerProvider _eventListenerProvider;
     public readonly RoomActionModule ActionModule;
     public readonly RoomAvatarModule AvatarModule;
-    public readonly RoomHandItemModule HandItemModule;
     public readonly RoomAvatarTickSystem AvatarTickSystem;
-    public readonly RoomChatSystem ChatSystem;
-
-    /// <summary>The room's one game coordinator. Every game the room hosts is inside it, and nothing
-    /// outside it names a game.</summary>
-    public readonly RoomGameRuntime GameRuntime;
-    public readonly GameTimerSystem GameTimers;
-    public readonly GameScoreboardPresenter ScoreboardPresenter;
 
     public readonly RoomEventModule EventModule;
     public readonly RoomFurniModule FurniModule;
@@ -104,11 +80,7 @@ public sealed partial class RoomGrain : Grain, IRoomGrain
     public readonly RoomObjectModule ObjectModule;
 
     public readonly RoomPathingSystem PathingSystem;
-    public readonly RoomPetSystem PetSystem;
-    public readonly RoomBotSystem BotSystem;
     public readonly RoomSecurityModule SecurityModule;
-    public readonly RoomModerationSystem ModerationSystem;
-    public readonly RoomTradingSystem TradingSystem;
 
     internal IAsyncStream<RoomOutbound> _roomOutbound = default!;
 
@@ -127,15 +99,9 @@ public sealed partial class RoomGrain : Grain, IRoomGrain
         IEventPublisher events,
         ICancellableEventPublisher cancellableEvents,
         IPermissionService permissionService,
-        IVortexMetrics metrics,
-        IRoomModerationStore moderationStore,
-        IRoomGameProvider gameProvider,
-        ICommerceJournal commerceJournal,
-        // Last on purpose: GrainActivationContext.CreateWithIntegerKey takes params object[], so a
-        // dependency inserted anywhere else compiles cleanly in every test that builds this grain
-        // and then fails at activation. Appending keeps that failure at the end of the list, where
-        // a reader of the test looks for it.
-        IWordFilter wordFilter
+        // GrainActivationContext.CreateWithIntegerKey takes params object[]: a dependency changed
+        // here compiles cleanly in every test that builds this grain and fails at activation.
+        IVortexMetrics metrics
     )
     {
         _dbCtxFactory = dbCtxFactory;
@@ -153,9 +119,6 @@ public sealed partial class RoomGrain : Grain, IRoomGrain
         _cancellableEvents = cancellableEvents;
         _permissionService = permissionService;
         _metrics = metrics;
-        _moderationStore = moderationStore;
-        _commerceJournal = commerceJournal;
-        _wordFilter = wordFilter;
 
         _state = new RoomLiveState { RoomId = (RoomId)this.GetPrimaryKeyLong() };
         PathingSystem = new RoomPathingSystem(this);
@@ -164,32 +127,10 @@ public sealed partial class RoomGrain : Grain, IRoomGrain
         MapModule = new RoomMapModule(this);
         ObjectModule = new RoomObjectModule(this);
         AvatarModule = new RoomAvatarModule(this);
-        HandItemModule = new RoomHandItemModule(this);
         FurniModule = new RoomFurniModule(this);
         ActionModule = new RoomActionModule(this);
 
         AvatarTickSystem = new RoomAvatarTickSystem(this);
-        PetSystem = new RoomPetSystem(this);
-        BotSystem = new RoomBotSystem(this);
-        ChatSystem = new RoomChatSystem(this);
-        GameRuntime = new RoomGameRuntime(this);
-        GameTimers = new GameTimerSystem(this);
-        ScoreboardPresenter = new GameScoreboardPresenter(this);
-        ModerationSystem = new RoomModerationSystem(this);
-        TradingSystem = new RoomTradingSystem(this);
-
-        // Every game the room hosts arrives from the provider, which holds whatever any scanned
-        // assembly marked [RoomGame]. There is no list of games in this file and there must not be
-        // one: that is the property that makes adding a game a new folder rather than an edit here,
-        // in the timer furni and in the tick loop.
-        gameProvider.AttachGamesTo(GameRuntime);
-        GameRuntime.AddSink(new GameDiagnosticsSink(_logger));
-        // One sink for every game's scoring, rather than progression plumbing inside each game.
-        GameRuntime.AddSink(new GameProgressSink(RoomId.Value, PublishDetached));
-
-        // The scoreboard adapter paints every game's score displays from the game events, so no game
-        // refreshes a board by hand.
-        EventModule.Register(ScoreboardPresenter);
     }
 
     public RoomId RoomId => _state.RoomId;
@@ -214,7 +155,6 @@ public sealed partial class RoomGrain : Grain, IRoomGrain
 
         await MapModule.EnsureMapBuiltAsync(ct);
         await FurniModule.EnsureFurniLoadedAsync(ct);
-        await PetSystem.EnsurePetsLoadedAsync(ct);
     }
 
     /// <summary>
@@ -274,18 +214,13 @@ public sealed partial class RoomGrain : Grain, IRoomGrain
 
             _state.EpochMs = now;
             _state.NextAvatarBoundaryMs = AlignToNextBoundary(now, _roomConfig.AvatarTickMs);
-            _state.NextPetBoundaryMs = AlignToNextBoundary(now, _roomConfig.Pet.TickMs);
-            _state.NextBotBoundaryMs = now;
         }
 
         await HydrateRoomStateAsync(ct);
-        await HydrateModerationStateAsync(ct);
 
         // Contributed listeners are attached here rather than in the constructor: they come from
         // scanned assemblies, and handing a half-built grain to outside code is how a plugin ends up
-        // reading state that does not exist yet. They go after the scoreboard presenter,
-        // so an outside listener can slow a room down but never pre-empt what the room does with its
-        // own events.
+        // reading state that does not exist yet.
         foreach (IRoomEventListener listener in _eventListenerProvider.BuildListenersForRoom(this))
         {
             EventModule.Register(listener);
@@ -355,14 +290,6 @@ public sealed partial class RoomGrain : Grain, IRoomGrain
         // last, the room also stopped persisting furniture and tile changes for as long as
         // the fault lasted.
         await RunTickStepAsync("avatars", () => AvatarTickSystem.ProcessAvatarsAsync(now, ct));
-        await RunTickStepAsync("pets", () => PetSystem.ProcessPetsAsync(now, ct));
-        await RunTickStepAsync("bots", () => BotSystem.ProcessBotsAsync(now, ct));
-        await RunTickStepAsync("game-timer", () => GameTimers.ProcessAsync(now, ct));
-        // One step for every game the room hosts. The runtime isolates each game's failure and skips
-        // the ones with nothing to do, so a room with no match running does no per-game work at all.
-        await RunTickStepAsync("games", () => GameRuntime.TickAsync(now, ct));
-
-        await RunTickStepAsync("doorbell", () => ProcessDoorbellTimeoutsAsync(now, ct));
         await RunTickStepAsync("flush-tiles", () => FlushDirtyTilesAsync(ct));
         await RunTickStepAsync("flush-items", () => FlushDirtyItemsAsync(ct));
 
@@ -430,13 +357,7 @@ public sealed partial class RoomGrain : Grain, IRoomGrain
     {
         try
         {
-            // Games first: a room unload destroys its game runtime, and tearing every match down
-            // through its own cleanup is what guarantees no timer, effect or queued piece of work
-            // outlives the activation.
-            await GameRuntime.ShutdownAsync(ct);
-
             await FlushDirtyItemsAsync(ct);
-            await PetSystem.FlushDirtyPetsAsync(ct);
 
             using (
                 _metrics.MeasureRoomDirectoryCall(nameof(IRoomDirectoryGrain.RemoveActiveRoomAsync))
@@ -542,32 +463,6 @@ public sealed partial class RoomGrain : Grain, IRoomGrain
             foreach (int playerId in rightsPlayerIds)
             {
                 _state.PlayerIdsWithRights.Add(playerId);
-            }
-
-            List<string> filterWords = await dbCtx
-                .RoomFilterWords.AsNoTracking()
-                .Where(w => w.RoomEntityId == entity.Id && w.DeletedAt == null)
-                .Select(w => w.Word)
-                .ToListAsync(ct)
-                .ConfigureAwait(true);
-
-            _state.FilterWords.Clear();
-
-            foreach (string word in filterWords)
-            {
-                _state.FilterWords.Add(word);
-            }
-
-            // Only worth a config read when there is something to mask. Most rooms have an empty
-            // filter, and ApplyFilterWords returns before it ever looks at the replacement.
-            if (_state.FilterWords.Count > 0)
-            {
-                _state.FilterReplacement =
-                    await _grainFactory
-                        .GetServerConfigGrain()
-                        .GetValueAsync(RoomFilterConfig.ReplacementKey)
-                        .ConfigureAwait(true)
-                    ?? RoomFilterConfig.ReplacementDefault;
             }
 
             await HydrateGroupMembershipAsync(dbCtx, entity.GroupEntityId, ct).ConfigureAwait(true);
@@ -699,19 +594,4 @@ public sealed partial class RoomGrain : Grain, IRoomGrain
 
     /// <summary>The two columns of a membership row the room actually reads.</summary>
     private readonly record struct GroupMemberRankRow(int PlayerId, GroupMemberRank Rank);
-
-    private async Task HydrateModerationStateAsync(CancellationToken ct)
-    {
-        IReadOnlyList<RoomMuteRecord> activeMutes = await _moderationStore.GetActiveMutesAsync(
-            _state.RoomId.Value,
-            ct
-        );
-
-        _state.MuteExpiresUtc.Clear();
-
-        foreach (RoomMuteRecord mute in activeMutes)
-        {
-            _state.MuteExpiresUtc[mute.PlayerId] = mute.ExpiresUtc;
-        }
-    }
 }

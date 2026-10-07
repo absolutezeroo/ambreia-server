@@ -4,7 +4,6 @@ using Orleans.Runtime;
 using Vortex.Primitives.Networking;
 using Vortex.Primitives.Players;
 using Vortex.Primitives.Rooms.Events;
-using Vortex.Primitives.Rooms.Games;
 using Vortex.Primitives.Rooms.Grains;
 using Vortex.Primitives.Rooms.Object.Logic;
 
@@ -45,11 +44,6 @@ public interface IRoomObjectContext
 
     /// <summary>Tile arithmetic, walkability and tile contents.</summary>
     public IRoomMapAccess Map { get; }
-
-    /// <summary>The room's game runtime: teams, scores, the match lifecycle and the one seam arena
-    /// furniture reports through. There is no per-game property here and there must never be one —
-    /// a component says what happened to it and the runtime routes it.</summary>
-    public IRoomGameAccess Game { get; }
 
     /// <summary>The room clock, in milliseconds. Monotonic within an activation.</summary>
     public long NowMs();

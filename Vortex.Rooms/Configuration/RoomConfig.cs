@@ -51,42 +51,10 @@ public class RoomConfig
     public int RoomTickMs { get; init; } = 50;
     public int AvatarTickMs { get; init; } = 500;
 
-    /// <summary>
-    /// How long a hand item stays in the hand. Habbo shows one for about half a minute and then
-    /// takes it away; it is a display timer rather than a rule about the item, which is why it sits
-    /// with the room's other clocks.
-    /// </summary>
-    public int HandItemDurationMs { get; init; } = 30_000;
-    public PetConfig Pet { get; init; } = new();
     public int DirtyItemsTickMs { get; init; } = 2000;
     public int MaxDirtyItemsPerFlush { get; init; } = 100;
     public int MaxTileHeightsPerFlush { get; init; } = 200;
     public int MaxPathNodes { get; init; } = 4096;
 
-    /// <summary>What a room's name becomes when a moderator wipes an offensive one from the room
-    /// tool. Kept configurable so a hotel can localise it; the description is blanked outright.</summary>
-    public string ModeratedRoomNamePlaceholder { get; init; } = "Inappropriate room name";
-
     public int MaxVisitorsLimit { get; init; } = 50;
-
-    public int DoorbellTimeoutMs { get; init; } = 20000;
-
-    /// <summary>Business cap on how many items one player may offer on their side of a trade. The
-    /// parser also bounds a single batch (<c>ProtocolLimitsConfig.MaxTradeItems</c>) for wire safety;
-    /// this is the per-side offer ceiling enforced by the trade session.</summary>
-    public int MaxTradeItemsPerSide { get; init; } = 1500;
-
-    /// <summary>Minimum seconds between chat lines from the same player under each room-configured
-    /// <c>ChatFloodSensitivityType</c>, keyed Extra/Normal/Minimal (SEC-03). A line arriving before
-    /// its slot sends <c>FloodControlMessageComposer</c> with the remaining wait instead of being
-    /// spoken. These are starting defaults, not a tuned game-balance decision - adjust freely.</summary>
-    public int[] ChatFloodIntervalSeconds { get; init; } = [4, 2, 1];
-
-    /// <summary>
-    /// How many lines a player may send faster than <see cref="ChatFloodIntervalSeconds"/> before
-    /// the room starts refusing them. Habbo lets a burst through and only then gates: a limit of
-    /// one — which is what no allowance at all amounts to — blocks the second line of any sentence
-    /// somebody types quickly, and reads as the chat being broken rather than protected.
-    /// </summary>
-    public int ChatFloodAllowance { get; init; } = 5;
 }

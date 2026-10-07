@@ -116,11 +116,7 @@ public sealed class TickBoundaryTests
             FakeProxy.Create<IEventPublisher>(_ => null),
             RoomGrainStubs.NeverCancels(),
             FakeProxy.Create<IPermissionService>(_ => null),
-            FakeProxy.Create<IVortexMetrics>(_ => null),
-            FakeProxy.Create<IRoomModerationStore>(_ => null),
-            TestRoomGames.Provider(),
-            FakeProxy.Create<ICommerceJournal>(_ => Task.CompletedTask),
-            RoomGrainStubs.PassThroughWordFilter()
+            FakeProxy.Create<IVortexMetrics>(_ => null)
         );
 
         grain._state.EpochMs = epoch;

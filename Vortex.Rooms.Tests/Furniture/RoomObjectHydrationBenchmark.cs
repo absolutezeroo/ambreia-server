@@ -91,7 +91,7 @@ public sealed class RoomObjectHydrationBenchmark(ITestOutputHelper output)
         {
             Id = 1,
             SpriteId = 1,
-            Name = "bench_dice",
+            Name = "bench_gate",
             ProductType = ProductType.Floor,
             FurniCategory = FurnitureCategory.Default,
             LogicName = "default_floor",
@@ -137,7 +137,7 @@ public sealed class RoomObjectHydrationBenchmark(ITestOutputHelper output)
 
         for (int i = 0; i < items; i++)
         {
-            _ = ActivatorUtilities.CreateInstance(services, typeof(FurnitureDiceLogic), ctx);
+            _ = ActivatorUtilities.CreateInstance(services, typeof(FurnitureGateLogic), ctx);
         }
 
         return Stopwatch.GetElapsedTime(startedAt).TotalMilliseconds;
@@ -150,7 +150,7 @@ public sealed class RoomObjectHydrationBenchmark(ITestOutputHelper output)
     private static double Compiled(IServiceProvider services, IRoomFloorItemContext ctx, int items)
     {
         ObjectFactory factory = ActivatorUtilities.CreateFactory(
-            typeof(FurnitureDiceLogic),
+            typeof(FurnitureGateLogic),
             [typeof(IRoomFloorItemContext)]
         );
 

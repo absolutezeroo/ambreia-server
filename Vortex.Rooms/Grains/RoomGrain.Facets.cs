@@ -19,9 +19,4 @@ public sealed partial class RoomGrain
         IRoomAvatars,
         IRoomMap,
         IRoomFurni,
-        IRoomPets,
-        IRoomSecurity,
-        IRoomSettings,
-        IRoomModeration,
-        IRoomTrading,
-        IRoomDoorbell { }
+        IRoomSecurity { }

@@ -68,39 +68,6 @@ public sealed class RoomWalkThroughTests
         harness.Grain.MapModule.CanAvatarWalk(walker, tileId, isGoal: false).Should().BeTrue();
     }
 
-    /// <summary>
-    /// A pet is an obstacle too, and was not one.
-    ///
-    /// Pets live in PetsById as plain snapshots and never enter the tile stacks, so no flag was
-    /// ever raised for them and avatars walked straight through. They block on the same terms as a
-    /// person: never somewhere to stop, and crossable only where people are.
-    /// </summary>
-    [Fact]
-    public async Task APetIsWalkedRound_NotThrough()
-    {
-        RoomHarness harness = await RoomHarness.CreateAsync().ConfigureAwait(true);
-
-        harness.Grain._state.RoomSnapshot = harness.Grain._state.RoomSnapshot with
-        {
-            AllowBlocking = false,
-        };
-
-        await harness.PutPetInRoomAsync(7, 3, 3).ConfigureAwait(true);
-
-        RoomPlayerAvatar walker = harness.PutRealPlayerInRoom(1, 0, 0);
-        int tileId = harness.Grain.MapModule.ToIdx(3, 3);
-
-        harness
-            .Grain.MapModule.CanAvatarWalk(walker, tileId, isGoal: false)
-            .Should()
-            .BeFalse("a pet is standing there");
-
-        harness
-            .Grain.MapModule.CanAvatarWalk(walker, tileId, isGoal: true)
-            .Should()
-            .BeFalse("and nobody stops on a pet");
-    }
-
     /// <summary>Nobody stops *on* somebody else, whichever way the setting is turned.</summary>
     [Fact]
     public async Task NobodyEndsTheirWalkOnSomebodyElse()

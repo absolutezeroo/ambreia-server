@@ -35,32 +35,4 @@ public partial interface IRoomService
         int? targetZKey,
         CancellationToken ct
     );
-    public Task PickupItemInRoomAsync(
-        ActionContext ctx,
-        RoomObjectId itemId,
-        CancellationToken ct,
-        bool isConfirm = true
-    );
-    public Task UseItemInRoomAsync(
-        ActionContext ctx,
-        RoomObjectId itemId,
-        CancellationToken ct,
-        int param = -1
-    );
-    public Task ClickItemInRoomAsync(
-        ActionContext ctx,
-        RoomObjectId itemId,
-        CancellationToken ct,
-        int param = -1
-    );
-
-    /// <summary>Resolves a pending doorbell ring: <paramref name="actorCtx"/> is the answering
-    /// owner/rights-holder's own room context, <paramref name="targetPlayerId"/> the ringer.
-    /// On admit, completes the ringer's room entry; on deny, tears down their pending session.</summary>
-    public Task AnswerDoorbellAsync(
-        ActionContext actorCtx,
-        PlayerId targetPlayerId,
-        bool admit,
-        CancellationToken ct
-    );
 }

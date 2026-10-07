@@ -1,12 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
-using System.Threading;
-using System.Threading.Tasks;
-using Vortex.Primitives.Action;
 using Vortex.Primitives.Players;
 using Vortex.Primitives.Rooms.Enums;
-using Vortex.Primitives.Rooms.Enums.Games;
-using Vortex.Primitives.Rooms.Games;
 using Vortex.Primitives.Rooms.Object;
 using Vortex.Primitives.Rooms.Object.Avatars;
 using Vortex.Primitives.Rooms.Object.Furniture;
@@ -25,7 +20,7 @@ namespace Vortex.Rooms.Grains;
 /// and a call through one stays an ordinary method call on this activation.
 /// </para>
 /// </summary>
-public sealed partial class RoomGrain : IRoomLookup, IRoomMapAccess, IRoomGameAccess
+public sealed partial class RoomGrain : IRoomLookup, IRoomMapAccess
 {
     private static readonly IReadOnlySet<RoomObjectId> EmptyStack = new HashSet<RoomObjectId>();
 
@@ -109,59 +104,4 @@ public sealed partial class RoomGrain : IRoomLookup, IRoomMapAccess, IRoomGameAc
         tileIndex >= 0 && tileIndex < _state.TileAvatarStacks.Length
             ? _state.TileAvatarStacks[tileIndex]
             : EmptyStack;
-
-    GameTeamColor IRoomGameAccess.GetTeam(PlayerId playerId) => GameRuntime.GetTeam(playerId);
-
-    int IRoomGameAccess.GetTeamScore(GameTeamColor team) => GameRuntime.GetTeamScore(team);
-
-    IReadOnlyList<PlayerId> IRoomGameAccess.GetPlayersInTeam(GameTeamColor team) =>
-        GameRuntime.GetPlayersInTeam(team);
-
-    Task<bool> IRoomGameAccess.StartGameAsync(
-        RoomObjectId source,
-        GameId game,
-        CancellationToken ct
-    ) => GameRuntime.StartGameAsync(source, game, ct);
-
-    Task<bool> IRoomGameAccess.EndGameAsync(
-        RoomObjectId source,
-        GameId game,
-        CancellationToken ct
-    ) => GameRuntime.EndGameAsync(source, game, ct);
-
-    Task IRoomGameAccess.JoinTeamAsync(
-        PlayerId playerId,
-        GameTeamColor team,
-        CancellationToken ct
-    ) => GameRuntime.JoinTeamAsync(playerId, team, ct);
-
-    Task IRoomGameAccess.LeaveTeamAsync(PlayerId playerId, CancellationToken ct) =>
-        GameRuntime.LeaveTeamAsync(playerId, ct);
-
-    Task<bool> IRoomGameAccess.TryGiveScoreToTeamAsync(
-        RoomObjectId box,
-        GameTeamColor team,
-        int amount,
-        int cap,
-        CancellationToken ct
-    ) => GameRuntime.TryGiveScoreToTeamAsync(box, team, amount, cap, ct);
-
-    Task<bool> IRoomGameAccess.TryGiveScoreToPlayerTeamAsync(
-        RoomObjectId box,
-        PlayerId playerId,
-        int amount,
-        int cap,
-        CancellationToken ct
-    ) => GameRuntime.TryGiveScoreToPlayerTeamAsync(box, playerId, amount, cap, ct);
-
-    bool IRoomGameAccess.IsRunning(GameId game) => GameRuntime.IsRunningGame(game);
-
-    Task IRoomGameAccess.SignalAsync(GameSignal signal, CancellationToken ct) =>
-        GameRuntime.SignalAsync(signal, ct);
-
-    void IRoomGameAccess.LockMovement(PlayerId playerId) =>
-        GameRuntime.Chrome.LockMovement(playerId);
-
-    void IRoomGameAccess.UnlockMovement(PlayerId playerId) =>
-        GameRuntime.Chrome.UnlockMovement(playerId);
 }

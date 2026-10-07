@@ -1,7 +1,6 @@
 using System;
 using System.Threading.Tasks;
 using Vortex.Events.Registry;
-using Vortex.Primitives.Moderation.WordFilter;
 using Vortex.Primitives.Rooms;
 using Vortex.Primitives.Rooms.Providers;
 using Vortex.Tests.Support;
@@ -21,23 +20,5 @@ internal static class RoomGrainStubs
     public static ICancellableEventPublisher NeverCancels() =>
         FakeProxy.Create<ICancellableEventPublisher>(_ =>
             Task.FromResult(new EventContext { CorrelationId = string.Empty })
-        );
-
-    /// <summary>
-    /// A hotel word filter with an empty list: every text comes back untouched. Not the proxy's
-    /// default either — that would answer a zeroed result whose text is null.
-    /// </summary>
-    public static IWordFilter PassThroughWordFilter() =>
-        FakeProxy.Create<IWordFilter>(call =>
-            call.Method.Name switch
-            {
-                nameof(IWordFilter.Apply) or nameof(IWordFilter.Test) => new WordFilterResult(
-                    (string)call.Args![0]!,
-                    false,
-                    false
-                ),
-                "get_RefusedMessage" => WordFilterConfig.RefusedMessageDefault,
-                _ => null,
-            }
         );
 }

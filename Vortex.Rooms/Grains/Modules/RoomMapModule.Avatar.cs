@@ -148,16 +148,6 @@ public sealed partial class RoomMapModule
             }
         }
 
-        // Pets stand on tiles too, and nothing said so: they live in PetsById as plain snapshots
-        // and never enter TileAvatarStacks, so no flag was ever raised for them and avatars walked
-        // straight through. They block on the same terms as a person -- you never stop on one, and
-        // whether you may cross one follows the room's walk-through setting. Same rule rather than
-        // a second one: a pet is an obstacle for the same reason a player is.
-        if (IsPetOn(tileIdx) && (isGoal || !_roomGrain._state.RoomSnapshot.AllowBlocking))
-        {
-            return false;
-        }
-
         if (tileFlags.Has(RoomTileFlags.FurnitureOccupied))
         {
             bool isSeat = section.IsSittable || section.IsLayable;
@@ -243,36 +233,6 @@ public sealed partial class RoomMapModule
 
         return CanAvatarWalk(avatar, ToIdx(toX, fromY), true, true)
             || CanAvatarWalk(avatar, ToIdx(fromX, toY), true, true);
-    }
-
-    /// <summary>
-    /// Whether a pet is standing on this tile.
-    ///
-    /// Scanned rather than indexed. A pet's position is written from a dozen places -- motion,
-    /// riding, care -- each replacing an immutable snapshot in the dictionary, so a per-tile set
-    /// would have to be hooked at every one of them and would be wrong the first time somebody
-    /// added a thirteenth. A room holds a handful of pets, so the scan is a handful of comparisons.
-    ///
-    /// ponytail: linear in the room's pet count, inside the pathfinder's inner loop. If a room ever
-    /// holds enough pets for that to show, give the map a per-tile pet set and maintain it where
-    /// PetsById is written.
-    /// </summary>
-    private bool IsPetOn(int tileIdx)
-    {
-        if (_roomGrain._state.PetsById.Count == 0)
-        {
-            return false;
-        }
-
-        foreach (PetSnapshot pet in _roomGrain._state.PetsById.Values)
-        {
-            if (ToIdx(pet.X, pet.Y) == tileIdx)
-            {
-                return true;
-            }
-        }
-
-        return false;
     }
 
     public bool CanAvatarWalkBetween(

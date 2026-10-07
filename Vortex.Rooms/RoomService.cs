@@ -40,7 +40,6 @@ internal sealed partial class RoomService(
     ISessionGateway sessionGateway,
     IGrainFactory grainFactory,
     IDbContextFactory<VortexDbContext> dbContextFactory,
-    IRoomModerationStore roomModerationStore,
     IEventPublisher events,
     ICancellableEventPublisher cancellableEvents
 ) : IRoomService
@@ -49,7 +48,6 @@ internal sealed partial class RoomService(
     private readonly IGrainFactory _grainFactory = grainFactory;
     private readonly ILogger<IRoomService> _logger = logger;
     private readonly RoomConfig _roomConfig = roomConfig.Value;
-    private readonly IRoomModerationStore _roomModerationStore = roomModerationStore;
     private readonly ISessionGateway _sessionGateway = sessionGateway;
     private readonly IEventPublisher _events = events;
     private readonly ICancellableEventPublisher _cancellableEvents = cancellableEvents;
@@ -66,20 +64,6 @@ internal sealed partial class RoomService(
         RoomPendingSnapshot pendingRoom = await playerPresence
             .GetPendingRoomAsync()
             .ConfigureAwait(false);
-
-        if (
-            await _roomModerationStore
-                .IsBannedAsync(roomId.Value, playerId.Value, ct)
-                .ConfigureAwait(false)
-        )
-        {
-            await playerPresence
-                .SendComposerAsync(
-                    new CantConnectMessageComposer { ErrorType = RoomConnectionErrorType.Banned }
-                )
-                .ConfigureAwait(false);
-            return;
-        }
 
         // Only an entry still in flight is a duplicate worth dropping. Once the player is in, the
         // same room id means a reload -- the navigator forwards to the room you are standing in as
@@ -101,7 +85,7 @@ internal sealed partial class RoomService(
         await playerPresence.SetPendingRoomAsync(roomId, false).ConfigureAwait(false);
 
         // Room entry is the one flow that legitimately spans the room: core activation, the
-        // security gate, the avatar list and the doorbell all take part. This is what the
+        // security gate and the avatar list take part. This is what the
         // IRoomGrain aggregate is for -- narrowing it here would mean four references, not less
         // coupling.
         IRoomGrain room = _grainFactory.GetRoomGrain(roomId);
@@ -121,11 +105,15 @@ internal sealed partial class RoomService(
             ImmutableArray<RoomAvatarSnapshot> currentAvatars =
                 await room.GetAllAvatarSnapshotsAsync(ct).ConfigureAwait(false);
             bool isFull = snapshot.PlayersMax > 0 && currentAvatars.Length >= snapshot.PlayersMax;
-            bool isPasswordMismatch =
-                snapshot.DoorMode == RoomDoorModeType.Password
-                && !string.Equals(snapshot.Password, password, StringComparison.Ordinal);
+            // A locked door has no doorbell any more (the cut of 2026-10-07): it simply refuses.
+            bool isRefused =
+                snapshot.DoorMode == RoomDoorModeType.Locked
+                || (
+                    snapshot.DoorMode == RoomDoorModeType.Password
+                    && !string.Equals(snapshot.Password, password, StringComparison.Ordinal)
+                );
 
-            if (isFull || isPasswordMismatch)
+            if (isFull || isRefused)
             {
                 await playerPresence
                     .SendComposerAsync(
@@ -140,16 +128,6 @@ internal sealed partial class RoomService(
                 await playerPresence
                     .SetPendingRoomAsync(RoomId.Invalid, false)
                     .ConfigureAwait(false);
-                return;
-            }
-
-            if (snapshot.DoorMode == RoomDoorModeType.Locked)
-            {
-                // Locked doors ring the doorbell instead of a flat reject: the requester waits
-                // (RoomPendingSnapshot stays set) while every present owner/rights-holder is
-                // notified. Resolution arrives via AnswerDoorbellAsync (LetUserInMessageHandler)
-                // or the room tick's timeout sweep (RoomGrain.Doorbell.cs) if nobody answers.
-                await room.RegisterDoorbellRingAsync(playerId, ct).ConfigureAwait(false);
                 return;
             }
         }
@@ -413,12 +391,6 @@ internal sealed partial class RoomService(
 
         if (pendingRoom.RoomId > 0)
         {
-            // Covers cancelling a doorbell ring: the requester never became Active while
-            // waiting, so ClearActiveRoomAsync below is a no-op for that case.
-            await _grainFactory
-                .GetRoomDoorbell(pendingRoom.RoomId)
-                .TryRemoveDoorbellRingAsync(playerId, ct)
-                .ConfigureAwait(false);
             await playerPresence.SetPendingRoomAsync(RoomId.Invalid, false).ConfigureAwait(false);
         }
 
@@ -450,56 +422,5 @@ internal sealed partial class RoomService(
             .GetRoomAvatars(ctx.RoomId)
             .WalkAvatarToAsync(ctx, targetX, targetY, targetZKey, ct)
             .ConfigureAwait(false);
-    }
-
-    public async Task PickupItemInRoomAsync(
-        ActionContext ctx,
-        RoomObjectId itemId,
-        CancellationToken ct,
-        bool isConfirm = true
-    )
-    {
-        if (ctx.PlayerId <= 0 || ctx.RoomId <= 0 || itemId <= 0)
-        {
-            return;
-        }
-
-        IRoomFurni roomGrain = _grainFactory.GetRoomFurni(ctx.RoomId);
-
-        await roomGrain.RemoveItemByIdAsync(ctx, itemId, ct).ConfigureAwait(false);
-    }
-
-    public async Task UseItemInRoomAsync(
-        ActionContext ctx,
-        RoomObjectId itemId,
-        CancellationToken ct,
-        int param = -1
-    )
-    {
-        if (ctx.PlayerId <= 0 || ctx.RoomId <= 0 || itemId <= 0)
-        {
-            return;
-        }
-
-        IRoomFurni roomGrain = _grainFactory.GetRoomFurni(ctx.RoomId);
-
-        await roomGrain.UseItemByIdAsync(ctx, itemId, ct, param).ConfigureAwait(false);
-    }
-
-    public async Task ClickItemInRoomAsync(
-        ActionContext ctx,
-        RoomObjectId itemId,
-        CancellationToken ct,
-        int param = -1
-    )
-    {
-        if (ctx.PlayerId <= 0 || ctx.RoomId <= 0 || itemId <= 0)
-        {
-            return;
-        }
-
-        IRoomFurni roomGrain = _grainFactory.GetRoomFurni(ctx.RoomId);
-
-        await roomGrain.ClickItemByIdAsync(ctx, itemId, ct, param).ConfigureAwait(false);
     }
 }

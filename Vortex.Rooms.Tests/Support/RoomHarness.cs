@@ -14,7 +14,6 @@ using Vortex.Database.Entities.Room;
 using Vortex.Events.Registry;
 using Vortex.Primitives;
 using Vortex.Primitives.Action;
-using Vortex.Primitives.Bots;
 using Vortex.Primitives.Commerce;
 using Vortex.Primitives.Events;
 using Vortex.Primitives.Furniture.Providers;
@@ -58,16 +57,10 @@ namespace Vortex.Rooms.Tests.Support;
 internal sealed class RoomHarness
 {
     public const int RoomIdValue = 55;
-    public const int PlacedBotId = 7;
     public const string OwnerName = "Owner";
     public const string OriginalFigure = "hd-180-1";
-    public const string BotName = "Bartender";
 
-    /// <summary>Where the seeded bot stands, clear of the walls it might otherwise path into.</summary>
-    public const int BotStartX = 3;
-    public const int BotStartY = 4;
-
-    /// <summary>Wider than the wander radius, so a bot in the middle has somewhere to go.</summary>
+    /// <summary>Room enough for a walk with a turn in it.</summary>
     private const int MapSize = 12;
 
     /// <summary>The room's bot tick, which is what a simulated tick has to advance past.</summary>
@@ -133,18 +126,7 @@ internal sealed class RoomHarness
                 );
             }),
             BuildPermissionService(capabilities),
-            FakeProxy.Create<IVortexMetrics>(_ => null),
-            // The real store, on the same in-memory database as everything else here. It was a
-            // no-op proxy, which meant a ban could be "applied" in a test and land nowhere — and
-            // raid protection bans without a human actor, so that was the only thing left to assert.
-            // Plain EF, nothing this provider cannot run.
-            new RoomModerationStore(
-                new SingleOptionsFactory(options),
-                NullLogger<RoomModerationStore>.Instance
-            ),
-            TestRoomGames.Provider(),
-            BuildCommerceJournal(),
-            RoomGrainStubs.PassThroughWordFilter()
+            FakeProxy.Create<IVortexMetrics>(_ => null)
         );
 
         // The security module reads the room's own snapshot to decide who owns the place, so a
@@ -260,8 +242,6 @@ internal sealed class RoomHarness
 
     public RoomGrain Grain { get; }
 
-    public RoomBotSystem BotSystem => Grain.BotSystem;
-
     /// <summary>Who the grain pushed an inventory composer at — the point of the ownership tests.</summary>
     public List<PlayerId> ComposersSentTo { get; } = [];
 
@@ -305,36 +285,16 @@ internal sealed class RoomHarness
     /// The hotel-wide capabilities the permission service answers with, for the grain methods that
     /// gate on a staff power rather than on an in-room controller level.
     /// </param>
-    public static async Task<RoomHarness> CreateAsync(
-        int placedBotId = PlacedBotId,
+    public static Task<RoomHarness> CreateAsync(
         bool canManipulate = true,
         string[]? capabilities = null
     )
     {
         DbContextOptions<VortexDbContext> options = new DbContextOptionsBuilder<VortexDbContext>()
-            .UseInMemoryDatabase($"room-bots-{Guid.NewGuid():N}")
+            .UseInMemoryDatabase($"room-{Guid.NewGuid():N}")
             .Options;
 
-        await using (VortexDbContext seed = new(options))
-        {
-            seed.Bots.Add(
-                new BotEntity
-                {
-                    Id = placedBotId,
-                    OwnerPlayerEntityId = Owner.Value,
-                    RoomEntityId = RoomIdValue,
-                    Name = BotName,
-                    Figure = OriginalFigure,
-                    Gender = AvatarGenderType.Male,
-                    X = BotStartX,
-                    Y = BotStartY,
-                }
-            );
-
-            await seed.SaveChangesAsync().ConfigureAwait(true);
-        }
-
-        return new RoomHarness(options, canManipulate, capabilities ?? []);
+        return Task.FromResult(new RoomHarness(options, canManipulate, capabilities ?? []));
     }
 
     public VortexDbContext NewDbContext() => new(_options);
@@ -342,11 +302,8 @@ internal sealed class RoomHarness
     public ActionContext ContextFor(PlayerId playerId) =>
         new(ActionOrigin.Player, default, playerId, new RoomId(RoomIdValue));
 
-    /// <summary>How long the test room holds a hand item, so a test can tick past it.</summary>
-    public const int HandItemDurationMs = 30_000;
-
     /// <summary>
-    /// Runs the avatar tick, which is a different clock from the bot one — hand items expire on it.
+    /// Runs the avatar tick.
     /// </summary>
     public async Task TickAvatarsAsync(int ticks = 1)
     {
@@ -369,36 +326,6 @@ internal sealed class RoomHarness
             .AvatarTickSystem.ProcessAvatarsAsync(_now, CancellationToken.None)
             .ConfigureAwait(true);
     }
-
-    /// <summary>Runs the bot tick, each call standing for one second of room time.</summary>
-    public async Task TickAsync(int ticks = 1)
-    {
-        for (int tick = 0; tick < ticks; tick++)
-        {
-            _now += TickMs;
-
-            await Grain.ProcessBotsForTestAsync(_now).ConfigureAwait(true);
-        }
-    }
-
-    /// <summary>The bot as the room would draw it, which is where its position is observable.</summary>
-    public async Task<RoomBotAvatarSnapshot> ReadBotAvatarAsync()
-    {
-        ImmutableArray<RoomAvatarSnapshot> avatars = await Grain
-            .GetPlacedBotAvatarSnapshotsAsync(CancellationToken.None)
-            .ConfigureAwait(true);
-
-        return avatars.OfType<RoomBotAvatarSnapshot>().Single();
-    }
-
-    public Task EnableWanderAsync() =>
-        Grain.SetBotSkillAsync(
-            ContextFor(Owner),
-            PlacedBotId,
-            BotSkillId.RandomWalk,
-            string.Empty,
-            CancellationToken.None
-        );
 
     /// <summary>Closes a tile, which is what furniture standing on one amounts to for a bot.</summary>
     public void BlockTile(int x, int y) =>
@@ -445,35 +372,6 @@ internal sealed class RoomHarness
         return avatar;
     }
 
-    /// <summary>
-    /// A pet standing on a tile. Placed straight into the room's live state rather than through the
-    /// pet system, because what is under test is what happens to it, not how it got there.
-    /// </summary>
-    public async Task PutPetInRoomAsync(int petId, int x, int y)
-    {
-        // Load first, on an empty table: the pet system clears its cache the first time it is
-        // asked, so a pet placed before that would be wiped by the very call under test.
-        await Grain.PetSystem.EnsurePetsLoadedAsync(CancellationToken.None).ConfigureAwait(true);
-
-        Grain._state.PetsById[petId] = new PetSnapshot
-        {
-            PetId = petId,
-            OwnerId = Owner,
-            RoomId = RoomIdValue,
-            Name = "Rex",
-            Type = 0,
-            Skin = 0,
-            Color = "FFFFFF",
-            Gender = AvatarGenderType.Male,
-            Level = 1,
-            Experience = 0,
-            X = x,
-            Y = y,
-            Z = 0,
-            Direction = Rotation.South,
-        };
-    }
-
     /// <summary>An avatar standing on a tile, which is what a following bot walks towards.</summary>
     public void PutPlayerInRoom(
         PlayerId playerId,
@@ -504,29 +402,6 @@ internal sealed class RoomHarness
     /// default) means the proxy's own completed task.
     /// </summary>
     public Task? PublishResult { get; set; }
-
-    /// <summary>Every state the room moved a commerce operation through, in order.</summary>
-    public List<CommerceOperationState> JournalStates { get; } = [];
-
-    /// <summary>Makes the journal itself fail, which a payout must survive: the furniture behind a
-    /// prize is already destroyed by the time it is written.</summary>
-    public bool JournalThrows { get; set; }
-
-    private ICommerceJournal BuildCommerceJournal() =>
-        FakeProxy.Create<ICommerceJournal>(call =>
-        {
-            if (JournalThrows)
-            {
-                throw new InvalidOperationException("journal unavailable");
-            }
-
-            if (call.Method.Name == nameof(ICommerceJournal.TransitionAsync))
-            {
-                JournalStates.Add((CommerceOperationState)call.Args![1]!);
-            }
-
-            return Task.CompletedTask;
-        });
 
     /// <summary>
     /// A staff-capability-free player, so the manipulate check falls through to the room's own

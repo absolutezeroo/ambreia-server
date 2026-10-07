@@ -5,7 +5,6 @@ using Vortex.Primitives.Networking;
 using Vortex.Primitives.Players;
 using Vortex.Primitives.Rooms;
 using Vortex.Primitives.Rooms.Events;
-using Vortex.Primitives.Rooms.Games;
 using Vortex.Primitives.Rooms.Grains;
 using Vortex.Primitives.Rooms.Object;
 using Vortex.Primitives.Rooms.Object.Logic;
@@ -39,7 +38,6 @@ public abstract class RoomObjectContext<TObject, TLogic, TSelf>(
     // core, and there must never be another one.
     public IRoomLookup Lookup => _roomGrain;
     public IRoomMapAccess Map => _roomGrain;
-    public IRoomGameAccess Game => _roomGrain;
 
     public long NowMs() => _roomGrain.NowMs();
 

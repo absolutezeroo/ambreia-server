@@ -29,15 +29,6 @@ public sealed class RoomObjectLogicKeyTests
         [.. typeof(T).GetCustomAttributes<RoomObjectLogicAttribute>(false).Select(a => a.Key)];
 
     [Fact]
-    public void TheWheelUsesTheClientsLogicName_NotTheFurnitureClassname()
-    {
-        // "wheel_of_fortune" is the classname in furnidata; the client's enum knows
-        // "furniture_habbowheel". Registering the classname matched server-side while the client
-        // animated nothing.
-        KeysOf<FurnitureWheelOfFortuneLogic>().Should().Equal("furniture_habbowheel");
-    }
-
-    [Fact]
     public void TheLogicAttributeIsRepeatable_SoOneClassCanCoverSeveralClientNames()
     {
         AttributeUsageAttribute usage =
@@ -75,6 +66,19 @@ public sealed class RoomObjectLogicKeyTests
     [InlineData("nest")]
     [InlineData("pet_nest")]
     public void APetToyOrNestDefinition_LoadsAsDefaultLogic(string key) =>
+        ResolvedImplementation(key).Should().Be<FurnitureFloorLogic>();
+
+    /// <summary>
+    /// The interactive furniture left with the core cut (2026-10-07). Their definitions stay in the
+    /// catalogue and must still load — as plain floor furniture — rather than take their room down.
+    /// </summary>
+    [Theory]
+    [InlineData("dice")]
+    [InlineData("furniture_habbowheel")]
+    [InlineData("fireworks")]
+    [InlineData("vendingmachine")]
+    [InlineData("furniture_one_way_door")]
+    public void ARemovedInteractiveLogic_LoadsAsDefaultLogic(string key) =>
         ResolvedImplementation(key).Should().Be<FurnitureFloorLogic>();
 
     private static Type ResolvedImplementation(string key)

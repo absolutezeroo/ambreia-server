@@ -45,29 +45,6 @@ public sealed class RoomObjectLogicFamilyTests
     }
 
     /// <summary>
-    /// The Arcturus names are what the shipped catalogue carries; the <c>furniture_*</c> ones are what
-    /// the assets and the client call the same furni. Dropping either side silently un-binds several
-    /// hundred definitions, depending on which dump a hotel imported.
-    /// </summary>
-    [Theory]
-    [InlineData(typeof(FurnitureDiceLogic), "dice", "furniture_dice")]
-    [InlineData(typeof(FurnitureFireworksLogic), "fireworks", "furniture_fireworks")]
-    public void LogicsCarryBothTheArcturusAndTheClientName(
-        Type logic,
-        string arcturusName,
-        string clientName
-    )
-    {
-        string[] keys =
-        [
-            .. logic.GetCustomAttributes<RoomObjectLogicAttribute>(false).Select(a => a.Key),
-        ];
-
-        keys.Should().Contain(arcturusName);
-        keys.Should().Contain(clientName);
-    }
-
-    /// <summary>
     /// A gate is the standing counter-example to "just take the logic from the assets": the client
     /// calls it <c>furniture_multistate</c> because Flash derives blocking from the visualization,
     /// while Vortex resolves walkability server-side. 375 definitions were one blind remap away from

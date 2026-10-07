@@ -7,7 +7,6 @@ using Vortex.Primitives.Groups.Grains;
 using Vortex.Primitives.Inventory.Grains;
 using Vortex.Primitives.Loot.Grains;
 using Vortex.Primitives.Marketplace.Grains;
-using Vortex.Primitives.Moderation.Grains;
 using Vortex.Primitives.Players;
 using Vortex.Primitives.Players.Grains;
 using Vortex.Primitives.Quests.Grains;
@@ -42,26 +41,8 @@ public static class GrainFactoryExtensions
     public static IRoomFurni GetRoomFurni(this IGrainFactory factory, RoomId roomId) =>
         factory.GetGrain<IRoomFurni>((long)roomId.Value);
 
-    public static IRoomPets GetRoomPets(this IGrainFactory factory, RoomId roomId) =>
-        factory.GetGrain<IRoomPets>((long)roomId.Value);
-
-    public static IRoomBots GetRoomBots(this IGrainFactory factory, RoomId roomId) =>
-        factory.GetGrain<IRoomBots>((long)roomId.Value);
-
     public static IRoomSecurity GetRoomSecurity(this IGrainFactory factory, RoomId roomId) =>
         factory.GetGrain<IRoomSecurity>((long)roomId.Value);
-
-    public static IRoomSettings GetRoomSettings(this IGrainFactory factory, RoomId roomId) =>
-        factory.GetGrain<IRoomSettings>((long)roomId.Value);
-
-    public static IRoomModeration GetRoomModeration(this IGrainFactory factory, RoomId roomId) =>
-        factory.GetGrain<IRoomModeration>((long)roomId.Value);
-
-    public static IRoomTrading GetRoomTrading(this IGrainFactory factory, RoomId roomId) =>
-        factory.GetGrain<IRoomTrading>((long)roomId.Value);
-
-    public static IRoomDoorbell GetRoomDoorbell(this IGrainFactory factory, RoomId roomId) =>
-        factory.GetGrain<IRoomDoorbell>((long)roomId.Value);
 
     public static IRoomPersistenceGrain GetRoomPersistenceGrain(
         this IGrainFactory factory,
@@ -72,9 +53,6 @@ public static class GrainFactoryExtensions
         factory.GetGrain<IRoomDirectoryGrain>(SingletonGrainId.GLOBAL);
 
     /// <summary>The hotel's single CFH queue coordinator — one per hotel, hence the global key.</summary>
-    public static IModerationQueueGrain GetModerationQueueGrain(this IGrainFactory factory) =>
-        factory.GetGrain<IModerationQueueGrain>(SingletonGrainId.GLOBAL);
-
     public static IPlayerGrain GetPlayerGrain(this IGrainFactory factory, PlayerId playerId) =>
         factory.GetGrain<IPlayerGrain>((long)playerId.Value);
 
