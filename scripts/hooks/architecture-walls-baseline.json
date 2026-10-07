@@ -1,8 +1,6 @@
 {
   "protocolLeak": [],
   "protocolFree": [
-    "Vortex.Authentication",
-    "Vortex.Authentication.Tests",
     "Vortex.Crypto",
     "Vortex.Crypto.Tests",
     "Vortex.Dashboard.API",
@@ -18,6 +16,9 @@
     "Vortex.Navigator",
     "Vortex.Navigator.Tests",
     "Vortex.Observability",
+    "Vortex.PacketHandlers.Tests",
+    "Vortex.Permissions",
+    "Vortex.Permissions.Tests",
     "Vortex.Pipeline",
     "Vortex.Pipeline.Tests",
     "Vortex.Players.Tests",
@@ -27,8 +28,14 @@
     "Vortex.Primitives",
     "Vortex.Protocol",
     "Vortex.Runtime",
+    "Vortex.Shop",
+    "Vortex.Shop.Tests",
+    "Vortex.Signals",
+    "Vortex.Signals.Tests",
     "Vortex.Tests.Support",
     "Vortex.WebApi",
+    "Vortex.WebApi.Authentication",
+    "Vortex.WebApi.Authentication.Tests",
     "Vortex.WebApi.Tests"
   ]
 }

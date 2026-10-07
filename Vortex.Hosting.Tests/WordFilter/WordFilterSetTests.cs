@@ -1,6 +1,6 @@
 using System;
 using FluentAssertions;
-using Vortex.Observability.WordFilter;
+using Vortex.Permissions.WordFilter;
 using Vortex.Primitives.Moderation.WordFilter;
 using Xunit;
 

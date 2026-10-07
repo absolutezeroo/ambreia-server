@@ -180,7 +180,7 @@ services:
 
       # --- Auth (DEVELOPMENT ONLY) -------------------------------------------------------------
       # HMAC key for the IP addresses hashed into auth events. Only a placeholder check applies in
-      # Development (Vortex.Authentication/Configuration/AuthenticationConfigValidator.cs enforces
+      # Development (Vortex.Players/Authentication/AuthenticationConfigValidator.cs enforces
       # it outside Development), but a value that is at least distinct from the repo defaults keeps
       # the dev hashes from colliding with anyone else's.
       VORTEX__Vortex__Authentication__IpHashSecret: "vortex-compose-dev-ip-hash-secret"

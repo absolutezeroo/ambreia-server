@@ -49,8 +49,9 @@
     </Content>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Vortex.Authentication\Vortex.Authentication.csproj" />
     <ProjectReference Include="..\Vortex.Catalog\Vortex.Catalog.csproj" />
+    <ProjectReference Include="..\Vortex.WebApi.Authentication\Vortex.WebApi.Authentication.csproj" />
+    <ProjectReference Include="..\Vortex.Permissions\Vortex.Permissions.csproj" />
     <ProjectReference Include="..\Vortex.Fishing\Vortex.Fishing.csproj" />
     <ProjectReference Include="..\Vortex.Shop\Vortex.Shop.csproj" />
     <!--

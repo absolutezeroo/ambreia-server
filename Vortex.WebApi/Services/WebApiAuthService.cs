@@ -48,7 +48,7 @@ public sealed class WebApiAuthService(
     )
     {
         // This used to be its own copy of the password check -- same table, same dummy hash, same
-        // off-thread BCrypt as Vortex.Authentication. Two copies is how the second factor came to
+        // off-thread BCrypt as Vortex.WebApi.Authentication. Two copies is how the second factor came to
         // guard the admin cookie while the same password still opened this login and, through it, an
         // SSO ticket into the game. One entry point, and the factor comes with it.
         AccountVerification verification = await _authenticator

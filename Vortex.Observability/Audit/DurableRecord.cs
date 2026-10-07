@@ -1,5 +1,5 @@
 using System;
-using Vortex.Observability.WordFilter;
+using Vortex.Primitives.Moderation.WordFilter;
 using Vortex.Primitives.Observability;
 
 namespace Vortex.Observability.Audit;

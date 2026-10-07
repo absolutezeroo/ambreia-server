@@ -21,8 +21,9 @@
       modules that own them: listener security and the required-service policy (Primitives), plus
       one IValidateOptions<T> per sensitive section.
     -->
-    <ProjectReference Include="..\Vortex.Authentication\Vortex.Authentication.csproj" />
     <ProjectReference Include="..\Vortex.Crypto\Vortex.Crypto.csproj" />
+    <ProjectReference Include="..\Vortex.WebApi.Authentication\Vortex.WebApi.Authentication.csproj" />
+    <ProjectReference Include="..\Vortex.Permissions\Vortex.Permissions.csproj" />
     <ProjectReference Include="..\Vortex.Database\Vortex.Database.csproj" />
     <ProjectReference Include="..\Vortex.Main\Vortex.Main.csproj" />
     <ProjectReference Include="..\Vortex.Observability\Vortex.Observability.csproj" />

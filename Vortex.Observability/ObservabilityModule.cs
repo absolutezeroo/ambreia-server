@@ -9,12 +9,10 @@ using Vortex.Observability.Context;
 using Vortex.Observability.ErrorTracking;
 using Vortex.Observability.Metrics;
 using Vortex.Observability.Runtime;
-using Vortex.Observability.WordFilter;
 using Vortex.Primitives.Moderation.WordFilter;
 using Vortex.Primitives.Observability;
 using Vortex.Primitives.Plugins;
 using Vortex.Primitives.Signals;
-using WordFilterService = Vortex.Observability.WordFilter.WordFilter;
 
 namespace Vortex.Observability;
 
@@ -84,10 +82,9 @@ public sealed class ObservabilityModule : IHostPluginModule
         services.TryAddSingleton<IItemForensics, ChannelItemForensics>();
         services.AddHostedService<AuditWriterService>();
 
-        // The hotel-wide word filter. Its journal rides the channel above; the loader performs the
-        // first reload once the silo is up.
-        services.TryAddSingleton<IWordFilter, WordFilterService>();
-        services.AddHostedService<WordFilterLoader>();
+        // The hotel-wide word filter's journal rides the channel above. The filter itself is
+        // registered by the permissions module.
+        services.TryAddSingleton<IWordFilterJournal, ChannelWordFilterJournal>();
 
         // Orleans resolves all registered IIncomingGrainCallFilter instances from the container.
         services.AddSingleton<IIncomingGrainCallFilter, ObservabilityGrainCallFilter>();

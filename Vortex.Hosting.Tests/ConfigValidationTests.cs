@@ -5,12 +5,13 @@ using FluentAssertions;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
-using Vortex.Authentication.Configuration;
 using Vortex.Crypto.Configuration;
 using Vortex.Database.Configuration;
 using Vortex.Main.Configuration;
 using Vortex.Observability.Configuration;
+using Vortex.Players.Authentication;
 using Vortex.Plugins.Configuration;
+using Vortex.Primitives.Authentication;
 using Vortex.WebApi.Configuration;
 using Xunit;
 

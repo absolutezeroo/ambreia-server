@@ -119,7 +119,7 @@ if (dashboardWrites.length > 0) {
 // BCrypt call, same constant-time dummy hash. Two copies read as harmless duplication right up until
 // the day one of them gained a second factor and the other did not -- and the one that did not was
 // the login that issues SSO tickets into the game. Verification now lives only in
-// Vortex.Authentication, behind IAccountAuthenticator, so a factor added there reaches every caller.
+// Vortex.WebApi.Authentication, behind IAccountAuthenticator, so a factor added there reaches every caller.
 //
 // Hashing is not covered: registration legitimately creates a hash where the account is created.
 // It is the *checking* that must not fork.
@@ -127,11 +127,11 @@ if (dashboardWrites.length > 0) {
 const verifiers = fs
   .readdirSync(root, { withFileTypes: true })
   .filter((e) => e.isDirectory() && e.name.startsWith('Vortex.') && !e.name.endsWith('.Tests'))
-  .filter((e) => e.name !== 'Vortex.Authentication')
+  .filter((e) => e.name !== 'Vortex.WebApi.Authentication')
   .flatMap((e) => hits(e.name, /BCrypt[\w.]*\.Verify\s*\(/));
 if (verifiers.length > 0) {
   failures.push([
-    'A password is verified outside Vortex.Authentication. Go through IAccountAuthenticator, or the '
+    'A password is verified outside Vortex.WebApi.Authentication. Go through IAccountAuthenticator, or the '
       + 'second factor will guard one login and not the other.',
     verifiers,
   ]);

@@ -11,7 +11,6 @@ using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Orleans;
-using Vortex.Authentication;
 using Vortex.Catalog;
 using Vortex.Crypto.Extensions;
 using Vortex.Database.Extensions;
@@ -31,6 +30,7 @@ using Vortex.Navigator;
 using Vortex.Networking.Extensions;
 using Vortex.Observability;
 using Vortex.PacketHandlers;
+using Vortex.Permissions;
 using Vortex.Players;
 using Vortex.Plugins.Extensions;
 using Vortex.Primitives.Console;
@@ -43,6 +43,7 @@ using Vortex.Runtime.AssemblyProcessing;
 using Vortex.Shop;
 using Vortex.Signals;
 using Vortex.Social;
+using Vortex.WebApi.Authentication;
 
 namespace Vortex.Main;
 
@@ -130,7 +131,8 @@ internal class Program
         builder.Services.AddVortexRevisions(builder);
 
         builder.Services.AddHostPlugin<ObservabilityModule>(builder);
-        builder.Services.AddHostPlugin<AuthenticationModule>(builder);
+        builder.Services.AddHostPlugin<PermissionsModule>(builder);
+        builder.Services.AddHostPlugin<WebApiAuthenticationModule>(builder);
         builder.Services.AddHostPlugin<FurnitureModule>(builder);
         builder.Services.AddHostPlugin<CatalogModule>(builder);
         builder.Services.AddHostPlugin<PlayerModule>(builder);

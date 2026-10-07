@@ -3,7 +3,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using FluentAssertions;
 using Microsoft.Extensions.Logging.Abstractions;
-using Vortex.Observability.WordFilter;
+using Vortex.Permissions.WordFilter;
 using Vortex.Primitives.Moderation.WordFilter;
 using Vortex.Tests.Support;
 using Xunit;

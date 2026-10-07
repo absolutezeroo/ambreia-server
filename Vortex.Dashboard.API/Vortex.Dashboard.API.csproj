@@ -37,6 +37,7 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Vortex.Database\Vortex.Database.csproj" />
+    <ProjectReference Include="..\Vortex.Permissions\Vortex.Permissions.csproj" />
     <ProjectReference Include="..\Vortex.Observability\Vortex.Observability.csproj" />
     <ProjectReference Include="..\Vortex.Primitives\Vortex.Primitives.csproj" />
   </ItemGroup>

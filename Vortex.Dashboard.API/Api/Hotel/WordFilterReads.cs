@@ -11,7 +11,7 @@ using Vortex.Dashboard.API.Api.Hotel.Contracts;
 using Vortex.Dashboard.API.Infrastructure;
 using Vortex.Database.Context;
 using Vortex.Database.Entities.Moderation;
-using Vortex.Observability.WordFilter;
+using Vortex.Permissions.WordFilter;
 using Vortex.Primitives.Moderation.WordFilter;
 using Vortex.Primitives.Orleans;
 
