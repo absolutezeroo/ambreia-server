@@ -86,6 +86,19 @@ public sealed class ZoneArrivalTests
     }
 
     [Fact]
+    public async Task AFullZone_TurnsTheExpectedArrivalAway()
+    {
+        RoomHarness harness = await ZoneAsync(Entry("gate", ZoneEntryKinds.Arrival, 3, 3));
+        harness.Grain._state.RoomSnapshot = harness.Grain._state.RoomSnapshot with
+        {
+            PlayersMax = 1,
+        };
+        await EnterAsync(harness);
+
+        (await harness.Grain.ExpectArrivalAsync(new PlayerId(8), "gate")).Should().BeFalse();
+    }
+
+    [Fact]
     public async Task AnUnknownExpectedEntry_IsTheDefaultArrival()
     {
         RoomHarness harness = await ZoneAsync(Entry("gate", ZoneEntryKinds.Arrival, 3, 3));

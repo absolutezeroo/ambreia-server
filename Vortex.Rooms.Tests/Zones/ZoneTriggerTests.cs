@@ -199,6 +199,79 @@ public sealed class ZoneTriggerTests
     }
 
     [Fact]
+    public async Task ArrivingInATeleportingArea_Teleports()
+    {
+        RoomHarness harness = await ZoneAsync(
+            Market(OnEnter("market", new TeleportAction("village", "tower"))) with
+            {
+                Entries =
+                [
+                    Entry("gate", ZoneEntryKinds.Arrival, 4, 4),
+                    Entry("tower", ZoneEntryKinds.Teleport, 1, 1),
+                ],
+            }
+        );
+
+        await EnterAsync(harness);
+
+        (AvatarOf(harness).X, AvatarOf(harness).Y).Should().Be((1, 1));
+    }
+
+    [Fact]
+    public async Task ABarrierThatSendsThePlayerBack_NeverLetsThemIntoTheNextArea()
+    {
+        // Leaving "home" sends the player back into it: the step into "field" never happened.
+        RoomHarness harness = await ZoneAsync(
+            ZoneSamples.Minimal() with
+            {
+                Zones =
+                [
+                    Area("home", "Town", string.Empty, 0, 2),
+                    Area("field", "Town", "Champ", 3, 5),
+                ],
+                Entries = [Entry("back", ZoneEntryKinds.Teleport, 1, 2)],
+                Triggers =
+                [
+                    new ZoneTrigger
+                    {
+                        Id = "barrier",
+                        Type = ZoneTriggerType.LeaveZone,
+                        Target = "home",
+                        Actions = [new TeleportAction("village", "back")],
+                    },
+                ],
+            }
+        );
+        await EnterAsync(harness);
+
+        await WalkAsync(harness, 4, 2);
+
+        (AvatarOf(harness).X, AvatarOf(harness).Y).Should().Be((1, 2));
+        harness
+            .RoomEvents.OfType<ZoneAreaEnteredEvent>()
+            .Select(e => e.AreaId)
+            .Should()
+            .NotContain("field");
+        Bubbles(harness).Should().BeEmpty();
+    }
+
+    [Fact]
+    public async Task ATeleportOntoAHole_LeavesThePlayerWhereTheyAre()
+    {
+        ZoneDocument doc = Market(OnEnter("market", new TeleportAction("village", "pit"))) with
+        {
+            Entries = [Entry("pit", ZoneEntryKinds.Teleport, 1, 4)],
+        };
+        doc.Floor.Tiles[4 * 6 + 1] = new ZoneTile { Hole = true };
+        RoomHarness harness = await ZoneAsync(doc);
+        await EnterAsync(harness);
+
+        await WalkAsync(harness, 4, 2);
+
+        (AvatarOf(harness).X, AvatarOf(harness).Y).Should().Be((4, 2));
+    }
+
+    [Fact]
     public async Task ALoopOfTriggers_StopsAtDepthEight()
     {
         // Entering "a" teleports into "b", entering "b" teleports back into "a": forever, but for

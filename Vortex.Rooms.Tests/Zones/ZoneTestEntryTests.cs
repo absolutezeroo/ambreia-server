@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using FluentAssertions;
+using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 using Orleans;
 using Vortex.Primitives.Players;
@@ -44,7 +45,8 @@ public sealed class ZoneTestEntryTests
                         return null;
                     })
                     : null
-            )
+            ),
+            NullLogger<ZoneTestGrain>.Instance
         );
 
     [Fact]
@@ -60,9 +62,17 @@ public sealed class ZoneTestEntryTests
     }
 
     [Fact]
-    public async Task APickedCell_IsAnnouncedToTheZone()
+    public async Task APickedCell_IsAnnouncedToTheZone_WhenTheTesterSignsIn()
     {
-        await Grain().ExpectAsync(Tester, new RoomId(77), 4, 1);
+        // Announced at sign-in, not when the ticket is made: the room forgets an expected arrival
+        // after ExpectedArrivalTimeoutMs, and a client can take longer than that to load.
+        ZoneTestGrain grain = Grain();
+
+        await grain.ExpectAsync(Tester, new RoomId(77), 4, 1);
+
+        _cells.Should().BeEmpty();
+
+        await grain.TakeAsync(Tester);
 
         _cells.Should().Equal((77L, Tester, 4, 1));
     }

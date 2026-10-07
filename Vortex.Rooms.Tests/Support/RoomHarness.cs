@@ -153,11 +153,12 @@ internal sealed class RoomHarness
                 FakeProxy.Create<IVortexMetrics>(_ => null),
                 FakeProxy.Create<IZoneRoomSource>(call =>
                     call.Method.Name == nameof(IZoneRoomSource.FindPublishedRoomAsync)
-                        ? Task.FromResult<RoomId?>(
-                            ZoneRooms.TryGetValue((string)call.Args![0]!, out RoomId room)
-                                ? room
-                                : null
-                        )
+                        ? ZoneLookup?.Task
+                            ?? Task.FromResult<RoomId?>(
+                                ZoneRooms.TryGetValue((string)call.Args![0]!, out RoomId room)
+                                    ? room
+                                    : null
+                            )
                         : Task.FromResult(Zone)
                 ),
             ]
@@ -317,6 +318,12 @@ internal sealed class RoomHarness
 
     /// <summary>The rooms of the other published zones, by zone key, for passages.</summary>
     public Dictionary<string, RoomId> ZoneRooms { get; } = [];
+
+    /// <summary>When set, every zone lookup answers when this completes: a slow database.</summary>
+    public TaskCompletionSource<RoomId?>? ZoneLookup { get; set; }
+
+    /// <summary>The zone rooms that answer "full" to an announced arrival.</summary>
+    public HashSet<RoomId> FullZones { get; } = [];
 
     /// <summary>Every arrival announced to another zone's room.</summary>
     public List<(RoomId Room, PlayerId Player, string Entry)> ExpectedArrivals { get; } = [];
@@ -619,11 +626,16 @@ internal sealed class RoomHarness
 
                 return FakeProxy.Create<IRoomZone>(inner =>
                 {
+                    if (FullZones.Contains(destination))
+                    {
+                        return Task.FromResult(false);
+                    }
+
                     ExpectedArrivals.Add(
                         (destination, (PlayerId)inner.Args![0]!, (string)inner.Args![1]!)
                     );
 
-                    return null;
+                    return Task.FromResult(true);
                 });
             }
 

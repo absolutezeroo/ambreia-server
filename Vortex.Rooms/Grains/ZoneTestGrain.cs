@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Orleans;
 using Vortex.Primitives.Orleans;
@@ -13,30 +15,77 @@ namespace Vortex.Rooms.Grains;
 
 /// <summary>Pending test-mode sign-ins, by player (plan D18). In memory: a test is a few seconds.</summary>
 [KeepAlive]
-public sealed class ZoneTestGrain(IOptions<RoomConfig> config, IGrainFactory grainFactory)
-    : Grain,
-        IZoneTestGrain
+public sealed class ZoneTestGrain(
+    IOptions<RoomConfig> config,
+    IGrainFactory grainFactory,
+    ILogger<ZoneTestGrain> logger
+) : Grain, IZoneTestGrain
 {
-    private readonly Dictionary<PlayerId, (RoomId Room, DateTime UntilUtc)> _pending = [];
+    private readonly Dictionary<
+        PlayerId,
+        (RoomId Room, int X, int Y, DateTime UntilUtc)
+    > _pending = [];
 
-    public async Task ExpectAsync(PlayerId playerId, RoomId roomId, int x, int y)
+    public Task ExpectAsync(PlayerId playerId, RoomId roomId, int x, int y)
     {
+        DateTime now = DateTime.UtcNow;
+
+        // A tester who never signed in leaves nothing behind for long.
+        foreach (
+            PlayerId stale in _pending
+                .Where(p => p.Value.UntilUtc <= now)
+                .Select(p => p.Key)
+                .ToList()
+        )
+        {
+            _pending.Remove(stale);
+        }
+
         _pending[playerId] = (
             roomId,
-            DateTime.UtcNow.AddMilliseconds(config.Value.ZoneTestEntryTimeoutMs)
+            x,
+            y,
+            now.AddMilliseconds(config.Value.ZoneTestEntryTimeoutMs)
         );
 
-        if (x >= 0 && y >= 0)
-        {
-            await grainFactory.GetRoomZone(roomId).ExpectArrivalAtAsync(playerId, x, y);
-        }
+        return Task.CompletedTask;
     }
 
-    public Task<RoomId?> TakeAsync(PlayerId playerId) =>
-        Task.FromResult<RoomId?>(
-            _pending.Remove(playerId, out (RoomId Room, DateTime UntilUtc) test)
-            && test.UntilUtc > DateTime.UtcNow
-                ? test.Room
-                : null
-        );
+    /// <remarks>
+    /// The cell reaches the room here, at sign-in, rather than when the ticket was made: the room
+    /// forgets an expected arrival after <c>ExpectedArrivalTimeoutMs</c>, and a client can take
+    /// longer than that to load.
+    /// </remarks>
+    public async Task<RoomId?> TakeAsync(PlayerId playerId)
+    {
+        if (
+            !_pending.Remove(playerId, out (RoomId Room, int X, int Y, DateTime UntilUtc) test)
+            || test.UntilUtc <= DateTime.UtcNow
+        )
+        {
+            return null;
+        }
+
+        if (test.X >= 0 && test.Y >= 0)
+        {
+            try
+            {
+                await grainFactory
+                    .GetRoomZone(test.Room)
+                    .ExpectArrivalAtAsync(playerId, test.X, test.Y);
+            }
+            catch (Exception ex)
+            {
+                // The tester still goes to the zone, on its arrival rather than the picked cell.
+                logger.LogWarning(
+                    ex,
+                    "Test entry of player {PlayerId} could not reach room {RoomId}",
+                    playerId.Value,
+                    test.Room.Value
+                );
+            }
+        }
+
+        return test.Room;
+    }
 }

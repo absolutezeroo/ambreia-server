@@ -372,7 +372,14 @@ function sessionCookie(res) {
 
 // Login, or registration when the account does not exist yet: the site's web session. Login first:
 // registration allows 3 attempts per 5 minutes, and a few driver runs in a row used them all up.
-async function webSession() {
+let webSessionOnce = null;
+
+// One login per driver run: the login allows 5 per minute, and a command logs in more than once.
+function webSession() {
+  return (webSessionOnce ??= openWebSession());
+}
+
+async function openWebSession() {
   const base = `http://127.0.0.1:${WEBAPI}`;
   const json = (o) => JSON.stringify(o);
   let res = await request(`${base}/api/public/authentication/login`, {
@@ -660,12 +667,13 @@ async function cmdTravel() {
   await sleep(2500);
   if (movesOnto(2, 2, mark)) fail('Walked onto the closed door.');
   mark = g.frames.length;
+  // Out of reach from the door: the player walks up to it first, then it opens.
   g.send(frame(H.useFurniture, 1, 0));
-  await sleep(500);
+  await sleep(3500);
   g.send(frame(H.moveAvatar, 2, 2));
   await sleep(2500);
   if (!movesOnto(2, 2, mark)) fail('The door, used, did not let the avatar through.');
-  log('Closed door refused the step; UseFurniture opened it; walked onto it.');
+  log('Closed door refused the step; UseFurniture walked up to it and opened it; walked onto it.');
   mark = g.frames.length;
   g.send(frame(H.useFurniture, 2, 0));
   const sign = await g.wait([H.notificationDialog], mark, 5000);

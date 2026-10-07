@@ -24,7 +24,7 @@ public sealed class ZoneTeleportInteraction : IZoneInteraction
 
         if (zone.Document.Passages.FirstOrDefault(p => p.Id == use.Decor.Tag) is { } passage)
         {
-            await use.Room.ZonePassages.TakeAsync(use.Player, passage, ct);
+            await use.Room.ZonePassages.TryUseAsync(use.Player, passage, ct);
         }
         else if (zone.Entries.TryGetValue(use.Decor.Tag, out ZoneEntry? entry))
         {

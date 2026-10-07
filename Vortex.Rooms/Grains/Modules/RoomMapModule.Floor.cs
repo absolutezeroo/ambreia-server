@@ -145,25 +145,24 @@ public sealed partial class RoomMapModule
     /// </remarks>
     public void RecomputeFootprint(IRoomFloorItem item)
     {
-        if (
-            !GetTileIdForSize(
-                item.X,
-                item.Y,
-                item.Rotation,
-                item.Definition.Width,
-                item.Definition.Length,
-                out List<int> tileIds
-            )
-        )
-        {
-            return;
-        }
-
-        foreach (int idx in tileIds)
+        foreach (int idx in Footprint(item))
         {
             ComputeTile(idx);
         }
     }
+
+    /// <summary>The tile indexes the item covers; none when it does not fit the map.</summary>
+    public List<int> Footprint(IRoomFloorItem item) =>
+        GetTileIdForSize(
+            item.X,
+            item.Y,
+            item.Rotation,
+            item.Definition.Width,
+            item.Definition.Length,
+            out List<int> tileIds
+        )
+            ? tileIds
+            : [];
 
     public bool RollFloorItem(IRoomFloorItem item, int tileIdx, Altitude z)
     {

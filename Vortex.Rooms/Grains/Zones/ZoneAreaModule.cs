@@ -40,6 +40,11 @@ public sealed class ZoneAreaModule(RoomGrain roomGrain)
 
         foreach (ZoneArea left in before.Except(now))
         {
+            if (Moved(visitor, now))
+            {
+                return;
+            }
+
             await roomGrain.EventModule.PublishAsync(
                 new ZoneAreaLeftEvent
                 {
@@ -55,6 +60,11 @@ public sealed class ZoneAreaModule(RoomGrain roomGrain)
 
         foreach (ZoneArea area in entered)
         {
+            if (Moved(visitor, now))
+            {
+                return;
+            }
+
             await roomGrain.EventModule.PublishAsync(
                 new ZoneAreaEnteredEvent
                 {
@@ -67,7 +77,7 @@ public sealed class ZoneAreaModule(RoomGrain roomGrain)
         }
 
         // One bubble per step: the highest named area just entered.
-        if (entered.FirstOrDefault(a => a.Name.Length > 0) is { } named)
+        if (!Moved(visitor, now) && entered.FirstOrDefault(a => a.Name.Length > 0) is { } named)
         {
             string rule =
                 zone.Compiled.SafeAt(x, y) ? "Zone sûre"
@@ -84,4 +94,12 @@ public sealed class ZoneAreaModule(RoomGrain roomGrain)
             );
         }
     }
+
+    /// <summary>
+    /// A trigger set off by one of this step's events moved the player (a LeaveZone barrier that
+    /// teleports them back): the newer update has said everything, and the rest of this one
+    /// describes a step that no longer happened.
+    /// </summary>
+    private static bool Moved(ZoneVisitor visitor, IReadOnlyList<ZoneArea> now) =>
+        !ReferenceEquals(visitor.Areas, now);
 }

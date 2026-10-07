@@ -50,6 +50,54 @@ public sealed class ZonePassageTests
     }
 
     [Fact]
+    public async Task ASlowJourney_DoesNotHoldTheRoomsTick()
+    {
+        RoomHarness harness = await ZoneAsync(
+            ZoneSamples.Minimal() with
+            {
+                Passages = [Passage("forest", "gate")],
+            }
+        );
+        harness.ZoneLookup = new TaskCompletionSource<RoomId?>();
+        await EnterAsync(harness);
+
+        Task walk = WalkAsync(harness, 5, 2);
+
+        (await Task.WhenAny(walk, Task.Delay(5000)))
+            .Should()
+            .Be(walk, "the database answering late must not stop every avatar in the room");
+
+        harness.ZoneLookup.SetResult(Forest);
+        await Task.Delay(50);
+
+        Sent<RoomForwardMessageComposer>(harness).Select(f => f.RoomId).Should().Equal(Forest);
+    }
+
+    [Fact]
+    public async Task APassageToAFullZone_KeepsThePlayerAndSaysSo()
+    {
+        RoomHarness harness = await ZoneAsync(
+            ZoneSamples.Minimal() with
+            {
+                Passages = [Passage("forest", "gate")],
+            }
+        );
+        harness.ZoneRooms["forest"] = Forest;
+        harness.FullZones.Add(Forest);
+        await EnterAsync(harness);
+
+        await WalkAsync(harness, 5, 2);
+
+        Sent<RoomForwardMessageComposer>(harness).Should().BeEmpty();
+        Sent<NotificationDialogMessageComposer>(harness)
+            .Should()
+            .ContainSingle()
+            .Which.Parameters.Single()
+            .Value.Should()
+            .Contain("pleine");
+    }
+
+    [Fact]
     public async Task APassageInsideTheZone_MovesThePlayerToTheEntry()
     {
         RoomHarness harness = await ZoneAsync(

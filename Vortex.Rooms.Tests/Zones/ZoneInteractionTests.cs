@@ -1,7 +1,9 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using FluentAssertions;
+using Vortex.Primitives.Rooms;
 using Vortex.Primitives.Rooms.Enums;
 using Vortex.Primitives.Rooms.Events.Zone;
 using Vortex.Primitives.Rooms.Object;
@@ -10,6 +12,7 @@ using Vortex.Primitives.Rooms.Object.Logic.Furniture;
 using Vortex.Primitives.Rooms.Snapshots.Mapping;
 using Vortex.Primitives.World;
 using Vortex.Primitives.World.Layers;
+using Vortex.Primitives.World.Rules;
 using Vortex.Protocol.Messages.Outgoing.Notifications;
 using Vortex.Rooms.Tests.Support;
 using Vortex.Tests.Support;
@@ -26,6 +29,9 @@ public sealed class ZoneInteractionTests
 {
     /// <summary>The decor's room object id: the first floor decor is object 1.</summary>
     private static readonly RoomObjectId Decor = new(1);
+
+    /// <summary>A two-tile gate, 2 x 1.</summary>
+    private const int Gate = 4242;
 
     private readonly List<int> _states = [];
 
@@ -83,8 +89,19 @@ public sealed class ZoneInteractionTests
     private Task<RoomHarness> ZoneWithAsync(ZoneDecorObject furni) =>
         ZoneWithAsync(ZoneSamples.Minimal() with { Decor = [furni] });
 
-    private static Task<bool> UseAsync(RoomHarness harness) =>
-        harness.Grain.UseItemByIdAsync(harness.ContextFor(Walker), Decor, default);
+    /// <summary>A use, then the time to walk up to the furni when it is out of reach.</summary>
+    private static async Task<bool> UseAsync(RoomHarness harness)
+    {
+        bool used = await harness.Grain.UseItemByIdAsync(
+            harness.ContextFor(Walker),
+            Decor,
+            default
+        );
+
+        await harness.TickAvatarsAsync(12);
+
+        return used;
+    }
 
     private static bool Walkable(RoomHarness harness, int x, int y) =>
         harness
@@ -137,6 +154,28 @@ public sealed class ZoneInteractionTests
     }
 
     [Fact]
+    public async Task AWideDoor_DoesNotCloseOnSomeoneInItsFarHalf()
+    {
+        RoomHarness harness = await RoomHarness.CreateZoneAsync(
+            ZoneSamples.Minimal() with
+            {
+                Decor = [Furni("door") with { Definition = Gate, Class = "gate_wide" }],
+            }
+        );
+        harness.Definitions[Gate] = TestDefinitions.Floor(Gate, "gate_wide", 2, 1);
+        harness.LogicFactory = SolidLogic;
+        await harness.Grain.FurniModule.EnsureFurniLoadedAsync(default);
+        harness.LogicFactory = () => FakeProxy.Create<IRoomPlayerLogic>(_ => null);
+        await EnterAsync(harness);
+        await UseAsync(harness);
+        await WalkAsync(harness, 4, 2);
+
+        await UseAsync(harness);
+
+        _states.Should().Equal(1);
+    }
+
+    [Fact]
     public async Task ALever_Flips()
     {
         RoomHarness harness = await ZoneWithAsync(Furni("lever"));
@@ -176,6 +215,50 @@ public sealed class ZoneInteractionTests
         await UseAsync(harness);
 
         (AvatarOf(harness).X, AvatarOf(harness).Y).Should().Be((5, 5));
+    }
+
+    [Fact]
+    public async Task AFurniOutOfReach_IsWalkedUpToBeforeItIsUsed()
+    {
+        RoomHarness harness = await ZoneWithAsync(Furni("lever"));
+
+        await harness.Grain.UseItemByIdAsync(harness.ContextFor(Walker), Decor, default);
+
+        _states.Should().BeEmpty("the player stands three tiles away, at the door");
+
+        await harness.TickAvatarsAsync(12);
+
+        _states.Should().Equal(1);
+        Math.Max(Math.Abs(AvatarOf(harness).X - 3), Math.Abs(AvatarOf(harness).Y - 2))
+            .Should()
+            .BeLessThanOrEqualTo(1);
+    }
+
+    [Fact]
+    public async Task ATeleporterToAConditionalPassage_KeepsThePassagesRules()
+    {
+        RoomHarness harness = await ZoneWithAsync(
+            ZoneSamples.Minimal() with
+            {
+                Decor = [Furni("teleport", "road")],
+                Passages =
+                [
+                    new ZonePassage
+                    {
+                        Id = "road",
+                        Area = [new ZoneCell(5, 5)],
+                        DestinationZone = "forest",
+                        DestinationEntry = "gate",
+                        Conditions = [new PlayerLevelCondition(5, 99)],
+                    },
+                ],
+            }
+        );
+        harness.ZoneRooms["forest"] = new RoomId(77);
+
+        await UseAsync(harness);
+
+        harness.ExpectedArrivals.Should().BeEmpty();
     }
 
     [Fact]

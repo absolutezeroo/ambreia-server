@@ -75,6 +75,9 @@ public class SSOTicketMessageHandler(
                 .GetZoneTestGrain()
                 .TakeAsync(new PlayerId(playerId));
 
+            // All awaited, so a failure of any is seen rather than dropped.
+            await Task.WhenAll(permissionsTask, startRoomTask, testRoomTask).ConfigureAwait(false);
+
             PermissionSet permissions = await permissionsTask.ConfigureAwait(false);
             int startRoomId = await testRoomTask.ConfigureAwait(false) is { } testRoom
                 ? testRoom.Value

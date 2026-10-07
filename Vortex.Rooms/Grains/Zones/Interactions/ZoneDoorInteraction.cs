@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Vortex.Primitives.Rooms.Enums;
@@ -28,17 +29,17 @@ public sealed class ZoneDoorInteraction : IZoneInteraction
             !zone.Doors.TryGetValue(id, out bool isOpen)
             || isOpen == open
             || !open
-                && room._state.TileFlags[room.MapModule.ToIdx(door.X, door.Y)]
-                    .Has(RoomTileFlags.AvatarOccupied)
+                && room.MapModule.Footprint(door)
+                    .Any(idx => room._state.TileFlags[idx].Has(RoomTileFlags.AvatarOccupied))
         )
         {
             return;
         }
 
-        zone.Doors[id] = open;
-
+        // The state first: if it fails, the door is still what the map says it is.
         await door.Logic.SetStateAsync(open ? 1 : 0);
 
+        zone.Doors[id] = open;
         room.MapModule.RecomputeFootprint(door);
     }
 }

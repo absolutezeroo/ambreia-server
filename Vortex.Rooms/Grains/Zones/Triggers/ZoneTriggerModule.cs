@@ -188,15 +188,19 @@ public sealed class ZoneTriggerModule(RoomGrain roomGrain) : IRoomEventListener
     }
 
     private ZoneTriggerContext ContextFor(ZoneRuntimeState zone, PlayerId playerId) =>
-        new(
-            roomGrain,
-            zone,
-            playerId,
-            playerId.Value > 0
-            && roomGrain._state.AvatarsByPlayerId.TryGetValue(playerId, out RoomObjectId objectId)
-            && roomGrain._state.AvatarsByObjectId.TryGetValue(objectId, out IRoomAvatar? avatar)
-                ? avatar as IRoomPlayer
-                : null,
-            Time.GetLocalNow()
-        );
+        new(roomGrain, zone, playerId, PlayerAvatar(playerId), Time.GetLocalNow());
+
+    /// <remarks>
+    /// The arrival step runs inside the avatar's attach, before the room maps the player to it:
+    /// on that step only the object index knows the avatar, and an EnterZone trigger on the
+    /// arrival area must still be able to move them.
+    /// </remarks>
+    private IRoomPlayer? PlayerAvatar(PlayerId playerId) =>
+        playerId.Value <= 0 ? null
+        : roomGrain._state.AvatarsByPlayerId.TryGetValue(playerId, out RoomObjectId objectId)
+        && roomGrain._state.AvatarsByObjectId.TryGetValue(objectId, out IRoomAvatar? avatar)
+            ? avatar as IRoomPlayer
+        : roomGrain
+            ._state.AvatarsByObjectId.Values.OfType<IRoomPlayer>()
+            .FirstOrDefault(p => p.PlayerId == playerId);
 }

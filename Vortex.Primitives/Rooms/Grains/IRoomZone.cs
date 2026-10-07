@@ -13,9 +13,11 @@ public interface IRoomZone : IGrainWithIntegerKey
     /// The next time <paramref name="playerId"/> enters, they arrive on the entry
     /// <paramref name="entryId"/> instead of the default one (a passage, a teleport). Forgotten
     /// after one use or <c>RoomConfig.ExpectedArrivalTimeoutMs</c>; an unknown entry is ignored.
+    /// False, and nothing recorded, when the zone is full: the caller keeps the player rather than
+    /// forward them to an entry that will refuse them.
     /// </summary>
     [AlwaysInterleave]
-    public Task ExpectArrivalAsync(PlayerId playerId, string entryId);
+    public Task<bool> ExpectArrivalAsync(PlayerId playerId, string entryId);
 
     /// <summary>The same for a cell rather than an entry (the editor's test mode, plan D18).</summary>
     [AlwaysInterleave]
