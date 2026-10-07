@@ -17,10 +17,8 @@ using Vortex.Primitives.Moderation.WordFilter;
 using Vortex.Primitives.Observability;
 using Vortex.Primitives.Plugins;
 using Vortex.Primitives.Plugins.Exports;
-using Vortex.Primitives.Shop;
 using Vortex.WebApi.Configuration;
 using Vortex.WebApi.Hosting;
-using Vortex.WebApi.Notifications;
 using Vortex.WebApi.Services;
 using Vortex.WebApi.Session;
 
@@ -77,24 +75,9 @@ public sealed class WebApiPlugin : IVortexPlugin
         // `Required` still takes the hotel down — the guard stops the borrowed host lifetime.
         services.TryAddSingleton<RequiredServiceGuard>();
 
-        // NOT registered as IAccountSessionRevoker: see BindExportsAsync.
         services.TryAddSingleton<WebApiSessionStore>();
         services.TryAddSingleton<IWebApiAuthService, WebApiAuthService>();
         services.TryAddSingleton<IWebApiPlayerService, WebApiPlayerService>();
-        services.TryAddSingleton<IWebApiArticleService, WebApiArticleService>();
-        services.TryAddSingleton<IWebApiProfileService, WebApiProfileService>();
-        services.TryAddSingleton<IWebApiRoomService, WebApiRoomService>();
-        services.TryAddSingleton<IWebApiNotificationService, WebApiNotificationService>();
-        services.TryAddSingleton<IPasswordResetMailer, SmtpPasswordResetMailer>();
-        services.TryAddSingleton<IWebApiPasswordResetService, WebApiPasswordResetService>();
-
-        // Before the sink, which takes it: the pub/sub the open tabs listen on.
-        services.TryAddSingleton<NotificationBroadcaster>();
-
-        // The notification sink. The HANDLERS that fill it need no registration of their own —
-        // PluginManager scans this assembly for IEventHandler<T> and resolves them from this
-        // container, and unregisters them again on unload.
-        services.TryAddSingleton<INotificationSink, NotificationSink>();
 
         // PluginManager starts every IHostedService a plugin registers, and stops it on unload.
         services.AddHostedService<WebApiWebHost>();
@@ -126,33 +109,11 @@ public sealed class WebApiPlugin : IVortexPlugin
 
         // Accounts.
         services.UseHostService<IAccountAuthenticator>();
-        services.UseHostService<IAccountPasswordService>();
-        services.UseHostService<IAccountMfaService>();
-        services.UseHostService<IAccountEmailService>();
-        services.UseHostService<IAccountSafetyLockService>();
-        services.UseHostService<IAccountSafetyQuestionsService>();
-        services.UseHostService<IAccountTrustedLocationService>();
-
-        // The shop: a module this assembly does not reference, reached through the interface in
-        // Vortex.Primitives.
-        services.UseHostService<IShopService>();
     }
 
-    /// <summary>
-    /// Publishes the one thing the hotel needs back: a password change must sign the account out of
-    /// the website too. Into a slot the HOST owns, refilled on every load, so the host never holds
-    /// the session store itself.
-    /// </summary>
-    public Task BindExportsAsync(IExportBinder binder, IServiceProvider services)
-    {
-        ArgumentNullException.ThrowIfNull(binder);
-        ArgumentNullException.ThrowIfNull(services);
-
-        return binder.ExportAsync<IAccountSessionRevoker>(
-            IAccountSessionRevoker.WebApiExportKey,
-            services.GetRequiredService<WebApiSessionStore>()
-        );
-    }
+    /// <summary>Nothing to publish: the host needs nothing back from the website.</summary>
+    public Task BindExportsAsync(IExportBinder binder, IServiceProvider services) =>
+        Task.CompletedTask;
 
     /// <summary>
     /// Nothing to do: <see cref="WebApiWebHost"/> is an <c>IHostedService</c>, and PluginManager has

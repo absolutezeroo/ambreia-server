@@ -7003,7 +7003,6 @@ namespace Vortex.Database.Migrations
             migrationBuilder.Sql(SeedScripts.Read("currencies.sql"));
             migrationBuilder.Sql(SeedScripts.Read("purchasable_clothing.sql"));
             migrationBuilder.Sql(SeedScripts.Read("fishing.sql"));
-            migrationBuilder.Sql(SeedScripts.Read("add_shop.sql"));
             migrationBuilder.Sql(SeedScripts.Read("furni_logic_self_named_rebind.sql"));
             migrationBuilder.Sql(SeedScripts.Read("achievement_client_level_caps.sql"));
             migrationBuilder.Sql(SeedScripts.Read("achievement_catalogue.sql"));

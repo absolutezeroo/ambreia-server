@@ -18,9 +18,6 @@ namespace Vortex.WebApi.Services;
 public sealed class WebApiAuthService(
     IDbContextFactory<VortexDbContext> dbCtxFactory,
     IAccountAuthenticator authenticator,
-    IAccountSafetyQuestionsService questions,
-    IAccountTrustedLocationService locations,
-    IAccountSafetyLockService locks,
     WebApiSessionStore sessions,
     IOptions<WebApiConfig> options,
     ILogger<WebApiAuthService> logger
@@ -31,9 +28,6 @@ public sealed class WebApiAuthService(
 
     private readonly IDbContextFactory<VortexDbContext> _db = dbCtxFactory;
     private readonly IAccountAuthenticator _authenticator = authenticator;
-    private readonly IAccountSafetyQuestionsService _questions = questions;
-    private readonly IAccountTrustedLocationService _locations = locations;
-    private readonly IAccountSafetyLockService _locks = locks;
     private readonly WebApiSessionStore _sessions = sessions;
     private readonly WebApiConfig _config = options.Value;
     private readonly ILogger<WebApiAuthService> _logger = logger;
@@ -41,38 +35,20 @@ public sealed class WebApiAuthService(
     public async Task<(bool Success, string? SessionId, int AccountId, string? Error)> LoginAsync(
         string email,
         string password,
-        string? code,
-        string? address,
-        string? userAgent,
         CancellationToken ct
     )
     {
-        // This used to be its own copy of the password check -- same table, same dummy hash, same
-        // off-thread BCrypt as Vortex.WebApi.Authentication. Two copies is how the second factor came to
-        // guard the admin cookie while the same password still opened this login and, through it, an
-        // SSO ticket into the game. One entry point, and the factor comes with it.
         AccountVerification verification = await _authenticator
-            .VerifyCredentialsAsync(email, password, code, ct)
+            .VerifyCredentialsAsync(email, password, ct)
             .ConfigureAwait(false);
 
-        switch (verification.Outcome)
+        if (!verification.IsVerified)
         {
-            case AccountVerificationOutcome.MfaRequired:
-                return (false, null, 0, "pocket.auth.mfa_required");
-
-            case AccountVerificationOutcome.InvalidCode:
-                _logger.LogWarning("Second factor rejected for {Email}", email.ToLowerInvariant());
-                return (false, null, 0, "pocket.auth.invalid_code");
-
-            case AccountVerificationOutcome.InvalidCredentials:
-                _logger.LogWarning("Login failed for {Email}", email.ToLowerInvariant());
-                return (false, null, 0, "pocket.auth.login_failed");
+            _logger.LogWarning("Login failed for {Email}", email.ToLowerInvariant());
+            return (false, null, 0, "pocket.auth.login_failed");
         }
 
-        bool trusted = await IsTrustedPlaceAsync(verification.AccountId, address, userAgent, ct)
-            .ConfigureAwait(false);
-
-        string sessionId = _sessions.CreateSession(verification.AccountId, trusted);
+        string sessionId = _sessions.CreateSession(verification.AccountId);
         _logger.LogInformation(
             "Account {AccountId} authenticated ({Email})",
             verification.AccountId,
@@ -98,50 +74,14 @@ public sealed class WebApiAuthService(
     /// spend from inside the GAME either — the web session is not where the credits are.
     /// </para>
     /// </remarks>
-    private async Task<bool> IsTrustedPlaceAsync(
-        int accountId,
-        string? address,
-        string? userAgent,
-        CancellationToken ct
-    )
-    {
-        SafetyQuestionsStatus status = await _questions
-            .GetStatusAsync(accountId, ct)
-            .ConfigureAwait(false);
-
-        if (!status.Configured)
-        {
-            return true;
-        }
-
-        string fingerprint = _locations.Fingerprint(address, userAgent);
-
-        if (await _locations.IsTrustedAsync(accountId, fingerprint, ct).ConfigureAwait(false))
-        {
-            return true;
-        }
-
-        await _locks.ArmAsync(accountId, ct).ConfigureAwait(false);
-
-        _logger.LogInformation(
-            "Account {AccountId} signed in from an unrecognised place: safety lock armed",
-            accountId
-        );
-
-        return false;
-    }
-
     public async Task<(bool Success, int AccountId, string? Error)> RegisterAsync(
         string email,
         string password,
         CancellationToken ct
     )
     {
-        // The rule the column already has everywhere else: AccountPasswordService refuses anything
-        // under MINIMUM_LENGTH on change and on reset, so registration was the one writer that let a
-        // one-character password onto an account -- and that account opens the web session, the
-        // password-change route and, through /api/ssotoken, a game login.
-        if (password.Length < PasswordChangeResult.MINIMUM_LENGTH)
+        // The account opens the web session and, through /api/ssotoken, a game login.
+        if (password.Length < AccountPasswordRules.MINIMUM_LENGTH)
         {
             _logger.LogWarning("Registration refused: password too short");
             return (false, 0, "pocket.auth.password_too_short");

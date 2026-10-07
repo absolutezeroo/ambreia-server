@@ -43,7 +43,6 @@ using Vortex.Runtime.AssemblyProcessing;
 using Vortex.Signals;
 using Vortex.Social;
 using Vortex.WebApi.Authentication;
-using Vortex.WebApi.Shop;
 
 namespace Vortex.Main;
 
@@ -142,7 +141,6 @@ internal class Program
         builder.Services.AddHostPlugin<InventoryModule>(builder);
         builder.Services.AddHostPlugin<MarketplaceModule>(builder);
         builder.Services.AddHostPlugin<FishingModule>(builder);
-        builder.Services.AddHostPlugin<ShopModule>(builder);
         // No dashboard or web API module here any more. Both are LOADABLE plugins, found in their
         // folders by PluginManager rather than compiled into this host — registering either here
         // would mean referencing its assembly, which is exactly what makes a plugin impossible to

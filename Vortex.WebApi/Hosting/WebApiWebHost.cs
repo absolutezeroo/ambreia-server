@@ -17,9 +17,7 @@ using Vortex.Primitives.Crypto;
 using Vortex.Primitives.Hosting;
 using Vortex.Primitives.Moderation.WordFilter;
 using Vortex.Primitives.Observability;
-using Vortex.Primitives.Shop;
 using Vortex.WebApi.Configuration;
-using Vortex.WebApi.Notifications;
 using Vortex.WebApi.Services;
 using Vortex.WebApi.Session;
 
@@ -264,39 +262,9 @@ internal sealed class WebApiWebHost(
         services.AddSingleton(rootServices.GetRequiredService<WebApiSessionStore>());
         services.AddSingleton(rootServices.GetRequiredService<IWebApiAuthService>());
         services.AddSingleton(rootServices.GetRequiredService<IWebApiPlayerService>());
-        services.AddSingleton(rootServices.GetRequiredService<IWebApiArticleService>());
-        services.AddSingleton(rootServices.GetRequiredService<IWebApiProfileService>());
-        services.AddSingleton(rootServices.GetRequiredService<IWebApiRoomService>());
-        services.AddSingleton(rootServices.GetRequiredService<IWebApiNotificationService>());
-        services.AddSingleton(rootServices.GetRequiredService<IWebApiPasswordResetService>());
-
-        // The very instance the grains filter with: one compiled list, one reload. No route takes it
-        // as a parameter today — the player service above were built with it in the root
-        // container — but forwarding it is what keeps a future route from building its own.
+        // The very instance the grains filter with: one compiled list, one reload.
         services.AddSingleton(rootServices.GetRequiredService<IWordFilter>());
-
-        // The SAME instance as the sink's, which is the whole point: the sink runs in the root
-        // container and the stream endpoint in this one, and two broadcasters would mean a push
-        // that reaches nobody.
-        services.AddSingleton(rootServices.GetRequiredService<NotificationBroadcaster>());
         services.AddSingleton(rootServices.GetRequiredService<RequiredServiceGuard>());
-        services.AddSingleton(rootServices.GetRequiredService<IAccountPasswordService>());
-        services.AddSingleton(rootServices.GetRequiredService<IAccountMfaService>());
-        services.AddSingleton(rootServices.GetRequiredService<IAccountEmailService>());
-        services.AddSingleton(rootServices.GetRequiredService<IAccountSafetyLockService>());
-        services.AddSingleton(rootServices.GetRequiredService<IAccountSafetyQuestionsService>());
-        services.AddSingleton(rootServices.GetRequiredService<IAccountTrustedLocationService>());
-
-        // The shop. Resolved from the root because it lives in Vortex.WebApi.Shop, which this project does
-        // not reference and does not need to: the endpoints know only IShopService, and which payment
-        // providers exist behind it is settled where the module is registered.
-        services.AddSingleton(rootServices.GetRequiredService<IShopService>());
-
-        // POST /api/user/reports emits an audit record. A service missing from this list is not a
-        // resolution failure at call time — minimal APIs read an unregistered parameter as the
-        // request body, and an endpoint that already has one dies at startup and takes the whole
-        // web API with it.
-        services.AddSingleton(rootServices.GetRequiredService<IAuditSink>());
 
         services.AddSingleton(
             rootServices.GetRequiredService<IDbContextFactory<VortexDbContext>>()

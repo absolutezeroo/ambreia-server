@@ -9,21 +9,18 @@ using Vortex.Primitives.Authentication;
 namespace Vortex.WebApi.Authentication;
 
 /// <summary>
-/// Verifies account credentials against the <c>player_accounts</c> table using BCrypt, then the
-/// second factor when the account has one. Password verification is CPU-bound, so it runs off the
+/// Verifies account credentials against the <c>player_accounts</c> table using BCrypt. Password
+/// verification is CPU-bound, so it runs off the
 /// calling thread. When the account is missing a dummy BCrypt verification is still performed so the
 /// response time does not reveal account existence.
 ///
 /// <para>
 /// This is the only place in the emulator that checks a password, and the architecture-walls check
-/// holds it there. The web API used to keep its own copy -- same table, same dummy hash -- which is
-/// precisely why the second factor reached one login and not the other.
+/// holds it there, so a rule added to the check reaches every login.
 /// </para>
 /// </summary>
-public sealed class AccountAuthenticator(
-    IDbContextFactory<VortexDbContext> dbContextFactory,
-    IAccountMfaService mfa
-) : IAccountAuthenticator
+public sealed class AccountAuthenticator(IDbContextFactory<VortexDbContext> dbContextFactory)
+    : IAccountAuthenticator
 {
     // A pre-computed BCrypt hash of a random value, used to keep timing constant when no account
     // matches the supplied email (prevents user-enumeration via response timing).
@@ -32,7 +29,6 @@ public sealed class AccountAuthenticator(
     public async Task<AccountVerification> VerifyCredentialsAsync(
         string email,
         string password,
-        string? code,
         CancellationToken ct = default
     )
     {
@@ -60,21 +56,6 @@ public sealed class AccountAuthenticator(
         if (!valid || account is null)
         {
             return AccountVerification.InvalidCredentials;
-        }
-
-        // Read off the row already loaded rather than through IsEnabledAsync: one query, and the
-        // factor state cannot change between the two checks.
-        if (!string.IsNullOrWhiteSpace(account.TotpSecret))
-        {
-            if (string.IsNullOrWhiteSpace(code))
-            {
-                return AccountVerification.MfaRequired;
-            }
-
-            if (!await mfa.VerifyAsync(account.Id, code, ct).ConfigureAwait(false))
-            {
-                return AccountVerification.InvalidCode;
-            }
         }
 
         return AccountVerification.Verified(account.Id);

@@ -19,7 +19,6 @@ using Vortex.Database.Entities.Quests;
 using Vortex.Database.Entities.Room;
 using Vortex.Database.Entities.Security;
 using Vortex.Database.Entities.Server;
-using Vortex.Database.Entities.Shop;
 using Vortex.Database.Entities.Web;
 using Vortex.Primitives.Catalog;
 
@@ -42,14 +41,10 @@ public class VortexDbContext(DbContextOptions<VortexDbContext> options)
     public DbSet<CommerceReceiptEntity> CommerceReceipts { get; init; } = null!;
 
     /// <summary>What the hotel sells for real money, and what each bundle pays out.</summary>
-    public DbSet<ShopProductEntity> ShopProducts { get; init; } = null!;
-
     /// <summary>
     /// Every attempt to buy one. The money fields are snapshots of the product's, which is why a
     /// repriced or withdrawn product cannot change what an order already means.
     /// </summary>
-    public DbSet<ShopOrderEntity> ShopOrders { get; init; } = null!;
-
     public DbSet<ItemEventEntity> ItemEvents { get; init; } = null!;
 
     public DbSet<MembershipOfferEntity> MembershipOffers { get; init; } = null!;
