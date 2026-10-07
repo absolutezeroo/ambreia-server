@@ -1,0 +1,1527 @@
+{
+  "type": [
+    "object",
+    "null"
+  ],
+  "properties": {
+    "schemaVersion": {
+      "type": [
+        "string",
+        "integer"
+      ],
+      "pattern": "^-?(?:0|[1-9]\\d*)$"
+    },
+    "settings": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "region": {
+          "type": "string"
+        },
+        "type": {
+          "enum": [
+            "World",
+            "Dungeon",
+            "Lobby",
+            "Housing",
+            "Guild",
+            "Arena"
+          ]
+        },
+        "capacity": {
+          "type": [
+            "string",
+            "integer"
+          ],
+          "pattern": "^-?(?:0|[1-9]\\d*)$"
+        },
+        "recommendedLevel": {
+          "type": [
+            "string",
+            "integer"
+          ],
+          "pattern": "^-?(?:0|[1-9]\\d*)$"
+        },
+        "pvpAllowed": {
+          "type": "boolean"
+        },
+        "music": {
+          "type": "string"
+        },
+        "weather": {
+          "type": "string"
+        },
+        "template": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "id",
+        "name"
+      ],
+      "additionalProperties": false
+    },
+    "floor": {
+      "type": "object",
+      "properties": {
+        "width": {
+          "type": [
+            "string",
+            "integer"
+          ],
+          "pattern": "^-?(?:0|[1-9]\\d*)$"
+        },
+        "length": {
+          "type": [
+            "string",
+            "integer"
+          ],
+          "pattern": "^-?(?:0|[1-9]\\d*)$"
+        },
+        "tiles": {
+          "type": "array",
+          "items": {
+            "type": [
+              "object",
+              "null"
+            ],
+            "properties": {
+              "height": {
+                "type": [
+                  "string",
+                  "integer"
+                ],
+                "pattern": "^-?(?:0|[1-9]\\d*)$"
+              },
+              "walkable": {
+                "type": "boolean"
+              },
+              "hole": {
+                "type": "boolean"
+              },
+              "zone": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "note": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              }
+            },
+            "additionalProperties": false
+          }
+        },
+        "door": {
+          "type": "object",
+          "properties": {
+            "x": {
+              "type": [
+                "string",
+                "integer"
+              ],
+              "pattern": "^-?(?:0|[1-9]\\d*)$"
+            },
+            "y": {
+              "type": [
+                "string",
+                "integer"
+              ],
+              "pattern": "^-?(?:0|[1-9]\\d*)$"
+            }
+          },
+          "additionalProperties": false
+        },
+        "doorDirection": {
+          "type": [
+            "string",
+            "integer"
+          ],
+          "pattern": "^-?(?:0|[1-9]\\d*)$"
+        }
+      },
+      "required": [
+        "width",
+        "length",
+        "tiles",
+        "door"
+      ],
+      "additionalProperties": false
+    },
+    "walls": {
+      "type": "object",
+      "properties": {
+        "visible": {
+          "type": "boolean"
+        },
+        "height": {
+          "type": [
+            "string",
+            "integer"
+          ],
+          "pattern": "^-?(?:0|[1-9]\\d*)$"
+        },
+        "thickness": {
+          "type": [
+            "string",
+            "integer"
+          ],
+          "pattern": "^-?(?:0|[1-9]\\d*)$"
+        }
+      },
+      "additionalProperties": false
+    },
+    "decor": {
+      "type": "array",
+      "items": {
+        "type": [
+          "object",
+          "null"
+        ],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "definition": {
+            "type": [
+              "string",
+              "integer"
+            ],
+            "pattern": "^-?(?:0|[1-9]\\d*)$"
+          },
+          "class": {
+            "type": "string"
+          },
+          "x": {
+            "type": [
+              "string",
+              "integer"
+            ],
+            "pattern": "^-?(?:0|[1-9]\\d*)$"
+          },
+          "y": {
+            "type": [
+              "string",
+              "integer"
+            ],
+            "pattern": "^-?(?:0|[1-9]\\d*)$"
+          },
+          "z": {
+            "type": [
+              "string",
+              "number"
+            ],
+            "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d\u002B)?(?:[eE][\u002B-]?\\d\u002B)?$"
+          },
+          "rotation": {
+            "type": [
+              "string",
+              "integer"
+            ],
+            "pattern": "^-?(?:0|[1-9]\\d*)$"
+          },
+          "state": {
+            "type": [
+              "string",
+              "integer"
+            ],
+            "pattern": "^-?(?:0|[1-9]\\d*)$"
+          },
+          "collision": {
+            "type": [
+              "object",
+              "null"
+            ],
+            "properties": {
+              "walkable": {
+                "type": [
+                  "boolean",
+                  "null"
+                ]
+              },
+              "blocksSight": {
+                "type": [
+                  "boolean",
+                  "null"
+                ]
+              },
+              "height": {
+                "type": [
+                  "string",
+                  "number",
+                  "null"
+                ],
+                "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d\u002B)?(?:[eE][\u002B-]?\\d\u002B)?$"
+              },
+              "seat": {
+                "type": [
+                  "boolean",
+                  "null"
+                ]
+              }
+            },
+            "additionalProperties": false
+          },
+          "interaction": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "tag": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "locked": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "id",
+          "definition",
+          "class",
+          "x",
+          "y"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "wallDecor": {
+      "type": "array",
+      "items": {
+        "type": [
+          "object",
+          "null"
+        ],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "definition": {
+            "type": [
+              "string",
+              "integer"
+            ],
+            "pattern": "^-?(?:0|[1-9]\\d*)$"
+          },
+          "class": {
+            "type": "string"
+          },
+          "side": {
+            "enum": [
+              "Left",
+              "Right"
+            ]
+          },
+          "x": {
+            "type": [
+              "string",
+              "integer"
+            ],
+            "pattern": "^-?(?:0|[1-9]\\d*)$"
+          },
+          "y": {
+            "type": [
+              "string",
+              "integer"
+            ],
+            "pattern": "^-?(?:0|[1-9]\\d*)$"
+          },
+          "offsetX": {
+            "type": [
+              "string",
+              "integer"
+            ],
+            "pattern": "^-?(?:0|[1-9]\\d*)$"
+          },
+          "offsetY": {
+            "type": [
+              "string",
+              "integer"
+            ],
+            "pattern": "^-?(?:0|[1-9]\\d*)$"
+          },
+          "state": {
+            "type": [
+              "string",
+              "integer"
+            ],
+            "pattern": "^-?(?:0|[1-9]\\d*)$"
+          }
+        },
+        "required": [
+          "id",
+          "definition",
+          "class",
+          "side",
+          "x",
+          "y"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "entries": {
+      "type": "array",
+      "items": {
+        "type": [
+          "object",
+          "null"
+        ],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "kind": {
+            "type": "string"
+          },
+          "cell": {
+            "type": "object",
+            "properties": {
+              "x": {
+                "type": [
+                  "string",
+                  "integer"
+                ],
+                "pattern": "^-?(?:0|[1-9]\\d*)$"
+              },
+              "y": {
+                "type": [
+                  "string",
+                  "integer"
+                ],
+                "pattern": "^-?(?:0|[1-9]\\d*)$"
+              }
+            },
+            "additionalProperties": false
+          },
+          "direction": {
+            "type": [
+              "string",
+              "integer"
+            ],
+            "pattern": "^-?(?:0|[1-9]\\d*)$"
+          }
+        },
+        "required": [
+          "id",
+          "kind",
+          "cell"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "passages": {
+      "type": "array",
+      "items": {
+        "type": [
+          "object",
+          "null"
+        ],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "area": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "x": {
+                  "type": [
+                    "string",
+                    "integer"
+                  ],
+                  "pattern": "^-?(?:0|[1-9]\\d*)$"
+                },
+                "y": {
+                  "type": [
+                    "string",
+                    "integer"
+                  ],
+                  "pattern": "^-?(?:0|[1-9]\\d*)$"
+                }
+              },
+              "additionalProperties": false
+            }
+          },
+          "destinationZone": {
+            "type": "string"
+          },
+          "destinationEntry": {
+            "type": "string"
+          },
+          "fade": {
+            "type": "boolean"
+          },
+          "cost": {
+            "type": [
+              "string",
+              "integer"
+            ],
+            "pattern": "^-?(?:0|[1-9]\\d*)$"
+          },
+          "cooldownSeconds": {
+            "type": [
+              "string",
+              "integer"
+            ],
+            "pattern": "^-?(?:0|[1-9]\\d*)$"
+          },
+          "conditions": {
+            "type": "array",
+            "items": {
+              "type": [
+                "object",
+                "null"
+              ],
+              "required": [
+                "kind"
+              ],
+              "anyOf": [
+                {
+                  "properties": {
+                    "kind": {
+                      "const": "PlayerLevel"
+                    },
+                    "min": {
+                      "type": [
+                        "string",
+                        "integer"
+                      ],
+                      "pattern": "^-?(?:0|[1-9]\\d*)$"
+                    },
+                    "max": {
+                      "type": [
+                        "string",
+                        "integer"
+                      ],
+                      "pattern": "^-?(?:0|[1-9]\\d*)$"
+                    }
+                  },
+                  "required": [
+                    "min",
+                    "max"
+                  ],
+                  "additionalProperties": false
+                },
+                {
+                  "properties": {
+                    "kind": {
+                      "const": "QuestState"
+                    },
+                    "quest": {
+                      "type": "string"
+                    },
+                    "state": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "quest",
+                    "state"
+                  ],
+                  "additionalProperties": false
+                },
+                {
+                  "properties": {
+                    "kind": {
+                      "const": "TimeOfDay"
+                    },
+                    "from": {
+                      "type": [
+                        "string",
+                        "integer"
+                      ],
+                      "pattern": "^-?(?:0|[1-9]\\d*)$"
+                    },
+                    "to": {
+                      "type": [
+                        "string",
+                        "integer"
+                      ],
+                      "pattern": "^-?(?:0|[1-9]\\d*)$"
+                    }
+                  },
+                  "required": [
+                    "from",
+                    "to"
+                  ],
+                  "additionalProperties": false
+                },
+                {
+                  "properties": {
+                    "kind": {
+                      "const": "HasItem"
+                    },
+                    "item": {
+                      "type": "string"
+                    },
+                    "count": {
+                      "type": [
+                        "string",
+                        "integer"
+                      ],
+                      "pattern": "^-?(?:0|[1-9]\\d*)$"
+                    }
+                  },
+                  "required": [
+                    "item",
+                    "count"
+                  ],
+                  "additionalProperties": false
+                },
+                {
+                  "properties": {
+                    "kind": {
+                      "const": "Faction"
+                    },
+                    "faction": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "faction"
+                  ],
+                  "additionalProperties": false
+                },
+                {
+                  "properties": {
+                    "kind": {
+                      "const": "ZoneActive"
+                    },
+                    "zone": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "zone"
+                  ],
+                  "additionalProperties": false
+                }
+              ]
+            }
+          }
+        },
+        "required": [
+          "id",
+          "area",
+          "destinationZone",
+          "destinationEntry"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "zones": {
+      "type": "array",
+      "items": {
+        "type": [
+          "object",
+          "null"
+        ],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "kind": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "polygon": {
+            "type": "array",
+            "items": {
+              "$ref": "#/properties/passages/items/properties/area/items"
+            }
+          },
+          "priority": {
+            "type": [
+              "string",
+              "integer"
+            ],
+            "pattern": "^-?(?:0|[1-9]\\d*)$"
+          },
+          "music": {
+            "type": "string"
+          },
+          "recommendedLevel": {
+            "type": [
+              "string",
+              "integer"
+            ],
+            "pattern": "^-?(?:0|[1-9]\\d*)$"
+          },
+          "tags": {
+            "type": "array",
+            "items": {
+              "type": [
+                "string",
+                "null"
+              ]
+            }
+          },
+          "conditions": {
+            "type": "array",
+            "items": {
+              "$ref": "#/properties/passages/items/properties/conditions/items"
+            }
+          }
+        },
+        "required": [
+          "id",
+          "kind",
+          "polygon"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "npcs": {
+      "type": "array",
+      "items": {
+        "type": [
+          "object",
+          "null"
+        ],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "template": {
+            "type": "string"
+          },
+          "name": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "look": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "cell": {
+            "type": "object",
+            "properties": {
+              "x": {
+                "type": [
+                  "string",
+                  "integer"
+                ],
+                "pattern": "^-?(?:0|[1-9]\\d*)$"
+              },
+              "y": {
+                "type": [
+                  "string",
+                  "integer"
+                ],
+                "pattern": "^-?(?:0|[1-9]\\d*)$"
+              }
+            },
+            "additionalProperties": false
+          },
+          "rotation": {
+            "type": [
+              "string",
+              "integer"
+            ],
+            "pattern": "^-?(?:0|[1-9]\\d*)$"
+          },
+          "interactions": {
+            "type": "array",
+            "items": {
+              "type": [
+                "string",
+                "null"
+              ]
+            }
+          },
+          "animation": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "icon": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "appearWhen": {
+            "type": "array",
+            "items": {
+              "$ref": "#/properties/passages/items/properties/conditions/items"
+            }
+          }
+        },
+        "required": [
+          "id",
+          "template",
+          "cell"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "spawns": {
+      "type": "array",
+      "items": {
+        "type": [
+          "object",
+          "null"
+        ],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "area": {
+            "type": "array",
+            "items": {
+              "$ref": "#/properties/passages/items/properties/area/items"
+            }
+          },
+          "monster": {
+            "type": "string"
+          },
+          "min": {
+            "type": [
+              "string",
+              "integer"
+            ],
+            "pattern": "^-?(?:0|[1-9]\\d*)$"
+          },
+          "max": {
+            "type": [
+              "string",
+              "integer"
+            ],
+            "pattern": "^-?(?:0|[1-9]\\d*)$"
+          },
+          "respawnSeconds": {
+            "type": [
+              "string",
+              "integer"
+            ],
+            "pattern": "^-?(?:0|[1-9]\\d*)$"
+          },
+          "wanderRadius": {
+            "type": [
+              "string",
+              "integer"
+            ],
+            "pattern": "^-?(?:0|[1-9]\\d*)$"
+          },
+          "aggroRadius": {
+            "type": [
+              "string",
+              "integer"
+            ],
+            "pattern": "^-?(?:0|[1-9]\\d*)$"
+          },
+          "levelMin": {
+            "type": [
+              "string",
+              "integer"
+            ],
+            "pattern": "^-?(?:0|[1-9]\\d*)$"
+          },
+          "levelMax": {
+            "type": [
+              "string",
+              "integer"
+            ],
+            "pattern": "^-?(?:0|[1-9]\\d*)$"
+          },
+          "aoiActivation": {
+            "type": "boolean"
+          },
+          "group": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "conditions": {
+            "type": "array",
+            "items": {
+              "$ref": "#/properties/passages/items/properties/conditions/items"
+            }
+          }
+        },
+        "required": [
+          "id",
+          "area",
+          "monster"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "resources": {
+      "type": "array",
+      "items": {
+        "type": [
+          "object",
+          "null"
+        ],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "decor": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "cell": {
+            "type": [
+              "object",
+              "null"
+            ],
+            "properties": {
+              "x": {
+                "type": [
+                  "string",
+                  "integer"
+                ],
+                "pattern": "^-?(?:0|[1-9]\\d*)$"
+              },
+              "y": {
+                "type": [
+                  "string",
+                  "integer"
+                ],
+                "pattern": "^-?(?:0|[1-9]\\d*)$"
+              }
+            },
+            "additionalProperties": false
+          },
+          "template": {
+            "type": "string"
+          },
+          "profession": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "level": {
+            "type": [
+              "string",
+              "integer"
+            ],
+            "pattern": "^-?(?:0|[1-9]\\d*)$"
+          },
+          "respawnSeconds": {
+            "type": [
+              "string",
+              "integer"
+            ],
+            "pattern": "^-?(?:0|[1-9]\\d*)$"
+          }
+        },
+        "required": [
+          "id",
+          "template"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "chests": {
+      "type": "array",
+      "items": {
+        "type": [
+          "object",
+          "null"
+        ],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "decor": {
+            "type": "string"
+          },
+          "lootTable": {
+            "type": "string"
+          },
+          "respawnSeconds": {
+            "type": [
+              "string",
+              "integer"
+            ],
+            "pattern": "^-?(?:0|[1-9]\\d*)$"
+          },
+          "perPlayer": {
+            "type": "boolean"
+          },
+          "conditions": {
+            "type": "array",
+            "items": {
+              "$ref": "#/properties/passages/items/properties/conditions/items"
+            }
+          }
+        },
+        "required": [
+          "id",
+          "decor",
+          "lootTable"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "interactives": {
+      "type": "array",
+      "items": {
+        "type": [
+          "object",
+          "null"
+        ],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "decor": {
+            "type": "string"
+          },
+          "interaction": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "decor",
+          "interaction"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "bosses": {
+      "type": "array",
+      "items": {
+        "type": [
+          "object",
+          "null"
+        ],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "arena": {
+            "type": "array",
+            "items": {
+              "$ref": "#/properties/passages/items/properties/area/items"
+            }
+          },
+          "encounter": {
+            "type": "string"
+          },
+          "spawn": {
+            "type": "object",
+            "properties": {
+              "x": {
+                "type": [
+                  "string",
+                  "integer"
+                ],
+                "pattern": "^-?(?:0|[1-9]\\d*)$"
+              },
+              "y": {
+                "type": [
+                  "string",
+                  "integer"
+                ],
+                "pattern": "^-?(?:0|[1-9]\\d*)$"
+              }
+            },
+            "additionalProperties": false
+          },
+          "adds": {
+            "type": "array",
+            "items": {
+              "$ref": "#/properties/passages/items/properties/area/items"
+            }
+          },
+          "doors": {
+            "type": "array",
+            "items": {
+              "type": [
+                "string",
+                "null"
+              ]
+            }
+          }
+        },
+        "required": [
+          "id",
+          "arena",
+          "encounter",
+          "spawn"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "events": {
+      "type": "array",
+      "items": {
+        "type": [
+          "object",
+          "null"
+        ],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "area": {
+            "type": "array",
+            "items": {
+              "$ref": "#/properties/passages/items/properties/area/items"
+            }
+          },
+          "definition": {
+            "type": "string"
+          },
+          "durationSeconds": {
+            "type": [
+              "string",
+              "integer"
+            ],
+            "pattern": "^-?(?:0|[1-9]\\d*)$"
+          },
+          "cooldownSeconds": {
+            "type": [
+              "string",
+              "integer"
+            ],
+            "pattern": "^-?(?:0|[1-9]\\d*)$"
+          }
+        },
+        "required": [
+          "id",
+          "area",
+          "definition"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "triggers": {
+      "type": "array",
+      "items": {
+        "type": [
+          "object",
+          "null"
+        ],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "type": {
+            "enum": [
+              "EnterZone",
+              "LeaveZone",
+              "Interact",
+              "MonsterKilled",
+              "Timer",
+              "QuestState",
+              "PlayerLevel",
+              "ItemOwned"
+            ]
+          },
+          "target": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "conditions": {
+            "type": "array",
+            "items": {
+              "$ref": "#/properties/passages/items/properties/conditions/items"
+            }
+          },
+          "actions": {
+            "type": "array",
+            "items": {
+              "type": [
+                "object",
+                "null"
+              ],
+              "required": [
+                "kind"
+              ],
+              "anyOf": [
+                {
+                  "properties": {
+                    "kind": {
+                      "const": "StartQuest"
+                    },
+                    "quest": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "quest"
+                  ],
+                  "additionalProperties": false
+                },
+                {
+                  "properties": {
+                    "kind": {
+                      "const": "ShowDialogue"
+                    },
+                    "dialogue": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "dialogue"
+                  ],
+                  "additionalProperties": false
+                },
+                {
+                  "properties": {
+                    "kind": {
+                      "const": "ActivateZone"
+                    },
+                    "zone": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "zone"
+                  ],
+                  "additionalProperties": false
+                },
+                {
+                  "properties": {
+                    "kind": {
+                      "const": "DeactivateZone"
+                    },
+                    "zone": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "zone"
+                  ],
+                  "additionalProperties": false
+                },
+                {
+                  "properties": {
+                    "kind": {
+                      "const": "Teleport"
+                    },
+                    "zone": {
+                      "type": "string"
+                    },
+                    "entry": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "zone",
+                    "entry"
+                  ],
+                  "additionalProperties": false
+                },
+                {
+                  "properties": {
+                    "kind": {
+                      "const": "SpawnGroup"
+                    },
+                    "spawn": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "spawn"
+                  ],
+                  "additionalProperties": false
+                },
+                {
+                  "properties": {
+                    "kind": {
+                      "const": "PlaySound"
+                    },
+                    "sound": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "sound"
+                  ],
+                  "additionalProperties": false
+                },
+                {
+                  "properties": {
+                    "kind": {
+                      "const": "OpenDoor"
+                    },
+                    "decor": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "decor"
+                  ],
+                  "additionalProperties": false
+                }
+              ]
+            }
+          },
+          "cooldownMs": {
+            "type": [
+              "string",
+              "integer"
+            ],
+            "pattern": "^-?(?:0|[1-9]\\d*)$"
+          },
+          "active": {
+            "type": "boolean"
+          },
+          "visibleInDebug": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "id",
+          "type"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "ambience": {
+      "type": "object",
+      "properties": {
+        "tint": {
+          "type": "string"
+        },
+        "brightness": {
+          "type": [
+            "string",
+            "integer"
+          ],
+          "pattern": "^-?(?:0|[1-9]\\d*)$"
+        },
+        "dayNight": {
+          "type": "boolean"
+        },
+        "lights": {
+          "type": "array",
+          "items": {
+            "type": [
+              "object",
+              "null"
+            ],
+            "properties": {
+              "id": {
+                "type": "string"
+              },
+              "cell": {
+                "type": "object",
+                "properties": {
+                  "x": {
+                    "type": [
+                      "string",
+                      "integer"
+                    ],
+                    "pattern": "^-?(?:0|[1-9]\\d*)$"
+                  },
+                  "y": {
+                    "type": [
+                      "string",
+                      "integer"
+                    ],
+                    "pattern": "^-?(?:0|[1-9]\\d*)$"
+                  }
+                },
+                "additionalProperties": false
+              },
+              "color": {
+                "type": "string"
+              },
+              "radius": {
+                "type": [
+                  "string",
+                  "integer"
+                ],
+                "pattern": "^-?(?:0|[1-9]\\d*)$"
+              }
+            },
+            "required": [
+              "id",
+              "cell",
+              "color",
+              "radius"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "sounds": {
+          "type": "array",
+          "items": {
+            "type": [
+              "object",
+              "null"
+            ],
+            "properties": {
+              "id": {
+                "type": "string"
+              },
+              "cell": {
+                "type": "object",
+                "properties": {
+                  "x": {
+                    "type": [
+                      "string",
+                      "integer"
+                    ],
+                    "pattern": "^-?(?:0|[1-9]\\d*)$"
+                  },
+                  "y": {
+                    "type": [
+                      "string",
+                      "integer"
+                    ],
+                    "pattern": "^-?(?:0|[1-9]\\d*)$"
+                  }
+                },
+                "additionalProperties": false
+              },
+              "sound": {
+                "type": "string"
+              },
+              "radius": {
+                "type": [
+                  "string",
+                  "integer"
+                ],
+                "pattern": "^-?(?:0|[1-9]\\d*)$"
+              },
+              "volume": {
+                "type": [
+                  "string",
+                  "integer"
+                ],
+                "pattern": "^-?(?:0|[1-9]\\d*)$"
+              },
+              "loop": {
+                "type": "boolean"
+              }
+            },
+            "required": [
+              "id",
+              "cell",
+              "sound",
+              "radius",
+              "volume",
+              "loop"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "effects": {
+          "type": "array",
+          "items": {
+            "type": [
+              "object",
+              "null"
+            ],
+            "properties": {
+              "id": {
+                "type": "string"
+              },
+              "cell": {
+                "type": "object",
+                "properties": {
+                  "x": {
+                    "type": [
+                      "string",
+                      "integer"
+                    ],
+                    "pattern": "^-?(?:0|[1-9]\\d*)$"
+                  },
+                  "y": {
+                    "type": [
+                      "string",
+                      "integer"
+                    ],
+                    "pattern": "^-?(?:0|[1-9]\\d*)$"
+                  }
+                },
+                "additionalProperties": false
+              },
+              "effect": {
+                "type": "string"
+              },
+              "scale": {
+                "type": [
+                  "string",
+                  "number"
+                ],
+                "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d\u002B)?(?:[eE][\u002B-]?\\d\u002B)?$"
+              },
+              "radius": {
+                "type": [
+                  "string",
+                  "integer"
+                ],
+                "pattern": "^-?(?:0|[1-9]\\d*)$"
+              }
+            },
+            "required": [
+              "id",
+              "cell",
+              "effect",
+              "scale",
+              "radius"
+            ],
+            "additionalProperties": false
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "prefabs": {
+      "type": "array",
+      "items": {
+        "type": [
+          "object",
+          "null"
+        ],
+        "properties": {
+          "prefab": {
+            "type": "string"
+          },
+          "version": {
+            "type": [
+              "string",
+              "integer"
+            ],
+            "pattern": "^-?(?:0|[1-9]\\d*)$"
+          }
+        },
+        "required": [
+          "prefab",
+          "version"
+        ],
+        "additionalProperties": false
+      }
+    }
+  },
+  "required": [
+    "settings",
+    "floor"
+  ],
+  "additionalProperties": false
+}
