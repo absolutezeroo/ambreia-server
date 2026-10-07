@@ -1,3 +1,4 @@
+using System.Collections.Concurrent;
 using System.Data.Common;
 using System.Linq;
 using System.Text.Json;
@@ -17,12 +18,22 @@ public sealed class ZoneRoomSource(
     ILogger<ZoneRoomSource> logger
 ) : IZoneRoomSource
 {
+    /// <summary>
+    /// The room of each published zone, once found. Nothing invalidates it because nothing has to:
+    /// a zone's room is set when the zone is made, and a published zone stays published (rolling
+    /// back publishes an older version). "Not published yet" is never remembered.
+    /// </summary>
+    private readonly ConcurrentDictionary<string, RoomId> _publishedRooms = new();
+
     public async Task<RoomId?> FindPublishedRoomAsync(string zoneKey, CancellationToken ct)
     {
+        if (_publishedRooms.TryGetValue(zoneKey, out RoomId known))
+        {
+            return known;
+        }
+
         await using VortexDbContext ctx = await db.CreateDbContextAsync(ct).ConfigureAwait(false);
 
-        // ponytail: one indexed lookup per passage taken; a cache invalidated on publication when
-        // passages get busy.
         int? roomId = await ctx
             .Zones.AsNoTracking()
             .Where(z => z.Key == zoneKey && z.PublishedVersion != null)
@@ -30,7 +41,12 @@ public sealed class ZoneRoomSource(
             .FirstOrDefaultAsync(ct)
             .ConfigureAwait(false);
 
-        return roomId is { } id ? new RoomId(id) : null;
+        if (roomId is not { } id)
+        {
+            return null;
+        }
+
+        return _publishedRooms[zoneKey] = new RoomId(id);
     }
 
     public async Task<ZoneDocument?> GetPublishedAsync(RoomId roomId, CancellationToken ct)

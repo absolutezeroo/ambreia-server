@@ -8,6 +8,7 @@ using Vortex.Primitives.Rooms.Object.Avatars;
 using Vortex.Primitives.Rooms.Object.Logic.Avatars;
 using Vortex.Primitives.World;
 using Vortex.Primitives.World.Layers;
+using Vortex.Rooms.Grains.Zones;
 using Vortex.Rooms.Tests.Support;
 using Vortex.Tests.Support;
 using Xunit;
@@ -96,6 +97,23 @@ public sealed class ZoneArrivalTests
         await EnterAsync(harness);
 
         (await harness.Grain.ExpectArrivalAsync(new PlayerId(8), "gate")).Should().BeFalse();
+    }
+
+    [Fact]
+    public async Task AnExpectationNobodyHonoured_IsDroppedLater()
+    {
+        // A passage announced a player who never came: the room does not keep them forever.
+        RoomHarness harness = await ZoneAsync(Entry("gate", ZoneEntryKinds.Arrival, 3, 3));
+        ZoneRuntimeState zone = harness.Grain._state.ZoneRuntime!;
+        await harness.Grain.ExpectArrivalAsync(new PlayerId(8), "gate");
+        zone.ExpectedArrivals[new PlayerId(8)] = zone.ExpectedArrivals[new PlayerId(8)] with
+        {
+            ExpiresAtMs = 0,
+        };
+
+        await harness.Grain.ExpectArrivalAsync(new PlayerId(9), "gate");
+
+        zone.ExpectedArrivals.Keys.Should().Equal(new PlayerId(9));
     }
 
     [Fact]

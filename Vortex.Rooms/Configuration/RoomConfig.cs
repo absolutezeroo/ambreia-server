@@ -57,6 +57,9 @@ public class RoomConfig
     /// <summary>How deep zone triggers may set each other off before the chain is cut (plan D15).</summary>
     public int ZoneTriggerMaxDepth { get; init; } = 8;
 
+    /// <summary>How many trigger runs one event may set off in all, across every depth (plan D15).</summary>
+    public int ZoneTriggerChainBudget { get; init; } = 64;
+
     /// <summary>How long the editor's test mode waits for the tester's client to sign in (plan D18).</summary>
     public int ZoneTestEntryTimeoutMs { get; init; } = 120000;
 

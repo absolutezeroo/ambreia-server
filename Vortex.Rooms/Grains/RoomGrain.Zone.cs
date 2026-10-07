@@ -27,9 +27,7 @@ public sealed partial class RoomGrain
     }
 
     public Task<ZoneCellRules?> GetRulesAtAsync(int x, int y) =>
-        Task.FromResult(
-            _state.ZoneRuntime is { } zone ? ZoneRuleBook.At(zone, x, y) : (ZoneCellRules?)null
-        );
+        Task.FromResult(_state.ZoneRuntime is { } zone ? zone.RulesAt(x, y) : (ZoneCellRules?)null);
 
     public async Task<RoomId?> InstanceForAsync(PlayerId playerId)
     {

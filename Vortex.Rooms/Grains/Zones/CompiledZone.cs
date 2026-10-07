@@ -7,7 +7,8 @@ namespace Vortex.Rooms.Grains.Zones;
 
 /// <summary>
 /// A published zone document read once for the room's lifetime: what each cell is part of
-/// (areas by priority, passage), the entries, the triggers by type, and the decor's object ids.
+/// (areas by priority, passage), the entries, the active triggers by type and target, the clocks,
+/// and the decor's object ids.
 /// Immutable: a republication builds a new one with the new activation.
 /// </summary>
 public sealed class CompiledZone
@@ -33,9 +34,30 @@ public sealed class CompiledZone
         AreaTiles = areaTiles;
         Entries = document.Entries.GroupBy(e => e.Id).ToDictionary(g => g.Key, g => g.First());
         DefaultArrival = document.Entries.FirstOrDefault(e => e.Kind == ZoneEntryKinds.Arrival);
-        Triggers = document.Triggers.ToLookup(t => t.Type);
+        _triggersByTarget = document
+            .Triggers.Where(t => t.Active)
+            .ToLookup(t => (t.Type, t.Target ?? string.Empty));
+        Timers =
+        [
+            .. document
+                .Triggers.Where(t => t.Active && t.Type == ZoneTriggerType.Timer)
+                .Select(t => (Trigger: t, Seconds: int.TryParse(t.Target, out int s) ? s : 0))
+                .Where(t => t.Seconds > 0),
+        ];
         Areas = document.Zones.GroupBy(a => a.Id).ToDictionary(g => g.Key, g => g.First());
     }
+
+    private readonly ILookup<(ZoneTriggerType Type, string Target), ZoneTrigger> _triggersByTarget;
+
+    /// <summary>
+    /// The active triggers of this type aimed at this target, in document order: what an area
+    /// event or a furni use looks up, without scanning every trigger each time.
+    /// </summary>
+    public IEnumerable<ZoneTrigger> TriggersFor(ZoneTriggerType type, string target) =>
+        _triggersByTarget[(type, target)];
+
+    /// <summary>The active clock triggers and their period in seconds; a bad period is left out.</summary>
+    public IReadOnlyList<(ZoneTrigger Trigger, int Seconds)> Timers { get; }
 
     public ZoneDocument Document { get; }
 
@@ -47,8 +69,6 @@ public sealed class CompiledZone
 
     /// <summary>Where a player arrives when nothing names an entry: the first "arrival".</summary>
     public ZoneEntry? DefaultArrival { get; }
-
-    public ILookup<ZoneTriggerType, ZoneTrigger> Triggers { get; }
 
     public IReadOnlyDictionary<string, ZoneArea> Areas { get; }
 

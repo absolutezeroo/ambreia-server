@@ -21,11 +21,15 @@ namespace Vortex.Rooms.Grains.Zones.Triggers;
 /// The zone's triggers (plan D11–D15), listening on the room's event bus: an area entered or left,
 /// a furni used, or the clock. A trigger fires when its target matches, it is active, its cooldown
 /// is over (per player, or global for the clock) and every condition holds; its actions run in
-/// order. A chain of triggers setting each other off stops at <c>RoomConfig.ZoneTriggerMaxDepth</c>.
+/// order. A chain of triggers setting each other off stops at <c>RoomConfig.ZoneTriggerMaxDepth</c>
+/// deep or after <c>RoomConfig.ZoneTriggerChainBudget</c> runs, whichever comes first.
 /// </summary>
 public sealed class ZoneTriggerModule(RoomGrain roomGrain) : IRoomEventListener
 {
     private int _depth;
+
+    /// <summary>Trigger runs in the chain under way: set off by one event, reset by the next.</summary>
+    private int _runs;
 
     /// <summary>Server time for TimeOfDay and the clock; a test sets its own.</summary>
     public TimeProvider Time { get; set; } = TimeProvider.System;
@@ -47,20 +51,16 @@ public sealed class ZoneTriggerModule(RoomGrain roomGrain) : IRoomEventListener
     /// <summary>The clock: each Timer trigger fires once per period of Target seconds.</summary>
     public async Task TickAsync(CancellationToken ct)
     {
-        if (roomGrain._state.ZoneRuntime is not { } zone)
+        // Twenty times a second per room: a zone without a clock stops at the first check.
+        if (roomGrain._state.ZoneRuntime is not { Compiled.Timers.Count: > 0 } zone)
         {
             return;
         }
 
         long now = Time.GetUtcNow().ToUnixTimeMilliseconds();
 
-        foreach (ZoneTrigger timer in zone.Compiled.Triggers[ZoneTriggerType.Timer])
+        foreach ((ZoneTrigger timer, int seconds) in zone.Compiled.Timers)
         {
-            if (!timer.Active || !int.TryParse(timer.Target, out int seconds) || seconds <= 0)
-            {
-                continue;
-            }
-
             if (!zone.TimerNextAtMs.TryGetValue(timer.Id, out long next))
             {
                 zone.TimerNextAtMs[timer.Id] = now + seconds * 1000L;
@@ -97,12 +97,10 @@ public sealed class ZoneTriggerModule(RoomGrain roomGrain) : IRoomEventListener
             return Task.CompletedTask;
         }
 
-        ZoneTrigger[] matching =
-        [
-            .. zone.Compiled.Triggers[type].Where(t => t.Active && t.Target == target),
-        ];
+        // Most steps and uses match no trigger: the lookup answers without allocating.
+        IEnumerable<ZoneTrigger> matching = zone.Compiled.TriggersFor(type, target);
 
-        return matching.Length == 0
+        return !matching.Any()
             ? Task.CompletedTask
             : GuardedAsync(async () =>
             {
@@ -115,6 +113,12 @@ public sealed class ZoneTriggerModule(RoomGrain roomGrain) : IRoomEventListener
 
     private async Task GuardedAsync(Func<Task> run)
     {
+        // An event from outside any trigger starts a new chain, with a fresh budget.
+        if (_depth == 0)
+        {
+            _runs = 0;
+        }
+
         if (_depth >= roomGrain._roomConfig.ZoneTriggerMaxDepth)
         {
             roomGrain._logger.LogWarning(
@@ -145,13 +149,27 @@ public sealed class ZoneTriggerModule(RoomGrain roomGrain) : IRoomEventListener
         CancellationToken ct
     )
     {
-        Dictionary<string, long> cooldowns =
-            playerId.Value > 0 && zone.Visitors.TryGetValue(playerId, out ZoneVisitor? visitor)
-                ? visitor.TriggerReadyAtMs
-                : zone.TriggerReadyAtMs;
+        // Plan D15: depth alone lets N triggers per area run N^depth times; the chain set off by
+        // one event also has a budget of runs.
+        if (++_runs > roomGrain._roomConfig.ZoneTriggerChainBudget)
+        {
+            if (_runs == roomGrain._roomConfig.ZoneTriggerChainBudget + 1)
+            {
+                roomGrain._logger.LogWarning(
+                    "Zone triggers in room {RoomId} ran {Runs} times for one event; the chain stops here",
+                    roomGrain.RoomId.Value,
+                    roomGrain._roomConfig.ZoneTriggerChainBudget
+                );
+            }
+
+            return;
+        }
+
+        // Per player; what nobody set off (a clock) cools down for everyone, under player 0.
+        string cooldown = $"trigger:{trigger.Id}";
         long now = roomGrain.NowMs();
 
-        if (cooldowns.GetValueOrDefault(trigger.Id) > now)
+        if (zone.Cooldowns.IsCooling(playerId, cooldown, now))
         {
             return;
         }
@@ -165,7 +183,7 @@ public sealed class ZoneTriggerModule(RoomGrain roomGrain) : IRoomEventListener
 
         if (trigger.CooldownMs > 0)
         {
-            cooldowns[trigger.Id] = now + trigger.CooldownMs;
+            zone.Cooldowns.Start(playerId, cooldown, now + trigger.CooldownMs, now);
         }
 
         foreach (ZoneAction action in trigger.Actions)

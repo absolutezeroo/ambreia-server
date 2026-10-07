@@ -4,7 +4,10 @@ using Vortex.Primitives.World.Rules;
 
 namespace Vortex.Rooms.Grains.Zones.Triggers.Actions;
 
-/// <summary>Silences an area: nobody enters or leaves it, so none of its triggers fire.</summary>
+/// <summary>
+/// Switches an area off: it no longer rules its cells, no one enters it, and those inside leave it
+/// at their next step (one last LeaveZone); its triggers stay silent until it is switched on.
+/// </summary>
 public sealed class DeactivateZoneExecutor : ZoneActionExecutor<DeactivateZoneAction>
 {
     protected override Task RunAsync(
@@ -13,7 +16,7 @@ public sealed class DeactivateZoneExecutor : ZoneActionExecutor<DeactivateZoneAc
         CancellationToken ct
     )
     {
-        ctx.Zone.InactiveAreas.Add(action.Zone);
+        ctx.Zone.SetAreaActive(action.Zone, false);
 
         return Task.CompletedTask;
     }

@@ -1,6 +1,8 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Vortex.Primitives.Players;
+using Vortex.Primitives.World;
 using Vortex.Primitives.World.Layers;
 
 namespace Vortex.Rooms.Grains.Zones;
@@ -37,17 +39,58 @@ public sealed class ZoneRuntimeState(CompiledZone compiled)
     /// <summary>The entry each expected player arrives on, and when the expectation lapses.</summary>
     public Dictionary<PlayerId, ZoneExpectedArrival> ExpectedArrivals { get; } = [];
 
+    private readonly HashSet<string> _inactiveAreas = [];
+
+    /// <summary>
+    /// Per cell, worked out on first use and kept until an area is switched: what a step, a bubble
+    /// or (with the RPG) every attack asks, without filtering or allocating each time.
+    /// </summary>
+    private readonly IReadOnlyList<ZoneArea>?[] _activeAreasAt = new IReadOnlyList<ZoneArea>?[
+        compiled.Width * compiled.Length
+    ];
+    private readonly ZoneCellRules?[] _rulesAt = new ZoneCellRules?[
+        compiled.Width * compiled.Length
+    ];
+
     /// <summary>Areas switched off by an action: nobody enters or leaves them (plan D13).</summary>
-    public HashSet<string> InactiveAreas { get; } = [];
+    public IReadOnlySet<string> InactiveAreas => _inactiveAreas;
+
+    /// <summary>Switches an area on or off (ActivateZone / DeactivateZone); the cells forget what they knew.</summary>
+    public void SetAreaActive(string areaId, bool active)
+    {
+        if (active ? _inactiveAreas.Remove(areaId) : _inactiveAreas.Add(areaId))
+        {
+            Array.Clear(_activeAreasAt);
+            Array.Clear(_rulesAt);
+        }
+    }
 
     /// <summary>The areas covering (x, y) that are switched on, highest priority first.</summary>
-    public IReadOnlyList<ZoneArea> ActiveAreasAt(int x, int y) =>
-        InactiveAreas.Count == 0
-            ? Compiled.AreasAt(x, y)
-            : [.. Compiled.AreasAt(x, y).Where(a => !InactiveAreas.Contains(a.Id))];
+    public IReadOnlyList<ZoneArea> ActiveAreasAt(int x, int y)
+    {
+        if (_inactiveAreas.Count == 0 || !Inside(x, y))
+        {
+            return Compiled.AreasAt(x, y);
+        }
 
-    /// <summary>When each trigger fires again for everyone (the clock's, and those set off by nobody).</summary>
-    public Dictionary<string, long> TriggerReadyAtMs { get; } = [];
+        int cell = y * Compiled.Width + x;
+
+        return _activeAreasAt[cell] ??= [
+            .. Compiled.AreasAt(x, y).Where(a => !_inactiveAreas.Contains(a.Id)),
+        ];
+    }
+
+    /// <summary>What (x, y) allows (plan D24), worked out once per cell and area switch.</summary>
+    public ZoneCellRules RulesAt(int x, int y) =>
+        Inside(x, y)
+            ? _rulesAt[y * Compiled.Width + x] ??= ZoneRuleBook.At(this, x, y)
+            : ZoneRuleBook.At(this, x, y);
+
+    private bool Inside(int x, int y) =>
+        x >= 0 && y >= 0 && x < Compiled.Width && y < Compiled.Length;
+
+    /// <summary>When each passage and trigger works again, per player; outlives the player's visit.</summary>
+    public ZoneCooldowns Cooldowns { get; } = new();
 
     /// <summary>When each Timer trigger is next due, in epoch milliseconds.</summary>
     public Dictionary<string, long> TimerNextAtMs { get; } = [];

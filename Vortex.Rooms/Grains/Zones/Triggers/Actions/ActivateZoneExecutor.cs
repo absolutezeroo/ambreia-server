@@ -13,7 +13,7 @@ public sealed class ActivateZoneExecutor : ZoneActionExecutor<ActivateZoneAction
         CancellationToken ct
     )
     {
-        ctx.Zone.InactiveAreas.Remove(action.Zone);
+        ctx.Zone.SetAreaActive(action.Zone, true);
 
         return Task.CompletedTask;
     }

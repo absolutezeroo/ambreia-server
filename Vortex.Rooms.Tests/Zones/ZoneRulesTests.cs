@@ -146,9 +146,36 @@ public sealed class ZoneRulesTests
     public void ASwitchedOffArea_RulesNothing()
     {
         ZoneRuntimeState zone = Zone(true, Area("inn", ZoneAreaKinds.Safe, "Auberge", 0, 2));
-        zone.InactiveAreas.Add("inn");
+        zone.SetAreaActive("inn", false);
 
         ZoneRuleBook.At(zone, 1, 1).Safe.Should().BeFalse();
         ZoneRuleBook.At(zone, 1, 1).Pvp.Should().BeTrue();
+    }
+
+    [Fact]
+    public void TheCachedRules_FollowAnAreaSwitchedOffAndOnAgain()
+    {
+        // Worked out once per cell, then read: a switch must not leave the old answer behind.
+        ZoneRuntimeState zone = Zone(true, Area("inn", ZoneAreaKinds.Safe, "Auberge", 0, 2));
+
+        zone.RulesAt(1, 1).Safe.Should().BeTrue();
+
+        zone.SetAreaActive("inn", false);
+
+        zone.RulesAt(1, 1).Safe.Should().BeFalse();
+        zone.ActiveAreasAt(1, 1).Should().BeEmpty();
+
+        zone.SetAreaActive("inn", true);
+
+        zone.RulesAt(1, 1).Safe.Should().BeTrue();
+        zone.ActiveAreasAt(1, 1).Should().ContainSingle();
+    }
+
+    [Fact]
+    public void TheSameCell_IsWorkedOutOnce()
+    {
+        ZoneRuntimeState zone = Zone(true, Area("inn", ZoneAreaKinds.Safe, "Auberge", 0, 2));
+
+        zone.RulesAt(1, 1).Should().BeSameAs(zone.RulesAt(1, 1));
     }
 }

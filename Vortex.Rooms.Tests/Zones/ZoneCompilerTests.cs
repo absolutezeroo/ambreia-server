@@ -119,12 +119,48 @@ public sealed class ZoneCompilerTests
     }
 
     [Fact]
-    public void TriggersAreGroupedByWhatTheyListenTo()
+    public void TriggersAreIndexedByWhatTheyListenTo()
     {
         CompiledZone zone = ZoneCompiler.Compile(ZoneSamples.EveryLayer());
 
-        zone.Triggers[ZoneTriggerType.EnterZone].Should().NotBeEmpty();
-        zone.Triggers[ZoneTriggerType.Timer].Should().BeEmpty();
+        zone.TriggersFor(ZoneTriggerType.EnterZone, "z_safe").Should().ContainSingle();
+        zone.TriggersFor(ZoneTriggerType.EnterZone, "elsewhere").Should().BeEmpty();
+        zone.Timers.Should().BeEmpty();
+    }
+
+    [Fact]
+    public void AnInactiveTriggerOrABadPeriod_IsNotIndexed()
+    {
+        CompiledZone zone = ZoneCompiler.Compile(
+            ZoneSamples.EveryLayer() with
+            {
+                Triggers =
+                [
+                    new ZoneTrigger
+                    {
+                        Id = "off",
+                        Type = ZoneTriggerType.EnterZone,
+                        Target = "z_safe",
+                        Active = false,
+                    },
+                    new ZoneTrigger
+                    {
+                        Id = "bell",
+                        Type = ZoneTriggerType.Timer,
+                        Target = "soon",
+                    },
+                    new ZoneTrigger
+                    {
+                        Id = "clock",
+                        Type = ZoneTriggerType.Timer,
+                        Target = "30",
+                    },
+                ],
+            }
+        );
+
+        zone.TriggersFor(ZoneTriggerType.EnterZone, "z_safe").Should().BeEmpty();
+        zone.Timers.Should().ContainSingle().Which.Seconds.Should().Be(30);
     }
 
     private static ZoneArea Area(string id, int priority, ZoneCell[] polygon) =>

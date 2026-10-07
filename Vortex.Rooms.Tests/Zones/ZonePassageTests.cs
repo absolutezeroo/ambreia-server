@@ -152,6 +152,31 @@ public sealed class ZonePassageTests
     }
 
     [Fact]
+    public async Task APassageCooldown_OutlivesLeavingTheRoom()
+    {
+        RoomHarness harness = await ZoneAsync(
+            ZoneSamples.Minimal() with
+            {
+                Passages = [Passage("forest", "gate") with { CooldownSeconds = 600 }],
+            }
+        );
+        harness.ZoneRooms["forest"] = Forest;
+        await EnterAsync(harness);
+        await WalkAsync(harness, 5, 2);
+
+        await harness.Grain.RemoveAvatarFromPlayerAsync(
+            harness.ContextFor(Walker),
+            Walker,
+            default
+        );
+        await EnterAsync(harness);
+        await WalkAsync(harness, 4, 2);
+        await WalkAsync(harness, 5, 2);
+
+        Sent<RoomForwardMessageComposer>(harness).Should().ContainSingle();
+    }
+
+    [Fact]
     public async Task APassageWithAConditionNoOneCanCheckYet_StaysClosed()
     {
         RoomHarness harness = await ZoneAsync(

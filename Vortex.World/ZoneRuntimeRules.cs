@@ -41,11 +41,19 @@ internal static class ZoneRuntimeRules
             .ToDictionary(g => g.Key, g => g.First());
         HashSet<string> entries = [.. d.Entries.Select(e => e.Id)];
         HashSet<string> passages = [.. d.Passages.Select(p => p.Id)];
+        HashSet<string> known =
+        [
+            .. areas,
+            .. decor.Keys,
+            .. d.WallDecor.Select(w => w.Id),
+            .. d.Npcs.Select(n => n.Id),
+            .. d.Spawns.Select(s => s.Id),
+        ];
         string here = d.Settings.Id;
 
         foreach (ZoneTrigger t in d.Triggers)
         {
-            CheckTarget(t, areas, decor, f);
+            CheckTarget(t, areas, decor, known, f);
 
             foreach (ZoneCondition c in t.Conditions)
             {
@@ -87,10 +95,13 @@ internal static class ZoneRuntimeRules
         CheckOverlaps(d, f);
     }
 
+    /// <param name="known">Every element id a trigger may name (areas, decor, NPCs, spawns): one that
+    /// names none of them is the BrokenReference of ZoneValidator, not a wrong target.</param>
     private static void CheckTarget(
         ZoneTrigger t,
         HashSet<string> areas,
         Dictionary<string, ZoneDecorObject> decor,
+        HashSet<string> known,
         List<ZoneFinding> f
     )
     {
@@ -110,9 +121,9 @@ internal static class ZoneRuntimeRules
 
                 break;
 
-            // A target that names nothing at all is the BrokenReference of ZoneValidator.
             case ZoneTriggerType.EnterZone
-            or ZoneTriggerType.LeaveZone when t.Target is null || decor.ContainsKey(t.Target):
+            or ZoneTriggerType.LeaveZone
+                when t.Target is null || known.Contains(t.Target) && !areas.Contains(t.Target):
                 f.Add(
                     Error(
                         "WrongTarget",
@@ -123,12 +134,15 @@ internal static class ZoneRuntimeRules
 
                 break;
 
-            case ZoneTriggerType.Interact when t.Target is null || areas.Contains(t.Target):
+            // Only a floor furni is used (UseFurniture): on a wall item, an NPC or an area the
+            // trigger would never fire.
+            case ZoneTriggerType.Interact
+                when t.Target is null || known.Contains(t.Target) && !decor.ContainsKey(t.Target):
                 f.Add(
                     Error(
                         "WrongTarget",
                         t.Id,
-                        $"Interact listens to a furni; '{t.Target}' is not one."
+                        $"Interact listens to a floor furni; '{t.Target}' is not one."
                     )
                 );
 

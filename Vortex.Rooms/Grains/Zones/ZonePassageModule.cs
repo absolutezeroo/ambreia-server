@@ -40,15 +40,16 @@ public sealed class ZonePassageModule(RoomGrain roomGrain)
         // the player straight back.
         if (
             roomGrain._state.ZoneRuntime is not { } zone
-            || !zone.Visitors.TryGetValue(player.PlayerId, out ZoneVisitor? visitor)
+            || !zone.Visitors.ContainsKey(player.PlayerId)
         )
         {
             return false;
         }
 
         long now = roomGrain.NowMs();
+        string cooldown = $"passage:{passage.Id}";
 
-        if (visitor.PassageReadyAtMs.GetValueOrDefault(passage.Id) > now)
+        if (zone.Cooldowns.IsCooling(player.PlayerId, cooldown, now))
         {
             return false;
         }
@@ -59,7 +60,15 @@ public sealed class ZonePassageModule(RoomGrain roomGrain)
             return false;
         }
 
-        visitor.PassageReadyAtMs[passage.Id] = now + passage.CooldownSeconds * 1000L;
+        if (passage.CooldownSeconds > 0)
+        {
+            zone.Cooldowns.Start(
+                player.PlayerId,
+                cooldown,
+                now + passage.CooldownSeconds * 1000L,
+                now
+            );
+        }
 
         await TakeAsync(player, passage, ct);
 

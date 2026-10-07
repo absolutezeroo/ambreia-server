@@ -136,7 +136,7 @@ public sealed class ZoneAreaTests
     public async Task ASwitchedOffRestrictedArea_LetsEveryoneIn()
     {
         RoomHarness harness = await ZoneAsync(Vault());
-        harness.Grain._state.ZoneRuntime!.InactiveAreas.Add("vault");
+        harness.Grain._state.ZoneRuntime!.SetAreaActive("vault", false);
         await EnterAsync(harness);
 
         await WalkAsync(harness, 4, 2);

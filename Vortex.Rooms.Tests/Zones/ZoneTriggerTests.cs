@@ -121,6 +121,66 @@ public sealed class ZoneTriggerTests
     }
 
     [Fact]
+    public async Task ThePlayerCooldown_OutlivesLeavingTheRoom()
+    {
+        // With the RPG a trigger can reward: stepping out and back in must not reset its clock.
+        RoomHarness harness = await ZoneAsync(
+            Market(OnEnter("market", new ShowDialogueAction("x")) with { CooldownMs = 600000 })
+        );
+        await EnterAsync(harness);
+        await WalkAsync(harness, 4, 2);
+
+        await harness.Grain.RemoveAvatarFromPlayerAsync(
+            harness.ContextFor(Walker),
+            Walker,
+            default
+        );
+        await EnterAsync(harness);
+        await WalkAsync(harness, 4, 2);
+
+        Bubbles(harness).Should().ContainSingle();
+    }
+
+    [Fact]
+    public async Task AFanOutOfTriggers_StopsAtTheChainBudget()
+    {
+        // Three triggers on each area, each teleporting into the other: depth alone would allow
+        // 3^8 runs. The chain's budget stops it long before.
+        ZoneTrigger[] fan(string area, string entry) =>
+            [
+                .. Enumerable
+                    .Range(0, 3)
+                    .Select(i =>
+                        OnEnter(area, new TeleportAction("village", entry)) with
+                        {
+                            Id = $"{area}_{i}",
+                        }
+                    ),
+            ];
+        RoomHarness harness = await ZoneAsync(
+            ZoneSamples.Minimal() with
+            {
+                Zones =
+                [
+                    Area("a", "Town", string.Empty, 2, 2),
+                    Area("b", "Town", string.Empty, 4, 4),
+                ],
+                Entries =
+                [
+                    Entry("in_a", ZoneEntryKinds.Teleport, 2, 4),
+                    Entry("in_b", ZoneEntryKinds.Teleport, 4, 4),
+                ],
+                Triggers = [.. fan("a", "in_b"), .. fan("b", "in_a")],
+            }
+        );
+        await EnterAsync(harness);
+
+        await WalkAsync(harness, 2, 2);
+
+        harness.RoomEvents.OfType<ZoneAreaEnteredEvent>().Count().Should().BeLessThan(80);
+    }
+
+    [Fact]
     public async Task DeactivatingAnArea_SilencesIt()
     {
         RoomHarness harness = await ZoneAsync(
@@ -331,7 +391,13 @@ public sealed class ZoneTriggerTests
         clock.Advance(TimeSpan.FromSeconds(10));
         await harness.Grain.ZoneTriggers.TickAsync(default);
 
-        Bubbles(harness).Should().Equal("La cloche sonne");
+        // Once, on the room's stream, for everyone in it -- not one message per player.
+        harness
+            .BroadcastToRoom.OfType<NotificationDialogMessageComposer>()
+            .Select(n => n.Parameters.Single(p => p.Key == "message").Value)
+            .Should()
+            .Equal("La cloche sonne");
+        Bubbles(harness).Should().BeEmpty();
     }
 
     [Fact]

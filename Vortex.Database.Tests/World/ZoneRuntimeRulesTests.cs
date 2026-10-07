@@ -94,6 +94,26 @@ public sealed class ZoneRuntimeRulesTests
         Errors(Doc(Trigger(ZoneTriggerType.Interact, "market"))).Should().Equal("WrongTarget");
 
     [Fact]
+    public void AnInteractTriggerAimedAtAnNpc_IsAnError() =>
+        // Only floor furni are used: a trigger on anything else would never fire.
+        Errors(
+                Doc(Trigger(ZoneTriggerType.Interact, "smith")) with
+                {
+                    Npcs =
+                    [
+                        new ZoneNpc
+                        {
+                            Id = "smith",
+                            Template = "blacksmith",
+                            Cell = new ZoneCell(1, 1),
+                        },
+                    ],
+                }
+            )
+            .Should()
+            .Equal("WrongTarget");
+
+    [Fact]
     public void AnInteractTriggerOnAFurni_IsValid() =>
         Validate(Doc(Trigger(ZoneTriggerType.Interact, "lever"))).Should().BeEmpty();
 

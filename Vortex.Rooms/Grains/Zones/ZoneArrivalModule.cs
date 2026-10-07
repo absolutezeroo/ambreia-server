@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 using Vortex.Primitives.Players;
 using Vortex.Primitives.Rooms.Enums;
 using Vortex.Primitives.World.Layers;
@@ -20,6 +21,7 @@ public sealed class ZoneArrivalModule(RoomGrain roomGrain)
             return;
         }
 
+        Forget(zone);
         zone.ExpectedArrivals[playerId] = new(entryId, -1, -1, ExpiresAt());
     }
 
@@ -27,7 +29,27 @@ public sealed class ZoneArrivalModule(RoomGrain roomGrain)
     {
         if (roomGrain._state.ZoneRuntime is { } zone && x >= 0 && y >= 0)
         {
+            Forget(zone);
             zone.ExpectedArrivals[playerId] = new(null, x, y, ExpiresAt());
+        }
+    }
+
+    /// <summary>
+    /// Drops the expectations nobody honoured in time: a player announced by a passage who never
+    /// came must not stay in memory for the life of the room. Expectations are few and rare.
+    /// </summary>
+    private void Forget(ZoneRuntimeState zone)
+    {
+        long now = roomGrain.NowMs();
+
+        foreach (
+            PlayerId stale in zone
+                .ExpectedArrivals.Where(e => e.Value.ExpiresAtMs < now)
+                .Select(e => e.Key)
+                .ToList()
+        )
+        {
+            zone.ExpectedArrivals.Remove(stale);
         }
     }
 

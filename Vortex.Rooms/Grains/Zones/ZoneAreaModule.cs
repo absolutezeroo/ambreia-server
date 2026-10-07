@@ -81,7 +81,7 @@ public sealed class ZoneAreaModule(RoomGrain roomGrain)
         // One bubble per step: the highest named area just entered, with what it allows.
         if (!Moved(visitor, now) && entered.FirstOrDefault(a => a.Name.Length > 0) is { } named)
         {
-            string rules = Describe(ZoneRuleBook.At(zone, x, y));
+            string rules = Describe(zone.RulesAt(x, y));
 
             ZoneBubble.Show(
                 roomGrain,
@@ -101,8 +101,11 @@ public sealed class ZoneAreaModule(RoomGrain roomGrain)
     /// </summary>
     public bool MayStepOnto(IRoomAvatar avatar, int x, int y)
     {
+        // Every step of every player comes here: a cell outside any Restricted area answers from
+        // its cached rules and goes no further.
         if (
             roomGrain._state.ZoneRuntime is not { } zone
+            || !zone.RulesAt(x, y).Restricted
             || avatar is not IRoomPlayer player
             || player.PlayerId.Value <= 0
         )

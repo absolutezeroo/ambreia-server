@@ -201,6 +201,39 @@ public sealed class ZoneEditorServiceTests : IAsyncLifetime
         (await source.GetPublishedAsync(new RoomId(1), default)).Should().BeNull();
     }
 
+    /// <summary>
+    /// A passage asks where a zone is each time it is taken. A zone's room never changes and a
+    /// published zone stays published, so the first answer is remembered; "not published yet" is not.
+    /// </summary>
+    [Fact]
+    public async Task TheRoomOfAPublishedZone_IsLookedUpOnce()
+    {
+        ZoneSummary zone = await _service.CreateAsync("village", "Village", Author, null, default);
+        await _service.TryLockAsync("village", Author, false, default);
+        ZoneRoomSource source = new(
+            new OptionsDbContextFactory(_options),
+            NullLogger<ZoneRoomSource>.Instance
+        );
+
+        (await source.FindPublishedRoomAsync("village", default)).Should().BeNull();
+
+        ZoneSaveResult saved = await _service.SaveAsync("village", Json(), Author, "", default);
+        await _service.PublishAsync("village", saved.Version!.Value, default);
+
+        (await source.FindPublishedRoomAsync("village", default))
+            .Should()
+            .Be(new RoomId(zone.RoomId), "an unpublished answer is not remembered");
+
+        await using (VortexDbContext db = new(_options))
+        {
+            await db.Database.ExecuteSqlRawAsync("UPDATE zones SET zone_key = 'renamed'");
+        }
+
+        (await source.FindPublishedRoomAsync("village", default))
+            .Should()
+            .Be(new RoomId(zone.RoomId), "the database is not asked a second time");
+    }
+
     [Fact]
     public async Task SavingToAnUnknownZone_IsNotFound()
     {
