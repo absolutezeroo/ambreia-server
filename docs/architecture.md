@@ -28,8 +28,10 @@ layers share: grain interfaces, snapshots, ids, events.
 ## Flow 1 — sign-in
 
 1. The site registers an account (`POST /api/public/registration/new`), creates and selects an avatar
-   (`/api/user/avatars`, `/api/user/avatars/select`) and asks `GET /api/ssotoken` for a single-use
-   ticket (`security_tickets`).
+   (`/api/user/avatars`, `/api/user/avatars/select`) and asks `GET /api/ssotoken` for a ticket
+   (`security_tickets`). It is not single-use: the client reads it from `?sso=` and a page reload
+   presents it again, so it stays valid up to `Authentication:TicketAbsoluteLifetimeSeconds` (300 s)
+   from issue, sliding on each use.
 2. The client connects to the game socket. Frames are `[int32 length][int16 header][body]`, plaintext
    until the Diffie handshake installs RC4 (`Vortex.Networking/Package`).
 3. `PackageHandler` finds the parser for the header in the session's revision

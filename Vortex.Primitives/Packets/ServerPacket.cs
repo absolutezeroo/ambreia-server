@@ -84,6 +84,16 @@ public class ServerPacket(int header) : VortexPacket(header), IServerPacket
     {
         byte[] data = Encoding.UTF8.GetBytes(s ?? string.Empty);
 
+        // The length prefix is an unsigned 16-bit count; past it the client would read the rest
+        // of the string as the next fields and the whole stream after it would be garbage.
+        if (data.Length > ushort.MaxValue)
+        {
+            throw new ArgumentOutOfRangeException(
+                nameof(s),
+                $"A wire string is at most {ushort.MaxValue} bytes; this one is {data.Length}."
+            );
+        }
+
         WriteShort((short)data.Length);
         Writer.Write(data);
 

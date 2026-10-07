@@ -43,8 +43,12 @@ public sealed partial class RoomGrain
         HashSet<int> dirtyHeightTileIds = _state.DirtyHeightTileIds;
         _state.DirtyHeightTileIds = [];
 
+        // The packet counts its tiles in one byte: a batch over 255 would wrap and desync the
+        // client, whatever the config says.
+        int perPacket = Math.Clamp(_roomConfig.MaxTileHeightsPerFlush, 1, byte.MaxValue);
+
         List<(int X, int Y, short Height)> heights = new List<(int X, int Y, short Height)>(
-            Math.Min(dirtyHeightTileIds.Count, _roomConfig.MaxTileHeightsPerFlush)
+            Math.Min(dirtyHeightTileIds.Count, perPacket)
         );
 
         foreach (int x in dirtyHeightTileIds)

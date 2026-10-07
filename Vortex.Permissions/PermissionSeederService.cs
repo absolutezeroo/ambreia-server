@@ -92,21 +92,21 @@ internal sealed class PermissionSeederService(
 
     /// <summary>
     /// Grants the configured bootstrap account the <c>owner</c> role so the very first administrator
-    /// can sign in (e.g. to the admin dashboard) before any role has been assigned. Idempotent: does
-    /// nothing if the email is unset, the account is missing, or the assignment already exists.
+    /// exists before any role has been assigned. Idempotent: does nothing if the id is unset, the
+    /// account is missing, or the assignment already exists.
     /// </summary>
     private async Task EnsureBootstrapOwnerAsync(VortexDbContext db, CancellationToken ct)
     {
-        string? email = _config.BootstrapOwnerEmail?.Trim().ToLowerInvariant();
+        int configuredId = _config.BootstrapOwnerAccountId;
 
-        if (string.IsNullOrWhiteSpace(email))
+        if (configuredId <= 0)
         {
             return;
         }
 
         int? accountId = await db
             .PlayerAccounts.AsNoTracking()
-            .Where(a => a.Email == email)
+            .Where(a => a.Id == configuredId)
             .Select(a => (int?)a.Id)
             .FirstOrDefaultAsync(ct)
             .ConfigureAwait(false);
@@ -114,8 +114,8 @@ internal sealed class PermissionSeederService(
         if (accountId is null)
         {
             logger.LogWarning(
-                "Bootstrap owner email '{Email}' has no matching account; skipping role assignment.",
-                email
+                "Bootstrap owner account {AccountId} does not exist; skipping role assignment.",
+                configuredId
             );
             return;
         }
@@ -155,11 +155,7 @@ internal sealed class PermissionSeederService(
 
         await db.SaveChangesAsync(ct).ConfigureAwait(false);
 
-        logger.LogInformation(
-            "Granted 'owner' role to bootstrap account {AccountId} ({Email}).",
-            accountId,
-            email
-        );
+        logger.LogInformation("Granted 'owner' role to bootstrap account {AccountId}.", accountId);
     }
 
     public Task StopAsync(CancellationToken cancellationToken) => Task.CompletedTask;

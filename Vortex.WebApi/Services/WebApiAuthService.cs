@@ -86,7 +86,9 @@ public sealed class WebApiAuthService(
 
         await using VortexDbContext db = await _db.CreateDbContextAsync(ct).ConfigureAwait(false);
 
-        string normalizedEmail = email.ToLowerInvariant();
+        // Trimmed as well as lowered, exactly as AccountAuthenticator does at login: an address
+        // stored with a stray space could never sign in again.
+        string normalizedEmail = email.Trim().ToLowerInvariant();
 
         bool exists = await db
             .PlayerAccounts.AsNoTracking()

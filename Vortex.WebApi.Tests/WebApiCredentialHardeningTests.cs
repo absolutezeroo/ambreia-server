@@ -134,6 +134,44 @@ public sealed class WebApiCredentialHardeningTests
         (await AccountCountAsync(factory)).Should().Be(1);
     }
 
+    // --- the address an account is found by again ---------------------------------------------------
+
+    /// <summary>
+    /// Registration lowered the address, login trimmed and lowered it: one typed with a stray space
+    /// was stored with it and could never sign in.
+    /// </summary>
+    [Fact]
+    public async Task Register_StoresTheAddressTheLoginLooksUp()
+    {
+        (WebApiAuthService service, TestDbContextFactory factory) = BuildAuth();
+
+        await service.RegisterAsync(
+            "  New@Example.com ",
+            new string('p', AccountPasswordRules.MINIMUM_LENGTH),
+            CancellationToken.None
+        );
+
+        await using VortexDbContext db = factory.CreateDbContext();
+        (await db.PlayerAccounts.SingleAsync()).Email.Should().Be("new@example.com");
+    }
+
+    [Theory]
+    [InlineData("not-an-address")]
+    [InlineData("Name <a@b.c>")]
+    [InlineData("a@b.c, d@e.f")]
+    [InlineData("")]
+    [InlineData(null)]
+    public void RegisterRequest_IsInvalidForSomethingThatIsNotOneAddress(string? email) =>
+        new RegisterRequest(email, "password1", null).IsValid.Should().BeFalse();
+
+    [Fact]
+    public void RegisterRequest_AcceptsAnAddress() =>
+        new RegisterRequest(" a@b.co ", "password1", null).IsValid.Should().BeTrue();
+
+    [Fact]
+    public void CreateAvatarRequest_IsInvalidForALookWiderThanItsColumn() =>
+        new CreateAvatarRequest(null, new string('a', 256), "M").IsValid.Should().BeFalse();
+
     // --- the name shape the in-game rename enforces, on the HTTP routes that bypassed it -----------
 
     [Theory]

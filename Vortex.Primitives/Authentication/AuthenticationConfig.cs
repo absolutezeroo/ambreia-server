@@ -11,11 +11,16 @@ public sealed class AuthenticationConfig
     public string IpHashSecret { get; init; } = "local-dev-ip-hash-secret";
 
     /// <summary>
-    /// Optional account email granted the <c>owner</c> role at startup. Use it to bootstrap the first
-    /// administrator (e.g. for the admin dashboard) so there is never a lock-out before any role is
-    /// assigned. Empty disables the bootstrap; the assignment is idempotent and additive-only.
+    /// Optional account id granted the <c>owner</c> role at startup, so the first administrator
+    /// exists before anyone can assign a role. 0 disables it; the grant is idempotent and
+    /// additive-only.
     /// </summary>
-    public string BootstrapOwnerEmail { get; init; } = string.Empty;
+    /// <remarks>
+    /// An id, not an e-mail: registration is open and addresses are not verified, so whoever
+    /// registered the configured address first -- before its real owner -- became owner. An id is
+    /// read off an account that already exists, after its owner created it.
+    /// </remarks>
+    public int BootstrapOwnerAccountId { get; init; }
 
     /// <summary>
     /// Fallback TTL (seconds) applied when a ticket has no <c>expires_at</c> column value.
@@ -27,9 +32,9 @@ public sealed class AuthenticationConfig
 
     /// <summary>
     /// When true, a non-locked ticket is deleted on its first successful use instead of having its
-    /// expiry pushed forward. Default false so behavior is unchanged out of the box: some CMS
-    /// integrations rely on reusing the same ticket across reconnects, and turning this on would
-    /// break them until they're updated to mint a fresh ticket per connection attempt.
+    /// expiry pushed forward. Default false: the client reads its ticket from <c>?sso=</c>, so a
+    /// page reload presents the same ticket again, and single-use would turn every reload into a
+    /// failed login. <see cref="TicketAbsoluteLifetimeSeconds"/> is the bound instead.
     /// </summary>
     public bool TicketSingleUse { get; init; }
 

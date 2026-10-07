@@ -176,8 +176,26 @@ public sealed class DatabaseBackupService(
                 Task copy = process.StandardOutput.BaseStream.CopyToAsync(file, timeout.Token);
                 Task<string> errors = process.StandardError.ReadToEndAsync(timeout.Token);
 
-                await copy.ConfigureAwait(false);
-                await process.WaitForExitAsync(timeout.Token).ConfigureAwait(false);
+                try
+                {
+                    await copy.ConfigureAwait(false);
+                    await process.WaitForExitAsync(timeout.Token).ConfigureAwait(false);
+                }
+                catch (OperationCanceledException)
+                {
+                    // Disposing the Process object does not end the process: a timed-out or
+                    // cancelled dump would keep running, and keep its server connection open.
+                    try
+                    {
+                        process.Kill(entireProcessTree: true);
+                    }
+                    catch (InvalidOperationException)
+                    {
+                        // Already exited.
+                    }
+
+                    throw;
+                }
 
                 if (process.ExitCode != 0)
                 {

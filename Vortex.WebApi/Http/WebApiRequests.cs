@@ -1,4 +1,6 @@
+using System.Net.Mail;
 using Vortex.Primitives.Players;
+using Vortex.Primitives.Players.Avatar;
 using Vortex.Primitives.Players.Enums;
 
 namespace Vortex.WebApi.Http;
@@ -29,7 +31,7 @@ public sealed record LoginRequest(string? Email, string? Password, string? Code 
 public sealed record RegisterRequest(string? Email, string? Password, string? PasswordRepeated)
 {
     public bool IsValid =>
-        !string.IsNullOrWhiteSpace(Email)
+        EmailShape.IsWellFormed(Email)
         && !string.IsNullOrWhiteSpace(Password)
         // The confirmation field is optional (some clients omit it), but when supplied it
         // must match the password.
@@ -47,7 +49,11 @@ public sealed record CreateAvatarRequest(string? Name, string? Figure, string? G
     // supplied has to be one the player could have picked in-game; WebApiPlayerService refuses it
     // again at the sink, this is only so the caller gets a 400 rather than a 409 about a name clash
     // that is not what went wrong.
-    public bool IsValid => string.IsNullOrWhiteSpace(Name) || NameShape.IsWellFormed(Name);
+    //
+    // A look past the column width used to reach the database and come back as a 500.
+    public bool IsValid =>
+        (string.IsNullOrWhiteSpace(Name) || NameShape.IsWellFormed(Name))
+        && (Figure is null || Figure.Length <= FigureString.MaxLength);
 }
 
 public sealed record SelectAvatarRequest(string? UniqueId)
@@ -77,4 +83,23 @@ internal static class NameShape
             NameChangePolicy.DEFAULT_MIN_LENGTH,
             NameChangePolicy.DEFAULT_MAX_LENGTH
         ) == NameChangeResultCode.Ok;
+}
+
+/// <summary>
+/// An address the account can be found by again: one mailbox, nothing around it, within the 254
+/// characters SMTP allows (the column is wider). Anything else used to be stored as typed.
+/// </summary>
+internal static class EmailShape
+{
+    private const int MAX_LENGTH = 254;
+
+    public static bool IsWellFormed(string? email)
+    {
+        string? trimmed = email?.Trim();
+
+        return !string.IsNullOrEmpty(trimmed)
+            && trimmed.Length <= MAX_LENGTH
+            && MailAddress.TryCreate(trimmed, out MailAddress? address)
+            && address.Address == trimmed;
+    }
 }

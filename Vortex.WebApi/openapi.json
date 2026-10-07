@@ -455,7 +455,7 @@
         "tags": [
           "User"
         ],
-        "summary": "Issue a single-use SSO ticket for the selected avatar.",
+        "summary": "Issue a short-lived SSO ticket for the selected avatar.",
         "operationId": "SsoToken",
         "parameters": [
           {

@@ -463,7 +463,7 @@ internal static partial class WebApiEndpoints
             )
             .RequireRateLimiting(SsoTokenRateLimitPolicy)
             .WithName("SsoToken")
-            .WithSummary("Issue a single-use SSO ticket for the selected avatar.")
+            .WithSummary("Issue a short-lived SSO ticket for the selected avatar.")
             .WithTags(TagUser);
     }
 

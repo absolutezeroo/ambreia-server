@@ -65,12 +65,23 @@ internal sealed class PlayerGrain : Grain, IPlayerGrain
 
     public async Task SetNameAsync(string name, CancellationToken ct)
     {
-        // Captured before the write: the old name is what a report, a chatlog or a ban appeal
-        // actually names, and after this line nothing else remembers it.
+        // Captured before the write: the rename event carries the old name, and after this line
+        // nothing else remembers it.
         string previousName = _state.Name;
         _state.Name = name;
 
-        await WriteToDatabaseAsync(ct);
+        // The name is uniquely indexed, so this write is the one that can be refused (a race with
+        // another rename). The card must keep saying what the row says.
+        try
+        {
+            await WriteToDatabaseAsync(ct);
+        }
+        catch
+        {
+            _state.Name = previousName;
+
+            throw;
+        }
 
         await _grainFactory.GetPlayerDirectoryGrain().SetPlayerNameAsync(_state.PlayerId, name, ct);
 

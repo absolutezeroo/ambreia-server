@@ -362,7 +362,7 @@ function sessionCookie(res) {
   return c ? c.split(';')[0] : null;
 }
 
-// Registration (or login when the address exists), an avatar, then a single-use SSO ticket --
+// Registration (or login when the address exists), an avatar, then a short-lived SSO ticket --
 // exactly what the site does before it opens the client.
 async function ssoTicket() {
   const base = `http://127.0.0.1:${WEBAPI}`;

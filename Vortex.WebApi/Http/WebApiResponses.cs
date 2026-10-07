@@ -69,7 +69,7 @@ public sealed record LoginResponse(bool RequiresOnboarding);
 /// <summary>The account id a registration created.</summary>
 public sealed record RegistrationResponse(int Id);
 
-/// <summary>The single-use ticket the client trades for a connection.</summary>
+/// <summary>The short-lived ticket the client trades for a connection.</summary>
 public sealed record SsoTicketResponse(string SsoToken);
 
 /// <summary>Whether a name is free, echoing the name that was asked about.</summary>

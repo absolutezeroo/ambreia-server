@@ -42,7 +42,7 @@ domain prefixes its tables (`character_*`, `quest_*`…); a table every domain r
 |---|---|---|---|
 | `player_accounts` | `PlayerAccountEntity` | web API | e-mail + bcrypt hash; one account, several players |
 | `players` | `PlayerEntity` | `PlayerGrain` | name, motto, figure, gender; `__world__` owns the zones |
-| `security_tickets` | `SecurityTicketEntity` | authentication | single-use SSO tickets |
+| `security_tickets` | `SecurityTicketEntity` | authentication | SSO tickets (valid 5 min from issue, sliding on reuse; see `AuthenticationConfig`) |
 | `roles`, `role_permissions`, `player_account_roles` | `Role*Entity` | `PermissionService` | capabilities per role; seeded by `PermissionSeederService` |
 | `rooms` | `RoomEntity` | `RoomGrain` | a zone; `model_id` → `room_models` |
 | `room_models` | `RoomModelEntity` | reference data | heightmaps, imported from `turbo` |

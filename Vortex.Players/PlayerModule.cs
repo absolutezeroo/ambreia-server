@@ -18,7 +18,7 @@ public sealed class PlayerModule : IHostPluginModule
     {
         // The game's sign-in: the SSO ticket the client presents. Bound here, with its validator,
         // because the ticket rules are the game's; the web accounts and the owner bootstrap read the
-        // same section (IpHashSecret, BootstrapOwnerEmail). Outside Development a placeholder secret
+        // same section (IpHashSecret, BootstrapOwnerAccountId). Outside Development a placeholder secret
         // still refuses to start.
         services
             .AddOptions<AuthenticationConfig>()
