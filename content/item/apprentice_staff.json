@@ -1,0 +1,13 @@
+{
+  "$schema": "../../schemas/content/item.schema.json",
+  "id": "item.weapon.apprentice_staff",
+  "kind": "item",
+  "category": "equipment",
+  "rarity": "common",
+  "slot": "weapon",
+  "allowedClasses": ["class.mage"],
+  "stats": { "intelligence": 3 },
+  "maxDurability": 50,
+  "sellValue": 4,
+  "binding": "none"
+}

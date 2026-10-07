@@ -1,0 +1,13 @@
+{
+  "$schema": "../../schemas/content/item.schema.json",
+  "id": "item.offhand.wooden_shield",
+  "kind": "item",
+  "category": "equipment",
+  "rarity": "common",
+  "slot": "offhand",
+  "allowedClasses": ["class.warrior"],
+  "stats": { "armor": 3 },
+  "maxDurability": 60,
+  "sellValue": 3,
+  "binding": "none"
+}

@@ -1,0 +1,10 @@
+{
+  "$schema": "../../schemas/content/item.schema.json",
+  "id": "item.consumable.minor_potion",
+  "kind": "item",
+  "category": "consumable",
+  "rarity": "common",
+  "maxStack": 20,
+  "sellValue": 2,
+  "binding": "none"
+}

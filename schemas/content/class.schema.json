@@ -1,0 +1,107 @@
+{
+  "type": "object",
+  "properties": {
+    "$schema": {
+      "type": "string"
+    },
+    "role": {
+      "enum": [
+        "tank",
+        "damage",
+        "heal"
+      ]
+    },
+    "range": {
+      "type": "integer"
+    },
+    "threatMultiplier": {
+      "type": "integer"
+    },
+    "primaryStat": {
+      "enum": [
+        "strength",
+        "intelligence",
+        "agility"
+      ]
+    },
+    "base": {
+      "type": "object",
+      "properties": {
+        "strength": {
+          "type": "integer"
+        },
+        "intelligence": {
+          "type": "integer"
+        },
+        "agility": {
+          "type": "integer"
+        },
+        "health": {
+          "type": "integer"
+        },
+        "mana": {
+          "type": "integer"
+        },
+        "armor": {
+          "type": "integer"
+        },
+        "speed": {
+          "type": "integer"
+        }
+      },
+      "additionalProperties": false
+    },
+    "perLevel": {
+      "type": "object",
+      "properties": {
+        "strength": {
+          "type": "integer"
+        },
+        "intelligence": {
+          "type": "integer"
+        },
+        "agility": {
+          "type": "integer"
+        },
+        "health": {
+          "type": "integer"
+        },
+        "mana": {
+          "type": "integer"
+        },
+        "armor": {
+          "type": "integer"
+        },
+        "speed": {
+          "type": "integer"
+        }
+      },
+      "additionalProperties": false
+    },
+    "specializations": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "id": {
+      "type": "string"
+    },
+    "kind": {
+      "type": "string"
+    },
+    "retired": {
+      "type": "boolean"
+    }
+  },
+  "required": [
+    "role",
+    "range",
+    "primaryStat",
+    "base",
+    "perLevel",
+    "id",
+    "kind"
+  ],
+  "additionalProperties": false
+}

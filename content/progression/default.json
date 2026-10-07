@@ -1,0 +1,14 @@
+{
+  "$schema": "../../schemas/content/progression.schema.json",
+  "id": "progression.default",
+  "kind": "progression",
+  "maxLevel": 20,
+  "xpToNext": [100, 150, 220, 300, 400, 520, 660, 820, 1000, 1200, 1450, 1750, 2100, 2500, 2950, 3450, 4000, 4600, 5300],
+  "healthPerStrength": 5,
+  "manaPerIntelligence": 5,
+  "critBasePercent": 5,
+  "critPerAgilityPercent": 0.2,
+  "critCapPercent": 50,
+  "dodgePerAgilityPercent": 0.1,
+  "dodgeCapPercent": 30
+}

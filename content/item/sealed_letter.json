@@ -1,0 +1,8 @@
+{
+  "$schema": "../../schemas/content/item.schema.json",
+  "id": "item.quest.sealed_letter",
+  "kind": "item",
+  "category": "quest",
+  "rarity": "common",
+  "binding": "on_pickup"
+}

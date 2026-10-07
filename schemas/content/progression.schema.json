@@ -1,0 +1,61 @@
+{
+  "type": "object",
+  "properties": {
+    "$schema": {
+      "type": "string"
+    },
+    "maxLevel": {
+      "type": "integer"
+    },
+    "xpToNext": {
+      "type": "array",
+      "items": {
+        "type": "integer"
+      }
+    },
+    "healthPerStrength": {
+      "type": "integer"
+    },
+    "manaPerIntelligence": {
+      "type": "integer"
+    },
+    "critBasePercent": {
+      "type": "number"
+    },
+    "critPerAgilityPercent": {
+      "type": "number"
+    },
+    "critCapPercent": {
+      "type": "number"
+    },
+    "dodgePerAgilityPercent": {
+      "type": "number"
+    },
+    "dodgeCapPercent": {
+      "type": "number"
+    },
+    "id": {
+      "type": "string"
+    },
+    "kind": {
+      "type": "string"
+    },
+    "retired": {
+      "type": "boolean"
+    }
+  },
+  "required": [
+    "maxLevel",
+    "xpToNext",
+    "healthPerStrength",
+    "manaPerIntelligence",
+    "critBasePercent",
+    "critPerAgilityPercent",
+    "critCapPercent",
+    "dodgePerAgilityPercent",
+    "dodgeCapPercent",
+    "id",
+    "kind"
+  ],
+  "additionalProperties": false
+}

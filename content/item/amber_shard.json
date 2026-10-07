@@ -1,0 +1,10 @@
+{
+  "$schema": "../../schemas/content/item.schema.json",
+  "id": "item.material.amber_shard",
+  "kind": "item",
+  "category": "material",
+  "rarity": "common",
+  "maxStack": 50,
+  "sellValue": 1,
+  "binding": "none"
+}

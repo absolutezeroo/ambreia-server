@@ -1,0 +1,12 @@
+{
+  "$schema": "../../schemas/content/item.schema.json",
+  "id": "item.ring.copper_ring",
+  "kind": "item",
+  "category": "equipment",
+  "rarity": "common",
+  "slot": "ring",
+  "stats": { "agility": 1 },
+  "maxDurability": 40,
+  "sellValue": 3,
+  "binding": "none"
+}

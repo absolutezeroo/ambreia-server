@@ -1,0 +1,11 @@
+{
+  "$schema": "../../schemas/content/class.schema.json",
+  "id": "class.archer",
+  "kind": "class",
+  "role": "damage",
+  "range": 6,
+  "primaryStat": "agility",
+  "base": { "strength": 6, "intelligence": 4, "agility": 14, "health": 60, "mana": 50, "armor": 1, "speed": 0 },
+  "perLevel": { "strength": 1, "intelligence": 0, "agility": 3, "health": 10, "mana": 3, "armor": 0, "speed": 0 },
+  "specializations": ["spec.archer.marksman"]
+}

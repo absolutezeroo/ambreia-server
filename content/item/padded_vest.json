@@ -1,0 +1,13 @@
+{
+  "$schema": "../../schemas/content/item.schema.json",
+  "id": "item.chest.padded_vest",
+  "kind": "item",
+  "category": "equipment",
+  "rarity": "uncommon",
+  "slot": "chest",
+  "requiredLevel": 3,
+  "stats": { "health": 10, "armor": 2 },
+  "maxDurability": 60,
+  "sellValue": 8,
+  "binding": "none"
+}

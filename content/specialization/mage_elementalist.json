@@ -1,0 +1,6 @@
+{
+  "$schema": "../../schemas/content/specialization.schema.json",
+  "id": "spec.mage.elementalist",
+  "kind": "specialization",
+  "class": "class.mage"
+}

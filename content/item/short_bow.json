@@ -1,0 +1,13 @@
+{
+  "$schema": "../../schemas/content/item.schema.json",
+  "id": "item.weapon.short_bow",
+  "kind": "item",
+  "category": "equipment",
+  "rarity": "common",
+  "slot": "weapon",
+  "allowedClasses": ["class.archer"],
+  "stats": { "agility": 3 },
+  "maxDurability": 50,
+  "sellValue": 4,
+  "binding": "none"
+}

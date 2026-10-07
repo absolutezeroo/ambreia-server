@@ -1,0 +1,14 @@
+{
+  "$schema": "../../schemas/content/item.schema.json",
+  "id": "item.neck.amber_pendant",
+  "kind": "item",
+  "category": "equipment",
+  "rarity": "rare",
+  "slot": "neck",
+  "requiredLevel": 5,
+  "allowedClasses": ["class.mage", "class.cleric"],
+  "stats": { "intelligence": 2, "mana": 15 },
+  "maxDurability": 80,
+  "sellValue": 25,
+  "binding": "on_equip"
+}

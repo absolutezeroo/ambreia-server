@@ -1,0 +1,55 @@
+# Textes français du contenu RPG (spec Contenu §7) : <id>.name et <id>.description.
+
+class.warrior.name=Guerrier
+class.warrior.description=Il tient la première ligne et attire sur lui les coups destinés aux autres.
+class.archer.name=Archer
+class.archer.description=Il frappe une cible à la fois, de loin, avant qu'elle n'arrive au contact.
+class.mage.name=Mage
+class.mage.description=Il frappe plusieurs ennemis d'un sort et ralentit ceux qui approchent.
+class.cleric.name=Clerc
+class.cleric.description=Il soigne le groupe et renforce ceux qui combattent.
+
+spec.warrior.guardian.name=Gardien
+spec.warrior.guardian.description=Un guerrier qui protège ses alliés plutôt que de chercher la victoire seul.
+spec.archer.marksman.name=Tireur d'élite
+spec.archer.marksman.description=Un archer qui vise juste et frappe fort, de très loin.
+spec.mage.elementalist.name=Élémentaliste
+spec.mage.elementalist.description=Un mage qui plie le feu, la glace et la foudre à sa volonté.
+spec.cleric.priest.name=Prêtre
+spec.cleric.priest.description=Un clerc voué aux soins et aux bénédictions.
+
+progression.default.name=Progression
+progression.default.description=La courbe d'expérience et les coefficients des statistiques dérivées.
+
+item.weapon.rusted_sword.name=Épée rouillée
+item.weapon.rusted_sword.description=Elle a connu de meilleurs jours, mais elle coupe encore.
+item.weapon.short_bow.name=Arc court
+item.weapon.short_bow.description=Léger et maniable, l'arc de tout archer débutant.
+item.weapon.apprentice_staff.name=Bâton d'apprenti
+item.weapon.apprentice_staff.description=Un bâton de chêne gravé de runes simples.
+item.weapon.oak_mace.name=Masse de chêne
+item.weapon.oak_mace.description=Une masse robuste, bénie au temple du village.
+item.offhand.wooden_shield.name=Bouclier de bois
+item.offhand.wooden_shield.description=Des planches cerclées de fer : assez pour arrêter une lame.
+item.head.leather_cap.name=Calotte de cuir
+item.head.leather_cap.description=Protège un peu des coups, beaucoup de la pluie.
+item.chest.padded_vest.name=Veste rembourrée
+item.chest.padded_vest.description=Plusieurs couches de laine piquée qui amortissent les coups.
+item.legs.cloth_trousers.name=Pantalon de toile
+item.legs.cloth_trousers.description=Solide et sans prétention.
+item.feet.worn_boots.name=Bottes usées
+item.feet.worn_boots.description=Elles ont beaucoup marché ; elles marcheront encore.
+item.hands.work_gloves.name=Gants de travail
+item.hands.work_gloves.description=Des gants épais qui assurent la prise.
+item.neck.amber_pendant.name=Pendentif d'ambre
+item.neck.amber_pendant.description=Une goutte d'ambre où dort un éclat de magie ancienne.
+item.ring.copper_ring.name=Anneau de cuivre
+item.ring.copper_ring.description=Un simple anneau qui rend la main plus vive.
+item.material.amber_shard.name=Éclat d'ambre
+item.material.amber_shard.description=Un fragment d'ambre brute, recherché par les artisans.
+item.consumable.minor_potion.name=Potion mineure
+item.consumable.minor_potion.description=Une fiole rouge qui referme les petites blessures.
+item.quest.sealed_letter.name=Lettre scellée
+item.quest.sealed_letter.description=Un pli cacheté de cire, à remettre en mains propres.
+item.furniture.amber_throne.name=Trône d'ambre
+item.furniture.amber_throne.description=Un trône à poser chez soi, digne des seigneurs d'Ambreia.

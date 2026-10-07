@@ -1,0 +1,26 @@
+{
+  "type": "object",
+  "properties": {
+    "$schema": {
+      "type": "string"
+    },
+    "class": {
+      "type": "string"
+    },
+    "id": {
+      "type": "string"
+    },
+    "kind": {
+      "type": "string"
+    },
+    "retired": {
+      "type": "boolean"
+    }
+  },
+  "required": [
+    "class",
+    "id",
+    "kind"
+  ],
+  "additionalProperties": false
+}

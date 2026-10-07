@@ -1,0 +1,6 @@
+{
+  "$schema": "../../schemas/content/specialization.schema.json",
+  "id": "spec.cleric.priest",
+  "kind": "specialization",
+  "class": "class.cleric"
+}

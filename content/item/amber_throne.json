@@ -1,0 +1,10 @@
+{
+  "$schema": "../../schemas/content/item.schema.json",
+  "id": "item.furniture.amber_throne",
+  "kind": "item",
+  "category": "furniture",
+  "rarity": "epic",
+  "furnitureDefinition": 230,
+  "sellValue": 120,
+  "binding": "on_pickup"
+}

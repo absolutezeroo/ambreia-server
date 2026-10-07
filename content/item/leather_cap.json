@@ -1,0 +1,12 @@
+{
+  "$schema": "../../schemas/content/item.schema.json",
+  "id": "item.head.leather_cap",
+  "kind": "item",
+  "category": "equipment",
+  "rarity": "common",
+  "slot": "head",
+  "stats": { "armor": 1 },
+  "maxDurability": 40,
+  "sellValue": 2,
+  "binding": "none"
+}

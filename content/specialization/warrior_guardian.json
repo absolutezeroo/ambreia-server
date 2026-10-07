@@ -1,0 +1,6 @@
+{
+  "$schema": "../../schemas/content/specialization.schema.json",
+  "id": "spec.warrior.guardian",
+  "kind": "specialization",
+  "class": "class.warrior"
+}

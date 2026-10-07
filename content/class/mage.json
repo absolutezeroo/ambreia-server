@@ -1,0 +1,11 @@
+{
+  "$schema": "../../schemas/content/class.schema.json",
+  "id": "class.mage",
+  "kind": "class",
+  "role": "damage",
+  "range": 5,
+  "primaryStat": "intelligence",
+  "base": { "strength": 4, "intelligence": 14, "agility": 5, "health": 60, "mana": 70, "armor": 0, "speed": 0 },
+  "perLevel": { "strength": 0, "intelligence": 3, "agility": 1, "health": 8, "mana": 6, "armor": 0, "speed": 0 },
+  "specializations": ["spec.mage.elementalist"]
+}

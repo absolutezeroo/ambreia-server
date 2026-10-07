@@ -1,0 +1,11 @@
+{
+  "$schema": "../../schemas/content/class.schema.json",
+  "id": "class.cleric",
+  "kind": "class",
+  "role": "heal",
+  "range": 5,
+  "primaryStat": "intelligence",
+  "base": { "strength": 6, "intelligence": 12, "agility": 5, "health": 70, "mana": 60, "armor": 2, "speed": 0 },
+  "perLevel": { "strength": 1, "intelligence": 2, "agility": 1, "health": 12, "mana": 4, "armor": 1, "speed": 0 },
+  "specializations": ["spec.cleric.priest"]
+}

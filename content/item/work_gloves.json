@@ -1,0 +1,12 @@
+{
+  "$schema": "../../schemas/content/item.schema.json",
+  "id": "item.hands.work_gloves",
+  "kind": "item",
+  "category": "equipment",
+  "rarity": "common",
+  "slot": "hands",
+  "stats": { "strength": 1 },
+  "maxDurability": 40,
+  "sellValue": 2,
+  "binding": "none"
+}

@@ -1,0 +1,12 @@
+{
+  "$schema": "../../schemas/content/item.schema.json",
+  "id": "item.feet.worn_boots",
+  "kind": "item",
+  "category": "equipment",
+  "rarity": "common",
+  "slot": "feet",
+  "stats": { "agility": 1 },
+  "maxDurability": 40,
+  "sellValue": 2,
+  "binding": "none"
+}

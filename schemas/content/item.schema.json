@@ -1,0 +1,119 @@
+{
+  "type": "object",
+  "properties": {
+    "$schema": {
+      "type": "string"
+    },
+    "category": {
+      "enum": [
+        "equipment",
+        "consumable",
+        "material",
+        "furniture",
+        "mount",
+        "cosmetic",
+        "quest"
+      ]
+    },
+    "rarity": {
+      "enum": [
+        "common",
+        "uncommon",
+        "rare",
+        "epic",
+        "legendary"
+      ]
+    },
+    "slot": {
+      "enum": [
+        "head",
+        "chest",
+        "legs",
+        "feet",
+        "hands",
+        "weapon",
+        "offhand",
+        "neck",
+        "ring",
+        null
+      ]
+    },
+    "requiredLevel": {
+      "type": "integer"
+    },
+    "allowedClasses": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "stats": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "properties": {
+        "strength": {
+          "type": "integer"
+        },
+        "intelligence": {
+          "type": "integer"
+        },
+        "agility": {
+          "type": "integer"
+        },
+        "health": {
+          "type": "integer"
+        },
+        "mana": {
+          "type": "integer"
+        },
+        "armor": {
+          "type": "integer"
+        },
+        "speed": {
+          "type": "integer"
+        }
+      },
+      "additionalProperties": false
+    },
+    "maxDurability": {
+      "type": "integer"
+    },
+    "maxStack": {
+      "type": "integer"
+    },
+    "sellValue": {
+      "type": "integer"
+    },
+    "binding": {
+      "enum": [
+        "none",
+        "on_pickup",
+        "on_equip"
+      ]
+    },
+    "furnitureDefinition": {
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "id": {
+      "type": "string"
+    },
+    "kind": {
+      "type": "string"
+    },
+    "retired": {
+      "type": "boolean"
+    }
+  },
+  "required": [
+    "category",
+    "rarity",
+    "id",
+    "kind"
+  ],
+  "additionalProperties": false
+}

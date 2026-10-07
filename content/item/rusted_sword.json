@@ -1,0 +1,13 @@
+{
+  "$schema": "../../schemas/content/item.schema.json",
+  "id": "item.weapon.rusted_sword",
+  "kind": "item",
+  "category": "equipment",
+  "rarity": "common",
+  "slot": "weapon",
+  "allowedClasses": ["class.warrior"],
+  "stats": { "strength": 3 },
+  "maxDurability": 50,
+  "sellValue": 4,
+  "binding": "none"
+}

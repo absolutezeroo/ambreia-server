@@ -1,0 +1,12 @@
+{
+  "$schema": "../../schemas/content/item.schema.json",
+  "id": "item.legs.cloth_trousers",
+  "kind": "item",
+  "category": "equipment",
+  "rarity": "common",
+  "slot": "legs",
+  "stats": { "armor": 1 },
+  "maxDurability": 40,
+  "sellValue": 2,
+  "binding": "none"
+}
