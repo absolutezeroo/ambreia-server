@@ -1,3 +1,4 @@
+using System.Data.Common;
 using System.Linq;
 using System.Text.Json;
 using System.Threading;
@@ -20,19 +21,36 @@ public sealed class ZoneRoomSource(
     {
         await using VortexDbContext ctx = await db.CreateDbContextAsync(ct).ConfigureAwait(false);
 
-        string? json = await (
-            from z in ctx.Zones.AsNoTracking()
-            join v in ctx.ZoneVersions.AsNoTracking()
-                on new { Zone = z.Id, Version = z.PublishedVersion ?? -1 } equals new
-                {
-                    Zone = v.ZoneEntityId,
-                    Version = v.Version,
-                }
-            where z.RoomEntityId == roomId.Value
-            select v.Document
-        )
-            .FirstOrDefaultAsync(ct)
-            .ConfigureAwait(false);
+        string? json;
+
+        // A database created before the zone tables (an older check database, a restored backup)
+        // must still open every room -- as an ordinary one -- instead of failing every entry.
+        try
+        {
+            json = await (
+                from z in ctx.Zones.AsNoTracking()
+                join v in ctx.ZoneVersions.AsNoTracking()
+                    on new { Zone = z.Id, Version = z.PublishedVersion ?? -1 } equals new
+                    {
+                        Zone = v.ZoneEntityId,
+                        Version = v.Version,
+                    }
+                where z.RoomEntityId == roomId.Value
+                select v.Document
+            )
+                .FirstOrDefaultAsync(ct)
+                .ConfigureAwait(false);
+        }
+        catch (DbException ex)
+        {
+            logger.LogError(
+                ex,
+                "Zone lookup failed for room {RoomId}; opening it as an ordinary room",
+                roomId
+            );
+
+            return null;
+        }
 
         if (json is null)
         {

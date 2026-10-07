@@ -176,6 +176,24 @@ public sealed class ZoneEditorServiceTests : IAsyncLifetime
         (await source.GetPublishedAsync(new RoomId(zone.RoomId + 100), default)).Should().BeNull();
     }
 
+    /// <summary>
+    /// A database created before the zone tables existed: every room must still open, as an
+    /// ordinary room, rather than every entry crashing on the missing table.
+    /// </summary>
+    [Fact]
+    public async Task WithoutTheZoneTables_EveryRoomIsAnOrdinaryRoom()
+    {
+        await using (VortexDbContext db = new(_options))
+        {
+            await db.Database.ExecuteSqlRawAsync("DROP TABLE zone_versions");
+            await db.Database.ExecuteSqlRawAsync("DROP TABLE zones");
+        }
+
+        ZoneRoomSource source = new(new Factory(_options), NullLogger<ZoneRoomSource>.Instance);
+
+        (await source.GetPublishedAsync(new RoomId(1), default)).Should().BeNull();
+    }
+
     private async Task CreateLockedAsync()
     {
         await _service.CreateAsync("village", "Village", Author, null, default);
