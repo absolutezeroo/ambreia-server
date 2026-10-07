@@ -40,6 +40,16 @@ entries:
     justification: Same deadlock and same synchronous enqueue as the single-composer overload.
     owner: players
 
+  - symbol: Vortex.Primitives.Rooms.Grains.IRoomZone.ExpectArrivalAsync
+    overload: (PlayerId, String)
+    category: SynchronousBoundedLivenessOperation
+    implementation: Vortex.Rooms/Grains/RoomGrain.Zone.cs
+    justification: >
+      A passage awaits it from inside the source room's tick, and two rooms whose passages lead to
+      each other can each be in that call at once: non-interleaved, both would wait out the 30s
+      call timeout. The body records the expected entry synchronously and returns.
+    owner: rooms
+
   - symbol: Vortex.Primitives.Rooms.Grains.IRoomCore.GetSnapshotAsync
     overload: ()
     category: ImmutableRead

@@ -17,6 +17,22 @@ public sealed class ZoneRoomSource(
     ILogger<ZoneRoomSource> logger
 ) : IZoneRoomSource
 {
+    public async Task<RoomId?> FindPublishedRoomAsync(string zoneKey, CancellationToken ct)
+    {
+        await using VortexDbContext ctx = await db.CreateDbContextAsync(ct).ConfigureAwait(false);
+
+        // ponytail: one indexed lookup per passage taken; a cache invalidated on publication when
+        // passages get busy.
+        int? roomId = await ctx
+            .Zones.AsNoTracking()
+            .Where(z => z.Key == zoneKey && z.PublishedVersion != null)
+            .Select(z => (int?)z.RoomEntityId)
+            .FirstOrDefaultAsync(ct)
+            .ConfigureAwait(false);
+
+        return roomId is { } id ? new RoomId(id) : null;
+    }
+
     public async Task<ZoneDocument?> GetPublishedAsync(RoomId roomId, CancellationToken ct)
     {
         await using VortexDbContext ctx = await db.CreateDbContextAsync(ct).ConfigureAwait(false);

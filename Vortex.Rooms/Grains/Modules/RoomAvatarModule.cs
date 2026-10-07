@@ -122,6 +122,7 @@ public sealed partial class RoomAvatarModule(RoomGrain roomGrain)
             finally
             {
                 _roomGrain._state.AvatarsByPlayerId.Remove(playerId);
+                _roomGrain._state.ZoneRuntime?.Visitors.Remove(playerId);
             }
         }
         catch (Exception ex)
@@ -478,6 +479,8 @@ public sealed partial class RoomAvatarModule(RoomGrain roomGrain)
 
             _roomGrain.MapModule.AddAvatar(avatar, false);
             _roomGrain.MapModule.UpdateHeightForAvatar(avatar);
+
+            await OnZoneStepAsync(avatar, nextX, nextY, ct);
         }
         catch (Exception ex)
         {
@@ -490,6 +493,40 @@ public sealed partial class RoomAvatarModule(RoomGrain roomGrain)
 
             await StopWalkingAsync(avatar, ct);
         }
+    }
+
+    /// <summary>A player's step in a zone: a passage under them, else the areas they now stand in.</summary>
+    private async Task OnZoneStepAsync(IRoomAvatar avatar, int x, int y, CancellationToken ct)
+    {
+        if (
+            _roomGrain._state.ZoneRuntime is null
+            || avatar is not IRoomPlayer player
+            || player.PlayerId.Value <= 0
+        )
+        {
+            return;
+        }
+
+        if (await _roomGrain.ZonePassages.TryTakeAsync(player, x, y, ct))
+        {
+            return;
+        }
+
+        await _roomGrain.ZoneAreas.UpdateAsync(player.PlayerId, x, y, ct);
+    }
+
+    /// <summary>Puts a standing avatar on (x, y) at once, walk dropped.</summary>
+    public void Teleport(IRoomAvatar avatar, int x, int y)
+    {
+        CancelWalk(avatar);
+
+        int idx = _roomGrain.MapModule.ToIdx(x, y);
+
+        _roomGrain.MapModule.RollAvatar(
+            avatar,
+            idx,
+            _roomGrain.MapModule.GetTileHeightForAvatar(idx)
+        );
     }
 
     public Task<bool> UpdateAvatarWithPlayerAsync(

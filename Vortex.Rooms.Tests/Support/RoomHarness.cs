@@ -151,7 +151,15 @@ internal sealed class RoomHarness
                 }),
                 BuildPermissionService(capabilities),
                 FakeProxy.Create<IVortexMetrics>(_ => null),
-                FakeProxy.Create<IZoneRoomSource>(_ => Task.FromResult(Zone)),
+                FakeProxy.Create<IZoneRoomSource>(call =>
+                    call.Method.Name == nameof(IZoneRoomSource.FindPublishedRoomAsync)
+                        ? Task.FromResult<RoomId?>(
+                            ZoneRooms.TryGetValue((string)call.Args![0]!, out RoomId room)
+                                ? room
+                                : null
+                        )
+                        : Task.FromResult(Zone)
+                ),
             ]
         );
 
@@ -306,6 +314,12 @@ internal sealed class RoomHarness
 
     /// <summary>The published document the zone source answers with; null = an ordinary room.</summary>
     public ZoneDocument? Zone { get; set; }
+
+    /// <summary>The rooms of the other published zones, by zone key, for passages.</summary>
+    public Dictionary<string, RoomId> ZoneRooms { get; } = [];
+
+    /// <summary>Every arrival announced to another zone's room.</summary>
+    public List<(RoomId Room, PlayerId Player, string Entry)> ExpectedArrivals { get; } = [];
 
     /// <summary>The furniture definitions the room can resolve by id.</summary>
     public Dictionary<int, FurnitureDefinitionSnapshot> Definitions { get; } = [];
@@ -597,6 +611,20 @@ internal sealed class RoomHarness
                         _ => null,
                     }
                 );
+            }
+
+            if (call.Method.GetGenericArguments()[0] == typeof(IRoomZone))
+            {
+                RoomId destination = new((int)(long)call.Args![0]!);
+
+                return FakeProxy.Create<IRoomZone>(inner =>
+                {
+                    ExpectedArrivals.Add(
+                        (destination, (PlayerId)inner.Args![0]!, (string)inner.Args![1]!)
+                    );
+
+                    return null;
+                });
             }
 
             if (call.Method.GetGenericArguments()[0] != typeof(IPlayerPresenceGrain))

@@ -302,6 +302,7 @@ const H = {
   objects: 2104,
   userUpdate: 2613,
   moveAvatar: 2364,
+  notificationDialog: 2243,
 };
 
 // A socket that collects every frame the server sends, as { header, body }.
@@ -545,6 +546,104 @@ async function cmdZone() {
   log('Zone OK.');
 }
 
+// Two zones published through the editor API and walked through: a named area greets the player
+// (NotificationDialog), a passage forwards them to the other zone, and they arrive on the entry the
+// passage names -- not the destination's default arrival, not its door.
+async function cmdTravel() {
+  const base = `http://127.0.0.1:${WEBAPI}`;
+  const headers = { cookie: (await webSession()).cookie };
+  sql(`INSERT INTO player_account_roles (account_id, role_id)
+       SELECT a.id, r.id FROM player_accounts a, roles r
+       WHERE a.email='${PLAYER.email}' AND r.\`key\`='owner'
+         AND NOT EXISTS (SELECT 1 FROM player_account_roles x WHERE x.account_id=a.id AND x.role_id=r.id);`);
+
+  const tiles = Array.from({ length: 100 }, () => ({ height: 0, walkable: true, hole: false }));
+  const floor = { width: 10, length: 10, tiles, door: { x: 0, y: 5 }, doorDirection: 2 };
+  const docs = {
+    proof_b: {
+      schemaVersion: 1,
+      settings: { id: 'proof_b', name: 'Preuve B' },
+      floor,
+      entries: [
+        { id: 'start', kind: 'arrival', cell: { x: 8, y: 8 } },
+        { id: 'gate', kind: 'respawn', cell: { x: 2, y: 2 } },
+      ],
+    },
+    proof_a: {
+      schemaVersion: 1,
+      settings: { id: 'proof_a', name: 'Preuve A' },
+      floor,
+      zones: [{ id: 'market', kind: 'Safe', name: 'Marché', polygon: [{ x: 3, y: 0 }, { x: 5, y: 0 }, { x: 5, y: 9 }, { x: 3, y: 9 }] }],
+      passages: [{ id: 'road', area: [{ x: 7, y: 5 }], destinationZone: 'proof_b', destinationEntry: 'gate' }],
+    },
+  };
+
+  const rooms = {};
+  for (const [key, doc] of Object.entries(docs)) {
+    let r = await request(`${base}/api/editor/zones`, { method: 'POST', headers, body: JSON.stringify({ key, name: doc.settings.name }) });
+    if (r.status !== 200 && r.status !== 409) die(`Zone creation ${key}: ${r.status} ${r.body}`);
+    r = await request(`${base}/api/editor/zones/${key}/lock`, { method: 'POST', headers });
+    if (r.status !== 200) die(`Lock ${key}: ${r.status} ${r.body}`);
+    r = await request(`${base}/api/editor/zones/${key}/versions?comment=driver`, { method: 'POST', headers, body: JSON.stringify(doc) });
+    if (r.status !== 200) die(`Save ${key}: ${r.status} ${r.body}`);
+    const saved = JSON.parse(r.body);
+    if (!saved.published) {
+      r = await request(`${base}/api/editor/zones/${key}/publish/${saved.version}`, { method: 'POST', headers });
+      if (r.status !== 200) die(`Publish ${key}: ${r.status} ${r.body}`);
+    }
+    const zones = JSON.parse((await request(`${base}/api/editor/zones`, { headers })).body);
+    rooms[key] = zones.find((z) => z.key === key).roomId;
+  }
+  log(`Published proof_a (room ${rooms.proof_a}) and proof_b (room ${rooms.proof_b}).`);
+
+  const ticket = await ssoTicket();
+  const g = await gameSocket().catch((e) => die(`Socket error on :${GAME_TCP}: ${e.message}`));
+  const fail = (m) => {
+    g.close();
+    die(m);
+  };
+  g.send(frame(H.sso, ticket, 0));
+  if (!(await g.wait([H.authOk]))) fail('No AuthenticationOK.');
+
+  // Users: count, then per avatar id, name, motto, figure, room index, x, y...
+  const firstUserAt = (f) => {
+    const b = f.body;
+    let o = 4;
+    const str = () => ((o += 2 + b.readInt16BE(o)), null);
+    o += 4;
+    str(), str(), str();
+    o += 4;
+    return [b.readInt32BE(o), b.readInt32BE(o + 4)];
+  };
+  const enter = async (roomId) => {
+    const before = g.frames.length;
+    g.send(frame(H.openFlat, roomId, '', -1));
+    const burst = await g.wait([H.objects, H.cantConnect], before, 10000);
+    if (!burst || burst.header === H.cantConnect) fail(`Room ${roomId} refused or silent.`);
+    const own = await g.wait([H.users], g.frames.indexOf(burst) + 1, 5000);
+    if (!own) fail(`No avatar announced in room ${roomId}.`);
+    return firstUserAt(own);
+  };
+  const walk = async (x, y, headersToWait) => {
+    const before = g.frames.length;
+    g.send(frame(H.moveAvatar, x, y));
+    return g.wait(headersToWait, before, 8000);
+  };
+
+  log(`proof_a: arrived on (${(await enter(rooms.proof_a)).join(',')}) (door 0,5)`);
+  if (!(await walk(4, 5, [H.notificationDialog]))) fail('No bubble on entering the Marché area.');
+  log('Walked into Marché -> NotificationDialog.');
+  const forward = await walk(7, 5, [H.roomForward]);
+  if (!forward) fail('No RoomForward from the passage.');
+  const to = forward.body.readInt32BE(0);
+  if (to !== rooms.proof_b) fail(`Forwarded to ${to}, expected ${rooms.proof_b}.`);
+  log(`Passage -> RoomForward ${to}.`);
+  const at = await enter(to);
+  g.close();
+  if (at[0] !== 2 || at[1] !== 2) die(`Arrived on (${at.join(',')}), expected the passage's entry (2,2).`);
+  log(`proof_b: arrived on (2,2), the passage's entry. Travel OK.`);
+}
+
 // Enters a published zone by its key, as the throwaway player, and lists the floor items the room
 // sends: what the map editor saved is what a player sees.
 async function cmdEnter(key) {
@@ -622,6 +721,7 @@ const table = {
   play: cmdPlay,
   zone: cmdZone,
   enter: () => cmdEnter(args[0]),
+  travel: cmdTravel,
   cleanup: cmdCleanup,
   smoke: cmdSmoke,
 };
@@ -640,6 +740,7 @@ if (!cmd || !table[cmd]) {
   play      throwaway player -> SSO -> start zone -> heightmap -> one step
   zone      publish a zone through /api/editor, enter it, republish while inside
   enter <k> enter the published zone <k> and count the floor items it sends
+  travel    two proof zones: named area bubble, passage A -> B, arrival on the passage's entry
   cleanup   delete the throwaway account and its players`);
   process.exit(cmd ? 1 : 0);
 }

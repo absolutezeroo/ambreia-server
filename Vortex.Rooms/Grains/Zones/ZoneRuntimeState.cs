@@ -10,4 +10,7 @@ public sealed class ZoneRuntimeState(CompiledZone compiled)
 
     /// <summary>The entry each expected player arrives on, and when the expectation lapses.</summary>
     public Dictionary<PlayerId, (string EntryId, long ExpiresAtMs)> ExpectedArrivals { get; } = [];
+
+    /// <summary>The players in the room, from their arrival step to their exit.</summary>
+    public Dictionary<PlayerId, ZoneVisitor> Visitors { get; } = [];
 }
