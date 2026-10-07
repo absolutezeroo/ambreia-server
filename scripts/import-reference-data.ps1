@@ -62,6 +62,8 @@ $seeds = @(
 
 $batch = @("SET @src = '$Source';", "source scripts/sql/import_reference_data.sql")
 $batch += $seeds | ForEach-Object { "source Vortex.Database/Seeds/$_" }
+# After the models: the development zone needs model_a, and writes world.start_room_id.
+$batch += "source scripts/sql/dev_zone.sql"
 $batch += "SELECT 'room_models', COUNT(*) FROM room_models UNION ALL
 SELECT 'furniture_definitions', COUNT(*) FROM furniture_definitions UNION ALL
 SELECT 'furniture_purchasable_clothing', COUNT(*) FROM furniture_purchasable_clothing UNION ALL

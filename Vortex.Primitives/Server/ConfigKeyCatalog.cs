@@ -44,6 +44,13 @@ public static class ConfigKeyCatalog
             "General"
         ),
         new(
+            "world.start_room_id",
+            "0",
+            ConfigValueKind.Int,
+            "Room every login is forwarded into. 0 = none: the player stays on the hotel view.",
+            "World"
+        ),
+        new(
             "badge.rarity.minimum_players",
             "100",
             ConfigValueKind.Int,

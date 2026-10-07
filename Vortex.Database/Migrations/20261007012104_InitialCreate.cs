@@ -6984,7 +6984,7 @@ namespace Vortex.Database.Migrations
 
             // Reference data, in the order the squashed migrations applied it (M0). Each file is
             // under Vortex.Database/Seeds and SeedCatalogTests checks every embedded one is here.
-            migrationBuilder.Sql(SeedScripts.Read("seed_dashboard_staff_actor.sql"));
+            migrationBuilder.Sql(SeedScripts.Read("seed_world_owner.sql"));
             migrationBuilder.Sql(SeedScripts.Read("add_marketplace_settings.sql"));
             migrationBuilder.Sql(SeedScripts.Read("add_achievements.sql"));
             migrationBuilder.Sql(SeedScripts.Read("seed_more_achievements_fix_categories.sql"));
