@@ -31,6 +31,8 @@ using Vortex.Primitives.Rooms.Events;
 using Vortex.Primitives.Rooms.Grains;
 using Vortex.Primitives.Rooms.Object;
 using Vortex.Primitives.Rooms.Object.Avatars;
+using Vortex.Primitives.Rooms.Object.Furniture.Floor;
+using Vortex.Primitives.Rooms.Object.Furniture.Wall;
 using Vortex.Primitives.Rooms.Object.Logic;
 using Vortex.Primitives.Rooms.Providers;
 using Vortex.Primitives.Rooms.Snapshots;
@@ -85,7 +87,15 @@ internal sealed class RoomHarness
             Options.Create(new RoomConfig()),
             NullLogger<IRoomGrain>.Instance,
             FakeProxy.Create<IRoomModelProvider>(_ => null),
-            FakeProxy.Create<IRoomItemsProvider>(_ => null),
+            FakeProxy.Create<IRoomItemsProvider>(call =>
+                call.Method.Name == nameof(IRoomItemsProvider.LoadByRoomIdAsync)
+                    ? Task.FromResult<(
+                        IReadOnlyList<IRoomFloorItem>,
+                        IReadOnlyList<IRoomWallItem>,
+                        IReadOnlyDictionary<PlayerId, string>
+                    )>((FloorItemsToLoad, [], new Dictionary<PlayerId, string>()))
+                    : null
+            ),
             FakeProxy.Create<IRoomObjectLogicProvider>(call =>
                 call.Method.Name == nameof(IRoomObjectLogicProvider.CreateLogicInstance)
                     ? LogicFactory?.Invoke()
@@ -270,6 +280,9 @@ internal sealed class RoomHarness
     /// attach rather than reaching the map.
     /// </summary>
     public Func<IRoomObjectLogic>? LogicFactory { get; set; }
+
+    /// <summary>The floor items the room reads from its rows when it loads its furniture.</summary>
+    public List<IRoomFloorItem> FloorItemsToLoad { get; } = [];
 
     /// <summary>
     /// Server-config integers that differ from the compiled default. Everything else reads its

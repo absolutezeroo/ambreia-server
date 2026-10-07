@@ -1,7 +1,9 @@
+using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 using Orleans;
 using Vortex.Logging;
 using Vortex.Primitives;
@@ -49,22 +51,59 @@ public sealed partial class RoomFurniModule(RoomGrain roomGrain)
 
         _roomGrain._state.IsTileComputationPaused = true;
 
-        foreach (IRoomFloorItem item in floorItems)
+        try
         {
-            await _roomGrain.ObjectModule.AttatchObjectAsync(item, ct);
+            foreach (IRoomFloorItem item in floorItems)
+            {
+                await AttachLoadedItemAsync(item, ct);
+            }
         }
-
-        _roomGrain._state.IsTileComputationPaused = false;
+        finally
+        {
+            _roomGrain._state.IsTileComputationPaused = false;
+        }
 
         _roomGrain.MapModule.ComputeAllTiles();
         _roomGrain._state.DirtyHeightTileIds.Clear();
 
         foreach (IRoomWallItem item in wallItems)
         {
-            await _roomGrain.ObjectModule.AttatchObjectAsync(item, ct);
+            await AttachLoadedItemAsync(item, ct);
         }
 
         _roomGrain._state.IsFurniLoaded = true;
+    }
+
+    /// <summary>
+    /// One bad row -- a footprint past the map edge after a model change, a logic that no longer
+    /// exists -- leaves that item out of the room, logged, instead of keeping the room shut: an
+    /// exception here used to abort the load, and every retry then tripped over the items the
+    /// failed attempt had already attached.
+    /// </summary>
+    private async Task AttachLoadedItemAsync(IRoomItem item, CancellationToken ct)
+    {
+        try
+        {
+            if (await _roomGrain.ObjectModule.AttatchObjectAsync(item, ct))
+            {
+                return;
+            }
+
+            _roomGrain._logger.LogWarning(
+                "Item {ItemId} could not be placed in room {RoomId}; left out of the room.",
+                item.ObjectId,
+                _roomGrain.RoomId
+            );
+        }
+        catch (Exception ex) when (ex is not OperationCanceledException)
+        {
+            _roomGrain._logger.LogWarning(
+                ex,
+                "Item {ItemId} failed to load in room {RoomId}; left out of the room.",
+                item.ObjectId,
+                _roomGrain.RoomId
+            );
+        }
     }
 
     public async Task<bool> UseItemByIdAsync(

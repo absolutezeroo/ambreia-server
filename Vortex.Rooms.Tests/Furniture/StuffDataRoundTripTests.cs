@@ -42,6 +42,19 @@ public sealed class StuffDataRoundTripTests
     }
 
     [Fact]
+    public void AStuffSectionOfTheWrongShape_ReadsAsTheDefault()
+    {
+        // Valid JSON, wrong type for StringStuffData.Data: an import or a hand edit can write this,
+        // and it is read inside a room's activation.
+        IStuffData read = Factory.CreateStuffDataFromJson(
+            StuffDataType.StringKey,
+            """{"stuff":{"data":5}}"""
+        );
+
+        read.Should().BeEquivalentTo(Factory.CreateStuffData(StuffDataType.StringKey));
+    }
+
+    [Fact]
     public void LegacyStuffData_SurvivesAWriteThenRead()
     {
         string blob = WriteStuffSection(new { Data = "5" });

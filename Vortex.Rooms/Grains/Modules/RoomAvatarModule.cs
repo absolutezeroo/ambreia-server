@@ -111,9 +111,14 @@ public sealed partial class RoomAvatarModule(RoomGrain roomGrain)
                 return;
             }
 
-            await _roomGrain.ObjectModule.RemoveObjectAsync(ctx, avatar, ct, -1);
-
-            _roomGrain._state.AvatarsByPlayerId.Remove(playerId);
+            try
+            {
+                await _roomGrain.ObjectModule.RemoveObjectAsync(ctx, avatar, ct, -1);
+            }
+            finally
+            {
+                _roomGrain._state.AvatarsByPlayerId.Remove(playerId);
+            }
         }
         catch (Exception ex)
         {
@@ -236,7 +241,7 @@ public sealed partial class RoomAvatarModule(RoomGrain roomGrain)
         {
             int goalTileId = _roomGrain.MapModule.ToIdx(targetX, targetY);
             int currentTileId =
-                avatar.NextTileId > 0
+                avatar.NextTileId >= 0
                     ? avatar.NextTileId
                     : _roomGrain.MapModule.ToIdx(avatar.X, avatar.Y);
             (int currentX, int currentY) = _roomGrain.MapModule.GetTileXY(currentTileId);
@@ -458,14 +463,11 @@ public sealed partial class RoomAvatarModule(RoomGrain roomGrain)
 
             avatar.NextTileId = -1;
 
-            int prevTileId = _roomGrain.MapModule.ToIdx(avatar.X, avatar.Y);
             (int nextX, int nextY) = _roomGrain.MapModule.GetTileXY(nextTileId);
 
-            if (prevTileId == nextTileId)
-            {
-                return;
-            }
-
+            // No "already there" shortcut: a spawn is a first step onto the door, and an avatar not
+            // yet placed reads as (0, 0) -- with a door on (0, 0) the shortcut skipped the spawn and
+            // left the avatar off every tile stack. Removing then adding is harmless when it was on.
             _roomGrain.MapModule.RemoveAvatar(avatar, false);
 
             avatar.SetPosition(nextX, nextY);

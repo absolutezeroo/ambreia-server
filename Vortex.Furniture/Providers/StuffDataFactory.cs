@@ -57,7 +57,15 @@ public sealed class StuffDataFactory : IStuffDataFactory
     {
         type = (StuffDataType)((int)type & StuffDataBase.TYPE_MASK);
 
-        if (extraData.TryGetSection(ExtraDataSectionType.STUFF, out JsonElement stuffElement))
+        if (!extraData.TryGetSection(ExtraDataSectionType.STUFF, out JsonElement stuffElement))
+        {
+            return CreateStuffData(type);
+        }
+
+        // Valid JSON of the wrong shape (a number where a list is declared) throws, and this runs
+        // inside a room's activation: the item falls back to its default state, as ExtraDataReader
+        // does for JSON it cannot parse at all, rather than keeping the whole room shut.
+        try
         {
             return type switch
             {
@@ -75,8 +83,10 @@ public sealed class StuffDataFactory : IStuffDataFactory
                 _ => stuffElement.Deserialize<LegacyStuffData>(ReadOptions)!,
             };
         }
-
-        return CreateStuffData(type);
+        catch (JsonException)
+        {
+            return CreateStuffData(type);
+        }
     }
 
     public StuffDataSnapshot FromStuffData(IStuffData data)

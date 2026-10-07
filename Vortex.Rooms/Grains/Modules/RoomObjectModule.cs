@@ -128,9 +128,16 @@ public sealed partial class RoomObjectModule(RoomGrain roomGrain)
     /// </remarks>
     private void RollBackItemAttach(IRoomItem item)
     {
-        _roomGrain.MapModule.RemoveItem(item);
-
-        DetachItemFromLiveState(item);
+        // RemoveItem throws for a footprint that overhangs the map -- the very failure that can
+        // bring us here -- and the identity must still go, or the item stays a ghost.
+        try
+        {
+            _roomGrain.MapModule.RemoveItem(item);
+        }
+        finally
+        {
+            DetachItemFromLiveState(item);
+        }
     }
 
     /// <summary>
@@ -209,15 +216,23 @@ public sealed partial class RoomObjectModule(RoomGrain roomGrain)
             {
                 await _roomGrain.AvatarModule.StopWalkingAsync(avatar, ct);
 
+                // The tile and the identity go together, before the first await: a hook that
+                // throws must not leave an avatar that ticks and counts as present but blocks no
+                // tile. The room is told it left whatever the hook did.
                 _roomGrain.MapModule.RemoveAvatar(avatar, false);
-
-                await avatar.Logic.OnDetachAsync(ct);
-
-                await _roomGrain.SendComposerToRoomAsync(
-                    new UserRemoveMessageComposer { ObjectId = avatar.ObjectId }
-                );
-
                 _roomGrain._state.AvatarsByObjectId.Remove(avatar.ObjectId);
+
+                try
+                {
+                    await avatar.Logic.OnDetachAsync(ct);
+                }
+                finally
+                {
+                    await _roomGrain.SendComposerToRoomAsync(
+                        new UserRemoveMessageComposer { ObjectId = avatar.ObjectId }
+                    );
+                }
+
                 break;
             }
         }
