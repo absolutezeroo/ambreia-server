@@ -50,4 +50,7 @@ public class RoomConfig
     public int MaxPathNodes { get; init; } = 4096;
 
     public int MaxVisitorsLimit { get; init; } = 50;
+
+    /// <summary>How long a zone keeps the entry a passage or a teleport announced for a player.</summary>
+    public int ExpectedArrivalTimeoutMs { get; init; } = 30000;
 }

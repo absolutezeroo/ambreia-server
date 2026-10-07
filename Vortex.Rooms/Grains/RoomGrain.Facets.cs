@@ -19,4 +19,5 @@ public sealed partial class RoomGrain
         IRoomAvatars,
         IRoomMap,
         IRoomFurni,
-        IRoomSecurity { }
+        IRoomSecurity,
+        IRoomZone { }

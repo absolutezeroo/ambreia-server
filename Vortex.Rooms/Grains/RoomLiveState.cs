@@ -10,6 +10,7 @@ using Vortex.Primitives.Rooms.Object.Furniture;
 using Vortex.Primitives.Rooms.Snapshots.Mapping;
 using Vortex.Primitives.World;
 using Vortex.Rooms.Configuration;
+using Vortex.Rooms.Grains.Zones;
 
 namespace Vortex.Rooms.Grains;
 
@@ -49,6 +50,9 @@ public sealed class RoomLiveState
 
     /// <summary>The published document this room runs when it is a zone; null otherwise.</summary>
     public ZoneDocument? Zone { get; internal set; }
+
+    /// <summary>The compiled zone and its live state; null when the room is not a zone.</summary>
+    public ZoneRuntimeState? ZoneRuntime { get; internal set; }
     public bool IsFurniLoaded { get; internal set; } = false;
     public bool IsTileComputationPaused { get; internal set; } = false;
 

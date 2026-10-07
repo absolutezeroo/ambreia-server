@@ -50,7 +50,11 @@ public sealed partial class RoomAvatarModule(RoomGrain roomGrain)
         int startY = _roomGrain._state.Model?.DoorY ?? 0;
         Rotation startRot = _roomGrain._state.Model?.DoorRotation ?? Rotation.North;
 
-        if (!_roomGrain.MapModule.InBounds(startX, startY))
+        if (_roomGrain.ZoneArrival.TakeArrival(snapshot.PlayerId) is { } arrival)
+        {
+            (startX, startY, startRot) = arrival;
+        }
+        else if (!_roomGrain.MapModule.InBounds(startX, startY))
         {
             // A door outside the map means broken model data: spawning blindly on (0, 0) can drop
             // the avatar on a closed/blocked tile it can never walk off, so pick a real one.

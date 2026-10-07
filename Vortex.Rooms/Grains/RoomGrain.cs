@@ -83,6 +83,7 @@ public sealed partial class RoomGrain : Grain, IRoomGrain
 
     public readonly RoomPathingSystem PathingSystem;
     public readonly RoomSecurityModule SecurityModule;
+    public readonly ZoneArrivalModule ZoneArrival;
 
     internal IAsyncStream<RoomOutbound> _roomOutbound = default!;
 
@@ -133,6 +134,7 @@ public sealed partial class RoomGrain : Grain, IRoomGrain
         AvatarModule = new RoomAvatarModule(this);
         FurniModule = new RoomFurniModule(this);
         ActionModule = new RoomActionModule(this);
+        ZoneArrival = new ZoneArrivalModule(this);
 
         AvatarTickSystem = new RoomAvatarTickSystem(this);
     }
@@ -405,7 +407,17 @@ public sealed partial class RoomGrain : Grain, IRoomGrain
         }
 
         _state.Zone = zone;
+        _state.ZoneRuntime = new ZoneRuntimeState(ZoneCompiler.Compile(zone));
         _state.Model = ZoneRoomLoader.CompileModel(zone, _state.RoomId.Value, _roomModelProvider);
+    }
+
+    /// <summary>A zone's name, capacity and walls override the room row's, in memory.</summary>
+    internal void ApplyZoneSettings()
+    {
+        if (_state.Zone is not null)
+        {
+            _state.RoomSnapshot = ZoneSettingsApplier.Apply(_state.RoomSnapshot, _state.Zone);
+        }
     }
 
     private async Task HydrateRoomStateAsync(CancellationToken ct)
@@ -475,6 +487,8 @@ public sealed partial class RoomGrain : Grain, IRoomGrain
                 WallHeight = entity.WallHeight,
                 LastUpdatedUtc = DateTime.UtcNow,
             };
+
+            ApplyZoneSettings();
 
             _state.RoomProperties[RoomPropertyType.WALLPAPER] = DecorationOrDefault(
                 entity.PaintWall

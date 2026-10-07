@@ -17,4 +17,10 @@ namespace Vortex.Primitives.Rooms.Grains;
 /// </para>
 /// </summary>
 [Alias("Vortex.Primitives.Rooms.Grains.IRoomGrain")]
-public interface IRoomGrain : IRoomCore, IRoomAvatars, IRoomMap, IRoomFurni, IRoomSecurity { }
+public interface IRoomGrain
+    : IRoomCore,
+        IRoomAvatars,
+        IRoomMap,
+        IRoomFurni,
+        IRoomSecurity,
+        IRoomZone { }

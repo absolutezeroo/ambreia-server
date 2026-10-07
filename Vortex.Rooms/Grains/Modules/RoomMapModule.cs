@@ -161,26 +161,12 @@ public sealed partial class RoomMapModule(RoomGrain roomGrain)
 
         for (int idx = 0; idx < size; idx++)
         {
-            RoomTileFlags flags = GetTileFlagsOrBase(idx);
-
-            if (flags.Has(RoomTileFlags.Disabled) || flags.Has(RoomTileFlags.Closed))
+            if (!IsSpawnable(idx))
             {
                 continue;
             }
 
-            // Mirrors CanAvatarWalk with isGoal: a sittable/layable tile is a legal destination,
-            // any other furniture-occupied tile is only enterable when the stack is walkable.
-            if (
-                flags.Has(RoomTileFlags.FurnitureOccupied)
-                && !flags.Has(RoomTileFlags.Walkable)
-                && !flags.Has(RoomTileFlags.Sittable)
-                && !flags.Has(RoomTileFlags.Layable)
-            )
-            {
-                continue;
-            }
-
-            if (!flags.Has(RoomTileFlags.AvatarOccupied))
+            if (!GetTileFlagsOrBase(idx).Has(RoomTileFlags.AvatarOccupied))
             {
                 return (GetX(idx), GetY(idx));
             }
@@ -192,6 +178,24 @@ public sealed partial class RoomMapModule(RoomGrain roomGrain)
         }
 
         return occupiedIdx >= 0 ? (GetX(occupiedIdx), GetY(occupiedIdx)) : (0, 0);
+    }
+
+    /// <summary>Whether an avatar may appear on this tile, whoever already stands there.</summary>
+    public bool IsSpawnable(int idx)
+    {
+        RoomTileFlags flags = GetTileFlagsOrBase(idx);
+
+        if (flags.Has(RoomTileFlags.Disabled) || flags.Has(RoomTileFlags.Closed))
+        {
+            return false;
+        }
+
+        // Mirrors CanAvatarWalk with isGoal: a sittable/layable tile is a legal destination,
+        // any other furniture-occupied tile is only enterable when the stack is walkable.
+        return !flags.Has(RoomTileFlags.FurnitureOccupied)
+            || flags.Has(RoomTileFlags.Walkable)
+            || flags.Has(RoomTileFlags.Sittable)
+            || flags.Has(RoomTileFlags.Layable);
     }
 
     /// <summary>
