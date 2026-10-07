@@ -107,25 +107,6 @@ public static class Capabilities
         public const string OpsGuildsManage = "dashboard.ops.guilds.manage";
 
         /// <summary>
-        /// Taking a post or a comment down from the website's social feed, whoever wrote it.
-        /// </summary>
-        /// <remarks>
-        /// <para>
-        /// A player takes their own back through the site (<c>DELETE /api/user/feed/{id}</c>); this
-        /// is the other half. It lives here rather than on the public web API because
-        /// <c>Vortex.WebApi</c> has no permission check anywhere in it, and teaching it one for a
-        /// single endpoint would put the hotel's authorisation model in two places.
-        /// </para>
-        /// <para>
-        /// Named <c>dashboard.*</c> and listed in <see cref="All"/> because that list is what
-        /// registers the authorization policies. A capability outside it compiles green and then
-        /// throws "AuthorizationPolicy named '…' was not found" the first time an operator opens
-        /// the page — the failure <c>CapabilityDeclarationTests</c> exists to prevent.
-        /// </para>
-        /// </remarks>
-        public const string OpsFeedModerate = "dashboard.ops.feed.moderate";
-
-        /// <summary>
         /// Keeping the hotel-wide word list — adding, editing and removing words — and reading the
         /// journal of what it caught.
         /// </summary>
@@ -272,7 +253,6 @@ public static class Capabilities
             OpsFurnitureManage,
             GroupsRead,
             OpsGuildsManage,
-            OpsFeedModerate,
             OpsWordFilterManage,
             PetsRead,
             CfhRead,

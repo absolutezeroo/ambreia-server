@@ -84,16 +84,12 @@ public sealed class WebApiPlugin : IVortexPlugin
         services.TryAddSingleton<IWebApiArticleService, WebApiArticleService>();
         services.TryAddSingleton<IWebApiProfileService, WebApiProfileService>();
         services.TryAddSingleton<IWebApiRoomService, WebApiRoomService>();
-        services.TryAddSingleton<IWebApiFeedService, WebApiFeedService>();
         services.TryAddSingleton<IWebApiNotificationService, WebApiNotificationService>();
         services.TryAddSingleton<IPasswordResetMailer, SmtpPasswordResetMailer>();
         services.TryAddSingleton<IWebApiPasswordResetService, WebApiPasswordResetService>();
 
         // Before the sink, which takes it: the pub/sub the open tabs listen on.
         services.TryAddSingleton<NotificationBroadcaster>();
-
-        // The feed's own, public where that one is per-player: what the whole page listens to.
-        services.TryAddSingleton<FeedBroadcaster>();
 
         // The notification sink. The HANDLERS that fill it need no registration of their own —
         // PluginManager scans this assembly for IEventHandler<T> and resolves them from this

@@ -118,12 +118,6 @@ internal sealed class WebApiTestFactory : IAsyncDisposable
             new WebApiRoomService(DbContexts, NullLogger<WebApiRoomService>.Instance)
         );
 
-        // Real for the same reason again: the feed's access rule (not deleted, author not hidden)
-        // and its roots-only shape are exactly what is worth exercising against a database.
-        builder.Services.AddSingleton<IWebApiFeedService>(
-            new WebApiFeedService(DbContexts, Events, WordFilter)
-        );
-
         // Forwarded in production (WebApiWebHost.ForwardSingletons) — the same instance the grains
         // filter with. Registered here so check-webapi-forwarding.mjs finds the three lists agree.
         builder.Services.AddSingleton<IWordFilter>(WordFilter);
@@ -137,7 +131,6 @@ internal sealed class WebApiTestFactory : IAsyncDisposable
         // check-webapi-forwarding.mjs reads this file as text to compare the three registration
         // lists — and an inferred registration is one it cannot see.
         builder.Services.AddSingleton<NotificationBroadcaster>(Broadcast);
-        builder.Services.AddSingleton<FeedBroadcaster>(FeedBroadcast);
         builder.Services.AddSingleton<INotificationSink>(
             new NotificationSink(DbContexts, Broadcast, NullLogger<NotificationSink>.Instance)
         );
@@ -206,13 +199,7 @@ internal sealed class WebApiTestFactory : IAsyncDisposable
     public RecordingAuditSink Audit { get; } = new();
 
     /// <summary>
-    /// Everything the feed announced. There is no bus here, so this is how a test asks whether a
-    /// mention, a comment or a repost was raised at all.
-    /// </summary>
-    public FakeEventPublisher Events { get; } = new();
-
-    /// <summary>
-    /// The hotel-wide word filter the feed service and the routes both see. Passes everything unless
+    /// The hotel-wide word filter the routes see. Passes everything unless
     /// a test sets its <see cref="FakeWordFilter.Answer"/>.
     /// </summary>
     public FakeWordFilter WordFilter { get; } = new();
@@ -223,9 +210,6 @@ internal sealed class WebApiTestFactory : IAsyncDisposable
     /// only way to know the push actually lands.
     /// </summary>
     public NotificationBroadcaster Broadcast { get; } = new();
-
-    /// <summary>The feed's public fan-out, real for the same reason as the one above.</summary>
-    public FeedBroadcaster FeedBroadcast { get; } = new();
 
     /// <summary>The in-memory database behind the app, so a test can seed the rows it is about.</summary>
     public IDbContextFactory<VortexDbContext> DbContexts { get; }

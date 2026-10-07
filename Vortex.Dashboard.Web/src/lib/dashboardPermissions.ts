@@ -39,10 +39,6 @@ export const CAPABILITIES = {
   navigatorRead: 'dashboard.navigator.read',
   opsNavigatorManage: 'dashboard.ops.navigator.manage',
   socialRead: 'dashboard.social.read',
-  // Taking a post off the website's feed. It guards an API route and no page yet — the takedown
-  // is reachable from the endpoint and nothing in this sidebar calls it — but the capability has
-  // to be known here all the same, or the front end cannot see that it exists.
-  opsFeedModerate: 'dashboard.ops.feed.moderate',
   // The hotel-wide word list and the journal of what it caught — one grant for both.
   opsWordFilterManage: 'dashboard.ops.wordfilter.manage',
   staffRead: 'dashboard.staff.read',
@@ -103,7 +99,6 @@ export const ROUTE_PERMISSIONS = {
   gamedata: [CAPABILITIES.opsGamedataManage],
   // The same capability, deliberately: this page edits the same file with the same blast radius,
   // and a second grant would protect nothing the first one does not already give away.
-  hotelView: [CAPABILITIES.opsGamedataManage],
   console: [CAPABILITIES.serverConsoleRead, CAPABILITIES.opsServerConsole],
   playerRewards: [CAPABILITIES.playersRead],
   economyExtras: [CAPABILITIES.economyRead],

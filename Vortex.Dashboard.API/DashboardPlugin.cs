@@ -39,7 +39,6 @@ using Vortex.Primitives.Catalog.Tags;
 using Vortex.Primitives.Console;
 using Vortex.Primitives.Content;
 using Vortex.Primitives.Crypto;
-using Vortex.Primitives.Feed;
 using Vortex.Primitives.Fishing;
 using Vortex.Primitives.Furniture;
 using Vortex.Primitives.Furniture.Providers;
@@ -140,7 +139,6 @@ public sealed class DashboardPlugin : IVortexPlugin
         // dependencies for the reads, two for the writes, both visible in their constructors.
         services.TryAddSingleton<CatalogReads>();
         services.TryAddSingleton<CatalogOperations>();
-        services.TryAddSingleton<FeedOperations>();
         // The word filter: the reads take the live filter too, for the dry run.
         services.TryAddSingleton<WordFilterReads>();
         services.TryAddSingleton<WordFilterOperations>();
@@ -166,8 +164,6 @@ public sealed class DashboardPlugin : IVortexPlugin
         services.TryAddSingleton<ContentOperations>();
         services.TryAddSingleton<GamedataReads>();
         services.TryAddSingleton<GamedataOperations>();
-        services.TryAddSingleton<HotelViewReads>();
-        services.TryAddSingleton<HotelViewOperations>();
         services.TryAddSingleton<BackupOperations>();
         services.TryAddSingleton<ConsoleOperations>();
         services.TryAddSingleton<PrivacyOperations>();
@@ -209,7 +205,6 @@ public sealed class DashboardPlugin : IVortexPlugin
         services.TryAddSingleton<IQuestAdminService, QuestAdminService>();
         services.TryAddSingleton<IQuestContentAdminService, QuestContentAdminService>();
         services.TryAddSingleton<IWebArticleAdminService, WebArticleAdminService>();
-        services.TryAddSingleton<IFeedAdminService, FeedAdminService>();
         services.TryAddSingleton<IWordFilterAdminService, WordFilterAdminService>();
 
         // The dashboard runs as a self-contained ASP.NET Core (Kestrel) app. Inside the plugin's own

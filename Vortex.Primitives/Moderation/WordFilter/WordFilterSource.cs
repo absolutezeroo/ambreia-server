@@ -17,7 +17,8 @@ public enum WordFilterSource
     RoomInvite = 2,
     Motto = 3,
     Username = 4,
-    FeedPost = 5,
+
+    // 5 was FeedPost, removed with the website feed (M0 bis). Persisted: never reuse it.
 
     /// <summary>A group's name or description, at creation or edit.</summary>
     Group = 6,

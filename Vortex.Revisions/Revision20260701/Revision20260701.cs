@@ -13,7 +13,6 @@ public sealed class Revision20260701(IOptions<ProtocolLimitsConfig> protocolLimi
             new AvatarMap(),
             new CatalogMap(),
             new CollectiblesMap(),
-            new CompetitionMap(),
             new FriendListMap(protocolLimits.Value),
             new GroupForumsMap(),
             new HandshakeMap(),

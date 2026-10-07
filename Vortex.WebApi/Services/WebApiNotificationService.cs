@@ -21,7 +21,7 @@ namespace Vortex.WebApi.Services;
 /// </para>
 /// <para>
 /// The global soft-delete filter already hides deleted rows, so there is no <c>Readable</c> gate
-/// here the way the feed has one — nothing about a notification is conditional on who is asking,
+/// here — nothing about a notification is conditional on who is asking,
 /// because the only person who can ask is its owner.
 /// </para>
 /// </remarks>
@@ -103,9 +103,8 @@ public sealed class WebApiNotificationService(IDbContextFactory<VortexDbContext>
             .CreateDbContextAsync(ct)
             .ConfigureAwait(false);
 
-        // Loaded and stamped rather than one `ExecuteUpdateAsync`, which is the same call the feed
-        // already decided against beside it (WebApiFeedService, marking a thread read). Three
-        // reasons and none of them is the statement count:
+        // Loaded and stamped rather than one `ExecuteUpdateAsync`. Three reasons and none of them is
+        // the statement count:
         //
         //   - ExecuteUpdate BYPASSES the change interceptor, so the rows would miss the auditing
         //     and the updated_at stamp every other write here gets (EntityChangeInterceptor says

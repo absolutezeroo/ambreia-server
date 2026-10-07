@@ -1,4 +1,3 @@
-using Vortex.Primitives.Feed;
 using Vortex.Primitives.Players;
 using Vortex.Primitives.Players.Enums;
 
@@ -101,28 +100,6 @@ public sealed record SafetyLockRequest(bool? Locked, string? CurrentPassword, st
 {
     public bool IsValid => Locked is not null && !string.IsNullOrWhiteSpace(CurrentPassword);
 }
-
-/// <summary>
-/// Which choice the caller is taking in a feed poll.
-/// </summary>
-/// <remarks>
-/// The choice id alone, with the poll named by the route. The service checks the two agree, because
-/// on its own this is a number a browser sends and it would otherwise let a vote land on any poll
-/// in the hotel. Re-sending the same choice is a no-op and sending a different one MOVES the vote,
-/// so a retry can never turn one player into two voices.
-/// </remarks>
-public sealed record FeedVoteRequest(int ChoiceId);
-
-/// <summary>
-/// Whether the caller wants this reaction on this post, or not.
-/// </summary>
-/// <remarks>
-/// The WANTED STATE, not a toggle: a toggle sent twice — a flaky connection retrying, a double
-/// tap — lands on the opposite of what the reader pressed, and they cannot tell which of the two
-/// happened. <see cref="Kind"/> separates a repost from a favourite, which are independent — the
-/// unique index behind them spans the kind too.
-/// </remarks>
-public sealed record FeedReactionRequest(FeedReactionKind Kind, bool On);
 
 /// <summary>
 /// Sets, or replaces, the account's two security questions. The password is required because these

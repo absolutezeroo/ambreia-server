@@ -141,7 +141,7 @@ public sealed class WordFilterTests
         using WordFilterService filter = NewFilter(Word("con", WordFilterAction.Replace));
         await filter.ReloadAsync(CancellationToken.None);
 
-        filter.Apply("con " + new string('x', 1000), WordFilterSource.FeedPost, 9);
+        filter.Apply("con " + new string('x', 1000), WordFilterSource.Messenger, 9);
 
         _journal.Should().ContainSingle().Which.OriginalText.Length.Should().Be(512);
     }

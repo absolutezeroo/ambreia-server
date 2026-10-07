@@ -200,36 +200,6 @@ public sealed class WebApiConfig
         };
 
     /// <summary>
-    /// Fixed-window rate limit applied to <c>POST /api/user/feed</c> and
-    /// <c>DELETE /api/user/feed/{id}</c>.
-    ///
-    /// <para>
-    /// The feed is the one surface here where the cost of a flood is paid by every reader rather
-    /// than by the flooder: a page of twenty posts is twenty posts by whoever posted fastest. Ten
-    /// a minute is far above what a person writing sentences reaches, and far below what a loop
-    /// does.
-    /// </para>
-    /// <para>
-    /// The delete route shares this budget rather than declaring one of its own, for a different
-    /// reason: it verifies a six-digit second factor, and an unthrottled verifier is one an
-    /// attacker walks through. Ten attempts a minute is the same "a handful of writes" the
-    /// publishes get, and the two together are still more than a person does.
-    /// </para>
-    /// <para>
-    /// Votes and reactions are not limited. They are cheap, they undo, and a reader legitimately
-    /// fires several in a row going down a page; rationing those would punish normal use to no
-    /// purpose.
-    /// </para>
-    /// </summary>
-    public RateLimitOptions FeedPostRateLimit { get; set; } =
-        new RateLimitOptions
-        {
-            PermitLimit = 10,
-            WindowSeconds = 60,
-            QueueLimit = 0,
-        };
-
-    /// <summary>
     /// Fixed-window rate limit applied to <c>POST /api/user/shop/orders</c>. Opening an order costs a
     /// row and charges nobody anything; the limit keeps a script from filling the table.
     /// </summary>

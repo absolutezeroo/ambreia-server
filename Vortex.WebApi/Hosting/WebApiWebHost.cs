@@ -267,12 +267,11 @@ internal sealed class WebApiWebHost(
         services.AddSingleton(rootServices.GetRequiredService<IWebApiArticleService>());
         services.AddSingleton(rootServices.GetRequiredService<IWebApiProfileService>());
         services.AddSingleton(rootServices.GetRequiredService<IWebApiRoomService>());
-        services.AddSingleton(rootServices.GetRequiredService<IWebApiFeedService>());
         services.AddSingleton(rootServices.GetRequiredService<IWebApiNotificationService>());
         services.AddSingleton(rootServices.GetRequiredService<IWebApiPasswordResetService>());
 
         // The very instance the grains filter with: one compiled list, one reload. No route takes it
-        // as a parameter today — the feed and player services above were built with it in the root
+        // as a parameter today — the player service above were built with it in the root
         // container — but forwarding it is what keeps a future route from building its own.
         services.AddSingleton(rootServices.GetRequiredService<IWordFilter>());
 
@@ -280,7 +279,6 @@ internal sealed class WebApiWebHost(
         // container and the stream endpoint in this one, and two broadcasters would mean a push
         // that reaches nobody.
         services.AddSingleton(rootServices.GetRequiredService<NotificationBroadcaster>());
-        services.AddSingleton(rootServices.GetRequiredService<FeedBroadcaster>());
         services.AddSingleton(rootServices.GetRequiredService<RequiredServiceGuard>());
         services.AddSingleton(rootServices.GetRequiredService<IAccountPasswordService>());
         services.AddSingleton(rootServices.GetRequiredService<IAccountMfaService>());

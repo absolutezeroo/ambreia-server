@@ -126,7 +126,6 @@ public sealed class ApiTypeScriptContractTests
         typeof(GamedataFileList),
         typeof(GamedataEntryPage),
         typeof(GamedataLanguageList),
-        typeof(HotelViewConfig),
         typeof(ApiRouteCatalog),
         typeof(RoomSummaryDto),
         typeof(RoomOccupantSnapshot),

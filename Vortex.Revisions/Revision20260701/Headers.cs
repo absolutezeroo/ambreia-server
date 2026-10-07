@@ -41,8 +41,6 @@ internal static class MessageEvent
     public const int GetPetInfoMessageEvent = 3899; // AS3-verified (old-revision trace): _SafeCls_3258 -> requestPetInfo() still exists in current revision at 3899
     public const int PetSelectedMessageEvent = 2757; // AS3-verified (old-revision trace): _SafeCls_2740 -> handleGetPetInfoMessage() still exists in current revision at 2757
 
-    public const int GetCurrentTimingCodeMessageEvent = 1503;
-
     public const int GetCreditsInfoEvent = 540;
     public const int CallForHelpFromForumMessageMessageEvent = 2991;
     public const int CallForHelpFromForumThreadMessageEvent = 380;
@@ -57,7 +55,6 @@ internal static class MessageEvent
 
     public const int OpenFlatConnectionMessageEvent = 3234;
     public const int QuitMessageEvent = 3061;
-    public const int GetBonusRareInfoMessageEvent = 251;
     public const int GetBundleDiscountRulesetEvent = 317; // AS3-verified: HabboCatalog::sendGetBundleDiscountRuleset(). Note: GetBundleDiscountRulesetVortexEvent (1811) also resolves to this same AS3 message - likely a Vortex-specific duplicate/extension with no distinct AS3 backing, left untouched
     public const int GetCatalogIndexEvent = 2232;
     public const int GetCatalogPageEvent = 2093;
@@ -451,7 +448,6 @@ internal static class MessageComposer
     public const int AchievementComposer = 3981; // AS3-verified (ghost fix): onAchievement
     public const int AchievementsComposer = 1969; // AS3-verified (ghost fix): onAchievements
     public const int AchievementsScoreComposer = 3070;
-    public const int BonusRareInfoMessageComposer = 3573;
     public const int BundleDiscountRulesetMessageComposer = 1073; // AS3-verified (ghost fix): onBundleDiscountRulesetMessageEvent @ HabboCatalog
     public const int CatalogIndexMessageComposer = 3666;
     public const int CatalogPageMessageComposer = 1660;
@@ -586,7 +582,6 @@ internal static class MessageComposer
     public const int RoomSettingsDataComposer = 791;
     public const int RoomSettingsSavedComposer = 1783;
     public const int UserUnbannedFromRoomComposer = 2089;
-    public const int CurrentTimingCodeMessageComposer = 3076;
     public const int CfhChatlogComposer = 3880; // AS3-verified (ghost fix): onCfhChatlog @ ModerationMessageHandler
     public const int IssueDeletedMessageComposer = 122; // AS3-verified (ghost fix): onIssueDeleted @ ModerationMessageHandler
 

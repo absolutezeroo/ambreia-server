@@ -4,7 +4,6 @@ using Vortex.Database.Entities.Audit;
 using Vortex.Database.Entities.Catalog;
 using Vortex.Database.Entities.Commerce;
 using Vortex.Database.Entities.Errors;
-using Vortex.Database.Entities.Feed;
 using Vortex.Database.Entities.Fishing;
 using Vortex.Database.Entities.Furniture;
 using Vortex.Database.Entities.Groups;
@@ -120,18 +119,6 @@ public class VortexDbContext(DbContextOptions<VortexDbContext> options)
     public DbSet<WordFilterWordEntity> WordFilterWords { get; init; } = null!;
 
     public DbSet<WordFilterHitEntity> WordFilterHits { get; init; } = null!;
-
-    public DbSet<WebFeedPostEntity> WebFeedPosts { get; init; } = null!;
-
-    public DbSet<WebFeedPollChoiceEntity> WebFeedPollChoices { get; init; } = null!;
-
-    public DbSet<WebFeedPollVoteEntity> WebFeedPollVotes { get; init; } = null!;
-
-    public DbSet<WebFeedReactionEntity> WebFeedReactions { get; init; } = null!;
-
-    public DbSet<WebFeedTagEntity> WebFeedTags { get; init; } = null!;
-
-    public DbSet<WebFeedPostTagEntity> WebFeedPostTags { get; init; } = null!;
 
     public DbSet<WebNotificationEntity> WebNotifications { get; init; } = null!;
 

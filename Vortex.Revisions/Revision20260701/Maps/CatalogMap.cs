@@ -11,10 +11,6 @@ internal sealed class CatalogMap : IRevisionMap
     {
         // charge firework?
         builder.MapParser(
-            MessageEvent.GetBonusRareInfoMessageEvent,
-            new GetBonusRareInfoMessageParser()
-        );
-        builder.MapParser(
             MessageEvent.GetBundleDiscountRulesetEvent,
             new GetBundleDiscountRulesetMessageParser()
         );
@@ -61,10 +57,6 @@ internal sealed class CatalogMap : IRevisionMap
         );
         builder.MapParser(MessageEvent.SelectClubGiftEvent, new SelectClubGiftMessageParser());
 
-        builder.MapSerializer(
-            typeof(BonusRareInfoMessageComposer),
-            new BonusRareInfoMessageComposerSerializer(MessageComposer.BonusRareInfoMessageComposer)
-        );
         builder.MapSerializer(
             typeof(BundleDiscountRulesetMessageComposer),
             new BundleDiscountRulesetMessageComposerSerializer(

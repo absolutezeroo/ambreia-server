@@ -36,7 +36,6 @@ internal static partial class WebApiEndpoints
     public const string SsoTokenRateLimitPolicy = "webapi-ssotoken";
     public const string ReportRateLimitPolicy = "webapi-report";
     public const string ShopOrderRateLimitPolicy = "webapi-shop-order";
-    public const string FeedPostRateLimitPolicy = "webapi-feed-post";
 
     private const string TagPublic = "Public";
     private const string TagAuth = "Authentication";
@@ -58,10 +57,6 @@ internal static partial class WebApiEndpoints
         MapNewUser(app);
         MapContent(app);
         MapShop(app);
-
-        // The website's social feed. The reads are anonymous, like the profile; the publish route is the composer's, tagged User like every other route behind a session — see
-        // WebApiEndpoints.Feed.cs.
-        WebApiEndpointsFeed.MapFeed(app, TagPublic, TagUser);
 
         // No public tag: a notification has exactly one reader, so both of its routes are the
         // player's own.

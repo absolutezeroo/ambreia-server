@@ -17,8 +17,7 @@ namespace Vortex.WebApi.Hosting;
 /// What the hotel has told this player.
 /// </summary>
 /// <remarks>
-/// Both routes are a player's own and neither is public — unlike the feed, where the reads are
-/// anonymous. A notification has exactly one reader.
+/// Both routes are a player's own and neither is public: a notification has exactly one reader.
 /// </remarks>
 internal static partial class WebApiEndpointsNotifications
 {

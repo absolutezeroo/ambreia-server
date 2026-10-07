@@ -72,11 +72,8 @@ public enum NotificationKind
     // 43 was HabbiconCollectionCompleted, removed in the RPG fork (M0). Persisted: never reuse it.
     PrizeAwarded = 44,
 
-    // ---- The website's feed ----------------------------------------------------------------
-    FeedMentioned = 50,
-    FeedCommented = 51,
-    FeedReposted = 52,
-    FeedFavourited = 53,
+    // 50-53 were the website feed's (mention, comment, repost, favourite), removed with the feed
+    // (M0 bis). Persisted: never reuse them.
 
     // ---- Account security ------------------------------------------------------------------
     /// <remarks>

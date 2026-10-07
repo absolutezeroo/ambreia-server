@@ -63,7 +63,6 @@ GET /api/v1/guilds -> dashboard.ops.guilds.manage
 GET /api/v1/guilds/{guildId:int} -> dashboard.ops.guilds.manage
 GET /api/v1/guilds/{guildId:int}/threads/{threadId:int} -> dashboard.ops.guilds.manage
 GET /api/v1/hand-items -> dashboard.bots.read
-GET /api/v1/hotelview -> dashboard.ops.gamedata.manage
 GET /api/v1/meta/endpoints -> dashboard.overview.read
 GET /api/v1/monitoring/incidents -> dashboard.overview.read
 GET /api/v1/monitoring/infrastructure -> dashboard.overview.read
@@ -146,7 +145,6 @@ POST /api/v1/operations/daily-tasks -> dashboard.ops.quests.manage
 POST /api/v1/operations/daily-tasks/delete -> dashboard.ops.quests.manage
 POST /api/v1/operations/daily-tasks/update -> dashboard.ops.quests.manage
 POST /api/v1/operations/database/backup -> dashboard.ops.database.backup
-POST /api/v1/operations/feed/remove -> dashboard.ops.feed.moderate
 POST /api/v1/operations/fishing/levels -> dashboard.ops.fishing.manage
 POST /api/v1/operations/fishing/levels/delete -> dashboard.ops.fishing.manage
 POST /api/v1/operations/fishing/levels/update -> dashboard.ops.fishing.manage
@@ -176,7 +174,6 @@ POST /api/v1/operations/guilds/delete -> dashboard.ops.guilds.manage
 POST /api/v1/operations/guilds/forum/post -> dashboard.ops.guilds.manage
 POST /api/v1/operations/guilds/forum/thread -> dashboard.ops.guilds.manage
 POST /api/v1/operations/guilds/member -> dashboard.ops.guilds.manage
-POST /api/v1/operations/hotelview -> dashboard.ops.gamedata.manage
 POST /api/v1/operations/items/grant -> dashboard.ops.item.grant
 POST /api/v1/operations/items/pickup -> dashboard.ops.item.grant
 POST /api/v1/operations/items/refund -> dashboard.ops.currency.grant
