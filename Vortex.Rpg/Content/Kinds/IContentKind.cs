@@ -15,6 +15,10 @@ public interface IContentKind
     /// <summary>The kind as written in documents and as the first segment of their ids.</summary>
     public string Kind { get; }
 
+    /// <summary>The first segment of this kind's ids: the kind itself, except <c>spec</c> for
+    /// specializations (spec Contenu §4.1).</summary>
+    public string IdPrefix { get; }
+
     public Type DefinitionType { get; }
 
     /// <exception cref="System.Text.Json.JsonException">The document does not fit the record.</exception>

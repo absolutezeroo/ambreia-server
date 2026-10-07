@@ -10,6 +10,8 @@ public sealed class SpecializationKind : ContentKind<SpecializationDefinition>
 {
     public override string Kind => "specialization";
 
+    public override string IdPrefix => "spec";
+
     protected override IEnumerable<ContentFinding> Check(
         SpecializationDefinition s,
         ContentCheck check
