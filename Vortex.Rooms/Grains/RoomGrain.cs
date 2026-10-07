@@ -86,6 +86,7 @@ public sealed partial class RoomGrain : Grain, IRoomGrain
     public readonly ZoneArrivalModule ZoneArrival;
     public readonly ZoneAreaModule ZoneAreas;
     public readonly ZonePassageModule ZonePassages;
+    public readonly ZoneInteractionModule ZoneInteractions;
 
     internal IAsyncStream<RoomOutbound> _roomOutbound = default!;
 
@@ -139,6 +140,7 @@ public sealed partial class RoomGrain : Grain, IRoomGrain
         ZoneArrival = new ZoneArrivalModule(this);
         ZoneAreas = new ZoneAreaModule(this);
         ZonePassages = new ZonePassageModule(this);
+        ZoneInteractions = new ZoneInteractionModule(this);
 
         AvatarTickSystem = new RoomAvatarTickSystem(this);
     }

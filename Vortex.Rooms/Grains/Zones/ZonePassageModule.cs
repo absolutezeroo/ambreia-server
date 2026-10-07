@@ -46,13 +46,26 @@ public sealed class ZonePassageModule(RoomGrain roomGrain)
 
         visitor.PassageReadyAtMs[passage.Id] = now + passage.CooldownSeconds * 1000L;
 
+        await TakeAsync(player, passage, ct);
+
+        return true;
+    }
+
+    /// <summary>Sends the player through a passage, wherever they stand (a step, a teleporter).</summary>
+    public async Task TakeAsync(IRoomPlayer player, ZonePassage passage, CancellationToken ct)
+    {
+        CompiledZone zone = roomGrain._state.ZoneRuntime!.Compiled;
+
         roomGrain.AvatarModule.CancelWalk(player);
 
-        if (passage.DestinationZone == zone.Compiled.Document.Settings.Id)
+        if (passage.DestinationZone == zone.Document.Settings.Id)
         {
-            await MoveWithinAsync(player, passage, ct);
+            if (zone.Entries.TryGetValue(passage.DestinationEntry, out ZoneEntry? entry))
+            {
+                await MoveToAsync(player, entry, ct);
+            }
 
-            return true;
+            return;
         }
 
         RoomId? destination = await roomGrain._zoneSource.FindPublishedRoomAsync(
@@ -69,7 +82,7 @@ public sealed class ZonePassageModule(RoomGrain roomGrain)
                 "Ce passage ne mène nulle part pour l'instant."
             );
 
-            return true;
+            return;
         }
 
         await roomGrain
@@ -78,22 +91,12 @@ public sealed class ZonePassageModule(RoomGrain roomGrain)
         await roomGrain
             ._grainFactory.GetPlayerPresenceGrain(player.PlayerId)
             .SendComposerAsync(new RoomForwardMessageComposer { RoomId = room });
-
-        return true;
     }
 
-    private async Task MoveWithinAsync(
-        IRoomPlayer player,
-        ZonePassage passage,
-        CancellationToken ct
-    )
+    /// <summary>Puts the player on an entry of this zone at once, and updates their areas.</summary>
+    public async Task MoveToAsync(IRoomPlayer player, ZoneEntry entry, CancellationToken ct)
     {
-        ZoneRuntimeState zone = roomGrain._state.ZoneRuntime!;
-
-        if (
-            !zone.Compiled.Entries.TryGetValue(passage.DestinationEntry, out ZoneEntry? entry)
-            || !roomGrain.MapModule.InBounds(entry.Cell.X, entry.Cell.Y)
-        )
+        if (!roomGrain.MapModule.InBounds(entry.Cell.X, entry.Cell.Y))
         {
             return;
         }

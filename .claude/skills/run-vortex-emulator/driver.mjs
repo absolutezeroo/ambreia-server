@@ -303,6 +303,7 @@ const H = {
   userUpdate: 2613,
   moveAvatar: 2364,
   notificationDialog: 2243,
+  useFurniture: 3353,
 };
 
 // A socket that collects every frame the server sends, as { header, body }.
@@ -575,6 +576,11 @@ async function cmdTravel() {
       floor,
       zones: [{ id: 'market', kind: 'Safe', name: 'Marché', polygon: [{ x: 3, y: 0 }, { x: 5, y: 0 }, { x: 5, y: 9 }, { x: 3, y: 9 }] }],
       passages: [{ id: 'road', area: [{ x: 7, y: 5 }], destinationZone: 'proof_b', destinationEntry: 'gate' }],
+      // Room objects 1 and 2: a closed door on (2,2) and a sign on (1,1).
+      decor: [
+        { id: 'door', definition: THRONE, class: 'throne', x: 2, y: 2, interaction: 'door' },
+        { id: 'sign', definition: THRONE, class: 'throne', x: 1, y: 1, interaction: 'sign', tag: 'Bienvenue à Preuve A' },
+      ],
     },
   };
 
@@ -631,6 +637,26 @@ async function cmdTravel() {
   };
 
   log(`proof_a: arrived on (${(await enter(rooms.proof_a)).join(',')}) (door 0,5)`);
+
+  // A UserUpdate whose status moves the avatar onto (x, y).
+  const movesOnto = (x, y, from) =>
+    g.frames.slice(from).some((f) => f.header === H.userUpdate && f.body.includes(`mv ${x},${y},`));
+  let mark = g.frames.length;
+  g.send(frame(H.moveAvatar, 2, 2));
+  await sleep(2500);
+  if (movesOnto(2, 2, mark)) fail('Walked onto the closed door.');
+  mark = g.frames.length;
+  g.send(frame(H.useFurniture, 1, 0));
+  await sleep(500);
+  g.send(frame(H.moveAvatar, 2, 2));
+  await sleep(2500);
+  if (!movesOnto(2, 2, mark)) fail('The door, used, did not let the avatar through.');
+  log('Closed door refused the step; UseFurniture opened it; walked onto it.');
+  mark = g.frames.length;
+  g.send(frame(H.useFurniture, 2, 0));
+  const sign = await g.wait([H.notificationDialog], mark, 5000);
+  if (!sign || !sign.body.includes('Bienvenue')) fail('The sign said nothing.');
+  log('UseFurniture on the sign -> NotificationDialog "Bienvenue à Preuve A".');
   if (!(await walk(4, 5, [H.notificationDialog]))) fail('No bubble on entering the Marché area.');
   log('Walked into Marché -> NotificationDialog.');
   const forward = await walk(7, 5, [H.roomForward]);

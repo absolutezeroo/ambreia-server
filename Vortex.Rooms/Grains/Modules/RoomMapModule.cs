@@ -180,6 +180,16 @@ public sealed partial class RoomMapModule(RoomGrain roomGrain)
         return occupiedIdx >= 0 ? (GetX(occupiedIdx), GetY(occupiedIdx)) : (0, 0);
     }
 
+    /// <summary>A zone's door or collision override first, else the furni's own logic.</summary>
+    public bool CanWalkOn(IRoomFloorItem item) =>
+        _roomGrain._state.ZoneRuntime?.Walkable(item.ObjectId.Value) ?? item.Logic.CanWalk();
+
+    public bool CanSitOn(IRoomFloorItem item) =>
+        _roomGrain._state.ZoneRuntime?.Seat(item.ObjectId.Value) ?? item.Logic.CanSit();
+
+    public bool CanLayOn(IRoomFloorItem item) =>
+        _roomGrain._state.ZoneRuntime?.Bed(item.ObjectId.Value) ?? item.Logic.CanLay();
+
     /// <summary>Whether an avatar may appear on this tile, whoever already stands there.</summary>
     public bool IsSpawnable(int idx)
     {
@@ -405,17 +415,17 @@ public sealed partial class RoomMapModule(RoomGrain roomGrain)
                 nextFlags = nextFlags.Add(RoomTileFlags.StackBlocked);
             }
 
-            if (nextHighestItem.Logic.CanWalk())
+            if (CanWalkOn(nextHighestItem))
             {
                 nextFlags = nextFlags.Add(RoomTileFlags.Walkable);
             }
 
-            if (nextHighestItem.Logic.CanSit())
+            if (CanSitOn(nextHighestItem))
             {
                 nextFlags = nextFlags.Add(RoomTileFlags.Sittable);
             }
 
-            if (nextHighestItem.Logic.CanLay())
+            if (CanLayOn(nextHighestItem))
             {
                 nextFlags = nextFlags.Add(RoomTileFlags.Layable);
             }
@@ -584,17 +594,17 @@ public sealed partial class RoomMapModule(RoomGrain roomGrain)
                 flags = flags.Add(RoomTileFlags.StackBlocked);
             }
 
-            if (floorItem.Logic.CanWalk())
+            if (CanWalkOn(floorItem))
             {
                 flags = flags.Add(RoomTileFlags.Walkable);
             }
 
-            if (floorItem.Logic.CanSit())
+            if (CanSitOn(floorItem))
             {
                 flags = flags.Add(RoomTileFlags.Sittable);
             }
 
-            if (floorItem.Logic.CanLay())
+            if (CanLayOn(floorItem))
             {
                 flags = flags.Add(RoomTileFlags.Layable);
             }

@@ -82,5 +82,9 @@ public sealed class CompiledZone
 
     public string? DecorId(int objectId) => _decorIds.GetValueOrDefault(objectId);
 
+    /// <summary>The floor decor object behind a room object id, or null (wall decor, not decor).</summary>
+    public ZoneDecorObject? FloorDecor(int objectId) =>
+        objectId >= 1 && objectId <= Document.Decor.Count ? Document.Decor[objectId - 1] : null;
+
     private bool Inside(int x, int y) => x >= 0 && y >= 0 && x < Width && y < Length;
 }

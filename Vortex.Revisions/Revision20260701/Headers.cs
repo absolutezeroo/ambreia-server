@@ -19,6 +19,13 @@ internal static class MessageEvent
     public const int GetFurnitureAliasesMessageEvent = 1901;
     public const int MoveAvatarMessageEvent = 2364;
 
+    // AS3-verified (direct read): RoomObjectEventHandler (_SafeCls_1821.as:2570) changeRoomObjectState()
+    // branches on the object category -- category 10 (floor) sends UseFurniture(objectId, param)
+    // @3353, category 20 (wall) sends _SafeCls_3754(objectId, param) @3590. Both were registered
+    // before the core cut (72aecdde2) with these ids.
+    public const int UseFurnitureMessageEvent = 3353;
+    public const int UseWallItemMessageEvent = 3590;
+
     public const int LookToMessageEvent = 2508; // AS3-verified: the client registry maps _composers[2508] to the (x,y) composer RoomObjectEventHandler.setSelectedAvatar() sends when an avatar is selected without a click-user wired (WIN63 habbo/communication/_SafeCls_2046.as:819, LookToMessageComposer in win63_version). Was 9103, a placeholder whose own comment flagged it as unresolved; the parser here already read the right two ints, so only the header was wrong
     #endregion
 

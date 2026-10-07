@@ -44,8 +44,8 @@ public sealed partial class RoomMapModule
                 && item is IRoomFloorItem floorItem
             )
             {
-                canSit = floorItem.Logic.CanSit();
-                canLay = floorItem.Logic.CanLay();
+                canSit = CanSitOn(floorItem);
+                canLay = CanLayOn(floorItem);
 
                 if (canSit)
                 {

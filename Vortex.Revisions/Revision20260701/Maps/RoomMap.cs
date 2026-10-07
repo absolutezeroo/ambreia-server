@@ -30,6 +30,8 @@ internal sealed class RoomMap : IRevisionMap
             new GetFurnitureAliasesMessageParser()
         );
         builder.MapParser(MessageEvent.MoveAvatarMessageEvent, new MoveAvatarMessageParser());
+        builder.MapParser(MessageEvent.UseFurnitureMessageEvent, new UseFurnitureMessageParser());
+        builder.MapParser(MessageEvent.UseWallItemMessageEvent, new UseWallItemMessageParser());
 
         // Room Furniture
 

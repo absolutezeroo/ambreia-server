@@ -156,6 +156,11 @@ public sealed partial class RoomActionModule(RoomGrain roomGrain)
             throw new VortexException(VortexErrorCodeEnum.FloorItemNotFound);
         }
 
+        if (await _roomGrain.ZoneInteractions.TryUseAsync(ctx, item, param, ct))
+        {
+            return true;
+        }
+
         FurnitureUsageType usagePolicy = item.Logic.GetUsagePolicy();
 
         bool canUse = await _roomGrain.SecurityModule.CanUseFurniAsync(ctx, usagePolicy);
