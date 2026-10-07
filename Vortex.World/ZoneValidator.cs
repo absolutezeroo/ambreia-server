@@ -90,6 +90,7 @@ public sealed class ZoneValidator(
         CheckDecor(doc, f);
         CheckPlacement(doc, f);
         CheckInternalReferences(doc, f);
+        ZoneRuntimeRules.Check(doc, knownZones, f);
 
         foreach (ZonePassage p in doc.Passages.Where(p => !knownZones.Contains(p.DestinationZone)))
         {
@@ -313,7 +314,9 @@ public sealed class ZoneValidator(
         ];
 
         foreach (
-            ZoneTrigger t in d.Triggers.Where(t => t.Target is not null && !all.Contains(t.Target))
+            ZoneTrigger t in d.Triggers.Where(t =>
+                t.Type != ZoneTriggerType.Timer && t.Target is not null && !all.Contains(t.Target)
+            )
         )
         {
             f.Add(Error("BrokenReference", t.Id, $"Target '{t.Target}' does not exist."));

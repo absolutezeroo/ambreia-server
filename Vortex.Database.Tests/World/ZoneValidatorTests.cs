@@ -23,12 +23,16 @@ public sealed class ZoneValidatorTests
     public void TheMinimalSample_IsValid() => Errors(ZoneSamples.Minimal()).Should().BeEmpty();
 
     [Fact]
-    public void TheFullSample_HasOnlyDeferredReferenceWarnings()
+    public void TheFullSample_HasOnlyDeferredAndInertWarnings()
     {
         IReadOnlyList<ZoneFinding> findings = Validate(ZoneSamples.EveryLayer());
 
         findings.Where(f => f.Severity == ZoneSeverity.Error).Should().BeEmpty();
-        findings.Select(f => f.Code).Distinct().Should().BeEquivalentTo(["UnresolvedReference"]);
+        findings
+            .Select(f => f.Code)
+            .Distinct()
+            .Should()
+            .BeEquivalentTo(["UnresolvedReference", "InertUntilRpg"]);
     }
 
     [Fact]
