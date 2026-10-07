@@ -6,8 +6,6 @@ import fs from 'node:fs';
 import path from 'node:path';
 
 const root = process.cwd();
-const probe = path.join(root, 'Vortex.Dashboard.Web', 'src', 'pages', '__HookProbe.svelte');
-fs.writeFileSync(probe, '<script>\n  let count = 0;\n</script>\n<p>{undefinedThing}</p>\n');
 
 // Sonde csharpier : du C# valide mais mal formate. Le hook doit le reformater ET le dire, parce que
 // le fichier sur disque ne correspond alors plus a ce qui vient d'etre ecrit. La seconde sonde est
@@ -31,9 +29,6 @@ const cmd = (command) => ({ tool_name: 'Bash', tool_input: { command } });
 
 const cases = [
   ['post-edit.mjs', edit('README.md'), 0, 'fichier hors perimetre'],
-  ['post-edit.mjs', edit(path.join('Vortex.Dashboard.Web', 'src', 'lib', 'routes.ts')), 0, 'routes.ts coherent'],
-  ['post-edit.mjs', edit(path.join('Vortex.Dashboard.Web', 'src', 'pages', '__HookProbe.svelte')), 2, 'no-undef dans le markup'],
-  ['post-edit.mjs', edit(path.join('Vortex.Dashboard.Web', 'src', 'pages', 'AccessDeniedPage.svelte')), 0, 'svelte sain'],
   ['guard-emulator.mjs', cmd('dotnet build Vortex.Main/Vortex.Main.csproj'), 0, 'build normal'],
   ['guard-emulator.mjs', cmd('taskkill /F /IM Vortex.Main.exe'), 2, 'taskkill emulateur'],
   ['guard-emulator.mjs', cmd('Stop-Process -Name Vortex.Main -Force'), 2, 'Stop-Process emulateur'],
@@ -117,7 +112,7 @@ const restoreLayers = () => fs.writeFileSync(layerProject, layerProjectOriginal)
 const direct = [
   ['check-architecture-walls.mjs', [], 2, 'fuite protocole + reference rendue a un projet protege'],
   ['check-architecture-walls.mjs', [], 2, 'reference Coeur -> Plateforme bloquee', {}, probeLayers],
-  ['check-architecture-walls.mjs', [], 0, 'murs archi : les huit tiennent', {}, restoreLayers],
+  ['check-architecture-walls.mjs', [], 0, 'murs archi : les sept tiennent', {}, restoreLayers],
 ];
 
 let failed = 0;
@@ -142,7 +137,6 @@ for (const [script, argv, want, label, env, setup] of direct) {
   if (!ok && r.stderr) console.log('     ' + r.stderr.trim().split('\n').slice(0, 4).join('\n     '));
 }
 
-fs.rmSync(probe, { force: true });
 fs.rmSync(csProbe, { force: true });
 fs.rmSync(csProbeClean, { force: true });
 fs.rmSync(wallProbe, { force: true });

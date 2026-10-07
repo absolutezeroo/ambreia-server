@@ -28,19 +28,9 @@ public sealed class ObservabilityModule : IHostPluginModule
 
     public void ConfigureServices(IServiceCollection services, HostApplicationBuilder builder)
     {
-        // DashboardApiModule binds the same section; both register the validator through
-        // TryAddEnumerable so it runs exactly once regardless of module order.
         services
             .AddOptions<ObservabilityConfig>()
-            .Bind(builder.Configuration.GetSection(ObservabilityConfig.SECTION_NAME))
-            .ValidateOnStart();
-
-        services.TryAddEnumerable(
-            ServiceDescriptor.Singleton<
-                IValidateOptions<ObservabilityConfig>,
-                ObservabilityConfigValidator
-            >()
-        );
+            .Bind(builder.Configuration.GetSection(ObservabilityConfig.SECTION_NAME));
 
         services.AddMetrics();
 

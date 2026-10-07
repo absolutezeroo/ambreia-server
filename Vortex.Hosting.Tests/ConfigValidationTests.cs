@@ -414,69 +414,6 @@ public sealed class ConfigValidationTests
         ValidateWebApi(config, Environments.Production).Failed.Should().BeTrue();
     }
 
-    // ── Dashboard listener ───────────────────────────────────────────────────
-
-    [Fact]
-    public void ADisabledDashboard_IsNeverValidated()
-    {
-        ObservabilityConfig config = new() { DashboardEnabled = false, DashboardHost = "0.0.0.0" };
-
-        ValidateObservability(config, Environments.Production).Succeeded.Should().BeTrue();
-    }
-
-    [Fact]
-    public void AnEnabledDashboardOnARemoteAddressWithoutHttps_IsRefused()
-    {
-        ObservabilityConfig config = new()
-        {
-            DashboardEnabled = true,
-            DashboardHost = "203.0.113.5",
-        };
-
-        ValidateOptionsResult result = ValidateObservability(config, Environments.Production);
-
-        result.Failed.Should().BeTrue();
-        result
-            .FailureMessage.Should()
-            .Contain("DashboardAllowInsecureRemoteHttp", "the operator needs the exact opt-in key");
-    }
-
-    [Fact]
-    public void AnEnabledDashboardOnARemoteAddressWithExplicitAcceptance_Passes()
-    {
-        ObservabilityConfig config = new()
-        {
-            DashboardEnabled = true,
-            DashboardHost = "203.0.113.5",
-            DashboardAllowInsecureRemoteHttp = true,
-        };
-
-        ValidateObservability(config, Environments.Production).Succeeded.Should().BeTrue();
-    }
-
-    [Fact]
-    public void AnEnabledDashboardOnLocalhost_Passes()
-    {
-        ObservabilityConfig config = new() { DashboardEnabled = true, DashboardHost = "localhost" };
-
-        ValidateObservability(config, Environments.Production).Succeeded.Should().BeTrue();
-    }
-
-    [Fact]
-    public void ATooShortDashboardSession_IsRefused()
-    {
-        ObservabilityConfig config = new()
-        {
-            DashboardEnabled = true,
-            DashboardHost = "localhost",
-            DashboardSessionLifetimeMinutes = 1,
-        };
-
-        ValidateObservability(config, Environments.Production).Failed.Should().BeTrue();
-    }
-
-    // ── Orleans ──────────────────────────────────────────────────────────────
-
     private static OrleansHostConfigValidator OrleansValidator(
         string connectionString = "server=x",
         params int[] gameListenerPorts
@@ -618,11 +555,6 @@ public sealed class ConfigValidationTests
 
     private static ValidateOptionsResult ValidateWebApi(WebApiConfig config, string environment) =>
         new WebApiConfigValidator(Environment(environment)).Validate(null, config);
-
-    private static ValidateOptionsResult ValidateObservability(
-        ObservabilityConfig config,
-        string environment
-    ) => new ObservabilityConfigValidator(Environment(environment)).Validate(null, config);
 
     private static IHostEnvironment Environment(string environmentName) =>
         new FakeEnvironment { EnvironmentName = environmentName };

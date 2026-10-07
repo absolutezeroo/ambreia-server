@@ -26,31 +26,6 @@ if (rel.startsWith('..')) process.exit(0); // Outside the repo (sibling client s
 
 const failures = [];
 
-// --- dashboard capability / route / locale parity -------------------------------------------------
-// AGENTS.md: the client half of a capability has no cross-check, and every failure is silent.
-if (/^(Vortex\.Primitives\/Permissions\/Capabilities\.cs|Vortex\.Dashboard\.Web\/src\/lib\/(dashboardPermissions|routes)\.ts|Vortex\.Dashboard\.Web\/src\/lib\/locales\/(en|fr)\.js)$/.test(rel)) {
-  const r = spawnSync(process.execPath, [path.join(here, 'check-dashboard-capabilities.mjs')], {
-    cwd: root,
-    encoding: 'utf8',
-  });
-  if (r.status === 2) failures.push(r.stderr.trim());
-}
-
-// --- eslint on dashboard front-end files ----------------------------------------------------------
-// `npm run build` does not catch an undefined identifier used in markup (AGENTS.md validation note);
-// eslint does. Per-file, so it stays fast enough for a PostToolUse hook.
-if (/^Vortex\.Dashboard\.Web\/src\/.*\.(svelte|js)$/.test(rel)) {
-  const web = path.join(root, 'Vortex.Dashboard.Web');
-  const eslintBin = path.join(web, 'node_modules', 'eslint', 'bin', 'eslint.js');
-  if (fs.existsSync(eslintBin)) {
-    const r = spawnSync(process.execPath, [eslintBin, path.resolve(file)], { cwd: web, encoding: 'utf8' });
-    if (r.status !== 0) {
-      failures.push(`eslint failed on ${rel} (npm run build would NOT have caught this):\n${(r.stdout || r.stderr).trim()}`);
-    }
-  }
-  // node_modules absent -> skip silently rather than block every front-end edit.
-}
-
 // --- csharpier on touched C# files ----------------------------------------------------------------
 // `dotnet csharpier check .` runs repo-wide and only inside VortexCloudFastCheck, i.e. the ~2 minute
 // pre-commit hook. So a one-file formatting deviation is discovered two minutes into a commit that

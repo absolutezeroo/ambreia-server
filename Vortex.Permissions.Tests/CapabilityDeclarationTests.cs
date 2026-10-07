@@ -20,25 +20,14 @@ namespace Vortex.Permissions.Tests;
 public sealed class CapabilityDeclarationTests
 {
     [Fact]
-    public void DashboardAll_ContainsEveryDeclaredDashboardCapability()
+    public void ServerAll_ContainsEveryDeclaredServerCapability()
     {
-        IReadOnlyList<string> declared = DeclaredConstants(typeof(Capabilities.Dashboard));
+        IReadOnlyList<string> declared = DeclaredConstants(typeof(Capabilities.Server));
 
+        Capabilities.Server.All.Should().BeEquivalentTo(declared);
         Capabilities
-            .Dashboard.All.Should()
-            .BeEquivalentTo(
-                declared,
-                "every dashboard.* constant needs an authorization policy, and Capabilities.Dashboard.All is what registers them"
-            );
-    }
-
-    [Fact]
-    public void DashboardCapabilities_AreNamespacedAndUnique()
-    {
-        Capabilities.Dashboard.All.Should().OnlyHaveUniqueItems();
-        Capabilities
-            .Dashboard.All.Should()
-            .OnlyContain(c => c.StartsWith("dashboard.", StringComparison.Ordinal));
+            .Server.All.Should()
+            .OnlyContain(c => c.StartsWith("server.", StringComparison.Ordinal));
     }
 
     [Fact]

@@ -20,20 +20,11 @@ jobs:
         with:
           global-json-file: global.json
 
-      # The dashboard SPA is generated, not committed: Vortex.Dashboard.API embeds whatever Vite
-      # writes to its Assets\ folder, and its BuildDashboardFrontend target runs `npm run build`
-      # before doing so. Without a toolchain here that target has nothing to run and the gate fails
-      # rather than silently embedding an empty dashboard.
+      # The gate runs the repository hooks (scripts/hooks/*.mjs), which are plain node.
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
           node-version: 22
-          cache: npm
-          cache-dependency-path: Vortex.Dashboard.Web/package-lock.json
-
-      - name: Install dashboard front-end dependencies
-        working-directory: Vortex.Dashboard.Web
-        run: npm ci
 
       # Explicit and solution-wide. The gate's inner steps all pass --no-restore, and building
       # Vortex.Main only restores its own dependency graph — the test projects are not in it, so

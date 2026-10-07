@@ -3,8 +3,6 @@
   "protocolFree": [
     "Vortex.Crypto",
     "Vortex.Crypto.Tests",
-    "Vortex.Dashboard.API",
-    "Vortex.Dashboard.Tests",
     "Vortex.Database",
     "Vortex.Database.Tests",
     "Vortex.Events",
@@ -28,14 +26,14 @@
     "Vortex.Primitives",
     "Vortex.Protocol",
     "Vortex.Runtime",
-    "Vortex.WebApi.Shop",
-    "Vortex.WebApi.Shop.Tests",
     "Vortex.Signals",
     "Vortex.Signals.Tests",
     "Vortex.Tests.Support",
     "Vortex.WebApi",
     "Vortex.WebApi.Authentication",
     "Vortex.WebApi.Authentication.Tests",
+    "Vortex.WebApi.Shop",
+    "Vortex.WebApi.Shop.Tests",
     "Vortex.WebApi.Tests"
   ]
 }

@@ -86,7 +86,7 @@ services:
       - "30000:30000" # game client, raw TCP
       - "30001:30001" # game client, WebSocket
       - "8080:8080" # Vortex web API (Swagger UI at /swagger)
-      - "9000:9000" # operator dashboard (SPA + API, Swagger UI at /swagger)
+
       # Orleans silo (11111) and gateway (3000) are intentionally not published: one in-process
       # silo, nothing outside the container has any business talking to them.
     environment:
@@ -114,7 +114,6 @@ services:
       # container's external interface, so anything listening only on 127.0.0.1 inside the
       # container is unreachable from the host.
       VORTEX__Vortex__WebApi__Host: "0.0.0.0"
-      VORTEX__Vortex__Observability__DashboardHost: "0.0.0.0"
 
       # --- ListenerSecurity opt-in (DEVELOPMENT ONLY) -----------------------------------------
       # Vortex.Primitives/Hosting/ListenerSecurity.cs classifies 0.0.0.0 / :: / * / + as NON-local
@@ -126,9 +125,6 @@ services:
       # The guard is not bypassed or weakened here: these are the exact opt-in keys the code reads,
       # 'Vortex:WebApi:AllowInsecureRemoteHttp'
       #   (Vortex.WebApi/Configuration/WebApiConfig.cs -> AllowInsecureRemoteHttp) and
-      # 'Vortex:Observability:DashboardAllowInsecureRemoteHttp'
-      #   (Vortex.Observability/Configuration/ObservabilityConfig.cs ->
-      #    DashboardAllowInsecureRemoteHttp).
       # Setting them downgrades the refusal to a logged warning, which is still emitted at startup.
       #
       # This is acceptable ONLY because the published ports are meant to be reached from localhost
@@ -136,7 +132,6 @@ services:
       # ports are reachable from a network: enable HTTPS on the listeners, or bind them back to a
       # local address and put a TLS-terminating reverse proxy in front.
       VORTEX__Vortex__WebApi__AllowInsecureRemoteHttp: "true"
-      VORTEX__Vortex__Observability__DashboardAllowInsecureRemoteHttp: "true"
 
       # --- Prometheus scraping endpoint (DEVELOPMENT ONLY) -------------------------------------
       # Vortex.WebApi/Hosting/MetricsScrapingEndpoint.cs serves /metrics next to /health. With no

@@ -1,8 +1,0 @@
-{
-  "Name": "Vortex Dashboard",
-  "Key": "turbo-dashboard-api",
-  "Version": "1.0.0",
-  "Author": "Vortex",
-  "AssemblyFile": "Vortex.Dashboard.API.dll",
-  "ExplicitlyNoTablePrefix": true
-}

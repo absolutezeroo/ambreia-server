@@ -81,38 +81,6 @@ if (handlerDb.length > 0) {
 }
 
 // ---------------------------------------------------------------------------------------------
-// Wall 2 -- only the authoring services persist, and they own what they persist.
-//
-// This used to forbid SaveChangesAsync anywhere in Vortex.Dashboard.API, and that rule was simply
-// wrong: it reported 146 violations, every one of them an *AdminService doing exactly its job.
-// docs/architecture/dashboard-architecture.md §11-13 states the real rule -- what matters is who
-// owns the mutable state, not whether the call happens to be in this assembly. Catalogue rows,
-// furniture definitions and poll content are owned by the authoring services; a grain's live state
-// is not, and that distinction is not something a regex can see.
-//
-// So this wall guards the part that IS mechanical, and that the architecture actually holds today:
-// persistence lives in Admin/ and nowhere else. A Reads class that starts writing breaks §26.3
-// ("reads do not modify state"); an Operations class that persists directly has gone around the
-// authoring service that owns the data. Both are real regressions, and both are invisible to the
-// compiler.
-//
-// The ownership rule above stays prose on purpose: an executable rule that does not match the
-// architecture pushes the code towards the wrong shape, which is worse than no rule at all (§25).
-// ---------------------------------------------------------------------------------------------
-const dashboardWrites = hits(
-  'Vortex.Dashboard.API',
-  /\bSaveChangesAsync\b/,
-  (file) => file.startsWith('Vortex.Dashboard.API/Admin/')
-);
-if (dashboardWrites.length > 0) {
-  failures.push([
-    'The dashboard persists outside Admin/. Reads never write, and an operation goes through the ' +
-      'authoring service that owns the data.',
-    dashboardWrites,
-  ]);
-}
-
-// ---------------------------------------------------------------------------------------------
 // Wall 5 -- a password is verified in exactly one place.
 //
 // Vortex.WebApi used to carry its own copy of the credential check: same player_accounts row, same
@@ -263,8 +231,8 @@ if (schedulerEscapes.length > 0) {
 // Wall 8 -- the layers point one way.
 //
 // The RPG spec (§3.4 bis) cuts the solution into Core (network, protocol, persistence, plumbing),
-// Platform (the game's domains), Web and Operations. Core references no Platform, Web or Operations
-// project; Platform references neither Web nor Operations. Vortex.Main is the host and wires them
+// Platform (the game's domains) and Web. Core references no Platform or Web project; Platform
+// references no Web project. Vortex.Main is the host and wires them
 // all, so it is exempt, and so are test projects. A project outside the four lists is not judged
 // until it is given a layer.
 // ---------------------------------------------------------------------------------------------
@@ -281,10 +249,9 @@ const layerOf = (project) => {
   if (CORE.includes(name)) return 'Core';
   if (PLATFORM.includes(name)) return 'Platform';
   if (name.startsWith('WebApi')) return 'Web';
-  if (name.startsWith('Dashboard.')) return 'Operations';
   return null;
 };
-const FORBIDDEN = { Core: ['Platform', 'Web', 'Operations'], Platform: ['Web', 'Operations'] };
+const FORBIDDEN = { Core: ['Platform', 'Web'], Platform: ['Web'] };
 
 const layerBreaches = fs
   .readdirSync(root, { withFileTypes: true })
@@ -302,7 +269,7 @@ const layerBreaches = fs
 if (layerBreaches.length > 0) {
   failures.push([
     'A project references a layer above its own. Core knows no game domain, and no domain knows '
-      + 'the web or the dashboard -- move the shared type down into Vortex.Primitives instead.',
+      + 'the web -- move the shared type down into Vortex.Primitives instead.',
     layerBreaches,
   ]);
 }
@@ -340,7 +307,7 @@ if (newLeak.length > 0) {
 if (failures.length === 0) {
   const healed = baseline.filter((f) => !leakFiles.includes(f));
   const note = healed.length > 0 ? ` (${healed.length} baselined leak(s) now gone -- --update)` : '';
-  console.log(`Architecture walls hold: 8 checked, ${leakFiles.length} baselined leak(s)${note}.`);
+  console.log(`Architecture walls hold: 7 checked, ${leakFiles.length} baselined leak(s)${note}.`);
   process.exit(0);
 }
 

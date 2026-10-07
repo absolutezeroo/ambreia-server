@@ -28,7 +28,7 @@ public sealed class ConsoleCommandDispatcher(IServiceProvider services) : IConso
             "quit",
             "quit",
             "Shut the emulator down gracefully.",
-            Capabilities.Dashboard.OpsServerControl,
+            Capabilities.Server.Control,
             ["exit"]
         ),
         new(
@@ -37,19 +37,19 @@ public sealed class ConsoleCommandDispatcher(IServiceProvider services) : IConso
             "Warn every connected player that the hotel restarts in <minutes>.",
             // The same grant as `quit`: this is the warning for exactly what that command does, and
             // whoever may take the hotel down may say so.
-            Capabilities.Dashboard.OpsServerControl
+            Capabilities.Server.Control
         ),
         new(
             "reload-plugins",
             "reload-plugins",
             "Reload every plugin from disk.",
-            Capabilities.Dashboard.OpsConfigManage
+            Capabilities.Server.ConfigManage
         ),
         new(
             "reload-plugin",
             "reload-plugin <key>",
             "Reload a single plugin by key.",
-            Capabilities.Dashboard.OpsConfigManage
+            Capabilities.Server.ConfigManage
         ),
         // `reload-fishing` was here. It reloaded a grain rather than an IReferenceDataProvider, which
         // is the only reason it was a separate word for the same idea; the grain is now a named
@@ -63,7 +63,7 @@ public sealed class ConsoleCommandDispatcher(IServiceProvider services) : IConso
             "reload",
             "reload [provider]",
             "List the reloadable reference caches, or reload one by name.",
-            Capabilities.Dashboard.OpsConfigManage
+            Capabilities.Server.ConfigManage
         ),
     ];
 

@@ -70,7 +70,7 @@ public sealed class ConsoleCommandDispatcherTests
     /// <summary>
     /// A capability that is not in the canonical list has no authorization policy behind it, so the
     /// endpoint gating on it would throw at runtime rather than deny — the exact failure mode
-    /// <c>Capabilities.Dashboard.All</c> exists to prevent.
+    /// <c>Capabilities.Server.All</c> exists to prevent.
     /// </summary>
     [Fact]
     public void EveryCommandCapability_IsADeclaredDashboardCapability()
@@ -81,7 +81,7 @@ public sealed class ConsoleCommandDispatcherTests
 
         declared
             .Should()
-            .OnlyContain(capability => Capabilities.Dashboard.All.Contains(capability));
+            .OnlyContain(capability => Capabilities.Server.All.Contains(capability));
     }
 
     [Fact]
@@ -89,7 +89,7 @@ public sealed class ConsoleCommandDispatcherTests
         Dispatcher()
             .Dispatcher.Find("quit")!
             ?.RequiredCapability.Should()
-            .Be(Capabilities.Dashboard.OpsServerControl);
+            .Be(Capabilities.Server.Control);
 
     [Fact]
     public void Help_IsReachableWithoutAnyExtraCapability() =>
@@ -128,7 +128,7 @@ public sealed class ConsoleCommandDispatcherTests
         Dispatcher()
             .Dispatcher.Find("announce")!
             ?.RequiredCapability.Should()
-            .Be(Capabilities.Dashboard.OpsServerControl);
+            .Be(Capabilities.Server.Control);
 
     /// <summary>
     /// The downtime is optional and defaults, so a second argument that is not a number must be

@@ -76,32 +76,6 @@ public interface IVortexMetrics
     void RoomDirectoryCallCompleted(string method, double elapsedMilliseconds);
 
     /// <summary>
-    /// A dashboard login attempt finished. <paramref name="outcome"/> is a
-    /// <c>DashboardLoginResult</c> kind — authenticated, invalid-credentials, mfa-required,
-    /// invalid-code, forbidden — a closed set, and the one dimension that matters: a rising
-    /// invalid-code rate is someone working a stolen password against a second factor, which reads
-    /// nothing like a rising invalid-credentials rate.
-    /// </summary>
-    void DashboardAuthAttempt(string outcome);
-
-    /// <summary>
-    /// An authenticated operator was refused an endpoint. <paramref name="capability"/> is the
-    /// policy name, which is <c>Capabilities.Dashboard.All</c> and therefore bounded. This is the
-    /// difference between "someone cannot find the button" and "someone is walking the API".
-    /// </summary>
-    void DashboardAuthorizationDenied(string capability);
-
-    /// <summary>
-    /// A dashboard write operation finished. <paramref name="action"/> is the audit action name
-    /// (a fixed set declared at the call sites) and <paramref name="outcome"/> is success, rejected
-    /// or failed — the same three the audit row records, so the metric and the trail agree.
-    /// </summary>
-    void DashboardOperationCompleted(string action, string outcome, double elapsedMilliseconds);
-
-    /// <summary>A dashboard API request answered with an error status.</summary>
-    void DashboardHttpError(int statusCode);
-
-    /// <summary>
     /// An audit event will not reach the table. <paramref name="stage"/> is where it was lost:
     /// <c>enqueue</c> (the channel was saturated and the event was never handed to the writer) or
     /// <c>persist</c> (the writer exhausted its retries and dead-lettered the batch).

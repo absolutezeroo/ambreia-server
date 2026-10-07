@@ -27,13 +27,6 @@ internal static class DefaultRoles
                 Capabilities.Moderation.Chatlogs,
                 Capabilities.Moderation.Cfh,
                 Capabilities.Room.ModerateAny,
-                Capabilities.Dashboard.OverviewRead,
-                Capabilities.Dashboard.AuditRead,
-                Capabilities.Dashboard.PlayersRead,
-                Capabilities.Dashboard.OpsKickPlayer,
-                // The word list decides what every player may write, which
-                // is the moderator's remit, and the journal is the record of who tried.
-                Capabilities.Dashboard.OpsWordFilterManage,
             ]
         ),
         new RoleSeed(
@@ -43,13 +36,6 @@ internal static class DefaultRoles
                 Capabilities.Economy.GrantCredits,
                 Capabilities.Economy.GrantActivityPoints,
                 Capabilities.Economy.GrantItem,
-                Capabilities.Dashboard.OverviewRead,
-                Capabilities.Dashboard.AuditRead,
-                Capabilities.Dashboard.EconomyRead,
-                Capabilities.Dashboard.PlayersRead,
-                Capabilities.Dashboard.FurnitureRead,
-                Capabilities.Dashboard.OpsGrantCurrency,
-                Capabilities.Dashboard.OpsGrantItem,
             ]
         ),
         new RoleSeed(
@@ -70,14 +56,8 @@ internal static class DefaultRoles
                 Capabilities.Economy.GrantCredits,
                 Capabilities.Economy.GrantActivityPoints,
                 Capabilities.Economy.GrantItem,
-                Capabilities.Dashboard.OverviewRead,
-                Capabilities.Dashboard.AuditRead,
-                Capabilities.Dashboard.EconomyRead,
-                Capabilities.Dashboard.PlayersRead,
-                Capabilities.Dashboard.FurnitureRead,
-                Capabilities.Dashboard.OpsGrantCurrency,
-                Capabilities.Dashboard.OpsGrantItem,
-                Capabilities.Dashboard.OpsKickPlayer,
+                Capabilities.Server.ConfigManage,
+                Capabilities.Server.Control,
             ]
         ),
         new RoleSeed("owner", "Owner", [Capabilities.Wildcard]),
