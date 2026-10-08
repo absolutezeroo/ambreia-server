@@ -130,6 +130,20 @@ public sealed class WorldEntry(
                 new RoomForwardMessageComposer { RoomId = RoomId.Parse(startRoomId) }
             )
             .ConfigureAwait(false);
+
+        // The HUD. Entering the zone pushes it too, but a resume within the grace period enters
+        // no zone. A view only: its failure never undoes the sign-in.
+        try
+        {
+            await _grainFactory
+                .GetPlayerCharacterGrain(new PlayerId(playerId))
+                .PushStateAsync()
+                .ConfigureAwait(false);
+        }
+        catch (Exception ex) when (ex is not OperationCanceledException)
+        {
+            _logger.LogWarning(ex, "Sign-in could not push the state of {PlayerId}", playerId);
+        }
     }
 
     /// <summary>The last zone, if it is still a published zone: a zone taken down sends the player

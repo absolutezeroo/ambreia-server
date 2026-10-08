@@ -256,7 +256,8 @@ public sealed class PlayerCharacterXpTests : IAsyncLifetime
                 }),
                 Options.Create(new CharacterConfig()),
                 FakeProxy.Create<IVortexMetrics>(_ => null),
-                _logger
+                _logger,
+                SilentPresence.Grains()
             );
         await grain.OnActivateAsync(CancellationToken.None);
 

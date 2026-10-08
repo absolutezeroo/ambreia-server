@@ -20,5 +20,5 @@ public sealed class LastZoneHandler(IGrainFactory grainFactory)
     ) =>
         await grainFactory
             .GetPlayerCharacterGrain(e.PlayerId)
-            .SetLastRoomAsync(new RoomId(e.RoomId));
+            .EnteredRoomAsync(new RoomId(e.RoomId));
 }

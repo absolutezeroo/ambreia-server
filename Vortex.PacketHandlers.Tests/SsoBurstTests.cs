@@ -48,6 +48,15 @@ public sealed class SsoBurstTests
         _sent.Should().BeEmpty("no AuthenticationOK before a character is chosen");
     }
 
+    /// <summary>Back within the grace period there is no room entry to push it: the sign-in does.</summary>
+    [Fact]
+    public async Task SigningIn_PushesTheCharacterState()
+    {
+        await LoginAsync(startRoomId: 42);
+
+        _calls.Should().Equal("push");
+    }
+
     [Fact]
     public async Task SsoBurst_SendsOnlyTheCoreComposers()
     {
@@ -124,6 +133,13 @@ public sealed class SsoBurstTests
         _sent.OfType<RoomForwardMessageComposer>().Single().RoomId.Should().Be(new RoomId(50));
     }
 
+    private Task Pushed()
+    {
+        _calls.Add("push");
+
+        return Task.CompletedTask;
+    }
+
     private async Task LoginAsync(
         int startRoomId,
         int? testRoomId = null,
@@ -168,7 +184,8 @@ public sealed class SsoBurstTests
                 )
             : call.Method.GetGenericArguments()[0] == typeof(IPlayerCharacterGrain)
                 ? FakeProxy.Create<IPlayerCharacterGrain>(inner =>
-                    inner.Method.Name != nameof(IPlayerCharacterGrain.GetLastRoomAsync) ? null
+                    inner.Method.Name == nameof(IPlayerCharacterGrain.PushStateAsync) ? Pushed()
+                    : inner.Method.Name != nameof(IPlayerCharacterGrain.GetLastRoomAsync) ? null
                     : characterFails
                         ? Task.FromException<RoomId?>(
                             new InvalidOperationException("player_characters is missing")

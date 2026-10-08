@@ -41,7 +41,7 @@ public sealed class LastZoneTests : IAsyncLifetime
     {
         PlayerCharacterGrain grain = await ActivateAsync(withCharacter: true);
 
-        await grain.SetLastRoomAsync(new RoomId(12));
+        await grain.EnteredRoomAsync(new RoomId(12));
         await DeactivateAsync(grain);
 
         (await grain.GetLastRoomAsync()).Should().Be(new RoomId(12));
@@ -52,9 +52,9 @@ public sealed class LastZoneTests : IAsyncLifetime
     public async Task ADungeonCopy_IsNeverKept()
     {
         PlayerCharacterGrain grain = await ActivateAsync(withCharacter: true);
-        await grain.SetLastRoomAsync(new RoomId(12));
+        await grain.EnteredRoomAsync(new RoomId(12));
 
-        await grain.SetLastRoomAsync(new RoomId(1_000_012_001));
+        await grain.EnteredRoomAsync(new RoomId(1_000_012_001));
 
         (await grain.GetLastRoomAsync()).Should().Be(new RoomId(12));
     }
@@ -64,7 +64,7 @@ public sealed class LastZoneTests : IAsyncLifetime
     {
         PlayerCharacterGrain grain = await ActivateAsync(withCharacter: false);
 
-        await grain.SetLastRoomAsync(new RoomId(12));
+        await grain.EnteredRoomAsync(new RoomId(12));
 
         (await grain.GetLastRoomAsync()).Should().BeNull();
     }
@@ -103,7 +103,8 @@ public sealed class LastZoneTests : IAsyncLifetime
                 ),
                 Options.Create(new CharacterConfig()),
                 FakeProxy.Create<IVortexMetrics>(_ => null),
-                NullLogger<PlayerCharacterGrain>.Instance
+                NullLogger<PlayerCharacterGrain>.Instance,
+                SilentPresence.Grains()
             );
         await grain.OnActivateAsync(CancellationToken.None);
 

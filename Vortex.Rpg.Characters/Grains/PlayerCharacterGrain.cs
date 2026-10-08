@@ -14,12 +14,15 @@ using Vortex.Events.Registry;
 using Vortex.Logging.Extensions;
 using Vortex.Primitives.Events;
 using Vortex.Primitives.Events.Rpg;
+using Vortex.Primitives.Networking;
 using Vortex.Primitives.Observability;
+using Vortex.Primitives.Orleans;
 using Vortex.Primitives.Players;
 using Vortex.Primitives.Rooms;
 using Vortex.Primitives.Rpg.Characters;
 using Vortex.Primitives.Rpg.Characters.Grains;
 using Vortex.Primitives.World;
+using Vortex.Protocol.Messages.Outgoing.Rpg.Characters;
 using Vortex.Rpg.Characters.Configuration;
 using Vortex.Rpg.Content;
 using Vortex.Rpg.Content.Definitions;
@@ -40,7 +43,8 @@ internal sealed class PlayerCharacterGrain(
     ICancellableEventPublisher cancellableEvents,
     IOptions<CharacterConfig> config,
     IVortexMetrics metrics,
-    ILogger<PlayerCharacterGrain> logger
+    ILogger<PlayerCharacterGrain> logger,
+    IGrainFactory grainFactory
 ) : Grain, IPlayerCharacterGrain
 {
     internal const string ProgressionId = "progression.default";
@@ -329,10 +333,73 @@ internal sealed class PlayerCharacterGrain(
 
         Publish(new XpGainedEvent(_playerId, gaining.Amount, source, c.Level, c.Xp));
 
+        RpgCharacterProgressMessageComposer progress = new()
+        {
+            Level = c.Level,
+            Xp = c.Xp,
+            XpToNext = XpToNext(c, progression),
+        };
+
+        await PushAsync(
+            c.Level != oldLevel && await GetStatsAsync() is { } stats
+                ? [new RpgCharacterStatsMessageComposer { Stats = stats }, progress]
+                : [progress]
+        );
+
         return XpGrantOutcome.Granted;
     }
 
-    public Task SetLastRoomAsync(RoomId roomId)
+    public async Task PushStateAsync()
+    {
+        if (await GetStatsAsync() is not { } stats || _character is not { } c)
+        {
+            return;
+        }
+
+        ProgressionDefinition? progression = content.Get<ProgressionDefinition>(ProgressionId);
+
+        await PushAsync(
+            new RpgCharacterStateMessageComposer
+            {
+                PlayerId = _playerId.Value,
+                ClassId = c.ClassId,
+                SpecializationId = c.SpecializationId,
+                Level = c.Level,
+                MaxLevel = progression?.MaxLevel ?? c.Level,
+                Xp = c.Xp,
+                XpToNext = XpToNext(c, progression),
+                Stats = stats,
+            }
+        );
+    }
+
+    private static int XpToNext(PlayerCharacterEntity c, ProgressionDefinition? progression) =>
+        progression is null || c.Level >= progression.MaxLevel
+            ? 0
+            : progression.XpToNext[c.Level - 1];
+
+    /// <summary>To the player's socket through its presence; the HUD is a view, so a failure is
+    /// logged and never undoes what was granted.</summary>
+    private async Task PushAsync(params IComposer[] composers)
+    {
+        try
+        {
+            await grainFactory.GetPlayerPresenceGrain(_playerId).SendComposerAsync(composers);
+        }
+        catch (Exception ex)
+        {
+            logger.LogWarning(ex, "Could not push the state of player {PlayerId}", _playerId.Value);
+        }
+    }
+
+    public async Task EnteredRoomAsync(RoomId roomId)
+    {
+        KeepAsLastRoom(roomId);
+
+        await PushStateAsync();
+    }
+
+    private void KeepAsLastRoom(RoomId roomId)
     {
         // A dungeon copy is not somewhere to come back to (spec Personnage §9).
         if (
@@ -345,8 +412,6 @@ internal sealed class PlayerCharacterGrain(
             c.LastRoomId = roomId.Value;
             _dirty = true;
         }
-
-        return Task.CompletedTask;
     }
 
     public Task<RoomId?> GetLastRoomAsync() =>

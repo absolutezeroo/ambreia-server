@@ -149,7 +149,8 @@ public sealed class CharacterContentReferencesTests : IAsyncLifetime
                 ),
                 Options.Create(new CharacterConfig()),
                 FakeProxy.Create<IVortexMetrics>(_ => null),
-                NullLogger<PlayerCharacterGrain>.Instance
+                NullLogger<PlayerCharacterGrain>.Instance,
+                SilentPresence.Grains()
             );
         await grain.OnActivateAsync(CancellationToken.None);
         await grain.GainXpAsync(50, "test");

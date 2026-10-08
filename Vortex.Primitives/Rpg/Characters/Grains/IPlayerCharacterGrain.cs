@@ -29,8 +29,12 @@ public interface IPlayerCharacterGrain : IGrainWithIntegerKey
     public Task<XpGrantOutcome> GainXpAsync(int amount, string source);
 
     /// <summary>The character entered this room: kept as its last zone if it is a world zone (never
-    /// a dungeon copy), written at the next flush.</summary>
-    public Task SetLastRoomAsync(RoomId roomId);
+    /// a dungeon copy), written at the next flush; then its state is pushed to the player.</summary>
+    public Task EnteredRoomAsync(RoomId roomId);
+
+    /// <summary>The whole state (class, level, XP, stats) to the player's socket, for the HUD (spec
+    /// F3a §5.6); nothing without a character.</summary>
+    public Task PushStateAsync();
 
     /// <summary>The world zone to sign in to (spec Personnage §9); null without a character or a zone.</summary>
     public Task<RoomId?> GetLastRoomAsync();
