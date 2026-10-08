@@ -1,16 +1,12 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
-using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using Vortex.Logging.Extensions;
 using Vortex.Plugins.Configuration;
 using Vortex.Plugins.Exports;
 using Vortex.Primitives.Plugins;
@@ -19,7 +15,12 @@ using Vortex.Runtime.AssemblyProcessing;
 
 namespace Vortex.Plugins;
 
-public sealed class PluginManager(
+/// <summary>
+/// Loads, reloads and unloads the plugins, one key at a time. Its parts: what is on disk
+/// (<c>PluginManager.Discovery.cs</c>), turning an assembly into a running plugin
+/// (<c>.Activation.cs</c>) and taking one apart (<c>.Teardown.cs</c>).
+/// </summary>
+public sealed partial class PluginManager(
     IServiceProvider host,
     AssemblyProcessor processor,
     IOptions<PluginConfig> config,
@@ -80,84 +81,20 @@ public sealed class PluginManager(
     /// </summary>
     public IReadOnlyCollection<string> GetLiveKeys() => _live.Keys.ToArray();
 
-    private List<(PluginManifest manifest, string folder)> DiscoverPlugins()
-    {
-        List<(PluginManifest, string)> list = new(16);
-        HashSet<string> seen = new(StringComparer.OrdinalIgnoreCase);
-
-        foreach (string devPath in _config.DevPluginPaths)
-        {
-            string dir = Path.GetFullPath(devPath);
-
-            if (!Directory.Exists(dir))
-            {
-                continue;
-            }
-
-            try
-            {
-                PluginManifest manifest = PluginHelpers.ReadManifest(dir);
-
-                if (seen.Add(manifest.Key))
-                {
-                    list.Add((manifest, dir));
-                    _logger.LogDebug("Discovered dev plugin {Key} from {Dir}", manifest.Key, dir);
-                }
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Failed to read dev plugin manifest in {Dir}", dir);
-            }
-        }
-
-        if (!Directory.Exists(_config.PluginFolderPath))
-        {
-            return list;
-        }
-
-        {
-            foreach (string dir in Directory.EnumerateDirectories(_config.PluginFolderPath))
-            {
-                try
-                {
-                    PluginManifest manifest = PluginHelpers.ReadManifest(dir);
-
-                    if (seen.Add(manifest.Key))
-                    {
-                        list.Add((manifest, dir));
-                    }
-                }
-                catch (Exception ex)
-                {
-                    _logger.LogError(ex, "Failed to read plugin manifest in {Dir}", dir);
-                }
-            }
-        }
-
-        return list;
-    }
-
     public async Task LoadAllAsync(bool unloadRemoved = true, CancellationToken ct = default)
     {
         await _reloadGate.WaitAsync(ct).ConfigureAwait(false);
 
         try
         {
-            List<(PluginManifest manifest, string folder)> discovered = DiscoverPlugins();
-            IReadOnlyList<PluginManifest> manifests = SortAndReportUnresolved(discovered);
-            Dictionary<string, string> byKey = discovered.ToDictionary(
-                d => d.manifest.Key,
-                d => d.folder,
-                StringComparer.OrdinalIgnoreCase
-            );
+            (IReadOnlyList<PluginManifest> manifests, Dictionary<string, string> byKey) =
+                Discover();
             // Staged, not live: an envelope is only published to _live once its assembly processing
             // has also succeeded, so a plugin whose feature registration fails is never briefly
             // visible as active.
             List<PluginEnvelope> staged = new();
             ConcurrentBag<string> failedProcessing = new();
             List<Func<Task>> tasks = new();
-
-            RebuildDependents(manifests);
 
             foreach (PluginManifest m in manifests)
             {
@@ -312,15 +249,8 @@ public sealed class PluginManager(
 
         try
         {
-            List<(PluginManifest manifest, string folder)> discovered = DiscoverPlugins();
-            IReadOnlyList<PluginManifest> manifests = SortAndReportUnresolved(discovered);
-            Dictionary<string, string> byKey = discovered.ToDictionary(
-                d => d.manifest.Key,
-                d => d.folder,
-                StringComparer.OrdinalIgnoreCase
-            );
-
-            RebuildDependents(manifests);
+            (IReadOnlyList<PluginManifest> manifests, Dictionary<string, string> byKey) =
+                Discover();
 
             if (!byKey.TryGetValue(key, out string? folder))
             {
@@ -483,130 +413,6 @@ public sealed class PluginManager(
         }
     }
 
-    private static LoadedAssembly GetLoadedPluginAssembly(PluginManifest manifest, string folder)
-    {
-        string asmPath = PluginHelpers.GetAssemblyPath(folder, manifest);
-
-        return AssemblyMemoryLoader.LoadFromBytes(asmPath);
-    }
-
-    /// <summary>
-    /// Wraps <see cref="BuildEnvelopeAsync"/> so a failed activation is fully undone.
-    /// <para>
-    /// Previously this only unloaded the <c>AssemblyLoadContext</c> — while the plugin's
-    /// <see cref="ServiceProvider"/>, its already-started <see cref="IHostedService"/>s and its
-    /// published exports were all left in place. The rollback stack now undoes every completed step
-    /// in reverse first, and the ALC is unloaded last, when nothing references it any more.
-    /// </para>
-    /// <para>
-    /// That change was made to silence a "possible memory leak" warning, and did not, because the
-    /// warning never had anything to do with the rollback: the check behind it waited for the
-    /// context to be collected from a frame that was itself holding the context, so it reported a
-    /// leak on every input and cost five seconds doing it. The wait is gone; whether the contexts
-    /// really come back out is measured by <c>FailedActivationRetentionTests</c>, from a frame that
-    /// never held one, and they do.
-    /// </para>
-    /// </summary>
-    private async Task<PluginEnvelope> BuildEnvelopeOrUnloadAsync(
-        LoadedAssembly asm,
-        PluginManifest m,
-        string folder,
-        CancellationToken ct
-    )
-    {
-        ActivationRollback rollback = new(_logger, m.Key);
-
-        try
-        {
-            PluginEnvelope envelope = await BuildEnvelopeAsync(asm, m, folder, rollback, ct)
-                .ConfigureAwait(false);
-
-            // The envelope owns teardown from here on.
-            rollback.Commit();
-
-            return envelope;
-        }
-        catch
-        {
-            await rollback.UnwindAsync().ConfigureAwait(false);
-
-            AssemblyMemoryLoader.Unload(asm.Alc);
-
-            throw;
-        }
-    }
-
-    private async Task<PluginEnvelope> BuildEnvelopeAsync(
-        LoadedAssembly asm,
-        PluginManifest m,
-        string folder,
-        ActivationRollback rollback,
-        CancellationToken ct
-    )
-    {
-        IVortexPlugin inst = CreatePluginInstance(asm.Assembly);
-
-        // IVortexPlugin is IAsyncDisposable but nothing ever disposed the instance, because it is
-        // Activator-created rather than DI-owned.
-        rollback.Push("dispose plugin instance", () => inst.DisposeAsync().AsTask());
-
-        if (!string.Equals(inst.Key, m.Key, StringComparison.Ordinal))
-        {
-            throw new InvalidOperationException(
-                $"Plugin key mismatch: manifest={m.Key} entry={inst.Key}"
-            );
-        }
-
-        ServiceProvider sp = CreatePluginServiceProvider(inst, m);
-
-        rollback.Push("dispose service provider", () => sp.DisposeAsync().AsTask());
-
-        ExportJournal journal = new(_logger);
-
-        rollback.Push("restore previous exports", () => journal.RollbackAsync(m.Key));
-
-        await inst.BindExportsAsync(new ExportBinder(_exports, journal), sp).ConfigureAwait(false);
-        await StartPluginAsync(inst, sp, rollback, ct).ConfigureAwait(false);
-
-        // Every step succeeded, so the instances this activation displaced are genuinely dead.
-        await journal.CommitAsync().ConfigureAwait(false);
-
-        return new PluginEnvelope
-        {
-            Key = m.Key,
-            Assembly = asm.Assembly,
-            Alc = asm.Alc,
-            Manifest = m,
-            Folder = folder,
-            Instance = inst,
-            ServiceProvider = sp,
-            Disposables = [sp],
-        };
-    }
-
-    private IReadOnlyList<PluginManifest> SortAndReportUnresolved(
-        List<(PluginManifest manifest, string folder)> discovered
-    )
-    {
-        IReadOnlyList<PluginManifest> sorted = PluginHelpers.SortManifests([
-            .. discovered.Select(d => d.manifest),
-        ]);
-
-        foreach ((PluginManifest m, string folder) in discovered)
-        {
-            if (!sorted.Contains(m))
-            {
-                _logger.LogError(
-                    "Plugin {Key} in {Folder} is skipped: a dependency is missing or cyclic",
-                    m.Key,
-                    folder
-                );
-            }
-        }
-
-        return sorted;
-    }
-
     private async Task UnloadRemovedAsync(IEnumerable<string> keys, CancellationToken ct)
     {
         HashSet<string> keep = new(keys, StringComparer.OrdinalIgnoreCase);
@@ -625,266 +431,8 @@ public sealed class PluginManager(
         }
     }
 
-    private static IVortexPlugin CreatePluginInstance(Assembly asm)
-    {
-        Type pluginType =
-            AssemblyExplorer.FindType(asm, typeof(IVortexPlugin))
-            ?? throw new InvalidOperationException(
-                $"Failed to find IVortexPlugin in assembly '{asm.GetName().Name}'."
-            );
-
-        return (IVortexPlugin)Activator.CreateInstance(pluginType)!;
-    }
-
-    private ServiceProvider CreatePluginServiceProvider(
-        IVortexPlugin plugin,
-        PluginManifest manifest
-    )
-    {
-        ServiceCollection services = new();
-
-        services.AddSingleton(manifest);
-        services.AddSingleton<IPluginCatalog>(new PluginCatalog(_exports));
-        services.AddSingleton<IHostServices>(new HostServices(host));
-        services.ConfigurePrefixedLogging(host, manifest.Name);
-
-        plugin.ConfigureServices(services, manifest);
-
-        ServiceProvider provider = services.BuildServiceProvider(SP_OPTIONS);
-
-        VerifyHostServices(provider, manifest);
-
-        return provider;
-    }
-
-    /// <summary>
-    /// Checks every host service the plugin declared with <c>UseHostService&lt;T&gt;</c> is actually
-    /// there.
-    /// </summary>
-    /// <remarks>
-    /// The registration those calls produce is a factory, so without this a service the host does
-    /// not have fails at the moment it is first resolved. For anything request-driven — a plugin
-    /// serving HTTP, say — that is the first request that happens to need it, long after the load
-    /// that should have refused. Failing here instead makes it an activation error, which the
-    /// rollback then unwinds like any other.
-    /// </remarks>
-    private void VerifyHostServices(IServiceProvider plugin, PluginManifest manifest)
-    {
-        List<string> missing = [];
-
-        foreach (
-            HostServiceExtensions.HostServiceRequirement requirement in plugin.GetServices<HostServiceExtensions.HostServiceRequirement>()
-        )
-        {
-            if (host.GetService(requirement.ServiceType) is null)
-            {
-                missing.Add(requirement.ServiceType.FullName ?? requirement.ServiceType.Name);
-            }
-        }
-
-        if (missing.Count == 0)
-        {
-            return;
-        }
-
-        _logger.LogError(
-            "Plugin {Key} borrows host services this host does not provide: {Missing}",
-            manifest.Key,
-            string.Join(", ", missing)
-        );
-
-        throw new InvalidOperationException(
-            $"Plugin '{manifest.Key}' requires host service(s) not registered: {string.Join(", ", missing)}."
-        );
-    }
-
-    private async Task StartPluginAsync(
-        IVortexPlugin plugin,
-        IServiceProvider sp,
-        ActivationRollback rollback,
-        CancellationToken ct
-    )
-    {
-        await ProcessMigrationsAsync(sp, ct).ConfigureAwait(false);
-
-        // Migrations are deliberately not compensated. IPluginDbModule exposes UninstallAsync, but
-        // that drops the plugin's tables — running it because a hosted service failed to start would
-        // turn a recoverable startup error into data loss. A partially applied migration is EF's own
-        // per-migration transaction to resolve, and the plugin will retry on the next load.
-        foreach (IHostedService svc in sp.GetServices<IHostedService>())
-        {
-            try
-            {
-                await svc.StartAsync(ct).ConfigureAwait(false);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(
-                    ex,
-                    "Hosted service {Service} failed to start for plugin {Plugin}",
-                    svc.GetType().FullName,
-                    plugin.GetType().FullName
-                );
-
-                throw;
-            }
-
-            // Registered only after a successful start, so the rollback stops exactly the services
-            // that are actually running. The previous version rethrew on the first failure and left
-            // every earlier service in the loop started.
-            IHostedService started = svc;
-
-            rollback.Push(
-                $"stop hosted service {started.GetType().Name}",
-                () => started.StopAsync(CancellationToken.None)
-            );
-        }
-
-        await plugin.StartAsync(sp, ct).ConfigureAwait(false);
-
-        rollback.Push("stop plugin", () => plugin.StopAsync(CancellationToken.None));
-    }
-
-    private static async Task ProcessMigrationsAsync(
-        IServiceProvider pluginRoot,
-        CancellationToken ct
-    )
-    {
-        AsyncServiceScope scope = pluginRoot.CreateAsyncScope();
-
-        try
-        {
-            IServiceProvider sp = scope.ServiceProvider;
-            IPluginDbModule? dbModule = sp.GetService<IPluginDbModule>();
-
-            if (dbModule is null)
-            {
-                return;
-            }
-
-            await dbModule.MigrateAsync(sp, ct).ConfigureAwait(false);
-        }
-        finally
-        {
-            await scope.DisposeAsync().ConfigureAwait(false);
-        }
-    }
-
-    /// <summary>
-    /// Tears an activation down in reverse order: hosted services, the plugin, its registered
-    /// disposables (the service provider last of those), the plugin instance, then the ALC.
-    /// <para>
-    /// Each stage is independently guarded so one failure cannot skip the rest — the previous
-    /// version wrapped the whole sequence in a single try/catch, so a throw while enumerating hosted
-    /// services meant the service provider was never disposed and the ALC could never unload.
-    /// </para>
-    /// </summary>
-    private async Task StopAndTearDownAsync(PluginEnvelope env, CancellationToken ct)
-    {
-        // CancellationToken.None for the stop calls: teardown is cleanup, and abandoning it because
-        // the host is already shutting down is how sockets and file handles survive the process.
-        try
-        {
-            if (env.ServiceProvider is { } sp)
-            {
-                foreach (IHostedService svc in sp.GetServices<IHostedService>())
-                {
-                    try
-                    {
-                        await svc.StopAsync(CancellationToken.None).ConfigureAwait(false);
-                    }
-                    catch (Exception ex)
-                    {
-                        _logger.LogWarning(
-                            ex,
-                            "Hosted service {Service} failed to stop for plugin {Key}",
-                            svc.GetType().FullName,
-                            env.Manifest.Key
-                        );
-                    }
-                }
-            }
-        }
-        catch (Exception ex)
-        {
-            _logger.LogWarning(
-                ex,
-                "Could not enumerate hosted services while tearing down plugin {Key}; continuing "
-                    + "with the rest of the teardown",
-                env.Manifest.Key
-            );
-        }
-
-        try
-        {
-            await env.Instance.StopAsync(CancellationToken.None).ConfigureAwait(false);
-        }
-        catch (Exception ex)
-        {
-            _logger.LogWarning(ex, "Failed to stop plugin {Key}", env.Manifest.Key);
-        }
-
-        foreach (object inst in env.Disposables)
-        {
-            try
-            {
-                switch (inst)
-                {
-                    case IAsyncDisposable iad:
-                        await iad.DisposeAsync().ConfigureAwait(false);
-
-                        continue;
-                    case IDisposable d:
-                        d.Dispose();
-
-                        continue;
-                }
-            }
-            catch (Exception ex)
-            {
-                _logger.LogWarning(
-                    ex,
-                    "Failed to dispose {Type} for {Key}",
-                    inst.GetType().Name,
-                    env.Manifest.Key
-                );
-            }
-        }
-
-        env.Disposables.Clear();
-
-        try
-        {
-            // IVortexPlugin is IAsyncDisposable, but the instance is Activator-created rather than
-            // DI-owned, so nothing was disposing it. Anything it holds kept the ALC alive.
-            await env.Instance.DisposeAsync().ConfigureAwait(false);
-        }
-        catch (Exception ex)
-        {
-            _logger.LogWarning(ex, "Failed to dispose plugin instance {Key}", env.Manifest.Key);
-        }
-
-        if (env.Alc is not null)
-        {
-            AssemblyMemoryLoader.Unload(env.Alc);
-        }
-    }
-
     private SemaphoreSlim GetKeyGate(string key)
     {
         return _keyLocks.GetOrAdd(key, _ => new SemaphoreSlim(1, 1));
-    }
-
-    private void RebuildDependents(IEnumerable<PluginManifest> manifests)
-    {
-        _dependents.Clear();
-
-        foreach (PluginManifest manifest in manifests)
-        {
-            foreach (PluginDependency dep in manifest.Dependencies)
-            {
-                _dependents.GetOrAdd(dep.Key, _ => []).Add(manifest.Key);
-            }
-        }
     }
 }
