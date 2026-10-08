@@ -351,24 +351,11 @@ public sealed partial class RoomMapModule
                     Math.Abs(_roomGrain._roomConfig.MaxStepHeight),
                     Math.Abs(_roomGrain._roomConfig.MaxDropHeight)
                 ) ?? GetTopSection(tileId);
-            Altitude height = section.Height;
-            RoomObjectId highestItemId = section.ItemId;
-            Altitude postureOffset = Altitude.Zero;
-
-            if (highestItemId > 0)
-            {
-                if (
-                    _roomGrain._state.ItemsById.TryGetValue(highestItemId, out IRoomItem? item)
-                    && item is IRoomFloorItem floorItem
-                )
-                {
-                    postureOffset = floorItem.Logic.GetPostureOffset();
-                }
-            }
+            Altitude postureOffset = PostureOffsetOf(section);
 
             avatar.PostureOffset = postureOffset;
 
-            avatar.SetHeight(height - postureOffset);
+            avatar.SetHeight(section.Height - postureOffset);
         }
         catch (Exception ex)
         {
@@ -388,19 +375,16 @@ public sealed partial class RoomMapModule
     /// The arithmetic <see cref="GetTileHeightForAvatar" /> has always done, about a section the
     /// caller names rather than about whichever one is highest.
     /// </summary>
-    public Altitude GetHeightForAvatarOn(RoomTileSection section)
-    {
-        if (
-            section.ItemId > 0
-            && _roomGrain._state.ItemsById.TryGetValue(section.ItemId, out IRoomItem? item)
-            && item is IRoomFloorItem floorItem
-        )
-        {
-            return section.Height - floorItem.Logic.GetPostureOffset();
-        }
+    public Altitude GetHeightForAvatarOn(RoomTileSection section) =>
+        section.Height - PostureOffsetOf(section);
 
-        return section.Height;
-    }
+    /// <summary>How far the item forming a surface sinks the pose: zero on a bare floor.</summary>
+    private Altitude PostureOffsetOf(RoomTileSection section) =>
+        section.ItemId > 0
+        && _roomGrain._state.ItemsById.TryGetValue(section.ItemId, out IRoomItem? item)
+        && item is IRoomFloorItem floorItem
+            ? floorItem.Logic.GetPostureOffset()
+            : Altitude.Zero;
 
     /// <summary>
     /// How high an avatar stands on a tile: the surface, less whatever the item under it sinks the
@@ -414,23 +398,7 @@ public sealed partial class RoomMapModule
     {
         try
         {
-            RoomTileSection section = GetTopSection(tileId);
-            Altitude height = section.Height;
-            RoomObjectId highestItemId = section.ItemId;
-            Altitude postureOffset = Altitude.Zero;
-
-            if (highestItemId > 0)
-            {
-                if (
-                    _roomGrain._state.ItemsById.TryGetValue(highestItemId, out IRoomItem? item)
-                    && item is IRoomFloorItem floorItem
-                )
-                {
-                    postureOffset = floorItem.Logic.GetPostureOffset();
-                }
-            }
-
-            return height - postureOffset;
+            return GetHeightForAvatarOn(GetTopSection(tileId));
         }
         catch (Exception ex)
         {

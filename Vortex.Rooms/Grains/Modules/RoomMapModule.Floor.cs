@@ -9,32 +9,33 @@ namespace Vortex.Rooms.Grains.Modules;
 
 public sealed partial class RoomMapModule
 {
-    private bool AddFloorItem(IRoomFloorItem item)
+    /// <summary>The tiles a floor item covers where it stands, its rotation applied.</summary>
+    private List<int> FootprintOf(IRoomFloorItem item)
     {
-        int tileIdx = ToIdx(item.X, item.Y);
-
-        if (!InBounds(tileIdx))
+        if (!InBounds(ToIdx(item.X, item.Y)))
         {
             throw new VortexException(VortexErrorCodeEnum.TileOutOfBounds);
         }
 
-        if (
-            GetTileIdForSize(
-                item.X,
-                item.Y,
-                item.Rotation,
-                item.Definition.Width,
-                item.Definition.Length,
-                out List<int> tileIds
-            )
-        )
-        {
-            foreach (int idx in tileIds)
-            {
-                _roomGrain._state.TileFloorStacks[idx].Add(item.ObjectId);
+        GetTileIdForSize(
+            item.X,
+            item.Y,
+            item.Rotation,
+            item.Definition.Width,
+            item.Definition.Length,
+            out List<int> tileIds
+        );
 
-                ComputeTile(idx);
-            }
+        return tileIds;
+    }
+
+    private bool AddFloorItem(IRoomFloorItem item)
+    {
+        foreach (int idx in FootprintOf(item))
+        {
+            _roomGrain._state.TileFloorStacks[idx].Add(item.ObjectId);
+
+            ComputeTile(idx);
         }
 
         return true;
@@ -185,30 +186,11 @@ public sealed partial class RoomMapModule
 
     public bool RemoveFloorItem(IRoomFloorItem item)
     {
-        int tileIdx = ToIdx(item.X, item.Y);
-
-        if (!InBounds(tileIdx))
+        foreach (int idx in FootprintOf(item))
         {
-            throw new VortexException(VortexErrorCodeEnum.TileOutOfBounds);
-        }
+            _roomGrain._state.TileFloorStacks[idx].Remove(item.ObjectId);
 
-        if (
-            GetTileIdForSize(
-                item.X,
-                item.Y,
-                item.Rotation,
-                item.Definition.Width,
-                item.Definition.Length,
-                out List<int> tileIds
-            )
-        )
-        {
-            foreach (int idx in tileIds)
-            {
-                _roomGrain._state.TileFloorStacks[idx].Remove(item.ObjectId);
-
-                ComputeTile(idx);
-            }
+            ComputeTile(idx);
         }
 
         return true;
