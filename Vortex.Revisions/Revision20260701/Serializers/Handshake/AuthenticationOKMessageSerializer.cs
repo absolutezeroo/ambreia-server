@@ -9,16 +9,6 @@ internal class AuthenticationOKMessageSerializer(int header)
     protected override void Serialize(IServerPacket packet, AuthenticationOKMessage message)
     {
         packet.WriteInteger(message.AccountId);
-        packet.WriteInteger(message.SuggestedLoginActions?.Length ?? 0);
-
-        if (message.SuggestedLoginActions != null)
-        {
-            foreach (short action in message.SuggestedLoginActions)
-            {
-                packet.WriteShort(action);
-            }
-        }
-
         packet.WriteInteger(message.IdentityId);
     }
 }

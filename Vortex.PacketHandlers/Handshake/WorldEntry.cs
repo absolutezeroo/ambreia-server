@@ -94,7 +94,6 @@ public sealed class WorldEntry(
         AuthenticationOKMessage authenticated = new()
         {
             AccountId = playerId,
-            SuggestedLoginActions = [],
             IdentityId = playerId,
         };
         UserRightsMessage rights = new()
