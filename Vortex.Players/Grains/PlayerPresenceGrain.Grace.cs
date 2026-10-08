@@ -26,10 +26,10 @@ internal sealed partial class PlayerPresenceGrain
     /// <summary>Internal for the sign-in tests, which put a player back in grace directly.</summary>
     internal RoomId _resumableRoom = -1;
 
-    public Task<RoomId?> GetResumableRoomAsync() =>
+    internal Task<RoomId?> GetResumableRoomAsync() =>
         Task.FromResult(_resumableRoom > 0 ? (RoomId?)_resumableRoom : null);
 
-    public Task<bool> TakeResumeAsync(RoomId roomId)
+    internal Task<bool> TakeResumeAsync(RoomId roomId)
     {
         if (_resumableRoom <= 0 || _resumableRoom != roomId)
         {

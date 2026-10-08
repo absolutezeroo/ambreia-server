@@ -1,5 +1,6 @@
 using System.Threading;
 using System.Threading.Tasks;
+using Vortex.Primitives.Action;
 using Vortex.Primitives.Orleans.Snapshots.Room;
 using Vortex.Primitives.Rooms;
 using Vortex.Primitives.Rooms.Enums;
@@ -9,18 +10,22 @@ namespace Vortex.Primitives.Players.Grains;
 public partial interface IPlayerPresenceGrain
 {
     public Task<RoomPointerSnapshot> GetActiveRoomAsync();
-    public Task<RoomPendingSnapshot> GetPendingRoomAsync();
-    public Task SetActiveRoomAsync(RoomId roomId, CancellationToken ct);
-    public Task ClearActiveRoomAsync(CancellationToken ct);
-    public Task SetPendingRoomAsync(RoomId roomId, bool approved);
 
-    /// <summary>The room a session re-attached to during the grace period, its avatar still
-    /// standing there (spec Personnage §10); null otherwise. Sign-in forwards there first.</summary>
-    public Task<RoomId?> GetResumableRoomAsync();
+    /// <summary>
+    /// The only way into a room: the dungeon copy redirect, the room's door
+    /// (<c>IRoomCore.AdmitAsync</c>), then the entry burst and the avatar. Setting the room pointer
+    /// is not on this interface on purpose: a caller that could set it would skip the door.
+    /// </summary>
+    public Task EnterRoomAsync(
+        ActionContext ctx,
+        RoomId roomId,
+        string password,
+        CancellationToken ct
+    );
 
-    /// <summary>True once when <paramref name="roomId"/> is the resumable room: the entry then keeps
-    /// the avatar instead of making a second one.</summary>
-    public Task<bool> TakeResumeAsync(RoomId roomId);
+    /// <summary>The client closes the room: the avatar leaves, a pending entry is dropped.</summary>
+    public Task LeaveRoomAsync(CancellationToken ct);
+
     public Task OnControllerLevelUpdatedAsync(
         RoomId roomId,
         RoomControllerType controllerType,

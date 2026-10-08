@@ -7,8 +7,8 @@ using Xunit;
 namespace Vortex.Hosting.Tests.Architecture;
 
 /// <summary>
-/// Everything the client needs on room entry is pushed by <c>RoomService</c>, because the client
-/// asks for nothing.
+/// Everything the client needs on room entry is in the burst the room builds
+/// (<c>RoomGrain.Entry.cs</c>), because the client asks for nothing.
 /// </summary>
 /// <remarks>
 /// <para>
@@ -69,11 +69,9 @@ public sealed class RoomEntryPayloadTests
     ];
 
     [Fact]
-    public void RoomService_SendsTheWholeEntryPayload()
+    public void TheEntryBurst_CarriesTheWholePayload()
     {
-        string source = File.ReadAllText(
-            Path.Combine(RepositoryPaths.Root(), "Vortex.Rooms", "RoomService.cs")
-        );
+        string source = EntryMethodSource();
 
         string[] missing = RequiredOnEntry
             .Where(composer => !source.Contains($"new {composer}", StringComparison.Ordinal))
@@ -83,7 +81,7 @@ public sealed class RoomEntryPayloadTests
             .Should()
             .BeEmpty(
                 "the client requests nothing after OpenConnection, so anything not in this push "
-                    + "never reaches the player walking in. A composer moved out of RoomService is a "
+                    + "never reaches the player walking in. A composer moved out of the burst is a "
                     + "feature that still builds, still passes its own wire tests and is dead on "
                     + "arrival"
             );
@@ -95,8 +93,8 @@ public sealed class RoomEntryPayloadTests
     /// <remarks>
     /// <para>
     /// A source-order check, and honest about being one: it reads where each composer is built in
-    /// <c>CompleteRoomEntryAsync</c> rather than watching a socket. That is enough for what it
-    /// guards, because the method sends in the order it builds, and the order is a decision taken
+    /// <c>BuildEntryBurstAsync</c> rather than watching a socket. That is enough for what it
+    /// guards, because the burst goes out in the order it is built, and the order is a decision taken
     /// against a captured entry rather than an accident of how the code grew — it drifted once
     /// already, with the rating second and the paint arriving after the geometry it paints.
     /// </para>
@@ -131,25 +129,21 @@ public sealed class RoomEntryPayloadTests
         }
     }
 
-    /// <summary>Just <c>CompleteRoomEntryAsync</c>, so the gates above it cannot skew an index.</summary>
+    /// <summary>Just <c>BuildEntryBurstAsync</c>, the last method of the file, so the door above it
+    /// cannot skew an index.</summary>
     private static string EntryMethodSource()
     {
         string source = File.ReadAllText(
-            Path.Combine(RepositoryPaths.Root(), "Vortex.Rooms", "RoomService.cs")
+            Path.Combine(RepositoryPaths.Root(), "Vortex.Rooms", "Grains", "RoomGrain.Entry.cs")
         );
 
         int start = source.IndexOf(
-            "private async Task CompleteRoomEntryAsync",
-            StringComparison.Ordinal
-        );
-        int end = source.IndexOf(
-            "public async Task CloseRoomForPlayerAsync",
+            "private async Task<ImmutableArray<IComposer>> BuildEntryBurstAsync",
             StringComparison.Ordinal
         );
 
         start.Should().BeGreaterThan(-1);
-        end.Should().BeGreaterThan(start);
 
-        return source[start..end];
+        return source[start..];
     }
 }

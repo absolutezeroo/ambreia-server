@@ -4,6 +4,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Orleans;
 using Orleans.Concurrency;
+using Vortex.Primitives.Action;
 using Vortex.Primitives.Networking;
 using Vortex.Primitives.Orleans.Snapshots.Room;
 using Vortex.Primitives.Rooms.Events;
@@ -27,6 +28,20 @@ public interface IRoomCore : IGrainWithIntegerKey
     /// </summary>
     public Task ReloadZoneAsync();
     public Task EnsureRoomActiveAsync(CancellationToken ct);
+
+    /// <summary>
+    /// The room's door (the population cap, the locked door, the password, the cancellable entry
+    /// event) and, past it, the entry burst built from the room's own state in one turn. The
+    /// player's presence grain sends it: it is the one that holds the socket and the room pointer.
+    /// A <paramref name="resumed"/> player was admitted before the cut and skips the cap and the
+    /// password.
+    /// </summary>
+    public Task<RoomAdmissionSnapshot> AdmitAsync(
+        ActionContext ctx,
+        string password,
+        bool resumed,
+        CancellationToken ct
+    );
 
     // Pure reads: they never mutate _state, so letting them interleave with the room tick (and each
     // other) keeps them off the queue behind a 50ms tick instead of serializing on it.

@@ -18,8 +18,9 @@ public sealed partial class RoomGrain
 
     public void ComputeTile(int id) => MapModule.ComputeTile(id);
 
+    /// <summary>Fires the tile's click listener: a player's, never an anonymous session's.</summary>
     public Task ClickTileAsync(ActionContext ctx, int x, int y, CancellationToken ct) =>
-        MapModule.ClickTileAsync(ctx, x, y, ct);
+        ctx.PlayerId <= 0 ? Task.CompletedTask : MapModule.ClickTileAsync(ctx, x, y, ct);
 
     public Task<RoomTileSnapshot> GetTileSnapshotAsync(int x, int y, CancellationToken ct) =>
         MapModule.GetTileSnapshotAsync(x, y, ct);

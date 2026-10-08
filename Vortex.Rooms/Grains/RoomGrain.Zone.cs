@@ -15,7 +15,7 @@ public sealed partial class RoomGrain
     {
         int max = _state.RoomSnapshot.PlayersMax;
 
-        // The same test the entry makes (RoomService.OpenRoomForPlayerIdAsync).
+        // The same test the entry makes (AdmitAsync).
         if (max > 0 && _state.AvatarsByPlayerId.Count >= max)
         {
             return Task.FromResult(false);

@@ -1,15 +1,16 @@
 using System.Threading;
 using System.Threading.Tasks;
+using Orleans;
 using Vortex.Messages.Registry;
-using Vortex.Primitives.Rooms;
+using Vortex.Primitives.Orleans;
 using Vortex.Protocol.Messages.Incoming.Room.Session;
 
 namespace Vortex.PacketHandlers.Room.Session;
 
-public class OpenFlatConnectionMessageHandler(IRoomService roomService)
+public class OpenFlatConnectionMessageHandler(IGrainFactory grainFactory)
     : IMessageHandler<OpenFlatConnectionMessage>
 {
-    private readonly IRoomService _roomService = roomService;
+    private readonly IGrainFactory _grainFactory = grainFactory;
 
     public async ValueTask HandleAsync(
         OpenFlatConnectionMessage message,
@@ -17,14 +18,16 @@ public class OpenFlatConnectionMessageHandler(IRoomService roomService)
         CancellationToken ct
     )
     {
-        await _roomService
-            .OpenRoomForPlayerIdAsync(
-                ctx.AsActionContext(),
-                ctx.PlayerId,
-                message.RoomId,
-                ct,
-                message.Password
-            )
+        // A session not yet signed in carries no player: it must not activate a presence grain,
+        // nor a room of its choosing.
+        if (ctx.PlayerId <= 0)
+        {
+            return;
+        }
+
+        await _grainFactory
+            .GetPlayerPresenceGrain(ctx.PlayerId)
+            .EnterRoomAsync(ctx.AsActionContext(), message.RoomId, message.Password, ct)
             .ConfigureAwait(false);
     }
 }

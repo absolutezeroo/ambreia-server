@@ -1,14 +1,15 @@
 using System.Threading;
 using System.Threading.Tasks;
+using Orleans;
 using Vortex.Messages.Registry;
-using Vortex.Primitives.Rooms;
+using Vortex.Primitives.Orleans;
 using Vortex.Protocol.Messages.Incoming.Room.Session;
 
 namespace Vortex.PacketHandlers.Room.Session;
 
-public class QuitMessageHandler(IRoomService roomService) : IMessageHandler<QuitMessage>
+public class QuitMessageHandler(IGrainFactory grainFactory) : IMessageHandler<QuitMessage>
 {
-    private readonly IRoomService _roomService = roomService;
+    private readonly IGrainFactory _grainFactory = grainFactory;
 
     public async ValueTask HandleAsync(
         QuitMessage message,
@@ -16,6 +17,14 @@ public class QuitMessageHandler(IRoomService roomService) : IMessageHandler<Quit
         CancellationToken ct
     )
     {
-        await _roomService.CloseRoomForPlayerAsync(ctx.PlayerId, ct).ConfigureAwait(false);
+        if (ctx.PlayerId <= 0)
+        {
+            return;
+        }
+
+        await _grainFactory
+            .GetPlayerPresenceGrain(ctx.PlayerId)
+            .LeaveRoomAsync(ct)
+            .ConfigureAwait(false);
     }
 }

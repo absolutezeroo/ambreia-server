@@ -27,7 +27,7 @@ public sealed partial class RoomActionModule(RoomGrain roomGrain)
     /// </summary>
     /// <remarks>
     /// <c>false</c>, not an exception. The room grain turns either into <c>false</c>, which is what
-    /// makes <c>RoomService</c> send the item's real position back so the client's copy snaps home;
+    /// makes the caller send the item's real position back so the client's copy snaps home;
     /// a throw got there too, but logged a stack trace at error level for what is a player dropping
     /// a chair on a wall.
     /// </remarks>

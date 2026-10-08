@@ -43,9 +43,9 @@ layers share: grain interfaces, snapshots, ids, events.
    (`Revision20260701`, maps in `Maps/`); no parser → warning, packet dropped. The typed message goes
    through `MessageSystem` to the `IMessageHandler<T>` found by scan.
 4. `SSOTicketMessageHandler` resolves the ticket.
-   - A player ticket goes to `WorldEntry.EnterAsync`: the session is bound to the player
-     (`SessionGateway.AddSessionToPlayerAsync` → `PlayerPresenceGrain`), then `AuthenticationOK`,
-     `UserRights`, `RoomForward` (where the player lands: see Characters below; by default
+   - A player ticket goes to `IWorldEntry.EnterAsync` (`Vortex.Players/Sessions`): the session is
+     bound to the player (`SessionGateway.AddSessionToPlayerAsync` → `PlayerPresenceGrain`), then
+     `PlayerPresenceGrain.EnterWorldAsync` sends `AuthenticationOK`, `UserRights`, `RoomForward` (where the player lands: see Characters below; by default
      `world.start_room_id`, the zone of `scripts/sql/dev_zone.sql`) and the character's state.
    - An account ticket opens the **account phase** (spec F3a): `SessionGateway.AddSessionToAccountAsync`
      binds the socket to `AccountSessionGrain` (one socket per account, a second one replaces it with
@@ -53,24 +53,28 @@ layers share: grain interfaces, snapshots, ids, events.
      `RpgClassList`. The character screen's packets (9000–9003, `IAccountPhaseMessage`) pass
      `AccountPhaseGateBehavior` only in this phase and `RpgIntentLimitBehavior` once per interval;
      `AccountCharactersGrain` creates (« Sans classe », 5 per account), gives a class and answers
-     `RpgCharacterResult`. `RpgEnterWorld` checks ownership, then takes the same `WorldEntry` path:
+     `RpgCharacterResult`. `RpgEnterWorld` checks ownership, then takes the same `IWorldEntry` path:
      the socket leaves the account phase for the player.
 
 ## Flow 2 — entering a zone
 
-`OpenFlatConnection` → `RoomService.OpenRoomForPlayerIdAsync` (`Vortex.Rooms/RoomService.cs`):
+`OpenFlatConnection` → `PlayerPresenceGrain.EnterRoomAsync` (`PlayerPresenceGrain.Room.cs`), the
+only way into a room (the room pointer has no setter on the grain interface):
 
-- marks the room pending on the player's `PlayerPresenceGrain`, sends `OpenConnection`;
-- activates the `RoomGrain` (`EnsureRoomActiveAsync`: map built from the room model, furniture loaded);
-- checks the door (locked refuses, password compared) unless the player has rights;
-- completes the entry: `RoomReady`, entry tile, properties, `HeightMap`, `FloorHeightMap`, `Users`,
-  `UserUpdate`, `Objects`, `Items`, controller level;
-- `PlayerPresenceGrain.SetActiveRoomAsync` subscribes the player to the room's Orleans stream
-  (`RoomOutbound`): everything the room broadcasts reaches the player through their presence grain.
+- a dungeon is redirected to the group's copy (below);
+- marks the room pending, sends `OpenConnection`;
+- `RoomGrain.AdmitAsync` (`RoomGrain.Entry.cs`) activates the room (map built from the room model,
+  furniture loaded), checks the door (full, locked, password; skipped with rights or on a resume)
+  and the cancellable `PlayerEnteringRoomEvent`, and builds the burst from its own state:
+  `RoomReady`, entry tile, properties, `HeightMap`, `FloorHeightMap`, `Users`, `UserUpdate`,
+  `Objects`, `Items`, controller level;
+- the presence grain sends it, then subscribes the player to the room's Orleans stream
+  (`RoomOutbound`) and creates the avatar: everything the room broadcasts reaches the player
+  through their presence grain. The room never calls the presence grain back during the entry.
 
 ## Flow 3 — walking
 
-`MoveAvatar` → `RoomService.ClickTileAsync` → `RoomGrain.WalkAvatarToAsync` → `RoomAvatarModule`
+`MoveAvatar` → `RoomGrain.ClickTileAsync` then `RoomGrain.WalkAvatarToAsync` → `RoomAvatarModule`
 plans the path (`RoomPathingSystem`, `RoomMapModule` walkability: heights, furniture flags, avatars).
 The room clock is a one-shot grain timer re-armed every `RoomTickMs` (50 ms); avatars step on
 `AvatarTickMs` (500 ms) in `RoomAvatarTickSystem`, which broadcasts `UserUpdate` on the room stream
@@ -106,7 +110,7 @@ classes). The modules answer, each for one thing:
 | `ZoneInteractionModule` + `Interactions/` | `UseFurniture`/`UseWallItem` on zone decor: one class per `interaction` | `RoomActionModule.UseItemByIdAsync` |
 | `ZoneTriggerModule` + `Triggers/` | triggers on the room event bus and the `zone-clock` tick step; one evaluator per condition, one executor per action | `RoomEventModule`, the room tick |
 
-A `Dungeon` zone is played in copies, one per group: `RoomService` asks the room
+A `Dungeon` zone is played in copies, one per group: the room entry asks the room
 `IRoomZone.InstanceForAsync` and forwards the player to the copy `IZoneInstanceGrain` hands out. A
 copy's room id (`ZoneInstanceIds`, from 1 000 000 000) names its template, whose row, zone, rights
 and visit log it uses; the copy is released when its room deactivates. Proof: `driver.mjs dungeon`.
@@ -150,7 +154,7 @@ The character pushes its own state through the player's presence: `RpgCharacterS
 and on every room entered, `RpgCharacterStats` then `RpgCharacterProgress` after XP (stats only on a
 level up). Proof of the whole character screen by the socket: `driver.mjs lobby`.
 
-Sign-in (`WorldEntry`) forwards to: a pending editor test entry, else the room the
+Sign-in (`PlayerPresenceGrain.EnterWorldAsync`) forwards to: a pending editor test entry, else the room the
 avatar is still standing in during its grace period, else the character's last world zone if still
 published, else `world.start_room_id`. `LastZoneHandler` offers every room entered to the grain,
 which keeps world zones only. A socket that drops in a room leaves the avatar there, still, for

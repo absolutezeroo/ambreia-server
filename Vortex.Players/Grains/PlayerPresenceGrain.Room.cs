@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
@@ -17,7 +18,9 @@ using Vortex.Primitives.Rooms;
 using Vortex.Primitives.Rooms.Enums;
 using Vortex.Primitives.Rooms.Grains;
 using Vortex.Primitives.Rooms.Snapshots;
+using Vortex.Primitives.Rooms.Snapshots.Avatars;
 using Vortex.Protocol.Messages.Outgoing.Room.Permissions;
+using Vortex.Protocol.Messages.Outgoing.Room.Session;
 
 namespace Vortex.Players.Grains;
 
@@ -32,16 +35,115 @@ internal sealed partial class PlayerPresenceGrain
             }
         );
 
-    public Task<RoomPendingSnapshot> GetPendingRoomAsync() =>
-        Task.FromResult(
-            new RoomPendingSnapshot
-            {
-                RoomId = _state.PendingRoomId,
-                Approved = _state.PendingRoomApproved,
-            }
-        );
+    public async Task EnterRoomAsync(
+        ActionContext ctx,
+        RoomId roomId,
+        string password,
+        CancellationToken ct
+    )
+    {
+        // Only an entry still in flight is a duplicate worth dropping. Once the player is in, the
+        // same room id means a reload -- the client asks for the room you are standing in as
+        // readily as for any other -- and by the time this arrives RoomSessionManager.createSession
+        // has already disposed the session and purged the room content. Returning early there left
+        // the client on a black screen with nothing left to ask for.
+        if (_state.PendingRoomId == roomId && !_state.PendingRoomApproved)
+        {
+            return;
+        }
 
-    public async Task SetActiveRoomAsync(RoomId roomId, CancellationToken ct)
+        // A dungeon is played in the group's own copy (plan D21): the client is sent there, and
+        // asks for it in turn.
+        RoomId? target = await _grainFactory.GetRoomZone(roomId).InstanceForAsync(PlayerId);
+
+        if (target is null)
+        {
+            await SendComposerAsync(
+                new CantConnectMessageComposer { ErrorType = RoomConnectionErrorType.RoomFull }
+            );
+
+            return;
+        }
+
+        if (target.Value != roomId)
+        {
+            await SendComposerAsync(new RoomForwardMessageComposer { RoomId = target.Value });
+
+            return;
+        }
+
+        IRoomGrain room = _grainFactory.GetRoomGrain(roomId);
+
+        // Back within the grace period (spec Personnage §10), into the room still holding the
+        // avatar: it is kept, and SetActiveRoomAsync sees the same room and makes no second one.
+        bool resumed = await ResumeOrLeaveAsync(room, roomId, ct);
+
+        // Pending, not approved: the room's door has not answered yet. Approval is granted only
+        // once the player is genuinely in.
+        _state.PendingRoomId = roomId;
+        _state.PendingRoomApproved = false;
+
+        await SendComposerAsync(new OpenConnectionMessageComposer { RoomId = roomId });
+
+        RoomAdmissionSnapshot admission = await room.AdmitAsync(ctx, password, resumed, ct);
+
+        if (admission.Refusal is { } refusal)
+        {
+            await SendComposerAsync(new CantConnectMessageComposer { ErrorType = refusal });
+            _state.PendingRoomId = RoomId.Invalid;
+            _state.PendingRoomApproved = false;
+
+            // A resumed avatar refused here would stand in the room for nobody; otherwise the room
+            // was already left and this does nothing.
+            await ClearActiveRoomAsync(ct);
+
+            return;
+        }
+
+        await SendComposerAsync([.. admission.Burst]);
+        await SetActiveRoomAsync(roomId, ct);
+
+        // Approved only once the player is genuinely in: the door answered, the payload is sent
+        // and the avatar exists. Granting it any earlier approves a request the door may refuse.
+        _state.PendingRoomId = roomId;
+        _state.PendingRoomApproved = true;
+    }
+
+    public async Task LeaveRoomAsync(CancellationToken ct)
+    {
+        _state.PendingRoomId = RoomId.Invalid;
+        _state.PendingRoomApproved = false;
+
+        await ClearActiveRoomAsync(ct);
+        await SendComposerAsync(new CloseConnectionMessageComposer());
+    }
+
+    /// <summary>True when the player comes back, within the grace period, to the room that still
+    /// holds their avatar; otherwise the room they were in is left, as any entry does. A room
+    /// reloaded meanwhile (a zone republished) lost the avatar: kept as "resumed", the player would
+    /// stand in it with no avatar at all.</summary>
+    internal async Task<bool> ResumeOrLeaveAsync(
+        IRoomAvatars room,
+        RoomId roomId,
+        CancellationToken ct
+    )
+    {
+        if (
+            await TakeResumeAsync(roomId)
+            && (await room.GetAllAvatarSnapshotsAsync(ct)).Any(a =>
+                a is RoomPlayerAvatarSnapshot && a.WebId == PlayerId.Value
+            )
+        )
+        {
+            return true;
+        }
+
+        await ClearActiveRoomAsync(ct);
+
+        return false;
+    }
+
+    private async Task SetActiveRoomAsync(RoomId roomId, CancellationToken ct)
     {
         if (roomId <= 0)
         {
@@ -108,7 +210,7 @@ internal sealed partial class PlayerPresenceGrain
         }
     }
 
-    public async Task ClearActiveRoomAsync(CancellationToken ct)
+    internal async Task ClearActiveRoomAsync(CancellationToken ct)
     {
         if (_state.ActiveRoomId <= 0)
         {
@@ -182,14 +284,6 @@ internal sealed partial class PlayerPresenceGrain
 
             _roomOutboundSub = null;
         }
-    }
-
-    public Task SetPendingRoomAsync(RoomId roomId, bool approved)
-    {
-        _state.PendingRoomId = roomId;
-        _state.PendingRoomApproved = approved;
-
-        return Task.CompletedTask;
     }
 
     public async Task OnControllerLevelUpdatedAsync(
