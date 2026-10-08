@@ -58,6 +58,10 @@ internal static class DefaultRoles
                 Capabilities.Economy.GrantItem,
                 Capabilities.Server.ConfigManage,
                 Capabilities.Server.Control,
+                Capabilities.World.ZoneEdit,
+                Capabilities.World.ZonePublish,
+                Capabilities.Rpg.GrantXp,
+                Capabilities.Content.Publish,
             ]
         ),
         new RoleSeed("owner", "Owner", [Capabilities.Wildcard]),
