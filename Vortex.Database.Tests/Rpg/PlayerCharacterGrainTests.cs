@@ -11,6 +11,7 @@ using Microsoft.Extensions.Options;
 using Vortex.Database.Context;
 using Vortex.Database.Entities.Rpg;
 using Vortex.Database.Tests.Support;
+using Vortex.Events.Registry;
 using Vortex.Primitives.Events;
 using Vortex.Primitives.Events.Rpg;
 using Vortex.Primitives.Rpg.Characters;
@@ -155,6 +156,9 @@ public sealed class PlayerCharacterGrainTests : IAsyncLifetime
 
                     return null;
                 }),
+                FakeProxy.Create<ICancellableEventPublisher>(_ =>
+                    Task.FromResult(new EventContext { CorrelationId = "test" })
+                ),
                 Options.Create(new CharacterConfig()),
                 _logger
             );

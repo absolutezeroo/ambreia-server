@@ -9,6 +9,7 @@ using Microsoft.Extensions.Options;
 using Orleans;
 using Vortex.Database.Context;
 using Vortex.Database.Entities.Rpg;
+using Vortex.Events.Registry;
 using Vortex.Logging.Extensions;
 using Vortex.Primitives.Events;
 using Vortex.Primitives.Events.Rpg;
@@ -32,6 +33,7 @@ internal sealed class PlayerCharacterGrain(
     IRpgContent content,
     IEnumerable<IStatSource> sources,
     IEventPublisher events,
+    ICancellableEventPublisher cancellableEvents,
     IOptions<CharacterConfig> config,
     ILogger<PlayerCharacterGrain> logger
 ) : Grain, IPlayerCharacterGrain
@@ -141,6 +143,92 @@ internal sealed class PlayerCharacterGrain(
 
         return _stats;
     }
+
+    public async Task<XpGrantOutcome> GainXpAsync(int amount, string source)
+    {
+        if (_character is not { } c)
+        {
+            return XpGrantOutcome.NoCharacter;
+        }
+
+        if (amount < 1 || amount > _config.MaxXpPerGrant)
+        {
+            return Refuse(amount, source);
+        }
+
+        ProgressionDefinition? progression = content.Get<ProgressionDefinition>(ProgressionId);
+        int maxLevel = progression?.MaxLevel ?? 1;
+
+        if (c.Level >= maxLevel)
+        {
+            return XpGrantOutcome.AtMaxLevel;
+        }
+
+        XpGainingEvent gaining = new(_playerId, source) { Amount = amount };
+
+        if ((await cancellableEvents.PublishCancellableAsync(gaining)).Cancel)
+        {
+            return XpGrantOutcome.Cancelled;
+        }
+
+        if (gaining.Amount < 1)
+        {
+            return Refuse(gaining.Amount, source);
+        }
+
+        int oldLevel = c.Level;
+        c.Xp += gaining.Amount;
+
+        while (c.Level < maxLevel && c.Xp >= progression!.XpToNext[c.Level - 1])
+        {
+            c.Xp -= progression.XpToNext[c.Level - 1];
+            c.Level++;
+
+            logger.LogInformation(
+                "Level up: player {PlayerId}, {ClassId}, level {Level}.",
+                _playerId.Value,
+                c.ClassId,
+                c.Level
+            );
+            Publish(new LevelUpEvent(_playerId, c.ClassId, c.Level - 1, c.Level));
+        }
+
+        if (c.Level >= maxLevel)
+        {
+            c.Xp = 0;
+        }
+
+        _dirty = true;
+
+        if (c.Level != oldLevel)
+        {
+            // Never lose a level (spec Personnage §7): written now, not at the next tick.
+            _stats = null;
+            await FlushAsync(CancellationToken.None);
+            Publish(new CharacterStatsChangedEvent(_playerId));
+        }
+
+        Publish(new XpGainedEvent(_playerId, gaining.Amount, source, c.Level, c.Xp));
+
+        return XpGrantOutcome.Granted;
+    }
+
+    private XpGrantOutcome Refuse(int amount, string source)
+    {
+        logger.LogWarning(
+            "XP grant of {Amount} from {Source} to player {PlayerId} refused: 1 to {Max} per grant.",
+            amount,
+            source,
+            _playerId.Value,
+            _config.MaxXpPerGrant
+        );
+
+        return XpGrantOutcome.Refused;
+    }
+
+    /// <summary>The "-ed" events, off the critical path (spec Personnage §11).</summary>
+    private void Publish(IEvent e) =>
+        events.PublishAsync(e).LogAndForget(logger, "Publishing {Event}", e.GetType().Name);
 
     private async Task ComputeStatsAsync(PlayerCharacterEntity character)
     {

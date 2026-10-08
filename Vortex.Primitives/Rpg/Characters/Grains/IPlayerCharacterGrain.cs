@@ -18,4 +18,8 @@ public interface IPlayerCharacterGrain : IGrainWithIntegerKey
 
     /// <summary>The computed stats; null without a character.</summary>
     public Task<CharacterStatsSnapshot?> GetStatsAsync();
+
+    /// <summary>Grants XP, server side only (spec Personnage §5, §14): levels chained, a level
+    /// written at once.</summary>
+    public Task<XpGrantOutcome> GainXpAsync(int amount, string source);
 }
