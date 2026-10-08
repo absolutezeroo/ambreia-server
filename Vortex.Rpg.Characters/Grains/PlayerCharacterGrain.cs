@@ -142,7 +142,16 @@ internal sealed class PlayerCharacterGrain(
 
         if (_character is { } current)
         {
-            return await LeaveTheStarterClassAsync(current, classId);
+            ChooseClassOutcome outcome = await LeaveTheStarterClassAsync(current, classId);
+
+            // Chosen on the character screen of another tab while this character plays: its HUD
+            // would keep the starter's stats until the next zone (spec F3a §5.6).
+            if (outcome == ChooseClassOutcome.Chosen)
+            {
+                await PushStatsAsync();
+            }
+
+            return outcome;
         }
 
         if (content.Get<ClassDefinition>(classId) is not { Retired: false } chosen)
@@ -343,6 +352,22 @@ internal sealed class PlayerCharacterGrain(
         await PushProgressAsync(c.Level != oldLevel, progress);
 
         return XpGrantOutcome.Granted;
+    }
+
+    /// <summary>The stats after a change already written; a failure to read them is logged.</summary>
+    private async Task PushStatsAsync()
+    {
+        try
+        {
+            if (await GetStatsAsync() is { } stats)
+            {
+                await PushAsync(new RpgCharacterStatsMessageComposer { Stats = stats });
+            }
+        }
+        catch (Exception ex)
+        {
+            logger.LogWarning(ex, "Could not read the stats of player {PlayerId}", _playerId.Value);
+        }
     }
 
     /// <summary>Progress, after the new stats on a level up. The level is already written: reading

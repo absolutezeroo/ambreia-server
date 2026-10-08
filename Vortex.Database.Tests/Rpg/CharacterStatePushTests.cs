@@ -41,6 +41,7 @@ public sealed class CharacterStatePushTests : IAsyncLifetime
         ["class.warrior"] = CharacterContent.Warrior,
         ["spec.warrior.guardian"] = CharacterContent.Guardian,
         ["progression.default"] = CharacterContent.Progression,
+        ["class.classless"] = CharacterContent.Classless,
     };
 
     private SqliteConnection _conn = null!;
@@ -119,6 +120,27 @@ public sealed class CharacterStatePushTests : IAsyncLifetime
                     XpToNext = 150,
                 }
             );
+    }
+
+    /// <summary>
+    /// The class can be chosen on the character screen of a second tab while the character plays in
+    /// the first: its HUD must not keep the starter's stats (spec F3a §5.6, §9).
+    /// </summary>
+    [Fact]
+    public async Task LeavingTheStarterClass_PushesTheNewStats()
+    {
+        await StoreAsync(level: 2, classId: "class.classless");
+        PlayerCharacterGrain grain = await ActivateAsync();
+
+        await grain.ChooseClassAsync("class.warrior");
+
+        RpgCharacterStatsMessageComposer stats = _sent
+            .Should()
+            .ContainSingle()
+            .Which.Should()
+            .BeOfType<RpgCharacterStatsMessageComposer>()
+            .Subject;
+        stats.Stats.Strength.Should().Be(15, "a level 2 warrior: 12 + 3");
     }
 
     [Fact]
@@ -207,15 +229,18 @@ public sealed class CharacterStatePushTests : IAsyncLifetime
                 : null
         );
 
-    private async Task StoreAsync(int level)
+    private async Task StoreAsync(int level, string classId = "class.warrior")
     {
         await using VortexDbContext db = new(_options);
         db.PlayerCharacters.Add(
             new PlayerCharacterEntity
             {
                 PlayerEntityId = PLAYER_ID,
-                ClassId = "class.warrior",
-                SpecializationId = "spec.warrior.guardian",
+                ClassId = classId,
+                SpecializationId =
+                    classId == "class.warrior"
+                        ? "spec.warrior.guardian"
+                        : "spec.classless.adventurer",
                 Level = level,
                 Xp = 0,
             }
