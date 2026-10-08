@@ -477,7 +477,6 @@ public sealed partial class RoomGrain : Grain, IRoomGrain
                 PlayersMax = entity.PlayersMax,
                 MaxVisitorsLimit = _roomConfig.MaxVisitorsLimit,
                 TradeType = entity.TradeType,
-                Score = entity.Score,
                 Ranking = entity.Ranking,
                 CategoryId = -1,
                 Tags = RoomTagMapper.ToTags(entity.Tag1, entity.Tag2),

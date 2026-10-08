@@ -24,7 +24,6 @@ using Vortex.Primitives.Rooms.Object;
 using Vortex.Primitives.Rooms.Snapshots.Avatars;
 using Vortex.Primitives.Rooms.Snapshots.Furniture;
 using Vortex.Primitives.Rooms.Snapshots.Mapping;
-using Vortex.Protocol.Messages.Outgoing.Navigator;
 using Vortex.Protocol.Messages.Outgoing.Room.Action;
 using Vortex.Protocol.Messages.Outgoing.Room.Engine;
 using Vortex.Protocol.Messages.Outgoing.Room.Layout;
@@ -415,15 +414,6 @@ internal sealed partial class RoomService(
                 .SendComposerAsync(new YouAreOwnerMessageComposer { RoomId = roomId })
                 .ConfigureAwait(false);
         }
-
-        // After the rights, not before the map. Room rating was removed (M0), but the official entry
-        // still carries this packet: the score rides along on the snapshot already in hand, and
-        // CanRate is pinned to false so the client never offers a like button nothing answers.
-        await playerPresence
-            .SendComposerAsync(
-                new RoomRatingMessageComposer { Rating = snapshot.Score, CanRate = false }
-            )
-            .ConfigureAwait(false);
 
         if (replayComposers.Length > 0)
         {

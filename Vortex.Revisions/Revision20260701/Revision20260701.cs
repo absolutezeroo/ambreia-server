@@ -9,7 +9,6 @@ public sealed class Revision20260701()
         {
             new AvatarMap(),
             new HandshakeMap(),
-            new NavigatorMap(),
             new NotificationsMap(),
             new RoomMap(),
             new AvailabilityMap(),

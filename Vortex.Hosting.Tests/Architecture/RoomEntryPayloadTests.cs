@@ -51,8 +51,7 @@ public sealed class RoomEntryPayloadTests
     /// <remarks>
     /// The room's shell first: ready, the door tile, the paint, the geometry, the visualisation settings. Then who is here, then what is
     /// here, then whose room it is. Then the furniture configuration and the
-    /// rights. The rating comes last of the room's own state, after the client
-    /// has been told whether the player owns the place.
+    /// rights. The official burst ends with the room's rating, which the RPG does not send.
     /// </remarks>
     private static readonly string[] CapturedOrder =
     [
@@ -69,7 +68,6 @@ public sealed class RoomEntryPayloadTests
         "HanditemConfigurationMessageComposer",
         "YouAreControllerMessageComposer",
         "YouAreOwnerMessageComposer",
-        "RoomRatingMessageComposer",
     ];
 
     [Fact]

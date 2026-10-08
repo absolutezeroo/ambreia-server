@@ -17,8 +17,7 @@ public record RoomInfoSnapshot : RoomSummarySnapshot
     [Id(2)]
     public required RoomTradeModeType TradeType { get; init; } = RoomTradeModeType.Disabled;
 
-    [Id(3)]
-    public required int Score { get; init; } = 0;
+    // [Id(3)] retired: Score, last read by the room rating packet the RPG no longer sends.
 
     [Id(4)]
     public required int Ranking { get; init; } = 0;

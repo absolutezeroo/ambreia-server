@@ -102,7 +102,6 @@ internal static class MessageComposer
     public const int UserRemoveMessageComposer = 3693;
     public const int UsersMessageComposer = 996;
     public const int UserUpdateMessageComposer = 2613;
-    public const int RoomRatingComposer = 2502;
 
     #endregion
 

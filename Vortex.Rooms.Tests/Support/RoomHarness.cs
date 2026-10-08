@@ -179,7 +179,6 @@ internal sealed class RoomHarness
             DoorMode = RoomDoorModeType.Open,
             PlayersMax = 25,
             TradeType = RoomTradeModeType.Disabled,
-            Score = 0,
             Ranking = 0,
             CategoryId = -1,
             Tags = [],
