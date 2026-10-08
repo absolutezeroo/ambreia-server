@@ -27,5 +27,6 @@ public sealed class CharactersModule : IHostPluginModule
         // Characters hold class ids: an import that removes one needs a replace rule.
         services.AddSingleton<IContentReferences, ClassReferences>();
         services.AddSingleton<IContentReferences, SpecializationReferences>();
+        services.AddSingleton<IContentReferences, ItemReferences>();
     }
 }
