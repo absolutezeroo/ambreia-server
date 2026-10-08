@@ -12,7 +12,9 @@ using Vortex.Primitives.Networking;
 using Vortex.Primitives.Permissions;
 using Vortex.Primitives.Players.Grains;
 using Vortex.Primitives.Rooms;
+using Vortex.Primitives.Rpg.Characters.Grains;
 using Vortex.Primitives.Server.Grains;
+using Vortex.Primitives.World;
 using Vortex.Primitives.World.Grains;
 using Vortex.Protocol.Messages.Incoming.Handshake;
 using Vortex.Protocol.Messages.Outgoing.Handshake;
@@ -67,7 +69,36 @@ public sealed class SsoBurstTests
             .Equal(typeof(AuthenticationOKMessage), typeof(UserRightsMessage));
     }
 
-    private async Task LoginAsync(int startRoomId, int? testRoomId = null)
+    [Fact]
+    public async Task TheLastZone_IsWhereTheCharacterSignsIn()
+    {
+        await LoginAsync(startRoomId: 42, lastRoomId: 12);
+
+        _sent.OfType<RoomForwardMessageComposer>().Single().RoomId.Should().Be(new RoomId(12));
+    }
+
+    [Fact]
+    public async Task ALastZoneNoLongerPublished_FallsBackToTheStart()
+    {
+        await LoginAsync(startRoomId: 42, lastRoomId: 12, lastRoomPublished: false);
+
+        _sent.OfType<RoomForwardMessageComposer>().Single().RoomId.Should().Be(new RoomId(42));
+    }
+
+    [Fact]
+    public async Task ATestEntry_StillComesFirst()
+    {
+        await LoginAsync(startRoomId: 42, testRoomId: 30, lastRoomId: 12);
+
+        _sent.OfType<RoomForwardMessageComposer>().Single().RoomId.Should().Be(new RoomId(30));
+    }
+
+    private async Task LoginAsync(
+        int startRoomId,
+        int? testRoomId = null,
+        int? lastRoomId = null,
+        bool lastRoomPublished = true
+    )
     {
         SSOTicketMessageHandler handler = new(
             FakeProxy.Create<IAuthenticationService>(call =>
@@ -89,6 +120,14 @@ public sealed class SsoBurstTests
                     ? FakeProxy.Create<IZoneTestGrain>(_ =>
                         Task.FromResult(testRoomId is { } room ? (RoomId?)new RoomId(room) : null)
                     )
+                : call.Method.GetGenericArguments()[0] == typeof(IPlayerCharacterGrain)
+                    ? FakeProxy.Create<IPlayerCharacterGrain>(inner =>
+                        inner.Method.Name == nameof(IPlayerCharacterGrain.GetLastRoomAsync)
+                            ? Task.FromResult(
+                                lastRoomId is { } room ? (RoomId?)new RoomId(room) : null
+                            )
+                            : null
+                    )
                 : call.Method.GetGenericArguments()[0] == typeof(IPlayerPresenceGrain)
                     ? FakeProxy.Create<IPlayerPresenceGrain>(inner =>
                     {
@@ -104,6 +143,15 @@ public sealed class SsoBurstTests
             FakeProxy.Create<IPermissionService>(call =>
                 call.Method.Name == nameof(IPermissionService.ResolveForPlayerAsync)
                     ? Task.FromResult(PermissionSet.Empty)
+                    : null
+            ),
+            FakeProxy.Create<IZoneRoomSource>(call =>
+                call.Method.Name == nameof(IZoneRoomSource.GetPublishedAsync)
+                    ? Task.FromResult(
+                        lastRoomPublished && ((RoomId)call.Args![0]!).Value == lastRoomId
+                            ? ZoneSamples.Minimal()
+                            : null
+                    )
                     : null
             ),
             NullLogger<SSOTicketMessageHandler>.Instance

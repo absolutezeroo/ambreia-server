@@ -14,8 +14,10 @@ using Vortex.Logging.Extensions;
 using Vortex.Primitives.Events;
 using Vortex.Primitives.Events.Rpg;
 using Vortex.Primitives.Players;
+using Vortex.Primitives.Rooms;
 using Vortex.Primitives.Rpg.Characters;
 using Vortex.Primitives.Rpg.Characters.Grains;
+using Vortex.Primitives.World;
 using Vortex.Rpg.Characters.Configuration;
 using Vortex.Rpg.Content;
 using Vortex.Rpg.Content.Definitions;
@@ -254,6 +256,28 @@ internal sealed class PlayerCharacterGrain(
 
         return XpGrantOutcome.Granted;
     }
+
+    public Task SetLastRoomAsync(RoomId roomId)
+    {
+        // A dungeon copy is not somewhere to come back to (spec Personnage §9).
+        if (
+            _character is { } c
+            && roomId.Value > 0
+            && !ZoneInstanceIds.IsInstance(roomId)
+            && c.LastRoomId != roomId.Value
+        )
+        {
+            c.LastRoomId = roomId.Value;
+            _dirty = true;
+        }
+
+        return Task.CompletedTask;
+    }
+
+    public Task<RoomId?> GetLastRoomAsync() =>
+        Task.FromResult(
+            _character?.LastRoomId is int room && room > 0 ? (RoomId?)new RoomId(room) : null
+        );
 
     private XpGrantOutcome Refuse(int amount, string source)
     {

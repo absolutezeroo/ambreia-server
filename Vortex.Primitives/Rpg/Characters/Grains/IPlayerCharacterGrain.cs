@@ -1,5 +1,6 @@
 using System.Threading.Tasks;
 using Orleans;
+using Vortex.Primitives.Rooms;
 
 namespace Vortex.Primitives.Rpg.Characters.Grains;
 
@@ -22,4 +23,11 @@ public interface IPlayerCharacterGrain : IGrainWithIntegerKey
     /// <summary>Grants XP, server side only (spec Personnage §5, §14): levels chained, a level
     /// written at once.</summary>
     public Task<XpGrantOutcome> GainXpAsync(int amount, string source);
+
+    /// <summary>The character entered this room: kept as its last zone if it is a world zone (never
+    /// a dungeon copy), written at the next flush.</summary>
+    public Task SetLastRoomAsync(RoomId roomId);
+
+    /// <summary>The world zone to sign in to (spec Personnage §9); null without a character or a zone.</summary>
+    public Task<RoomId?> GetLastRoomAsync();
 }

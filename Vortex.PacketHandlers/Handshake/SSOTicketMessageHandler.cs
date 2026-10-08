@@ -12,6 +12,7 @@ using Vortex.Primitives.Players;
 using Vortex.Primitives.Players.Enums;
 using Vortex.Primitives.Players.Grains;
 using Vortex.Primitives.Rooms;
+using Vortex.Primitives.World;
 using Vortex.Protocol.Messages.Incoming.Handshake;
 using Vortex.Protocol.Messages.Outgoing.Handshake;
 using Vortex.Protocol.Messages.Outgoing.Room.Session;
@@ -28,6 +29,7 @@ public class SSOTicketMessageHandler(
     ISessionGateway sessionGateway,
     IGrainFactory grainFactory,
     IPermissionService permissionService,
+    IZoneRoomSource zoneSource,
     ILogger<SSOTicketMessageHandler> logger
 ) : IMessageHandler<SSOTicketMessage>
 {
@@ -38,6 +40,7 @@ public class SSOTicketMessageHandler(
     private readonly ISessionGateway _sessionGateway = sessionGateway;
     private readonly IGrainFactory _grainFactory = grainFactory;
     private readonly IPermissionService _permissionService = permissionService;
+    private readonly IZoneRoomSource _zoneSource = zoneSource;
     private readonly ILogger<SSOTicketMessageHandler> _logger = logger;
 
     public async ValueTask HandleAsync(
@@ -75,12 +78,22 @@ public class SSOTicketMessageHandler(
                 .GetZoneTestGrain()
                 .TakeAsync(new PlayerId(playerId));
 
+            // Where the character left the world (spec Personnage §9); null for an avatar without one.
+            Task<RoomId?> lastRoomTask = _grainFactory
+                .GetPlayerCharacterGrain(new PlayerId(playerId))
+                .GetLastRoomAsync();
+
             // All awaited, so a failure of any is seen rather than dropped.
-            await Task.WhenAll(permissionsTask, startRoomTask, testRoomTask).ConfigureAwait(false);
+            await Task.WhenAll(permissionsTask, startRoomTask, testRoomTask, lastRoomTask)
+                .ConfigureAwait(false);
 
             PermissionSet permissions = await permissionsTask.ConfigureAwait(false);
-            int startRoomId = await testRoomTask.ConfigureAwait(false) is { } testRoom
-                ? testRoom.Value
+            int startRoomId =
+                await testRoomTask.ConfigureAwait(false) is { } testRoom ? testRoom.Value
+                : await PublishedAsync(await lastRoomTask.ConfigureAwait(false), ct)
+                    .ConfigureAwait(false)
+                    is { } lastRoom
+                    ? lastRoom.Value
                 : await startRoomTask.ConfigureAwait(false);
 
             AuthenticationOKMessage authenticated = new()
@@ -150,4 +163,12 @@ public class SSOTicketMessageHandler(
             _logger.LogDebug(ex, "Closing session {SessionKey} after a failed SSO", ctx.SessionKey);
         }
     }
+
+    /// <summary>The last zone, if it is still a published zone: a zone taken down sends the player
+    /// to the start rather than into a dead room.</summary>
+    private async Task<RoomId?> PublishedAsync(RoomId? room, CancellationToken ct) =>
+        room is { } r
+        && await _zoneSource.GetPublishedAsync(r, ct).ConfigureAwait(false) is not null
+            ? r
+            : null;
 }
