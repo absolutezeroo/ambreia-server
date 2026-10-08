@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
+using System.Reflection;
 using Vortex.Primitives.Networking.Revisions;
 using Vortex.Primitives.Packets;
 using DevRevision = Vortex.Revisions.Revision20260701.Revision20260701;
@@ -54,6 +56,34 @@ public sealed class ReleaseRevision : IRevision
                     )
         );
     }
+
+    private const string ResourcePrefix = "Releases/";
+
+    /// <summary>The newest embedded release; the AMBREIA-yyyyMMddHHmm name sorts chronologically.</summary>
+    public static ReleaseRevision LoadLatest()
+    {
+        Assembly assembly = typeof(ReleaseRevision).Assembly;
+        string name =
+            LatestReleaseName(assembly.GetManifestResourceNames())
+            ?? throw new InvalidOperationException(
+                "No release revision: Vortex.Revisions/Releases/ is empty. Draw one with "
+                    + "`node scripts/revision-new.mjs`, or run with Vortex:Revisions:Release=false for the dev revision."
+            );
+
+        using Stream stream = assembly.GetManifestResourceStream(name)!;
+        using StreamReader reader = new(stream);
+
+        return new ReleaseRevision(ReleaseTable.Parse(reader.ReadToEnd()));
+    }
+
+    public static string? LatestReleaseName(IEnumerable<string> resourceNames) =>
+        resourceNames
+            .Where(name =>
+                name.StartsWith(ResourcePrefix, StringComparison.Ordinal)
+                && name.EndsWith(".json", StringComparison.Ordinal)
+            )
+            .Order(StringComparer.Ordinal)
+            .LastOrDefault();
 
     public string Revision { get; }
 

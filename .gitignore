@@ -19,6 +19,8 @@ nupkg/
 [Dd]ebugPublic/
 [Rr]elease/
 [Rr]eleases/
+# …except the drawn production revisions, which are source (Vortex.Revisions/README.md).
+!/Vortex.Revisions/Releases/
 x64/
 x86/
 build/

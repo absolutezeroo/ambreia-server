@@ -8,6 +8,11 @@
     <PackageReference Include="Microsoft.Orleans.Persistence.Memory" />
   </ItemGroup>
   <ItemGroup>
+    <!-- Production revisions drawn by scripts/revision-new.mjs, shipped inside the assembly so a
+         deploy cannot run a server without the table its clients were built against. -->
+    <EmbeddedResource Include="Releases\*.json" LogicalName="Releases/%(Filename)%(Extension)" />
+  </ItemGroup>
+  <ItemGroup>
     <ProjectReference Include="..\Vortex.Primitives\Vortex.Primitives.csproj" />
     <ProjectReference Include="..\Vortex.Protocol\Vortex.Protocol.csproj" />
   </ItemGroup>

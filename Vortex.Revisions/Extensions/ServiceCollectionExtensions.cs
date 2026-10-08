@@ -1,3 +1,4 @@
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Vortex.Primitives.Networking.Revisions;
@@ -17,9 +18,22 @@ public static class ServiceCollectionExtensions
             builder.Configuration.GetSection(RevisionConfig.SECTION_NAME)
         );
 
-        // Registered by contract (not the concrete type) so new revisions are picked up by adding
-        // an IRevision implementation, without VortexEmulator ever knowing a concrete type exists.
-        services.AddSingleton<IRevision, RevisionType>();
+        RevisionConfig revisions =
+            builder.Configuration.GetSection(RevisionConfig.SECTION_NAME).Get<RevisionConfig>()
+            ?? new RevisionConfig();
+
+        // Registered by contract (not the concrete type), and one revision only, so it is also the
+        // default every new session starts on. A production server never speaks AMBREIA-DEV: its ids
+        // are in this repository.
+        if (revisions.Release ?? !builder.Environment.IsDevelopment())
+        {
+            services.AddSingleton<IRevision>(_ => ReleaseRevision.LoadLatest());
+        }
+        else
+        {
+            services.AddSingleton<IRevision, RevisionType>();
+        }
+
         services.AddHostedService<RevisionRegistrationService>();
 
         return services;
