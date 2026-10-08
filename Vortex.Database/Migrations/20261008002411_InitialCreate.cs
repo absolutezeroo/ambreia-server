@@ -919,6 +919,55 @@ namespace Vortex.Database.Migrations
 
             migrationBuilder
                 .CreateTable(
+                    name: "player_characters",
+                    columns: table => new
+                    {
+                        id = table
+                            .Column<int>(type: "int", nullable: false)
+                            .Annotation(
+                                "MySql:ValueGenerationStrategy",
+                                MySqlValueGenerationStrategy.IdentityColumn
+                            ),
+                        player_id = table.Column<int>(type: "int", nullable: false),
+                        class_id = table
+                            .Column<string>(type: "varchar(64)", maxLength: 64, nullable: false)
+                            .Annotation("MySql:CharSet", "utf8mb4"),
+                        specialization_id = table
+                            .Column<string>(type: "varchar(64)", maxLength: 64, nullable: false)
+                            .Annotation("MySql:CharSet", "utf8mb4"),
+                        level = table.Column<int>(type: "int", nullable: false, defaultValue: 1),
+                        xp = table.Column<int>(type: "int", nullable: false, defaultValue: 0),
+                        last_room_id = table.Column<int>(type: "int", nullable: true),
+                        created_at = table
+                            .Column<DateTime>(type: "datetime(6)", nullable: false)
+                            .Annotation(
+                                "MySql:ValueGenerationStrategy",
+                                MySqlValueGenerationStrategy.IdentityColumn
+                            ),
+                        updated_at = table
+                            .Column<DateTime>(type: "datetime(6)", nullable: false)
+                            .Annotation(
+                                "MySql:ValueGenerationStrategy",
+                                MySqlValueGenerationStrategy.ComputedColumn
+                            ),
+                        deleted_at = table.Column<DateTime>(type: "datetime(6)", nullable: true),
+                    },
+                    constraints: table =>
+                    {
+                        table.PrimaryKey("PK_player_characters", x => x.id);
+                        table.ForeignKey(
+                            name: "FK_player_characters_players_player_id",
+                            column: x => x.player_id,
+                            principalTable: "players",
+                            principalColumn: "id",
+                            onDelete: ReferentialAction.Cascade
+                        );
+                    }
+                )
+                .Annotation("MySql:CharSet", "utf8mb4");
+
+            migrationBuilder
+                .CreateTable(
                     name: "rooms",
                     columns: table => new
                     {
@@ -1479,6 +1528,13 @@ namespace Vortex.Database.Migrations
             );
 
             migrationBuilder.CreateIndex(
+                name: "IX_player_characters_player_id",
+                table: "player_characters",
+                column: "player_id",
+                unique: true
+            );
+
+            migrationBuilder.CreateIndex(
                 name: "IX_players_account_id",
                 table: "players",
                 column: "account_id"
@@ -1643,6 +1699,8 @@ namespace Vortex.Database.Migrations
             migrationBuilder.DropTable(name: "item_events");
 
             migrationBuilder.DropTable(name: "player_account_roles");
+
+            migrationBuilder.DropTable(name: "player_characters");
 
             migrationBuilder.DropTable(name: "role_permissions");
 

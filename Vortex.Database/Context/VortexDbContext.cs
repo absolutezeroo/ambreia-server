@@ -60,4 +60,6 @@ public class VortexDbContext(DbContextOptions<VortexDbContext> options)
     public DbSet<RpgContentMigrationEntity> RpgContentMigrations { get; init; } = null!;
 
     public DbSet<RpgContentTextEntity> RpgContentTexts { get; init; } = null!;
+
+    public DbSet<PlayerCharacterEntity> PlayerCharacters { get; init; } = null!;
 }
