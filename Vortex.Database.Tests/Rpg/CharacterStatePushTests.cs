@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
@@ -16,6 +17,7 @@ using Vortex.Primitives.Events;
 using Vortex.Primitives.Observability;
 using Vortex.Primitives.Players.Grains;
 using Vortex.Primitives.Rooms;
+using Vortex.Primitives.Rpg.Characters;
 using Vortex.Protocol.Messages.Outgoing.Rpg.Characters;
 using Vortex.Rpg.Characters.Configuration;
 using Vortex.Rpg.Characters.Grains;
@@ -142,14 +144,40 @@ public sealed class CharacterStatePushTests : IAsyncLifetime
         (state.Level, state.MaxLevel, state.XpToNext).Should().Be((20, 20, 0));
     }
 
-    private async Task<PlayerCharacterGrain> ActivateAsync()
+    /// <summary>
+    /// The level is written before the push: a stat source failing then must not turn the grant into
+    /// an error, or a retry would grant the XP twice.
+    /// </summary>
+    [Fact]
+    public async Task AStatSourceFailingOnALevelUp_StillGrantsAndPushesProgress()
+    {
+        await StoreAsync(level: 1);
+        IStatSource broken = FakeProxy.Create<IStatSource>(call =>
+            call.Method.Name == "get_Name"
+                ? "broken"
+                : throw new InvalidOperationException("stat source down")
+        );
+        PlayerCharacterGrain grain = await ActivateAsync(broken);
+
+        (await grain.GainXpAsync(120, "test")).Should().Be(XpGrantOutcome.Granted);
+
+        _sent
+            .Should()
+            .ContainSingle()
+            .Which.Should()
+            .BeOfType<RpgCharacterProgressMessageComposer>();
+    }
+
+    private async Task<PlayerCharacterGrain> ActivateAsync(IStatSource? extraSource = null)
     {
         PlayerCharacterGrain grain =
             GrainActivationContext.CreateWithIntegerKey<PlayerCharacterGrain>(
                 PLAYER_ID,
                 new OptionsDbContextFactory(_options),
                 CharacterContent.Registry(_content, () => 1),
-                new IStatSource[] { new ClassLevelStatSource() },
+                extraSource is null
+                    ? new IStatSource[] { new ClassLevelStatSource() }
+                    : new IStatSource[] { new ClassLevelStatSource(), extraSource },
                 FakeProxy.Create<IEventPublisher>(_ => null),
                 FakeProxy.Create<ICancellableEventPublisher>(_ =>
                     Task.FromResult(new EventContext { CorrelationId = "test" })

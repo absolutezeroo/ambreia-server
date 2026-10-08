@@ -64,7 +64,7 @@ internal sealed class AccountCharactersGrain(
             summaries = await SummariesAsync(avatars);
         }
 
-        await Session.SendComposerAsync(List(avatars, summaries), Classes());
+        await Session.SendComposerAsync(BuildList(avatars, summaries), Classes());
     }
 
     public async Task ListAsync() => await Session.SendComposerAsync(await CurrentListAsync());
@@ -277,7 +277,7 @@ internal sealed class AccountCharactersGrain(
     {
         List<PlayerEntity> avatars = await AvatarsAsync();
 
-        return List(avatars, await SummariesAsync(avatars));
+        return BuildList(avatars, await SummariesAsync(avatars));
     }
 
     private async Task<List<PlayerEntity>> AvatarsAsync()
@@ -309,7 +309,7 @@ internal sealed class AccountCharactersGrain(
         }
     }
 
-    private RpgCharacterListMessageComposer List(
+    private RpgCharacterListMessageComposer BuildList(
         List<PlayerEntity> avatars,
         CharacterSummary?[] summaries
     ) =>

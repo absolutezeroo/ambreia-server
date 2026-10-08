@@ -340,13 +340,33 @@ internal sealed class PlayerCharacterGrain(
             XpToNext = XpToNext(c, progression),
         };
 
-        await PushAsync(
-            c.Level != oldLevel && await GetStatsAsync() is { } stats
-                ? [new RpgCharacterStatsMessageComposer { Stats = stats }, progress]
-                : [progress]
-        );
+        await PushProgressAsync(c.Level != oldLevel, progress);
 
         return XpGrantOutcome.Granted;
+    }
+
+    /// <summary>Progress, after the new stats on a level up. The level is already written: reading
+    /// the stats may fail here, and that must not fail the grant.</summary>
+    private async Task PushProgressAsync(
+        bool levelledUp,
+        RpgCharacterProgressMessageComposer progress
+    )
+    {
+        IComposer[] composers = [progress];
+
+        try
+        {
+            if (levelledUp && await GetStatsAsync() is { } stats)
+            {
+                composers = [new RpgCharacterStatsMessageComposer { Stats = stats }, progress];
+            }
+        }
+        catch (Exception ex)
+        {
+            logger.LogWarning(ex, "Could not read the stats of player {PlayerId}", _playerId.Value);
+        }
+
+        await PushAsync(composers);
     }
 
     public async Task PushStateAsync()

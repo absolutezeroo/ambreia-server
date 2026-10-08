@@ -5,6 +5,7 @@ using Microsoft.Extensions.Logging;
 using Orleans;
 using Vortex.Messages.Registry;
 using Vortex.PacketHandlers.Handshake;
+using Vortex.Primitives.Authentication;
 using Vortex.Primitives.Orleans;
 using Vortex.Protocol.Messages.Incoming.Rpg.Characters;
 
@@ -16,6 +17,7 @@ namespace Vortex.PacketHandlers.Rpg.Characters;
 /// </summary>
 public class RpgEnterWorldMessageHandler(
     IGrainFactory grainFactory,
+    IAuthenticationService authService,
     WorldEntry worldEntry,
     ILogger<RpgEnterWorldMessageHandler> logger
 ) : IMessageHandler<RpgEnterWorldMessage>
@@ -45,6 +47,11 @@ public class RpgEnterWorldMessageHandler(
         try
         {
             await worldEntry.EnterAsync(ctx.SessionKey, message.PlayerId, ct).ConfigureAwait(false);
+
+            // The audit a player ticket writes when it is resolved: here the ticket named the account.
+            await authService
+                .RecordLoginAsync(message.PlayerId, ctx.RemoteIpAddress, ct)
+                .ConfigureAwait(false);
         }
         catch (Exception ex)
         {

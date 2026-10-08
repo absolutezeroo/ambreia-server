@@ -12,6 +12,7 @@ using Vortex.PacketHandlers.Configuration;
 using Vortex.PacketHandlers.Handshake;
 using Vortex.PacketHandlers.Rpg;
 using Vortex.PacketHandlers.Rpg.Characters;
+using Vortex.Primitives.Authentication;
 using Vortex.Primitives.Networking;
 using Vortex.Primitives.Observability;
 using Vortex.Primitives.Permissions;
@@ -47,7 +48,9 @@ public sealed class AccountPhaseTests
     private readonly List<object> _toAccount = [];
     private readonly List<(SessionKey Key, int PlayerId)> _attached = [];
     private readonly List<string> _refused = [];
+    private readonly List<int> _logins = [];
     private bool _owns = true;
+    private bool _accountSendFails;
 
     [Fact]
     public async Task EnteringTheWorld_SendsTheSameBurstAsTheSso()
@@ -55,6 +58,7 @@ public sealed class AccountPhaseTests
         await EnterWorldAsync();
 
         _attached.Should().Equal((Key, PLAYER_ID));
+        _logins.Should().Equal([PLAYER_ID], "the login audit a player ticket writes");
         _toPlayer
             .Select(c => c.GetType())
             .Should()
@@ -95,7 +99,7 @@ public sealed class AccountPhaseTests
         await gate.InvokeAsync(
             new RpgCharacterListRequestMessage(),
             Context(playerId: PLAYER_ID, accountId: 0),
-            () => Next(ref passed),
+            () => PassAsync(ref passed),
             CancellationToken.None
         );
         passed.Should().Be(0);
@@ -104,7 +108,7 @@ public sealed class AccountPhaseTests
         await gate.InvokeAsync(
             new RpgCharacterListRequestMessage(),
             Context(playerId: -1, accountId: ACCOUNT_ID),
-            () => Next(ref passed),
+            () => PassAsync(ref passed),
             CancellationToken.None
         );
         passed.Should().Be(1, "on the character screen it goes through");
@@ -122,8 +126,18 @@ public sealed class AccountPhaseTests
             Gender = "M",
         };
 
-        await limit.InvokeAsync(create, Context(), () => Next(ref passed), CancellationToken.None);
-        await limit.InvokeAsync(create, Context(), () => Next(ref passed), CancellationToken.None);
+        await limit.InvokeAsync(
+            create,
+            Context(),
+            () => PassAsync(ref passed),
+            CancellationToken.None
+        );
+        await limit.InvokeAsync(
+            create,
+            Context(),
+            () => PassAsync(ref passed),
+            CancellationToken.None
+        );
 
         passed.Should().Be(1);
         _refused.Should().Equal("rate_limited");
@@ -141,6 +155,41 @@ public sealed class AccountPhaseTests
             );
     }
 
+    /// <summary>
+    /// The pipeline runs the next step when a behavior throws: a refusal that could not be sent must
+    /// not become a pass.
+    /// </summary>
+    [Fact]
+    public async Task ARefusalThatCannotBeSent_IsStillARefusal()
+    {
+        RpgIntentLimitBehavior limit = Limit();
+        int passed = 0;
+        RpgCharacterCreateMessage create = new()
+        {
+            Name = "Bob",
+            Figure = "",
+            Gender = "M",
+        };
+
+        await limit.InvokeAsync(
+            create,
+            Context(),
+            () => PassAsync(ref passed),
+            CancellationToken.None
+        );
+        _accountSendFails = true;
+        Func<Task> second = async () =>
+            await limit.InvokeAsync(
+                create,
+                Context(),
+                () => PassAsync(ref passed),
+                CancellationToken.None
+            );
+
+        await second.Should().NotThrowAsync();
+        passed.Should().Be(1);
+    }
+
     [Fact]
     public async Task TheLimiter_KeepsIntentsApart()
     {
@@ -155,13 +204,13 @@ public sealed class AccountPhaseTests
                 Gender = "M",
             },
             Context(),
-            () => Next(ref passed),
+            () => PassAsync(ref passed),
             CancellationToken.None
         );
         await limit.InvokeAsync(
             new RpgCharacterListRequestMessage(),
             Context(),
-            () => Next(ref passed),
+            () => PassAsync(ref passed),
             CancellationToken.None
         );
 
@@ -169,7 +218,7 @@ public sealed class AccountPhaseTests
         _refused.Should().BeEmpty();
     }
 
-    private static ValueTask Next(ref int passed)
+    private static ValueTask PassAsync(ref int passed)
     {
         passed++;
 
@@ -181,6 +230,15 @@ public sealed class AccountPhaseTests
         IGrainFactory grains = Grains();
         RpgEnterWorldMessageHandler handler = new(
             grains,
+            FakeProxy.Create<IAuthenticationService>(call =>
+            {
+                if (call.Method.Name == nameof(IAuthenticationService.RecordLoginAsync))
+                {
+                    _logins.Add((int)call.Args![0]!);
+                }
+
+                return null;
+            }),
             new WorldEntry(
                 FakeProxy.Create<ISessionGateway>(call =>
                 {
@@ -260,10 +318,17 @@ public sealed class AccountPhaseTests
                 : grain == typeof(IAccountSessionGrain)
                     ? FakeProxy.Create<IAccountSessionGrain>(inner =>
                     {
-                        if (inner.Method.Name == nameof(IAccountSessionGrain.SendComposerAsync))
+                        if (inner.Method.Name != nameof(IAccountSessionGrain.SendComposerAsync))
                         {
-                            _toAccount.AddRange(((object[])inner.Args![0]!).Cast<object>());
+                            return null;
                         }
+
+                        if (_accountSendFails)
+                        {
+                            return Task.FromException(new TimeoutException("silo busy"));
+                        }
+
+                        _toAccount.AddRange(((object[])inner.Args![0]!).Cast<object>());
 
                         return null;
                     })

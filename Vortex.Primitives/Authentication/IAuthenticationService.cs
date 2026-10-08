@@ -15,4 +15,10 @@ public interface IAuthenticationService
         string? remoteIp = null,
         CancellationToken ct = default
     );
+
+    /// <summary>
+    /// A player signed in through the character screen: the login a player ticket records when it is
+    /// resolved (the audit's <c>auth.login.success</c>), for an account ticket that became a player.
+    /// </summary>
+    public Task RecordLoginAsync(int playerId, string? remoteIp, CancellationToken ct = default);
 }

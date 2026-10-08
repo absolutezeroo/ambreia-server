@@ -133,7 +133,7 @@ public sealed class SsoBurstTests
         _sent.OfType<RoomForwardMessageComposer>().Single().RoomId.Should().Be(new RoomId(50));
     }
 
-    private Task Pushed()
+    private Task PushedAsync()
     {
         _calls.Add("push");
 
@@ -184,7 +184,8 @@ public sealed class SsoBurstTests
                 )
             : call.Method.GetGenericArguments()[0] == typeof(IPlayerCharacterGrain)
                 ? FakeProxy.Create<IPlayerCharacterGrain>(inner =>
-                    inner.Method.Name == nameof(IPlayerCharacterGrain.PushStateAsync) ? Pushed()
+                    inner.Method.Name == nameof(IPlayerCharacterGrain.PushStateAsync)
+                        ? PushedAsync()
                     : inner.Method.Name != nameof(IPlayerCharacterGrain.GetLastRoomAsync) ? null
                     : characterFails
                         ? Task.FromException<RoomId?>(

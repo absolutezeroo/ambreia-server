@@ -55,7 +55,14 @@ public sealed class RpgIntentLimitBehavior(
             _ => null,
         };
 
-        if (action is { } a && ctx.AccountId > 0)
+        if (action is not { } a || ctx.AccountId <= 0)
+        {
+            return;
+        }
+
+        // Caught here: a behavior that throws is skipped by the pipeline, which would hand the
+        // refused packet to its handler.
+        try
         {
             await grainFactory
                 .GetAccountSessionGrain(ctx.AccountId)
@@ -68,6 +75,14 @@ public sealed class RpgIntentLimitBehavior(
                     }
                 )
                 .ConfigureAwait(false);
+        }
+        catch (Exception ex)
+        {
+            logger.LogWarning(
+                ex,
+                "Could not tell session {SessionKey} it was rate-limited",
+                ctx.SessionKey
+            );
         }
     }
 }

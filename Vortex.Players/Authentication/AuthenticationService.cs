@@ -174,6 +174,15 @@ public sealed class AuthenticationService(
         return new TicketOwner(0, entity.AccountId);
     }
 
+    public async Task RecordLoginAsync(
+        int playerId,
+        string? remoteIp,
+        CancellationToken ct = default
+    ) =>
+        await _events
+            .PublishAsync(new PlayerLoggedInEvent(playerId, HashIp(remoteIp)), ct)
+            .ConfigureAwait(false);
+
     /// <summary>Expired once past <c>ExpiresAt</c>, or past <c>CreatedAt + TTL</c> before a first use.</summary>
     private bool IsExpired(DateTime createdAt, DateTime? expiresAt, DateTime now)
     {

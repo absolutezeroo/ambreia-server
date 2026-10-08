@@ -23,7 +23,10 @@ internal sealed class HeldSaveInterceptor : SaveChangesInterceptor
         CancellationToken ct = default
     )
     {
+        // VSTHRD003: waiting on a task started elsewhere is the whole point — the test releases it.
+#pragma warning disable VSTHRD003
         await _release.Task;
+#pragma warning restore VSTHRD003
 
         return result;
     }
