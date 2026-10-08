@@ -96,8 +96,6 @@ public sealed partial class RoomActionModule
             return false;
         }
 
-        (int kinds, int sameLogic) = CountAround(floorItem);
-
         // Detached: the room is not waiting for the event's subscribers to answer before the next
         // click can be served. See RoomGrain.PublishDetached.
         _roomGrain.PublishDetached(
@@ -115,9 +113,7 @@ public sealed partial class RoomActionModule
                     }
                 ),
                 snapshot.Definition.Id,
-                LogicName: snapshot.Definition.LogicName,
-                KindsInRoom: kinds,
-                SameLogicInRoom: sameLogic
+                LogicName: snapshot.Definition.LogicName
             )
         );
 

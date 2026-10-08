@@ -102,8 +102,6 @@ public sealed partial class RoomActionModule
             return false;
         }
 
-        (int kinds, int sameLogic) = CountAround(wallItem);
-
         // Detached, as on the floor: see RoomGrain.PublishDetached.
         _roomGrain.PublishDetached(
             new ItemPlacedEvent(
@@ -125,9 +123,7 @@ public sealed partial class RoomActionModule
                 // The one thing a definition id cannot say, and the thing an operator means by
                 // "a floor item" when they write a task.
                 IsWallItem: true,
-                LogicName: snapshot.Definition.LogicName,
-                KindsInRoom: kinds,
-                SameLogicInRoom: sameLogic
+                LogicName: snapshot.Definition.LogicName
             )
         );
 

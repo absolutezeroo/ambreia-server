@@ -12,7 +12,6 @@
     "grain:Rooms/IRoomFurni.cs::ClickItemByIdAsync": "NONE",
     "grain:Rooms/IRoomFurni.cs::RemoveItemByIdAsync": "security-module",
     "grain:Rooms/IRoomFurni.cs::UseItemByIdAsync": "security-module+can-helper",
-    "grain:Rooms/IRoomFurni.Decoration.cs::ApplyDecorationAsync": "security-module+can-helper+owner-compare",
     "grain:Rooms/IRoomFurni.Floor.cs::MoveFloorItemByIdAsync": "security-module+can-helper",
     "grain:Rooms/IRoomFurni.Floor.cs::PlaceFloorItemAsync": "security-module+can-helper",
     "grain:Rooms/IRoomFurni.Wall.cs::MoveWallItemByIdAsync": "security-module+can-helper",
