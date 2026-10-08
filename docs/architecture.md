@@ -31,20 +31,30 @@ layers share: grain interfaces, snapshots, ids, events.
 
 ## Flow 1 — sign-in
 
-1. The site registers an account (`POST /api/public/registration/new`), creates and selects an avatar
-   (`/api/user/avatars`, `/api/user/avatars/select`) and asks `GET /api/ssotoken` for a ticket
-   (`security_tickets`). It is not single-use: the client reads it from `?sso=` and a page reload
-   presents it again, so it stays valid up to `Authentication:TicketAbsoluteLifetimeSeconds` (300 s)
-   from issue, sliding on each use.
+1. The client logs in over HTTP (`POST /api/public/registration/new` or `/authentication/login`) and
+   asks `GET /api/ssotoken` for a ticket. Without a selected avatar it is an **account ticket**
+   (`account_tickets`, one per account); with one (`/api/user/avatars/select`, the editor's test mode)
+   a **player ticket** (`security_tickets`). Both follow the same rules: not single-use unless
+   `Authentication:TicketSingleUse`, valid up to `TicketAbsoluteLifetimeSeconds` (300 s) from issue,
+   sliding on each use. `IAuthenticationService.ResolveTicketAsync` answers a `TicketOwner`.
 2. The client connects to the game socket. Frames are `[int32 length][int16 header][body]`, plaintext
    until the Diffie handshake installs RC4 (`Vortex.Networking/Package`).
 3. `PackageHandler` finds the parser for the header in the session's revision
    (`Revision20260701`, maps in `Maps/`); no parser → warning, packet dropped. The typed message goes
    through `MessageSystem` to the `IMessageHandler<T>` found by scan.
-4. `SSOTicketMessageHandler` resolves the ticket (`IAuthenticationService`), binds the session to the
-   player (`SessionGateway.AddSessionToPlayerAsync` → `PlayerPresenceGrain`), then sends
-   `AuthenticationOK`, `UserRights` and `RoomForward(world.start_room_id)` — the start zone created by
-   `scripts/sql/dev_zone.sql`.
+4. `SSOTicketMessageHandler` resolves the ticket.
+   - A player ticket goes to `WorldEntry.EnterAsync`: the session is bound to the player
+     (`SessionGateway.AddSessionToPlayerAsync` → `PlayerPresenceGrain`), then `AuthenticationOK`,
+     `UserRights`, `RoomForward` (where the player lands: see Characters below; by default
+     `world.start_room_id`, the zone of `scripts/sql/dev_zone.sql`) and the character's state.
+   - An account ticket opens the **account phase** (spec F3a): `SessionGateway.AddSessionToAccountAsync`
+     binds the socket to `AccountSessionGrain` (one socket per account, a second one replaces it with
+     `ConcurrentLogin`), and `AccountCharactersGrain.OpenAsync` sends `RpgCharacterList` and
+     `RpgClassList`. The character screen's packets (9000–9003, `IAccountPhaseMessage`) pass
+     `AccountPhaseGateBehavior` only in this phase and `RpgIntentLimitBehavior` once per interval;
+     `AccountCharactersGrain` creates (« Sans classe », 5 per account), gives a class and answers
+     `RpgCharacterResult`. `RpgEnterWorld` checks ownership, then takes the same `WorldEntry` path:
+     the socket leaves the account phase for the player.
 
 ## Flow 2 — entering a zone
 
@@ -132,7 +142,11 @@ XP on a 30 s timer and at deactivation), stats from the `IStatSource`s declared 
 (`ClassReferences`); the grain re-reads them when `IRpgContent.Version` moves and never writes them
 back.
 
-Sign-in (`SSOTicketMessageHandler`) forwards to: a pending editor test entry, else the room the
+The character pushes its own state through the player's presence: `RpgCharacterState` on sign-in
+and on every room entered, `RpgCharacterStats` then `RpgCharacterProgress` after XP (stats only on a
+level up). Proof of the whole character screen by the socket: `driver.mjs lobby`.
+
+Sign-in (`WorldEntry`) forwards to: a pending editor test entry, else the room the
 avatar is still standing in during its grace period, else the character's last world zone if still
 published, else `world.start_room_id`. `LastZoneHandler` offers every room entered to the grain,
 which keeps world zones only. A socket that drops in a room leaves the avatar there, still, for

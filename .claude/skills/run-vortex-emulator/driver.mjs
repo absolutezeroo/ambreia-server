@@ -304,7 +304,40 @@ const H = {
   moveAvatar: 2364,
   notificationDialog: 2243,
   useFurniture: 3353,
+  // RPG (spec §3.7): incoming and outgoing are separate id spaces.
+  rpgListRequest: 9000,
+  rpgCreate: 9001,
+  rpgChooseClass: 9002,
+  rpgEnterWorld: 9003,
+  rpgCharacterList: 9000,
+  rpgClassList: 9001,
+  rpgResult: 9002,
+  rpgState: 9003,
+  rpgProgress: 9004,
+  rpgStats: 9005,
 };
+
+// Reads a frame body in the client's order: int32 BE, int16-prefixed UTF-8, one-byte bool.
+function reader(body) {
+  let at = 0;
+  return {
+    int() {
+      const v = body.readInt32BE(at);
+      at += 4;
+      return v;
+    },
+    str() {
+      const len = body.readInt16BE(at);
+      const v = body.subarray(at + 2, at + 2 + len).toString('utf8');
+      at += 2 + len;
+      return v;
+    },
+    bool() {
+      return body[at++] !== 0;
+    },
+    left: () => body.length - at,
+  };
+}
 
 // A socket that collects every frame the server sends, as { header, body }.
 function gameSocket() {
@@ -990,6 +1023,109 @@ async function cmdContent(dir = 'content') {
   if (out.status !== 0) process.exit(out.status ?? 1);
 }
 
+// The character screen by the socket alone (spec F3a §4): an account ticket opens the account
+// phase -> the lists; a character created « Sans classe », given a real class, entered into the
+// world as the SSO would; its state on the HUD, its progress after an XP grant; and a screen packet
+// sent in the world is dropped by the phase gate.
+async function cmdLobby() {
+  const base = `http://127.0.0.1:${WEBAPI}`;
+  const headers = { cookie: (await webSession()).cookie };
+  sql(`INSERT INTO player_account_roles (account_id, role_id)
+       SELECT a.id, r.id FROM player_accounts a, roles r
+       WHERE a.email='${PLAYER.email}' AND r.\`key\`='owner'
+         AND NOT EXISTS (SELECT 1 FROM player_account_roles x WHERE x.account_id=a.id AND x.role_id=r.id);`);
+
+  // A fresh web session has no selected avatar: the ticket names the account.
+  let res = await request(`${base}/api/ssotoken`, { headers });
+  if (res.status !== 200) die(`SSO ticket refused: ${res.status} ${res.body}`);
+  const ticket = JSON.parse(res.body).ssoToken;
+
+  const g = await gameSocket().catch((e) => die(`Socket error on :${GAME_TCP}: ${e.message}`));
+  const fail = (m) => {
+    g.close();
+    die(m);
+  };
+  const result = async (from, action) => {
+    const f = await g.wait([H.rpgResult], from);
+    if (!f) fail(`No RpgCharacterResult for action ${action}.`);
+    const r = reader(f.body);
+    const [a, code, playerId] = [r.int(), r.str(), r.int()];
+    log(`  RpgCharacterResult(action ${a}, ${code}, player ${playerId})`);
+    if (a !== action || code !== 'ok') fail(`Expected action ${action} ok.`);
+    return playerId;
+  };
+
+  g.send(frame(H.sso, ticket, 0));
+  const list = await g.wait([H.rpgCharacterList]);
+  const classes = await g.wait([H.rpgClassList]);
+  if (!list || !classes) fail(`Account ticket -> ${g.frames.map((f) => f.header).join(', ')}: no lists.`);
+  if (g.frames.some((f) => f.header === H.authOk)) fail('AuthenticationOK before a character was chosen.');
+  const l = reader(list.body);
+  const [max, count] = [l.int(), l.int()];
+  const c = reader(classes.body);
+  const classIds = Array.from({ length: c.int() }, () => {
+    const id = c.str();
+    c.str(), c.int(), c.str(), c.bool();
+    Array.from({ length: c.int() }, () => c.str());
+    return id;
+  });
+  log(`Account phase -> RpgCharacterList (${count}/${max}), RpgClassList (${classIds.join(', ')})`);
+  if (count >= max) fail('The throwaway account is full: run `cleanup` first.');
+
+  let from = g.frames.length;
+  const name = `Lobby${Date.now() % 1_000_000}`;
+  g.send(frame(H.rpgCreate, name, 'hd-180-1.ch-210-66.lg-270-82.sh-290-80', 'M'));
+  log(`RpgCharacterCreate(${name})`);
+  const playerId = await result(from, 1);
+  if (!(await g.wait([H.rpgCharacterList], from))) fail('No list after the create.');
+
+  from = g.frames.length;
+  g.send(frame(H.rpgChooseClass, playerId, 'class.warrior'));
+  log(`RpgCharacterChooseClass(${playerId}, class.warrior)`);
+  await result(from, 2);
+
+  from = g.frames.length;
+  g.send(frame(H.rpgEnterWorld, playerId));
+  const forward = await g.wait([H.roomForward], from);
+  const entered = g.frames.slice(from).map((f) => f.header);
+  log(`RpgEnterWorld(${playerId}) -> ${entered.join(', ')}`);
+  if (!entered.includes(H.authOk) || !forward) fail('No AuthenticationOK and RoomForward.');
+
+  const roomId = forward.body.readInt32BE(0);
+  from = g.frames.length;
+  g.send(frame(H.openFlat, roomId, '', -1));
+  const state = await g.wait([H.rpgState], from, 10000);
+  if (!state) fail(`No RpgCharacterState on entering room ${roomId}.`);
+  const s = reader(state.body);
+  const st = { player: s.int(), cls: s.str(), spec: s.str(), level: s.int(), max: s.int(), xp: s.int(), next: s.int() };
+  const stats = { str: s.int(), int: s.int(), agi: s.int(), maxHealth: s.int(), maxMana: s.int(), armor: s.int(), critBp: s.int() };
+  log(`room ${roomId} -> RpgCharacterState ${JSON.stringify(st)} stats ${JSON.stringify(stats)}`);
+  if (st.cls !== 'class.warrior' || st.level !== 1) fail('Expected a level 1 warrior.');
+
+  from = g.frames.length;
+  res = await request(`${base}/api/admin/characters/${playerId}/xp`, {
+    method: 'POST',
+    headers,
+    body: JSON.stringify({ amount: 250 }),
+  });
+  if (res.status !== 200) fail(`XP grant failed: ${res.status} ${res.body}`);
+  const progress = await g.wait([H.rpgProgress], from);
+  if (!progress) fail('No RpgCharacterProgress after the XP grant.');
+  const p = reader(progress.body);
+  const pr = { level: p.int(), xp: p.int(), next: p.int() };
+  const pushed = g.frames.slice(from).map((f) => f.header);
+  log(`250 XP -> ${pushed.join(', ')}; RpgCharacterProgress ${JSON.stringify(pr)}`);
+  if (pr.level !== 3) fail('Expected level 3.');
+
+  from = g.frames.length;
+  g.send(frame(H.rpgCreate, `${name}x`, '', 'M'));
+  await sleep(2000);
+  const answered = g.frames.slice(from).some((f) => f.header === H.rpgResult);
+  g.close();
+  if (answered) die('A character-screen packet sent in the world was answered.');
+  log('RpgCharacterCreate in the world -> nothing (phase gate). Lobby OK.');
+}
+
 // ---------------------------------------------------------------- dispatch
 
 const [cmd, ...args] = process.argv.slice(2);
@@ -1009,6 +1145,7 @@ const table = {
   dungeon: cmdDungeon,
   content: () => cmdContent(args[0]),
   character: () => cmdCharacter(args[0]),
+  lobby: cmdLobby,
   grace: () => cmdGrace(args[0]),
   cleanup: cmdCleanup,
   smoke: cmdSmoke,
@@ -1033,6 +1170,7 @@ if (!cmd || !table[cmd]) {
   dungeon   a Dungeon zone: its room forwards to the player's own copy, which is entered
   content [dir]  push the RPG content pack (default content/) through scripts/content/push.mjs
   character [xp]  the throwaway avatar's character: class, an XP grant (default 250), the level read back
+  lobby     the character screen by the socket: account ticket -> lists, create, class, enter world, HUD state, XP progress, phase gate
   grace [wait]  drop the socket in a room and come back: same room, one avatar, same tile (wait: then stay away past 60 s)
   cleanup   delete the throwaway account and its players`);
   process.exit(cmd ? 1 : 0);
