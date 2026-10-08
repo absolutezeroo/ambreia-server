@@ -11,7 +11,11 @@ public class RoomConfig
 
     public RoomScaleType DefaultRoomScale { get; init; } = RoomScaleType.Normal;
 
-    public Altitude MaxStepHeight { get; init; } = Altitude.FromInt(200);
+    /// <summary>How high an avatar climbs in one step.</summary>
+    public Altitude MaxStepHeight { get; init; } = Altitude.FromInt(100);
+
+    /// <summary>How far an avatar drops in one step; deliberately more than it can climb.</summary>
+    public Altitude MaxDropHeight { get; init; } = Altitude.FromInt(200);
 
     public bool PlaceItemsOnAvatars { get; init; } = true;
 

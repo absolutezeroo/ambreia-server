@@ -169,6 +169,32 @@ public sealed class RoomTileSectionFinderTests
     }
 
     /// <summary>
+    /// Climbing and dropping have their own limits: a two-unit block cannot be climbed one step at
+    /// a time, but you can jump off it.
+    /// </summary>
+    [Fact]
+    public void ClimbIsLimitedSeparatelyFromTheDrop()
+    {
+        RoomTileOccupant block = Item(1, bottom: 0, top: 2, RoomTileFlags.Walkable);
+
+        RoomTileSectionFinder
+            .Find(Floor, [block], Floor, Altitude.FromValue(1), Altitude.FromValue(2))
+            .Should()
+            .BeNull("the block is two up and the climb is one");
+
+        RoomTileSection? landing = RoomTileSectionFinder.Find(
+            Floor,
+            [],
+            Altitude.FromValue(2),
+            Altitude.FromValue(1),
+            Altitude.FromValue(2)
+        );
+
+        landing.Should().NotBeNull("a two-unit drop is within the drop limit");
+        landing!.Value.Height.Should().Be(Floor);
+    }
+
+    /// <summary>
     /// Two things at the same height: you stand on the one resting highest, and its flags are the
     /// ones that apply.
     /// </summary>

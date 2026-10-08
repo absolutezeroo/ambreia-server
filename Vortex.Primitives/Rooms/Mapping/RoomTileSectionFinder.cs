@@ -31,8 +31,8 @@ public static class RoomTileSectionFinder
     /// <summary>
     /// How much empty space an avatar needs above a surface to occupy it.
     ///
-    /// Two, the same figure Skylight3 passes to its own gap search, and the same order as
-    /// <c>RoomConfig.MaxStepHeight</c>. It is not derived from the avatar sprite — no server knows
+    /// Two, the same figure Skylight3 passes to its own gap search (unrelated to
+    /// <c>RoomConfig.MaxStepHeight</c>, which is one). It is not derived from the avatar sprite — no server knows
     /// how tall a figure draws — it is the height Habbo's own rooms are built to.
     /// </summary>
     public static readonly Altitude Clearance = Altitude.FromValue(2);
@@ -45,17 +45,23 @@ public static class RoomTileSectionFinder
     /// the floor should put you on the rug. Null means the tile offers nothing reachable — which is
     /// a legitimate answer for a cliff, and the one the pathfinder needs in order to route around
     /// it rather than into it.
+    ///
+    /// <paramref name="maxStep" /> bounds the climb; <paramref name="maxDrop" /> bounds the way
+    /// down and is the same as the climb when omitted.
     /// </summary>
     public static RoomTileSection? Find(
         Altitude floorHeight,
         ReadOnlySpan<RoomTileOccupant> occupants,
         Altitude fromZ,
-        Altitude maxStep
+        Altitude maxStep,
+        Altitude? maxDrop = null
     )
     {
         RoomTileSection? best = null;
 
-        foreach (RoomTileSection section in FindAll(floorHeight, occupants, fromZ, maxStep))
+        foreach (
+            RoomTileSection section in FindAll(floorHeight, occupants, fromZ, maxStep, maxDrop)
+        )
         {
             if (best is null || section.Height > best.Value.Height)
             {
@@ -78,13 +84,23 @@ public static class RoomTileSectionFinder
         Altitude floorHeight,
         ReadOnlySpan<RoomTileOccupant> occupants,
         Altitude fromZ,
-        Altitude maxStep
+        Altitude maxStep,
+        Altitude? maxDrop = null
     )
     {
         List<RoomTileSection> found = [];
+        Altitude drop = maxDrop ?? maxStep;
 
         if (
-            TryBuild(floorHeight, occupants, floorHeight, fromZ, maxStep, out RoomTileSection floor)
+            TryBuild(
+                floorHeight,
+                occupants,
+                floorHeight,
+                fromZ,
+                maxStep,
+                drop,
+                out RoomTileSection floor
+            )
         )
         {
             found.Add(floor);
@@ -99,6 +115,7 @@ public static class RoomTileSectionFinder
                     occupant.Top,
                     fromZ,
                     maxStep,
+                    drop,
                     out RoomTileSection section
                 )
             )
@@ -134,12 +151,13 @@ public static class RoomTileSectionFinder
         Altitude surface,
         Altitude fromZ,
         Altitude maxStep,
+        Altitude maxDrop,
         out RoomTileSection section
     )
     {
         section = default;
 
-        if (surface < floorHeight || Math.Abs(surface - fromZ) > maxStep)
+        if (surface < floorHeight || surface - fromZ > maxStep || fromZ - surface > maxDrop)
         {
             return false;
         }

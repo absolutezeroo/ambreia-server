@@ -526,7 +526,12 @@ public sealed partial class RoomMapModule(RoomGrain roomGrain)
     /// apart, and by the step check between tiles. The pathfinder wants
     /// every surface and asks <see cref="FindSections" />.
     /// </summary>
-    public RoomTileSection? FindSection(int tileId, Altitude fromZ, Altitude maxStep)
+    public RoomTileSection? FindSection(
+        int tileId,
+        Altitude fromZ,
+        Altitude maxStep,
+        Altitude? maxDrop = null
+    )
     {
         if (!InBounds(tileId))
         {
@@ -535,7 +540,13 @@ public sealed partial class RoomMapModule(RoomGrain roomGrain)
 
         Altitude floorHeight = _roomGrain._state.Model?.BaseHeights[tileId] ?? Altitude.Zero;
 
-        return RoomTileSectionFinder.Find(floorHeight, CollectOccupants(tileId), fromZ, maxStep);
+        return RoomTileSectionFinder.Find(
+            floorHeight,
+            CollectOccupants(tileId),
+            fromZ,
+            maxStep,
+            maxDrop
+        );
     }
 
     /// <summary>
@@ -546,7 +557,12 @@ public sealed partial class RoomMapModule(RoomGrain roomGrain)
     /// and never step down off it — the low surface is never proposed while a high one is also
     /// within a step, so going up worked and coming down did not.
     /// </summary>
-    public List<RoomTileSection> FindSections(int tileId, Altitude fromZ, Altitude maxStep)
+    public List<RoomTileSection> FindSections(
+        int tileId,
+        Altitude fromZ,
+        Altitude maxStep,
+        Altitude? maxDrop = null
+    )
     {
         if (!InBounds(tileId))
         {
@@ -555,7 +571,13 @@ public sealed partial class RoomMapModule(RoomGrain roomGrain)
 
         Altitude floorHeight = _roomGrain._state.Model?.BaseHeights[tileId] ?? Altitude.Zero;
 
-        return RoomTileSectionFinder.FindAll(floorHeight, CollectOccupants(tileId), fromZ, maxStep);
+        return RoomTileSectionFinder.FindAll(
+            floorHeight,
+            CollectOccupants(tileId),
+            fromZ,
+            maxStep,
+            maxDrop
+        );
     }
 
     /// <summary>

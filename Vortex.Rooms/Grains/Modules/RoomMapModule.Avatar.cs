@@ -180,7 +180,8 @@ public sealed partial class RoomMapModule
         List<RoomTileSection> sections = FindSections(
             nTileIdx,
             fromZ,
-            Math.Abs(_roomGrain._roomConfig.MaxStepHeight)
+            Math.Abs(_roomGrain._roomConfig.MaxStepHeight),
+            Math.Abs(_roomGrain._roomConfig.MaxDropHeight)
         );
 
         sections.RemoveAll(section => !CanAvatarOccupy(avatar, nTileIdx, section, isGoal, false));
@@ -237,7 +238,8 @@ public sealed partial class RoomMapModule
         RoomTileSection? found = FindSection(
             nTileIdx,
             fromZ,
-            Math.Abs(_roomGrain._roomConfig.MaxStepHeight)
+            Math.Abs(_roomGrain._roomConfig.MaxStepHeight),
+            Math.Abs(_roomGrain._roomConfig.MaxDropHeight)
         );
 
         if (found is null)
@@ -343,8 +345,12 @@ public sealed partial class RoomMapModule
         {
             int tileId = ToIdx(avatar.X, avatar.Y);
             RoomTileSection section =
-                FindSection(tileId, avatar.Z, Math.Abs(_roomGrain._roomConfig.MaxStepHeight))
-                ?? GetTopSection(tileId);
+                FindSection(
+                    tileId,
+                    avatar.Z,
+                    Math.Abs(_roomGrain._roomConfig.MaxStepHeight),
+                    Math.Abs(_roomGrain._roomConfig.MaxDropHeight)
+                ) ?? GetTopSection(tileId);
             Altitude height = section.Height;
             RoomObjectId highestItemId = section.ItemId;
             Altitude postureOffset = Altitude.Zero;

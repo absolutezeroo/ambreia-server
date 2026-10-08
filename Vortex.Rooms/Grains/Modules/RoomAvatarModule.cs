@@ -328,7 +328,8 @@ public sealed partial class RoomAvatarModule(RoomGrain roomGrain)
                         .MapModule.FindSection(
                             goalTileId,
                             avatar.Z,
-                            Math.Abs(_roomGrain._roomConfig.MaxStepHeight)
+                            Math.Abs(_roomGrain._roomConfig.MaxStepHeight),
+                            Math.Abs(_roomGrain._roomConfig.MaxDropHeight)
                         )
                         ?.Height
                 );
