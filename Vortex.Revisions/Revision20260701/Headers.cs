@@ -35,7 +35,6 @@ internal static class MessageEvent
     public const int RpgCharacterCreateMessageEvent = 9001; // RPG (spec §3.7)
     public const int RpgCharacterChooseClassMessageEvent = 9002; // RPG (spec §3.7)
     public const int RpgEnterWorldMessageEvent = 9003; // RPG (spec §3.7)
-
     #endregion
 }
 
@@ -115,6 +114,5 @@ internal static class MessageComposer
     public const int RpgCharacterStateMessageComposer = 9003; // RPG (spec §3.7)
     public const int RpgCharacterProgressMessageComposer = 9004; // RPG (spec §3.7)
     public const int RpgCharacterStatsMessageComposer = 9005; // RPG (spec §3.7)
-
     #endregion
 }
