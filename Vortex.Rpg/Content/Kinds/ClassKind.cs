@@ -48,6 +48,15 @@ public sealed class ClassKind : ContentKind<ClassDefinition>
             );
         }
 
+        if (c.Starter && check.All<ClassDefinition>().Count(other => other.Starter) > 1)
+        {
+            yield return Error(
+                "SeveralStarterClasses",
+                c.Id,
+                "Only one class is the starter class every new avatar begins in."
+            );
+        }
+
         if (c.Specializations.Count == 0)
         {
             yield return Error(

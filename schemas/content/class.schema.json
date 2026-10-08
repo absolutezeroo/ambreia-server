@@ -84,6 +84,9 @@
         "type": "string"
       }
     },
+    "starter": {
+      "type": "boolean"
+    },
     "id": {
       "type": "string"
     },

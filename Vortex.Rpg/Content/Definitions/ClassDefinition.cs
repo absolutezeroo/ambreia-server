@@ -21,4 +21,10 @@ public sealed record ClassDefinition : ContentDefinition
     public required StatBlock PerLevel { get; init; }
 
     public List<string> Specializations { get; init; } = [];
+
+    /// <summary>
+    /// The class every new avatar starts in (« Sans classe »): it gives a level and stats at once,
+    /// and is left once for a real class. At most one per pack; never offered by the class picker.
+    /// </summary>
+    public bool Starter { get; init; }
 }

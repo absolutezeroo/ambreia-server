@@ -95,6 +95,29 @@ public sealed class KindRulesTests
     public void AValidClass_HasNoFinding() =>
         Codes(new ClassKind(), Warrior, Guardian).Should().BeEmpty();
 
+    /// <summary>Every new avatar starts in THE starter class: two would make the start a guess.</summary>
+    [Fact]
+    public void TwoStarterClasses_IsAnError() =>
+        Codes(
+                new ClassKind(),
+                Warrior with
+                {
+                    Starter = true,
+                },
+                Guardian,
+                Warrior with
+                {
+                    Id = "class.novice",
+                    Starter = true,
+                }
+            )
+            .Should()
+            .Contain("SeveralStarterClasses");
+
+    [Fact]
+    public void OneStarterClass_IsFine() =>
+        Codes(new ClassKind(), Warrior with { Starter = true }, Guardian).Should().BeEmpty();
+
     [Fact]
     public void AClassWithoutSpecialization_IsAnError() =>
         Codes(new ClassKind(), Warrior with { Specializations = [] })

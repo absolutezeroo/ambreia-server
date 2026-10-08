@@ -1,5 +1,7 @@
 # Textes français du contenu RPG (spec Contenu §7) : <id>.name et <id>.description.
 
+class.classless.name=Sans classe
+class.classless.description=Tout aventurier commence ainsi : un peu de tout, rien encore de choisi. On la quitte une fois, pour sa vraie voie.
 class.warrior.name=Guerrier
 class.warrior.description=Il tient la première ligne et attire sur lui les coups destinés aux autres.
 class.archer.name=Archer
@@ -9,6 +11,8 @@ class.mage.description=Il frappe plusieurs ennemis d'un sort et ralentit ceux qu
 class.cleric.name=Clerc
 class.cleric.description=Il soigne le groupe et renforce ceux qui combattent.
 
+spec.classless.adventurer.name=Aventurier
+spec.classless.adventurer.description=Celui qui n'a pas encore choisi sa voie.
 spec.warrior.guardian.name=Gardien
 spec.warrior.guardian.description=Un guerrier qui protège ses alliés plutôt que de chercher la victoire seul.
 spec.archer.marksman.name=Tireur d'élite

@@ -1,0 +1,12 @@
+{
+  "$schema": "../../schemas/content/class.schema.json",
+  "id": "class.classless",
+  "kind": "class",
+  "starter": true,
+  "role": "damage",
+  "range": 1,
+  "primaryStat": "strength",
+  "base": { "strength": 8, "intelligence": 8, "agility": 8, "health": 60, "mana": 40, "armor": 1, "speed": 0 },
+  "perLevel": { "strength": 1, "intelligence": 1, "agility": 1, "health": 10, "mana": 2, "armor": 0, "speed": 0 },
+  "specializations": ["spec.classless.adventurer"]
+}
