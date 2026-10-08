@@ -1,5 +1,5 @@
 using System;
-using System.Collections.Immutable;
+using System.Threading;
 using System.Threading.Tasks;
 using FluentAssertions;
 using Orleans;
@@ -14,9 +14,8 @@ namespace Vortex.Rooms.Tests.Grains;
 
 /// <summary>
 /// The directory grain end-to-end inside a real silo, so activation, DI wiring, and grain-reference
-/// calls are exercised the way production hosting exercises them (as opposed to the
-/// hand-constructed grain tests in Vortex.Rooms.Tests/Groups). It was the first grain covered this
-/// way because it has no database dependency.
+/// calls are exercised the way production hosting exercises them. It counts who stands in each
+/// active room, which is what keeps an occupied room up.
 /// </summary>
 [Collection(VortexClusterCollection.Name)]
 public sealed class RoomDirectoryGrainClusterTests(VortexClusterFixture cluster)
@@ -24,13 +23,40 @@ public sealed class RoomDirectoryGrainClusterTests(VortexClusterFixture cluster)
     private readonly VortexClusterFixture _cluster = cluster;
 
     [Fact]
-    public async Task UpsertActiveRoomAsync_ThenGetActiveRoomsAsync_ReturnsUpsertedRoom()
+    public async Task APlayerAddedToAnActiveRoom_IsCounted()
     {
         IRoomDirectoryGrain grain = _cluster.GrainFactory.GetGrain<IRoomDirectoryGrain>(
             "cluster-poc-directory"
         );
         RoomId roomId = 42;
-        RoomInfoSnapshot snapshot = new RoomInfoSnapshot
+
+        await grain.UpsertActiveRoomAsync(Snapshot(roomId)).ConfigureAwait(true);
+        await grain
+            .AddPlayerToRoomAsync((PlayerId)7, roomId, CancellationToken.None)
+            .ConfigureAwait(true);
+
+        (await grain.GetRoomPopulationAsync(roomId).ConfigureAwait(true)).Should().Be(1);
+    }
+
+    [Fact]
+    public async Task RemovingAnActiveRoom_DropsItsOccupants()
+    {
+        IRoomDirectoryGrain grain = _cluster.GrainFactory.GetGrain<IRoomDirectoryGrain>(
+            "cluster-poc-directory-remove"
+        );
+        RoomId roomId = 43;
+
+        await grain.UpsertActiveRoomAsync(Snapshot(roomId)).ConfigureAwait(true);
+        await grain
+            .AddPlayerToRoomAsync((PlayerId)7, roomId, CancellationToken.None)
+            .ConfigureAwait(true);
+        await grain.RemoveActiveRoomAsync(roomId).ConfigureAwait(true);
+
+        (await grain.GetRoomPopulationAsync(roomId).ConfigureAwait(true)).Should().Be(0);
+    }
+
+    private static RoomInfoSnapshot Snapshot(RoomId roomId) =>
+        new()
         {
             RoomId = roomId,
             Name = "Cluster Test Room",
@@ -52,51 +78,4 @@ public sealed class RoomDirectoryGrainClusterTests(VortexClusterFixture cluster)
             PaintFloor = string.Empty,
             PaintLandscape = string.Empty,
         };
-
-        await grain.UpsertActiveRoomAsync(snapshot).ConfigureAwait(true);
-        ImmutableArray<RoomSummarySnapshot> rooms = await grain
-            .GetActiveRoomsAsync()
-            .ConfigureAwait(true);
-
-        rooms.Should().ContainSingle(r => r.RoomId == roomId && r.Name == "Cluster Test Room");
-    }
-
-    [Fact]
-    public async Task RemoveActiveRoomAsync_RemovesPreviouslyUpsertedRoom()
-    {
-        IRoomDirectoryGrain grain = _cluster.GrainFactory.GetGrain<IRoomDirectoryGrain>(
-            "cluster-poc-directory-remove"
-        );
-        RoomId roomId = 43;
-        RoomInfoSnapshot snapshot = new RoomInfoSnapshot
-        {
-            RoomId = roomId,
-            Name = "Removable Room",
-            Description = "poc",
-            OwnerId = (PlayerId)1,
-            OwnerName = "Owner",
-            Population = 0,
-            LastUpdatedUtc = DateTime.UtcNow,
-            DoorMode = RoomDoorModeType.Open,
-            PlayersMax = 25,
-            TradeType = RoomTradeModeType.Disabled,
-            Ranking = 0,
-            CategoryId = -1,
-            Tags = [],
-            AllowBlocking = false,
-            AllowPets = false,
-            AllowPetsEat = false,
-            PaintWall = string.Empty,
-            PaintFloor = string.Empty,
-            PaintLandscape = string.Empty,
-        };
-
-        await grain.UpsertActiveRoomAsync(snapshot).ConfigureAwait(true);
-        await grain.RemoveActiveRoomAsync(roomId).ConfigureAwait(true);
-        ImmutableArray<RoomSummarySnapshot> rooms = await grain
-            .GetActiveRoomsAsync()
-            .ConfigureAwait(true);
-
-        rooms.Should().BeEmpty();
-    }
 }

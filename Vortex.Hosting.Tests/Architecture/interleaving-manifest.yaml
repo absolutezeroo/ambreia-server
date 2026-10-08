@@ -66,12 +66,6 @@ entries:
       instead of queueing behind it.
     owner: rooms
 
-  - symbol: Vortex.Primitives.Rooms.Grains.IRoomCore.GetSummaryAsync
-    overload: ()
-    category: ImmutableRead
-    implementation: Vortex.Rooms/Grains/RoomGrain.cs
-    justification: Pure read; navigator and directory poll it constantly.
-    owner: rooms
 
   - symbol: Vortex.Primitives.Rooms.Grains.IRoomCore.GetRoomPopulationAsync
     overload: ()

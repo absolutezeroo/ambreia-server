@@ -17,16 +17,6 @@ public class RoomConfig
     public int RoomDeactivationDelayMs { get; init; } = 1800000;
 
     /// <summary>
-    /// How often live room occupancy is written back to <c>rooms.users_now</c>.
-    /// <para>
-    /// It does not ride on <see cref="RoomCheckMs"/>: that sweep is the deactivation clock and runs
-    /// every five minutes, which is far too stale for any room list ordered on this column. Nothing
-    /// in-game reads the column yet; it is kept for a future zone list or web API.
-    /// </para>
-    /// </summary>
-    public int RoomPopulationFlushMs { get; init; } = 30000;
-
-    /// <summary>
     /// How often the room wakes up to look at its clocks.
     /// <para>
     /// <b>50 does not mean twenty times a second on Windows.</b> The default system timer quantum is

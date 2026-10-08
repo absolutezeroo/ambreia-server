@@ -208,22 +208,6 @@ public sealed partial class RoomGrain : Grain, IRoomGrain
         );
     }
 
-    public async Task<RoomSummarySnapshot> GetSummaryAsync()
-    {
-        int population = await GetRoomPopulationAsync();
-
-        return new RoomSummarySnapshot
-        {
-            RoomId = _state.RoomSnapshot.RoomId,
-            Name = _state.RoomSnapshot.Name,
-            Description = _state.RoomSnapshot.Description,
-            OwnerId = _state.RoomSnapshot.OwnerId,
-            OwnerName = _state.RoomSnapshot.OwnerName,
-            Population = population,
-            LastUpdatedUtc = DateTime.UtcNow,
-        };
-    }
-
     public Task<int> GetRoomPopulationAsync() => Task.FromResult(_state.AvatarsByPlayerId.Count);
 
     public Task<ImmutableArray<KeyValuePair<string, string>>> GetRoomPropertiesAsync() =>
