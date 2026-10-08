@@ -44,6 +44,13 @@ Protocol, Messages, Revisions, PacketHandlers, Runtime, Crypto, Database, Events
 Observability, Plugins, Primitives) → **Platform** (Rooms, Players, Furniture, Permissions) →
 **Web** (WebApi, WebApi.Authentication). References only point down; `Vortex.Main` wires them all.
 
+Layout, enforced by `scripts/hooks/check-code-layout.mjs`: **one top-level type per file** (a type
+and its generic namesake share one; an enum's extensions get their own file next to the enum), and
+**the namespace is the folder**. One kind of thing per folder: a grains folder keeps the grains at its
+root and their parts in `Modules/`, `Systems/`, `State/`, `Persistence/`. A large class splits into
+`partial` files by responsibility (`PluginManager.Activation.cs`). Never name a folder after a
+framework type it would shadow (`Errors/`, not `Results/`).
+
 ## Rules (each one has bitten this repo)
 
 - Handlers orchestrate: validate, call a grain, done. **No `DbContext` in a handler** — put the

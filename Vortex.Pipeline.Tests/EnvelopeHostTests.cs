@@ -7,6 +7,7 @@ using FluentAssertions;
 using Microsoft.Extensions.DependencyInjection;
 using Vortex.Pipeline.Attributes;
 using Vortex.Pipeline.Delegates;
+using Vortex.Pipeline.Tests.Fixtures;
 using Vortex.Runtime;
 using Xunit;
 

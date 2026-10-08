@@ -28,6 +28,24 @@
       WorkingDirectory="$(MSBuildThisFileDirectory)"
     />
     <!--
+      The layout rules (one type per file, namespace = folder), the declarations nothing reaches (a
+      handler without a parser, a composer without a serializer) and the authorization surface (a
+      new actor-taking method or route, or a gate gone). All three were run by hand only, so each
+      drifted between runs; the clean-up of 2026-10-08 put them here.
+    -->
+    <Exec
+      Command="node scripts/hooks/check-code-layout.mjs"
+      WorkingDirectory="$(MSBuildThisFileDirectory)"
+    />
+    <Exec
+      Command="node scripts/hooks/check-inert-declarations.mjs"
+      WorkingDirectory="$(MSBuildThisFileDirectory)"
+    />
+    <Exec
+      Command="node scripts/hooks/check-authorization-surface.mjs"
+      WorkingDirectory="$(MSBuildThisFileDirectory)"
+    />
+    <!--
       And: a [FromServices] type the web API's own container was never told about. The route builds,
       so the host starts clean and says nothing, and that one endpoint answers 500 to every caller.
       Three times now — the chain, the audit sink, a room photo.

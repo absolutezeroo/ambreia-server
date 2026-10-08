@@ -93,10 +93,27 @@ fs.writeFileSync(
 // Le mur 8 (couches) : une reference Coeur -> Plateforme, la seule sonde en place pour ce cas.
 const layerProject = path.join(root, 'Vortex.Crypto', 'Vortex.Crypto.csproj');
 const layerProjectOriginal = fs.readFileSync(layerProject, 'utf8');
+// Le mur 9 : un module de room qui ouvre un contexte de base, ce que le store de Persistence existe
+// pour remplacer.
+const roomPartProbe = path.join(root, 'Vortex.Rooms', 'Grains', 'Modules', '__WallProbe9.cs');
+const probeRoomPart = () => {
+  restoreLayers();
+  fs.writeFileSync(roomPartProbe, '// probe\nclass P { VortexDbContext Db; }\n');
+};
 const restoreWallProbes = () => {
   fs.rmSync(wallProbe, { force: true });
+  fs.rmSync(roomPartProbe, { force: true });
   fs.writeFileSync(freeProject, freeProjectOriginal);
 };
+
+// La mise en page : deux types dans un fichier, et un namespace qui ne nomme pas son dossier.
+const layoutProbe = path.join(root, 'Vortex.Primitives', 'Rooms', '__LayoutProbe.cs');
+const probeLayout = () =>
+  fs.writeFileSync(
+    layoutProbe,
+    'namespace Vortex.Primitives;\n\npublic class LayoutProbeA { }\n\npublic class LayoutProbeB { }\n'
+  );
+const restoreLayout = () => fs.rmSync(layoutProbe, { force: true });
 const probeLayers = () => {
   restoreWallProbes();
   fs.writeFileSync(
@@ -112,7 +129,10 @@ const restoreLayers = () => fs.writeFileSync(layerProject, layerProjectOriginal)
 const direct = [
   ['check-architecture-walls.mjs', [], 2, 'fuite protocole + reference rendue a un projet protege'],
   ['check-architecture-walls.mjs', [], 2, 'reference Coeur -> Plateforme bloquee', {}, probeLayers],
-  ['check-architecture-walls.mjs', [], 0, 'murs archi : les sept tiennent', {}, restoreLayers],
+  ['check-architecture-walls.mjs', [], 2, 'module de room qui ouvre la base bloque', {}, probeRoomPart],
+  ['check-architecture-walls.mjs', [], 0, 'murs archi : tous tiennent', {}, restoreLayers],
+  ['check-code-layout.mjs', [], 2, 'deux types et un namespace hors dossier bloques', {}, probeLayout],
+  ['check-code-layout.mjs', [], 0, 'mise en page : un type par fichier tient', {}, restoreLayout],
 ];
 
 let failed = 0;
@@ -140,6 +160,8 @@ for (const [script, argv, want, label, env, setup] of direct) {
 fs.rmSync(csProbe, { force: true });
 fs.rmSync(csProbeClean, { force: true });
 fs.rmSync(wallProbe, { force: true });
+fs.rmSync(roomPartProbe, { force: true });
+restoreLayout();
 fs.writeFileSync(freeProject, freeProjectOriginal);
 restoreLayers();
 console.log(failed ? `\n${failed} test(s) en echec.` : '\nTous les hooks se comportent comme attendu.');

@@ -1,7 +1,7 @@
 ﻿#!/usr/bin/env node
 // The boundaries AGENTS.md states in prose, made executable.
 //
-// Seven rules that no compiler, test or grep enforces today, all of them currently respected --
+// Rules that no compiler, test or grep enforces otherwise, all of them currently respected --
 // which is what makes encoding them cheap: only a state to hold. A rule that lives in a document is
 // a rule that erodes on the first busy afternoon; the stale project references this repository
 // carried for months are the proof, and wall 7 was already breached in 205 places when it was
@@ -271,6 +271,27 @@ if (layerBreaches.length > 0) {
   ]);
 }
 
+// ---------------------------------------------------------------------------------------------
+// Wall 9 -- the room's parts do not open a database context.
+//
+// The room grain owns its persistence: RoomGrain itself, the write-behind RoomPersistenceGrain and
+// the furniture location store in Grains/Persistence. Its modules, systems and zone parts once
+// opened contexts of their own, four places writing the same rows (clean-up lot 2, 2026-10-08);
+// they go through the store now, and this keeps them there.
+// ---------------------------------------------------------------------------------------------
+const roomPartDb = hits(
+  'Vortex.Rooms',
+  /\b(IDbContextFactory|VortexDbContext|_dbCtxFactory)\b/,
+  (file) => !/^Vortex\.Rooms\/Grains\/(Modules|Systems|Zones)\//.test(file)
+);
+if (roomPartDb.length > 0) {
+  failures.push([
+    'A room module, system or zone part reaches for the database. Go through the store in '
+      + 'Grains/Persistence (or the room grain itself), which owns the room\'s rows.',
+    roomPartDb,
+  ]);
+}
+
 if (update) {
   const free = fs
     .readdirSync(root, { withFileTypes: true })
@@ -304,7 +325,7 @@ if (newLeak.length > 0) {
 if (failures.length === 0) {
   const healed = baseline.filter((f) => !leakFiles.includes(f));
   const note = healed.length > 0 ? ` (${healed.length} baselined leak(s) now gone -- --update)` : '';
-  console.log(`Architecture walls hold: 7 checked, ${leakFiles.length} baselined leak(s)${note}.`);
+  console.log(`Architecture walls hold: 8 checked, ${leakFiles.length} baselined leak(s)${note}.`);
   process.exit(0);
 }
 
