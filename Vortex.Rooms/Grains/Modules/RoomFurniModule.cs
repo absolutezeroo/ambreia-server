@@ -180,16 +180,4 @@ public sealed partial class RoomFurniModule(RoomGrain roomGrain)
 
         return true;
     }
-
-    public Task<RoomItemSnapshot?> GetItemSnapshotByIdAsync(
-        RoomObjectId objectId,
-        CancellationToken ct
-    )
-    {
-        return Task.FromResult(
-            _roomGrain._state.ItemsById.TryGetValue(objectId, out IRoomItem? item)
-                ? item.GetSnapshot()
-                : null
-        );
-    }
 }

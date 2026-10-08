@@ -25,9 +25,6 @@ public sealed partial class RoomObjectModule(RoomGrain roomGrain)
 {
     private readonly RoomGrain _roomGrain = roomGrain;
 
-    public Task<ImmutableDictionary<PlayerId, string>> GetAllOwnersAsync(CancellationToken ct) =>
-        Task.FromResult(_roomGrain._state.OwnerNamesById.ToImmutableDictionary());
-
     public async Task<bool> AttatchObjectAsync(IRoomObject roomObject, CancellationToken ct)
     {
         switch (roomObject)
