@@ -6,6 +6,7 @@ using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Vortex.Database.Context;
@@ -80,7 +81,33 @@ public sealed partial class ZoneEditorService(
             throw new ArgumentException($"Zone key '{key}' is not 3-64 of [a-z0-9_].", nameof(key));
         }
 
+        // A transient failure replays the whole attempt on a fresh context, as the content import
+        // does: the retrying strategy refuses a transaction opened outside it.
+        await using VortexDbContext owner = await db.CreateDbContextAsync(ct).ConfigureAwait(false);
+        int roomId = await owner
+            .Database.CreateExecutionStrategy()
+            .ExecuteAsync(() => CreateAttemptAsync(key, name, accountId, fromTemplate, ct))
+            .ConfigureAwait(false);
+
+        logger.LogInformation("Zone {Key} created (room {RoomId})", key, roomId);
+
+        return new ZoneSummary(key, name, roomId, null, fromTemplate is null ? 0 : 1, null);
+    }
+
+    /// <summary>The room, the zone and the template's copy in one transaction: a failure part-way
+    /// leaves nothing, where it used to leave a room no zone pointed at.</summary>
+    private async Task<int> CreateAttemptAsync(
+        string key,
+        string name,
+        int accountId,
+        string? fromTemplate,
+        CancellationToken ct
+    )
+    {
         await using VortexDbContext ctx = await db.CreateDbContextAsync(ct).ConfigureAwait(false);
+        await using IDbContextTransaction tx = await ctx
+            .Database.BeginTransactionAsync(ct)
+            .ConfigureAwait(false);
 
         if (await ctx.Zones.AnyAsync(z => z.Key == key, ct).ConfigureAwait(false))
         {
@@ -95,23 +122,47 @@ public sealed partial class ZoneEditorService(
                     $"Template '{fromTemplate}' does not exist or is not published."
                 );
 
-        // The same minimal insert as scripts/sql/dev_zone.sql: every other column has a default,
-        // and a zone's room only needs an owner and a model to exist. The model is never read for
-        // a zone (the map comes from the document); the description marks the row as this zone's.
+        // A zone's room needs an owner and a model to exist. Neither is a choice: the world owner
+        // is seeded by InitialCreate, the model comes with the reference data. The model is never
+        // read for a zone (the map comes from the document).
+        int? worldId = await ctx
+            .Players.AsNoTracking()
+            .Where(p => p.Name == "__world__")
+            .OrderBy(p => p.Id)
+            .Select(p => (int?)p.Id)
+            .FirstOrDefaultAsync(ct)
+            .ConfigureAwait(false);
+        int? modelId = await ctx
+            .RoomModels.AsNoTracking()
+            .Where(m => m.Name == "model_a")
+            .OrderBy(m => m.Id)
+            .Select(m => (int?)m.Id)
+            .FirstOrDefaultAsync(ct)
+            .ConfigureAwait(false);
+
+        if (worldId is null || modelId is null)
+        {
+            throw new InvalidOperationException(
+                "The world's reference data is missing (player __world__, room model model_a): "
+                    + "run scripts/import-reference-data.ps1 on this database."
+            );
+        }
+
+        // The same minimal insert as scripts/sql/dev_zone.sql: every other column has a default.
+        // The description marks the row as this zone's.
         string marker = $"zone:{key}";
 
         await ctx
             .Database.ExecuteSqlInterpolatedAsync(
                 $"""
                 INSERT INTO rooms (name, description, player_id, model_id)
-                SELECT {name}, {marker},
-                       (SELECT id FROM players WHERE name = '__world__' ORDER BY id LIMIT 1),
-                       (SELECT id FROM room_models WHERE name = 'model_a' ORDER BY id LIMIT 1)
+                VALUES ({name}, {marker}, {worldId.Value}, {modelId.Value})
                 """,
                 ct
             )
             .ConfigureAwait(false);
 
+        // Read back in the same transaction: no other row can carry this marker before it commits.
         int roomId = await ctx
             .Rooms.AsNoTracking()
             .Where(r => r.Description == marker)
@@ -131,9 +182,9 @@ public sealed partial class ZoneEditorService(
                 .ConfigureAwait(false);
         }
 
-        logger.LogInformation("Zone {Key} created (room {RoomId})", key, roomId);
+        await tx.CommitAsync(ct).ConfigureAwait(false);
 
-        return new ZoneSummary(key, name, roomId, null, fromTemplate is null ? 0 : 1, null);
+        return roomId;
     }
 
     public async Task<string?> GetDocumentAsync(string key, int? version, CancellationToken ct)

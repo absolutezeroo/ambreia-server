@@ -251,6 +251,46 @@ public sealed class ZoneEditorServiceTests : IAsyncLifetime
         (await _service.ListAsync(default)).Should().BeEmpty();
     }
 
+    /// <summary>
+    /// The room, the zone and the template's copy are written together or not at all: a failure
+    /// half-way used to leave a room nothing pointed at, found again only by its description.
+    /// </summary>
+    [Fact]
+    public async Task ACreationThatFailsHalfWay_LeavesNoRoomBehind()
+    {
+        await CreateLockedAsync();
+        await _service.SaveAsync("village", Json(), Author, "", default);
+        await _service.PublishAsync("village", 1, default);
+        _options = new DbContextOptionsBuilder<VortexDbContext>()
+            .UseSqlite(_conn, sqlite => sqlite.ExecutionStrategy(d => new RetryingStrategy(d)))
+            .AddInterceptors(new FailingZoneVersionInterceptor())
+            .Options;
+        UseConfig(new WorldConfig());
+
+        Func<Task> create = () => _service.CreateAsync("copy", "Copie", Author, "village", default);
+
+        await create.Should().ThrowAsync<InvalidOperationException>();
+        await using VortexDbContext db = new(_options);
+        (await db.Rooms.CountAsync()).Should().Be(1, "only the template's own room");
+        (await db.Zones.CountAsync()).Should().Be(1);
+    }
+
+    [Fact]
+    public async Task MissingReferenceData_SaysWhatToRun()
+    {
+        await using (VortexDbContext db = new(_options))
+        {
+            await db.Database.ExecuteSqlRawAsync("DELETE FROM room_models");
+        }
+
+        Func<Task> create = () => _service.CreateAsync("village", "Village", Author, null, default);
+
+        (await create.Should().ThrowAsync<InvalidOperationException>()).WithMessage(
+            "*import-reference-data*"
+        );
+        (await _service.ListAsync(default)).Should().BeEmpty();
+    }
+
     [Fact]
     public async Task ASaveThatLosesTheRaceForItsVersion_IsAConflictFinding()
     {
