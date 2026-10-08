@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Vortex.Primitives.Rpg.Characters;
@@ -20,13 +21,18 @@ internal sealed class FakeCharacters
 
     public List<(long Player, int Amount)> XpGrants { get; } = [];
 
+    /// <summary>Players whose grain fails (its database read threw).</summary>
+    public HashSet<long> Broken { get; } = [];
+
     public IPlayerCharacterGrain For(long player) =>
         FakeProxy.Create<IPlayerCharacterGrain>(call =>
             call.Method.Name switch
             {
-                nameof(IPlayerCharacterGrain.GetSummaryAsync) => Task.FromResult(
-                    ByPlayer.GetValueOrDefault(player)
-                ),
+                nameof(IPlayerCharacterGrain.GetSummaryAsync) => Broken.Contains(player)
+                    ? Task.FromException<CharacterSummary?>(
+                        new InvalidOperationException("database unavailable")
+                    )
+                    : Task.FromResult(ByPlayer.GetValueOrDefault(player)),
                 nameof(IPlayerCharacterGrain.ChooseClassAsync) => Task.FromResult(
                     Choose(player, (string)call.Args![0]!)
                 ),

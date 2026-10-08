@@ -182,6 +182,20 @@ public sealed class CharacterEndpointsTests
         return await f.CreateAuthenticatedClient().PostAsync(url, body);
     }
 
+    /// <summary>The list is how the site picks an avatar to sign in with: one failing character
+    /// shows without its class rather than taking the list, and the sign-in, down.</summary>
+    [Fact]
+    public async Task AFailingCharacter_StillListsTheAvatars()
+    {
+        await using WebApiTestFactory f = new();
+        f.Characters.Broken.Add(long.Parse(FakePlayerService.OwnedUniqueId));
+
+        HttpResponseMessage r = await f.CreateAuthenticatedClient().GetAsync("/api/user/avatars");
+
+        r.StatusCode.Should().Be(HttpStatusCode.OK);
+        (await r.Content.ReadAsStringAsync()).Should().Contain("\"classId\":null");
+    }
+
     // The test grant (plan Personnage, décision 3): XP for the live proof, behind a capability.
 
     [Fact]

@@ -103,22 +103,28 @@ internal sealed partial class RoomService(
             return;
         }
 
-        // Back within the grace period (spec Personnage §10): the avatar is still standing in this
-        // room, so it is kept — SetActiveRoomAsync sees the same room and makes no second one.
-        if (!await playerPresence.TakeResumeAsync(roomId).ConfigureAwait(false))
-        {
-            await playerPresence.ClearActiveRoomAsync(ct).ConfigureAwait(false);
-        }
-
-        // Pending, not approved: the gates below have not run yet. Approval is granted in
-        // CompleteRoomEntryAsync, the one place every admission passes through.
-        await playerPresence.SetPendingRoomAsync(roomId, false).ConfigureAwait(false);
-
         // Room entry is the one flow that legitimately spans the room: core activation, the
         // controller level and the avatar list take part. This is what the
         // IRoomGrain aggregate is for -- narrowing it here would mean four references, not less
         // coupling.
         IRoomGrain room = _grainFactory.GetRoomGrain(roomId);
+
+        // Back within the grace period (spec Personnage §10), into the room still holding the
+        // avatar: it is kept, and SetActiveRoomAsync sees the same room and makes no second one.
+        bool resumed = await ResumeOrLeaveAsync(
+                playerPresence,
+                roomId,
+                async () =>
+                    (await room.GetAllAvatarSnapshotsAsync(ct).ConfigureAwait(false)).Any(a =>
+                        a is RoomPlayerAvatarSnapshot && a.WebId == playerId.Value
+                    ),
+                ct
+            )
+            .ConfigureAwait(false);
+
+        // Pending, not approved: the gates below have not run yet. Approval is granted in
+        // CompleteRoomEntryAsync, the one place every admission passes through.
+        await playerPresence.SetPendingRoomAsync(roomId, false).ConfigureAwait(false);
 
         await playerPresence
             .SendComposerAsync(new OpenConnectionMessageComposer { RoomId = roomId })
@@ -130,7 +136,9 @@ internal sealed partial class RoomService(
         RoomControllerType controllerLevel = await room.GetControllerLevelAsync(ctx, ct)
             .ConfigureAwait(false);
 
-        if (controllerLevel < RoomControllerType.Rights)
+        // A resumed player was admitted before the cut; their own waiting avatar must not count
+        // them out of a full room, nor a password they cannot resend lock them out.
+        if (!resumed && controllerLevel < RoomControllerType.Rights)
         {
             ImmutableArray<RoomAvatarSnapshot> currentAvatars =
                 await room.GetAllAvatarSnapshotsAsync(ct).ConfigureAwait(false);
@@ -165,6 +173,28 @@ internal sealed partial class RoomService(
         await CompleteRoomEntryAsync(ctx, playerId, roomId, ct).ConfigureAwait(false);
     }
 
+    /// <summary>True when the player comes back, within the grace period, to the room that still
+    /// holds their avatar; otherwise the room they were in is left, as any entry does.</summary>
+    internal static async Task<bool> ResumeOrLeaveAsync(
+        IPlayerPresenceGrain presence,
+        RoomId roomId,
+        Func<Task<bool>> roomHoldsTheAvatar,
+        CancellationToken ct
+    )
+    {
+        if (
+            await presence.TakeResumeAsync(roomId).ConfigureAwait(false)
+            && await roomHoldsTheAvatar().ConfigureAwait(false)
+        )
+        {
+            return true;
+        }
+
+        await presence.ClearActiveRoomAsync(ct).ConfigureAwait(false);
+
+        return false;
+    }
+
     private async Task CompleteRoomEntryAsync(
         ActionContext ctx,
         PlayerId playerId,
@@ -196,6 +226,10 @@ internal sealed partial class RoomService(
                 )
                 .ConfigureAwait(false);
             await playerPresence.SetPendingRoomAsync(RoomId.Invalid, false).ConfigureAwait(false);
+
+            // A resumed avatar refused here would stand in the room for nobody; otherwise the room
+            // was already left and this does nothing.
+            await playerPresence.ClearActiveRoomAsync(ct).ConfigureAwait(false);
 
             return;
         }

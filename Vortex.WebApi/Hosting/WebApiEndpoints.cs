@@ -270,7 +270,8 @@ internal static partial class WebApiEndpoints
                                 await players
                                     .GetAvatarsForAccountAsync(accountId.Value, ct)
                                     .ConfigureAwait(false),
-                                grains
+                                grains,
+                                CharactersLogger(ctx)
                             )
                             .ConfigureAwait(false)
                     );
@@ -348,7 +349,8 @@ internal static partial class WebApiEndpoints
                                 await players
                                     .GetAvatarsForAccountAsync(accountId.Value, ct)
                                     .ConfigureAwait(false),
-                                grains
+                                grains,
+                                CharactersLogger(ctx)
                             )
                             .ConfigureAwait(false)
                     );

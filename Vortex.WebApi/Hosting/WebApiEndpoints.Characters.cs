@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json;
@@ -5,6 +6,8 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Orleans;
 using Vortex.Primitives.Orleans;
 using Vortex.Primitives.Permissions;
@@ -25,6 +28,11 @@ namespace Vortex.WebApi.Hosting;
 internal static partial class WebApiEndpoints
 {
     private const string TagCharacters = "Characters";
+
+    private static ILogger CharactersLogger(HttpContext ctx) =>
+        ctx
+            .RequestServices.GetRequiredService<ILoggerFactory>()
+            .CreateLogger("Vortex.WebApi.Characters");
 
     private static void MapCharacters(WebApplication app)
     {
@@ -155,13 +163,14 @@ internal static partial class WebApiEndpoints
     /// <summary>The avatars with their character's class and level, read from their grains at once.</summary>
     private static async Task<List<AvatarInfo>> WithCharactersAsync(
         List<AvatarInfo> avatars,
-        IGrainFactory grains
+        IGrainFactory grains,
+        ILogger logger
     )
     {
         CharacterSummary?[] summaries = await Task.WhenAll(
                 avatars.Select(a =>
                     int.TryParse(a.UniqueId, out int id)
-                        ? grains.GetPlayerCharacterGrain(new PlayerId(id)).GetSummaryAsync()
+                        ? SummaryOrNullAsync(grains, new PlayerId(id), logger)
                         : Task.FromResult<CharacterSummary?>(null)
                 )
             )
@@ -173,6 +182,33 @@ internal static partial class WebApiEndpoints
                 (a, i) => a with { ClassId = summaries[i]?.ClassId, Level = summaries[i]?.Level }
             ),
         ];
+    }
+
+    /// <summary>The site lists avatars to sign in with: a character that fails to answer is listed
+    /// without its class rather than taking the whole list, and the sign-in, down.</summary>
+    private static async Task<CharacterSummary?> SummaryOrNullAsync(
+        IGrainFactory grains,
+        PlayerId playerId,
+        ILogger logger
+    )
+    {
+        try
+        {
+            return await grains
+                .GetPlayerCharacterGrain(playerId)
+                .GetSummaryAsync()
+                .ConfigureAwait(false);
+        }
+        catch (Exception ex) when (ex is not OperationCanceledException)
+        {
+            logger.LogWarning(
+                ex,
+                "The character of player {PlayerId} did not answer.",
+                playerId.Value
+            );
+
+            return null;
+        }
     }
 
     /// <summary>A named avatar needs a class once the content has classes; null when it may go on.</summary>
