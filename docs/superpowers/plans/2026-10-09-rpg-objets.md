@@ -53,6 +53,10 @@
    - `unknown_item` est ajouté : l'attribution d'une définition inconnue ou retirée.
 7. **Destruction et retrait sont écrits tout de suite** (comme l'attribution), pour que l'audit porte l'id réel de l'exemplaire. Le sac est vidé juste avant l'opération.
 8. **La route d'administration prend `{playerId:int}`** comme la route d'XP existante, et non `{uniqueId}` comme dans la spec §10. Elle utilise la capability existante `Capabilities.Economy.GrantItem` (`economy.item.grant`).
+9. **Le réseau des objets est dans ce plan (Tâche 7)** et non en F3, à la demande du propriétaire (2026-10-09), pour que la session client puisse construire la fenêtre Sac et l'onglet Équipement.
+   - Le grain pousse l'instantané complet à l'entrée en zone et après chaque changement, et répond à chaque opération du joueur par un résultat.
+   - Pas de limite par intention en plus de la limite globale : chaque opération est bornée et bon marché.
+10. **Pas d'icône d'objet en V1.** Le client montre le nom traduit (`<id>.name`) ; les sprites viendront avec leur propre spec.
 
 ## Review Focus
 
@@ -1109,4 +1113,90 @@ public async Task WriteAsync(PlayerId player, IReadOnlyList<ItemInstance> dirty,
 
 - [ ] **Step 7: Commit** (`objets : route d'attribution, preuve du driver, documentation`).
 
-- [ ] **Step 8: Relecture des tâches 5–6** par un agent relecteur général, puis corrections et registre. Mettre aussi à jour la mémoire `rpg-progress.md` : Objets livré, la suite est F3b.
+- [ ] **Step 8: Relecture des tâches 5–6** par un agent relecteur général, puis corrections et registre.
+
+---
+
+### Task 7: Le réseau des objets
+
+Suivre le skill `adding-a-packet` et `.claude/rules/protocol.md`. Ids RPG suivants (spec §3.7) : entrants 9004–9009, sortants 9006–9007.
+
+**Files:**
+- Create: `Vortex.Protocol/Messages/Incoming/Rpg/Items/RpgItemMoveMessage.cs`, `RpgItemSplitMessage.cs`, `RpgItemEquipMessage.cs`, `RpgItemUnequipMessage.cs`, `RpgItemDestroyMessage.cs`, `RpgItemClaimParcelMessage.cs`
+- Create: `Vortex.Protocol/Messages/Outgoing/Rpg/Items/RpgInventoryMessageComposer.cs`, `RpgItemResultMessageComposer.cs`
+- Create: `Vortex.Revisions/Revision20260701/Parsers/Rpg/Items/*Parser.cs` (six), `Serializers/Rpg/Items/RpgInventoryMessageComposerSerializer.cs`, `RpgItemResultMessageComposerSerializer.cs`, `Maps/RpgItemsMap.cs`
+- Modify: `Vortex.Revisions/Revision20260701/Headers.cs` (régions `Vortex-specific`, commentaire `// RPG (spec §3.7)`)
+- Create: `Vortex.PacketHandlers/Rpg/Items/*MessageHandler.cs` (six)
+- Modify: `Vortex.Rpg.Characters/Grains/PlayerCharacterGrain.Items.cs` (résultat et instantané poussés), `PlayerCharacterGrain.Hud.cs` (`PushStateAsync` pousse aussi l'instantané)
+- Modify: `docs/superpowers/specs/2026-10-08-rpg-items-design.md` : nouvelle section « §17 Réseau », le contrat pour la session client (ids, champs dans l'ordre, codes)
+- Modify: `.claude/skills/run-vortex-emulator/driver.mjs` (`items` va jusqu'au socket), `SKILL.md`
+- Test: `Vortex.Revisions.Tests` (parsers et serializers, sur le modèle des tests RPG de F3a), `Vortex.PacketHandlers.Tests/Rpg/Items/*` (un handler sans joueur ne fait rien), `Vortex.Database.Tests/Rpg/CharacterItemsPushTests.cs`
+
+**Interfaces:**
+- Consumes: les opérations du grain (Tâche 4), `CharacterItemSnapshot`.
+- Produces, en entrée (records `IMessageEvent`, phase monde) :
+
+  | Id | Message | Champs |
+  |---|---|---|
+  | 9004 | `RpgItemMove` | `int From, int To` |
+  | 9005 | `RpgItemSplit` | `int From, int Quantity, int To` |
+  | 9006 | `RpgItemEquip` | `int BagSlot` |
+  | 9007 | `RpgItemUnequip` | `int EquipmentSlot` |
+  | 9008 | `RpgItemDestroy` | `int BagSlot, int Quantity` |
+  | 9009 | `RpgItemClaimParcel` | `int Parcel` |
+
+- Produces, en sortie :
+  - **9006 `RpgInventory`** : `int BagSize, int MaxParcels, int count`, puis pour chaque exemplaire :
+    - `int ItemId, string DefinitionId, int Quantity` ;
+    - `int Durability` (−1 si inusable) ;
+    - `bool Bound, int Container, int Slot`.
+  - **9007 `RpgItemResult`** : `int Action, string Code`.
+    - Les actions : `1 move, 2 split, 3 equip, 4 unequip, 5 destroy, 6 claim`, en constantes sur le composer comme `RpgCharacterResultMessageComposer.Action*`.
+    - `Code` est le snake_case d'`ItemOutcome`, ou `ok`.
+
+- [ ] **Step 1: Tests qui échouent.**
+  - **Révision :** chaque parser lit ses champs dans l'ordre du tableau. Le serializer de `RpgInventory` écrit l'en-tête, puis les exemplaires dans l'ordre de l'instantané (durabilité −1 pour `null`). Celui de `RpgItemResult` écrit l'action puis le code.
+  - **Handlers :** sans joueur (`ctx.PlayerId <= 0`), aucun grain n'est appelé. Avec un joueur, la bonne méthode du grain est appelée avec les bons arguments.
+  - **Grain** (`CharacterItemsPushTests`, présence factice qui enregistre comme `CharacterStatePushTests`) :
+    - un `MoveItemAsync` réussi pousse `RpgItemResult(1, "ok")` puis `RpgInventory` ;
+    - un refus pousse `RpgItemResult(1, "not_found")` seul ;
+    - un `EquipItemAsync` réussi pousse aussi `RpgCharacterStats` ;
+    - une attribution pousse `RpgInventory` ;
+    - `PushStateAsync` pousse l'état puis l'instantané.
+
+- [ ] **Step 2: Implémenter.**
+  - **Les fichiers de protocole :** messages, composers, parsers, serializers, la carte `RpgItemsMap` et les en-têtes, selon le skill `adding-a-packet`.
+  - **Les handlers :** chacun fait `if (ctx.PlayerId <= 0) return;` puis appelle `grainFactory.GetPlayerCharacterGrain(new PlayerId(ctx.PlayerId))` sur l'opération, et rien d'autre.
+  - **Dans le grain :** `PushItemResultAsync(int action, ItemOutcome outcome)`, puis, si l'issue est `Ok`, `PushInventoryAsync()`. Les deux passent par `PushAsync` (un échec d'envoi est journalisé et ne défait rien).
+    - **Le code envoyé :** `JsonNamingPolicy.SnakeCaseLower.ConvertName(outcome.ToString())`, `Ok` donnant `ok`.
+    - **L'attribution** et le retrait poussent l'instantané seul, puisque ce n'est pas un geste du joueur.
+
+- [ ] **Step 3: Vérifications.**
+  - `node scripts/hooks/check-inert-declarations.mjs` : 0 trou, 26 handlers et 47 composers, et mettre à jour les seuils qui épinglent ces nombres s'il y en a ;
+  - `dotnet test Vortex.Revisions.Tests`, `Vortex.PacketHandlers.Tests` et `Vortex.Database.Tests` sont verts.
+
+- [ ] **Step 4: Le contrat pour le client.** Écrire dans la spec Objets une nouvelle section « §17 Réseau », dans la forme de la spec F3a §6 :
+  - le tableau des ids ;
+  - les champs dans l'ordre ;
+  - les codes de refus : `not_found`, `bag_full`, `slot_occupied`, `wrong_class`, `level_too_low`, `not_equipment`, `invalid_quantity`, `no_character` ;
+  - les règles :
+    - l'instantané remplace tout l'état du client ;
+    - les cases vont de 0 à `BagSize − 1` ;
+    - les emplacements vont de 0 à 9 (0–7 dans l'ordre d'`EquipmentSlot`, 8 et 9 pour les anneaux) ;
+    - les colis sont numérotés par leur `Slot` ;
+    - le nom vient de `<definitionId>.name` ;
+    - aucune icône en V1.
+
+- [ ] **Step 5: La preuve par le socket.** Étendre `driver.mjs items` : après l'attribution, `enterWorld()`, puis :
+  - attendre `RpgInventory` et y trouver l'épée en sac ;
+  - envoyer `RpgItemEquip(case de l'épée)` et attendre `RpgItemResult(3, "ok")`, `RpgCharacterStats` et un `RpgInventory` où l'épée est en emplacement 5 ;
+  - envoyer `RpgItemUnequip(5)` et la retrouver en sac.
+
+  Le personnage du driver est « Sans classe » ; `class.classless` n'est pas dans `allowedClasses` de l'épée, donc équiper l'épée doit répondre `wrong_class`. Le driver le vérifie (preuve du refus), puis prouve l'équipement avec un objet sans restriction de classe : la bague, `item.ring.copper_ring`, attribuée par la même route, en emplacement 8.
+
+- [ ] **Step 6: Porte, preuve, commit, relecture.**
+  - Lancer la porte complète, ou le script de tests plus les checks si la mémoire manque, en le disant.
+  - Publier le plugin, puis lancer le driver : `smoke`, `items` et `lobby`.
+  - Commit (`objets : le réseau du sac et de l'équipement`).
+  - Faire relire la tâche 7 par l'agent `grain-rules-reviewer` (le grain est touché), puis corriger et noter dans le registre.
+  - Mettre à jour la mémoire `rpg-progress.md` : Objets livré avec son réseau, la fenêtre client est à faire par la session client, et la suite est F3b.
