@@ -36,3 +36,20 @@ For changes under `TurboSamplePlugin/Revision/Revision20260701`:
    - `Parsers` dictionary for incoming events
    - `Serializers` dictionary for outgoing composers
 5. Add/adjust `using` directives in `Revision20260701.cs` for new parser/serializer namespaces.
+
+## Production revisions
+
+`Revision20260701` is the dev revision, `AMBREIA-DEV`. A production server never speaks it (its ids
+are in this repository): it speaks a `ReleaseRevision`, the same parsers and serializers under ids
+drawn at random for each deploy.
+
+1. `node scripts/revision-new.mjs` draws every id of `Revision20260701/Headers.cs` again into
+   `Releases/AMBREIA-<UTC yyyyMMddHHmm>.json`; `ClientHelloMessageEvent` and `DisconnectReasonComposer`
+   stay on 4000. Commit the file.
+2. The file is embedded in `Vortex.Revisions.dll`. Outside Development (or with
+   `Vortex:Revisions:Release=true`) the server loads the newest one, and refuses to start if it does
+   not cover every message the dev revision maps.
+3. Build the client against the same file (`AMBREIA_RELEASE=<path> pnpm build` in vortex-rpg-client)
+   and deploy both. A client on another revision is sent DisconnectReason 122 and offered a reload.
+
+Spec: `vortex-rpg-client/docs/superpowers/specs/2026-10-08-random-header-revisions-design.md`.
