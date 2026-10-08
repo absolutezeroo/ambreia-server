@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using Vortex.Primitives.Rooms.Object.Furniture;
 using Vortex.Primitives.Rooms.Object.Logic;
 
-namespace Vortex.Rooms.Grains;
+namespace Vortex.Rooms.Grains.State;
 
 /// <summary>
 /// Incrementally maintained index of the room's items by the type of their attached logic — the

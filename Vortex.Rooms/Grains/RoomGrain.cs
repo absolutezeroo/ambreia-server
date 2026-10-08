@@ -36,6 +36,7 @@ using Vortex.Protocol.Messages.Outgoing.Room.Session;
 using Vortex.Rooms.Configuration;
 using Vortex.Rooms.Grains.Modules;
 using Vortex.Rooms.Grains.Persistence;
+using Vortex.Rooms.Grains.State;
 using Vortex.Rooms.Grains.Systems;
 using Vortex.Rooms.Grains.Zones.Compilation;
 using Vortex.Rooms.Grains.Zones.Modules;

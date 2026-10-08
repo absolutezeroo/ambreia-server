@@ -7,6 +7,7 @@ using Vortex.Primitives.Rooms.Events.Zone;
 using Vortex.Primitives.Rooms.Object.Avatars;
 using Vortex.Primitives.World;
 using Vortex.Primitives.World.Layers;
+using Vortex.Rooms.Grains.Zones.Messaging;
 using Vortex.Rooms.Grains.Zones.Runtime;
 
 namespace Vortex.Rooms.Grains.Zones.Modules;

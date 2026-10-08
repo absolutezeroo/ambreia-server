@@ -98,11 +98,15 @@ Proof: `driver.mjs zone`. Schema: `schemas/zone.schema.json` (exported from the 
 per cell by priority, passages, entries, decor object ids) into `RoomLiveState.ZoneRuntime`
 (`ZoneRuntimeState`: doors, inactive areas, visitors, cooldowns, expected arrivals), and
 `ZoneSettingsApplier` puts the zone's name, capacity and walls on the room snapshot in memory.
-`Vortex.Rooms/Grains/Zones` holds one kind of thing per folder, its namespace the folder's:
-`Compilation/` (document → `CompiledZone`, rules, room model, settings), `Runtime/` (what changes
-while players are in: `ZoneRuntimeState`, visitors, cooldowns, expected arrivals, bubbles),
-`Modules/` (the `RoomGrain` modules below), `Interactions/` and `Triggers/` (their per-kind
-classes). The modules answer, each for one thing:
+`Vortex.Rooms/Grains` keeps the grains at its root (`RoomGrain` and its partials,
+`RoomDirectoryGrain`, `ZoneInstanceGrain`, `ZoneTestGrain`) and their parts in one folder per
+kind, namespace = folder: `Modules/`, `Systems/`, `State/` (`RoomLiveState`, `RoomItemIndex`),
+`Persistence/` (`RoomPersistenceGrain`, the furniture location store) and `Zones/`, itself one kind
+per folder: `Compilation/` (document → `CompiledZone`, room model, settings), `Runtime/` (what
+changes while players are in: `ZoneRuntimeState`, visitors, cooldowns, expected arrivals, and
+`ZoneRuleBook`, a cell's rules), `Messaging/` (`ZoneBubble`), `Modules/` (the `RoomGrain` modules
+below), `Interactions/` and `Triggers/` (their per-kind classes). The modules answer, each for one
+thing:
 
 | Module | Answers | Driven by |
 |---|---|---|

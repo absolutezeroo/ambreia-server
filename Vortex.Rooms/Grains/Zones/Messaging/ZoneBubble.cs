@@ -3,7 +3,7 @@ using Vortex.Primitives.Orleans;
 using Vortex.Primitives.Players;
 using Vortex.Protocol.Messages.Outgoing.Notifications;
 
-namespace Vortex.Rooms.Grains.Zones.Runtime;
+namespace Vortex.Rooms.Grains.Zones.Messaging;
 
 /// <summary>A server message shown to one player (an area's name, a closed passage) or to the whole room.</summary>
 internal static class ZoneBubble

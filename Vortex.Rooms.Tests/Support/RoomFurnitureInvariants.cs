@@ -4,6 +4,7 @@ using Vortex.Primitives.Rooms.Object;
 using Vortex.Primitives.Rooms.Object.Furniture;
 using Vortex.Primitives.Rooms.Object.Furniture.Floor;
 using Vortex.Rooms.Grains;
+using Vortex.Rooms.Grains.State;
 
 namespace Vortex.Rooms.Tests.Support;
 

@@ -12,7 +12,7 @@ using Vortex.Primitives.World;
 using Vortex.Rooms.Configuration;
 using Vortex.Rooms.Grains.Zones.Runtime;
 
-namespace Vortex.Rooms.Grains;
+namespace Vortex.Rooms.Grains.State;
 
 public sealed class RoomLiveState
 {
