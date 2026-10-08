@@ -60,11 +60,7 @@ internal sealed class AccountCharactersGrain(
 
         if (bare.Length > 0 && StarterClassId() is { } starter)
         {
-            await Task.WhenAll(
-                bare.Select(p =>
-                    grainFactory.GetPlayerCharacterGrain(p.Id).ChooseClassAsync(starter)
-                )
-            );
+            await Task.WhenAll(bare.Select(p => GiveStarterAsync(p.Id, starter)));
             summaries = await SummariesAsync(avatars);
         }
 
@@ -208,9 +204,11 @@ internal sealed class AccountCharactersGrain(
                 throw;
             }
 
+            // The row is written: the character exists whatever happens to its class, and the next
+            // opening of the screen gives the starter again.
             if (StarterClassId() is { } starter)
             {
-                await grainFactory.GetPlayerCharacterGrain(player.Id).ChooseClassAsync(starter);
+                await GiveStarterAsync(player.Id, starter);
             }
 
             logger.LogInformation(
@@ -225,6 +223,24 @@ internal sealed class AccountCharactersGrain(
         finally
         {
             _creating--;
+        }
+    }
+
+    /// <summary>« Sans classe » for an avatar without a character; a failure is logged and the
+    /// avatar stays one to give it to, at the next opening.</summary>
+    private async Task GiveStarterAsync(int playerId, string starter)
+    {
+        try
+        {
+            await grainFactory.GetPlayerCharacterGrain(playerId).ChooseClassAsync(starter);
+        }
+        catch (Exception ex)
+        {
+            logger.LogWarning(
+                ex,
+                "Could not give the starter class to player {PlayerId}",
+                playerId
+            );
         }
     }
 

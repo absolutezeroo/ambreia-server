@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -36,6 +37,9 @@ public sealed class AccountCharactersGrainTests : IAsyncLifetime
     private readonly List<IComposer> _sent = [];
     private readonly Dictionary<long, CharacterSummary> _characters = [];
     private readonly List<(long Player, string ClassId)> _choices = [];
+
+    /// <summary>Every character grain throws, as one whose database read failed.</summary>
+    private bool _broken;
     private readonly Dictionary<string, ContentDefinition> _content = new()
     {
         [WARRIOR] = CharacterContent.Warrior,
@@ -114,6 +118,37 @@ public sealed class AccountCharactersGrainTests : IAsyncLifetime
             .Which.Characters.Single()
             .Starter.Should()
             .BeTrue();
+    }
+
+    /// <summary>
+    /// The row is written, then the starter class fails: answering <c>failed</c> would send the
+    /// player to retry the name and meet <c>name_taken</c> against their own avatar.
+    /// </summary>
+    [Fact]
+    public async Task AStarterThatFails_StillAnswersTheCreatedCharacter()
+    {
+        _broken = true;
+
+        await Build().CreateAsync("Bob", "", "M");
+
+        PlayerEntity bob = await PlayerAsync("Bob");
+        ExpectResult(RpgCharacterResultMessageComposer.ActionCreate, "ok", bob.Id);
+        _sent[1].Should().BeOfType<RpgCharacterListMessageComposer>();
+    }
+
+    /// <summary>One broken character grain shows as a character to choose, not as no screen.</summary>
+    [Fact]
+    public async Task ABrokenCharacterGrain_StillSendsBothLists()
+    {
+        await SeedAsync("Ann");
+        _broken = true;
+
+        await Build().OpenAsync();
+
+        _sent
+            .Select(c => c.GetType())
+            .Should()
+            .Equal(typeof(RpgCharacterListMessageComposer), typeof(RpgClassListMessageComposer));
     }
 
     [Fact]
@@ -317,12 +352,12 @@ public sealed class AccountCharactersGrainTests : IAsyncLifetime
         FakeProxy.Create<IPlayerCharacterGrain>(call =>
             call.Method.Name switch
             {
-                nameof(IPlayerCharacterGrain.GetSummaryAsync) => Task.FromResult(
-                    _characters.GetValueOrDefault(player)
-                ),
-                nameof(IPlayerCharacterGrain.ChooseClassAsync) => Task.FromResult(
-                    Choose(player, (string)call.Args![0]!)
-                ),
+                nameof(IPlayerCharacterGrain.GetSummaryAsync) => _broken
+                    ? Task.FromException<CharacterSummary?>(new InvalidOperationException("down"))
+                    : Task.FromResult(_characters.GetValueOrDefault(player)),
+                nameof(IPlayerCharacterGrain.ChooseClassAsync) => _broken
+                    ? Task.FromException<ChooseClassOutcome>(new InvalidOperationException("down"))
+                    : Task.FromResult(Choose(player, (string)call.Args![0]!)),
                 _ => null,
             }
         );
