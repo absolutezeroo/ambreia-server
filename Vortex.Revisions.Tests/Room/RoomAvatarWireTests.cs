@@ -14,9 +14,10 @@ namespace Vortex.Revisions.Tests.Room;
 /// <summary>
 ///     The Users payload packs every avatar in the room back to back with no length prefix between
 ///     them, so a block that is one field short does not degrade — it shifts everything after it.
-///     The player block was missing its trailing badge rank, which means the client was reading the
-///     next avatar's id as the previous one's rank and mis-framing the rest of the room; the last
-///     avatar in the list read past the end of the buffer entirely.
+///     The player block was once missing its trailing badge rank, which means the client was reading
+///     the next avatar's id as the previous one's rank and mis-framing the rest of the room; the last
+///     avatar in the list read past the end of the buffer entirely. The RPG block has no badge rank
+///     at all now, on either side.
 /// </summary>
 public sealed class RoomAvatarWireTests
 {
@@ -60,13 +61,8 @@ public sealed class RoomAvatarWireTests
             Status = "/",
             Gender = AvatarGenderType.Male,
             DanceType = AvatarDanceType.None,
-            GroupId = 0,
-            GroupStatus = 0,
-            GroupName = string.Empty,
-            SwimFigure = string.Empty,
             ActivityPoints = 5,
-            IsModerator = false,
-            BadgesRank = 3,
+            IsModerator = true,
         };
 
     private static void SkipCommonHead(ClientPacket body)
@@ -84,22 +80,15 @@ public sealed class RoomAvatarWireTests
     }
 
     [Fact]
-    public void PlayerBlock_EndsWithTheBadgeRank()
+    public void PlayerBlock_EndsWithTheModeratorFlag()
     {
         ClientPacket body = Serialize(NewPlayer(1));
 
         SkipCommonHead(body);
 
         body.PopString().Should().Be("M");
-        body.PopInt().Should().Be(0); // groupId
-        body.PopInt().Should().Be(0); // groupStatus
-        body.PopString().Should().BeEmpty(); // groupName
-        body.PopString().Should().BeEmpty(); // swimFigure
         body.PopInt().Should().Be(5); // achievementScore
-        body.PopBoolean().Should().BeFalse(); // isModerator
-        body.PopInt()
-            .Should()
-            .Be(3, "the client reads a badge rank right after the moderator flag");
+        body.PopBoolean().Should().BeTrue(); // isModerator
 
         body.End.Should().BeTrue("the block must consume exactly what the client reads");
     }
@@ -114,14 +103,50 @@ public sealed class RoomAvatarWireTests
 
         body.PopString();
         body.PopInt();
-        body.PopInt();
-        body.PopString();
-        body.PopString();
-        body.PopInt();
         body.PopBoolean();
-        body.PopInt();
 
         body.PopInt().Should().Be(2, "the second avatar must start exactly where the first ended");
+    }
+
+    [Fact]
+    public void PetBlock_HasNoRarityNorBreedingFlags()
+    {
+        RoomPetAvatarSnapshot pet = new()
+        {
+            AvatarType = RoomObjectType.Pet,
+            WebId = 11,
+            Name = "Rex",
+            Motto = string.Empty,
+            Figure = "0 0 FFFFFF",
+            ObjectId = 901,
+            X = 0,
+            Y = 0,
+            Z = default,
+            BodyRotation = Rotation.North,
+            HeadRotation = Rotation.North,
+            Status = "/",
+            SubType = 3,
+            OwnerId = 42,
+            OwnerName = "Frank",
+            HasSaddle = true,
+            IsRiding = false,
+            PetLevel = 7,
+            PetPosture = "std",
+        };
+
+        ClientPacket body = Serialize(pet);
+
+        SkipCommonHead(body);
+
+        body.PopInt().Should().Be(3); // subType
+        body.PopInt().Should().Be(42); // ownerId
+        body.PopString().Should().Be("Frank");
+        body.PopBoolean().Should().BeTrue(); // hasSaddle
+        body.PopBoolean().Should().BeFalse(); // isRiding
+        body.PopInt().Should().Be(7); // petLevel
+        body.PopString().Should().Be("std");
+
+        body.End.Should().BeTrue("the block must consume exactly what the client reads");
     }
 
     [Fact]

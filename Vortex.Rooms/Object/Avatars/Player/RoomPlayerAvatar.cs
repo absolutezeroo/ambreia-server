@@ -13,15 +13,6 @@ public sealed class RoomPlayerAvatar
     : RoomAvatar<IRoomPlayer, IRoomPlayerLogic, IRoomPlayerContext>,
         IRoomPlayer
 {
-    /// <summary>The client's "no guild badge" sentinel.</summary>
-    private const int NoGroup = -1;
-
-    // Frozen wire fields: guilds left with the cut of 2026-10-07, the avatar block still carries them.
-    public int GroupId { get; } = NoGroup;
-    public int GroupStatus { get; } = NoGroup;
-    public string GroupName { get; } = string.Empty;
-    public string SwimFigure { get; init; } = string.Empty;
-
     /// <summary>
     /// The achievement score the avatar block reports. This was <c>init</c>-only and nothing ever
     /// initialised it — <c>RoomAvatarProvider.CreateAvatarFromPlayerSnapshot</c> builds the avatar
@@ -180,10 +171,6 @@ public sealed class RoomPlayerAvatar
             Status = statusString.ToString(),
             Gender = Gender,
             DanceType = DanceType,
-            GroupId = GroupId,
-            GroupStatus = GroupStatus,
-            GroupName = GroupName,
-            SwimFigure = SwimFigure,
             ActivityPoints = ActivityPoints,
             IsModerator = IsModerator,
             CurrentEffectId = CurrentEffectId,

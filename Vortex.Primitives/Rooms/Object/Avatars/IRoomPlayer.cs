@@ -20,9 +20,6 @@ public interface IRoomPlayer : IRoomAvatar<IRoomPlayer, IRoomPlayerLogic, IRoomP
     /// </summary>
     public int ActivityPoints { get; }
 
-    /// <summary>Guild whose badge the avatar displays, or -1 for none.</summary>
-    public int GroupId { get; }
-    public string GroupName { get; }
     public bool UpdateWithPlayer(PlayerSummarySnapshot snapshot);
     public bool SetDance(AvatarDanceType danceType = AvatarDanceType.None);
 }

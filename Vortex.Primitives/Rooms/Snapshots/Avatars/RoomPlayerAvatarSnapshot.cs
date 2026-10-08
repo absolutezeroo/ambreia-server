@@ -12,17 +12,8 @@ public sealed record RoomPlayerAvatarSnapshot : RoomAvatarSnapshot
     [Id(13)]
     public required AvatarDanceType DanceType { get; init; }
 
-    [Id(14)]
-    public required int GroupId { get; init; }
-
-    [Id(15)]
-    public required int GroupStatus { get; init; }
-
-    [Id(16)]
-    public required string GroupName { get; init; }
-
-    [Id(17)]
-    public required string SwimFigure { get; init; }
+    // [Id(14)]-[Id(17)] retired: favourite group id, status, name and swimsuit figure, constants
+    // since the cut of 2026-10-07 and no longer on the wire. Never reuse them.
 
     [Id(18)]
     public required int ActivityPoints { get; init; }
@@ -33,14 +24,7 @@ public sealed record RoomPlayerAvatarSnapshot : RoomAvatarSnapshot
     [Id(20)]
     public int CurrentEffectId { get; init; }
 
-    /// <summary>
-    /// The player's place on the hotel's badge leaderboard, or -1 for "no rank". Not 0: the client
-    /// shows the row for anything <c>>= 0</c> (infostand/InfoStandUserView.as:638-646) and would
-    /// print "#0" under every avatar, with a leaderboard link behind it. Nothing computes a real
-    /// rank yet, so -1 is the honest answer.
-    /// </summary>
-    [Id(21)]
-    public int BadgesRank { get; init; } = -1;
+    // [Id(21)] retired: the badge leaderboard rank, always -1 and no longer on the wire.
 
     /// <summary>What the avatar is holding; zero for empty-handed. Rides its own composer rather
     /// than the avatar block, so a room replays it for whoever has just walked in.</summary>

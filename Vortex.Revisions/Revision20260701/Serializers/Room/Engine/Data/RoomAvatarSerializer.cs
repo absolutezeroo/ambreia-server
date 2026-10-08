@@ -42,13 +42,8 @@ internal class RoomAvatarSerializer
     {
         packet
             .WriteString(AvatarGenderTypeExtensions.ToLegacyString(snapshot.Gender))
-            .WriteInteger(snapshot.GroupId)
-            .WriteInteger(snapshot.GroupStatus)
-            .WriteString(snapshot.GroupName)
-            .WriteString(snapshot.SwimFigure)
             .WriteInteger(snapshot.ActivityPoints)
-            .WriteBoolean(snapshot.IsModerator)
-            .WriteInteger(snapshot.BadgesRank);
+            .WriteBoolean(snapshot.IsModerator);
     }
 
     public static void SerializePetAvatar(IServerPacket packet, RoomPetAvatarSnapshot snapshot)
@@ -57,16 +52,8 @@ internal class RoomAvatarSerializer
             .WriteInteger(snapshot.SubType)
             .WriteInteger(snapshot.OwnerId)
             .WriteString(snapshot.OwnerName)
-            // Rarity, then after the saddle and rider the breed, harvest and revive flags and the
-            // breeding permission: breeding and monsterplants were removed in M0, and the client
-            // still reads all five. -1 is the rarity the live hotel sends for an animal.
-            .WriteInteger(-1)
             .WriteBoolean(snapshot.HasSaddle)
             .WriteBoolean(snapshot.IsRiding)
-            .WriteBoolean(false)
-            .WriteBoolean(false)
-            .WriteBoolean(false)
-            .WriteBoolean(false)
             .WriteInteger(snapshot.PetLevel)
             .WriteString(snapshot.PetPosture);
     }

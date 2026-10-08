@@ -15,7 +15,7 @@ public sealed record RoomPetAvatarSnapshot : RoomAvatarSnapshot
     public required string OwnerName { get; init; }
 
     // 15 was never assigned. 16 and 19 to 22 were the monsterplant rarity and the breed, harvest and revive flags, removed
-    // in M0. The serializer still writes them, as constants.
+    // in M0 and no longer on the wire. Never reuse them.
 
     [Id(17)]
     public required bool HasSaddle { get; init; }
