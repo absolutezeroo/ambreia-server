@@ -12,14 +12,6 @@ public interface IRoomObject<TSelf, out TLogic, out TContext> : IRoomObject
     new TLogic Logic { get; }
 }
 
-public interface IMutableRoomObject<TSelf, TLogic, TContext> : IRoomObject<TSelf, TLogic, TContext>
-    where TSelf : IRoomObject<TSelf, TLogic, TContext>
-    where TContext : IRoomObjectContext<TSelf, TLogic, TContext>
-    where TLogic : IRoomObjectLogic<TSelf, TLogic, TContext>
-{
-    void SetLogic(TLogic logic);
-}
-
 public interface IRoomObject
 {
     public RoomObjectId ObjectId { get; }

@@ -33,20 +33,3 @@ public enum AuditCategory
     /// </summary>
     PlayerReport,
 }
-
-/// <summary>Severity of an audit record, used for incident triage and retention policy.</summary>
-public enum AuditSeverity
-{
-    Info,
-    Notice,
-    Warning,
-    Critical,
-}
-
-/// <summary>Outcome of the audited action.</summary>
-public enum AuditResult
-{
-    Success,
-    Failed,
-    Denied,
-}

@@ -1,20 +1,5 @@
 namespace Vortex.Primitives.Observability;
 
-/// <summary>A point in an item's lifecycle.</summary>
-public enum ItemEventType
-{
-    Created,
-    CatalogPurchase,
-    Placed,
-    Moved,
-    PickedUp,
-    Traded,
-    OwnerChanged,
-    Deleted,
-    StaffAction,
-    AnomalyFlagged,
-}
-
 /// <summary>
 /// A single lifecycle event for one item. The correlation id and timestamp are stamped by the sink at
 /// record time. Ownership transitions carry both the previous and the new owner.
