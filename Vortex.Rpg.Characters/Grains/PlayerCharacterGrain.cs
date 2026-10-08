@@ -13,16 +13,10 @@ using Vortex.Database.Entities.Rpg;
 using Vortex.Events.Registry;
 using Vortex.Logging.Extensions;
 using Vortex.Primitives.Events;
-using Vortex.Primitives.Events.Rpg;
-using Vortex.Primitives.Networking;
 using Vortex.Primitives.Observability;
-using Vortex.Primitives.Orleans;
 using Vortex.Primitives.Players;
-using Vortex.Primitives.Rooms;
 using Vortex.Primitives.Rpg.Characters;
 using Vortex.Primitives.Rpg.Characters.Grains;
-using Vortex.Primitives.World;
-using Vortex.Protocol.Messages.Outgoing.Rpg.Characters;
 using Vortex.Rpg.Characters.Configuration;
 using Vortex.Rpg.Content;
 using Vortex.Rpg.Content.Definitions;
@@ -33,9 +27,11 @@ namespace Vortex.Rpg.Characters.Grains;
 /// <summary>
 /// The RPG state of one avatar (spec Personnage §7): hydrated from <c>player_characters</c> on
 /// activation, progress written on a timer and on deactivation. Class ids are never written back
-/// from memory: an import's replace rule owns that column once the row exists.
+/// from memory: an import's replace rule owns that column once the row exists. Its parts: the class
+/// (<c>PlayerCharacterGrain.Class.cs</c>), XP and levels (<c>.Progress.cs</c>), the HUD
+/// (<c>.Hud.cs</c>) and the last zone (<c>.Rooms.cs</c>).
 /// </summary>
-internal sealed class PlayerCharacterGrain(
+internal sealed partial class PlayerCharacterGrain(
     IDbContextFactory<VortexDbContext> dbFactory,
     IRpgContent content,
     IEnumerable<IStatSource> sources,
@@ -136,112 +132,6 @@ internal sealed class PlayerCharacterGrain(
         _stats = null;
     }
 
-    public async Task<ChooseClassOutcome> ChooseClassAsync(string classId)
-    {
-        await RefreshIdsAsync();
-
-        if (_character is { } current)
-        {
-            ChooseClassOutcome outcome = await LeaveTheStarterClassAsync(current, classId);
-
-            // Chosen on the character screen of another tab while this character plays: its HUD
-            // would keep the starter's stats until the next zone (spec F3a §5.6).
-            if (outcome == ChooseClassOutcome.Chosen)
-            {
-                await PushStatsAsync();
-            }
-
-            return outcome;
-        }
-
-        if (content.Get<ClassDefinition>(classId) is not { Retired: false } chosen)
-        {
-            return ChooseClassOutcome.UnknownClass;
-        }
-
-        PlayerCharacterEntity created = new()
-        {
-            PlayerEntityId = _playerId.Value,
-            ClassId = chosen.Id,
-            // One specialization per class in V1, given at once (spec Personnage §2.4).
-            SpecializationId = chosen.Specializations[0],
-        };
-
-        await using VortexDbContext db = await dbFactory.CreateDbContextAsync();
-        db.PlayerCharacters.Add(created);
-        await db.SaveChangesAsync();
-
-        _character = created;
-        _stats = null;
-
-        logger.LogInformation(
-            "Character created for player {PlayerId}: {ClassId} ({SpecializationId}).",
-            _playerId.Value,
-            created.ClassId,
-            created.SpecializationId
-        );
-        events
-            .PublishAsync(
-                new CharacterCreatedEvent(_playerId, created.ClassId, created.SpecializationId)
-            )
-            .LogAndForget(logger, "Publishing CharacterCreated for {PlayerId}", _playerId.Value);
-
-        return ChooseClassOutcome.Chosen;
-    }
-
-    /// <summary>
-    /// The one class change there is (owner decision, 2026-10-08): from the starter class « Sans
-    /// classe » to a real class, keeping level and XP. A real class is permanent. The ids are
-    /// written here, at once — the choice is the player's, not a copy from memory.
-    /// </summary>
-    private async Task<ChooseClassOutcome> LeaveTheStarterClassAsync(
-        PlayerCharacterEntity current,
-        string classId
-    )
-    {
-        if (content.Get<ClassDefinition>(current.ClassId) is not { Starter: true })
-        {
-            return ChooseClassOutcome.AlreadyChosen;
-        }
-
-        if (content.Get<ClassDefinition>(classId) is not { Retired: false } chosen)
-        {
-            return ChooseClassOutcome.UnknownClass;
-        }
-
-        if (chosen.Starter)
-        {
-            return ChooseClassOutcome.AlreadyChosen;
-        }
-
-        string oldClass = current.ClassId;
-        string specialization = chosen.Specializations[0];
-
-        await using VortexDbContext db = await dbFactory.CreateDbContextAsync();
-        await db
-            .PlayerCharacters.Where(x => x.PlayerEntityId == current.PlayerEntityId)
-            .ExecuteUpdateAsync(up =>
-                up.SetProperty(x => x.ClassId, chosen.Id)
-                    .SetProperty(x => x.SpecializationId, specialization)
-            );
-
-        current.ClassId = chosen.Id;
-        current.SpecializationId = specialization;
-        _stats = null;
-
-        logger.LogInformation(
-            "Player {PlayerId} left {OldClassId} for {ClassId} at level {Level}.",
-            _playerId.Value,
-            oldClass,
-            chosen.Id,
-            current.Level
-        );
-        Publish(new CharacterClassChangedEvent(_playerId, oldClass, chosen.Id));
-        Publish(new CharacterStatsChangedEvent(_playerId));
-
-        return ChooseClassOutcome.Chosen;
-    }
-
     public async Task<CharacterStatsSnapshot?> GetStatsAsync()
     {
         await RefreshIdsAsync();
@@ -257,224 +147,6 @@ internal sealed class PlayerCharacterGrain(
         }
 
         return _stats;
-    }
-
-    public async Task<XpGrantOutcome> GainXpAsync(int amount, string source)
-    {
-        await RefreshIdsAsync();
-
-        if (_character is not { } c)
-        {
-            return XpGrantOutcome.NoCharacter;
-        }
-
-        if (amount < 1 || amount > _config.MaxXpPerGrant)
-        {
-            return Refuse(amount, source);
-        }
-
-        if (content.Get<ProgressionDefinition>(ProgressionId) is not { } progression)
-        {
-            logger.LogWarning(
-                "XP grant to player {PlayerId} refused: the content has no {ProgressionId}.",
-                _playerId.Value,
-                ProgressionId
-            );
-
-            return XpGrantOutcome.Refused;
-        }
-
-        if (c.Level >= progression.MaxLevel)
-        {
-            return XpGrantOutcome.AtMaxLevel;
-        }
-
-        XpGainingEvent gaining = new(_playerId, source) { Amount = amount };
-
-        if ((await cancellableEvents.PublishCancellableAsync(gaining)).Cancel)
-        {
-            return XpGrantOutcome.Cancelled;
-        }
-
-        // The cap holds after a behaviour changed the amount too: no bonus goes past it.
-        if (gaining.Amount < 1 || gaining.Amount > _config.MaxXpPerGrant)
-        {
-            return Refuse(gaining.Amount, source);
-        }
-
-        int oldLevel = c.Level;
-        c.Xp += gaining.Amount;
-
-        while (c.Level < progression.MaxLevel && c.Xp >= progression.XpToNext[c.Level - 1])
-        {
-            c.Xp -= progression.XpToNext[c.Level - 1];
-            c.Level++;
-
-            logger.LogInformation(
-                "Level up: player {PlayerId}, {ClassId}, level {Level}.",
-                _playerId.Value,
-                c.ClassId,
-                c.Level
-            );
-        }
-
-        if (c.Level >= progression.MaxLevel)
-        {
-            c.Xp = 0;
-        }
-
-        _dirty = true;
-
-        if (c.Level != oldLevel)
-        {
-            // Never lose a level (spec Personnage §7): written now, and announced only then, so a
-            // reward given on LevelUp is never given for a level a crash could take back.
-            _stats = null;
-            await FlushAsync(CancellationToken.None);
-
-            for (int level = oldLevel + 1; level <= c.Level; level++)
-            {
-                Publish(new LevelUpEvent(_playerId, c.ClassId, level - 1, level));
-            }
-
-            Publish(new CharacterStatsChangedEvent(_playerId));
-        }
-
-        Publish(new XpGainedEvent(_playerId, gaining.Amount, source, c.Level, c.Xp));
-
-        RpgCharacterProgressMessageComposer progress = new()
-        {
-            Level = c.Level,
-            Xp = c.Xp,
-            XpToNext = XpToNext(c, progression),
-        };
-
-        await PushProgressAsync(c.Level != oldLevel, progress);
-
-        return XpGrantOutcome.Granted;
-    }
-
-    /// <summary>The stats after a change already written; a failure to read them is logged.</summary>
-    private async Task PushStatsAsync()
-    {
-        try
-        {
-            if (await GetStatsAsync() is { } stats)
-            {
-                await PushAsync(new RpgCharacterStatsMessageComposer { Stats = stats });
-            }
-        }
-        catch (Exception ex)
-        {
-            logger.LogWarning(ex, "Could not read the stats of player {PlayerId}", _playerId.Value);
-        }
-    }
-
-    /// <summary>Progress, after the new stats on a level up. The level is already written: reading
-    /// the stats may fail here, and that must not fail the grant.</summary>
-    private async Task PushProgressAsync(
-        bool levelledUp,
-        RpgCharacterProgressMessageComposer progress
-    )
-    {
-        IComposer[] composers = [progress];
-
-        try
-        {
-            if (levelledUp && await GetStatsAsync() is { } stats)
-            {
-                composers = [new RpgCharacterStatsMessageComposer { Stats = stats }, progress];
-            }
-        }
-        catch (Exception ex)
-        {
-            logger.LogWarning(ex, "Could not read the stats of player {PlayerId}", _playerId.Value);
-        }
-
-        await PushAsync(composers);
-    }
-
-    public async Task PushStateAsync()
-    {
-        if (await GetStatsAsync() is not { } stats || _character is not { } c)
-        {
-            return;
-        }
-
-        ProgressionDefinition? progression = content.Get<ProgressionDefinition>(ProgressionId);
-
-        await PushAsync(
-            new RpgCharacterStateMessageComposer
-            {
-                PlayerId = _playerId.Value,
-                ClassId = c.ClassId,
-                SpecializationId = c.SpecializationId,
-                Level = c.Level,
-                MaxLevel = progression?.MaxLevel ?? c.Level,
-                Xp = c.Xp,
-                XpToNext = XpToNext(c, progression),
-                Stats = stats,
-            }
-        );
-    }
-
-    private static int XpToNext(PlayerCharacterEntity c, ProgressionDefinition? progression) =>
-        progression is null || c.Level >= progression.MaxLevel
-            ? 0
-            : progression.XpToNext[c.Level - 1];
-
-    /// <summary>To the player's socket through its presence; the HUD is a view, so a failure is
-    /// logged and never undoes what was granted.</summary>
-    private async Task PushAsync(params IComposer[] composers)
-    {
-        try
-        {
-            await grainFactory.GetPlayerPresenceGrain(_playerId).SendComposerAsync(composers);
-        }
-        catch (Exception ex)
-        {
-            logger.LogWarning(ex, "Could not push the state of player {PlayerId}", _playerId.Value);
-        }
-    }
-
-    public async Task EnteredRoomAsync(RoomId roomId)
-    {
-        KeepAsLastRoom(roomId);
-
-        await PushStateAsync();
-    }
-
-    private void KeepAsLastRoom(RoomId roomId)
-    {
-        // A dungeon copy is not somewhere to come back to (spec Personnage §9).
-        if (
-            _character is { } c
-            && roomId.Value > 0
-            && !ZoneInstanceIds.IsInstance(roomId)
-            && c.LastRoomId != roomId.Value
-        )
-        {
-            c.LastRoomId = roomId.Value;
-            _dirty = true;
-        }
-    }
-
-    public Task<RoomId?> GetLastRoomAsync() =>
-        Task.FromResult(
-            _character?.LastRoomId is int room && room > 0 ? (RoomId?)new RoomId(room) : null
-        );
-
-    private XpGrantOutcome Refuse(int amount, string source)
-    {
-        logger.LogWarning(
-            "XP grant of {Amount} from {Source} to player {PlayerId} refused: 1 to {Max} per grant.",
-            amount,
-            source,
-            _playerId.Value,
-            _config.MaxXpPerGrant
-        );
-
-        return XpGrantOutcome.Refused;
     }
 
     /// <summary>The "-ed" events, off the critical path (spec Personnage §11).</summary>
