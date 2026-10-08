@@ -87,36 +87,14 @@ public sealed class EventRegistry(
         IErrorGroupingSink errorGroupingSink,
         IVortexContextAccessor contextAccessor,
         ILogger logger
-    )
-    {
-        IVortexContext? context = contextAccessor.Current;
-
-        try
-        {
-            errorGroupingSink.Record(
-                ex,
-                source,
-                env.GetType().Name,
-                context?.PlayerId,
-                context?.RoomId,
-                context?.CorrelationId.Value,
-                context?.SessionKey
-            );
-
-            logger.LogWarning(
-                ex,
-                "Event registry pipeline failure: {Source}/{Operation}",
-                source,
-                env.GetType().Name
-            );
-        }
-        catch (Exception reportEx)
-        {
-            logger.LogError(
-                reportEx,
-                "Event registry failed to report a pipeline error for {Operation}",
-                env.GetType().Name
-            );
-        }
-    }
+    ) =>
+        EnvelopeErrorReporter.Report(
+            "Event registry",
+            ex,
+            source,
+            env,
+            errorGroupingSink,
+            contextAccessor,
+            logger
+        );
 }

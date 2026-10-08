@@ -116,36 +116,14 @@ public sealed class MessageRegistry(
         IErrorGroupingSink errorGroupingSink,
         IVortexContextAccessor contextAccessor,
         ILogger logger
-    )
-    {
-        IVortexContext? context = contextAccessor.Current;
-
-        try
-        {
-            errorGroupingSink.Record(
-                ex,
-                source,
-                env.GetType().Name,
-                context?.PlayerId,
-                context?.RoomId,
-                context?.CorrelationId.Value,
-                context?.SessionKey
-            );
-
-            logger.LogWarning(
-                ex,
-                "Message registry pipeline failure: {Source}/{Operation}",
-                source,
-                env.GetType().Name
-            );
-        }
-        catch (Exception reportEx)
-        {
-            logger.LogError(
-                reportEx,
-                "Message registry failed to report a pipeline error for {Operation}",
-                env.GetType().Name
-            );
-        }
-    }
+    ) =>
+        EnvelopeErrorReporter.Report(
+            "Message registry",
+            ex,
+            source,
+            env,
+            errorGroupingSink,
+            contextAccessor,
+            logger
+        );
 }
