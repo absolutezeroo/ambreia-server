@@ -74,6 +74,13 @@ Path-scoped rules load with the files they cover; read them before editing those
 
 ## Gotchas
 
+- The content registry re-reads every stored document strictly at start, and invalid stored
+  content refuses the start. So a field **added** to a `Vortex.Rpg/Content/Definitions` record is
+  optional with a default, and a field **removed** stays declared (ignored) until a pack without it
+  has been imported. Locked out anyway: `scripts/sql/rpg-content-reset.sql`, then push again.
+- A system that stores content ids in a grain-owned row (a character's class) never writes the id
+  back from memory: an import's `replace` rule rewrites the row (`IContentReferences`), and the
+  grain re-reads the id when `IRpgContent.Version` changes.
 - `csharpier` reformats a `.cs` after each edit (Claude hook) and the gate checks the whole repo: a
   file edited by a script must be formatted too.
 - A web API `[FromServices]` or `UseHostService<T>` type that the host no longer registers breaks
