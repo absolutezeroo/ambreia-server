@@ -7,6 +7,7 @@ using Vortex.Primitives.Furniture.Snapshots;
 using Vortex.Primitives.World;
 using Vortex.Primitives.World.Layers;
 using Vortex.Tests.Support;
+using Vortex.Tests.Support.World;
 using Vortex.World;
 using Xunit;
 

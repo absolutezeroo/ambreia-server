@@ -1,15 +1,8 @@
 using System;
 using Microsoft.Extensions.Options;
-using Vortex.Primitives.Authentication;
 using Vortex.WebApi.Configuration;
 
 namespace Vortex.WebApi.Session;
-
-/// <summary>
-/// What a web session remembers besides the account it belongs to.
-/// </summary>
-/// <param name="SelectedPlayer">The avatar the visitor picked, or none yet.</param>
-public readonly record struct WebSessionState(int? SelectedPlayer);
 
 /// <summary>
 /// Authenticated web sessions, keyed by the cookie id, remembering which avatar the visitor picked.

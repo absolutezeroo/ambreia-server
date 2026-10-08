@@ -3,7 +3,7 @@ using Vortex.Primitives.World;
 using Vortex.Primitives.World.Layers;
 using Vortex.Primitives.World.Rules;
 
-namespace Vortex.Tests.Support;
+namespace Vortex.Tests.Support.World;
 
 /// <summary>Small valid zone documents for tests: a 6 × 6 open floor, door at (0, 2).</summary>
 public static class ZoneSamples

@@ -5,6 +5,7 @@ using Vortex.Primitives.Players;
 using Vortex.Protocol.Messages.Outgoing.Room.Session;
 using Vortex.Rooms.Tests.Support;
 using Vortex.Tests.Support;
+using Vortex.Tests.Support.World;
 using Xunit;
 
 namespace Vortex.Rooms.Tests.Zones;

@@ -21,6 +21,7 @@ using Vortex.Primitives.World.Grains;
 using Vortex.Protocol.Messages.Outgoing.Handshake;
 using Vortex.Protocol.Messages.Outgoing.Room.Session;
 using Vortex.Tests.Support;
+using Vortex.Tests.Support.World;
 using Xunit;
 
 namespace Vortex.Players.Tests.Presence;

@@ -46,6 +46,7 @@ using Vortex.Rooms.Grains.Systems;
 using Vortex.Rooms.Object.Avatars.Player;
 using Vortex.Rooms.Providers;
 using Vortex.Tests.Support;
+using Vortex.Tests.Support.World;
 
 namespace Vortex.Rooms.Tests.Support;
 

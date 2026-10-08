@@ -13,21 +13,6 @@ using Vortex.Database.Configuration;
 
 namespace Vortex.Database.Backup;
 
-/// <summary>One dump on disk.</summary>
-public sealed record DatabaseBackup(string FileName, long SizeBytes, DateTime CreatedUtc);
-
-/// <summary>Outcome of asking for one.</summary>
-public sealed record DatabaseBackupResult(bool Success, string Message, string? FileName = null);
-
-public interface IDatabaseBackupService
-{
-    bool IsConfigured { get; }
-
-    Task<DatabaseBackupResult> CreateAsync(string trigger, CancellationToken ct);
-
-    IReadOnlyList<DatabaseBackup> List();
-}
-
 /// <summary>
 /// Runs <c>mysqldump</c> and prunes what is older than the retention window.
 ///

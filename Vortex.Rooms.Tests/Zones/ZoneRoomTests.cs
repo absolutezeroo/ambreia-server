@@ -8,6 +8,7 @@ using Vortex.Primitives.World;
 using Vortex.Primitives.World.Layers;
 using Vortex.Rooms.Tests.Support;
 using Vortex.Tests.Support;
+using Vortex.Tests.Support.World;
 using Xunit;
 
 namespace Vortex.Rooms.Tests.Zones;

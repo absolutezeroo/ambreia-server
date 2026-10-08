@@ -17,6 +17,7 @@ using Vortex.Rpg.Content.Definitions;
 using Vortex.Rpg.Content.Kinds;
 using Vortex.Rpg.Content.Registry;
 using Vortex.Tests.Support;
+using Vortex.Tests.Support.World;
 using Xunit;
 
 namespace Vortex.Database.Tests.Rpg;

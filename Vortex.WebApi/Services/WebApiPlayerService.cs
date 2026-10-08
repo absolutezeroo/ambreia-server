@@ -14,7 +14,6 @@ using Vortex.Primitives.Players;
 using Vortex.Primitives.Players.Enums;
 using Vortex.Primitives.Rooms.Enums;
 using Vortex.WebApi.Configuration;
-using Vortex.WebApi.Http;
 
 namespace Vortex.WebApi.Services;
 

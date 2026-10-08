@@ -9,12 +9,6 @@ using Vortex.Primitives.Plugins.Exports;
 
 namespace Vortex.Plugins.TestPlugin;
 
-/// <summary>Something for the plugin to export, so export restoration can be observed.</summary>
-public interface ITestGreeter
-{
-    string Greet();
-}
-
 /// <summary>
 /// The one <see cref="IVortexPlugin" /> in this assembly. It fails at whichever activation step
 /// <see cref="FailureSwitch.Current" /> names, and traces the steps it reaches so the tests can
@@ -115,51 +109,4 @@ public sealed class TestPlugin : IVortexPlugin
     {
         public string Greet() => "from-plugin";
     }
-}
-
-/// <summary>A singleton whose disposal proves the plugin's service provider was disposed.</summary>
-public sealed class TrackedResource : IDisposable
-{
-    public void Dispose() => FailureSwitch.Trace("resource-dispose");
-}
-
-/// <summary>Traces its own start/stop so rollback ordering is observable.</summary>
-public sealed class TrackedHostedService(string name, bool failOnStart) : IHostedService
-{
-    public Task StartAsync(CancellationToken cancellationToken)
-    {
-        if (failOnStart)
-        {
-            throw new InvalidOperationException($"Hosted service '{name}' failed on purpose.");
-        }
-
-        FailureSwitch.Trace($"start-{name}");
-
-        return Task.CompletedTask;
-    }
-
-    public Task StopAsync(CancellationToken cancellationToken)
-    {
-        FailureSwitch.Trace($"stop-{name}");
-
-        return Task.CompletedTask;
-    }
-}
-
-/// <summary>Runs before any hosted service, so a migration failure aborts the activation early.</summary>
-public sealed class TestDbModule : IPluginDbModule
-{
-    public Task MigrateAsync(IServiceProvider sp, CancellationToken ct)
-    {
-        FailureSwitch.Trace("migrate");
-
-        if (FailureSwitch.Current == FailurePoint.Migration)
-        {
-            throw new InvalidOperationException("Migration failed on purpose.");
-        }
-
-        return Task.CompletedTask;
-    }
-
-    public Task UninstallAsync(IServiceProvider sp, CancellationToken ct) => Task.CompletedTask;
 }

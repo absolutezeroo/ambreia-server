@@ -22,6 +22,7 @@ using Vortex.Rooms.Grains;
 using Vortex.Rooms.Providers;
 using Vortex.Rooms.Tests.Support;
 using Vortex.Tests.Support;
+using Vortex.Tests.Support.World;
 using Xunit;
 using static Vortex.Rooms.Tests.Zones.ZoneVisits;
 

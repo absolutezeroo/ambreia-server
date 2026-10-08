@@ -7,6 +7,7 @@ using Vortex.Primitives.Rooms.Enums;
 using Vortex.Primitives.Rooms.Object.Logic.Avatars;
 using Vortex.Rooms.Tests.Support;
 using Vortex.Tests.Support;
+using Vortex.Tests.Support.World;
 using Xunit;
 
 namespace Vortex.Rooms.Tests.Zones;

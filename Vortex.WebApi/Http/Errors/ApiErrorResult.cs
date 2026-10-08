@@ -5,8 +5,9 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Metadata;
+using Vortex.WebApi.Http.Responses;
 
-namespace Vortex.WebApi.Http;
+namespace Vortex.WebApi.Http.Errors;
 
 /// <summary>
 /// A refusal that carries <see cref="ApiErrorResponse"/> at a status ASP.NET Core has no typed
@@ -64,43 +65,4 @@ public abstract class ApiErrorResult : IResult, IStatusCodeHttpResult
             )
         );
     }
-}
-
-/// <summary>401 — no session, or a bad password.</summary>
-public sealed class UnauthorizedError(string errorCode)
-    : ApiErrorResult(errorCode),
-        IEndpointMetadataProvider
-{
-    public override int StatusCode => StatusCodes.Status401Unauthorized;
-
-    public static void PopulateMetadata(MethodInfo method, EndpointBuilder builder) =>
-        Declare(builder, StatusCodes.Status401Unauthorized);
-}
-
-/// <summary>403 — a session that is real but is not allowed this.</summary>
-public sealed class ForbiddenError(string errorCode)
-    : ApiErrorResult(errorCode),
-        IEndpointMetadataProvider
-{
-    public override int StatusCode => StatusCodes.Status403Forbidden;
-
-    public static void PopulateMetadata(MethodInfo method, EndpointBuilder builder) =>
-        Declare(builder, StatusCodes.Status403Forbidden);
-}
-
-/// <summary>
-/// The metadata shape the API explorer reads. Declared here because the framework's own
-/// implementation is internal.
-/// </summary>
-internal sealed class ProducesResponseTypeMetadata(
-    int statusCode,
-    Type type,
-    IEnumerable<string> contentTypes
-) : IProducesResponseTypeMetadata
-{
-    public int StatusCode { get; } = statusCode;
-
-    public Type? Type { get; } = type;
-
-    public IEnumerable<string> ContentTypes { get; } = contentTypes;
 }

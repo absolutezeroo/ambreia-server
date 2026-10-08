@@ -3,7 +3,7 @@ using Vortex.Primitives.Furniture.Snapshots;
 using Vortex.Primitives.Furniture.StuffData;
 using Vortex.Primitives.Rooms.Enums;
 
-namespace Vortex.Tests.Support;
+namespace Vortex.Tests.Support.World;
 
 /// <summary>Furniture definitions with every required member at a neutral value.</summary>
 public static class TestDefinitions

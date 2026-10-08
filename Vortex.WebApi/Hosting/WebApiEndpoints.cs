@@ -19,7 +19,9 @@ using Vortex.Primitives.Observability;
 using Vortex.Primitives.Orleans;
 using Vortex.Primitives.Players;
 using Vortex.Primitives.Rpg.Content;
-using Vortex.WebApi.Http;
+using Vortex.WebApi.Http.Errors;
+using Vortex.WebApi.Http.Requests;
+using Vortex.WebApi.Http.Responses;
 using Vortex.WebApi.Services;
 using Vortex.WebApi.Session;
 

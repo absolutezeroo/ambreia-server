@@ -4,9 +4,6 @@ using System.Threading.Tasks;
 
 namespace Vortex.Tests.Support;
 
-/// <summary>A single intercepted call: the method that was invoked and the arguments it got.</summary>
-public sealed record ProxyCall(MethodInfo Method, object?[]? Args);
-
 /// <summary>
 /// Interface stub for the wide grain interfaces. Hand-writing a fake for something like
 /// <c>IPlayerGrain</c> means thirty members of which a test cares about two, so the handler answers

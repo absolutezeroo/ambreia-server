@@ -32,24 +32,3 @@ public sealed class PlayerFigureChangedAuditHandler(IAuditSink audit)
         return ValueTask.CompletedTask;
     }
 }
-
-public sealed class PlayerMottoChangedAuditHandler(IAuditSink audit)
-    : IEventHandler<PlayerMottoChangedEvent>
-{
-    public ValueTask HandleAsync(PlayerMottoChangedEvent e, EventContext ctx, CancellationToken ct)
-    {
-        audit.Emit(
-            new AuditEvent
-            {
-                Category = AuditCategory.Social,
-                Action = "profile.motto_changed",
-                Severity = AuditSeverity.Info,
-                Result = AuditResult.Success,
-                ActorPlayerId = e.PlayerId,
-                Data = JsonSerializer.Serialize(new { motto = e.Motto }),
-            }
-        );
-
-        return ValueTask.CompletedTask;
-    }
-}

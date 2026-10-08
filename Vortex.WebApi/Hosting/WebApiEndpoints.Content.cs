@@ -5,7 +5,9 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Vortex.Primitives.Permissions;
 using Vortex.Primitives.Rpg.Content;
-using Vortex.WebApi.Http;
+using Vortex.WebApi.Http.Errors;
+using Vortex.WebApi.Http.Requests;
+using Vortex.WebApi.Http.Responses;
 using Vortex.WebApi.Session;
 
 namespace Vortex.WebApi.Hosting;

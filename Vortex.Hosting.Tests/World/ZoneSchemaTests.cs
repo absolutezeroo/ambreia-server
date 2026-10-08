@@ -8,6 +8,7 @@ using FluentAssertions;
 using Vortex.Hosting.Tests.Architecture;
 using Vortex.Primitives.World;
 using Vortex.Tests.Support;
+using Vortex.Tests.Support.World;
 using Xunit;
 
 namespace Vortex.Hosting.Tests.World;

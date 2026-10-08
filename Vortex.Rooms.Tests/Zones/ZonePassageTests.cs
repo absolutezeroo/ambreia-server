@@ -9,6 +9,7 @@ using Vortex.Protocol.Messages.Outgoing.Notifications;
 using Vortex.Protocol.Messages.Outgoing.Room.Session;
 using Vortex.Rooms.Tests.Support;
 using Vortex.Tests.Support;
+using Vortex.Tests.Support.World;
 using Xunit;
 using static Vortex.Rooms.Tests.Zones.ZoneVisits;
 

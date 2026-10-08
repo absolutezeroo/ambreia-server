@@ -11,6 +11,7 @@ using Vortex.Primitives.World.Layers;
 using Vortex.Rooms.Grains.Zones.Runtime;
 using Vortex.Rooms.Tests.Support;
 using Vortex.Tests.Support;
+using Vortex.Tests.Support.World;
 using Xunit;
 
 namespace Vortex.Rooms.Tests.Zones;

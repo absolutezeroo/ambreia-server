@@ -12,7 +12,7 @@ using Vortex.Primitives.Authentication;
 using Vortex.Primitives.Players;
 using Vortex.WebApi.Configuration;
 using Vortex.WebApi.Hosting;
-using Vortex.WebApi.Http;
+using Vortex.WebApi.Http.Requests;
 using Vortex.WebApi.Services;
 using Vortex.WebApi.Session;
 using Xunit;

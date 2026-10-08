@@ -4,6 +4,7 @@ using Vortex.Primitives.World.Layers;
 using Vortex.Rooms.Grains.Zones.Compilation;
 using Vortex.Rooms.Grains.Zones.Runtime;
 using Vortex.Tests.Support;
+using Vortex.Tests.Support.World;
 using Xunit;
 using static Vortex.Rooms.Tests.Zones.ZoneVisits;
 

@@ -11,37 +11,7 @@ using Vortex.Primitives.World;
 
 namespace Vortex.Observability.Events;
 
-/// <summary>
-/// Persists the structured room-visit history: who entered which room and when they left (a real
-/// append-only log, not something to reconstruct by parsing the generic <see cref="Vortex.Primitives.Observability.AuditEvent"/>
-/// JSON blob that <see cref="SessionLifecycleAuditHandlers"/> also writes from these same events).
-/// </summary>
-public sealed class RoomVisitLogEnteredHandler(IDbContextFactory<VortexDbContext> dbCtxFactory)
-    : IEventHandler<PlayerEnteredRoomEvent>
-{
-    public async ValueTask HandleAsync(
-        PlayerEnteredRoomEvent e,
-        EventContext ctx,
-        CancellationToken ct
-    )
-    {
-        await using VortexDbContext dbCtx = await dbCtxFactory
-            .CreateDbContextAsync(ct)
-            .ConfigureAwait(false);
-
-        dbCtx.RoomEntryLogs.Add(
-            new RoomEntryLogEntity
-            {
-                // A dungeon copy has no row: its visits are its template's.
-                RoomEntityId = ZoneInstanceIds.TemplateOf(new RoomId(e.RoomId)).Value,
-                PlayerEntityId = e.PlayerId,
-            }
-        );
-
-        await dbCtx.SaveChangesAsync(ct).ConfigureAwait(false);
-    }
-}
-
+/// <summary>Closes the visit <see cref="RoomVisitLogEnteredHandler"/> opened.</summary>
 public sealed class RoomVisitLogLeftHandler(IDbContextFactory<VortexDbContext> dbCtxFactory)
     : IEventHandler<PlayerLeftRoomEvent>
 {

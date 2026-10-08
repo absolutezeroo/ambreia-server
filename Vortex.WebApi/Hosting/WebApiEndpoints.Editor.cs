@@ -17,7 +17,9 @@ using Vortex.Primitives.Players;
 using Vortex.Primitives.Rooms;
 using Vortex.Primitives.World;
 using Vortex.Primitives.World.Editing;
-using Vortex.WebApi.Http;
+using Vortex.WebApi.Http.Errors;
+using Vortex.WebApi.Http.Requests;
+using Vortex.WebApi.Http.Responses;
 using Vortex.WebApi.Services;
 using Vortex.WebApi.Session;
 

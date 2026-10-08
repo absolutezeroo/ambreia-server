@@ -1,4 +1,4 @@
-namespace Vortex.WebApi.Http;
+namespace Vortex.WebApi.Http.Requests;
 
 /// <summary>Body of <c>POST /api/editor/zones</c>; the key's shape is checked by the service.</summary>
 public sealed record CreateZoneRequest(string? Key, string? Name, string? FromTemplate)
