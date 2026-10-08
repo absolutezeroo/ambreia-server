@@ -1,3 +1,4 @@
+using System;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
@@ -74,7 +75,11 @@ public sealed class WebApiAuthService(
                 {
                     AccountCreationOutcome.PasswordTooShort => "pocket.auth.password_too_short",
                     AccountCreationOutcome.PasswordTooLong => "pocket.auth.password_too_long",
-                    _ => "pocket.auth.email_already_taken",
+                    AccountCreationOutcome.EmailTaken => "pocket.auth.email_already_taken",
+                    // A new refusal must get its own code, not pass for another one.
+                    _ => throw new InvalidOperationException(
+                        $"No site code for the registration outcome {creation.Outcome}."
+                    ),
                 }
             );
         }

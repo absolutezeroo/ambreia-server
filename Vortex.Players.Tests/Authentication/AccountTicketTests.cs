@@ -109,6 +109,38 @@ public sealed class AccountTicketTests
         row.IpAddress.Should().Be("203.0.113.7");
     }
 
+    /// <summary>One ticket per player too, and a missing address is recorded as the loopback.</summary>
+    [Fact]
+    public async Task IssuingAPlayerTicket_ReplacesTheLastOne()
+    {
+        int player;
+
+        await using (VortexDbContext seed = new(_options))
+        {
+            PlayerEntity entity = new()
+            {
+                Name = "bob",
+                Figure = "hd-180-1",
+                Gender = AvatarGenderType.Male,
+                PlayerStatus = PlayerStatusType.Offline,
+                PlayerPerks = PlayerPerkFlags.None,
+            };
+            seed.Players.Add(entity);
+            await seed.SaveChangesAsync();
+            player = entity.Id;
+        }
+
+        await Service().IssuePlayerTicketAsync(player, "203.0.113.7");
+        string? second = await Service().IssuePlayerTicketAsync(player, " ");
+
+        await using VortexDbContext db = new(_options);
+        SecurityTicketEntity row = await db.SecurityTickets.SingleAsync();
+
+        row.Ticket.Should().Be(second).And.MatchRegex("^[0-9A-F]{64}$");
+        row.IpAddress.Should().Be("127.0.0.1");
+        row.IsLocked.Should().BeFalse();
+    }
+
     [Fact]
     public async Task APlayerTicket_IsNotIssuedForNoOne() =>
         (await Service().IssuePlayerTicketAsync(404, null)).Should().BeNull();
