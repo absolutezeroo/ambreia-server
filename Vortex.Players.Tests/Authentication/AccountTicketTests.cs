@@ -145,7 +145,42 @@ public sealed class AccountTicketTests
     public async Task APlayerTicket_IsNotIssuedForNoOne() =>
         (await Service().IssuePlayerTicketAsync(404, null)).Should().BeNull();
 
-    private AuthenticationService Service() =>
+    /// <summary>Single-use applies to the character screen's ticket as to a player's: an observed
+    /// ticket cannot be replayed.</summary>
+    [Fact]
+    public async Task ASingleUseAccountTicket_OpensTheScreenOnce()
+    {
+        int account = await SeedAccountAsync();
+        await SeedAccountTicketAsync(account, "once", DateTime.UtcNow, null);
+
+        (await Service(singleUse: true).ResolveTicketAsync("once"))
+            .Should()
+            .Be(new TicketOwner(0, account));
+        (await Service(singleUse: true).ResolveTicketAsync("once")).Should().Be(TicketOwner.None);
+    }
+
+    /// <summary>Not single-use: each use slides the expiry forward (the client re-reads its ticket
+    /// from the page address on a reload).</summary>
+    [Fact]
+    public async Task AnAccountTicket_SlidesOnUse()
+    {
+        int account = await SeedAccountAsync();
+        await SeedAccountTicketAsync(
+            account,
+            "slide",
+            DateTime.UtcNow,
+            DateTime.UtcNow.AddSeconds(5)
+        );
+
+        await Service().ResolveTicketAsync("slide");
+
+        await using VortexDbContext db = new(_options);
+        (await db.AccountTickets.SingleAsync())
+            .ExpiresAt.Should()
+            .BeAfter(DateTime.UtcNow.AddSeconds(20), "slid by one 30 s TTL");
+    }
+
+    private AuthenticationService Service(bool singleUse = false) =>
         new(
             new OptionsDbContextFactory(_options),
             FakeProxy.Create<IEventPublisher>(call =>
@@ -155,7 +190,12 @@ public sealed class AccountTicketTests
                 return Task.CompletedTask;
             }),
             Options.Create(
-                new AuthenticationConfig { IpHashSecret = "test-secret", TicketTtlSeconds = 30 }
+                new AuthenticationConfig
+                {
+                    IpHashSecret = "test-secret",
+                    TicketTtlSeconds = 30,
+                    TicketSingleUse = singleUse,
+                }
             )
         );
 

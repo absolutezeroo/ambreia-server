@@ -42,6 +42,7 @@ public sealed class WorldEntryBurstTests
     private int? _lastRoomId;
     private bool _lastRoomPublished = true;
     private bool _characterFails;
+    private bool _pushFails;
 
     [Fact]
     public async Task TheBurst_IsOnlyTheCoreComposers()
@@ -135,6 +136,28 @@ public sealed class WorldEntryBurstTests
         _calls.Should().Equal("push");
     }
 
+    /// <summary>No zone to land in, no HUD: the player stays on the hotel view.</summary>
+    [Fact]
+    public async Task WithoutAStartZone_NoStateIsPushed()
+    {
+        _startRoomId = 0;
+
+        await Build().EnterWorldAsync(CancellationToken.None);
+
+        _calls.Should().BeEmpty();
+    }
+
+    /// <summary>The HUD is a view: a push that fails is logged, the sign-in has already happened.</summary>
+    [Fact]
+    public async Task AFailingPush_DoesNotFailTheSignIn()
+    {
+        _pushFails = true;
+
+        Func<Task> enter = () => Build().EnterWorldAsync(CancellationToken.None);
+
+        await enter.Should().NotThrowAsync();
+    }
+
     private static RoomId Forward(IComposer[] burst) =>
         burst.OfType<RoomForwardMessageComposer>().Single().RoomId;
 
@@ -205,6 +228,11 @@ public sealed class WorldEntryBurstTests
 
     private Task PushedAsync()
     {
+        if (_pushFails)
+        {
+            return Task.FromException(new InvalidOperationException("character grain down"));
+        }
+
         _calls.Add("push");
 
         return Task.CompletedTask;
