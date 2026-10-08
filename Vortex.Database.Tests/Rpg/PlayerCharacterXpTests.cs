@@ -37,6 +37,8 @@ public sealed class PlayerCharacterXpTests : IAsyncLifetime
     private DbContextOptions<VortexDbContext> _options = null!;
     private bool _cancel;
     private Action<XpGainingEvent>? _modify;
+    private bool _withProgression = true;
+    private readonly List<int> _levelStoredAtLevelUp = [];
 
     public async Task InitializeAsync() => (_conn, _options) = await SqliteTestDb.OpenAsync();
 
@@ -128,6 +130,40 @@ public sealed class PlayerCharacterXpTests : IAsyncLifetime
     }
 
     [Fact]
+    public async Task AModifiedAmountOverTheCap_IsRefused()
+    {
+        PlayerCharacterGrain grain = await WarriorAsync(level: 1);
+        _modify = e => e.Amount = int.MaxValue;
+
+        (await grain.GainXpAsync(50, "test")).Should().Be(XpGrantOutcome.Refused);
+
+        (await grain.GetSummaryAsync())!.Xp.Should().Be(0);
+    }
+
+    [Fact]
+    public async Task ALevelUp_IsPublishedOnlyOnceWritten()
+    {
+        PlayerCharacterGrain grain = await WarriorAsync(level: 1);
+
+        await grain.GainXpAsync(250, "test");
+
+        _levelStoredAtLevelUp.Should().Equal(3, 3);
+    }
+
+    [Fact]
+    public async Task WithoutTheProgression_AGrantIsRefusedAndLogged()
+    {
+        _withProgression = false;
+        PlayerCharacterGrain grain = await WarriorAsync(level: 1);
+
+        (await grain.GainXpAsync(50, "test")).Should().Be(XpGrantOutcome.Refused);
+
+        _logger
+            .Entries.Should()
+            .Contain(e => e.Level == LogLevel.Warning && e.Message.Contains("progression.default"));
+    }
+
+    [Fact]
     public async Task WithoutACharacter_NothingHappens()
     {
         PlayerCharacterGrain grain = await ActivateAsync();
@@ -175,11 +211,16 @@ public sealed class PlayerCharacterXpTests : IAsyncLifetime
                 Player,
                 new OptionsDbContextFactory(_options),
                 CharacterContent.Registry(
-                    new Dictionary<string, ContentDefinition>
-                    {
-                        ["class.warrior"] = CharacterContent.Warrior,
-                        ["progression.default"] = CharacterContent.Progression,
-                    },
+                    _withProgression
+                        ? new Dictionary<string, ContentDefinition>
+                        {
+                            ["class.warrior"] = CharacterContent.Warrior,
+                            ["progression.default"] = CharacterContent.Progression,
+                        }
+                        : new Dictionary<string, ContentDefinition>
+                        {
+                            ["class.warrior"] = CharacterContent.Warrior,
+                        },
                     () => 1
                 ),
                 new IStatSource[] { new ClassLevelStatSource() },
@@ -190,7 +231,19 @@ public sealed class PlayerCharacterXpTests : IAsyncLifetime
                         _events.Add((IEvent)call.Args![0]!);
                     }
 
-                    return null;
+                    // What the table held when a LevelUp went out: consumers must never see a
+                    // level that a crash could still take back.
+                    if (call.Args![0] is LevelUpEvent)
+                    {
+                        using VortexDbContext db = new(_options);
+                        _levelStoredAtLevelUp.Add(
+                            db.PlayerCharacters.AsNoTracking()
+                                .Single(c => c.PlayerEntityId == Player)
+                                .Level
+                        );
+                    }
+
+                    return Task.CompletedTask;
                 }),
                 FakeProxy.Create<ICancellableEventPublisher>(call =>
                 {

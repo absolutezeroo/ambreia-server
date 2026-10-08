@@ -200,10 +200,18 @@ internal sealed class PlayerCharacterGrain(
             return Refuse(amount, source);
         }
 
-        ProgressionDefinition? progression = content.Get<ProgressionDefinition>(ProgressionId);
-        int maxLevel = progression?.MaxLevel ?? 1;
+        if (content.Get<ProgressionDefinition>(ProgressionId) is not { } progression)
+        {
+            logger.LogWarning(
+                "XP grant to player {PlayerId} refused: the content has no {ProgressionId}.",
+                _playerId.Value,
+                ProgressionId
+            );
 
-        if (c.Level >= maxLevel)
+            return XpGrantOutcome.Refused;
+        }
+
+        if (c.Level >= progression.MaxLevel)
         {
             return XpGrantOutcome.AtMaxLevel;
         }
@@ -215,7 +223,8 @@ internal sealed class PlayerCharacterGrain(
             return XpGrantOutcome.Cancelled;
         }
 
-        if (gaining.Amount < 1)
+        // The cap holds after a behaviour changed the amount too: no bonus goes past it.
+        if (gaining.Amount < 1 || gaining.Amount > _config.MaxXpPerGrant)
         {
             return Refuse(gaining.Amount, source);
         }
@@ -223,7 +232,7 @@ internal sealed class PlayerCharacterGrain(
         int oldLevel = c.Level;
         c.Xp += gaining.Amount;
 
-        while (c.Level < maxLevel && c.Xp >= progression!.XpToNext[c.Level - 1])
+        while (c.Level < progression.MaxLevel && c.Xp >= progression.XpToNext[c.Level - 1])
         {
             c.Xp -= progression.XpToNext[c.Level - 1];
             c.Level++;
@@ -234,10 +243,9 @@ internal sealed class PlayerCharacterGrain(
                 c.ClassId,
                 c.Level
             );
-            Publish(new LevelUpEvent(_playerId, c.ClassId, c.Level - 1, c.Level));
         }
 
-        if (c.Level >= maxLevel)
+        if (c.Level >= progression.MaxLevel)
         {
             c.Xp = 0;
         }
@@ -246,9 +254,16 @@ internal sealed class PlayerCharacterGrain(
 
         if (c.Level != oldLevel)
         {
-            // Never lose a level (spec Personnage §7): written now, not at the next tick.
+            // Never lose a level (spec Personnage §7): written now, and announced only then, so a
+            // reward given on LevelUp is never given for a level a crash could take back.
             _stats = null;
             await FlushAsync(CancellationToken.None);
+
+            for (int level = oldLevel + 1; level <= c.Level; level++)
+            {
+                Publish(new LevelUpEvent(_playerId, c.ClassId, level - 1, level));
+            }
+
             Publish(new CharacterStatsChangedEvent(_playerId));
         }
 
