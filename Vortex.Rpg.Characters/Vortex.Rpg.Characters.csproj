@@ -1,0 +1,19 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+  </PropertyGroup>
+  <ItemGroup>
+    <InternalsVisibleTo Include="Vortex.Database.Tests" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.Hosting" />
+    <PackageReference Include="Microsoft.Orleans.Sdk" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Vortex.Database\Vortex.Database.csproj" />
+    <ProjectReference Include="..\Vortex.Events\Vortex.Events.csproj" />
+    <ProjectReference Include="..\Vortex.Logging\Vortex.Logging.csproj" />
+    <ProjectReference Include="..\Vortex.Primitives\Vortex.Primitives.csproj" />
+    <ProjectReference Include="..\Vortex.Rpg\Vortex.Rpg.csproj" />
+  </ItemGroup>
+</Project>

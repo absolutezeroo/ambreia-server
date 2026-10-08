@@ -3,6 +3,7 @@ using Vortex.Primitives.Players;
 using Vortex.Primitives.Players.Grains;
 using Vortex.Primitives.Rooms;
 using Vortex.Primitives.Rooms.Grains;
+using Vortex.Primitives.Rpg.Characters.Grains;
 using Vortex.Primitives.Server.Grains;
 using Vortex.Primitives.World.Grains;
 
@@ -55,6 +56,11 @@ public static class GrainFactoryExtensions
 
     public static IPlayerGrain GetPlayerGrain(this IGrainFactory factory, PlayerId playerId) =>
         factory.GetGrain<IPlayerGrain>((long)playerId.Value);
+
+    public static IPlayerCharacterGrain GetPlayerCharacterGrain(
+        this IGrainFactory factory,
+        PlayerId playerId
+    ) => factory.GetGrain<IPlayerCharacterGrain>((long)playerId.Value);
 
     public static IPlayerPresenceGrain GetPlayerPresenceGrain(
         this IGrainFactory factory,
