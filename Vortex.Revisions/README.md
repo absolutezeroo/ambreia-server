@@ -48,8 +48,13 @@ drawn at random for each deploy.
    stay on 4000. Commit the file.
 2. The file is embedded in `Vortex.Revisions.dll`. Outside Development (or with
    `Vortex:Revisions:Release=true`) the server loads the newest one, and refuses to start if it does
-   not cover every message the dev revision maps.
-3. Build the client against the same file (`AMBREIA_RELEASE=<path> pnpm build` in vortex-rpg-client)
-   and deploy both. A client on another revision is sent DisconnectReason 122 and offered a reload.
+   not cover every message the dev revision maps. **A container that runs in Development** (as
+   `docker-compose.yml` does) stays on `AMBREIA-DEV` unless `VORTEX__Vortex__Revisions__Release=true`
+   is set — and then refuses every production client.
+3. Build the client against the same file and deploy both: vortex-rpg-client `DEPLOYMENT.md` →
+   "Releasing a protocol revision". A client on another revision is sent DisconnectReason 122 and
+   offered the update.
+
+The tables are as secret as this repository: it must stay private.
 
 Spec: `vortex-rpg-client/docs/superpowers/specs/2026-10-08-random-header-revisions-design.md`.
