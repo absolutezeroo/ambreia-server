@@ -31,6 +31,11 @@ internal static class MessageEvent
 
     #region Vortex-specific (no AS3 backing)
 
+    public const int RpgCharacterListRequestMessageEvent = 9000; // RPG (spec §3.7)
+    public const int RpgCharacterCreateMessageEvent = 9001; // RPG (spec §3.7)
+    public const int RpgCharacterChooseClassMessageEvent = 9002; // RPG (spec §3.7)
+    public const int RpgEnterWorldMessageEvent = 9003; // RPG (spec §3.7)
+
     #endregion
 }
 
@@ -103,6 +108,13 @@ internal static class MessageComposer
     #endregion
 
     #region Vortex-specific (no AS3 backing)
+
+    public const int RpgCharacterListMessageComposer = 9000; // RPG (spec §3.7)
+    public const int RpgClassListMessageComposer = 9001; // RPG (spec §3.7)
+    public const int RpgCharacterResultMessageComposer = 9002; // RPG (spec §3.7)
+    public const int RpgCharacterStateMessageComposer = 9003; // RPG (spec §3.7)
+    public const int RpgCharacterProgressMessageComposer = 9004; // RPG (spec §3.7)
+    public const int RpgCharacterStatsMessageComposer = 9005; // RPG (spec §3.7)
 
     #endregion
 }

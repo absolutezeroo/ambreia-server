@@ -13,6 +13,7 @@ public sealed class Revision20260701()
             new NotificationsMap(),
             new RoomMap(),
             new AvailabilityMap(),
+            new RpgCharactersMap(),
         }
     )
 {
