@@ -53,7 +53,14 @@ public sealed class MessageRegistry(
                 // round trip per packet (PERF-01).
                 int roomId = playerId > 0 ? (contextAccessor.Current?.RoomId ?? -1) : -1;
 
-                return Task.FromResult(new MessageContext(data, playerId, roomId));
+                return Task.FromResult(
+                    new MessageContext(
+                        data,
+                        playerId,
+                        roomId,
+                        sessionGateway.GetAccountId(data.SessionKey)
+                    )
+                );
             },
             EnableInheritanceDispatch = true,
             HandlerMode = HandlerExecutionMode.Parallel,

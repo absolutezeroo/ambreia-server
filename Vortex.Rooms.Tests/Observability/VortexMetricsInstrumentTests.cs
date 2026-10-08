@@ -302,6 +302,14 @@ public sealed class VortexMetricsInstrumentTests
 
         public PlayerId GetPlayerId(SessionKey key) => -1;
 
+        public int GetAccountId(SessionKey key) => 0;
+
+        public Task AddSessionToAccountAsync(
+            SessionKey key,
+            int accountId,
+            System.Threading.CancellationToken ct = default
+        ) => Task.CompletedTask;
+
         public Task<bool> AddSessionAsync(SessionKey key, ISessionContext ctx) =>
             Task.FromResult(true);
 

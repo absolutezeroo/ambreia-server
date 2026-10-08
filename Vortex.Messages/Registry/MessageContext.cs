@@ -7,7 +7,12 @@ using Vortex.Primitives.Rooms;
 
 namespace Vortex.Messages.Registry;
 
-public sealed class MessageContext(ISessionContext session, PlayerId playerId, RoomId roomId)
+public sealed class MessageContext(
+    ISessionContext session,
+    PlayerId playerId,
+    RoomId roomId,
+    int accountId = 0
+)
 {
     private PlayerId _playerId = playerId;
     private RoomId _roomId = roomId;
@@ -15,6 +20,10 @@ public sealed class MessageContext(ISessionContext session, PlayerId playerId, R
 
     public PlayerId PlayerId => _playerId;
     public RoomId RoomId => _roomId;
+
+    /// <summary>The account of a socket in the account phase (spec F3a §5.2), 0 otherwise; the
+    /// <see cref="PlayerId"/> is then invalid.</summary>
+    public int AccountId { get; } = accountId;
     public SessionKey SessionKey => _session.SessionKey;
     public string? RemoteIpAddress => _session.RemoteIpAddress;
 

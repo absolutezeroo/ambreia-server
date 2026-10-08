@@ -36,6 +36,11 @@ public sealed class SessionGateway(
     private readonly ConcurrentDictionary<PlayerId, SessionKey> _playerToSession = new();
     private readonly ConcurrentDictionary<PlayerId, DateTime> _playerConnectedAt = new();
 
+    // The account phase (spec F3a §5.2): a socket on the character screen, before it is a player.
+    // Written under _mappingGate like the player pair.
+    private readonly ConcurrentDictionary<SessionKey, int> _sessionToAccount = new();
+    private readonly ConcurrentDictionary<int, SessionKey> _accountToSession = new();
+
     /// <summary>
     /// Live session count per remote address, and the address each session was ADMITTED under.
     /// The second map is what makes the count survive: on close the context may already be torn
@@ -72,6 +77,9 @@ public sealed class SessionGateway(
 
     public PlayerId GetPlayerId(SessionKey key) =>
         _sessionToPlayer.TryGetValue(key, out PlayerId playerId) ? playerId : -1;
+
+    public int GetAccountId(SessionKey key) =>
+        _sessionToAccount.TryGetValue(key, out int accountId) ? accountId : 0;
 
     public int GetActiveSessionCount() => _sessions.Count;
 
@@ -185,6 +193,8 @@ public sealed class SessionGateway(
                 await RemovePlayerSessionCoreAsync(playerId, key, closeTransport: false, ct)
                     .ConfigureAwait(false);
             }
+
+            await LeaveAccountPhaseAsync(key, ct).ConfigureAwait(false);
         }
         finally
         {
@@ -215,6 +225,162 @@ public sealed class SessionGateway(
         }
     }
 
+    public async Task AddSessionToAccountAsync(
+        SessionKey key,
+        int accountId,
+        CancellationToken ct = default
+    )
+    {
+        ISessionContextObserver? observer = GetSessionObserver(key);
+
+        if (observer is null || accountId <= 0)
+        {
+            return;
+        }
+
+        IAccountSessionGrain accountSession = _grainFactory.GetAccountSessionGrain(accountId);
+        long generation;
+
+        await _mappingGate.WaitAsync(ct).ConfigureAwait(false);
+
+        try
+        {
+            if (!_sessions.ContainsKey(key))
+            {
+                return;
+            }
+
+            if (_sessionToAccount.TryGetValue(key, out int currentAccountId))
+            {
+                await RemoveAccountSessionCoreAsync(
+                        currentAccountId,
+                        key,
+                        closeTransport: false,
+                        ct
+                    )
+                    .ConfigureAwait(false);
+            }
+
+            if (
+                _accountToSession.TryGetValue(accountId, out SessionKey existingSessionKey)
+                && existingSessionKey != key
+            )
+            {
+                await RemoveAccountSessionCoreAsync(
+                        accountId,
+                        existingSessionKey,
+                        closeTransport: true,
+                        ct
+                    )
+                    .ConfigureAwait(false);
+            }
+
+            _sessionToAccount[key] = accountId;
+            _accountToSession[accountId] = key;
+
+            // Claimed with the mapping, as for a player: the order of the generations is the order
+            // the replacements were decided.
+            generation = await accountSession.BeginSessionAsync().ConfigureAwait(false);
+        }
+        finally
+        {
+            _mappingGate.Release();
+        }
+
+        await accountSession
+            .RegisterSessionObserverAsync(observer, generation)
+            .ConfigureAwait(false);
+
+        if (_sessions.ContainsKey(key))
+        {
+            return;
+        }
+
+        // Closed while attaching: its removal may have unregistered before the registration above
+        // landed. Unregister again unless a newer socket holds the account.
+        await _mappingGate.WaitAsync(CancellationToken.None).ConfigureAwait(false);
+
+        try
+        {
+            await LeaveAccountPhaseAsync(key, CancellationToken.None).ConfigureAwait(false);
+
+            if (!_accountToSession.ContainsKey(accountId))
+            {
+                await accountSession.UnregisterSessionObserverAsync().ConfigureAwait(false);
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(
+                ex,
+                "Failed to detach account {AccountId} from closed session {SessionKey}",
+                accountId,
+                key
+            );
+        }
+        finally
+        {
+            _mappingGate.Release();
+        }
+    }
+
+    /// <summary>Takes a socket out of the account phase, if it is in it. Callers hold
+    /// <see cref="_mappingGate"/>.</summary>
+    private Task LeaveAccountPhaseAsync(SessionKey key, CancellationToken ct) =>
+        _sessionToAccount.TryGetValue(key, out int accountId)
+            ? RemoveAccountSessionCoreAsync(accountId, key, closeTransport: false, ct)
+            : Task.CompletedTask;
+
+    /// <summary>
+    /// Removes the session/account pair and lets go of the account session; with
+    /// <paramref name="closeTransport"/>, the socket a second connection replaces is told
+    /// <c>ConcurrentLogin</c> and closed. Callers hold <see cref="_mappingGate"/>.
+    /// </summary>
+    private async Task RemoveAccountSessionCoreAsync(
+        int accountId,
+        SessionKey sessionKey,
+        bool closeTransport,
+        CancellationToken ct
+    )
+    {
+        bool removedActiveMapping = TryRemovePair(_accountToSession, accountId, sessionKey);
+        TryRemovePair(_sessionToAccount, sessionKey, accountId);
+
+        if (!removedActiveMapping)
+        {
+            return;
+        }
+
+        try
+        {
+            await _grainFactory
+                .GetAccountSessionGrain(accountId)
+                .UnregisterSessionObserverAsync()
+                .ConfigureAwait(false);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(
+                ex,
+                "Failed to unregister the account session of account {AccountId}",
+                accountId
+            );
+        }
+
+        if (closeTransport)
+        {
+            await SayFarewellAndCloseAsync(
+                    sessionKey,
+                    new DisconnectReasonEventMessageComposer
+                    {
+                        Reason = DisconnectReasonEventMessageComposer.ConcurrentLogin,
+                    },
+                    ct
+                )
+                .ConfigureAwait(false);
+        }
+    }
+
     public async Task AddSessionToPlayerAsync(
         SessionKey key,
         PlayerId playerId,
@@ -241,6 +407,10 @@ public sealed class SessionGateway(
                 // The socket closed while the ticket was being checked.
                 return;
             }
+
+            // Entering the world from the character screen: the account session lets go of the
+            // socket before the player takes it.
+            await LeaveAccountPhaseAsync(key, ct).ConfigureAwait(false);
 
             if (
                 _sessionToPlayer.TryGetValue(key, out PlayerId currentPlayerId)
@@ -443,29 +613,43 @@ public sealed class SessionGateway(
             );
         }
 
-        if (closeTransport && _sessions.TryGetValue(sessionKey, out ISessionContext? session))
+        if (closeTransport)
         {
-            // Straight to the socket, not through presence: presence now belongs to the session
-            // that replaced this one, and must not hear its predecessor's goodbye. Without it the
-            // client just loses the connection and shows nothing about why.
-            if (farewell is not null)
-            {
-                try
-                {
-                    await session.SendComposerAsync(farewell, ct).ConfigureAwait(false);
-                }
-                catch (Exception ex)
-                {
-                    _logger.LogDebug(
-                        ex,
-                        "Failed to send the disconnect reason to replaced session {SessionKey}",
-                        sessionKey
-                    );
-                }
-            }
-
-            await CloseSessionTransportSafelyAsync(sessionKey, session).ConfigureAwait(false);
+            await SayFarewellAndCloseAsync(sessionKey, farewell, ct).ConfigureAwait(false);
         }
+    }
+
+    private async Task SayFarewellAndCloseAsync(
+        SessionKey sessionKey,
+        IComposer? farewell,
+        CancellationToken ct
+    )
+    {
+        if (!_sessions.TryGetValue(sessionKey, out ISessionContext? session))
+        {
+            return;
+        }
+
+        // Straight to the socket, not through presence: presence now belongs to the session that
+        // replaced this one, and must not hear its predecessor's goodbye. Without it the client
+        // just loses the connection and shows nothing about why.
+        if (farewell is not null)
+        {
+            try
+            {
+                await session.SendComposerAsync(farewell, ct).ConfigureAwait(false);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogDebug(
+                    ex,
+                    "Failed to send the disconnect reason to replaced session {SessionKey}",
+                    sessionKey
+                );
+            }
+        }
+
+        await CloseSessionTransportSafelyAsync(sessionKey, session).ConfigureAwait(false);
     }
 
     private async Task CloseSessionTransportSafelyAsync(

@@ -62,6 +62,11 @@ public static class GrainFactoryExtensions
         PlayerId playerId
     ) => factory.GetGrain<IPlayerCharacterGrain>((long)playerId.Value);
 
+    public static IAccountSessionGrain GetAccountSessionGrain(
+        this IGrainFactory factory,
+        int accountId
+    ) => factory.GetGrain<IAccountSessionGrain>(accountId);
+
     public static IPlayerPresenceGrain GetPlayerPresenceGrain(
         this IGrainFactory factory,
         PlayerId playerId

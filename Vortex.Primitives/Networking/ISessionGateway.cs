@@ -11,6 +11,10 @@ public interface ISessionGateway
     public ISessionContext? GetSession(SessionKey key);
     public ISessionContextObserver? GetSessionObserver(SessionKey key);
     public PlayerId GetPlayerId(SessionKey key);
+
+    /// <summary>The account a socket in the account phase belongs to (spec F3a §5.2); 0 outside
+    /// it, including once the socket has entered the world as a player.</summary>
+    public int GetAccountId(SessionKey key);
     public int GetActiveSessionCount();
 
     /// <summary>
@@ -47,6 +51,18 @@ public interface ISessionGateway
     /// </summary>
     public Task<bool> AddSessionAsync(SessionKey key, ISessionContext ctx);
     public Task RemoveSessionAsync(SessionKey key, CancellationToken ct);
+
+    /// <summary>
+    /// Puts a socket in the account phase: another socket of the same account is told
+    /// <c>ConcurrentLogin</c> and closed, and the account session grain answers through this one.
+    /// </summary>
+    public Task AddSessionToAccountAsync(
+        SessionKey key,
+        int accountId,
+        CancellationToken ct = default
+    );
+
+    /// <summary>Attaches a socket to a player; a socket in the account phase leaves it here.</summary>
     public Task AddSessionToPlayerAsync(
         SessionKey key,
         PlayerId playerId,
