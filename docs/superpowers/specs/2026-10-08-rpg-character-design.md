@@ -50,12 +50,13 @@ choix de classe du site (chantier du site, qui appelle les routes de §8).
   "id": "class.warrior", "kind": "class",
   "role": "tank", "range": 1, "threatMultiplier": 3,
   "primaryStat": "strength",
-  "base":     { "strength": 12, "intelligence": 4, "agility": 6, "health": 120, "mana": 40 },
-  "perLevel": { "strength": 3,  "intelligence": 1, "agility": 1, "health": 18,  "mana": 4 },
+  "base":     { "strength": 12, "intelligence": 4, "agility": 6, "health": 60, "mana": 40, "armor": 4 },
+  "perLevel": { "strength": 3,  "intelligence": 0, "agility": 1, "health": 18, "mana": 2, "armor": 1 },
   "specializations": ["spec.warrior.guardian"]
 }
 ```
 
+- `health` est le PV de la pile : au niveau 1, PV max = 60 + 12 × `healthPerStrength` (5) = 120.
 - `role` ∈ `tank` | `damage` | `heal` ; `primaryStat` ∈ `strength` | `intelligence` | `agility`.
 - `specialization` : `id`, `class` (référence), pour l'instant aucun autre champ (les modificateurs
   arrivent avec la spec Combat).
