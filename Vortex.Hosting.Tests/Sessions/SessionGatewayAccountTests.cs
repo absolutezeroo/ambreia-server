@@ -30,7 +30,6 @@ public sealed class SessionGatewayAccountTests
     private readonly List<string> _closed = [];
     private readonly List<(string Key, IComposer Composer)> _sent = [];
     private readonly SessionGateway _gateway;
-    private long _generation;
 
     public SessionGatewayAccountTests() =>
         _gateway = new SessionGateway(
@@ -48,7 +47,7 @@ public sealed class SessionGatewayAccountTests
         await _gateway.AddSessionToAccountAsync(a, ACCOUNT_ID);
 
         _gateway.GetAccountId(a).Should().Be(ACCOUNT_ID);
-        _accountCalls.Should().Equal("begin", "register:1");
+        _accountCalls.Should().Equal("register:1");
     }
 
     [Fact]
@@ -73,7 +72,7 @@ public sealed class SessionGatewayAccountTests
                 && ((DisconnectReasonEventMessageComposer)s.Composer).Reason
                     == DisconnectReasonEventMessageComposer.ConcurrentLogin
             );
-        _accountCalls.Should().Equal("begin", "register:1", "unregister", "begin", "register:2");
+        _accountCalls.Should().Equal("register:1", "unregister", "register:2");
     }
 
     [Fact]
@@ -122,6 +121,40 @@ public sealed class SessionGatewayAccountTests
             .Be(-1, "game handlers refuse a session without a player");
     }
 
+    /// <summary>
+    /// A socket in the world that sends an account ticket would be both a player and an account,
+    /// and the phase barrier would let character-screen packets through in the world.
+    /// </summary>
+    [Fact]
+    public async Task AnAccountTicketOnASocketInTheWorld_LeavesItAPlayer()
+    {
+        SessionKey a = await ConnectAsync("a");
+        await _gateway.AddSessionToPlayerAsync(a, 9);
+
+        await _gateway.AddSessionToAccountAsync(a, ACCOUNT_ID);
+
+        _gateway.GetAccountId(a).Should().Be(0);
+        _gateway.GetPlayerId(a).Value.Should().Be(9);
+        _accountCalls.Should().BeEmpty();
+    }
+
+    /// <summary>
+    /// Generations come from the gateway, not the grain: an account session grain deactivated
+    /// between two sockets would otherwise start counting again and hand both the same number.
+    /// </summary>
+    [Fact]
+    public async Task Generations_KeepGrowingAcrossSockets()
+    {
+        SessionKey a = await ConnectAsync("a");
+        await _gateway.AddSessionToAccountAsync(a, ACCOUNT_ID);
+        await _gateway.RemoveSessionAsync(a, CancellationToken.None);
+
+        SessionKey b = await ConnectAsync("b");
+        await _gateway.AddSessionToAccountAsync(b, ACCOUNT_ID);
+
+        _accountCalls.Should().Equal("register:1", "unregister", "register:2");
+    }
+
     private async Task<SessionKey> ConnectAsync(string name)
     {
         SessionKey key = new(name);
@@ -168,10 +201,6 @@ public sealed class SessionGatewayAccountTests
         {
             switch (call.Method.Name)
             {
-                case nameof(IAccountSessionGrain.BeginSessionAsync):
-                    _accountCalls.Add("begin");
-
-                    return Task.FromResult(++_generation);
                 case nameof(IAccountSessionGrain.RegisterSessionObserverAsync):
                     _accountCalls.Add($"register:{call.Args![1]}");
                     break;

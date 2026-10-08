@@ -40,6 +40,7 @@ public sealed class SessionGateway(
     // Written under _mappingGate like the player pair.
     private readonly ConcurrentDictionary<SessionKey, int> _sessionToAccount = new();
     private readonly ConcurrentDictionary<int, SessionKey> _accountToSession = new();
+    private long _accountGeneration;
 
     /// <summary>
     /// Live session count per remote address, and the address each session was ADMITTED under.
@@ -250,6 +251,21 @@ public sealed class SessionGateway(
                 return;
             }
 
+            if (_sessionToPlayer.TryGetValue(key, out PlayerId playerId) && playerId > 0)
+            {
+                // Already in the world: being an account too would let the phase barrier pass
+                // character-screen packets in the world. The player stays.
+                _logger.LogWarning(
+                    "Ignoring an account ticket for account {AccountId} on session {SessionKey}, "
+                        + "already player {PlayerId}",
+                    accountId,
+                    key,
+                    playerId
+                );
+
+                return;
+            }
+
             if (_sessionToAccount.TryGetValue(key, out int currentAccountId))
             {
                 await RemoveAccountSessionCoreAsync(
@@ -278,9 +294,9 @@ public sealed class SessionGateway(
             _sessionToAccount[key] = accountId;
             _accountToSession[accountId] = key;
 
-            // Claimed with the mapping, as for a player: the order of the generations is the order
-            // the replacements were decided.
-            generation = await accountSession.BeginSessionAsync().ConfigureAwait(false);
+            // Claimed with the mapping, so the order of the generations is the order the
+            // replacements were decided; counted here because the gateway outlives the grain.
+            generation = ++_accountGeneration;
         }
         finally
         {
