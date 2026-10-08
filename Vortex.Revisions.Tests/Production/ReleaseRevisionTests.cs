@@ -16,20 +16,32 @@ public sealed class ReleaseRevisionTests
     private static readonly Rev Dev = new();
 
     // Every name renumbered 1, 2, 3... in name order, the two fixed ones kept on 4000: a valid table.
-    private static ReleaseTable Table(Func<Dictionary<string, int>, Dictionary<string, int>>? edit = null)
+    private static ReleaseTable Table(
+        Func<Dictionary<string, int>, Dictionary<string, int>>? edit = null
+    )
     {
-        static Dictionary<string, int> Renumber(IReadOnlyDictionary<string, int> dev, string fixedName) =>
-            dev.Keys.Order(StringComparer.Ordinal)
-                .Select((name, i) => (name, id: name == fixedName ? ReleaseTable.FixedHeader : i + 1))
+        static Dictionary<string, int> Renumber(
+            IReadOnlyDictionary<string, int> dev,
+            string fixedName
+        ) =>
+            dev
+                .Keys.Order(StringComparer.Ordinal)
+                .Select(
+                    (name, i) => (name, id: name == fixedName ? ReleaseTable.FixedHeader : i + 1)
+                )
                 .ToDictionary(e => e.name, e => e.id);
 
         Dictionary<string, int> events = Renumber(DevHeaders.Events, "ClientHelloMessageEvent");
-        Dictionary<string, int> composers = Renumber(DevHeaders.Composers, "DisconnectReasonComposer");
+        Dictionary<string, int> composers = Renumber(
+            DevHeaders.Composers,
+            "DisconnectReasonComposer"
+        );
 
         return new ReleaseTable("AMBREIA-202610081530", edit?.Invoke(events) ?? events, composers);
     }
 
-    private static string ComposerName(int devHeader) => DevHeaders.Composers.Single(e => e.Value == devHeader).Key;
+    private static string ComposerName(int devHeader) =>
+        DevHeaders.Composers.Single(e => e.Value == devHeader).Key;
 
     [Fact]
     public void Revision_IsTheTablesName()
@@ -43,9 +55,16 @@ public sealed class ReleaseRevisionTests
         ReleaseTable table = Table();
         ReleaseRevision release = new(table);
 
-        foreach ((string name, int devId) in DevHeaders.Events.Where(e => Dev.Parsers.ContainsKey(e.Value)))
+        foreach (
+            (string name, int devId) in DevHeaders.Events.Where(e =>
+                Dev.Parsers.ContainsKey(e.Value)
+            )
+        )
         {
-            release.Parsers[table.Events[name]].Should().BeOfType(Dev.Parsers[devId].GetType(), name);
+            release
+                .Parsers[table.Events[name]]
+                .Should()
+                .BeOfType(Dev.Parsers[devId].GetType(), name);
         }
 
         release.Parsers.Should().HaveCount(Dev.Parsers.Count);
@@ -61,7 +80,10 @@ public sealed class ReleaseRevisionTests
 
         foreach ((Type type, ISerializer devSerializer) in Dev.Serializers)
         {
-            release.Serializers[type].Header.Should().Be(table.Composers[ComposerName(devSerializer.Header)], type.Name);
+            release
+                .Serializers[type]
+                .Header.Should()
+                .Be(table.Composers[ComposerName(devSerializer.Header)], type.Name);
         }
     }
 
@@ -93,14 +115,28 @@ public sealed class ReleaseRevisionTests
         DisconnectReasonEventMessageComposer composer = new() { Reason = 122 };
         Type type = typeof(DisconnectReasonEventMessageComposer);
 
-        new ReleaseRevision(Table()).Serializers[type].Serialize(composer).ToArray()
-            .Should().Equal(Dev.Serializers[type].Serialize(composer).ToArray(), "it keeps 4000 in every revision");
+        new ReleaseRevision(Table())
+            .Serializers[type]
+            .Serialize(composer)
+            .ToArray()
+            .Should()
+            .Equal(
+                Dev.Serializers[type].Serialize(composer).ToArray(),
+                "it keeps 4000 in every revision"
+            );
     }
 
     [Fact]
     public void AMissingMessage_IsNamed()
     {
-        Action build = () => new ReleaseRevision(Table(events => { events.Remove("SSOTicketMessageEvent"); return events; }));
+        Action build = () =>
+            new ReleaseRevision(
+                Table(events =>
+                {
+                    events.Remove("SSOTicketMessageEvent");
+                    return events;
+                })
+            );
 
         build.Should().Throw<InvalidOperationException>().WithMessage("*SSOTicketMessageEvent*");
     }
@@ -108,19 +144,32 @@ public sealed class ReleaseRevisionTests
     [Fact]
     public void AMovedFixedHeader_IsRefused()
     {
-        Action build = () => new ReleaseRevision(Table(events => { events["ClientHelloMessageEvent"] = 17; return events; }));
+        Action build = () =>
+            new ReleaseRevision(
+                Table(events =>
+                {
+                    events["ClientHelloMessageEvent"] = 17;
+                    return events;
+                })
+            );
 
-        build.Should().Throw<InvalidOperationException>().WithMessage("*ClientHelloMessageEvent*4000*");
+        build
+            .Should()
+            .Throw<InvalidOperationException>()
+            .WithMessage("*ClientHelloMessageEvent*4000*");
     }
 
     [Fact]
     public void ASharedNumber_IsRefused()
     {
-        Action build = () => new ReleaseRevision(Table(events =>
-        {
-            events["SSOTicketMessageEvent"] = events["PongMessageEvent"];
-            return events;
-        }));
+        Action build = () =>
+            new ReleaseRevision(
+                Table(events =>
+                {
+                    events["SSOTicketMessageEvent"] = events["PongMessageEvent"];
+                    return events;
+                })
+            );
 
         build.Should().Throw<InvalidOperationException>().WithMessage("*share*");
     }
@@ -128,17 +177,29 @@ public sealed class ReleaseRevisionTests
     [Fact]
     public void ANumberOutsideTheRange_IsRefused()
     {
-        Action build = () => new ReleaseRevision(Table(events => { events["SSOTicketMessageEvent"] = 4001; return events; }));
+        Action build = () =>
+            new ReleaseRevision(
+                Table(events =>
+                {
+                    events["SSOTicketMessageEvent"] = 4001;
+                    return events;
+                })
+            );
 
-        build.Should().Throw<InvalidOperationException>().WithMessage("*SSOTicketMessageEvent*1..3999*");
+        build
+            .Should()
+            .Throw<InvalidOperationException>()
+            .WithMessage("*SSOTicketMessageEvent*1..3999*");
     }
 
     [Fact]
     public void Parse_ReadsTheJsonFormat()
     {
-        ReleaseTable table = ReleaseTable.Parse("""
+        ReleaseTable table = ReleaseTable.Parse(
+            """
             {"revision":"AMBREIA-202610081530","events":{"A":1},"composers":{"B":2}}
-            """);
+            """
+        );
 
         table.Revision.Should().Be("AMBREIA-202610081530");
         table.Events.Should().Equal(new Dictionary<string, int> { ["A"] = 1 });
