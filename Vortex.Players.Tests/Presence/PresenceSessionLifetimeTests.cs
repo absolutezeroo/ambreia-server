@@ -157,7 +157,9 @@ public sealed class PresenceSessionLifetimeTests
                 FakeProxy.Create<IEventPublisher>(_ => Task.CompletedTask),
                 NullLogger<PlayerPresenceGrain>.Instance,
                 FakeProxy.Create<IVortexMetrics>(_ => null),
-                Options.Create(new PlayerPresenceConfig()),
+                // These pin the lifetime of a socket without a grace period: a drop leaves at once.
+                // The grace period has its own suite, DisconnectGraceTests.
+                Options.Create(new PlayerPresenceConfig { DisconnectGraceSeconds = 0 }),
             ]
         );
 

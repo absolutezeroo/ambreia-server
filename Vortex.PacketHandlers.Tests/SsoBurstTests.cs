@@ -93,11 +93,21 @@ public sealed class SsoBurstTests
         _sent.OfType<RoomForwardMessageComposer>().Single().RoomId.Should().Be(new RoomId(30));
     }
 
+    /// <summary>The avatar still standing in its room during the grace period is the one resumed.</summary>
+    [Fact]
+    public async Task ARoomInGrace_ComesBeforeTheLastZone()
+    {
+        await LoginAsync(startRoomId: 42, lastRoomId: 12, graceRoomId: 50);
+
+        _sent.OfType<RoomForwardMessageComposer>().Single().RoomId.Should().Be(new RoomId(50));
+    }
+
     private async Task LoginAsync(
         int startRoomId,
         int? testRoomId = null,
         int? lastRoomId = null,
-        bool lastRoomPublished = true
+        bool lastRoomPublished = true,
+        int? graceRoomId = null
     )
     {
         SSOTicketMessageHandler handler = new(
@@ -136,7 +146,12 @@ public sealed class SsoBurstTests
                             _sent.AddRange(((object[])inner.Args![0]!).Cast<object>());
                         }
 
-                        return null;
+                        return
+                            inner.Method.Name == nameof(IPlayerPresenceGrain.GetResumableRoomAsync)
+                            ? Task.FromResult(
+                                graceRoomId is { } room ? (RoomId?)new RoomId(room) : null
+                            )
+                            : null;
                     })
                 : null
             ),

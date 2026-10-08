@@ -115,6 +115,29 @@ public sealed partial class RoomGrain
         }
     }
 
+    public async Task<bool> StopAvatarAsync(
+        ActionContext ctx,
+        PlayerId playerId,
+        CancellationToken ct
+    )
+    {
+        try
+        {
+            return await AvatarModule.StopAvatarOfPlayerAsync(playerId, ct);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(
+                ex,
+                "Failed to stop the avatar of player {PlayerId} in room {RoomId}.",
+                playerId,
+                _state.RoomId
+            );
+
+            return false;
+        }
+    }
+
     public async Task<bool> UpdateAvatarWithPlayerAsync(
         PlayerSummarySnapshot snapshot,
         CancellationToken ct

@@ -32,6 +32,10 @@ public interface IRoomAvatars : IGrainWithIntegerKey
         int? targetZKey,
         CancellationToken ct
     );
+
+    /// <summary>Stops the player's avatar on the tile it reached (a dropped socket during the grace
+    /// period, spec Personnage §10); false when the player has no avatar here.</summary>
+    public Task<bool> StopAvatarAsync(ActionContext ctx, PlayerId playerId, CancellationToken ct);
     public Task<bool> UpdateAvatarWithPlayerAsync(
         PlayerSummarySnapshot snapshot,
         CancellationToken ct

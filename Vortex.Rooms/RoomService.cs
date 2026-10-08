@@ -103,7 +103,12 @@ internal sealed partial class RoomService(
             return;
         }
 
-        await playerPresence.ClearActiveRoomAsync(ct).ConfigureAwait(false);
+        // Back within the grace period (spec Personnage §10): the avatar is still standing in this
+        // room, so it is kept — SetActiveRoomAsync sees the same room and makes no second one.
+        if (!await playerPresence.TakeResumeAsync(roomId).ConfigureAwait(false))
+        {
+            await playerPresence.ClearActiveRoomAsync(ct).ConfigureAwait(false);
+        }
 
         // Pending, not approved: the gates below have not run yet. Approval is granted in
         // CompleteRoomEntryAsync, the one place every admission passes through.

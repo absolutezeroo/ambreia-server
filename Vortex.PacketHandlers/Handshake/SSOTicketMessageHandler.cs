@@ -83,13 +83,25 @@ public class SSOTicketMessageHandler(
                 .GetPlayerCharacterGrain(new PlayerId(playerId))
                 .GetLastRoomAsync();
 
+            // The room the avatar is still standing in, back within the grace period (§10).
+            Task<RoomId?> graceRoomTask = _grainFactory
+                .GetPlayerPresenceGrain(playerId)
+                .GetResumableRoomAsync();
+
             // All awaited, so a failure of any is seen rather than dropped.
-            await Task.WhenAll(permissionsTask, startRoomTask, testRoomTask, lastRoomTask)
+            await Task.WhenAll(
+                    permissionsTask,
+                    startRoomTask,
+                    testRoomTask,
+                    lastRoomTask,
+                    graceRoomTask
+                )
                 .ConfigureAwait(false);
 
             PermissionSet permissions = await permissionsTask.ConfigureAwait(false);
             int startRoomId =
                 await testRoomTask.ConfigureAwait(false) is { } testRoom ? testRoom.Value
+                : await graceRoomTask.ConfigureAwait(false) is { } graceRoom ? graceRoom.Value
                 : await PublishedAsync(await lastRoomTask.ConfigureAwait(false), ct)
                     .ConfigureAwait(false)
                     is { } lastRoom

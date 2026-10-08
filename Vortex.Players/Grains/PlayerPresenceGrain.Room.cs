@@ -158,6 +158,9 @@ internal sealed partial class PlayerPresenceGrain
         }
 
         _state.ActiveRoomId = -1;
+
+        // Left for real: nothing to resume any more.
+        _resumableRoom = -1;
         _state.ActiveRoomSinceUtc = leftAt;
 
         using (

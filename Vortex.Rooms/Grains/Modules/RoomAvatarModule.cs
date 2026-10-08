@@ -401,6 +401,22 @@ public sealed partial class RoomAvatarModule(RoomGrain roomGrain)
         avatar.NeedsInvoke = true;
     }
 
+    /// <summary>Stops a player's avatar where it stands; false when the player has none here.</summary>
+    public async Task<bool> StopAvatarOfPlayerAsync(PlayerId playerId, CancellationToken ct)
+    {
+        if (
+            !_roomGrain._state.AvatarsByPlayerId.TryGetValue(playerId, out RoomObjectId objectId)
+            || !_roomGrain._state.AvatarsByObjectId.TryGetValue(objectId, out IRoomAvatar? avatar)
+        )
+        {
+            return false;
+        }
+
+        await StopWalkingAsync(avatar, ct);
+
+        return true;
+    }
+
     public async Task StopWalkingAsync(IRoomAvatar avatar, CancellationToken ct)
     {
         try

@@ -132,6 +132,8 @@ internal sealed partial class PlayerPresenceGrain
             return Task.CompletedTask;
         }
 
+        ResumeIfWaiting();
+
         _sessionObserver = observer;
 
         // A fresh socket is a fresh queue. The grain outlives the session it was serving, so the
@@ -154,6 +156,22 @@ internal sealed partial class PlayerPresenceGrain
 
     public async Task UnregisterSessionObserverAsync(CancellationToken ct)
     {
+        if (ShouldWaitForReconnect())
+        {
+            await BeginGraceAsync(ct);
+
+            return;
+        }
+
+        await LeaveNowAsync(ct);
+    }
+
+    /// <summary>Out of the room and collectable: an ordinary disconnect, the end of a grace period,
+    /// or a deactivation.</summary>
+    private async Task LeaveNowAsync(CancellationToken ct)
+    {
+        StopGraceTimer();
+
         try
         {
             await ClearActiveRoomAsync(ct);
@@ -251,7 +269,8 @@ internal sealed partial class PlayerPresenceGrain
 
         try
         {
-            await UnregisterSessionObserverAsync(ct).ConfigureAwait(true);
+            // A deactivation leaves at once, grace period or not.
+            await LeaveNowAsync(ct).ConfigureAwait(true);
         }
         catch (Exception ex)
         {
