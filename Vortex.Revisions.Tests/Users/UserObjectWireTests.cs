@@ -49,7 +49,6 @@ public sealed class UserObjectWireTests
             .Should()
             .Be("01-01-1970 00:00:00", "lastAccessDate carries the official server's fixed format");
         packet.PopBoolean().Should().BeFalse("name change allowed");
-        packet.PopBoolean().Should().BeFalse("account safety locked");
 
         packet.PopBoolean().Should().BeFalse("account trade locked -- first optional pair");
         packet.PopString().Should().BeEmpty("name colour -- first optional pair");

@@ -14,7 +14,7 @@ The full procedure for a new packet is the `adding-a-packet` skill. The constrai
   `packet.Remaining` allows it (`MoveAvatarMessageParser`).
 - A serializer writes the real payload. Never replace a field with a constant to make a composer
   compile. A field the server no longer has data for is **frozen** with a comment saying why
-  (`UserObjectMessageSerializer`, safety lock).
+  (`UserObjectMessageSerializer`, respect counters).
 - Wire strings are an int16 length + UTF-8. Header ids live in `Headers.cs`; note the evidence for a
   new id (`// AS3-verified: …`) — a guessed id is a packet nobody receives.
 - A handler gets the player and the room from `MessageContext` (the authenticated session), never
