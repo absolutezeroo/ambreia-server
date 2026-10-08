@@ -8,8 +8,6 @@ internal class UserRightsMessageSerializer(int header)
 {
     protected override void Serialize(IServerPacket packet, UserRightsMessage message)
     {
-        packet.WriteInteger((int)message.MembershipLevel);
         packet.WriteInteger((int)message.SecurityLevel);
-        packet.WriteBoolean(message.IsAmbassador);
     }
 }

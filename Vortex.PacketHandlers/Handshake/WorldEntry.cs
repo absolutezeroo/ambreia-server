@@ -7,7 +7,6 @@ using Vortex.Primitives.Networking;
 using Vortex.Primitives.Orleans;
 using Vortex.Primitives.Permissions;
 using Vortex.Primitives.Players;
-using Vortex.Primitives.Players.Enums;
 using Vortex.Primitives.Players.Grains;
 using Vortex.Primitives.Rooms;
 using Vortex.Primitives.World;
@@ -98,9 +97,7 @@ public sealed class WorldEntry(
         };
         UserRightsMessage rights = new()
         {
-            MembershipLevel = MembershipLevelType.None,
             SecurityLevel = SecurityLevelPolicy.Resolve(permissions),
-            IsAmbassador = false,
         };
 
         // Through the presence queue like everything else sent to a signed-in player, so the

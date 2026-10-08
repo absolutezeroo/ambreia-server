@@ -7,12 +7,9 @@ namespace Vortex.Protocol.Messages.Outgoing.Handshake;
 [GenerateSerializer, Immutable]
 public sealed record UserRightsMessage : IComposer
 {
-    [Id(0)]
-    public required MembershipLevelType MembershipLevel { get; init; }
+    // [Id(0)] and [Id(2)] retired: the membership level and the ambassador flag, both constant
+    // (no club, no ambassadors) and no longer on the wire.
 
     [Id(1)]
     public required SecurityLevelType SecurityLevel { get; init; }
-
-    [Id(2)]
-    public required bool IsAmbassador { get; init; }
 }
