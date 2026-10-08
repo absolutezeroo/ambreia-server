@@ -11,6 +11,7 @@ single project, the code and `.claude/rules/` are enough.
 - Flow 4 — publishing a zone (map editor)
 - Flow 5 — a zone at run time
 - Flow 6 — RPG content
+- Flow 7 — the character
 - Persistence
 - Grains and their state
 - Plugins and the web API
@@ -116,6 +117,26 @@ it reads the tables, validates them like an import and swaps its whole set; inva
 refuses the start, and a failed reload keeps the set it had. Every system reads content through
 `IRpgContent.Get<T>/All<T>` and listens to `ContentReloadedEvent`. Texts are served raw by
 `GET /api/public/content/texts/{language}`.
+
+## Flow 7 — the character
+
+An avatar becomes a character when it takes a class (spec `2026-10-08-rpg-character-design.md`):
+`POST /api/user/avatars` with `classId` for a named avatar, or `POST /api/user/avatars/{id}/class`
+for one without (the registration avatar). Either way the route calls `IPlayerCharacterGrain`
+(`Vortex.Rpg.Characters`, key = player id), the sole writer of `player_characters`: class and
+specialization once, level and XP through `GainXpAsync` (server only; a level is written at once,
+XP on a 30 s timer and at deactivation), stats from the `IStatSource`s declared in
+`CharactersModule` summed by `StatCalculator`. An import's `replace` rule rewrites the class ids
+(`ClassReferences`); the grain re-reads them when `IRpgContent.Version` moves and never writes them
+back.
+
+Sign-in (`SSOTicketMessageHandler`) forwards to: a pending editor test entry, else the room the
+avatar is still standing in during its grace period, else the character's last world zone if still
+published, else `world.start_room_id`. `LastZoneHandler` offers every room entered to the grain,
+which keeps world zones only. A socket that drops in a room leaves the avatar there, still, for
+`PlayerPresenceConfig.DisconnectGraceSeconds` (60): a sign-in in time resumes it
+(`TakeResumeAsync`, no second avatar), otherwise it leaves as before. Proofs: `driver.mjs
+character`, `grace wait`.
 
 ## Persistence
 

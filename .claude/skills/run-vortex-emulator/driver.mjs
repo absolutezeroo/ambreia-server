@@ -883,6 +883,65 @@ async function cmdSmoke() {
   log('\nSmoke OK.');
 }
 
+// The grace period (spec Personnage §10): enter, step, drop the socket without Quit, sign in again
+// at once -> forwarded back to the same room, ONE avatar of this player, on the tile it reached.
+// With `wait`, drop again and stay away past the grace: the console log announces the leave.
+async function cmdGrace(wait) {
+  const enter = async () => {
+    const g = await gameSocket().catch((e) => die(`Socket error on :${GAME_TCP}: ${e.message}`));
+    g.send(frame(H.sso, await ssoTicket(), 0));
+    const forward = await g.wait([H.roomForward]);
+    if (!forward) die('No RoomForward at sign-in.');
+    const roomId = forward.body.readInt32BE(0);
+    const before = g.frames.length;
+    g.send(frame(H.openFlat, roomId, '', -1));
+    const users = await g.wait([H.users, H.cantConnect], before, 10000);
+    if (!users || users.header === H.cantConnect) die(`Room ${roomId} refused or silent.`);
+    return { g, roomId, before, users };
+  };
+  // Users: count, then per avatar web id, name, motto, figure, object id, x, y, ...
+  const firstAvatar = (b) => {
+    let o = 4;
+    const webId = b.readInt32BE(o);
+    o += 4;
+    for (let i = 0; i < 3; i++) o += 2 + b.readInt16BE(o);
+    return { count: b.readInt32BE(0), webId, x: b.readInt32BE(o + 4), y: b.readInt32BE(o + 8) };
+  };
+
+  const first = await enter();
+  const tile = first.g.frames.slice(first.before).find((f) => f.header === H.entryTile);
+  const [x, y] = tile ? [tile.body.readInt32BE(0), tile.body.readInt32BE(4)] : [3, 5];
+  const step = first.g.frames.length;
+  first.g.send(frame(H.moveAvatar, x + 1, y));
+  if (!(await first.g.wait([H.userUpdate], step, 5000))) die('No UserUpdate after the step.');
+  await new Promise((r) => setTimeout(r, 1500));
+  first.g.close();
+  log(`Entered room ${first.roomId}, stepped to (${x + 1},${y}), dropped the socket.`);
+
+  await new Promise((r) => setTimeout(r, 1500));
+  const back = await enter();
+  const seen = firstAvatar(back.users.body);
+  log(`Back in room ${back.roomId}: ${seen.count} avatar(s), first ${seen.webId} on (${seen.x},${seen.y}).`);
+  if (back.roomId !== first.roomId) die('Forwarded to another room: the grace room was not resumed.');
+  if (seen.count !== 1) die('Not exactly one avatar in the room: a second avatar was made.');
+  if (seen.x !== x + 1 || seen.y !== y) die(`The avatar is not on (${x + 1},${y}).`);
+  log('Grace OK: same room, one avatar, same tile.');
+
+  if (wait !== 'wait') {
+    back.g.close();
+    return;
+  }
+
+  const logStart = fs.existsSync(LOG_FILE) ? fs.statSync(LOG_FILE).size : 0;
+  back.g.close();
+  log('Dropped again; staying away 70 s...');
+  await new Promise((r) => setTimeout(r, 70_000));
+  const tail = fs.existsSync(LOG_FILE) ? fs.readFileSync(LOG_FILE, 'utf8').slice(logStart) : '';
+  const line = tail.split(/\r?\n/).find((l) => l.includes('did not come back within the grace period'));
+  if (!line) die('No grace-end line in the console log (is this an emulator the driver started?).');
+  log(line.trim());
+}
+
 // The character of the throwaway avatar (spec Personnage §16): its class and level, an XP grant
 // through the admin route (the account made owner, like `zone`), the level read back.
 async function cmdCharacter(amount = '250') {
@@ -958,6 +1017,7 @@ const table = {
   dungeon: cmdDungeon,
   content: () => cmdContent(args[0]),
   character: () => cmdCharacter(args[0]),
+  grace: () => cmdGrace(args[0]),
   cleanup: cmdCleanup,
   smoke: cmdSmoke,
 };
@@ -981,6 +1041,7 @@ if (!cmd || !table[cmd]) {
   dungeon   a Dungeon zone: its room forwards to the player's own copy, which is entered
   content [dir]  push the RPG content pack (default content/) through scripts/content/push.mjs
   character [xp]  the throwaway avatar's character: class, an XP grant (default 250), the level read back
+  grace [wait]  drop the socket in a room and come back: same room, one avatar, same tile (wait: then stay away past 60 s)
   cleanup   delete the throwaway account and its players`);
   process.exit(cmd ? 1 : 0);
 }
