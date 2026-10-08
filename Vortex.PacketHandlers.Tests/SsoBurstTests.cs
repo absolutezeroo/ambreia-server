@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
@@ -95,6 +96,14 @@ public sealed class SsoBurstTests
 
     /// <summary>The avatar still standing in its room during the grace period is the one resumed.</summary>
     [Fact]
+    public async Task ACharacterGrainFailure_StillSignsInAtTheStart()
+    {
+        await LoginAsync(startRoomId: 42, lastRoomId: 12, characterFails: true);
+
+        _sent.OfType<RoomForwardMessageComposer>().Single().RoomId.Should().Be(new RoomId(42));
+    }
+
+    [Fact]
     public async Task ARoomInGrace_ComesBeforeTheLastZone()
     {
         await LoginAsync(startRoomId: 42, lastRoomId: 12, graceRoomId: 50);
@@ -107,7 +116,8 @@ public sealed class SsoBurstTests
         int? testRoomId = null,
         int? lastRoomId = null,
         bool lastRoomPublished = true,
-        int? graceRoomId = null
+        int? graceRoomId = null,
+        bool characterFails = false
     )
     {
         SSOTicketMessageHandler handler = new(
@@ -132,11 +142,12 @@ public sealed class SsoBurstTests
                     )
                 : call.Method.GetGenericArguments()[0] == typeof(IPlayerCharacterGrain)
                     ? FakeProxy.Create<IPlayerCharacterGrain>(inner =>
-                        inner.Method.Name == nameof(IPlayerCharacterGrain.GetLastRoomAsync)
-                            ? Task.FromResult(
-                                lastRoomId is { } room ? (RoomId?)new RoomId(room) : null
+                        inner.Method.Name != nameof(IPlayerCharacterGrain.GetLastRoomAsync) ? null
+                        : characterFails
+                            ? Task.FromException<RoomId?>(
+                                new InvalidOperationException("player_characters is missing")
                             )
-                            : null
+                        : Task.FromResult(lastRoomId is { } room ? (RoomId?)new RoomId(room) : null)
                     )
                 : call.Method.GetGenericArguments()[0] == typeof(IPlayerPresenceGrain)
                     ? FakeProxy.Create<IPlayerPresenceGrain>(inner =>

@@ -79,14 +79,23 @@ public class SSOTicketMessageHandler(
                 .TakeAsync(new PlayerId(playerId));
 
             // Where the character left the world (spec Personnage §9); null for an avatar without one.
-            Task<RoomId?> lastRoomTask = _grainFactory
-                .GetPlayerCharacterGrain(new PlayerId(playerId))
-                .GetLastRoomAsync();
+            // Both are a better place to land, never a reason not to: a failure falls through to
+            // the start zone (spec Personnage §9: without a character, sign-in is as before).
+            Task<RoomId?> lastRoomTask = OrNullAsync(
+                () =>
+                    _grainFactory
+                        .GetPlayerCharacterGrain(new PlayerId(playerId))
+                        .GetLastRoomAsync(),
+                "last zone",
+                playerId
+            );
 
             // The room the avatar is still standing in, back within the grace period (§10).
-            Task<RoomId?> graceRoomTask = _grainFactory
-                .GetPlayerPresenceGrain(playerId)
-                .GetResumableRoomAsync();
+            Task<RoomId?> graceRoomTask = OrNullAsync(
+                () => _grainFactory.GetPlayerPresenceGrain(playerId).GetResumableRoomAsync(),
+                "grace room",
+                playerId
+            );
 
             // All awaited, so a failure of any is seen rather than dropped.
             await Task.WhenAll(
@@ -178,9 +187,35 @@ public class SSOTicketMessageHandler(
 
     /// <summary>The last zone, if it is still a published zone: a zone taken down sends the player
     /// to the start rather than into a dead room.</summary>
-    private async Task<RoomId?> PublishedAsync(RoomId? room, CancellationToken ct) =>
+    private Task<RoomId?> PublishedAsync(RoomId? room, CancellationToken ct) =>
         room is { } r
-        && await _zoneSource.GetPublishedAsync(r, ct).ConfigureAwait(false) is not null
-            ? r
-            : null;
+            ? OrNullAsync(
+                async () =>
+                    await _zoneSource.GetPublishedAsync(r, ct).ConfigureAwait(false) is not null
+                        ? r
+                        : null,
+                "published zone",
+                r.Value
+            )
+            : Task.FromResult<RoomId?>(null);
+
+    /// <summary>An optional landing place: its failure is logged and reads as "none".</summary>
+    private async Task<RoomId?> OrNullAsync(Func<Task<RoomId?>> lookup, string what, int id)
+    {
+        try
+        {
+            return await lookup().ConfigureAwait(false);
+        }
+        catch (Exception ex) when (ex is not OperationCanceledException)
+        {
+            _logger.LogWarning(
+                ex,
+                "Sign-in could not read the {What} for {Id}; skipping it.",
+                what,
+                id
+            );
+
+            return null;
+        }
+    }
 }
