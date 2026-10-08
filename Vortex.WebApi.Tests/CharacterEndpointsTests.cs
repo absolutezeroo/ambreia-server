@@ -27,14 +27,14 @@ public sealed class CharacterEndpointsTests
     }
 
     [Fact]
-    public async Task ANamedAvatarWithoutAClass_IsABadRequest()
+    public async Task ANamedAvatarWithoutAClass_StartsInTheStarterClass()
     {
         await using WebApiTestFactory f = new();
 
         HttpResponseMessage r = await PostAsync(f, "/api/user/avatars", """{ "name": "Bob" }""");
 
-        r.StatusCode.Should().Be(HttpStatusCode.BadRequest);
-        (await r.Content.ReadAsStringAsync()).Should().Contain("avatar.class_required");
+        r.StatusCode.Should().Be(HttpStatusCode.OK);
+        f.Characters.Choices.Should().Equal((101L, FakeCharacters.StarterClass));
     }
 
     [Fact]
@@ -71,12 +71,52 @@ public sealed class CharacterEndpointsTests
     /// <summary>The client creates the avatar of a registration without a name, then names it:
     /// that one chooses its class later (spec Personnage §2.4).</summary>
     [Fact]
-    public async Task ARegistrationAvatar_NeedsNoClassYet()
+    public async Task ARegistrationAvatar_StartsInTheStarterClass()
     {
         await using WebApiTestFactory f = new();
 
         (await PostAsync(f, "/api/user/avatars", "{}")).StatusCode.Should().Be(HttpStatusCode.OK);
-        f.Characters.Choices.Should().BeEmpty();
+        f.Characters.Choices.Should().Equal((101L, FakeCharacters.StarterClass));
+    }
+
+    /// <summary>An avatar made before the starter class existed gets it when it is next selected.</summary>
+    [Fact]
+    public async Task SelectingAnAvatarWithoutACharacter_GivesItTheStarterClass()
+    {
+        await using WebApiTestFactory f = new();
+
+        (
+            await PostAsync(
+                f,
+                "/api/user/avatars/select",
+                $$"""{ "uniqueId": "{{FakePlayerService.OwnedUniqueId}}" }"""
+            )
+        )
+            .StatusCode.Should()
+            .Be(HttpStatusCode.OK);
+        f.Characters.Choices.Should().Equal((100L, FakeCharacters.StarterClass));
+    }
+
+    [Fact]
+    public async Task TheStarterClass_IsLeftForARealOne()
+    {
+        await using WebApiTestFactory f = new();
+        await PostAsync(
+            f,
+            "/api/user/avatars/select",
+            $$"""{ "uniqueId": "{{FakePlayerService.OwnedUniqueId}}" }"""
+        );
+
+        (
+            await PostAsync(
+                f,
+                $"/api/user/avatars/{FakePlayerService.OwnedUniqueId}/class",
+                """{ "classId": "class.warrior" }"""
+            )
+        )
+            .StatusCode.Should()
+            .Be(HttpStatusCode.OK);
+        f.Characters.ByPlayer[100].ClassId.Should().Be("class.warrior");
     }
 
     [Fact]

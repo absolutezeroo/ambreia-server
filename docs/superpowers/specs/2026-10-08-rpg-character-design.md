@@ -24,9 +24,14 @@ reconnecte dans la zone qu'il a quittée ; une coupure de moins de 60 s le laiss
    (nom, figure, devise) ; l'état RPG est à côté, dans `player_characters`.
 2. **5 personnages par compte** (limite actuelle, `Vortex.WebApi/Configuration/WebApiConfig.cs:95`).
 3. **Niveau max 20** en V1.
-4. **Classe choisie à la création, définitive.** Un avatar existant sans classe la choisit à sa
-   prochaine sélection. Une seule spécialisation par classe en V1, attribuée d'office ; le
-   changement de spécialisation est tranché par la spec Combat (décision ouverte n° 18).
+4. **Départ « Sans classe », puis une vraie classe, définitive** (révisé le 2026-10-08 par le
+   propriétaire). Tout nouvel avatar commence dans la classe de départ `class.classless`
+   (« Sans classe », `"starter": true` dans le contenu, une seule par paquet) : niveau, XP et stats
+   tout de suite. Il la quitte **une fois** pour Guerrier, Archer, Mage ou Clerc, en gardant niveau
+   et XP ; une vraie classe est définitive. Un avatar existant sans personnage reçoit « Sans
+   classe » à sa prochaine sélection. Une seule spécialisation par classe en V1, attribuée
+   d'office ; le changement de spécialisation est tranché par la spec Combat (décision ouverte
+   n° 18).
 5. **Délai de grâce à la déconnexion : 60 s** (décision ouverte n° 17).
 6. **À la connexion : le personnage choisi, puis sa dernière zone** (décision d'audit n° 10).
 
@@ -91,8 +96,10 @@ choix de classe du site (chantier du site, qui appelle les routes de §8).
 
 ### 6.1 Calcul (§4 règle 3 de la spec unifiée)
 
-Stat finale = somme des contributions des sources `[StatSource]` enregistrées. Une source est une
-classe du code découverte par balayage ; F2 en livre deux :
+Stat finale = somme des contributions des sources `IStatSource` enregistrées. Une source est une
+classe du code **déclarée par DI** dans le module qui la porte
+(`services.AddSingleton<IStatSource, ClassLevelStatSource>()`, comme les sortes de contenu) ; F2 en
+livre deux :
 
 | Source | Contribue |
 |---|---|
@@ -136,7 +143,7 @@ quand le niveau, l'équipement ou le contenu changent, et le garde en mémoire ;
 - Projet **`Vortex.Rpg.Characters`** (couche plateforme, `scripts/hooks/check-architecture-walls.mjs`) :
   grain, sources de stats, handlers d'events. Contrat du grain (`IPlayerCharacterGrain`) et
   instantanés dans `Vortex.Primitives`, accès `GetPlayerCharacterGrain` dans `GrainFactoryExtensions`.
-- Le noyau **`Vortex.Rpg`** porte le contenu (spec Contenu), `[StatSource]`, `StatCalculator`, les
+- Le noyau **`Vortex.Rpg`** porte le contenu (spec Contenu), `IStatSource`, `StatCalculator`, les
   contrats des events RPG.
 
 ## 8. Commandes (web API)
@@ -144,8 +151,9 @@ quand le niveau, l'équipement ou le contenu changent, et le garde en mémoire ;
 | Route | Effet |
 |---|---|
 | `GET /api/public/content/classes` | Les classes : id, rôle, portée, stat principale (textes par clés) |
-| `POST /api/user/avatars` | Champ `classId` en plus ; requis dès que le contenu contient des classes ; crée le personnage avec la spécialisation par défaut |
-| `POST /api/user/avatars/{uniqueId}/class` | Choisit la classe d'un avatar qui n'en a pas ; une seule fois (409 ensuite) |
+| `POST /api/user/avatars` | Champ `classId` facultatif (vérifié s'il est donné) ; sans lui, le personnage part « Sans classe » ; spécialisation par défaut |
+| `POST /api/user/avatars/select` | Donne « Sans classe » à un avatar qui n'a pas encore de personnage |
+| `POST /api/user/avatars/{uniqueId}/class` | Quitte « Sans classe » pour une vraie classe, une seule fois (409 ensuite) |
 | `GET /api/user/avatars` | Chaque avatar porte `classId` et `level` (null s'il n'a pas de classe) |
 
 Les routes vérifient que l'avatar appartient au compte de la session (comme `avatars/select`). Le

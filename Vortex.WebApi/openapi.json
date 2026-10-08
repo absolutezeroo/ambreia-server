@@ -1176,7 +1176,8 @@
           "primaryStat",
           "range",
           "role",
-          "specializations"
+          "specializations",
+          "starter"
         ],
         "type": "object",
         "properties": {
@@ -1198,6 +1199,9 @@
             "items": {
               "type": "string"
             }
+          },
+          "starter": {
+            "type": "boolean"
           }
         },
         "additionalProperties": false

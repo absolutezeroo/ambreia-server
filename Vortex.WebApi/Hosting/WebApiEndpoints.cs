@@ -335,14 +335,15 @@ internal static partial class WebApiEndpoints
                         );
                     }
 
-                    if (!string.IsNullOrWhiteSpace(body.ClassId))
-                    {
-                        // Through the grain, the sole writer of player_characters.
-                        await grains
-                            .GetPlayerCharacterGrain(new PlayerId(playerId))
-                            .ChooseClassAsync(body.ClassId)
-                            .ConfigureAwait(false);
-                    }
+                    // A character at once: the class asked for, else « Sans classe ». Through the
+                    // grain, the sole writer of player_characters.
+                    await GiveClassAsync(
+                            grains,
+                            new PlayerId(playerId),
+                            ClassToGive(body.ClassId, content),
+                            CharactersLogger(ctx)
+                        )
+                        .ConfigureAwait(false);
 
                     return TypedResults.Ok(
                         await WithCharactersAsync(
@@ -374,6 +375,8 @@ internal static partial class WebApiEndpoints
                     SelectAvatarRequest body,
                     WebApiSessionStore sessions,
                     IWebApiPlayerService players,
+                    IRpgContentService content,
+                    IGrainFactory grains,
                     CancellationToken ct
                 ) =>
                 {
@@ -402,6 +405,16 @@ internal static partial class WebApiEndpoints
                     {
                         return new ForbiddenError("avatar_not_owned");
                     }
+
+                    // An avatar made before characters existed becomes one now, « Sans classe »;
+                    // the grain leaves a character already there as it is.
+                    await GiveClassAsync(
+                            grains,
+                            new PlayerId(playerId),
+                            ClassToGive(null, content),
+                            CharactersLogger(ctx)
+                        )
+                        .ConfigureAwait(false);
 
                     sessions.SetSelectedPlayer(ctx.SessionId(), playerId);
 

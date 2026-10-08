@@ -40,6 +40,7 @@ public sealed class PlayerCharacterGrainTests : IAsyncLifetime
         ["class.warrior"] = CharacterContent.Warrior,
         ["spec.warrior.guardian"] = CharacterContent.Guardian,
         ["progression.default"] = CharacterContent.Progression,
+        ["class.classless"] = CharacterContent.Classless,
     };
 
     private SqliteConnection _conn = null!;
@@ -116,6 +117,53 @@ public sealed class PlayerCharacterGrainTests : IAsyncLifetime
     }
 
     [Fact]
+    public async Task TheStarterClass_IsLeftOnceForARealClass()
+    {
+        IPlayerCharacterGrain grain = await ActivateAsync();
+        (await grain.ChooseClassAsync("class.classless")).Should().Be(ChooseClassOutcome.Chosen);
+
+        (await grain.ChooseClassAsync("class.warrior")).Should().Be(ChooseClassOutcome.Chosen);
+        (await grain.ChooseClassAsync("class.classless"))
+            .Should()
+            .Be(ChooseClassOutcome.AlreadyChosen);
+
+        PlayerCharacterEntity row = await RowAsync();
+        (row.ClassId, row.SpecializationId).Should().Be(("class.warrior", "spec.warrior.guardian"));
+        (await grain.GetStatsAsync())!.MaxHealth.Should().Be(120);
+    }
+
+    [Fact]
+    public async Task LeavingTheStarterClass_KeepsLevelAndXp()
+    {
+        await StoreAsync("class.classless", level: 5, xp: 30);
+        IPlayerCharacterGrain grain = await ActivateAsync();
+
+        await grain.ChooseClassAsync("class.warrior");
+
+        CharacterSummary summary = (await grain.GetSummaryAsync())!;
+        (summary.ClassId, summary.Level, summary.Xp).Should().Be(("class.warrior", 5, 30));
+        _events
+            .OfType<CharacterClassChangedEvent>()
+            .Should()
+            .Equal(new CharacterClassChangedEvent(Player, "class.classless", "class.warrior"));
+    }
+
+    [Fact]
+    public async Task TheStarterClass_IsNotLeftForAnotherStarterOrAnUnknownClass()
+    {
+        await StoreAsync("class.classless", level: 2);
+        IPlayerCharacterGrain grain = await ActivateAsync();
+
+        (await grain.ChooseClassAsync("class.classless"))
+            .Should()
+            .Be(ChooseClassOutcome.AlreadyChosen);
+        (await grain.ChooseClassAsync("class.paladin"))
+            .Should()
+            .Be(ChooseClassOutcome.UnknownClass);
+        (await RowAsync()).ClassId.Should().Be("class.classless");
+    }
+
+    [Fact]
     public async Task AStoredCharacter_IsHydrated()
     {
         await StoreAsync("class.warrior", level: 7);
@@ -178,7 +226,7 @@ public sealed class PlayerCharacterGrainTests : IAsyncLifetime
             .SingleAsync(c => c.PlayerEntityId == Player);
     }
 
-    private async Task StoreAsync(string classId, int level)
+    private async Task StoreAsync(string classId, int level, int xp = 0)
     {
         await using VortexDbContext db = new(_options);
         db.PlayerCharacters.Add(
@@ -188,6 +236,7 @@ public sealed class PlayerCharacterGrainTests : IAsyncLifetime
                 ClassId = classId,
                 SpecializationId = "spec.warrior.guardian",
                 Level = level,
+                Xp = xp,
             }
         );
         await db.SaveChangesAsync();

@@ -212,26 +212,59 @@ internal static partial class WebApiEndpoints
     }
 
     /// <summary>A named avatar needs a class once the content has classes; null when it may go on.</summary>
-    private static string? ClassRefusal(CreateAvatarRequest body, IRpgContentService content)
+    private static string? ClassRefusal(CreateAvatarRequest body, IRpgContentService content) =>
+        string.IsNullOrWhiteSpace(body.ClassId)
+        || content.GetClasses().Any(c => c.Id == body.ClassId)
+            ? null
+            : "avatar.unknown_class";
+
+    /// <summary>
+    /// The class a new avatar takes: the one asked for, else the starter class « Sans classe »
+    /// (owner decision, 2026-10-08); null while the content has neither.
+    /// </summary>
+    private static string? ClassToGive(string? asked, IRpgContentService content) =>
+        !string.IsNullOrWhiteSpace(asked)
+            ? asked
+            : content.GetClasses().FirstOrDefault(c => c.Starter)?.Id;
+
+    /// <summary>Makes the avatar a character in <paramref name="classId"/> if it is none yet; a
+    /// failure is logged and leaves the avatar as it was — it gets the class at a later try.</summary>
+    private static async Task GiveClassAsync(
+        IGrainFactory grains,
+        PlayerId playerId,
+        string? classId,
+        ILogger logger
+    )
     {
-        if (string.IsNullOrWhiteSpace(body.Name))
+        if (classId is null)
         {
-            // The registration avatar: named, and given its class, later (spec Personnage §2.4).
-            return null;
+            return;
         }
 
-        IReadOnlyList<ClassSummary> classes = content.GetClasses();
-
-        if (classes.Count == 0)
+        try
         {
-            return null;
-        }
+            ChooseClassOutcome outcome = await grains
+                .GetPlayerCharacterGrain(playerId)
+                .ChooseClassAsync(classId)
+                .ConfigureAwait(false);
 
-        if (string.IsNullOrWhiteSpace(body.ClassId))
+            if (outcome == ChooseClassOutcome.UnknownClass)
+            {
+                logger.LogWarning(
+                    "Avatar {PlayerId} could not take class {ClassId}: unknown to the content.",
+                    playerId.Value,
+                    classId
+                );
+            }
+        }
+        catch (Exception ex) when (ex is not OperationCanceledException)
         {
-            return "avatar.class_required";
+            logger.LogWarning(
+                ex,
+                "Avatar {PlayerId} could not take class {ClassId}.",
+                playerId.Value,
+                classId
+            );
         }
-
-        return classes.Any(c => c.Id == body.ClassId) ? null : "avatar.unknown_class";
     }
 }

@@ -37,6 +37,35 @@ internal static class CharacterContent
         Specializations = ["spec.warrior.guardian"],
     };
 
+    /// <summary>content/class/classless.json: the class every new avatar starts in.</summary>
+    public static readonly ClassDefinition Classless = new()
+    {
+        Id = "class.classless",
+        Kind = "class",
+        Starter = true,
+        Role = ClassRole.Damage,
+        Range = 1,
+        PrimaryStat = PrimaryStat.Strength,
+        Base = new StatBlock
+        {
+            Strength = 8,
+            Intelligence = 8,
+            Agility = 8,
+            Health = 60,
+            Mana = 40,
+            Armor = 1,
+        },
+        PerLevel = new StatBlock
+        {
+            Strength = 1,
+            Intelligence = 1,
+            Agility = 1,
+            Health = 10,
+            Mana = 2,
+        },
+        Specializations = ["spec.classless.adventurer"],
+    };
+
     public static readonly SpecializationDefinition Guardian = new()
     {
         Id = "spec.warrior.guardian",

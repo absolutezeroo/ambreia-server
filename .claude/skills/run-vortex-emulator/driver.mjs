@@ -415,16 +415,6 @@ async function ssoTicket() {
     if (res.status !== 200) die(`Avatar creation failed: ${res.status} ${res.body}`);
     avatars = JSON.parse(res.body);
   }
-  // A character (spec Personnage): the registration avatar takes its class afterwards. A 400 means
-  // the content has no such class yet (nothing pushed) and the avatar stays social only.
-  if (avatars[0].classId == null) {
-    res = await request(`${base}/api/user/avatars/${avatars[0].uniqueId}/class`, {
-      method: 'POST',
-      headers,
-      body: json({ classId: 'class.warrior' }),
-    });
-    if (res.status === 200) log(`Avatar ${avatars[0].uniqueId} is now a class.warrior character.`);
-  }
   res = await request(`${base}/api/user/avatars/select`, {
     method: 'POST',
     headers,
@@ -955,7 +945,9 @@ async function cmdCharacter(amount = '250') {
   const avatars = async () => JSON.parse((await request(`${base}/api/user/avatars`, { headers })).body);
   let avatar = (await avatars())[0];
   if (!avatar) die('No avatar: run `play` first.');
-  if (avatar.classId == null) {
+  log(`Avatar ${avatar.uniqueId}: ${avatar.classId}, level ${avatar.level}.`);
+  // Every avatar starts « Sans classe » (given at creation or selection); it leaves it once.
+  if (avatar.classId == null || avatar.classId === 'class.classless') {
     const res = await request(`${base}/api/user/avatars/${avatar.uniqueId}/class`, {
       method: 'POST',
       headers,

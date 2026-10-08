@@ -15,7 +15,13 @@ public interface IContentReferences
 
     public Task<bool> IsReferencedAsync(VortexDbContext db, string contentId, CancellationToken ct);
 
-    /// <summary>Points every reference to <paramref name="from"/> at <paramref name="to"/>, inside
-    /// the import's transaction (<paramref name="db"/> carries it).</summary>
+    /// <summary>
+    /// Points every reference to <paramref name="from"/> at <paramref name="to"/>, inside the
+    /// import's transaction (<paramref name="db"/> carries it). It rewrites rows only: a grain that
+    /// owns them must never write the id back from memory and must re-read it when
+    /// <c>IRpgContent.Version</c> moves (AGENTS.md, Gotchas; <c>PlayerCharacterGrain</c> does) —
+    /// an inventory flushed from memory every few seconds needs the same rule, or a notice to
+    /// its active grains.
+    /// </summary>
     public Task ReplaceAsync(VortexDbContext db, string from, string to, CancellationToken ct);
 }

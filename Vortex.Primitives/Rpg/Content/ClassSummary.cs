@@ -7,10 +7,12 @@ namespace Vortex.Primitives.Rpg.Content;
 /// the text keys <c>&lt;id&gt;.name</c> and <c>&lt;id&gt;.description</c>; role and primary stat are
 /// written as in the content files (<c>tank</c>, <c>strength</c>).
 /// </summary>
+/// <param name="Starter">The class every new avatar starts in (« Sans classe »): not one to pick.</param>
 public sealed record ClassSummary(
     string Id,
     string Role,
     int Range,
     string PrimaryStat,
-    IReadOnlyList<string> Specializations
+    IReadOnlyList<string> Specializations,
+    bool Starter = false
 );

@@ -15,6 +15,8 @@ internal sealed class FakeCharacters
 {
     public const string KnownClass = "class.warrior";
 
+    public const string StarterClass = "class.classless";
+
     public Dictionary<long, CharacterSummary> ByPlayer { get; } = [];
 
     public List<(long Player, string ClassId)> Choices { get; } = [];
@@ -45,12 +47,16 @@ internal sealed class FakeCharacters
 
     private ChooseClassOutcome Choose(long player, string classId)
     {
-        if (ByPlayer.ContainsKey(player))
+        // The grain's rule: the starter class is left once for a real class; a real one is kept.
+        if (ByPlayer.TryGetValue(player, out CharacterSummary? current))
         {
-            return ChooseClassOutcome.AlreadyChosen;
+            if (current.ClassId != StarterClass || classId == StarterClass)
+            {
+                return ChooseClassOutcome.AlreadyChosen;
+            }
         }
 
-        if (classId != KnownClass)
+        if (classId != KnownClass && classId != StarterClass)
         {
             return ChooseClassOutcome.UnknownClass;
         }

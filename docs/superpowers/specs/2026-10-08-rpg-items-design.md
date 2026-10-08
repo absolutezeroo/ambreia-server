@@ -122,7 +122,7 @@ Chaque opération réussie publie son event (§9) et recalcule les stats si l'é
 
 ## 8. Stats de l'équipement
 
-`EquipmentStatSource` (`[StatSource]`, spec Personnage §6) additionne les `stats` des objets équipés
+`EquipmentStatSource` (`IStatSource` déclaré par DI, spec Personnage §6) additionne les `stats` des objets équipés
 dont la durabilité est > 0 (ou inusables). Changer d'équipement recalcule
 `CharacterStatsSnapshot` et publie `CharacterStatsChanged`.
 

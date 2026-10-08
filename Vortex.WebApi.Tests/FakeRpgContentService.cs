@@ -31,5 +31,15 @@ internal sealed class FakeRpgContentService : IRpgContentService
         Task.FromResult(language == "fr" ? "class.warrior.name=Guerrier" : null);
 
     public IReadOnlyList<ClassSummary> GetClasses() =>
-        [new ClassSummary("class.warrior", "tank", 1, "strength", ["spec.warrior.guardian"])];
+        [
+            new ClassSummary(
+                "class.classless",
+                "damage",
+                1,
+                "strength",
+                ["spec.classless.adventurer"],
+                Starter: true
+            ),
+            new ClassSummary("class.warrior", "tank", 1, "strength", ["spec.warrior.guardian"]),
+        ];
 }

@@ -120,9 +120,11 @@ refuses the start, and a failed reload keeps the set it had. Every system reads 
 
 ## Flow 7 — the character
 
-An avatar becomes a character when it takes a class (spec `2026-10-08-rpg-character-design.md`):
-`POST /api/user/avatars` with `classId` for a named avatar, or `POST /api/user/avatars/{id}/class`
-for one without (the registration avatar). Either way the route calls `IPlayerCharacterGrain`
+Every avatar is a character (spec `2026-10-08-rpg-character-design.md`): it starts in the starter
+class « Sans classe » (`class.classless`, `"starter": true`), given by `POST /api/user/avatars`
+(or the `classId` asked for) and, for an avatar older than that, by `POST /api/user/avatars/select`.
+It leaves the starter once for a real class (`POST /api/user/avatars/{id}/class`), keeping level
+and XP. Every path calls `IPlayerCharacterGrain`
 (`Vortex.Rpg.Characters`, key = player id), the sole writer of `player_characters`: class and
 specialization once, level and XP through `GainXpAsync` (server only; a level is written at once,
 XP on a 30 s timer and at deactivation), stats from the `IStatSource`s declared in

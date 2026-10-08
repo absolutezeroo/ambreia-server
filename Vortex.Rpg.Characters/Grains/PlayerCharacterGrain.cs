@@ -134,9 +134,11 @@ internal sealed class PlayerCharacterGrain(
 
     public async Task<ChooseClassOutcome> ChooseClassAsync(string classId)
     {
-        if (_character is not null)
+        await RefreshIdsAsync();
+
+        if (_character is { } current)
         {
-            return ChooseClassOutcome.AlreadyChosen;
+            return await LeaveTheStarterClassAsync(current, classId);
         }
 
         if (content.Get<ClassDefinition>(classId) is not { Retired: false } chosen)
@@ -170,6 +172,59 @@ internal sealed class PlayerCharacterGrain(
                 new CharacterCreatedEvent(_playerId, created.ClassId, created.SpecializationId)
             )
             .LogAndForget(logger, "Publishing CharacterCreated for {PlayerId}", _playerId.Value);
+
+        return ChooseClassOutcome.Chosen;
+    }
+
+    /// <summary>
+    /// The one class change there is (owner decision, 2026-10-08): from the starter class « Sans
+    /// classe » to a real class, keeping level and XP. A real class is permanent. The ids are
+    /// written here, at once — the choice is the player's, not a copy from memory.
+    /// </summary>
+    private async Task<ChooseClassOutcome> LeaveTheStarterClassAsync(
+        PlayerCharacterEntity current,
+        string classId
+    )
+    {
+        if (content.Get<ClassDefinition>(current.ClassId) is not { Starter: true })
+        {
+            return ChooseClassOutcome.AlreadyChosen;
+        }
+
+        if (content.Get<ClassDefinition>(classId) is not { Retired: false } chosen)
+        {
+            return ChooseClassOutcome.UnknownClass;
+        }
+
+        if (chosen.Starter)
+        {
+            return ChooseClassOutcome.AlreadyChosen;
+        }
+
+        string oldClass = current.ClassId;
+        string specialization = chosen.Specializations[0];
+
+        await using VortexDbContext db = await dbFactory.CreateDbContextAsync();
+        await db
+            .PlayerCharacters.Where(x => x.PlayerEntityId == current.PlayerEntityId)
+            .ExecuteUpdateAsync(up =>
+                up.SetProperty(x => x.ClassId, chosen.Id)
+                    .SetProperty(x => x.SpecializationId, specialization)
+            );
+
+        current.ClassId = chosen.Id;
+        current.SpecializationId = specialization;
+        _stats = null;
+
+        logger.LogInformation(
+            "Player {PlayerId} left {OldClassId} for {ClassId} at level {Level}.",
+            _playerId.Value,
+            oldClass,
+            chosen.Id,
+            current.Level
+        );
+        Publish(new CharacterClassChangedEvent(_playerId, oldClass, chosen.Id));
+        Publish(new CharacterStatsChangedEvent(_playerId));
 
         return ChooseClassOutcome.Chosen;
     }

@@ -14,7 +14,11 @@ public interface IPlayerCharacterGrain : IGrainWithIntegerKey
     /// <summary>Class, specialization, level and XP; null without a character.</summary>
     public Task<CharacterSummary?> GetSummaryAsync();
 
-    /// <summary>Gives the avatar its class, once (spec Personnage §2.4).</summary>
+    /// <summary>
+    /// Gives the avatar its class: the starter class « Sans classe » or a real one when it has none,
+    /// then, once, a real class in place of the starter, keeping level and XP. A real class is
+    /// permanent (owner decision, 2026-10-08).
+    /// </summary>
     public Task<ChooseClassOutcome> ChooseClassAsync(string classId);
 
     /// <summary>The computed stats; null without a character.</summary>

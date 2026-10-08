@@ -69,7 +69,8 @@ public sealed class RpgContentService(
                     JsonNamingPolicy.SnakeCaseLower.ConvertName(c.Role.ToString()),
                     c.Range,
                     JsonNamingPolicy.SnakeCaseLower.ConvertName(c.PrimaryStat.ToString()),
-                    c.Specializations
+                    c.Specializations,
+                    c.Starter
                 )),
         ];
 
