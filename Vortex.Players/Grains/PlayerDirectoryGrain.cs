@@ -6,23 +6,30 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Orleans;
 using Vortex.Database.Context;
+using Vortex.Players.Configuration;
 using Vortex.Primitives.Players;
 using Vortex.Primitives.Players.Grains;
 
 namespace Vortex.Players.Grains;
 
 [KeepAlive]
-internal class PlayerDirectoryGrain(
+internal sealed class PlayerDirectoryGrain(
     IDbContextFactory<VortexDbContext> dbCtxFactory,
+    IOptions<PlayerDirectoryConfig> config,
     ILogger<PlayerDirectoryGrain> logger
 ) : Grain, IPlayerDirectoryGrain
 {
     private readonly IDbContextFactory<VortexDbContext> _dbCtxFactory = dbCtxFactory;
+    private readonly int _maxCachedNames = Math.Max(1, config.Value.MaxCachedNames);
     private readonly ILogger<PlayerDirectoryGrain> _logger = logger;
 
     private readonly Dictionary<PlayerId, string> _idToName = [];
+
+    /// <summary>How many names are cached, for the test that pins the cap.</summary>
+    internal int CachedNames => _idToName.Count;
 
     public async Task<string> GetPlayerNameAsync(PlayerId playerId, CancellationToken ct)
     {
@@ -145,6 +152,13 @@ internal class PlayerDirectoryGrain(
 
     private void SetNameCache(PlayerId playerId, string name)
     {
+        // ponytail: starts over when full rather than evicting the least used; an LRU if the
+        // database reads after a reset ever show.
+        if (_idToName.Count >= _maxCachedNames && !_idToName.ContainsKey(playerId))
+        {
+            _idToName.Clear();
+        }
+
         _idToName[playerId] = name;
     }
 }

@@ -5,9 +5,15 @@ using System.Threading.Tasks;
 using FluentAssertions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.Extensions.Options;
 using Vortex.Database.Context;
+using Vortex.Database.Entities.Players;
+using Vortex.Players.Configuration;
 using Vortex.Players.Grains;
+using Vortex.Players.Tests.Support;
 using Vortex.Primitives.Players;
+using Vortex.Primitives.Players.Enums;
+using Vortex.Primitives.Rooms.Enums;
 using Vortex.Tests.Support;
 using Xunit;
 
@@ -25,7 +31,7 @@ public sealed class PlayerNameLookupTests
     [Fact]
     public async Task AnUnknownId_HasNoName()
     {
-        PlayerDirectoryGrain grain = Create();
+        PlayerDirectoryGrain grain = Create(Options());
 
         (await grain.GetPlayerNameAsync(Unknown, CancellationToken.None).ConfigureAwait(true))
             .Should()
@@ -35,7 +41,7 @@ public sealed class PlayerNameLookupTests
     [Fact]
     public async Task AnUnknownId_AskedAlone_IsLeftOut()
     {
-        PlayerDirectoryGrain grain = Create();
+        PlayerDirectoryGrain grain = Create(Options());
 
         ImmutableDictionary<PlayerId, string> names = await grain
             .GetPlayerNamesAsync([Unknown], CancellationToken.None)
@@ -44,22 +50,68 @@ public sealed class PlayerNameLookupTests
         names.Should().BeEmpty();
     }
 
-    private static PlayerDirectoryGrain Create()
+    /// <summary>
+    /// The grain is <c>[KeepAlive]</c>: an unbounded cache would hold every player ever looked up for
+    /// the lifetime of the silo. A forgotten name is only one more database read.
+    /// </summary>
+    [Fact]
+    public async Task TheNameCache_NeverGrowsPastItsCap()
     {
-        DbContextOptions<VortexDbContext> options = new DbContextOptionsBuilder<VortexDbContext>()
+        DbContextOptions<VortexDbContext> options = Options();
+        await SeedAsync(options, "Ann", "Bob", "Cid", "Dee");
+        PlayerDirectoryGrain grain = Create(options, maxCachedNames: 2);
+
+        for (int id = 1; id <= 4; id++)
+        {
+            await grain.GetPlayerNameAsync(new PlayerId(id), CancellationToken.None);
+        }
+
+        grain.CachedNames.Should().BeLessThanOrEqualTo(2);
+        (await grain.GetPlayerNameAsync(new PlayerId(1), CancellationToken.None))
+            .Should()
+            .Be("Ann", "a name evicted from the cache is read again");
+    }
+
+    private static DbContextOptions<VortexDbContext> Options() =>
+        new DbContextOptionsBuilder<VortexDbContext>()
             .UseInMemoryDatabase($"directory-{Guid.NewGuid():N}")
             .Options;
 
-        return GrainActivationContext.CreateWithIntegerKey<PlayerDirectoryGrain>(
-            0,
-            new InMemoryFactory(options),
-            NullLogger<PlayerDirectoryGrain>.Instance
-        );
+    private static async Task SeedAsync(
+        DbContextOptions<VortexDbContext> options,
+        params string[] names
+    )
+    {
+        await using VortexDbContext db = new(options);
+
+        for (int i = 0; i < names.Length; i++)
+        {
+            db.Players.Add(
+                new PlayerEntity
+                {
+                    Id = i + 1,
+                    Name = names[i],
+                    Figure = "hd-180-1",
+                    Gender = AvatarGenderType.Male,
+                    PlayerStatus = PlayerStatusType.Offline,
+                    PlayerPerks = PlayerPerkFlags.None,
+                }
+            );
+        }
+
+        await db.SaveChangesAsync();
     }
 
-    private sealed class InMemoryFactory(DbContextOptions<VortexDbContext> options)
-        : IDbContextFactory<VortexDbContext>
-    {
-        public VortexDbContext CreateDbContext() => new(options);
-    }
+    private static PlayerDirectoryGrain Create(
+        DbContextOptions<VortexDbContext> options,
+        int maxCachedNames = 10_000
+    ) =>
+        GrainActivationContext.CreateWithIntegerKey<PlayerDirectoryGrain>(
+            0,
+            new OptionsDbContextFactory(options),
+            Microsoft.Extensions.Options.Options.Create(
+                new PlayerDirectoryConfig { MaxCachedNames = maxCachedNames }
+            ),
+            NullLogger<PlayerDirectoryGrain>.Instance
+        );
 }

@@ -33,5 +33,8 @@ public sealed class PlayerModule : IHostPluginModule
         services.Configure<PlayerPresenceConfig>(
             builder.Configuration.GetSection(PlayerPresenceConfig.SECTION_NAME)
         );
+        services.Configure<PlayerDirectoryConfig>(
+            builder.Configuration.GetSection(PlayerDirectoryConfig.SECTION_NAME)
+        );
     }
 }
