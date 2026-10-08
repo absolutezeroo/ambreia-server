@@ -8,12 +8,17 @@ public class RoomConfig
     public const string SECTION_NAME = "Vortex:Rooms";
 
     public Altitude MaxStackHeight { get; init; } = Altitude.FromInt(4000);
+
     public RoomScaleType DefaultRoomScale { get; init; } = RoomScaleType.Normal;
+
     public Altitude MaxStepHeight { get; init; } = Altitude.FromInt(200);
+
     public bool PlaceItemsOnAvatars { get; init; } = true;
+
     public bool EnableDiagonalChecking { get; init; } = true;
 
     public int RoomCheckMs { get; init; } = 300000;
+
     public int RoomDeactivationDelayMs { get; init; } = 1800000;
 
     /// <summary>
@@ -32,14 +37,16 @@ public class RoomConfig
     /// </para>
     /// </summary>
     public int RoomTickMs { get; init; } = 50;
+
     public int AvatarTickMs { get; init; } = 500;
 
     public int DirtyItemsTickMs { get; init; } = 2000;
-    public int MaxDirtyItemsPerFlush { get; init; } = 100;
-    public int MaxTileHeightsPerFlush { get; init; } = 200;
-    public int MaxPathNodes { get; init; } = 4096;
 
-    public int MaxVisitorsLimit { get; init; } = 50;
+    public int MaxDirtyItemsPerFlush { get; init; } = 100;
+
+    public int MaxTileHeightsPerFlush { get; init; } = 200;
+
+    public int MaxPathNodes { get; init; } = 4096;
 
     /// <summary>How long a zone keeps the entry a passage or a teleport announced for a player.</summary>
     public int ExpectedArrivalTimeoutMs { get; init; } = 30000;

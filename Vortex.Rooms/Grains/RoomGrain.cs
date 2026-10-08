@@ -24,7 +24,6 @@ using Vortex.Primitives.Networking;
 using Vortex.Primitives.Observability;
 using Vortex.Primitives.Orleans;
 using Vortex.Primitives.Orleans.Snapshots.Room;
-using Vortex.Primitives.Orleans.Snapshots.Room.Settings;
 using Vortex.Primitives.Permissions;
 using Vortex.Primitives.Rooms;
 using Vortex.Primitives.Rooms.Enums;
@@ -451,41 +450,14 @@ public sealed partial class RoomGrain : Grain, IRoomGrain
                 Description = entity.Description ?? string.Empty,
                 OwnerId = entity.PlayerEntityId,
                 OwnerName = entity.PlayerEntity?.Name ?? string.Empty,
-                LeaveOnDoorTile = entity.LeaveOnDoorTile,
-                IdleSleepEnabled = entity.IdleSleepEnabled,
-                IdleSleepTimeoutSeconds = entity.IdleSleepTimeoutSeconds,
-                IdleAutokickEnabled = entity.IdleAutokickEnabled,
-                IdleAutokickTimeoutSeconds = entity.IdleAutokickTimeoutSeconds,
-                MuteAllPets = entity.MuteAllPets,
                 Population = 0,
                 DoorMode = entity.DoorMode,
                 PlayersMax = entity.PlayersMax,
-                MaxVisitorsLimit = _roomConfig.MaxVisitorsLimit,
-                TradeType = entity.TradeType,
-                Ranking = entity.Ranking,
-                CategoryId = -1,
-                Tags = RoomTagMapper.ToTags(entity.Tag1, entity.Tag2),
                 AllowBlocking = entity.AllowBlocking,
-                AllowPets = entity.AllowPets,
-                AllowPetsEat = entity.AllowPetsEat,
                 PaintWall = entity.PaintWall ?? string.Empty,
                 PaintFloor = entity.PaintFloor ?? string.Empty,
                 PaintLandscape = entity.PaintLandscape ?? string.Empty,
                 Password = entity.Password ?? string.Empty,
-                ModSettings = new ModSettingsSnapshot
-                {
-                    WhoCanMute = entity.MuteType,
-                    WhoCanKick = entity.KickType,
-                    WhoCanBan = entity.BanType,
-                },
-                ChatSettings = new ChatSettingsSnapshot
-                {
-                    ChatMode = entity.ChatModeType,
-                    BubbleWidth = entity.ChatBubbleType,
-                    ScrollSpeed = entity.ChatSpeedType,
-                    FullHearRange = entity.ChatDistance,
-                    FloodSensitivity = entity.ChatFloodType,
-                },
                 WorldType = _state.Model.Name,
                 HideWalls = entity.HideWalls,
                 WallThickness = entity.ThicknessWall,

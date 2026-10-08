@@ -22,7 +22,6 @@ using Vortex.Primitives.Networking;
 using Vortex.Primitives.Observability;
 using Vortex.Primitives.Orleans.Snapshots.Players;
 using Vortex.Primitives.Orleans.Snapshots.Room;
-using Vortex.Primitives.Orleans.Snapshots.Room.Settings;
 using Vortex.Primitives.Permissions;
 using Vortex.Primitives.Players;
 using Vortex.Primitives.Players.Grains;
@@ -178,36 +177,15 @@ internal sealed class RoomHarness
             LastUpdatedUtc = DateTime.UnixEpoch,
             DoorMode = RoomDoorModeType.Open,
             PlayersMax = 25,
-            TradeType = RoomTradeModeType.Disabled,
-            Ranking = 0,
-            CategoryId = -1,
-            Tags = [],
             AllowBlocking = false,
-            AllowPets = true,
-            AllowPetsEat = false,
             PaintWall = string.Empty,
             PaintFloor = string.Empty,
             PaintLandscape = string.Empty,
             Password = string.Empty,
-            ModSettings = new ModSettingsSnapshot
-            {
-                WhoCanMute = ModSettingType.Owner,
-                WhoCanKick = ModSettingType.Owner,
-                WhoCanBan = ModSettingType.Owner,
-            },
-            ChatSettings = new ChatSettingsSnapshot
-            {
-                ChatMode = ChatModeType.FreeFlow,
-                BubbleWidth = ChatBubbleWidthType.Normal,
-                ScrollSpeed = ChatScrollSpeedType.Normal,
-                FullHearRange = 50,
-                FloodSensitivity = ChatFloodSensitivityType.Normal,
-            },
             WorldType = string.Empty,
             HideWalls = false,
             WallThickness = RoomThicknessType.Normal,
             FloorThickness = RoomThicknessType.Normal,
-            MaxVisitorsLimit = 25,
         };
 
         // A room with no model has no tiles, and an avatar with nowhere to step cannot be seen to walk.

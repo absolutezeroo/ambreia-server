@@ -1,5 +1,3 @@
-using System;
-using System.Collections.Immutable;
 using Orleans;
 using Vortex.Primitives.Rooms.Enums;
 
@@ -14,28 +12,17 @@ public record RoomInfoSnapshot : RoomSummarySnapshot
     [Id(1)]
     public required int PlayersMax { get; init; } = 0;
 
-    [Id(2)]
-    public required RoomTradeModeType TradeType { get; init; } = RoomTradeModeType.Disabled;
-
+    // [Id(2)] retired: TradeType, a Habbo room setting; trade rules come from the zone document.
     // [Id(3)] retired: Score, last read by the room rating packet the RPG no longer sends.
-
-    [Id(4)]
-    public required int Ranking { get; init; } = 0;
-
-    [Id(5)]
-    public required int CategoryId { get; init; } = -1;
-
-    [Id(6)]
-    public required ImmutableArray<string> Tags { get; init; } = [];
+    // [Id(4)] retired: Ranking, navigator ordering (the navigator is gone, spec §3.2 ter).
+    // [Id(5)] retired: CategoryId, navigator category.
+    // [Id(6)] retired: Tags, navigator search.
 
     [Id(7)]
     public required bool AllowBlocking { get; init; } = false;
 
-    [Id(8)]
-    public required bool AllowPets { get; init; } = false;
-
-    [Id(9)]
-    public required bool AllowPetsEat { get; init; } = false;
+    // [Id(8)] retired: AllowPets, a Habbo room setting nothing read.
+    // [Id(9)] retired: AllowPetsEat, a Habbo room setting nothing read.
 
     [Id(10)]
     public int? GroupId { get; init; }
