@@ -20,6 +20,7 @@ using Vortex.Primitives.Observability;
 using Vortex.Primitives.Permissions;
 using Vortex.Primitives.Players;
 using Vortex.Primitives.Rooms;
+using Vortex.Primitives.Rpg.Characters.Grains;
 using Vortex.Primitives.Rpg.Content;
 using Vortex.Primitives.World.Editing;
 using Vortex.Primitives.World.Grains;
@@ -86,7 +87,7 @@ internal sealed class WebApiTestFactory : IAsyncDisposable
 
         builder.Services.AddSingleton(Sessions);
         builder.Services.AddSingleton<IWebApiAuthService>(new FakeAuthService(Sessions));
-        builder.Services.AddSingleton<IWebApiPlayerService>(new FakePlayerService());
+        builder.Services.AddSingleton<IWebApiPlayerService>(Players);
         builder.Services.AddSingleton<IPermissionService>(
             new FakePermissionService(capabilities ?? [.. Capabilities.World.All])
         );
@@ -94,8 +95,10 @@ internal sealed class WebApiTestFactory : IAsyncDisposable
         builder.Services.AddSingleton<IRpgContentService>(new FakeRpgContentService());
         builder.Services.AddSingleton<IGrainFactory>(
             FakeProxy.Create<IGrainFactory>(call =>
-                call.Method.Name == nameof(IGrainFactory.GetGrain)
-                && call.Method.GetGenericArguments()[0] == typeof(IZoneTestGrain)
+                call.Method.Name != nameof(IGrainFactory.GetGrain) ? null
+                : call.Method.GetGenericArguments()[0] == typeof(IPlayerCharacterGrain)
+                    ? Characters.For((long)call.Args![0]!)
+                : call.Method.GetGenericArguments()[0] == typeof(IZoneTestGrain)
                     ? FakeProxy.Create<IZoneTestGrain>(inner =>
                     {
                         ZoneTests.Add(
@@ -109,7 +112,7 @@ internal sealed class WebApiTestFactory : IAsyncDisposable
 
                         return null;
                     })
-                    : null
+                : null
             )
         );
         builder.Services.AddSingleton<IOptions<WebApiConfig>>(Options.Create(config));
@@ -151,6 +154,12 @@ internal sealed class WebApiTestFactory : IAsyncDisposable
     }
 
     public WebApiSessionStore Sessions { get; }
+
+    /// <summary>The character grains the routes reach.</summary>
+    public FakeCharacters Characters { get; } = new();
+
+    /// <summary>The player service behind the avatar routes.</summary>
+    public FakePlayerService Players { get; } = new();
 
     /// <summary>Every test-mode sign-in the editor's test route announced.</summary>
     public List<(PlayerId Player, RoomId Room, int X, int Y)> ZoneTests { get; } = [];

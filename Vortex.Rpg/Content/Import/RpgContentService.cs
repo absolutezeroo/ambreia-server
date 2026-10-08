@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
@@ -57,6 +58,20 @@ public sealed class RpgContentService(
             _gate.Release();
         }
     }
+
+    public IReadOnlyList<ClassSummary> GetClasses() =>
+        [
+            .. registry
+                .All<ClassDefinition>()
+                .Where(c => !c.Retired)
+                .Select(c => new ClassSummary(
+                    c.Id,
+                    JsonNamingPolicy.SnakeCaseLower.ConvertName(c.Role.ToString()),
+                    c.Range,
+                    JsonNamingPolicy.SnakeCaseLower.ConvertName(c.PrimaryStat.ToString()),
+                    c.Specializations
+                )),
+        ];
 
     public async Task<string?> GetTextsAsync(string language, CancellationToken ct)
     {

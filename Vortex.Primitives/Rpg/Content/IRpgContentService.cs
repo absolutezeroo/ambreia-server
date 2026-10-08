@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -15,4 +16,7 @@ public interface IRpgContentService
 
     /// <summary>The imported text file of a language, or null when none was imported.</summary>
     public Task<string?> GetTextsAsync(string language, CancellationToken ct);
+
+    /// <summary>The classes a new character may take: those of the served content, not retired.</summary>
+    public IReadOnlyList<ClassSummary> GetClasses();
 }

@@ -129,6 +129,97 @@
         }
       }
     },
+    "/api/public/content/classes": {
+      "get": {
+        "tags": [
+          "Characters"
+        ],
+        "summary": "The classes a new character may take.",
+        "operationId": "ContentClasses",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ClassSummary"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/user/avatars/{uniqueId}/class": {
+      "post": {
+        "tags": [
+          "Characters"
+        ],
+        "summary": "Give an avatar without a class its class, once.",
+        "operationId": "ChooseAvatarClass",
+        "parameters": [
+          {
+            "name": "uniqueId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ChooseClassRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EmptyResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/content/import": {
       "post": {
         "tags": [
@@ -991,6 +1082,64 @@
           },
           "gender": {
             "type": "string"
+          },
+          "classId": {
+            "type": "string",
+            "nullable": true
+          },
+          "level": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "ChooseClassRequest": {
+        "required": [
+          "isValid"
+        ],
+        "type": "object",
+        "properties": {
+          "classId": {
+            "type": "string",
+            "nullable": true
+          },
+          "isValid": {
+            "type": "boolean",
+            "readOnly": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "ClassSummary": {
+        "required": [
+          "id",
+          "primaryStat",
+          "range",
+          "role",
+          "specializations"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "role": {
+            "type": "string"
+          },
+          "range": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "primaryStat": {
+            "type": "string"
+          },
+          "specializations": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
           }
         },
         "additionalProperties": false
@@ -1126,6 +1275,10 @@
             "nullable": true
           },
           "gender": {
+            "type": "string",
+            "nullable": true
+          },
+          "classId": {
             "type": "string",
             "nullable": true
           },
@@ -1568,6 +1721,9 @@
   "tags": [
     {
       "name": "Authentication"
+    },
+    {
+      "name": "Characters"
     },
     {
       "name": "Content"

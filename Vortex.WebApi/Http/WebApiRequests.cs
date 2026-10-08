@@ -43,7 +43,14 @@ public sealed record RegisterRequest(string? Email, string? Password, string? Pa
 /// registering, and <c>WebApiPlayerService.CreateAvatarAsync</c> assigns a placeholder that the
 /// client's onboarding step replaces. Everything else about the request is unchanged.
 /// </remarks>
-public sealed record CreateAvatarRequest(string? Name, string? Figure, string? Gender)
+/// <param name="ClassId">Required for a named avatar once the content has classes (spec Personnage
+/// §8); the registration avatar, created without a name, chooses its class later.</param>
+public sealed record CreateAvatarRequest(
+    string? Name,
+    string? Figure,
+    string? Gender,
+    string? ClassId = null
+)
 {
     // Blank stays valid — that is the registration path, which wants the placeholder. A name that IS
     // supplied has to be one the player could have picked in-game; WebApiPlayerService refuses it

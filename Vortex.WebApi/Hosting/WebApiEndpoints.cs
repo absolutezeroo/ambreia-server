@@ -11,10 +11,14 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.EntityFrameworkCore;
+using Orleans;
 using Vortex.Database.Context;
 using Vortex.Primitives.Authentication;
 using Vortex.Primitives.Hosting;
 using Vortex.Primitives.Observability;
+using Vortex.Primitives.Orleans;
+using Vortex.Primitives.Players;
+using Vortex.Primitives.Rpg.Content;
 using Vortex.WebApi.Http;
 using Vortex.WebApi.Services;
 using Vortex.WebApi.Session;
@@ -47,6 +51,7 @@ internal static partial class WebApiEndpoints
         MapNewUser(app);
         MapEditor(app);
         MapContent(app);
+        MapCharacters(app);
     }
 
     private static void MapPublic(WebApplication app)
@@ -249,6 +254,7 @@ internal static partial class WebApiEndpoints
                     HttpContext ctx,
                     WebApiSessionStore sessions,
                     IWebApiPlayerService players,
+                    IGrainFactory grains,
                     CancellationToken ct
                 ) =>
                 {
@@ -260,8 +266,12 @@ internal static partial class WebApiEndpoints
                     }
 
                     return TypedResults.Ok(
-                        await players
-                            .GetAvatarsForAccountAsync(accountId.Value, ct)
+                        await WithCharactersAsync(
+                                await players
+                                    .GetAvatarsForAccountAsync(accountId.Value, ct)
+                                    .ConfigureAwait(false),
+                                grains
+                            )
                             .ConfigureAwait(false)
                     );
                 }
@@ -284,6 +294,8 @@ internal static partial class WebApiEndpoints
                     CreateAvatarRequest body,
                     WebApiSessionStore sessions,
                     IWebApiPlayerService players,
+                    IRpgContentService content,
+                    IGrainFactory grains,
                     CancellationToken ct
                 ) =>
                 {
@@ -299,7 +311,13 @@ internal static partial class WebApiEndpoints
                         return TypedResults.BadRequest(new ApiErrorResponse("invalid_request"));
                     }
 
-                    (bool success, int _, string? error) = await players
+                    // Checked before the avatar exists, so a wrong class creates nothing.
+                    if (ClassRefusal(body, content) is { } refusal)
+                    {
+                        return TypedResults.BadRequest(new ApiErrorResponse(refusal));
+                    }
+
+                    (bool success, int playerId, string? error) = await players
                         .CreateAvatarAsync(
                             accountId.Value,
                             body.Name!,
@@ -316,9 +334,22 @@ internal static partial class WebApiEndpoints
                         );
                     }
 
+                    if (!string.IsNullOrWhiteSpace(body.ClassId))
+                    {
+                        // Through the grain, the sole writer of player_characters.
+                        await grains
+                            .GetPlayerCharacterGrain(new PlayerId(playerId))
+                            .ChooseClassAsync(body.ClassId)
+                            .ConfigureAwait(false);
+                    }
+
                     return TypedResults.Ok(
-                        await players
-                            .GetAvatarsForAccountAsync(accountId.Value, ct)
+                        await WithCharactersAsync(
+                                await players
+                                    .GetAvatarsForAccountAsync(accountId.Value, ct)
+                                    .ConfigureAwait(false),
+                                grains
+                            )
                             .ConfigureAwait(false)
                     );
                 }

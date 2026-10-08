@@ -100,7 +100,15 @@ internal sealed class FakePlayerService : IWebApiPlayerService
         string figure,
         string gender,
         CancellationToken ct
-    ) => Task.FromResult<(bool, int, string?)>((true, 101, null));
+    )
+    {
+        Created++;
+
+        return Task.FromResult<(bool, int, string?)>((true, 101, null));
+    }
+
+    /// <summary>How many avatars the routes created.</summary>
+    public int Created { get; private set; }
 
     public Task<bool> NameAvailableAsync(string name, CancellationToken ct) =>
         Task.FromResult(name != TakenName);

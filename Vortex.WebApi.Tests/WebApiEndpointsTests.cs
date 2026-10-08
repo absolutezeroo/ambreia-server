@@ -161,6 +161,8 @@ public sealed class WebApiEndpointsTests
                 name = "Newbie",
                 figure = "hd-180-1",
                 gender = "M",
+                // A named avatar takes its class at creation (spec Personnage §8).
+                classId = "class.warrior",
             }
         );
 

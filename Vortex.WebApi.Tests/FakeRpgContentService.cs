@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using Vortex.Primitives.Rpg.Content;
@@ -28,4 +29,7 @@ internal sealed class FakeRpgContentService : IRpgContentService
 
     public Task<string?> GetTextsAsync(string language, CancellationToken ct) =>
         Task.FromResult(language == "fr" ? "class.warrior.name=Guerrier" : null);
+
+    public IReadOnlyList<ClassSummary> GetClasses() =>
+        [new ClassSummary("class.warrior", "tank", 1, "strength", ["spec.warrior.guardian"])];
 }
