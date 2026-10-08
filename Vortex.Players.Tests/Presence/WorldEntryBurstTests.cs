@@ -127,6 +127,20 @@ public sealed class WorldEntryBurstTests
             .Be(new RoomId(50));
     }
 
+    /// <summary>A tester who dropped in the zone under test lands on the cell asked for: kept as a
+    /// resume, the room kept the avatar where it stood and the test cell was never used.</summary>
+    [Fact]
+    public async Task ATestEntry_DropsTheResumeOfTheRoomInGrace()
+    {
+        _testRoomId = 50;
+        PlayerPresenceGrain grain = Build();
+        grain._resumableRoom = 50;
+
+        await grain.BuildWorldEntryAsync(CancellationToken.None);
+
+        (await grain.GetResumableRoomAsync()).Should().BeNull();
+    }
+
     /// <summary>Back within the grace period there is no room entry to push it: the sign-in does.</summary>
     [Fact]
     public async Task EnteringTheWorld_PushesTheCharacterState()

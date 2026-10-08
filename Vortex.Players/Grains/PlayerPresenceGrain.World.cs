@@ -79,6 +79,14 @@ internal sealed partial class PlayerPresenceGrain
         await Task.WhenAll(permissionsTask, startRoomTask, testRoomTask, lastRoomTask);
 
         PermissionSet permissions = await permissionsTask;
+
+        // A test entry places the avatar on the cell asked for: resuming the avatar left in grace
+        // (perhaps in that very zone) would keep it where it stood. Its room is left on entry.
+        if (await testRoomTask is not null)
+        {
+            _resumableRoom = -1;
+        }
+
         int startRoomId =
             await testRoomTask is { } testRoom ? testRoom.Value
             // The room the avatar is still standing in, back within the grace period (§10).

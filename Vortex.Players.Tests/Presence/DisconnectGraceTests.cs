@@ -67,7 +67,7 @@ public sealed class DisconnectGraceTests
         PlayerPresenceGrain grain = await InRoomAsync();
         await grain.UnregisterSessionObserverAsync(CancellationToken.None);
 
-        await grain.EndGraceAsync(CancellationToken.None);
+        await grain.EndGraceAsync();
 
         _roomCalls.Should().Contain(nameof(IRoomAvatars.RemoveAvatarFromPlayerAsync));
         _lifetime.Deactivations.Should().Be(1);
@@ -82,7 +82,7 @@ public sealed class DisconnectGraceTests
         long generation = await grain.BeginSessionAsync(CancellationToken.None);
         await grain.RegisterSessionObserverAsync(Observer(), generation);
 
-        await grain.EndGraceAsync(CancellationToken.None);
+        await grain.EndGraceAsync();
 
         _roomCalls.Should().NotContain(nameof(IRoomAvatars.RemoveAvatarFromPlayerAsync));
     }

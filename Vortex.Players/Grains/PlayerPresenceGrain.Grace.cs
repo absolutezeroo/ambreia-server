@@ -78,8 +78,10 @@ internal sealed partial class PlayerPresenceGrain
             );
         }
 
+        // The timer's token is not passed on: ending the grace stops the timer first, which cancels
+        // it, and a leave sent with it never reached the room -- the avatar stayed as a ghost.
         _graceTimer = this.RegisterGrainTimer<object?>(
-            static async (self, ct) => await ((PlayerPresenceGrain)self!).EndGraceAsync(ct),
+            static async (self, _) => await ((PlayerPresenceGrain)self!).EndGraceAsync(),
             this,
             grace,
             Timeout.InfiniteTimeSpan
@@ -97,7 +99,7 @@ internal sealed partial class PlayerPresenceGrain
     }
 
     /// <summary>The grace ran out: leave the room as an ordinary disconnect would have.</summary>
-    internal async Task EndGraceAsync(CancellationToken ct)
+    internal async Task EndGraceAsync()
     {
         StopGraceTimer();
 
@@ -112,7 +114,7 @@ internal sealed partial class PlayerPresenceGrain
             _state.ActiveRoomId.Value
         );
 
-        await LeaveNowAsync(ct);
+        await LeaveNowAsync(CancellationToken.None);
     }
 
     /// <summary>A socket attached while the avatar was waiting: the room is resumable.</summary>
