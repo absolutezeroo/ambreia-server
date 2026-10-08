@@ -18,7 +18,7 @@ public class ClientHelloMessageHandler(IRevisionManager revisions)
     )
     {
         // The client announces its own build here, and a revision declares the same string as its
-        // id (Revision20260701.Revision is "WIN63-202607011411-782849652"). A build nobody
+        // id (Revision20260701.Revision is "AMBREIA-DEV"). A build nobody
         // registered would leave the session on an id no revision answers to: every packet would
         // then fail to parse until the failure budget closed it. Closed now instead.
         if (message.Production is null || _revisions.GetRevision(message.Production) is null)

@@ -16,5 +16,7 @@ public sealed class Revision20260701()
         }
     )
 {
-    public override string Revision => "WIN63-202607011411-782849652";
+    // The dev revision: the ids of Headers.cs as typed. A production server refuses it (its ids are
+    // in this repository) and speaks a ReleaseRevision drawn from them instead.
+    public override string Revision => "AMBREIA-DEV";
 }
