@@ -36,22 +36,36 @@ public sealed class EditorEndpointsTests
             .Be(HttpStatusCode.Forbidden);
     }
 
-    /// <summary>The gate is declared route by route: one left off is a route anyone can call.</summary>
+    /// <summary>
+    /// The gate is declared route by route: one left off is a route anyone can call, one naming
+    /// the wrong capability is a route the wrong staff can call. Each route is asked with the
+    /// editor's OTHER capability only, so it answers 403 only if it requires its own.
+    /// </summary>
     [Theory]
-    [InlineData("GET", "/api/editor/zones")]
-    [InlineData("POST", "/api/editor/zones")]
-    [InlineData("GET", "/api/editor/zones/village/versions")]
-    [InlineData("GET", "/api/editor/zones/village/document")]
-    [InlineData("POST", "/api/editor/zones/village/validate")]
-    [InlineData("POST", "/api/editor/zones/village/versions")]
-    [InlineData("POST", "/api/editor/zones/village/publish/1")]
-    [InlineData("POST", "/api/editor/zones/village/lock")]
-    [InlineData("DELETE", "/api/editor/zones/village/lock")]
-    [InlineData("POST", "/api/editor/zones/village/test")]
-    [InlineData("GET", "/api/editor/furniture")]
-    public async Task EveryEditorRoute_RefusesWithoutTheCapability(string method, string path)
+    [InlineData("GET", "/api/editor/zones", false)]
+    [InlineData("POST", "/api/editor/zones", false)]
+    [InlineData("GET", "/api/editor/zones/village/versions", false)]
+    [InlineData("GET", "/api/editor/zones/village/document", false)]
+    [InlineData("POST", "/api/editor/zones/village/validate", false)]
+    [InlineData("POST", "/api/editor/zones/village/versions", false)]
+    [InlineData("POST", "/api/editor/zones/village/publish/1", true)]
+    [InlineData("POST", "/api/editor/zones/village/lock", false)]
+    [InlineData("POST", "/api/editor/zones/village/lock?force=true", true)]
+    [InlineData("DELETE", "/api/editor/zones/village/lock", false)]
+    [InlineData("POST", "/api/editor/zones/village/test", false)]
+    [InlineData("GET", "/api/editor/furniture", false)]
+    public async Task EveryEditorRoute_RequiresItsOwnCapability(
+        string method,
+        string path,
+        bool needsPublish
+    )
     {
-        await using WebApiTestFactory f = new(capabilities: []);
+        await using WebApiTestFactory f = new(
+            capabilities:
+            [
+                needsPublish ? Capabilities.World.ZoneEdit : Capabilities.World.ZonePublish,
+            ]
+        );
 
         using HttpRequestMessage request = new(new HttpMethod(method), path)
         {

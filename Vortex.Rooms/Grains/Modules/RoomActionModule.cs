@@ -48,8 +48,8 @@ public sealed partial class RoomActionModule(RoomGrain roomGrain)
     /// room does anything with it: the other order puts the item in the room for everyone while the
     /// database still says it is in the hand, which a player reads as a duplicate -- and the
     /// write-behind tick no longer corrects it, because a position flush has stopped asserting
-    /// where an item lives. If the room then refuses it, the row is handed back rather than left
-    /// saying a room holds furniture the room has never heard of.
+    /// where an item lives. If the room then refuses it -- false or an exception -- the row is
+    /// handed back rather than left saying a room holds furniture the room has never heard of.
     /// </summary>
     private async Task<bool> ClaimAndPlaceAsync(
         IRoomItem item,
@@ -69,20 +69,35 @@ public sealed partial class RoomActionModule(RoomGrain roomGrain)
             throw new VortexException(VortexErrorCodeEnum.NoPermissionToPlaceFurni);
         }
 
-        if (await place())
+        bool placed;
+
+        try
         {
-            return true;
+            placed = await place();
+        }
+        catch
+        {
+            // A room that throws refused it as surely as one that answers false.
+            await ReleaseAsync(item, ct);
+
+            throw;
         }
 
-        await _roomGrain._furnitureLocations.ReleaseFromRoomAsync(
+        if (!placed)
+        {
+            await ReleaseAsync(item, ct);
+        }
+
+        return placed;
+    }
+
+    private Task<bool> ReleaseAsync(IRoomItem item, CancellationToken ct) =>
+        _roomGrain._furnitureLocations.ReleaseFromRoomAsync(
             item.ObjectId.Value,
             _roomGrain.RoomId.Value,
             item.OwnerId.Value,
             ct
         );
-
-        return false;
-    }
 
     public async Task<bool> RemoveItemByIdAsync(
         ActionContext ctx,

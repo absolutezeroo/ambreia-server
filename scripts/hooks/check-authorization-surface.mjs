@@ -164,7 +164,7 @@ const HTTP_GATES = [
   ['anonymous', /\.AllowAnonymous\s*\(/],
   // A session, then a capability from IPermissionService (Hosting/CapabilityGate.cs): declared on
   // the route, or asked inline where the capability depends on the request.
-  ['capability', /\.RequireCapability\s*\(|\bDenyAsync\s*\(/],
+  ['capability', /\.RequireCapability\s*\(|CapabilityGate\s*\.\s*DenyAsync\s*\(/],
 ];
 
 for (const f of walk(root)) {
