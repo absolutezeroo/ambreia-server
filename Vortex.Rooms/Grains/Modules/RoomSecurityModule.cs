@@ -5,9 +5,7 @@ using System.Globalization;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
-using Vortex.Database.Context;
 using Vortex.Primitives.Action;
 using Vortex.Primitives.Orleans;
 using Vortex.Primitives.Orleans.Snapshots.Room;
@@ -149,46 +147,5 @@ public sealed partial class RoomSecurityModule(RoomGrain roomGrain)
             AvatarStatusType.FlatControl,
             ((int)controllerLevel).ToString(CultureInfo.InvariantCulture)
         );
-    }
-
-    /// <summary>
-    /// The room's explicitly assigned rights, straight from the table. Unchecked: the grain's own
-    /// broadcasts call this after a rights change it has already authorised, and the packet-facing
-    /// path goes through <c>RoomGrain.GetControllersAsync</c>, which gates on ownership first.
-    /// </summary>
-    public async Task<ImmutableArray<RoomControllerSnapshot>> LoadControllersAsync(
-        CancellationToken ct
-    )
-    {
-        try
-        {
-            await using VortexDbContext dbCtx = await _roomGrain
-                ._dbCtxFactory.CreateDbContextAsync(ct)
-                .ConfigureAwait(true);
-
-            List<RoomControllerSnapshot> result = await dbCtx
-                .RoomRights.AsNoTracking()
-                .Include(r => r.PlayerEntity)
-                .Where(r => r.RoomEntityId == _roomGrain.RowId.Value && r.DeletedAt == null)
-                .Select(r => new RoomControllerSnapshot
-                {
-                    PlayerId = r.PlayerEntityId,
-                    Name = r.PlayerEntity != null ? r.PlayerEntity.Name : string.Empty,
-                })
-                .ToListAsync(ct)
-                .ConfigureAwait(true);
-
-            return [.. result];
-        }
-        catch (Exception ex)
-        {
-            _roomGrain._logger.LogError(
-                ex,
-                "Failed to load controllers for room {RoomId}.",
-                _roomGrain._state.RoomId
-            );
-
-            return [];
-        }
     }
 }

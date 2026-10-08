@@ -7,7 +7,8 @@ using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 using Vortex.Database.Context;
 using Vortex.Database.Entities.Furniture;
-using Vortex.Rooms.Grains.Systems;
+using Vortex.Rooms.Grains.Persistence;
+using Vortex.Tests.Support;
 using Xunit;
 
 namespace Vortex.Rooms.Tests.Grains;
@@ -75,7 +76,7 @@ public sealed class RoomFurnitureLocationStoreTests : IAsyncLifetime
     [Fact]
     public async Task AFreeStandingItem_CanBeClaimedIntoTheRoom()
     {
-        (await ClaimAsync(OWNER)).Should().Be(1);
+        (await ClaimAsync(OWNER)).Should().BeTrue();
 
         (await RowAsync()).RoomEntityId.Should().Be(ROOM);
     }
@@ -84,7 +85,7 @@ public sealed class RoomFurnitureLocationStoreTests : IAsyncLifetime
     [Fact]
     public async Task AnotherPlayersItem_IsNotClaimed()
     {
-        (await ClaimAsync(SOMEBODY_ELSE)).Should().Be(0);
+        (await ClaimAsync(SOMEBODY_ELSE)).Should().BeFalse();
 
         (await RowAsync()).RoomEntityId.Should().BeNull();
     }
@@ -96,21 +97,11 @@ public sealed class RoomFurnitureLocationStoreTests : IAsyncLifetime
     [Fact]
     public async Task AnItemAlreadyInARoom_IsNotClaimedIntoAnother()
     {
-        (await ClaimAsync(OWNER)).Should().Be(1);
+        (await ClaimAsync(OWNER)).Should().BeTrue();
 
-        await using VortexDbContext db = new(_options);
-
-        (
-            await RoomFurnitureLocationStore.ClaimIntoRoomAsync(
-                db,
-                ITEM,
-                OWNER,
-                OTHER_ROOM,
-                CancellationToken.None
-            )
-        )
+        (await Store().ClaimIntoRoomAsync(ITEM, OWNER, OTHER_ROOM, CancellationToken.None))
             .Should()
-            .Be(0);
+            .BeFalse();
     }
 
     /// <summary>
@@ -122,7 +113,7 @@ public sealed class RoomFurnitureLocationStoreTests : IAsyncLifetime
     {
         await ClaimAsync(OWNER);
 
-        (await ReleaseAsync(SOMEBODY_ELSE)).Should().Be(1);
+        (await ReleaseAsync(SOMEBODY_ELSE)).Should().BeTrue();
 
         FurnitureEntity row = await RowAsync();
 
@@ -146,7 +137,7 @@ public sealed class RoomFurnitureLocationStoreTests : IAsyncLifetime
             );
         }
 
-        (await ReleaseAsync(SOMEBODY_ELSE)).Should().Be(0);
+        (await ReleaseAsync(SOMEBODY_ELSE)).Should().BeFalse();
 
         FurnitureEntity row = await RowAsync();
 
@@ -154,31 +145,20 @@ public sealed class RoomFurnitureLocationStoreTests : IAsyncLifetime
         row.PlayerEntityId.Should().Be(OWNER, "and the owner did not move either");
     }
 
-    private async Task<int> ClaimAsync(int ownerId)
-    {
-        await using VortexDbContext db = new(_options);
+    private Task<bool> ClaimAsync(int ownerId) =>
+        Store().ClaimIntoRoomAsync(ITEM, ownerId, ROOM, CancellationToken.None);
 
-        return await RoomFurnitureLocationStore.ClaimIntoRoomAsync(
-            db,
-            ITEM,
-            ownerId,
-            ROOM,
-            CancellationToken.None
+    private Task<bool> ReleaseAsync(int newOwnerId) =>
+        Store().ReleaseFromRoomAsync(ITEM, ROOM, newOwnerId, CancellationToken.None);
+
+    private RoomFurnitureLocationStore Store() =>
+        new(
+            FakeProxy.Create<IDbContextFactory<VortexDbContext>>(call =>
+                call.Method.Name == nameof(IDbContextFactory<VortexDbContext>.CreateDbContext)
+                    ? new VortexDbContext(_options)
+                    : Task.FromResult(new VortexDbContext(_options))
+            )
         );
-    }
-
-    private async Task<int> ReleaseAsync(int newOwnerId)
-    {
-        await using VortexDbContext db = new(_options);
-
-        return await RoomFurnitureLocationStore.ReleaseFromRoomAsync(
-            db,
-            ITEM,
-            ROOM,
-            newOwnerId,
-            CancellationToken.None
-        );
-    }
 
     private async Task<FurnitureEntity> RowAsync()
     {

@@ -35,6 +35,7 @@ using Vortex.Primitives.World;
 using Vortex.Protocol.Messages.Outgoing.Room.Session;
 using Vortex.Rooms.Configuration;
 using Vortex.Rooms.Grains.Modules;
+using Vortex.Rooms.Grains.Persistence;
 using Vortex.Rooms.Grains.Systems;
 using Vortex.Rooms.Grains.Zones.Compilation;
 using Vortex.Rooms.Grains.Zones.Modules;
@@ -55,7 +56,10 @@ public sealed partial class RoomGrain : Grain, IRoomGrain
     private IGrainTimer? _roomTimer;
 
     internal readonly IRoomAvatarProvider _avatarProvider;
-    internal readonly IDbContextFactory<VortexDbContext> _dbCtxFactory;
+    private readonly IDbContextFactory<VortexDbContext> _dbCtxFactory;
+
+    /// <summary>The modules' one way to the database: a furniture row entering or leaving.</summary>
+    internal readonly RoomFurnitureLocationStore _furnitureLocations;
     internal readonly IFurnitureDefinitionProvider _definitionProvider;
     internal readonly IStuffDataFactory _stuffDataFactory;
     internal readonly IEventPublisher _events;
@@ -115,6 +119,7 @@ public sealed partial class RoomGrain : Grain, IRoomGrain
     {
         _zoneSource = zoneSource;
         _dbCtxFactory = dbCtxFactory;
+        _furnitureLocations = new RoomFurnitureLocationStore(dbCtxFactory);
         _definitionProvider = definitionProvider;
         _stuffDataFactory = stuffDataFactory;
         _roomConfig = roomConfig.Value;

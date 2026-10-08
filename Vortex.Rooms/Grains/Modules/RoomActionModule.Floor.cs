@@ -3,9 +3,7 @@ using System.Linq;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
-using Vortex.Database.Context;
 using Vortex.Logging;
 using Vortex.Primitives;
 using Vortex.Primitives.Action;
@@ -17,7 +15,6 @@ using Vortex.Primitives.Rooms.Object;
 using Vortex.Primitives.Rooms.Object.Furniture;
 using Vortex.Primitives.Rooms.Object.Furniture.Floor;
 using Vortex.Protocol.Messages.Outgoing.Notifications;
-using Vortex.Rooms.Grains.Systems;
 
 namespace Vortex.Rooms.Grains.Modules;
 
@@ -61,32 +58,23 @@ public sealed partial class RoomActionModule
         // item on the floor for everyone while the database still says it is in the hand, which is
         // what a player would read as having been duplicated -- and the write-behind tick no longer
         // corrects it, because a position flush has stopped asserting where an item lives.
-        await using (VortexDbContext db = await _roomGrain._dbCtxFactory.CreateDbContextAsync(ct))
-        {
-            int claimed = await RoomFurnitureLocationStore.ClaimIntoRoomAsync(
-                db,
+        if (
+            !await _roomGrain._furnitureLocations.ClaimIntoRoomAsync(
                 floorItem.ObjectId.Value,
                 item.OwnerId.Value,
                 _roomGrain.RoomId.Value,
                 ct
-            );
-
-            if (claimed == 0)
-            {
-                throw new VortexException(VortexErrorCodeEnum.NoPermissionToPlaceFurni);
-            }
+            )
+        )
+        {
+            throw new VortexException(VortexErrorCodeEnum.NoPermissionToPlaceFurni);
         }
 
         if (!await _roomGrain.FurniModule.PlaceFloorItemAsync(ctx, floorItem, x, y, rot, ct))
         {
             // The room refused it after the row was already ours. Hand it back rather than leaving
             // a row that says a room holds furniture the room has never heard of.
-            await using VortexDbContext db = await _roomGrain._dbCtxFactory.CreateDbContextAsync(
-                ct
-            );
-
-            await RoomFurnitureLocationStore.ReleaseFromRoomAsync(
-                db,
+            await _roomGrain._furnitureLocations.ReleaseFromRoomAsync(
                 floorItem.ObjectId.Value,
                 _roomGrain.RoomId.Value,
                 item.OwnerId.Value,

@@ -1,7 +1,6 @@
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
-using Vortex.Database.Context;
 using Vortex.Logging;
 using Vortex.Primitives;
 using Vortex.Primitives.Action;
@@ -13,7 +12,6 @@ using Vortex.Primitives.Rooms.Object;
 using Vortex.Primitives.Rooms.Object.Furniture;
 using Vortex.Primitives.Rooms.Snapshots.Furniture;
 using Vortex.Protocol.Messages.Outgoing.Notifications;
-using Vortex.Rooms.Grains.Systems;
 
 namespace Vortex.Rooms.Grains.Modules;
 
@@ -81,20 +79,16 @@ public sealed partial class RoomActionModule(RoomGrain roomGrain)
         //
         // Conditional on the row still being this room's, so a pickup racing another room's claim
         // loses rather than overwriting it.
-        await using (VortexDbContext db = await _roomGrain._dbCtxFactory.CreateDbContextAsync(ct))
-        {
-            int released = await RoomFurnitureLocationStore.ReleaseFromRoomAsync(
-                db,
+        if (
+            !await _roomGrain._furnitureLocations.ReleaseFromRoomAsync(
                 itemId.Value,
                 _roomGrain.RoomId.Value,
                 pickerId.Value,
                 ct
-            );
-
-            if (released == 0)
-            {
-                throw new VortexException(VortexErrorCodeEnum.FloorItemNotFound);
-            }
+            )
+        )
+        {
+            throw new VortexException(VortexErrorCodeEnum.FloorItemNotFound);
         }
 
         await _roomGrain.ObjectModule.RemoveObjectAsync(ctx, item, ct, pickerId);

@@ -1,14 +1,14 @@
-using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using Vortex.Database.Context;
 
-namespace Vortex.Rooms.Grains.Systems;
+namespace Vortex.Rooms.Grains.Persistence;
 
 /// <summary>
-/// Moves a furniture row into a room and back out again.
+/// Moves a furniture row into a room and back out again: the room's only database write outside
+/// the write-behind flush (<see cref="RoomPersistenceGrain" />), so the modules never open a context.
 /// </summary>
 /// <remarks>
 /// <para>
@@ -26,25 +26,28 @@ namespace Vortex.Rooms.Grains.Systems;
 /// because the global soft-delete query filter supplies it.
 /// </para>
 /// </remarks>
-internal static class RoomFurnitureLocationStore
+internal sealed class RoomFurnitureLocationStore(IDbContextFactory<VortexDbContext> dbCtxFactory)
 {
     /// <summary>
     /// Takes a free-standing item out of <paramref name="ownerId" />'s hand and into
     /// <paramref name="roomId" />.
     /// </summary>
-    /// <returns>1 when the row moved, 0 when it was not the player's to place.</returns>
-    public static Task<int> ClaimIntoRoomAsync(
-        VortexDbContext dbCtx,
+    /// <returns>True when the row moved, false when it was not the player's to place.</returns>
+    public async Task<bool> ClaimIntoRoomAsync(
         int itemId,
         int ownerId,
         int roomId,
         CancellationToken ct
-    ) =>
-        dbCtx
-            .Furnitures.Where(f =>
-                f.Id == itemId && f.PlayerEntityId == ownerId && f.RoomEntityId == null
-            )
-            .ExecuteUpdateAsync(row => row.SetProperty(f => f.RoomEntityId, roomId), ct);
+    )
+    {
+        await using VortexDbContext dbCtx = await dbCtxFactory.CreateDbContextAsync(ct);
+
+        return await dbCtx
+                .Furnitures.Where(f =>
+                    f.Id == itemId && f.PlayerEntityId == ownerId && f.RoomEntityId == null
+                )
+                .ExecuteUpdateAsync(row => row.SetProperty(f => f.RoomEntityId, roomId), ct) > 0;
+    }
 
     /// <summary>
     /// Takes an item out of <paramref name="roomId" /> and into <paramref name="newOwnerId" />'s
@@ -55,20 +58,23 @@ internal static class RoomFurnitureLocationStore
     /// owned it -- the pickup type decides whether a piece goes back to its owner or to whoever
     /// picked it up, and the caller has already decided which.
     /// </remarks>
-    /// <returns>1 when the row moved, 0 when it was no longer this room's to give.</returns>
-    public static Task<int> ReleaseFromRoomAsync(
-        VortexDbContext dbCtx,
+    /// <returns>True when the row moved, false when it was no longer this room's to give.</returns>
+    public async Task<bool> ReleaseFromRoomAsync(
         int itemId,
         int roomId,
         int newOwnerId,
         CancellationToken ct
-    ) =>
-        dbCtx
-            .Furnitures.Where(f => f.Id == itemId && f.RoomEntityId == roomId)
-            .ExecuteUpdateAsync(
-                row =>
-                    row.SetProperty(f => f.RoomEntityId, (int?)null)
-                        .SetProperty(f => f.PlayerEntityId, newOwnerId),
-                ct
-            );
+    )
+    {
+        await using VortexDbContext dbCtx = await dbCtxFactory.CreateDbContextAsync(ct);
+
+        return await dbCtx
+                .Furnitures.Where(f => f.Id == itemId && f.RoomEntityId == roomId)
+                .ExecuteUpdateAsync(
+                    row =>
+                        row.SetProperty(f => f.RoomEntityId, (int?)null)
+                            .SetProperty(f => f.PlayerEntityId, newOwnerId),
+                    ct
+                ) > 0;
+    }
 }

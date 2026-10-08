@@ -19,7 +19,7 @@ using Vortex.Primitives.Rooms.Grains;
 using Vortex.Primitives.Rooms.Object;
 using Vortex.Primitives.Rooms.Snapshots.Furniture;
 using Vortex.Rooms.Configuration;
-using Vortex.Rooms.Grains;
+using Vortex.Rooms.Grains.Persistence;
 using Vortex.Tests.Support;
 using Xunit;
 

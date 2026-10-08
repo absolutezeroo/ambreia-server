@@ -16,7 +16,7 @@ using Vortex.Primitives.Rooms.Object;
 using Vortex.Primitives.Rooms.Snapshots.Furniture;
 using Vortex.Rooms.Configuration;
 
-namespace Vortex.Rooms.Grains;
+namespace Vortex.Rooms.Grains.Persistence;
 
 public sealed class RoomPersistenceGrain(
     IDbContextFactory<VortexDbContext> dbCtxFactory,
