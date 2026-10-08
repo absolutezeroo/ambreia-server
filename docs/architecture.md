@@ -91,8 +91,12 @@ Proof: `driver.mjs zone`. Schema: `schemas/zone.schema.json` (exported from the 
 `ApplyZoneAsync` compiles the document once per activation (`ZoneCompiler` → `CompiledZone`: areas
 per cell by priority, passages, entries, decor object ids) into `RoomLiveState.ZoneRuntime`
 (`ZoneRuntimeState`: doors, inactive areas, visitors, cooldowns, expected arrivals), and
-`ZoneSettingsApplier` puts the zone's name, capacity and walls on the room snapshot in memory. The
-modules under `Vortex.Rooms/Grains/Zones` then answer, each for one thing:
+`ZoneSettingsApplier` puts the zone's name, capacity and walls on the room snapshot in memory.
+`Vortex.Rooms/Grains/Zones` holds one kind of thing per folder, its namespace the folder's:
+`Compilation/` (document → `CompiledZone`, rules, room model, settings), `Runtime/` (what changes
+while players are in: `ZoneRuntimeState`, visitors, cooldowns, expected arrivals, bubbles),
+`Modules/` (the `RoomGrain` modules below), `Interactions/` and `Triggers/` (their per-kind
+classes). The modules answer, each for one thing:
 
 | Module | Answers | Driven by |
 |---|---|---|

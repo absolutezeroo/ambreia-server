@@ -3,7 +3,7 @@ using System.Linq;
 using Vortex.Primitives.World;
 using Vortex.Primitives.World.Layers;
 
-namespace Vortex.Rooms.Grains.Zones;
+namespace Vortex.Rooms.Grains.Zones.Compilation;
 
 /// <summary>
 /// A published zone document read once for the room's lifetime: what each cell is part of

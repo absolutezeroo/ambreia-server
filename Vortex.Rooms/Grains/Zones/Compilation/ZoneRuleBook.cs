@@ -2,8 +2,9 @@ using System.Collections.Generic;
 using System.Linq;
 using Vortex.Primitives.World;
 using Vortex.Primitives.World.Layers;
+using Vortex.Rooms.Grains.Zones.Runtime;
 
-namespace Vortex.Rooms.Grains.Zones;
+namespace Vortex.Rooms.Grains.Zones.Compilation;
 
 /// <summary>
 /// The rules of a cell (plan D6, D24), the one place they are worked out: the bubble shows them,

@@ -4,6 +4,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Vortex.Primitives.Rooms.Enums;
 using Vortex.Primitives.Rooms.Object.Furniture.Floor;
+using Vortex.Rooms.Grains.Zones.Runtime;
 
 namespace Vortex.Rooms.Grains.Zones.Interactions;
 

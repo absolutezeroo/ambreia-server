@@ -7,8 +7,9 @@ using Vortex.Primitives.Rooms.Events.Zone;
 using Vortex.Primitives.Rooms.Object.Avatars;
 using Vortex.Primitives.World;
 using Vortex.Primitives.World.Layers;
+using Vortex.Rooms.Grains.Zones.Runtime;
 
-namespace Vortex.Rooms.Grains.Zones;
+namespace Vortex.Rooms.Grains.Zones.Modules;
 
 /// <summary>
 /// Which areas each player stands in (plan D5): a change is a room event, and entering a named

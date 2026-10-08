@@ -8,8 +8,10 @@ using Vortex.Primitives.Rooms;
 using Vortex.Primitives.Rooms.Object.Avatars;
 using Vortex.Primitives.World.Layers;
 using Vortex.Protocol.Messages.Outgoing.Room.Session;
+using Vortex.Rooms.Grains.Zones.Compilation;
+using Vortex.Rooms.Grains.Zones.Runtime;
 
-namespace Vortex.Rooms.Grains.Zones;
+namespace Vortex.Rooms.Grains.Zones.Modules;
 
 /// <summary>
 /// Passages (plan D8, D9): a step onto one takes the player to its destination entry -- in this

@@ -4,8 +4,9 @@ using System.Linq;
 using Vortex.Primitives.Players;
 using Vortex.Primitives.World;
 using Vortex.Primitives.World.Layers;
+using Vortex.Rooms.Grains.Zones.Compilation;
 
-namespace Vortex.Rooms.Grains.Zones;
+namespace Vortex.Rooms.Grains.Zones.Runtime;
 
 /// <summary>The live side of a published zone: its compiled document and who is expected where.</summary>
 public sealed class ZoneRuntimeState(CompiledZone compiled)

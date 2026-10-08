@@ -3,8 +3,9 @@ using System.Linq;
 using Vortex.Primitives.Players;
 using Vortex.Primitives.Rooms.Enums;
 using Vortex.Primitives.World.Layers;
+using Vortex.Rooms.Grains.Zones.Runtime;
 
-namespace Vortex.Rooms.Grains.Zones;
+namespace Vortex.Rooms.Grains.Zones.Modules;
 
 /// <summary>
 /// Where a player lands in a zone (plan D3): the entry they are expected on, else the zone's first

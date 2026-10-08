@@ -10,7 +10,7 @@ using Vortex.Primitives.Rooms.Object.Furniture;
 using Vortex.Primitives.Rooms.Snapshots.Mapping;
 using Vortex.Primitives.World;
 using Vortex.Rooms.Configuration;
-using Vortex.Rooms.Grains.Zones;
+using Vortex.Rooms.Grains.Zones.Runtime;
 
 namespace Vortex.Rooms.Grains;
 

@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Vortex.Primitives.Players;
 
-namespace Vortex.Rooms.Grains.Zones;
+namespace Vortex.Rooms.Grains.Zones.Runtime;
 
 /// <summary>
 /// When a passage or a trigger works again, per player (plan D14) -- or for everyone, under player

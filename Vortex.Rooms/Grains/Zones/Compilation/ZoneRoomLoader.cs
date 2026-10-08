@@ -16,7 +16,7 @@ using Vortex.Primitives.World.Layers;
 using Vortex.Rooms.Object.Furniture.Floor;
 using Vortex.Rooms.Object.Furniture.Wall;
 
-namespace Vortex.Rooms.Grains.Zones;
+namespace Vortex.Rooms.Grains.Zones.Compilation;
 
 /// <summary>
 /// Turns a published zone document into what a room runs on: a Habbo model and decor objects.

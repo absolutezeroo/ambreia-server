@@ -3,7 +3,7 @@ using Vortex.Primitives.Orleans.Snapshots.Room;
 using Vortex.Primitives.Rooms.Enums;
 using Vortex.Primitives.World;
 
-namespace Vortex.Rooms.Grains.Zones;
+namespace Vortex.Rooms.Grains.Zones.Compilation;
 
 /// <summary>
 /// A zone's settings become its room's (plan D1, D2): name, region as description, capacity as the

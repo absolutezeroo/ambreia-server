@@ -1,7 +1,8 @@
 using FluentAssertions;
 using Vortex.Primitives.World;
 using Vortex.Primitives.World.Layers;
-using Vortex.Rooms.Grains.Zones;
+using Vortex.Rooms.Grains.Zones.Compilation;
+using Vortex.Rooms.Grains.Zones.Runtime;
 using Vortex.Tests.Support;
 using Xunit;
 using static Vortex.Rooms.Tests.Zones.ZoneVisits;

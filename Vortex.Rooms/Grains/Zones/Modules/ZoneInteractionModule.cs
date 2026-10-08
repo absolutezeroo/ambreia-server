@@ -13,7 +13,7 @@ using Vortex.Primitives.World.Layers;
 using Vortex.Rooms.Grains.Modules;
 using Vortex.Rooms.Grains.Zones.Interactions;
 
-namespace Vortex.Rooms.Grains.Zones;
+namespace Vortex.Rooms.Grains.Zones.Modules;
 
 /// <summary>
 /// Using a zone furni (plan D10): an Interact event every time, then the effect its

@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using Vortex.Primitives.World.Layers;
 
-namespace Vortex.Rooms.Grains.Zones;
+namespace Vortex.Rooms.Grains.Zones.Runtime;
 
 /// <summary>
 /// A player in the zone, from their arrival step to their exit: the areas they stand in. What must

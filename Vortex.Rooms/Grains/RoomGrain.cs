@@ -37,8 +37,9 @@ using Vortex.Protocol.Messages.Outgoing.Room.Session;
 using Vortex.Rooms.Configuration;
 using Vortex.Rooms.Grains.Modules;
 using Vortex.Rooms.Grains.Systems;
-using Vortex.Rooms.Grains.Zones;
-using Vortex.Rooms.Grains.Zones.Triggers;
+using Vortex.Rooms.Grains.Zones.Compilation;
+using Vortex.Rooms.Grains.Zones.Modules;
+using Vortex.Rooms.Grains.Zones.Runtime;
 using Vortex.Rooms.Providers;
 
 namespace Vortex.Rooms.Grains;

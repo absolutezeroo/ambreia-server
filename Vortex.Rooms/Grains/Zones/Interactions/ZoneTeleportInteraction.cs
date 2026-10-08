@@ -2,6 +2,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Vortex.Primitives.World.Layers;
+using Vortex.Rooms.Grains.Zones.Compilation;
 
 namespace Vortex.Rooms.Grains.Zones.Interactions;
 

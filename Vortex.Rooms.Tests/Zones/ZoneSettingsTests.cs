@@ -4,7 +4,7 @@ using Vortex.Primitives.Orleans.Snapshots.Room;
 using Vortex.Primitives.Rooms.Enums;
 using Vortex.Primitives.World;
 using Vortex.Primitives.World.Layers;
-using Vortex.Rooms.Grains.Zones;
+using Vortex.Rooms.Grains.Zones.Compilation;
 using Vortex.Rooms.Tests.Support;
 using Vortex.Tests.Support;
 using Xunit;

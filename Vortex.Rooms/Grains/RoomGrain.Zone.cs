@@ -5,7 +5,7 @@ using Vortex.Primitives.Rooms;
 using Vortex.Primitives.Rooms.Grains;
 using Vortex.Primitives.World;
 using Vortex.Primitives.World.Layers;
-using Vortex.Rooms.Grains.Zones;
+using Vortex.Rooms.Grains.Zones.Runtime;
 
 namespace Vortex.Rooms.Grains;
 

@@ -8,7 +8,7 @@ using Vortex.Primitives.Rooms.Object.Avatars;
 using Vortex.Primitives.Rooms.Object.Logic.Avatars;
 using Vortex.Primitives.World;
 using Vortex.Primitives.World.Layers;
-using Vortex.Rooms.Grains.Zones;
+using Vortex.Rooms.Grains.Zones.Runtime;
 using Vortex.Rooms.Tests.Support;
 using Vortex.Tests.Support;
 using Xunit;

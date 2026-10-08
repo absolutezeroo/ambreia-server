@@ -12,10 +12,12 @@ using Vortex.Primitives.Rooms.Object;
 using Vortex.Primitives.Rooms.Object.Avatars;
 using Vortex.Primitives.World.Layers;
 using Vortex.Primitives.World.Rules;
+using Vortex.Rooms.Grains.Zones.Runtime;
+using Vortex.Rooms.Grains.Zones.Triggers;
 using Vortex.Rooms.Grains.Zones.Triggers.Actions;
 using Vortex.Rooms.Grains.Zones.Triggers.Conditions;
 
-namespace Vortex.Rooms.Grains.Zones.Triggers;
+namespace Vortex.Rooms.Grains.Zones.Modules;
 
 /// <summary>
 /// The zone's triggers (plan D11–D15), listening on the room's event bus: an area entered or left,

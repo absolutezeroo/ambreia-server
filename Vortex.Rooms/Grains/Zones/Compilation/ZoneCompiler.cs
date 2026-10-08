@@ -4,7 +4,7 @@ using Vortex.Primitives.World;
 using Vortex.Primitives.World.Geometry;
 using Vortex.Primitives.World.Layers;
 
-namespace Vortex.Rooms.Grains.Zones;
+namespace Vortex.Rooms.Grains.Zones.Compilation;
 
 /// <summary>Builds the <see cref="CompiledZone"/> of a published document. Pure.</summary>
 public static class ZoneCompiler

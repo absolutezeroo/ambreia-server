@@ -1,6 +1,7 @@
 using System;
 using Vortex.Primitives.Players;
 using Vortex.Primitives.Rooms.Object.Avatars;
+using Vortex.Rooms.Grains.Zones.Runtime;
 
 namespace Vortex.Rooms.Grains.Zones.Triggers;
 

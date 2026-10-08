@@ -17,7 +17,7 @@ using Vortex.Primitives.Rooms.Object.Furniture.Floor;
 using Vortex.Primitives.Rooms.Object.Furniture.Wall;
 using Vortex.Primitives.Rooms.Snapshots.Furniture;
 using Vortex.Primitives.World;
-using Vortex.Rooms.Grains.Zones;
+using Vortex.Rooms.Grains.Zones.Compilation;
 
 namespace Vortex.Rooms.Grains.Modules;
 
