@@ -27,14 +27,15 @@ public interface IRoomCore : IGrainWithIntegerKey
     /// and the activation goes, so the next one loads the published document.
     /// </summary>
     public Task ReloadZoneAsync();
+
     public Task EnsureRoomActiveAsync(CancellationToken ct);
 
     /// <summary>
     /// The room's door (the population cap, the locked door, the password, the cancellable entry
     /// event) and, past it, the entry burst built from the room's own state in one turn. The
     /// player's presence grain sends it: it is the one that holds the socket and the room pointer.
-    /// A <paramref name="resumed"/> player was admitted before the cut and skips the cap and the
-    /// password.
+    /// A <paramref name="resumed"/> player was admitted before the cut, and a player with rights is
+    /// trusted: both skip the cap, the lock and the password, never the event.
     /// </summary>
     public Task<RoomAdmissionSnapshot> AdmitAsync(
         ActionContext ctx,

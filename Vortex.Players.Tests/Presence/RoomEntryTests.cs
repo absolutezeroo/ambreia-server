@@ -41,6 +41,7 @@ public sealed class RoomEntryTests
 
     private readonly List<object> _sent = [];
     private readonly List<string> _roomCalls = [];
+    private readonly List<ActionContext> _doorContexts = [];
     private int _sentCount;
     private RoomId? _instance = Room;
     private bool _roomHoldsTheAvatar = true;
@@ -79,15 +80,16 @@ public sealed class RoomEntryTests
         _roomCalls.Should().Contain(nameof(IRoomAvatars.RemoveAvatarFromPlayerAsync));
     }
 
-    /// <summary>A refusal says why, and leaves nothing pending: the next try is not taken for a
-    /// duplicate of one still in flight.</summary>
+    /// <summary>A refusal says why, and the next try is answered in full: entries are serialised
+    /// by the grain, so a second one is never a duplicate to drop. The door judges this grain's own
+    /// player, as a player.</summary>
     [Fact]
     public async Task ARefusedEntry_SaysWhy_AndCanBeTriedAgain()
     {
         PlayerPresenceGrain grain = await SignedInAsync();
 
-        await grain.EnterRoomAsync(Context(), Room, "wrong", CancellationToken.None);
-        await grain.EnterRoomAsync(Context(), Room, "wrong", CancellationToken.None);
+        await grain.EnterRoomAsync(Room, "wrong", CancellationToken.None);
+        await grain.EnterRoomAsync(Room, "wrong", CancellationToken.None);
 
         (await SentAsync(4))
             .Select(c => c.GetType())
@@ -99,7 +101,14 @@ public sealed class RoomEntryTests
                 typeof(CantConnectMessageComposer)
             );
         _sent.OfType<CantConnectMessageComposer>().First().ErrorType.Should().Be(_refusal);
-        _roomCalls.Should().Contain(nameof(IRoomCore.AdmitAsync));
+        _doorContexts
+            .Should()
+            .HaveCount(2)
+            .And.AllSatisfy(door =>
+            {
+                door.PlayerId.Value.Should().Be(PLAYER_ID);
+                door.Origin.Should().Be(ActionOrigin.Player);
+            });
     }
 
     [Fact]
@@ -108,7 +117,7 @@ public sealed class RoomEntryTests
         _instance = new RoomId(99);
         PlayerPresenceGrain grain = await SignedInAsync();
 
-        await grain.EnterRoomAsync(Context(), Room, "", CancellationToken.None);
+        await grain.EnterRoomAsync(Room, "", CancellationToken.None);
 
         (await SentAsync(1))
             .Should()
@@ -126,7 +135,7 @@ public sealed class RoomEntryTests
         _instance = null;
         PlayerPresenceGrain grain = await SignedInAsync();
 
-        await grain.EnterRoomAsync(Context(), Room, "", CancellationToken.None);
+        await grain.EnterRoomAsync(Room, "", CancellationToken.None);
 
         (await SentAsync(1))
             .Should()
@@ -182,15 +191,6 @@ public sealed class RoomEntryTests
         return grain;
     }
 
-    private static ActionContext Context() =>
-        new()
-        {
-            Origin = ActionOrigin.Player,
-            SessionKey = default,
-            PlayerId = PLAYER_ID,
-            RoomId = Room,
-        };
-
     private IRoomGrain Avatars() =>
         FakeProxy.Create<IRoomGrain>(call =>
         {
@@ -204,12 +204,17 @@ public sealed class RoomEntryTests
                         : ImmutableArray<RoomAvatarSnapshot>.Empty
                 ),
                 nameof(IRoomZone.InstanceForAsync) => Task.FromResult(_instance),
-                nameof(IRoomCore.AdmitAsync) => Task.FromResult(
-                    new RoomAdmissionSnapshot { Refusal = _refusal }
-                ),
+                nameof(IRoomCore.AdmitAsync) => AdmitAsync((ActionContext)call.Args![0]!),
                 _ => null,
             };
         });
+
+    private Task<RoomAdmissionSnapshot> AdmitAsync(ActionContext door)
+    {
+        _doorContexts.Add(door);
+
+        return Task.FromResult(new RoomAdmissionSnapshot { Refusal = _refusal });
+    }
 
     private static RoomPlayerAvatarSnapshot Avatar() =>
         new()

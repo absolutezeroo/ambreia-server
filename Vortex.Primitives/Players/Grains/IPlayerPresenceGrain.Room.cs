@@ -1,6 +1,5 @@
 using System.Threading;
 using System.Threading.Tasks;
-using Vortex.Primitives.Action;
 using Vortex.Primitives.Orleans.Snapshots.Room;
 using Vortex.Primitives.Rooms;
 using Vortex.Primitives.Rooms.Enums;
@@ -16,12 +15,7 @@ public partial interface IPlayerPresenceGrain
     /// (<c>IRoomCore.AdmitAsync</c>), then the entry burst and the avatar. Setting the room pointer
     /// is not on this interface on purpose: a caller that could set it would skip the door.
     /// </summary>
-    public Task EnterRoomAsync(
-        ActionContext ctx,
-        RoomId roomId,
-        string password,
-        CancellationToken ct
-    );
+    public Task EnterRoomAsync(RoomId roomId, string password, CancellationToken ct);
 
     /// <summary>The client closes the room: the avatar leaves, a pending entry is dropped.</summary>
     public Task LeaveRoomAsync(CancellationToken ct);

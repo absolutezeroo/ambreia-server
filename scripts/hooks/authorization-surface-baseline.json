@@ -2,7 +2,6 @@
   "surface": {
     "grain:Players/IPlayerDirectoryGrain.cs::GetPlayerNameAsync": "NONE",
     "grain:Players/IPlayerDirectoryGrain.cs::SetPlayerNameAsync": "NONE",
-    "grain:Players/IPlayerPresenceGrain.Room.cs::EnterRoomAsync": "controller-level",
     "grain:Rooms/IRoomAvatars.cs::CreateAvatarFromPlayerAsync": "security-module+controller-level",
     "grain:Rooms/IRoomAvatars.cs::LookToAvatarAsync": "NONE",
     "grain:Rooms/IRoomAvatars.cs::RemoveAvatarFromPlayerAsync": "NONE",

@@ -27,7 +27,7 @@ public class OpenFlatConnectionMessageHandler(IGrainFactory grainFactory)
 
         await _grainFactory
             .GetPlayerPresenceGrain(ctx.PlayerId)
-            .EnterRoomAsync(ctx.AsActionContext(), message.RoomId, message.Password, ct)
+            .EnterRoomAsync(message.RoomId, message.Password, ct)
             .ConfigureAwait(false);
     }
 }

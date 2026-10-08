@@ -35,22 +35,12 @@ internal sealed partial class PlayerPresenceGrain
             }
         );
 
-    public async Task EnterRoomAsync(
-        ActionContext ctx,
-        RoomId roomId,
-        string password,
-        CancellationToken ct
-    )
+    public async Task EnterRoomAsync(RoomId roomId, string password, CancellationToken ct)
     {
-        // Only an entry still in flight is a duplicate worth dropping. Once the player is in, the
-        // same room id means a reload -- the client asks for the room you are standing in as
-        // readily as for any other -- and by the time this arrives RoomSessionManager.createSession
-        // has already disposed the session and purged the room content. Returning early there left
-        // the client on a black screen with nothing left to ask for.
-        if (_state.PendingRoomId == roomId && !_state.PendingRoomApproved)
-        {
-            return;
-        }
+        // No "entry already in flight" check: this grain serialises entries, so a second request
+        // runs after the first and is a reload -- the client asks for the room you are standing in
+        // as readily as for any other, and by then RoomSessionManager.createSession has already
+        // disposed the session and purged the room content. It must be answered in full.
 
         // A dungeon is played in the group's own copy (plan D21): the client is sent there, and
         // asks for it in turn.
@@ -78,20 +68,22 @@ internal sealed partial class PlayerPresenceGrain
         // avatar: it is kept, and SetActiveRoomAsync sees the same room and makes no second one.
         bool resumed = await ResumeOrLeaveAsync(room, roomId, ct);
 
-        // Pending, not approved: the room's door has not answered yet. Approval is granted only
-        // once the player is genuinely in.
-        _state.PendingRoomId = roomId;
-        _state.PendingRoomApproved = false;
-
         await SendComposerAsync(new OpenConnectionMessageComposer { RoomId = roomId });
 
+        // The door's context is this grain's player, never one the caller supplies: a System
+        // origin is a moderator to the door, and another player's id would be judged instead.
+        ActionContext ctx = new()
+        {
+            Origin = ActionOrigin.Player,
+            SessionKey = SessionKey.Invalid,
+            PlayerId = PlayerId,
+            RoomId = roomId,
+        };
         RoomAdmissionSnapshot admission = await room.AdmitAsync(ctx, password, resumed, ct);
 
         if (admission.Refusal is { } refusal)
         {
             await SendComposerAsync(new CantConnectMessageComposer { ErrorType = refusal });
-            _state.PendingRoomId = RoomId.Invalid;
-            _state.PendingRoomApproved = false;
 
             // A resumed avatar refused here would stand in the room for nobody; otherwise the room
             // was already left and this does nothing.
@@ -102,18 +94,10 @@ internal sealed partial class PlayerPresenceGrain
 
         await SendComposerAsync([.. admission.Burst]);
         await SetActiveRoomAsync(roomId, ct);
-
-        // Approved only once the player is genuinely in: the door answered, the payload is sent
-        // and the avatar exists. Granting it any earlier approves a request the door may refuse.
-        _state.PendingRoomId = roomId;
-        _state.PendingRoomApproved = true;
     }
 
     public async Task LeaveRoomAsync(CancellationToken ct)
     {
-        _state.PendingRoomId = RoomId.Invalid;
-        _state.PendingRoomApproved = false;
-
         await ClearActiveRoomAsync(ct);
         await SendComposerAsync(new CloseConnectionMessageComposer());
     }
@@ -160,16 +144,16 @@ internal sealed partial class PlayerPresenceGrain
         RoomId next = roomId;
 
         _state.ActiveRoomId = next;
-        _state.PendingRoomId = -1;
-        _state.PendingRoomApproved = false;
         _state.ActiveRoomSinceUtc = DateTime.UtcNow;
 
-        using (_metrics.MeasureRoomDirectoryCall(nameof(IRoomDirectoryGrain.AddPlayerToRoomAsync)))
-        {
-            await _grainFactory
-                .GetRoomDirectoryGrain()
-                .AddPlayerToRoomAsync((int)this.GetPrimaryKeyLong(), next, ct);
-        }
+        // Independent: the directory entry and the summary the avatar is built from.
+        Task<PlayerSummarySnapshot> summaryTask = _grainFactory
+            .GetPlayerGrain(PlayerId)
+            .GetSummaryAsync(ct);
+
+        await Task.WhenAll(summaryTask, AddToDirectoryAsync(next, ct));
+
+        PlayerSummarySnapshot playerSnapshot = await summaryTask;
 
         IStreamProvider? provider = this.GetStreamProvider(
             OrleansStreamProviders.ROOM_STREAM_PROVIDER
@@ -180,10 +164,6 @@ internal sealed partial class PlayerPresenceGrain
         _roomOutboundSub = await stream.SubscribeAsync(this);
 
         IRoomAvatars room = _grainFactory.GetRoomAvatars(roomId);
-
-        PlayerSummarySnapshot playerSnapshot = await _grainFactory
-            .GetPlayerGrain((PlayerId)this.GetPrimaryKeyLong())
-            .GetSummaryAsync(ct);
 
         ActionContext ctx = new ActionContext
         {
@@ -207,6 +187,16 @@ internal sealed partial class PlayerPresenceGrain
                 ),
                 ct
             );
+        }
+    }
+
+    private async Task AddToDirectoryAsync(RoomId roomId, CancellationToken ct)
+    {
+        using (_metrics.MeasureRoomDirectoryCall(nameof(IRoomDirectoryGrain.AddPlayerToRoomAsync)))
+        {
+            await _grainFactory
+                .GetRoomDirectoryGrain()
+                .AddPlayerToRoomAsync(PlayerId.Value, roomId, ct);
         }
     }
 
