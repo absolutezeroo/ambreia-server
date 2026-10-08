@@ -2,7 +2,9 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Vortex.Primitives.Plugins;
 using Vortex.Rpg.Characters.Configuration;
+using Vortex.Rpg.Characters.Content;
 using Vortex.Rpg.Characters.Stats;
+using Vortex.Rpg.Content.Migrations;
 using Vortex.Rpg.Stats;
 
 namespace Vortex.Rpg.Characters;
@@ -20,5 +22,9 @@ public sealed class CharactersModule : IHostPluginModule
 
         // Declared, not scanned (plan Personnage, décision 1): a system that adds stats adds a line.
         services.AddSingleton<IStatSource, ClassLevelStatSource>();
+
+        // Characters hold class ids: an import that removes one needs a replace rule.
+        services.AddSingleton<IContentReferences, ClassReferences>();
+        services.AddSingleton<IContentReferences, SpecializationReferences>();
     }
 }

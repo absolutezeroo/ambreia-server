@@ -48,11 +48,16 @@ internal sealed class PlayerCharacterGrain(
     private bool _dirty;
     private CharacterStatsSnapshot? _stats;
     private long _statsVersion = -1;
+
+    /// <summary>The content version the class ids were last read at.</summary>
+    private long _idsVersion;
     private IDisposable? _flushTimer;
 
     public override async Task OnActivateAsync(CancellationToken ct)
     {
         _playerId = PlayerId.Parse((int)this.GetPrimaryKeyLong());
+
+        _idsVersion = content.Version;
 
         await using VortexDbContext db = await dbFactory.CreateDbContextAsync(ct);
         _character = await db
@@ -74,18 +79,51 @@ internal sealed class PlayerCharacterGrain(
         await FlushAsync(ct);
     }
 
-    public Task<CharacterSummary?> GetSummaryAsync() =>
-        Task.FromResult(
-            _character is { } c
-                ? new CharacterSummary
-                {
-                    ClassId = c.ClassId,
-                    SpecializationId = c.SpecializationId,
-                    Level = c.Level,
-                    Xp = c.Xp,
-                }
-                : null
-        );
+    public async Task<CharacterSummary?> GetSummaryAsync()
+    {
+        await RefreshIdsAsync();
+
+        return _character is { } c
+            ? new CharacterSummary
+            {
+                ClassId = c.ClassId,
+                SpecializationId = c.SpecializationId,
+                Level = c.Level,
+                Xp = c.Xp,
+            }
+            : null;
+    }
+
+    /// <summary>
+    /// An import may have moved this character to another class (replace rule, written to the row
+    /// while this grain was active): when the content version changed, the ids are read again.
+    /// The flush never writes them, so the row's value is the truth.
+    /// </summary>
+    private async Task RefreshIdsAsync()
+    {
+        long version = content.Version;
+
+        if (_character is not { } c || version == _idsVersion)
+        {
+            return;
+        }
+
+        await using VortexDbContext db = await dbFactory.CreateDbContextAsync();
+        var ids = await db
+            .PlayerCharacters.AsNoTracking()
+            .Where(x => x.PlayerEntityId == c.PlayerEntityId)
+            .Select(x => new { x.ClassId, x.SpecializationId })
+            .SingleOrDefaultAsync();
+
+        if (ids is not null)
+        {
+            c.ClassId = ids.ClassId;
+            c.SpecializationId = ids.SpecializationId;
+        }
+
+        _idsVersion = version;
+        _stats = null;
+    }
 
     public async Task<ChooseClassOutcome> ChooseClassAsync(string classId)
     {
@@ -131,6 +169,8 @@ internal sealed class PlayerCharacterGrain(
 
     public async Task<CharacterStatsSnapshot?> GetStatsAsync()
     {
+        await RefreshIdsAsync();
+
         if (_character is null)
         {
             return null;
@@ -146,6 +186,8 @@ internal sealed class PlayerCharacterGrain(
 
     public async Task<XpGrantOutcome> GainXpAsync(int amount, string source)
     {
+        await RefreshIdsAsync();
+
         if (_character is not { } c)
         {
             return XpGrantOutcome.NoCharacter;
