@@ -1575,6 +1575,64 @@ namespace Vortex.Database.Migrations
                     b.ToTable("rpg_content_texts");
                 });
 
+            modelBuilder.Entity("Vortex.Database.Entities.Security.AccountTicketEntity", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasColumnName("id");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("AccountId")
+                        .HasColumnType("int")
+                        .HasColumnName("account_id");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime(6)")
+                        .HasColumnName("created_at");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<DateTime>("CreatedAt"));
+
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("datetime(6)")
+                        .HasColumnName("deleted_at");
+
+                    b.Property<DateTime?>("ExpiresAt")
+                        .HasColumnType("datetime(6)")
+                        .HasColumnName("expires_at");
+
+                    b.Property<string>("IpAddress")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("varchar(64)")
+                        .HasColumnName("ip_address");
+
+                    b.Property<string>("Ticket")
+                        .IsRequired()
+                        .HasMaxLength(128)
+                        .HasColumnType("varchar(128)")
+                        .HasColumnName("ticket");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("datetime(6)")
+                        .HasColumnName("updated_at");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlComputedColumn(b.Property<DateTime>("UpdatedAt"));
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AccountId")
+                        .IsUnique();
+
+                    b.HasIndex("Ticket")
+                        .IsUnique();
+
+                    b.ToTable("account_tickets");
+                });
+
             modelBuilder.Entity("Vortex.Database.Entities.Security.SecurityTicketEntity", b =>
                 {
                     b.Property<int>("Id")
@@ -1970,6 +2028,17 @@ namespace Vortex.Database.Migrations
                         .IsRequired();
 
                     b.Navigation("Pack");
+                });
+
+            modelBuilder.Entity("Vortex.Database.Entities.Security.AccountTicketEntity", b =>
+                {
+                    b.HasOne("Vortex.Database.Entities.Players.PlayerAccountEntity", "Account")
+                        .WithMany()
+                        .HasForeignKey("AccountId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Account");
                 });
 
             modelBuilder.Entity("Vortex.Database.Entities.Security.SecurityTicketEntity", b =>

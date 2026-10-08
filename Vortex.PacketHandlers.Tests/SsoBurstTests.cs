@@ -122,8 +122,8 @@ public sealed class SsoBurstTests
     {
         SSOTicketMessageHandler handler = new(
             FakeProxy.Create<IAuthenticationService>(call =>
-                call.Method.Name == nameof(IAuthenticationService.GetPlayerIdFromTicketAsync)
-                    ? Task.FromResult(PLAYER_ID)
+                call.Method.Name == nameof(IAuthenticationService.ResolveTicketAsync)
+                    ? Task.FromResult(new TicketOwner(PLAYER_ID, 0))
                     : null
             ),
             FakeProxy.Create<ISessionGateway>(_ => null),

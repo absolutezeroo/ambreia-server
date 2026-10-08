@@ -173,4 +173,39 @@ public sealed class WebApiAuthService(
         _logger.LogInformation("SSO token issued for player {PlayerId}", playerId);
         return (true, ticket, null);
     }
+
+    public async Task<(bool Success, string? Ticket, string? Error)> GetAccountSsoTokenAsync(
+        int accountId,
+        string ip,
+        CancellationToken ct
+    )
+    {
+        await using VortexDbContext db = await _db.CreateDbContextAsync(ct).ConfigureAwait(false);
+
+        // One ticket per account, as one per player: a new sign-in replaces the last.
+        AccountTicketEntity? existing = await db
+            .AccountTickets.FirstOrDefaultAsync(t => t.AccountId == accountId, ct)
+            .ConfigureAwait(false);
+
+        if (existing is not null)
+        {
+            db.AccountTickets.Remove(existing);
+        }
+
+        string ticket = Guid.NewGuid().ToString("N") + Guid.NewGuid().ToString("N");
+
+        db.AccountTickets.Add(
+            new AccountTicketEntity
+            {
+                AccountId = accountId,
+                Ticket = ticket,
+                IpAddress = string.IsNullOrWhiteSpace(ip) ? "127.0.0.1" : ip,
+            }
+        );
+
+        await db.SaveChangesAsync(ct).ConfigureAwait(false);
+
+        _logger.LogInformation("Account SSO token issued for account {AccountId}", accountId);
+        return (true, ticket, null);
+    }
 }

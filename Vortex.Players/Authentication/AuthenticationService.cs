@@ -61,11 +61,8 @@ public sealed class AuthenticationService(
             }
 
             DateTime now = DateTime.UtcNow;
-            DateTime? expiry =
-                entity.ExpiresAt
-                ?? (_ticketTtlSeconds > 0 ? entity.CreatedAt.AddSeconds(_ticketTtlSeconds) : null);
 
-            if (expiry.HasValue && now > expiry.Value)
+            if (IsExpired(entity.CreatedAt, entity.ExpiresAt, now))
             {
                 if (!entity.IsLocked)
                 {
@@ -100,22 +97,7 @@ public sealed class AuthenticationService(
                     // new ticket, while keeping the replay window bounded per use. Left default
                     // (TicketSingleUse = false) because the client re-reads its ticket from ?sso= on
                     // a page reload.
-                    DateTime slidExpiry =
-                        _ticketTtlSeconds > 0
-                            ? now.AddSeconds(_ticketTtlSeconds)
-                            : DateTime.MaxValue;
-
-                    if (_ticketAbsoluteLifetimeSeconds is int absoluteSeconds)
-                    {
-                        DateTime absoluteCap = entity.CreatedAt.AddSeconds(absoluteSeconds);
-
-                        if (slidExpiry > absoluteCap)
-                        {
-                            slidExpiry = absoluteCap;
-                        }
-                    }
-
-                    entity.ExpiresAt = slidExpiry == DateTime.MaxValue ? null : slidExpiry;
+                    entity.ExpiresAt = SlidExpiry(entity.CreatedAt, now);
                 }
 
                 await dbCtx.SaveChangesAsync(ct).ConfigureAwait(false);
@@ -131,6 +113,94 @@ public sealed class AuthenticationService(
         {
             await dbCtx.DisposeAsync().ConfigureAwait(false);
         }
+    }
+
+    public async Task<TicketOwner> ResolveTicketAsync(
+        string ticket,
+        string? remoteIp = null,
+        CancellationToken ct = default
+    )
+    {
+        if (string.IsNullOrEmpty(ticket))
+        {
+            return TicketOwner.None;
+        }
+
+        await using VortexDbContext dbCtx = await _dbCtxFactory
+            .CreateDbContextAsync(ct)
+            .ConfigureAwait(false);
+
+        // A player ticket keeps its own path, events included; 0 there means expired.
+        if (await dbCtx.SecurityTickets.AnyAsync(t => t.Ticket == ticket, ct).ConfigureAwait(false))
+        {
+            int playerId = await GetPlayerIdFromTicketAsync(ticket, remoteIp, ct)
+                .ConfigureAwait(false);
+
+            return playerId > 0 ? new TicketOwner(playerId, 0) : TicketOwner.None;
+        }
+
+        AccountTicketEntity? entity = await dbCtx
+            .AccountTickets.FirstOrDefaultAsync(t => t.Ticket == ticket, ct)
+            .ConfigureAwait(false);
+        DateTime now = DateTime.UtcNow;
+
+        if (entity is null || IsExpired(entity.CreatedAt, entity.ExpiresAt, now))
+        {
+            if (entity is not null)
+            {
+                dbCtx.AccountTickets.Remove(entity);
+                await dbCtx.SaveChangesAsync(ct).ConfigureAwait(false);
+            }
+
+            await _events
+                .PublishAsync(new PlayerLoginFailedEvent(HashIp(remoteIp)), ct)
+                .ConfigureAwait(false);
+
+            return TicketOwner.None;
+        }
+
+        // Same rules as a player ticket: consumed when single-use, otherwise slid.
+        if (_ticketSingleUse)
+        {
+            dbCtx.AccountTickets.Remove(entity);
+        }
+        else
+        {
+            entity.ExpiresAt = SlidExpiry(entity.CreatedAt, now);
+        }
+
+        await dbCtx.SaveChangesAsync(ct).ConfigureAwait(false);
+
+        return new TicketOwner(0, entity.AccountId);
+    }
+
+    /// <summary>Expired once past <c>ExpiresAt</c>, or past <c>CreatedAt + TTL</c> before a first use.</summary>
+    private bool IsExpired(DateTime createdAt, DateTime? expiresAt, DateTime now)
+    {
+        DateTime? expiry =
+            expiresAt ?? (_ticketTtlSeconds > 0 ? createdAt.AddSeconds(_ticketTtlSeconds) : null);
+
+        return expiry.HasValue && now > expiry.Value;
+    }
+
+    /// <summary>The expiry after a successful use: one TTL more, capped by the absolute lifetime;
+    /// null when there is no TTL.</summary>
+    private DateTime? SlidExpiry(DateTime createdAt, DateTime now)
+    {
+        DateTime slid =
+            _ticketTtlSeconds > 0 ? now.AddSeconds(_ticketTtlSeconds) : DateTime.MaxValue;
+
+        if (_ticketAbsoluteLifetimeSeconds is int absoluteSeconds)
+        {
+            DateTime cap = createdAt.AddSeconds(absoluteSeconds);
+
+            if (slid > cap)
+            {
+                slid = cap;
+            }
+        }
+
+        return slid == DateTime.MaxValue ? null : slid;
     }
 
     private string? HashIp(string? remoteIp)

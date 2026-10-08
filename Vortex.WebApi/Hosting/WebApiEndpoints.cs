@@ -475,23 +475,17 @@ internal static partial class WebApiEndpoints
                     }
                     else
                     {
-                        System.Collections.Generic.List<AvatarInfo> list = await players
-                            .GetAvatarsForAccountAsync(accountId.Value, ct)
-                            .ConfigureAwait(false);
+                        // No avatar chosen: the ticket names the account, and the client picks its
+                        // character on the socket (spec F3a §5.1).
+                        (bool accountOk, string? accountTicket, string? accountError) =
+                            await auth.GetAccountSsoTokenAsync(accountId.Value, ctx.RemoteIp(), ct)
+                                .ConfigureAwait(false);
 
-                        if (list.Count == 0)
-                        {
-                            return TypedResults.NotFound(
-                                new ApiErrorResponse("pocket.auth.no_avatars")
+                        return accountOk
+                            ? TypedResults.Ok(new SsoTicketResponse(accountTicket!))
+                            : TypedResults.InternalServerError(
+                                new ApiErrorResponse(accountError ?? "internal")
                             );
-                        }
-
-                        if (!int.TryParse(list[0].UniqueId, out playerId))
-                        {
-                            return TypedResults.InternalServerError(
-                                new ApiErrorResponse("internal")
-                            );
-                        }
                     }
 
                     (bool success, string? ticket, string? error) = await auth.GetSsoTokenAsync(

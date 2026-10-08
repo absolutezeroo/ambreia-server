@@ -51,9 +51,10 @@ public class SSOTicketMessageHandler(
     {
         try
         {
-            int playerId = await _authService
-                .GetPlayerIdFromTicketAsync(message.SSO, ctx.RemoteIpAddress, ct)
+            TicketOwner owner = await _authService
+                .ResolveTicketAsync(message.SSO, ctx.RemoteIpAddress, ct)
                 .ConfigureAwait(false);
+            int playerId = owner.PlayerId;
 
             if (playerId <= 0)
             {

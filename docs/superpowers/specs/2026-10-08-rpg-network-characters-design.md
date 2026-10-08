@@ -68,7 +68,9 @@ directement la phase personnage. Le driver et le mode test de l'éditeur s'en se
 - `GET /api/ssotoken` : avatar sélectionné (ou `uniqueId`) → ticket de joueur comme aujourd'hui ;
   sinon → ticket de compte. Même limite de débit qu'aujourd'hui.
 - `IAuthenticationService` résout un ticket en **joueur** ou en **compte** (une seule méthode qui
-  rend l'un ou l'autre), avec les mêmes règles d'IP et d'expiration que le ticket de joueur.
+  rend l'un ou l'autre), avec les mêmes règles que le ticket de joueur : durée de vie, expiration
+  glissante plafonnée et usage unique selon `AuthenticationConfig.TicketSingleUse`. Aucun des deux
+  ne contrôle l'IP aujourd'hui (elle n'est que hachée dans les events de connexion).
 
 ### 5.2 Phase compte
 
@@ -88,10 +90,11 @@ directement la phase personnage. Le driver et le mode test de l'éditeur s'en se
   `Vortex.Rpg.Characters`) :
   - `ListAsync()` : les avatars du compte (non supprimés) avec leur personnage (classe,
     spécialisation, niveau, classe de départ ou non) par `IPlayerCharacterGrain` ;
-  - `CreateAsync(name, figure, gender)` : 5 au plus (`WebApiConfig.MaxAvatarsPerAccount`, déplacé
-    dans une configuration partagée), nom validé comme aujourd'hui (`NameShape`, interne au web
-    API aujourd'hui, déplacé dans `Vortex.Primitives` pour être partagé ; unique), figure validée
-    (`FigureString`) ; crée la ligne `players` puis donne « Sans classe » par
+  - `CreateAsync(name, figure, gender)` : 5 au plus (`CharacterConfig.MaxCharactersPerAccount` ;
+    `WebApiConfig.MaxAvatarsPerAccount`, configuration du plugin web, reste pour les routes HTTP),
+    nom validé comme aujourd'hui (`NameShape`, interne au web API aujourd'hui, déplacé dans
+    `Vortex.Primitives` pour être partagé ; unique), figure de 255 caractères au plus
+    (`FigureString.MaxLength`, la seule règle appliquée aujourd'hui) ; crée la ligne `players` puis donne « Sans classe » par
     `IPlayerCharacterGrain.ChooseClassAsync` ;
   - `ChooseClassAsync(playerId, classId)` : vérifie l'appartenance, puis `IPlayerCharacterGrain`.
   - Chaque méthode envoie elle-même le résultat (`RpgCharacterResult`) et, en cas de succès, la
@@ -191,7 +194,8 @@ des stats de classe nulles (spec Personnage §12).
   tient.
 - Une connexion du même compte pendant une phase compte remplace la précédente ; une connexion
   pendant une phase personnage suit les règles de la présence du joueur (grâce, reprise).
-- Un ticket de compte s'utilise une fois, comme un ticket de joueur.
+- Un ticket de compte suit les règles d'un ticket de joueur : usage unique si
+  `TicketSingleUse` est vrai, sinon réutilisable jusqu'à son expiration glissante (300 s au plus).
 
 ## 8. Observabilité
 

@@ -5,7 +5,12 @@ namespace Vortex.Primitives.Authentication;
 
 public interface IAuthenticationService
 {
-    public Task<int> GetPlayerIdFromTicketAsync(
+    /// <summary>
+    /// The player or the account a sign-in ticket names (spec F3a §5.1); <see cref="TicketOwner.None"/>
+    /// when it is unknown or expired. Both kinds follow the same TTL, sliding expiry and single-use
+    /// rules (<c>AuthenticationConfig</c>).
+    /// </summary>
+    public Task<TicketOwner> ResolveTicketAsync(
         string ticket,
         string? remoteIp = null,
         CancellationToken ct = default

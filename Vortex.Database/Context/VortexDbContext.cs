@@ -35,6 +35,8 @@ public class VortexDbContext(DbContextOptions<VortexDbContext> options)
 
     public DbSet<SecurityTicketEntity> SecurityTickets { get; init; } = null!;
 
+    public DbSet<AccountTicketEntity> AccountTickets { get; init; } = null!;
+
     public DbSet<PlayerAccountEntity> PlayerAccounts { get; init; } = null!;
 
     public DbSet<RoleEntity> Roles { get; init; } = null!;

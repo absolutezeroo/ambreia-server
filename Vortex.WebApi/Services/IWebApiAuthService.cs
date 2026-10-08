@@ -23,4 +23,12 @@ public interface IWebApiAuthService
         string ip,
         CancellationToken ct
     );
+
+    /// <summary>A ticket for the account, opening the game socket on the character screen (spec
+    /// F3a §5.1); replaces the account's previous one.</summary>
+    Task<(bool Success, string? Ticket, string? Error)> GetAccountSsoTokenAsync(
+        int accountId,
+        string ip,
+        CancellationToken ct
+    );
 }

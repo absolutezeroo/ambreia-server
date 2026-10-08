@@ -200,6 +200,40 @@ public sealed class WebApiEndpointsTests
             .NotBeNullOrEmpty();
     }
 
+    /// <summary>Spec F3a §5.1: without a selected avatar, the ticket names the account — the client
+    /// then picks its character on the socket.</summary>
+    [Fact]
+    public async Task SsoToken_WithoutASelectedAvatar_IsAnAccountTicket()
+    {
+        await using WebApiTestFactory factory = new WebApiTestFactory();
+        using HttpClient client = factory.CreateAuthenticatedClient();
+
+        HttpResponseMessage response = await client.GetAsync("/api/ssotoken");
+
+        (await ReadJsonAsync(response))
+            .GetProperty("ssoToken")
+            .GetString()
+            .Should()
+            .StartWith("account-ticket-");
+    }
+
+    [Fact]
+    public async Task SsoToken_ForASelectedAvatar_IsStillAPlayerTicket()
+    {
+        await using WebApiTestFactory factory = new WebApiTestFactory();
+        using HttpClient client = factory.CreateAuthenticatedClient();
+
+        HttpResponseMessage response = await client.GetAsync(
+            $"/api/ssotoken?uniqueId={FakePlayerService.OwnedUniqueId}"
+        );
+
+        (await ReadJsonAsync(response))
+            .GetProperty("ssoToken")
+            .GetString()
+            .Should()
+            .Be($"ticket-{FakePlayerService.OwnedUniqueId}");
+    }
+
     [Fact]
     public async Task NameCheck_Returns200WithValidity()
     {
