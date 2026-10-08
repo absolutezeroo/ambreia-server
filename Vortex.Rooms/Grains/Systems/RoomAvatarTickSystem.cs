@@ -71,16 +71,6 @@ public sealed class RoomAvatarTickSystem(RoomGrain roomGrain)
                 {
                     _dirtySnapshots.Add(avatar.GetSnapshot());
                 }
-
-                // A sign is a one-shot: it has been on the wire by now (in the update above at the
-                // latest), so drop it. Without this the avatar holds the sign up forever. No packet
-                // raises a sign yet.
-                if (avatar.HasStatus(AvatarStatusType.Sign))
-                {
-                    avatar.RemoveStatus(AvatarStatusType.Sign);
-                }
-
-                ExpireHandItem(avatar, now);
             }
             catch (Exception ex)
             {
@@ -105,33 +95,6 @@ public sealed class RoomAvatarTickSystem(RoomGrain roomGrain)
             .LogAndForget(
                 _roomGrain._logger,
                 "Failed to publish avatar tick update for room {RoomId}",
-                _roomGrain.RoomId
-            );
-    }
-
-    /// <summary>
-    /// Takes a held item out of the hand once its time is up. Habbo hand items are shown for a
-    /// while and then gone; without this one drink would be held for the rest of the session.
-    /// Nothing hands an avatar an item yet.
-    /// </summary>
-    private void ExpireHandItem(IRoomAvatar avatar, long now)
-    {
-        if (avatar.CarryItemId == 0 || now < avatar.CarryItemUntilMs)
-        {
-            return;
-        }
-
-        avatar.SetCarryItem(0, 0);
-
-        // The item is not in the avatar block, so an emptied hand has to be said out loud or the
-        // client keeps drawing what it was last told about.
-        _roomGrain
-            .SendComposerToRoomAsync(
-                new CarryObjectMessageComposer { UserId = avatar.ObjectId.Value, ItemType = 0 }
-            )
-            .LogAndForget(
-                _roomGrain._logger,
-                "Failed to clear a hand item in room {RoomId}",
                 _roomGrain.RoomId
             );
     }

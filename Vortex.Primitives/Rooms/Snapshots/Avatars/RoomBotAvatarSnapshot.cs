@@ -23,10 +23,5 @@ public sealed record RoomBotAvatarSnapshot : RoomAvatarSnapshot
     [Id(15)]
     public ImmutableArray<short> SkillIds { get; init; } = ImmutableArray<short>.Empty;
 
-    /// <summary>
-    /// Not part of the avatar block: like a player's, a bot's dance rides its own composer, and
-    /// this is what lets a room replay it for somebody who has just walked in.
-    /// </summary>
-    [Id(16)]
-    public AvatarDanceType DanceType { get; init; }
+    // [Id(16)] retired: DanceType, a Habbo dance; nothing in the RPG dances.
 }

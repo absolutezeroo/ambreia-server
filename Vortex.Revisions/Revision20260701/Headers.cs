@@ -60,7 +60,6 @@ internal static class MessageComposer
     // worn effects never appeared on avatars in-room.
     public const int AvatarEffectMessageComposer = 2624;
     public const int CarryObjectMessageComposer = 2850;
-    public const int DanceMessageComposer = 2217;
 
     public const int FigureUpdateComposer = 132;
 

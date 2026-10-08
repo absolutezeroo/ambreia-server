@@ -8,9 +8,10 @@ namespace Vortex.Primitives.Rooms.Object.Avatars;
 public interface IRoomPlayer : IRoomAvatar<IRoomPlayer, IRoomPlayerLogic, IRoomPlayerContext>
 {
     new IRoomPlayerLogic Logic { get; }
+
     public PlayerId PlayerId { get; }
+
     public AvatarGenderType Gender { get; }
-    public AvatarDanceType DanceType { get; }
 
     /// <summary>
     /// The achievement score the room was last told — the same number it broadcasts as
@@ -21,5 +22,4 @@ public interface IRoomPlayer : IRoomAvatar<IRoomPlayer, IRoomPlayerLogic, IRoomP
     public int ActivityPoints { get; }
 
     public bool UpdateWithPlayer(PlayerSummarySnapshot snapshot);
-    public bool SetDance(AvatarDanceType danceType = AvatarDanceType.None);
 }

@@ -60,7 +60,6 @@ public sealed class RoomAvatarWireTests
             HeadRotation = Rotation.North,
             Status = "/",
             Gender = AvatarGenderType.Male,
-            DanceType = AvatarDanceType.None,
             ActivityPoints = 5,
             IsModerator = true,
         };
@@ -234,11 +233,8 @@ public sealed class RoomAvatarWireTests
         // The January WIN63 build the hotel serves reads status straight after the body rotation
         // (_SafePkg_2072/_SafeCls_3051.parse:82-84). The July build reads a jumpingPower int in
         // between; writing it for the January client shifted the status string and cost the walk
-        // animation, so the block stays at eight fields and JumpPower rides along unused.
-        UserUpdateMessageComposer composer = new()
-        {
-            Avatars = [NewPlayer(1), NewPlayer(2) with { JumpPower = 7 }],
-        };
+        // animation, so the block stays at eight fields.
+        UserUpdateMessageComposer composer = new() { Avatars = [NewPlayer(1), NewPlayer(2)] };
 
         byte[] bytes = Revision
             .Serializers[typeof(UserUpdateMessageComposer)]

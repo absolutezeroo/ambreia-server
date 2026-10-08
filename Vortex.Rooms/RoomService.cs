@@ -329,25 +329,10 @@ internal sealed partial class RoomService(
             )
             .ConfigureAwait(false);
 
-        // None of a dance, a worn effect or a hand item is part of the Users payload, so each one
-        // has to be replayed for the player walking in. A bot's dance is as absent from that
-        // payload as a player's.
+        // Neither a worn effect nor a hand item is part of the Users payload, so each one has to be
+        // replayed for the player walking in.
         IComposer[] replayComposers =
         [
-            .. avatarSnapshots
-                .OfType<RoomPlayerAvatarSnapshot>()
-                .Where(x => x.DanceType != AvatarDanceType.None)
-                .Select(
-                    IComposer (x) =>
-                        new DanceMessageComposer { ObjectId = x.ObjectId, DanceType = x.DanceType }
-                ),
-            .. avatarSnapshots
-                .OfType<RoomBotAvatarSnapshot>()
-                .Where(x => x.DanceType != AvatarDanceType.None)
-                .Select(
-                    IComposer (x) =>
-                        new DanceMessageComposer { ObjectId = x.ObjectId, DanceType = x.DanceType }
-                ),
             .. avatarSnapshots
                 .OfType<RoomPlayerAvatarSnapshot>()
                 .Where(x => x.CurrentEffectId != 0)

@@ -26,7 +26,6 @@ internal class UserUpdateMessageComposerSerializer(int header)
                 // two rotations to the status string. Writing the int shifted the status, so `mv`
                 // never parsed and the walk animation died on a live server.
                 // Wire truth here is Nitro's TypeScript parser, not the AS3.
-                // avatar.JumpPower is carried and deliberately unused.
                 .WriteString(avatar.Status);
         }
     }

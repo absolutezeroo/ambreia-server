@@ -43,12 +43,5 @@ public record RoomAvatarSnapshot
     [Id(11)]
     public required string Status { get; init; }
 
-    /// <summary>
-    /// Arc height of the avatar's slide — the client reads it as the curve strength of the move
-    /// (<c>AvatarLogic.getCurveStrength</c> via <c>figure_jumping_power</c>) and only honours it
-    /// while the avatar is moving. Zero is a flat slide, which is every avatar today: nothing
-    /// produces a jump yet.
-    /// </summary>
-    [Id(12)]
-    public int JumpPower { get; init; }
+    // [Id(12)] retired: JumpPower, the arc of a slide; nothing ever produced a jump.
 }

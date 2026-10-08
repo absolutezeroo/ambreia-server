@@ -53,11 +53,6 @@ internal sealed class RoomMap : IRevisionMap
             typeof(CarryObjectMessageComposer),
             new CarryObjectMessageComposerSerializer(MessageComposer.CarryObjectMessageComposer)
         );
-        builder.MapSerializer(
-            typeof(DanceMessageComposer),
-            new DanceMessageComposerSerializer(MessageComposer.DanceMessageComposer)
-        );
-
         // Room Engine
         builder.MapSerializer(
             typeof(FloorHeightMapMessageComposer),

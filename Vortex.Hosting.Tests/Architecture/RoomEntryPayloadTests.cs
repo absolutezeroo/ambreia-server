@@ -38,8 +38,6 @@ public sealed class RoomEntryPayloadTests
         "AvatarEffectMessageComposer",
         // Occupants' hand items.
         "CarryObjectMessageComposer",
-        // Occupants' dances, players and bots alike.
-        "DanceMessageComposer",
         // Pins chooserDisabled, freeFurniMovementsEnabled and invisibleFurni on the client's room
         // object instead of leaving them to whatever the client defaults to.
         "HanditemConfigurationMessageComposer",
@@ -92,27 +90,6 @@ public sealed class RoomEntryPayloadTests
     }
 
     /// <summary>
-    /// Bots dance too, and their dance is as absent from the <c>Users</c> payload as a player's.
-    /// The replay used to filter on the player snapshot alone, so a room entered while a bot was
-    /// dancing showed it standing still until it changed dance.
-    /// </summary>
-    [Fact]
-    public void TheDanceReplay_CoversBotsAsWellAsPlayers()
-    {
-        string source = File.ReadAllText(
-            Path.Combine(RepositoryPaths.Root(), "Vortex.Rooms", "RoomService.cs")
-        );
-
-        source
-            .Should()
-            .Contain(
-                "OfType<RoomBotAvatarSnapshot>()",
-                "a bot's dance reaches the arriving client through the same replay as a player's, "
-                    + "and through nothing else"
-            );
-    }
-
-    /// <summary>
     /// The burst goes out in the order Sulake sends it.
     /// </summary>
     /// <remarks>
@@ -124,7 +101,7 @@ public sealed class RoomEntryPayloadTests
     /// already, with the rating second and the paint arriving after the geometry it paints.
     /// </para>
     /// <para>
-    /// The replay set (dances, effects, hand items) is deliberately absent: those are ours, the
+    /// The replay set (effects, hand items) is deliberately absent: those are ours, the
     /// capture's room was empty, and there is no official order to hold them to.
     /// </para>
     /// </remarks>

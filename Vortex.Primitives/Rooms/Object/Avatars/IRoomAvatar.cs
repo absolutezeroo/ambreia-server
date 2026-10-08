@@ -36,29 +36,21 @@ public interface IRoomAvatar : IRoomObject
     public long NextMoveUpdateAtMs { get; set; }
     public long PendingStopAtMs { get; set; }
 
-    /// <summary>The avatar's currently worn effect id (0 = none). Broadcast via
-    /// <c>AvatarEffectMessageComposer</c> and re-synced to late joiners at room entry. Nothing calls
-    /// <see cref="SetEffect"/> since the effect inventory, wired and games left with the cut.</summary>
+    /// <summary>The avatar's currently worn effect id (0 = none): status effects and premium
+    /// cosmetics will set it (spec §6.5, §12). Broadcast via <c>AvatarEffectMessageComposer</c> and
+    /// re-synced to late joiners at room entry. Nothing calls <see cref="SetEffect"/> yet.</summary>
     public int CurrentEffectId { get; }
 
     /// <summary>
-    /// What the avatar is holding (0 = empty-handed). Broadcast via <c>CarryObjectMessageComposer</c>
-    /// and re-synced to late joiners at room entry, the same way an effect is; unlike an effect it
-    /// is never persisted, because a hand item is shown for a while and then gone.
+    /// What the avatar is holding (0 = empty-handed): the weapon in hand of the RPG (spec §16.3).
+    /// Broadcast via <c>CarryObjectMessageComposer</c> and re-synced to late joiners at room entry,
+    /// the same way an effect is. Nothing sets it yet.
     /// </summary>
     public int CarryItemId { get; }
 
-    /// <summary>Room-clock time the held item leaves the hand.</summary>
-    public long CarryItemUntilMs { get; }
-
-    /// <summary>Arc height of the avatar's next slide (0 = flat). Broadcast on every
-    /// <c>UserUpdateMessageComposer</c>; the client applies it only while the avatar is moving.
-    /// Nothing sets it yet.</summary>
-    public int JumpPower { get; }
-
-    /// <summary>True while the avatar may not start walking. Nothing sets it since wired and Freeze
-    /// left with the cut. Activation-scoped, so it dies with the avatar and can never leak between
-    /// rooms or sessions.</summary>
+    /// <summary>True while the avatar may not start walking: stuns and roots (spec §6.5). Nothing
+    /// sets it yet. Activation-scoped, so it dies with the avatar and can never leak between rooms
+    /// or sessions.</summary>
     public bool IsMovementLocked { get; }
 
     public bool SetGoalTileId(int tileId);
@@ -68,16 +60,23 @@ public interface IRoomAvatar : IRoomObject
     /// in-flight walk — the lock only gates NEW walks.</summary>
     public void SetMovementLocked(bool locked);
 
-    /// <summary>Puts something in the hand until a room-clock time, or empties it when zero.</summary>
-    public bool SetCarryItem(int itemId, long untilMs);
+    /// <summary>Puts something in the hand, or empties it when zero.</summary>
+    public bool SetCarryItem(int itemId);
+
     public void SetHeight(Altitude z);
+
     public void SetBodyRotation(Rotation rot);
+
     public void SetHeadRotation(Rotation rot);
+
     public void Sit(bool flag = true, Altitude? height = null, Rotation? rot = null);
+
     public void Lay(bool flag = true, Altitude? height = null, Rotation? rot = null);
 
     public void AddStatus(AvatarStatusType type, string value);
+
     public bool HasStatus(params AvatarStatusType[] types);
+
     public void RemoveStatus(params AvatarStatusType[] types);
 
     public RoomAvatarSnapshot GetSnapshot();
