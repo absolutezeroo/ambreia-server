@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
@@ -38,6 +39,47 @@ public sealed partial class RoomActionModule(RoomGrain roomGrain)
                 .SendComposerAsync(FurniPlacementNotice.Create())
                 .ConfigureAwait(true);
         }
+
+        return false;
+    }
+
+    /// <summary>
+    /// Places an item from a player's hand, floor or wall alike. The row enters the room before the
+    /// room does anything with it: the other order puts the item in the room for everyone while the
+    /// database still says it is in the hand, which a player reads as a duplicate -- and the
+    /// write-behind tick no longer corrects it, because a position flush has stopped asserting
+    /// where an item lives. If the room then refuses it, the row is handed back rather than left
+    /// saying a room holds furniture the room has never heard of.
+    /// </summary>
+    private async Task<bool> ClaimAndPlaceAsync(
+        IRoomItem item,
+        Func<Task<bool>> place,
+        CancellationToken ct
+    )
+    {
+        if (
+            !await _roomGrain._furnitureLocations.ClaimIntoRoomAsync(
+                item.ObjectId.Value,
+                item.OwnerId.Value,
+                _roomGrain.RoomId.Value,
+                ct
+            )
+        )
+        {
+            throw new VortexException(VortexErrorCodeEnum.NoPermissionToPlaceFurni);
+        }
+
+        if (await place())
+        {
+            return true;
+        }
+
+        await _roomGrain._furnitureLocations.ReleaseFromRoomAsync(
+            item.ObjectId.Value,
+            _roomGrain.RoomId.Value,
+            item.OwnerId.Value,
+            ct
+        );
 
         return false;
     }

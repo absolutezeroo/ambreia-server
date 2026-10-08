@@ -54,33 +54,14 @@ public sealed partial class RoomActionModule
             return await RefusePlacementAsync(ctx);
         }
 
-        // The row enters the room before the room does anything with it. The other order puts the
-        // item on the floor for everyone while the database still says it is in the hand, which is
-        // what a player would read as having been duplicated -- and the write-behind tick no longer
-        // corrects it, because a position flush has stopped asserting where an item lives.
         if (
-            !await _roomGrain._furnitureLocations.ClaimIntoRoomAsync(
-                floorItem.ObjectId.Value,
-                item.OwnerId.Value,
-                _roomGrain.RoomId.Value,
+            !await ClaimAndPlaceAsync(
+                item,
+                () => _roomGrain.FurniModule.PlaceFloorItemAsync(ctx, floorItem, x, y, rot, ct),
                 ct
             )
         )
         {
-            throw new VortexException(VortexErrorCodeEnum.NoPermissionToPlaceFurni);
-        }
-
-        if (!await _roomGrain.FurniModule.PlaceFloorItemAsync(ctx, floorItem, x, y, rot, ct))
-        {
-            // The room refused it after the row was already ours. Hand it back rather than leaving
-            // a row that says a room holds furniture the room has never heard of.
-            await _roomGrain._furnitureLocations.ReleaseFromRoomAsync(
-                floorItem.ObjectId.Value,
-                _roomGrain.RoomId.Value,
-                item.OwnerId.Value,
-                ct
-            );
-
             return false;
         }
 

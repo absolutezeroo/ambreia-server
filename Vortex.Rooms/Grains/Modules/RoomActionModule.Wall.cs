@@ -54,40 +54,24 @@ public sealed partial class RoomActionModule
             return await RefusePlacementAsync(ctx);
         }
 
-        // As on the floor: the row enters the room before the room does, so the item is never on a
-        // wall for everyone while the database still says it is in somebody's hand.
         if (
-            !await _roomGrain._furnitureLocations.ClaimIntoRoomAsync(
-                wallItem.ObjectId.Value,
-                item.OwnerId.Value,
-                _roomGrain.RoomId.Value,
+            !await ClaimAndPlaceAsync(
+                item,
+                () =>
+                    _roomGrain.FurniModule.PlaceWallItemAsync(
+                        ctx,
+                        wallItem,
+                        x,
+                        y,
+                        z,
+                        wallOffset,
+                        rot,
+                        ct
+                    ),
                 ct
             )
         )
         {
-            throw new VortexException(VortexErrorCodeEnum.NoPermissionToPlaceFurni);
-        }
-
-        if (
-            !await _roomGrain.FurniModule.PlaceWallItemAsync(
-                ctx,
-                wallItem,
-                x,
-                y,
-                z,
-                wallOffset,
-                rot,
-                ct
-            )
-        )
-        {
-            await _roomGrain._furnitureLocations.ReleaseFromRoomAsync(
-                wallItem.ObjectId.Value,
-                _roomGrain.RoomId.Value,
-                item.OwnerId.Value,
-                ct
-            );
-
             return false;
         }
 
