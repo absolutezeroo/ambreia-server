@@ -162,8 +162,9 @@ const HTTP_GATES = [
   ['account-id', /\.AccountId\s*\(/],
   ['selected-player', /SelectedPlayerAsync\s*\(/],
   ['anonymous', /\.AllowAnonymous\s*\(/],
-  // A session, then a capability from IPermissionService (WebApiEndpoints.Editor.cs).
-  ['capability', /\bDenyAsync\s*\(/],
+  // A session, then a capability from IPermissionService (Hosting/CapabilityGate.cs): declared on
+  // the route, or asked inline where the capability depends on the request.
+  ['capability', /\.RequireCapability\s*\(|\bDenyAsync\s*\(/],
 ];
 
 for (const f of walk(root)) {

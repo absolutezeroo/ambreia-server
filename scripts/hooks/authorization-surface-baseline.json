@@ -28,7 +28,7 @@
     "http:GET /api/public/info/hello  (Vortex.WebApi/Hosting/WebApiEndpoints.cs)": "NONE",
     "http:GET /api/ssotoken  (Vortex.WebApi/Hosting/WebApiEndpoints.cs)": "account-id",
     "http:GET /api/user/avatars  (Vortex.WebApi/Hosting/WebApiEndpoints.cs)": "account-id",
-    "http:GET /furniture  (Vortex.WebApi/Hosting/WebApiEndpoints.Editor.cs)": "account-id+capability",
+    "http:GET /furniture  (Vortex.WebApi/Hosting/WebApiEndpoints.Editor.cs)": "capability",
     "http:GET /health  (Vortex.WebApi/Hosting/WebApiEndpoints.cs)": "NONE",
     "http:GET /zones  (Vortex.WebApi/Hosting/WebApiEndpoints.Editor.cs)": "capability",
     "http:GET /zones/{key}/document  (Vortex.WebApi/Hosting/WebApiEndpoints.Editor.cs)": "capability",

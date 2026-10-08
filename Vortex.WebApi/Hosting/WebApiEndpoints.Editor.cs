@@ -44,17 +44,10 @@ internal static partial class WebApiEndpoints
         editor
             .MapGet(
                 "/zones",
-                async Task<IResult> (
-                    HttpContext ctx,
-                    WebApiSessionStore sessions,
-                    IPermissionService permissions,
-                    IZoneEditorService zones,
-                    CancellationToken ct
-                ) =>
-                    await DenyAsync(ctx, sessions, permissions, Capabilities.World.ZoneEdit, ct)
-                        .ConfigureAwait(false)
-                    ?? TypedResults.Ok(await zones.ListAsync(ct).ConfigureAwait(false))
+                async Task<IResult> (IZoneEditorService zones, CancellationToken ct) =>
+                    TypedResults.Ok(await zones.ListAsync(ct).ConfigureAwait(false))
             )
+            .RequireCapability(Capabilities.World.ZoneEdit)
             .WithName("EditorListZones")
             .Produces<IReadOnlyList<ZoneSummary>>();
 
@@ -65,25 +58,10 @@ internal static partial class WebApiEndpoints
                     HttpContext ctx,
                     CreateZoneRequest body,
                     WebApiSessionStore sessions,
-                    IPermissionService permissions,
                     IZoneEditorService zones,
                     CancellationToken ct
                 ) =>
                 {
-                    IResult? denied = await DenyAsync(
-                            ctx,
-                            sessions,
-                            permissions,
-                            Capabilities.World.ZoneEdit,
-                            ct
-                        )
-                        .ConfigureAwait(false);
-
-                    if (denied is not null)
-                    {
-                        return denied;
-                    }
-
                     if (body is null || !body.IsValid)
                     {
                         return TypedResults.BadRequest(new ApiErrorResponse("invalid_request"));
@@ -121,24 +99,17 @@ internal static partial class WebApiEndpoints
                     }
                 }
             )
+            .RequireCapability(Capabilities.World.ZoneEdit)
             .WithName("EditorCreateZone")
             .Produces<ZoneSummary>();
 
         editor
             .MapGet(
                 "/zones/{key}/versions",
-                async Task<IResult> (
-                    HttpContext ctx,
-                    string key,
-                    WebApiSessionStore sessions,
-                    IPermissionService permissions,
-                    IZoneEditorService zones,
-                    CancellationToken ct
-                ) =>
-                    await DenyAsync(ctx, sessions, permissions, Capabilities.World.ZoneEdit, ct)
-                        .ConfigureAwait(false)
-                    ?? TypedResults.Ok(await zones.GetVersionsAsync(key, ct).ConfigureAwait(false))
+                async Task<IResult> (string key, IZoneEditorService zones, CancellationToken ct) =>
+                    TypedResults.Ok(await zones.GetVersionsAsync(key, ct).ConfigureAwait(false))
             )
+            .RequireCapability(Capabilities.World.ZoneEdit)
             .WithName("EditorZoneVersions")
             .Produces<IReadOnlyList<ZoneVersionInfo>>();
 
@@ -146,29 +117,12 @@ internal static partial class WebApiEndpoints
             .MapGet(
                 "/zones/{key}/document",
                 async Task<IResult> (
-                    HttpContext ctx,
                     string key,
                     string? version,
-                    WebApiSessionStore sessions,
-                    IPermissionService permissions,
                     IZoneEditorService zones,
                     CancellationToken ct
                 ) =>
                 {
-                    IResult? denied = await DenyAsync(
-                            ctx,
-                            sessions,
-                            permissions,
-                            Capabilities.World.ZoneEdit,
-                            ct
-                        )
-                        .ConfigureAwait(false);
-
-                    if (denied is not null)
-                    {
-                        return denied;
-                    }
-
                     string? json;
 
                     if (version == "latest")
@@ -191,6 +145,7 @@ internal static partial class WebApiEndpoints
                         : TypedResults.Text(json, "application/json", Encoding.UTF8);
                 }
             )
+            .RequireCapability(Capabilities.World.ZoneEdit)
             .WithName("EditorZoneDocument");
 
         editor
@@ -199,26 +154,10 @@ internal static partial class WebApiEndpoints
                 async Task<IResult> (
                     HttpContext ctx,
                     string key,
-                    WebApiSessionStore sessions,
-                    IPermissionService permissions,
                     IZoneEditorService zones,
                     CancellationToken ct
                 ) =>
                 {
-                    IResult? denied = await DenyAsync(
-                            ctx,
-                            sessions,
-                            permissions,
-                            Capabilities.World.ZoneEdit,
-                            ct
-                        )
-                        .ConfigureAwait(false);
-
-                    if (denied is not null)
-                    {
-                        return denied;
-                    }
-
                     string? json = await ReadDocumentAsync(ctx, ct).ConfigureAwait(false);
 
                     return json is null
@@ -228,6 +167,7 @@ internal static partial class WebApiEndpoints
                         );
                 }
             )
+            .RequireCapability(Capabilities.World.ZoneEdit)
             .WithName("EditorValidateZone")
             .Produces<IReadOnlyList<ZoneFinding>>();
 
@@ -239,25 +179,10 @@ internal static partial class WebApiEndpoints
                     string key,
                     string? comment,
                     WebApiSessionStore sessions,
-                    IPermissionService permissions,
                     IZoneEditorService zones,
                     CancellationToken ct
                 ) =>
                 {
-                    IResult? denied = await DenyAsync(
-                            ctx,
-                            sessions,
-                            permissions,
-                            Capabilities.World.ZoneEdit,
-                            ct
-                        )
-                        .ConfigureAwait(false);
-
-                    if (denied is not null)
-                    {
-                        return denied;
-                    }
-
                     string? json = await ReadDocumentAsync(ctx, ct).ConfigureAwait(false);
 
                     if (json is null)
@@ -285,6 +210,7 @@ internal static partial class WebApiEndpoints
                     }
                 }
             )
+            .RequireCapability(Capabilities.World.ZoneEdit)
             .WithName("EditorSaveZone")
             .Produces<ZoneSaveResult>()
             .Produces<ZoneSaveResult>(StatusCodes.Status400BadRequest);
@@ -293,29 +219,12 @@ internal static partial class WebApiEndpoints
             .MapPost(
                 "/zones/{key}/publish/{version:int}",
                 async Task<IResult> (
-                    HttpContext ctx,
                     string key,
                     int version,
-                    WebApiSessionStore sessions,
-                    IPermissionService permissions,
                     IZoneEditorService zones,
                     CancellationToken ct
                 ) =>
                 {
-                    IResult? denied = await DenyAsync(
-                            ctx,
-                            sessions,
-                            permissions,
-                            Capabilities.World.ZonePublish,
-                            ct
-                        )
-                        .ConfigureAwait(false);
-
-                    if (denied is not null)
-                    {
-                        return denied;
-                    }
-
                     try
                     {
                         ZoneSaveResult result = await zones
@@ -330,6 +239,7 @@ internal static partial class WebApiEndpoints
                     }
                 }
             )
+            .RequireCapability(Capabilities.World.ZonePublish)
             .WithName("EditorPublishZone")
             .Produces<ZoneSaveResult>()
             .Produces<ZoneSaveResult>(StatusCodes.Status400BadRequest);
@@ -342,17 +252,18 @@ internal static partial class WebApiEndpoints
                     string key,
                     bool? force,
                     WebApiSessionStore sessions,
-                    IPermissionService permissions,
                     IZoneEditorService zones,
                     CancellationToken ct
                 ) =>
                 {
-                    // Taking someone else's lock is a publisher's call.
+                    // Taking someone else's lock is a publisher's call: the one route whose
+                    // capability depends on the request, so it asks the gate itself.
                     string capability =
                         force == true
                             ? Capabilities.World.ZonePublish
                             : Capabilities.World.ZoneEdit;
-                    IResult? denied = await DenyAsync(ctx, sessions, permissions, capability, ct)
+                    IResult? denied = await CapabilityGate
+                        .DenyAsync(ctx, capability, ct)
                         .ConfigureAwait(false);
 
                     if (denied is not null)
@@ -387,25 +298,10 @@ internal static partial class WebApiEndpoints
                     HttpContext ctx,
                     string key,
                     WebApiSessionStore sessions,
-                    IPermissionService permissions,
                     IZoneEditorService zones,
                     CancellationToken ct
                 ) =>
                 {
-                    IResult? denied = await DenyAsync(
-                            ctx,
-                            sessions,
-                            permissions,
-                            Capabilities.World.ZoneEdit,
-                            ct
-                        )
-                        .ConfigureAwait(false);
-
-                    if (denied is not null)
-                    {
-                        return denied;
-                    }
-
                     await zones
                         .UnlockAsync(key, ctx.AccountId(sessions)!.Value, ct)
                         .ConfigureAwait(false);
@@ -413,6 +309,7 @@ internal static partial class WebApiEndpoints
                     return TypedResults.Ok(EmptyResponse.Instance);
                 }
             )
+            .RequireCapability(Capabilities.World.ZoneEdit)
             .WithName("EditorUnlockZone");
 
         editor
@@ -424,7 +321,6 @@ internal static partial class WebApiEndpoints
                     int? x,
                     int? y,
                     WebApiSessionStore sessions,
-                    IPermissionService permissions,
                     IZoneEditorService zones,
                     IWebApiPlayerService players,
                     IWebApiAuthService auth,
@@ -432,20 +328,6 @@ internal static partial class WebApiEndpoints
                     CancellationToken ct
                 ) =>
                 {
-                    IResult? denied = await DenyAsync(
-                            ctx,
-                            sessions,
-                            permissions,
-                            Capabilities.World.ZoneEdit,
-                            ct
-                        )
-                        .ConfigureAwait(false);
-
-                    if (denied is not null)
-                    {
-                        return denied;
-                    }
-
                     ZoneSummary? zone = (
                         await zones.ListAsync(ct).ConfigureAwait(false)
                     ).FirstOrDefault(z => z.Key == key);
@@ -503,6 +385,7 @@ internal static partial class WebApiEndpoints
                         : new ForbiddenError(error ?? "avatar_not_owned");
                 }
             )
+            .RequireCapability(Capabilities.World.ZoneEdit)
             .WithName("EditorTestZone")
             .WithSummary(
                 "An SSO ticket whose sign-in starts in the published zone, on the cell given."
@@ -510,44 +393,10 @@ internal static partial class WebApiEndpoints
             .Produces<ZoneTestTicket>();
 
         editor
-            .MapGet(
-                "/furniture",
-                async Task<IResult> (
-                    HttpContext ctx,
-                    WebApiSessionStore sessions,
-                    IPermissionService permissions,
-                    IZoneEditorService zones,
-                    CancellationToken ct
-                ) =>
-                    await DenyAsync(ctx, sessions, permissions, Capabilities.World.ZoneEdit, ct)
-                        .ConfigureAwait(false)
-                    ?? TypedResults.Ok(zones.GetPalette())
-            )
+            .MapGet("/furniture", (IZoneEditorService zones) => TypedResults.Ok(zones.GetPalette()))
+            .RequireCapability(Capabilities.World.ZoneEdit)
             .WithName("EditorFurniturePalette")
             .Produces<IReadOnlyList<FurniturePaletteEntry>>();
-    }
-
-    /// <summary>401 without a session, 403 without the capability, null when allowed.</summary>
-    private static async Task<IResult?> DenyAsync(
-        HttpContext ctx,
-        WebApiSessionStore sessions,
-        IPermissionService permissions,
-        string capability,
-        CancellationToken ct
-    )
-    {
-        int? accountId = ctx.AccountId(sessions);
-
-        if (accountId is null)
-        {
-            return Unauthorized();
-        }
-
-        PermissionSet granted = await permissions
-            .ResolveForAccountAsync(accountId.Value, ct)
-            .ConfigureAwait(false);
-
-        return granted.Has(capability) ? null : new ForbiddenError("editor.forbidden");
     }
 
     /// <summary>

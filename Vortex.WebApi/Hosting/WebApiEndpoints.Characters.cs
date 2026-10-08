@@ -105,30 +105,8 @@ internal static partial class WebApiEndpoints
 
         app.MapPost(
                 "/api/admin/characters/{playerId:int}/xp",
-                async Task<IResult> (
-                    int playerId,
-                    HttpContext ctx,
-                    GrantXpRequest body,
-                    WebApiSessionStore sessions,
-                    IPermissionService permissions,
-                    IGrainFactory grains,
-                    CancellationToken ct
-                ) =>
+                async Task<IResult> (int playerId, GrantXpRequest body, IGrainFactory grains) =>
                 {
-                    IResult? denied = await DenyAsync(
-                            ctx,
-                            sessions,
-                            permissions,
-                            Capabilities.Rpg.GrantXp,
-                            ct
-                        )
-                        .ConfigureAwait(false);
-
-                    if (denied is not null)
-                    {
-                        return denied;
-                    }
-
                     IPlayerCharacterGrain character = grains.GetPlayerCharacterGrain(
                         new PlayerId(playerId)
                     );
@@ -153,6 +131,7 @@ internal static partial class WebApiEndpoints
                     );
                 }
             )
+            .RequireCapability(Capabilities.Rpg.GrantXp)
             .WithTags(TagCharacters)
             .WithName("GrantCharacterXp")
             .WithSummary("Grant XP to a character, as a server system would (test command).")

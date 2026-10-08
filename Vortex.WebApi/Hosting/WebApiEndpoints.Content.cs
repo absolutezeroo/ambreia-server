@@ -32,25 +32,10 @@ internal static partial class WebApiEndpoints
                 async Task<IResult> (
                     HttpContext ctx,
                     WebApiSessionStore sessions,
-                    IPermissionService permissions,
                     IRpgContentService content,
                     CancellationToken ct
                 ) =>
                 {
-                    IResult? denied = await DenyAsync(
-                            ctx,
-                            sessions,
-                            permissions,
-                            Capabilities.Content.Publish,
-                            ct
-                        )
-                        .ConfigureAwait(false);
-
-                    if (denied is not null)
-                    {
-                        return denied;
-                    }
-
                     string? json = await ReadDocumentAsync(ctx, ct, MaxPackBytes)
                         .ConfigureAwait(false);
 
@@ -86,6 +71,7 @@ internal static partial class WebApiEndpoints
                         : TypedResults.BadRequest(result);
                 }
             )
+            .RequireCapability(Capabilities.Content.Publish)
             .WithTags(TagContent)
             .WithName("ContentImport")
             .Accepts<ContentPack>("application/json")

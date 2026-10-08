@@ -36,6 +36,40 @@ public sealed class EditorEndpointsTests
             .Be(HttpStatusCode.Forbidden);
     }
 
+    /// <summary>The gate is declared route by route: one left off is a route anyone can call.</summary>
+    [Theory]
+    [InlineData("GET", "/api/editor/zones")]
+    [InlineData("POST", "/api/editor/zones")]
+    [InlineData("GET", "/api/editor/zones/village/versions")]
+    [InlineData("GET", "/api/editor/zones/village/document")]
+    [InlineData("POST", "/api/editor/zones/village/validate")]
+    [InlineData("POST", "/api/editor/zones/village/versions")]
+    [InlineData("POST", "/api/editor/zones/village/publish/1")]
+    [InlineData("POST", "/api/editor/zones/village/lock")]
+    [InlineData("DELETE", "/api/editor/zones/village/lock")]
+    [InlineData("POST", "/api/editor/zones/village/test")]
+    [InlineData("GET", "/api/editor/furniture")]
+    public async Task EveryEditorRoute_RefusesWithoutTheCapability(string method, string path)
+    {
+        await using WebApiTestFactory f = new(capabilities: []);
+
+        using HttpRequestMessage request = new(new HttpMethod(method), path)
+        {
+            Content =
+                method == "GET"
+                    ? null
+                    : new StringContent(
+                        "{\"key\":\"k\",\"name\":\"n\"}",
+                        Encoding.UTF8,
+                        "application/json"
+                    ),
+        };
+
+        (await f.CreateAuthenticatedClient().SendAsync(request))
+            .StatusCode.Should()
+            .Be(HttpStatusCode.Forbidden);
+    }
+
     [Fact]
     public async Task WithTheEditCapability_TheZonesAreListed()
     {
