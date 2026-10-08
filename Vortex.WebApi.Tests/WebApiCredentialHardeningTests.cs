@@ -9,6 +9,7 @@ using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 using Vortex.Database.Context;
 using Vortex.Primitives.Authentication;
+using Vortex.Primitives.Players;
 using Vortex.WebApi.Configuration;
 using Vortex.WebApi.Hosting;
 using Vortex.WebApi.Http;

@@ -1,5 +1,7 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Reflection;
 using Vortex.Rpg.Content;
 using Vortex.Rpg.Content.Definitions;
 using Vortex.Tests.Support;
@@ -125,7 +127,15 @@ internal static class CharacterContent
                 ) && call.Method.GetGenericArguments()[0].IsInstanceOfType(d)
                     ? d
                     : null,
+                nameof(IRpgContent.All) => typeof(CharacterContent)
+                    .GetMethod(nameof(AllOf), BindingFlags.NonPublic | BindingFlags.Static)!
+                    .MakeGenericMethod(call.Method.GetGenericArguments()[0])
+                    .Invoke(null, [definitions]),
                 _ => null,
             }
         );
+
+    private static IReadOnlyList<T> AllOf<T>(IReadOnlyDictionary<string, ContentDefinition> all)
+        where T : ContentDefinition =>
+        [.. all.Values.OfType<T>().OrderBy(d => d.Id, StringComparer.Ordinal)];
 }

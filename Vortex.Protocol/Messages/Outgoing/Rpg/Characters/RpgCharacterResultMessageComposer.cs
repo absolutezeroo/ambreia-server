@@ -16,6 +16,9 @@ public sealed record RpgCharacterResultMessageComposer : IComposer
 
     public const string Ok = "ok";
 
+    /// <summary>An unexpected failure, logged on the server (spec F3a §7); the socket stays open.</summary>
+    public const string Failed = "character.failed";
+
     [Id(0)]
     public required int Action { get; init; }
 

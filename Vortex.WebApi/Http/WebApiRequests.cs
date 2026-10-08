@@ -79,20 +79,6 @@ public sealed record NameSelectRequest(string? Name, int PlayerId)
 }
 
 /// <summary>
-/// The player-name shape rule, borrowed from the one place that owns it so the HTTP routes and the
-/// in-game rename cannot drift apart. Uniqueness is still storage's call, not this.
-/// </summary>
-internal static class NameShape
-{
-    public static bool IsWellFormed(string? name) =>
-        NameChangePolicy.Validate(
-            name,
-            NameChangePolicy.DEFAULT_MIN_LENGTH,
-            NameChangePolicy.DEFAULT_MAX_LENGTH
-        ) == NameChangeResultCode.Ok;
-}
-
-/// <summary>
 /// An address the account can be found by again: one mailbox, nothing around it, within the 254
 /// characters SMTP allows (the column is wider). Anything else used to be stored as typed.
 /// </summary>
