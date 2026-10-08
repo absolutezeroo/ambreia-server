@@ -1,7 +1,6 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Vortex.PacketHandlers.Configuration;
-using Vortex.PacketHandlers.Handshake;
 using Vortex.PacketHandlers.Rpg;
 using Vortex.Primitives.Plugins;
 
@@ -14,7 +13,6 @@ public sealed class PacketHandlersModule : IHostPluginModule
     // Handlers and behaviors are discovered by scanning; what they share is registered here.
     public void ConfigureServices(IServiceCollection services, HostApplicationBuilder builder)
     {
-        services.AddSingleton<WorldEntry>();
         services.AddSingleton<RpgIntentLimiter>();
         services.Configure<RpgIntentLimitConfig>(
             builder.Configuration.GetSection(RpgIntentLimitConfig.SECTION_NAME)

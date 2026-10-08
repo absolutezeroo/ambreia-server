@@ -3,9 +3,11 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
 using Vortex.Players.Authentication;
 using Vortex.Players.Configuration;
+using Vortex.Players.Sessions;
 using Vortex.Primitives.Authentication;
 using Vortex.Primitives.Hosting;
 using Vortex.Primitives.Players;
+using Vortex.Primitives.Players.Sessions;
 using Vortex.Primitives.Plugins;
 
 namespace Vortex.Players;
@@ -36,5 +38,6 @@ public sealed class PlayerModule : IHostPluginModule
         services.Configure<PlayerDirectoryConfig>(
             builder.Configuration.GetSection(PlayerDirectoryConfig.SECTION_NAME)
         );
+        services.AddSingleton<IWorldEntry, WorldEntry>();
     }
 }

@@ -9,23 +9,16 @@ using Microsoft.Extensions.Options;
 using Orleans;
 using Vortex.Messages.Registry;
 using Vortex.PacketHandlers.Configuration;
-using Vortex.PacketHandlers.Handshake;
 using Vortex.PacketHandlers.Rpg;
 using Vortex.PacketHandlers.Rpg.Characters;
 using Vortex.Primitives.Authentication;
 using Vortex.Primitives.Networking;
 using Vortex.Primitives.Observability;
-using Vortex.Primitives.Permissions;
 using Vortex.Primitives.Players;
 using Vortex.Primitives.Players.Grains;
-using Vortex.Primitives.Rooms;
+using Vortex.Primitives.Players.Sessions;
 using Vortex.Primitives.Rpg.Characters.Grains;
-using Vortex.Primitives.Server.Grains;
-using Vortex.Primitives.World;
-using Vortex.Primitives.World.Grains;
 using Vortex.Protocol.Messages.Incoming.Rpg.Characters;
-using Vortex.Protocol.Messages.Outgoing.Handshake;
-using Vortex.Protocol.Messages.Outgoing.Room.Session;
 using Vortex.Protocol.Messages.Outgoing.Rpg.Characters;
 using Vortex.Tests.Support;
 using Xunit;
@@ -40,11 +33,9 @@ public sealed class AccountPhaseTests
 {
     private const int ACCOUNT_ID = 3;
     private const int PLAYER_ID = 7;
-    private const int START_ROOM_ID = 42;
 
     private static readonly SessionKey Key = new("socket");
 
-    private readonly List<object> _toPlayer = [];
     private readonly List<object> _toAccount = [];
     private readonly List<(SessionKey Key, int PlayerId)> _attached = [];
     private readonly List<string> _refused = [];
@@ -52,26 +43,14 @@ public sealed class AccountPhaseTests
     private bool _owns = true;
     private bool _accountSendFails;
 
+    /// <summary>The SSO's own path (IWorldEntry), and the login audit a player ticket writes.</summary>
     [Fact]
-    public async Task EnteringTheWorld_SendsTheSameBurstAsTheSso()
+    public async Task EnteringTheWorld_TakesTheSsoPath()
     {
         await EnterWorldAsync();
 
         _attached.Should().Equal((Key, PLAYER_ID));
         _logins.Should().Equal([PLAYER_ID], "the login audit a player ticket writes");
-        _toPlayer
-            .Select(c => c.GetType())
-            .Should()
-            .Equal(
-                typeof(AuthenticationOKMessage),
-                typeof(UserRightsMessage),
-                typeof(RoomForwardMessageComposer)
-            );
-        _toPlayer
-            .OfType<RoomForwardMessageComposer>()
-            .Single()
-            .RoomId.Should()
-            .Be(new RoomId(START_ROOM_ID));
     }
 
     /// <summary>Review Focus 3: the account phase continues, nothing is attached.</summary>
@@ -83,7 +62,7 @@ public sealed class AccountPhaseTests
         await EnterWorldAsync();
 
         _attached.Should().BeEmpty();
-        _toPlayer.Should().BeEmpty();
+        _logins.Should().BeEmpty();
     }
 
     /// <summary>Review Focus 1: a character-screen packet sent in the world never reaches its handler.</summary>
@@ -239,27 +218,12 @@ public sealed class AccountPhaseTests
 
                 return null;
             }),
-            new WorldEntry(
-                FakeProxy.Create<ISessionGateway>(call =>
-                {
-                    if (call.Method.Name == nameof(ISessionGateway.AddSessionToPlayerAsync))
-                    {
-                        _attached.Add(
-                            ((SessionKey)call.Args![0]!, ((PlayerId)call.Args[1]!).Value)
-                        );
-                    }
+            FakeProxy.Create<IWorldEntry>(call =>
+            {
+                _attached.Add(((SessionKey)call.Args![0]!, ((PlayerId)call.Args[1]!).Value));
 
-                    return null;
-                }),
-                grains,
-                FakeProxy.Create<IPermissionService>(call =>
-                    call.Method.Name == nameof(IPermissionService.ResolveForPlayerAsync)
-                        ? Task.FromResult(PermissionSet.Empty)
-                        : null
-                ),
-                FakeProxy.Create<IZoneRoomSource>(_ => null),
-                NullLogger<WorldEntry>.Instance
-            ),
+                return null;
+            }),
             NullLogger<RpgEnterWorldMessageHandler>.Instance
         );
 
@@ -329,24 +293,6 @@ public sealed class AccountPhaseTests
                         }
 
                         _toAccount.AddRange(((object[])inner.Args![0]!).Cast<object>());
-
-                        return null;
-                    })
-                : grain == typeof(IServerConfigGrain)
-                    ? FakeProxy.Create<IServerConfigGrain>(inner =>
-                        inner.Method.Name == nameof(IServerConfigGrain.GetIntAsync)
-                            ? Task.FromResult(START_ROOM_ID)
-                            : null
-                    )
-                : grain == typeof(IZoneTestGrain)
-                    ? FakeProxy.Create<IZoneTestGrain>(_ => Task.FromResult<RoomId?>(null))
-                : grain == typeof(IPlayerPresenceGrain)
-                    ? FakeProxy.Create<IPlayerPresenceGrain>(inner =>
-                    {
-                        if (inner.Method.Name == nameof(IPlayerPresenceGrain.SendComposerAsync))
-                        {
-                            _toPlayer.AddRange(((object[])inner.Args![0]!).Cast<object>());
-                        }
 
                         return null;
                     })

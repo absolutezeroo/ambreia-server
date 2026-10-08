@@ -22,7 +22,9 @@ internal sealed partial class PlayerPresenceGrain
     private static readonly TimeSpan GraceKeepAliveMargin = TimeSpan.FromSeconds(10);
 
     private IDisposable? _graceTimer;
-    private RoomId _resumableRoom = -1;
+
+    /// <summary>Internal for the sign-in tests, which put a player back in grace directly.</summary>
+    internal RoomId _resumableRoom = -1;
 
     public Task<RoomId?> GetResumableRoomAsync() =>
         Task.FromResult(_resumableRoom > 0 ? (RoomId?)_resumableRoom : null);

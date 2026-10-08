@@ -11,8 +11,10 @@ using Vortex.Players.Grains;
 using Vortex.Primitives.Events;
 using Vortex.Primitives.Observability;
 using Vortex.Primitives.Orleans.Observers;
+using Vortex.Primitives.Permissions;
 using Vortex.Primitives.Rooms;
 using Vortex.Primitives.Rooms.Grains;
+using Vortex.Primitives.World;
 using Vortex.Tests.Support;
 using Xunit;
 
@@ -146,6 +148,8 @@ public sealed class DisconnectGraceTests
                 NullLogger<PlayerPresenceGrain>.Instance,
                 FakeProxy.Create<IVortexMetrics>(_ => null),
                 Options.Create(new PlayerPresenceConfig { DisconnectGraceSeconds = GraceSeconds }),
+                FakeProxy.Create<IPermissionService>(_ => null),
+                FakeProxy.Create<IZoneRoomSource>(_ => null),
             ]
         );
 }

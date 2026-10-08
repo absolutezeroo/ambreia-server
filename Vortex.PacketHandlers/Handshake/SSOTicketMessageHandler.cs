@@ -7,12 +7,13 @@ using Vortex.Messages.Registry;
 using Vortex.Primitives.Authentication;
 using Vortex.Primitives.Networking;
 using Vortex.Primitives.Orleans;
+using Vortex.Primitives.Players.Sessions;
 using Vortex.Protocol.Messages.Incoming.Handshake;
 
 namespace Vortex.PacketHandlers.Handshake;
 
 /// <summary>
-/// The core sign-in. A player ticket enters the world (<see cref="WorldEntry"/>); an account ticket
+/// The core sign-in. A player ticket enters the world (<see cref="IWorldEntry"/>); an account ticket
 /// opens the character screen, the account phase (spec F3a §4): the character list and the class
 /// list, and nothing of the world until a character is chosen.
 /// </summary>
@@ -20,14 +21,14 @@ public class SSOTicketMessageHandler(
     IAuthenticationService authService,
     ISessionGateway sessionGateway,
     IGrainFactory grainFactory,
-    WorldEntry worldEntry,
+    IWorldEntry worldEntry,
     ILogger<SSOTicketMessageHandler> logger
 ) : IMessageHandler<SSOTicketMessage>
 {
     private readonly IAuthenticationService _authService = authService;
     private readonly ISessionGateway _sessionGateway = sessionGateway;
     private readonly IGrainFactory _grainFactory = grainFactory;
-    private readonly WorldEntry _worldEntry = worldEntry;
+    private readonly IWorldEntry _worldEntry = worldEntry;
     private readonly ILogger<SSOTicketMessageHandler> _logger = logger;
 
     public async ValueTask HandleAsync(

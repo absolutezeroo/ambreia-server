@@ -12,8 +12,10 @@ using Vortex.Primitives.Events;
 using Vortex.Primitives.Networking;
 using Vortex.Primitives.Observability;
 using Vortex.Primitives.Orleans.Observers;
+using Vortex.Primitives.Permissions;
 using Vortex.Primitives.Players.Grains;
 using Vortex.Primitives.Rooms.Snapshots;
+using Vortex.Primitives.World;
 using Vortex.Protocol.Messages.Outgoing.Room.Session;
 
 namespace Vortex.Players.Grains;
@@ -59,7 +61,9 @@ internal sealed partial class PlayerPresenceGrain
         IEventPublisher events,
         ILogger<PlayerPresenceGrain> logger,
         IVortexMetrics metrics,
-        IOptions<PlayerPresenceConfig> config
+        IOptions<PlayerPresenceConfig> config,
+        IPermissionService permissions,
+        IZoneRoomSource zoneSource
     )
     {
         _grainFactory = grainFactory;
@@ -67,6 +71,8 @@ internal sealed partial class PlayerPresenceGrain
         _logger = logger;
         _metrics = metrics;
         _config = config.Value;
+        _permissions = permissions;
+        _zoneSource = zoneSource;
 
         _state = new PlayerPresenceLiveState();
     }

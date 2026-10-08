@@ -269,7 +269,7 @@ public sealed class ZoneEditorServiceTests : IAsyncLifetime
 
         Func<Task> create = () => _service.CreateAsync("copy", "Copie", Author, "village", default);
 
-        await create.Should().ThrowAsync<InvalidOperationException>();
+        await create.Should().ThrowAsync<InvalidOperationException>().WithMessage("database lost");
         await using VortexDbContext db = new(_options);
         (await db.Rooms.CountAsync()).Should().Be(1, "only the template's own room");
         (await db.Zones.CountAsync()).Should().Be(1);

@@ -94,8 +94,8 @@ response through `PlayerPresenceGrain.SendComposerAsync` or the room stream.
 
 - Wire test: serialize through the registered serializer and pop the fields back in client order —
   copy `Vortex.Revisions.Tests/Room/UserChangeWireTests.cs`.
-- Handler test: construct the handler with `FakeProxy` fakes and record what the session receives —
-  copy `Vortex.PacketHandlers.Tests/SsoBurstTests.cs`.
+- Handler test: construct the handler with `FakeProxy` fakes and record what it calls —
+  copy `Vortex.PacketHandlers.Tests/SsoTicketMessageHandlerTests.cs`.
 - `SerializerPairingTests` and `EmittedComposerRegistrationTests` already fail on a composer the
   server builds without a serializer.
 
