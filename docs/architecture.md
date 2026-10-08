@@ -32,9 +32,9 @@ layers share: grain interfaces, snapshots, ids, events.
 ## Flow 1 — sign-in
 
 1. The client logs in over HTTP (`POST /api/public/registration/new` or `/authentication/login`) and
-   asks `GET /api/ssotoken` for a ticket. Without a selected avatar it is an **account ticket**
-   (`account_tickets`, one per account); with one (`/api/user/avatars/select`, the editor's test mode)
-   a **player ticket** (`security_tickets`). Both follow the same rules: not single-use unless
+   asks `GET /api/ssotoken` for an **account ticket** (`account_tickets`, one per account): the
+   socket opens on the character screen (Flow 7). Only the editor's test mode gets a **player
+   ticket** (`security_tickets`), straight into a zone. Both follow the same rules: not single-use unless
    `Authentication:TicketSingleUse`, valid up to `TicketAbsoluteLifetimeSeconds` (300 s) from issue,
    sliding on each use. `IAuthenticationService` (`Vortex.Players/Authentication`) issues both
    (`Issue…TicketAsync`) and resolves them (`ResolveTicketAsync` answers a `TicketOwner`); the
@@ -145,10 +145,10 @@ refuses the start, and a failed reload keeps the set it had. Every system reads 
 ## Flow 7 — the character
 
 Every avatar is a character (spec `2026-10-08-rpg-character-design.md`): it starts in the starter
-class « Sans classe » (`class.classless`, `"starter": true`), given by `POST /api/user/avatars`
-(or the `classId` asked for) and, for an avatar older than that, by `POST /api/user/avatars/select`.
-It leaves the starter once for a real class (`POST /api/user/avatars/{id}/class`), keeping level
-and XP. Every path calls `IPlayerCharacterGrain`
+class « Sans classe » (`class.classless`, `"starter": true`), given at creation on the character
+screen (`RpgCharacterCreate`, through `IAccountCharactersGrain`) and, for an avatar older than that,
+when the screen opens. It leaves the starter once for a real class (`RpgCharacterChooseClass`),
+keeping level and XP. Every path calls `IPlayerCharacterGrain`
 (`Vortex.Rpg.Characters`, key = player id), the sole writer of `player_characters`: class and
 specialization once, level and XP through `GainXpAsync` (server only; a level is written at once,
 XP on a 30 s timer and at deactivation), stats from the `IStatSource`s declared in

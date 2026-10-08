@@ -118,151 +118,32 @@ public sealed class WebApiEndpointsTests
         (await ReadJsonAsync(response)).GetProperty("id").GetInt32().Should().BeGreaterThan(0);
     }
 
+    /// <summary>Spec F3a §5.1: the ticket names the account — the client then picks its character
+    /// on the socket.</summary>
     [Fact]
-    public async Task GetAvatars_Unauthenticated_Returns401()
+    public async Task SsoToken_IsAnAccountTicket()
+    {
+        await using WebApiTestFactory factory = new WebApiTestFactory();
+        using HttpClient client = factory.CreateAuthenticatedClient();
+
+        HttpResponseMessage response = await client.GetAsync("/api/ssotoken");
+
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        (await ReadJsonAsync(response))
+            .GetProperty("ssoToken")
+            .GetString()
+            .Should()
+            .Be($"account-ticket-{FakeAuthService.AccountId}");
+    }
+
+    [Fact]
+    public async Task SsoToken_WithoutASession_Returns401()
     {
         await using WebApiTestFactory factory = new WebApiTestFactory();
 
-        HttpResponseMessage response = await factory.Client.GetAsync("/api/user/avatars");
+        HttpResponseMessage response = await factory.Client.GetAsync("/api/ssotoken");
 
         response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
-    }
-
-    [Fact]
-    public async Task GetAvatars_Authenticated_ReturnsList()
-    {
-        await using WebApiTestFactory factory = new WebApiTestFactory();
-        using HttpClient client = factory.CreateAuthenticatedClient();
-
-        HttpResponseMessage response = await client.GetAsync("/api/user/avatars");
-
-        response.StatusCode.Should().Be(HttpStatusCode.OK);
-        JsonElement payload = await ReadJsonAsync(response);
-        payload.ValueKind.Should().Be(JsonValueKind.Array);
-        payload
-            .EnumerateArray()
-            .First()
-            .GetProperty("uniqueId")
-            .GetString()
-            .Should()
-            .Be(FakePlayerService.OwnedUniqueId);
-    }
-
-    [Fact]
-    public async Task CreateAvatar_Authenticated_Returns200WithList()
-    {
-        await using WebApiTestFactory factory = new WebApiTestFactory();
-        using HttpClient client = factory.CreateAuthenticatedClient();
-
-        HttpResponseMessage response = await client.PostAsJsonAsync(
-            "/api/user/avatars",
-            new
-            {
-                name = "Newbie",
-                figure = "hd-180-1",
-                gender = "M",
-                // A named avatar takes its class at creation (spec Personnage §8).
-                classId = "class.warrior",
-            }
-        );
-
-        response.StatusCode.Should().Be(HttpStatusCode.OK);
-        (await ReadJsonAsync(response)).ValueKind.Should().Be(JsonValueKind.Array);
-    }
-
-    [Fact]
-    public async Task SelectAvatar_Authenticated_Returns200()
-    {
-        await using WebApiTestFactory factory = new WebApiTestFactory();
-        using HttpClient client = factory.CreateAuthenticatedClient();
-
-        HttpResponseMessage response = await client.PostAsJsonAsync(
-            "/api/user/avatars/select",
-            new { uniqueId = FakePlayerService.OwnedUniqueId }
-        );
-
-        response.StatusCode.Should().Be(HttpStatusCode.OK);
-    }
-
-    [Fact]
-    public async Task SsoToken_Authenticated_ReturnsTicket()
-    {
-        await using WebApiTestFactory factory = new WebApiTestFactory();
-        using HttpClient client = factory.CreateAuthenticatedClient();
-
-        HttpResponseMessage response = await client.GetAsync("/api/ssotoken");
-
-        response.StatusCode.Should().Be(HttpStatusCode.OK);
-        (await ReadJsonAsync(response))
-            .GetProperty("ssoToken")
-            .GetString()
-            .Should()
-            .NotBeNullOrEmpty();
-    }
-
-    /// <summary>Spec F3a §5.1: without a selected avatar, the ticket names the account — the client
-    /// then picks its character on the socket.</summary>
-    [Fact]
-    public async Task SsoToken_WithoutASelectedAvatar_IsAnAccountTicket()
-    {
-        await using WebApiTestFactory factory = new WebApiTestFactory();
-        using HttpClient client = factory.CreateAuthenticatedClient();
-
-        HttpResponseMessage response = await client.GetAsync("/api/ssotoken");
-
-        (await ReadJsonAsync(response))
-            .GetProperty("ssoToken")
-            .GetString()
-            .Should()
-            .StartWith("account-ticket-");
-    }
-
-    [Fact]
-    public async Task SsoToken_ForASelectedAvatar_IsStillAPlayerTicket()
-    {
-        await using WebApiTestFactory factory = new WebApiTestFactory();
-        using HttpClient client = factory.CreateAuthenticatedClient();
-
-        HttpResponseMessage response = await client.GetAsync(
-            $"/api/ssotoken?uniqueId={FakePlayerService.OwnedUniqueId}"
-        );
-
-        (await ReadJsonAsync(response))
-            .GetProperty("ssoToken")
-            .GetString()
-            .Should()
-            .Be($"ticket-{FakePlayerService.OwnedUniqueId}");
-    }
-
-    [Fact]
-    public async Task NameCheck_Returns200WithValidity()
-    {
-        await using WebApiTestFactory factory = new WebApiTestFactory();
-
-        HttpResponseMessage response = await factory.Client.PostAsJsonAsync(
-            "/api/newuser/name/check",
-            new { name = "Available" }
-        );
-
-        response.StatusCode.Should().Be(HttpStatusCode.OK);
-        JsonElement payload = await ReadJsonAsync(response);
-        payload.GetProperty("name").GetString().Should().Be("Available");
-        payload.GetProperty("valid").GetBoolean().Should().BeTrue();
-    }
-
-    [Fact]
-    public async Task NameSelect_Authenticated_Returns200()
-    {
-        await using WebApiTestFactory factory = new WebApiTestFactory();
-        using HttpClient client = factory.CreateAuthenticatedClient();
-
-        HttpResponseMessage response = await client.PostAsJsonAsync(
-            "/api/newuser/name/select",
-            new { name = "Chosen", playerId = 100 }
-        );
-
-        response.StatusCode.Should().Be(HttpStatusCode.OK);
-        (await ReadJsonAsync(response)).GetProperty("name").GetString().Should().Be("Chosen");
     }
 
     [Fact]

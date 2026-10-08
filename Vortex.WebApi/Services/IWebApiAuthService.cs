@@ -18,6 +18,8 @@ public interface IWebApiAuthService
         CancellationToken ct
     );
 
+    /// <summary>A ticket straight into the world as <paramref name="playerId"/>: the editor's test
+    /// route, which skips the character screen.</summary>
     Task<(bool Success, string? Ticket, string? Error)> GetSsoTokenAsync(
         int playerId,
         string ip,
@@ -26,9 +28,5 @@ public interface IWebApiAuthService
 
     /// <summary>A ticket for the account, opening the game socket on the character screen (spec
     /// F3a §5.1); replaces the account's previous one.</summary>
-    Task<(bool Success, string? Ticket, string? Error)> GetAccountSsoTokenAsync(
-        int accountId,
-        string ip,
-        CancellationToken ct
-    );
+    Task<string> GetAccountSsoTokenAsync(int accountId, string ip, CancellationToken ct);
 }

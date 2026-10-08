@@ -29,7 +29,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/LoginResponse"
+                  "$ref": "#/components/schemas/EmptyResponse"
                 }
               }
             }
@@ -146,73 +146,6 @@
                   "items": {
                     "$ref": "#/components/schemas/ClassSummary"
                   }
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/api/user/avatars/{uniqueId}/class": {
-      "post": {
-        "tags": [
-          "Characters"
-        ],
-        "summary": "Give an avatar without a class its class, once.",
-        "operationId": "ChooseAvatarClass",
-        "parameters": [
-          {
-            "name": "uniqueId",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/ChooseClassRequest"
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/EmptyResponse"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Bad Request",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiErrorResponse"
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "Unauthorized"
-          },
-          "403": {
-            "description": "Forbidden"
-          },
-          "409": {
-            "description": "Conflict",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiErrorResponse"
                 }
               }
             }
@@ -710,118 +643,6 @@
         }
       }
     },
-    "/api/newuser/name/check": {
-      "post": {
-        "tags": [
-          "NewUser"
-        ],
-        "summary": "Check whether a player name is available.",
-        "operationId": "NameCheck",
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/NameRequest"
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/NameCheckResponse"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Bad Request",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiErrorResponse"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/api/newuser/name/select": {
-      "post": {
-        "tags": [
-          "NewUser"
-        ],
-        "summary": "Assign a name to an owned avatar.",
-        "operationId": "NameSelect",
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/NameSelectRequest"
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/NameSelectResponse"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Bad Request",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiErrorResponse"
-                }
-              }
-            }
-          },
-          "409": {
-            "description": "Conflict",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiErrorResponse"
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "Unauthorized",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiErrorResponse"
-                }
-              }
-            }
-          },
-          "403": {
-            "description": "Forbidden",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiErrorResponse"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
     "/api/public/info/hello": {
       "get": {
         "tags": [
@@ -874,179 +695,13 @@
         }
       }
     },
-    "/api/user/avatars": {
-      "get": {
-        "tags": [
-          "User"
-        ],
-        "summary": "List the avatars owned by the authenticated account.",
-        "operationId": "GetAvatars",
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/AvatarInfo"
-                  }
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "Unauthorized",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiErrorResponse"
-                }
-              }
-            }
-          }
-        }
-      },
-      "post": {
-        "tags": [
-          "User"
-        ],
-        "summary": "Create an avatar and return the refreshed avatar list.",
-        "operationId": "CreateAvatar",
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/CreateAvatarRequest"
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/AvatarInfo"
-                  }
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Bad Request",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiErrorResponse"
-                }
-              }
-            }
-          },
-          "409": {
-            "description": "Conflict",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiErrorResponse"
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "Unauthorized",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiErrorResponse"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/api/user/avatars/select": {
-      "post": {
-        "tags": [
-          "User"
-        ],
-        "summary": "Select the avatar used for the next SSO token.",
-        "operationId": "SelectAvatar",
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/SelectAvatarRequest"
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/EmptyResponse"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Bad Request",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiErrorResponse"
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "Unauthorized",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiErrorResponse"
-                }
-              }
-            }
-          },
-          "403": {
-            "description": "Forbidden",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiErrorResponse"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
     "/api/ssotoken": {
       "get": {
         "tags": [
           "User"
         ],
-        "summary": "Issue a short-lived SSO ticket for the selected avatar.",
+        "summary": "Issue a short-lived account ticket: the game socket opens on the character screen.",
         "operationId": "SsoToken",
-        "parameters": [
-          {
-            "name": "uniqueId",
-            "in": "query",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
         "responses": {
           "200": {
             "description": "OK",
@@ -1058,38 +713,8 @@
               }
             }
           },
-          "404": {
-            "description": "Not Found",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiErrorResponse"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Internal Server Error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiErrorResponse"
-                }
-              }
-            }
-          },
           "401": {
             "description": "Unauthorized",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiErrorResponse"
-                }
-              }
-            }
-          },
-          "403": {
-            "description": "Forbidden",
             "content": {
               "application/json": {
                 "schema": {
@@ -1112,60 +737,6 @@
         "properties": {
           "error": {
             "type": "string"
-          }
-        },
-        "additionalProperties": false
-      },
-      "AvatarInfo": {
-        "required": [
-          "figureString",
-          "gender",
-          "motto",
-          "name",
-          "uniqueId"
-        ],
-        "type": "object",
-        "properties": {
-          "uniqueId": {
-            "type": "string"
-          },
-          "name": {
-            "type": "string"
-          },
-          "motto": {
-            "type": "string"
-          },
-          "figureString": {
-            "type": "string"
-          },
-          "gender": {
-            "type": "string"
-          },
-          "classId": {
-            "type": "string",
-            "nullable": true
-          },
-          "level": {
-            "type": "integer",
-            "format": "int32",
-            "nullable": true
-          }
-        },
-        "additionalProperties": false
-      },
-      "ChooseClassRequest": {
-        "required": [
-          "isValid"
-        ],
-        "type": "object",
-        "properties": {
-          "classId": {
-            "type": "string",
-            "nullable": true
-          },
-          "isValid": {
-            "type": "boolean",
-            "readOnly": true
           }
         },
         "additionalProperties": false
@@ -1321,35 +892,6 @@
           "Warning"
         ],
         "type": "string"
-      },
-      "CreateAvatarRequest": {
-        "required": [
-          "isValid"
-        ],
-        "type": "object",
-        "properties": {
-          "name": {
-            "type": "string",
-            "nullable": true
-          },
-          "figure": {
-            "type": "string",
-            "nullable": true
-          },
-          "gender": {
-            "type": "string",
-            "nullable": true
-          },
-          "classId": {
-            "type": "string",
-            "nullable": true
-          },
-          "isValid": {
-            "type": "boolean",
-            "readOnly": true
-          }
-        },
-        "additionalProperties": false
       },
       "CreateZoneRequest": {
         "required": [
@@ -1519,85 +1061,6 @@
         },
         "additionalProperties": false
       },
-      "LoginResponse": {
-        "required": [
-          "requiresOnboarding"
-        ],
-        "type": "object",
-        "properties": {
-          "requiresOnboarding": {
-            "type": "boolean"
-          }
-        },
-        "additionalProperties": false
-      },
-      "NameCheckResponse": {
-        "required": [
-          "name",
-          "valid"
-        ],
-        "type": "object",
-        "properties": {
-          "name": {
-            "type": "string"
-          },
-          "valid": {
-            "type": "boolean"
-          }
-        },
-        "additionalProperties": false
-      },
-      "NameRequest": {
-        "required": [
-          "isValid"
-        ],
-        "type": "object",
-        "properties": {
-          "name": {
-            "type": "string",
-            "nullable": true
-          },
-          "isValid": {
-            "type": "boolean",
-            "readOnly": true
-          }
-        },
-        "additionalProperties": false
-      },
-      "NameSelectRequest": {
-        "required": [
-          "isValid",
-          "playerId"
-        ],
-        "type": "object",
-        "properties": {
-          "name": {
-            "type": "string",
-            "nullable": true
-          },
-          "playerId": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "isValid": {
-            "type": "boolean",
-            "readOnly": true
-          }
-        },
-        "additionalProperties": false
-      },
-      "NameSelectResponse": {
-        "required": [
-          "name"
-        ],
-        "type": "object",
-        "properties": {
-          "name": {
-            "type": "string"
-          }
-        },
-        "additionalProperties": false
-      },
       "RegisterRequest": {
         "required": [
           "isValid"
@@ -1632,23 +1095,6 @@
           "id": {
             "type": "integer",
             "format": "int32"
-          }
-        },
-        "additionalProperties": false
-      },
-      "SelectAvatarRequest": {
-        "required": [
-          "isValid"
-        ],
-        "type": "object",
-        "properties": {
-          "uniqueId": {
-            "type": "string",
-            "nullable": true
-          },
-          "isValid": {
-            "type": "boolean",
-            "readOnly": true
           }
         },
         "additionalProperties": false
@@ -1822,9 +1268,6 @@
     },
     {
       "name": "Editor"
-    },
-    {
-      "name": "NewUser"
     },
     {
       "name": "Public"

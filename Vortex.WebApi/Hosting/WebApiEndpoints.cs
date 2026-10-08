@@ -1,24 +1,12 @@
-using System.Collections.Generic;
-using System.Globalization;
-using System.Linq;
-using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.HttpResults;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
-using Microsoft.AspNetCore.Routing;
 using Microsoft.EntityFrameworkCore;
-using Orleans;
 using Vortex.Database.Context;
-using Vortex.Primitives.Authentication;
 using Vortex.Primitives.Hosting;
-using Vortex.Primitives.Observability;
-using Vortex.Primitives.Orleans;
-using Vortex.Primitives.Players;
-using Vortex.Primitives.Rpg.Content;
 using Vortex.WebApi.Http.Errors;
 using Vortex.WebApi.Http.Requests;
 using Vortex.WebApi.Http.Responses;
@@ -28,9 +16,9 @@ using Vortex.WebApi.Session;
 namespace Vortex.WebApi.Hosting;
 
 /// <summary>
-/// Maps the client-facing web API onto minimal-API endpoints — one handler per route — preserving the
-/// exact paths, methods, status codes and response shapes of the previous <c>HttpListener</c>
-/// dispatcher. Authentication is the same cookie-backed session model (see
+/// Maps the client-facing web API onto minimal-API endpoints — one handler per route. The web API
+/// signs an account in and hands it a ticket; the characters are chosen on the game socket (spec F3a
+/// §5.1), never here. Authentication is a cookie-backed session (see
 /// <see cref="WebApiHttpContextExtensions"/>); the sensitive endpoints declare a named rate-limiting
 /// policy. Every endpoint is tagged for Swagger grouping.
 /// </summary>
@@ -43,14 +31,12 @@ internal static partial class WebApiEndpoints
     private const string TagPublic = "Public";
     private const string TagAuth = "Authentication";
     private const string TagUser = "User";
-    private const string TagNewUser = "NewUser";
 
     public static void Map(WebApplication app)
     {
         MapPublic(app);
         MapAuthentication(app);
         MapUser(app);
-        MapNewUser(app);
         MapEditor(app);
         MapContent(app);
         MapCharacters(app);
@@ -130,12 +116,11 @@ internal static partial class WebApiEndpoints
         app.MapPost(
                 "/api/public/authentication/login",
                 async Task<
-                    Results<Ok<LoginResponse>, BadRequest<ApiErrorResponse>, UnauthorizedError>
+                    Results<Ok<EmptyResponse>, BadRequest<ApiErrorResponse>, UnauthorizedError>
                 > (
                     HttpContext ctx,
                     LoginRequest body,
                     IWebApiAuthService auth,
-                    IWebApiPlayerService players,
                     CancellationToken ct
                 ) =>
                 {
@@ -146,9 +131,12 @@ internal static partial class WebApiEndpoints
                         );
                     }
 
-                    (bool success, string? sessionId, int accountId, string? error) =
-                        await auth.LoginAsync(body.Email!, body.Password!, ct)
-                            .ConfigureAwait(false);
+                    (bool success, string? sessionId, _, string? error) = await auth.LoginAsync(
+                            body.Email!,
+                            body.Password!,
+                            ct
+                        )
+                        .ConfigureAwait(false);
 
                     if (!success)
                     {
@@ -157,11 +145,7 @@ internal static partial class WebApiEndpoints
 
                     ctx.IssueSessionCookie(sessionId!);
 
-                    System.Collections.Generic.List<AvatarInfo> avatars = await players
-                        .GetAvatarsForAccountAsync(accountId, ct)
-                        .ConfigureAwait(false);
-
-                    return TypedResults.Ok(new LoginResponse(avatars.Count == 0));
+                    return TypedResults.Ok(EmptyResponse.Instance);
                 }
             )
             .RequireRateLimiting(LoginRateLimitPolicy)
@@ -247,201 +231,10 @@ internal static partial class WebApiEndpoints
             .WithTags(TagAuth);
 
         app.MapGet(
-                "/api/user/avatars",
-                // Also the identity probe: the 401 in this union is what the site reads as "signed
-                // out", which is why it has no dedicated route.
-                async Task<
-                    Results<Ok<System.Collections.Generic.List<AvatarInfo>>, UnauthorizedError>
-                > (
-                    HttpContext ctx,
-                    WebApiSessionStore sessions,
-                    IWebApiPlayerService players,
-                    IGrainFactory grains,
-                    CancellationToken ct
-                ) =>
-                {
-                    int? accountId = ctx.AccountId(sessions);
-
-                    if (accountId is null)
-                    {
-                        return Unauthorized();
-                    }
-
-                    return TypedResults.Ok(
-                        await WithCharactersAsync(
-                                await players
-                                    .GetAvatarsForAccountAsync(accountId.Value, ct)
-                                    .ConfigureAwait(false),
-                                grains,
-                                CharactersLogger(ctx)
-                            )
-                            .ConfigureAwait(false)
-                    );
-                }
-            )
-            .WithName("GetAvatars")
-            .WithSummary("List the avatars owned by the authenticated account.")
-            .WithTags(TagUser);
-
-        app.MapPost(
-                "/api/user/avatars",
-                async Task<
-                    Results<
-                        Ok<System.Collections.Generic.List<AvatarInfo>>,
-                        BadRequest<ApiErrorResponse>,
-                        Conflict<ApiErrorResponse>,
-                        UnauthorizedError
-                    >
-                > (
-                    HttpContext ctx,
-                    CreateAvatarRequest body,
-                    WebApiSessionStore sessions,
-                    IWebApiPlayerService players,
-                    IRpgContentService content,
-                    IGrainFactory grains,
-                    CancellationToken ct
-                ) =>
-                {
-                    int? accountId = ctx.AccountId(sessions);
-
-                    if (accountId is null)
-                    {
-                        return Unauthorized();
-                    }
-
-                    if (body is null || !body.IsValid)
-                    {
-                        return TypedResults.BadRequest(new ApiErrorResponse("invalid_request"));
-                    }
-
-                    // Checked before the avatar exists, so a wrong class creates nothing.
-                    if (ClassRefusal(body, content) is { } refusal)
-                    {
-                        return TypedResults.BadRequest(new ApiErrorResponse(refusal));
-                    }
-
-                    (bool success, int playerId, string? error) = await players
-                        .CreateAvatarAsync(
-                            accountId.Value,
-                            body.Name!,
-                            body.Figure ?? string.Empty,
-                            body.Gender ?? "M",
-                            ct
-                        )
-                        .ConfigureAwait(false);
-
-                    if (!success)
-                    {
-                        return TypedResults.Conflict(
-                            new ApiErrorResponse(error ?? "invalid_request")
-                        );
-                    }
-
-                    // A character at once: the class asked for, else « Sans classe ». Through the
-                    // grain, the sole writer of player_characters.
-                    await GiveClassAsync(
-                            grains,
-                            new PlayerId(playerId),
-                            ClassToGive(body.ClassId, content),
-                            CharactersLogger(ctx)
-                        )
-                        .ConfigureAwait(false);
-
-                    return TypedResults.Ok(
-                        await WithCharactersAsync(
-                                await players
-                                    .GetAvatarsForAccountAsync(accountId.Value, ct)
-                                    .ConfigureAwait(false),
-                                grains,
-                                CharactersLogger(ctx)
-                            )
-                            .ConfigureAwait(false)
-                    );
-                }
-            )
-            .WithName("CreateAvatar")
-            .WithSummary("Create an avatar and return the refreshed avatar list.")
-            .WithTags(TagUser);
-
-        app.MapPost(
-                "/api/user/avatars/select",
-                async Task<
-                    Results<
-                        Ok<EmptyResponse>,
-                        BadRequest<ApiErrorResponse>,
-                        UnauthorizedError,
-                        ForbiddenError
-                    >
-                > (
-                    HttpContext ctx,
-                    SelectAvatarRequest body,
-                    WebApiSessionStore sessions,
-                    IWebApiPlayerService players,
-                    IRpgContentService content,
-                    IGrainFactory grains,
-                    CancellationToken ct
-                ) =>
-                {
-                    int? accountId = ctx.AccountId(sessions);
-
-                    if (accountId is null)
-                    {
-                        return Unauthorized();
-                    }
-
-                    if (body is null || !body.IsValid)
-                    {
-                        return TypedResults.BadRequest(new ApiErrorResponse("invalid_request"));
-                    }
-
-                    if (!int.TryParse(body.UniqueId, out int playerId))
-                    {
-                        return TypedResults.BadRequest(new ApiErrorResponse("invalid_unique_id"));
-                    }
-
-                    System.Collections.Generic.List<AvatarInfo> owned = await players
-                        .GetAvatarsForAccountAsync(accountId.Value, ct)
-                        .ConfigureAwait(false);
-
-                    if (!owned.Exists(a => a.UniqueId == body.UniqueId))
-                    {
-                        return new ForbiddenError("avatar_not_owned");
-                    }
-
-                    // An avatar made before characters existed becomes one now, « Sans classe »;
-                    // the grain leaves a character already there as it is.
-                    await GiveClassAsync(
-                            grains,
-                            new PlayerId(playerId),
-                            ClassToGive(null, content),
-                            CharactersLogger(ctx)
-                        )
-                        .ConfigureAwait(false);
-
-                    sessions.SetSelectedPlayer(ctx.SessionId(), playerId);
-
-                    return TypedResults.Ok(EmptyResponse.Instance);
-                }
-            )
-            .WithName("SelectAvatar")
-            .WithSummary("Select the avatar used for the next SSO token.")
-            .WithTags(TagUser);
-
-        app.MapGet(
                 "/api/ssotoken",
-                async Task<
-                    Results<
-                        Ok<SsoTicketResponse>,
-                        NotFound<ApiErrorResponse>,
-                        InternalServerError<ApiErrorResponse>,
-                        UnauthorizedError,
-                        ForbiddenError
-                    >
-                > (
+                async Task<Results<Ok<SsoTicketResponse>, UnauthorizedError>> (
                     HttpContext ctx,
-                    string? uniqueId,
                     WebApiSessionStore sessions,
-                    IWebApiPlayerService players,
                     IWebApiAuthService auth,
                     CancellationToken ct
                 ) =>
@@ -453,146 +246,22 @@ internal static partial class WebApiEndpoints
                         return Unauthorized();
                     }
 
-                    int? selectedFromSession = sessions.GetSelectedPlayer(ctx.SessionId());
-                    int playerId;
-
-                    if (selectedFromSession.HasValue)
-                    {
-                        playerId = selectedFromSession.Value;
-                    }
-                    else if (
-                        !string.IsNullOrWhiteSpace(uniqueId) && int.TryParse(uniqueId, out int pid)
-                    )
-                    {
-                        System.Collections.Generic.List<AvatarInfo> ownedForSso = await players
-                            .GetAvatarsForAccountAsync(accountId.Value, ct)
-                            .ConfigureAwait(false);
-
-                        if (!ownedForSso.Exists(a => a.UniqueId == uniqueId))
-                        {
-                            return new ForbiddenError("avatar_not_owned");
-                        }
-
-                        playerId = pid;
-                    }
-                    else
-                    {
-                        // No avatar chosen: the ticket names the account, and the client picks its
-                        // character on the socket (spec F3a §5.1).
-                        (bool accountOk, string? accountTicket, string? accountError) =
-                            await auth.GetAccountSsoTokenAsync(accountId.Value, ctx.RemoteIp(), ct)
-                                .ConfigureAwait(false);
-
-                        return accountOk
-                            ? TypedResults.Ok(new SsoTicketResponse(accountTicket!))
-                            : TypedResults.InternalServerError(
-                                new ApiErrorResponse(accountError ?? "internal")
-                            );
-                    }
-
-                    (bool success, string? ticket, string? error) = await auth.GetSsoTokenAsync(
-                            playerId,
+                    string ticket = await auth.GetAccountSsoTokenAsync(
+                            accountId.Value,
                             ctx.RemoteIp(),
                             ct
                         )
                         .ConfigureAwait(false);
 
-                    if (!success)
-                    {
-                        return new ForbiddenError(error ?? "avatar_not_owned");
-                    }
-
-                    return TypedResults.Ok(new SsoTicketResponse(ticket!));
+                    return TypedResults.Ok(new SsoTicketResponse(ticket));
                 }
             )
             .RequireRateLimiting(SsoTokenRateLimitPolicy)
             .WithName("SsoToken")
-            .WithSummary("Issue a short-lived SSO ticket for the selected avatar.")
+            .WithSummary(
+                "Issue a short-lived account ticket: the game socket opens on the character screen."
+            )
             .WithTags(TagUser);
-    }
-
-    private static void MapNewUser(WebApplication app)
-    {
-        app.MapPost(
-                "/api/newuser/name/check",
-                async Task<Results<Ok<NameCheckResponse>, BadRequest<ApiErrorResponse>>> (
-                    NameRequest body,
-                    IWebApiPlayerService players,
-                    CancellationToken ct
-                ) =>
-                {
-                    if (body is null || !body.IsValid)
-                    {
-                        return TypedResults.BadRequest(new ApiErrorResponse("invalid_request"));
-                    }
-
-                    bool available = await players
-                        .NameAvailableAsync(body.Name!, ct)
-                        .ConfigureAwait(false);
-
-                    return TypedResults.Ok(new NameCheckResponse(body.Name!, available));
-                }
-            )
-            .WithName("NameCheck")
-            .WithSummary("Check whether a player name is available.")
-            .WithTags(TagNewUser);
-
-        app.MapPost(
-                "/api/newuser/name/select",
-                async Task<
-                    Results<
-                        Ok<NameSelectResponse>,
-                        BadRequest<ApiErrorResponse>,
-                        Conflict<ApiErrorResponse>,
-                        UnauthorizedError,
-                        ForbiddenError
-                    >
-                > (
-                    HttpContext ctx,
-                    NameSelectRequest body,
-                    WebApiSessionStore sessions,
-                    IWebApiPlayerService players,
-                    CancellationToken ct
-                ) =>
-                {
-                    int? accountId = ctx.AccountId(sessions);
-
-                    if (accountId is null)
-                    {
-                        return Unauthorized();
-                    }
-
-                    if (body is null || !body.IsValid)
-                    {
-                        return TypedResults.BadRequest(new ApiErrorResponse("invalid_request"));
-                    }
-
-                    System.Collections.Generic.List<AvatarInfo> ownedForName = await players
-                        .GetAvatarsForAccountAsync(accountId.Value, ct)
-                        .ConfigureAwait(false);
-
-                    if (!ownedForName.Exists(a => a.UniqueId == body.PlayerId.ToString()))
-                    {
-                        return new ForbiddenError("avatar_not_owned");
-                    }
-
-                    bool ok = await players
-                        .SetNameAsync(body.PlayerId, body.Name!, ct)
-                        .ConfigureAwait(false);
-
-                    if (!ok)
-                    {
-                        return TypedResults.Conflict(
-                            new ApiErrorResponse("pocket.auth.name_taken")
-                        );
-                    }
-
-                    return TypedResults.Ok(new NameSelectResponse(body.Name!));
-                }
-            )
-            .WithName("NameSelect")
-            .WithSummary("Assign a name to an owned avatar.")
-            .WithTags(TagNewUser);
     }
 
     private static UnauthorizedError Unauthorized() => new("unauthorized");

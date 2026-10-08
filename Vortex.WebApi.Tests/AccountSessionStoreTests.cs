@@ -10,22 +10,22 @@ namespace Vortex.WebApi.Tests;
 /// <summary>
 /// The session table behind the web API. It replaced two implementations that had drifted,
 /// so what is asserted here is the behaviour each of them was missing: a token nobody can guess,
-/// expiry that holds on every read path rather than just the one someone remembered, revocation of
-/// an account's sessions, and a table that does not grow forever because visitors never come back.
+/// expiry that holds on every read, revocation of an account's sessions, and a table that does not
+/// grow forever because visitors never come back.
 /// </summary>
 public sealed class AccountSessionStoreTests
 {
-    private static AccountSessionStore<string> Store(TimeSpan? lifetime = null) =>
+    private static AccountSessionStore Store(TimeSpan? lifetime = null) =>
         new(lifetime ?? TimeSpan.FromMinutes(30));
 
     [Fact]
-    public void ResolvesTheAccountAndStateBehindAToken()
+    public void ResolvesTheAccountBehindAToken()
     {
-        AccountSessionStore<string> store = Store();
+        AccountSessionStore store = Store();
 
-        string token = store.Create(42, "ops@example.com");
+        string token = store.Create(42);
 
-        store.Resolve(token).Should().Be((42, "ops@example.com"));
+        store.Resolve(token).Should().Be(42);
     }
 
     /// <summary>
@@ -36,9 +36,9 @@ public sealed class AccountSessionStoreTests
     [Fact]
     public void MintsAnUnguessableTokenEachTime()
     {
-        AccountSessionStore<string> store = Store();
+        AccountSessionStore store = Store();
 
-        List<string> tokens = [.. Enumerable.Range(0, 200).Select(i => store.Create(i, "x"))];
+        List<string> tokens = [.. Enumerable.Range(0, 200).Select(store.Create)];
 
         tokens.Should().OnlyHaveUniqueItems();
         tokens.Should().AllSatisfy(t => t.Should().HaveLength(64).And.MatchRegex("^[0-9A-F]+$"));
@@ -56,48 +56,21 @@ public sealed class AccountSessionStoreTests
     [Fact]
     public void StopsResolvingOnceTheLifetimeHasPassed()
     {
-        AccountSessionStore<string> store = Store(TimeSpan.FromMilliseconds(1));
+        AccountSessionStore store = Store(TimeSpan.FromMilliseconds(1));
 
-        string token = store.Create(7, "ops@example.com");
+        string token = store.Create(7);
         System.Threading.Thread.Sleep(20);
 
         store.Resolve(token).Should().BeNull();
-    }
-
-    /// <summary>
-    /// The web store read the selected avatar straight out of the dictionary, so an expired session
-    /// still answered that question. Expiry has to hold on every read, not the one that remembered.
-    /// </summary>
-    [Fact]
-    public void RefusesToUpdateAnExpiredSession()
-    {
-        AccountSessionStore<string> store = Store(TimeSpan.FromMilliseconds(1));
-
-        string token = store.Create(7, "before");
-        System.Threading.Thread.Sleep(20);
-
-        store.TryUpdate(token, _ => "after").Should().BeFalse();
-        store.Resolve(token).Should().BeNull();
-    }
-
-    [Fact]
-    public void UpdatesTheStateOfALiveSessionWithoutExtendingIt()
-    {
-        AccountSessionStore<int?> store = new(TimeSpan.FromMinutes(30));
-
-        string token = store.Create(7, null);
-
-        store.TryUpdate(token, _ => 99).Should().BeTrue();
-        store.Resolve(token)!.Value.State.Should().Be(99);
     }
 
     [Fact]
     public void RemovesOneSessionWithoutTouchingTheOthers()
     {
-        AccountSessionStore<string> store = Store();
+        AccountSessionStore store = Store();
 
-        string kept = store.Create(1, "a");
-        string dropped = store.Create(1, "b");
+        string kept = store.Create(1);
+        string dropped = store.Create(1);
 
         store.Remove(dropped);
 
@@ -112,11 +85,11 @@ public sealed class AccountSessionStoreTests
     [Fact]
     public void RevokesEverySessionOfOneAccountAndReportsHowMany()
     {
-        AccountSessionStore<string> store = Store();
+        AccountSessionStore store = Store();
 
-        string a1 = store.Create(1, "a");
-        string a2 = store.Create(1, "a");
-        string b1 = store.Create(2, "b");
+        string a1 = store.Create(1);
+        string a2 = store.Create(1);
+        string b1 = store.Create(2);
 
         store.RemoveAllForAccount(1).Should().Be(2);
 
@@ -138,15 +111,15 @@ public sealed class AccountSessionStoreTests
     [Fact]
     public void SweepsExpiredEntriesOnceTheTableIsBigEnoughToNotice()
     {
-        AccountSessionStore<string> store = Store(TimeSpan.FromMilliseconds(1));
+        AccountSessionStore store = Store(TimeSpan.FromMilliseconds(1));
 
         for (int i = 0; i < 64; i++)
         {
-            store.Create(i, "abandoned");
+            store.Create(i);
         }
 
         System.Threading.Thread.Sleep(20);
-        store.Create(999, "the login that triggers the sweep");
+        store.Create(999);
 
         store.Count.Should().Be(1);
     }
@@ -154,7 +127,7 @@ public sealed class AccountSessionStoreTests
     [Fact]
     public void RefusesALifetimeThatWouldExpireEverySessionImmediately()
     {
-        Action act = () => _ = new AccountSessionStore<string>(TimeSpan.Zero);
+        Action act = () => _ = new AccountSessionStore(TimeSpan.Zero);
 
         act.Should().Throw<ArgumentOutOfRangeException>();
     }

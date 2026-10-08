@@ -9,7 +9,8 @@ using Xunit;
 
 namespace Vortex.WebApi.Tests;
 
-/// <summary>Spec Personnage §8: classes listed, a class at creation, chosen once, read back.</summary>
+/// <summary>Spec Personnage §8: the classes listed, and the test XP grant. A character is created
+/// and given its class on the game socket (spec F3a §4), not through these routes.</summary>
 public sealed class CharacterEndpointsTests
 {
     [Fact]
@@ -26,191 +27,6 @@ public sealed class CharacterEndpointsTests
             .And.Contain("\"role\":\"tank\"");
     }
 
-    [Fact]
-    public async Task ANamedAvatarWithoutAClass_StartsInTheStarterClass()
-    {
-        await using WebApiTestFactory f = new();
-
-        HttpResponseMessage r = await PostAsync(f, "/api/user/avatars", """{ "name": "Bob" }""");
-
-        r.StatusCode.Should().Be(HttpStatusCode.OK);
-        f.Characters.Choices.Should().Equal((101L, FakeCharacters.StarterClass));
-    }
-
-    [Fact]
-    public async Task AnUnknownClass_CreatesNoAvatar()
-    {
-        await using WebApiTestFactory f = new();
-
-        HttpResponseMessage r = await PostAsync(
-            f,
-            "/api/user/avatars",
-            """{ "name": "Bob", "classId": "class.paladin" }"""
-        );
-
-        r.StatusCode.Should().Be(HttpStatusCode.BadRequest);
-        (await r.Content.ReadAsStringAsync()).Should().Contain("avatar.unknown_class");
-        f.Players.Created.Should().Be(0);
-    }
-
-    [Fact]
-    public async Task AnAvatarWithAClass_IsCreatedWithIt()
-    {
-        await using WebApiTestFactory f = new();
-
-        HttpResponseMessage r = await PostAsync(
-            f,
-            "/api/user/avatars",
-            """{ "name": "Bob", "classId": "class.warrior" }"""
-        );
-
-        r.StatusCode.Should().Be(HttpStatusCode.OK);
-        f.Characters.Choices.Should().Equal((101L, "class.warrior"));
-    }
-
-    /// <summary>The client creates the avatar of a registration without a name, then names it:
-    /// that one chooses its class later (spec Personnage §2.4).</summary>
-    [Fact]
-    public async Task ARegistrationAvatar_StartsInTheStarterClass()
-    {
-        await using WebApiTestFactory f = new();
-
-        (await PostAsync(f, "/api/user/avatars", "{}")).StatusCode.Should().Be(HttpStatusCode.OK);
-        f.Characters.Choices.Should().Equal((101L, FakeCharacters.StarterClass));
-    }
-
-    /// <summary>An avatar made before the starter class existed gets it when it is next selected.</summary>
-    [Fact]
-    public async Task SelectingAnAvatarWithoutACharacter_GivesItTheStarterClass()
-    {
-        await using WebApiTestFactory f = new();
-
-        (
-            await PostAsync(
-                f,
-                "/api/user/avatars/select",
-                $$"""{ "uniqueId": "{{FakePlayerService.OwnedUniqueId}}" }"""
-            )
-        )
-            .StatusCode.Should()
-            .Be(HttpStatusCode.OK);
-        f.Characters.Choices.Should().Equal((100L, FakeCharacters.StarterClass));
-    }
-
-    [Fact]
-    public async Task TheStarterClass_IsLeftForARealOne()
-    {
-        await using WebApiTestFactory f = new();
-        await PostAsync(
-            f,
-            "/api/user/avatars/select",
-            $$"""{ "uniqueId": "{{FakePlayerService.OwnedUniqueId}}" }"""
-        );
-
-        (
-            await PostAsync(
-                f,
-                $"/api/user/avatars/{FakePlayerService.OwnedUniqueId}/class",
-                """{ "classId": "class.warrior" }"""
-            )
-        )
-            .StatusCode.Should()
-            .Be(HttpStatusCode.OK);
-        f.Characters.ByPlayer[100].ClassId.Should().Be("class.warrior");
-    }
-
-    [Fact]
-    public async Task AClass_IsChosenOnce()
-    {
-        await using WebApiTestFactory f = new();
-        string url = $"/api/user/avatars/{FakePlayerService.OwnedUniqueId}/class";
-
-        (await PostAsync(f, url, """{ "classId": "class.warrior" }"""))
-            .StatusCode.Should()
-            .Be(HttpStatusCode.OK);
-        HttpResponseMessage again = await PostAsync(f, url, """{ "classId": "class.warrior" }""");
-
-        again.StatusCode.Should().Be(HttpStatusCode.Conflict);
-        (await again.Content.ReadAsStringAsync()).Should().Contain("avatar.class_already_chosen");
-    }
-
-    [Fact]
-    public async Task ChoosingAnUnknownClass_IsABadRequest()
-    {
-        await using WebApiTestFactory f = new();
-
-        (
-            await PostAsync(
-                f,
-                $"/api/user/avatars/{FakePlayerService.OwnedUniqueId}/class",
-                """{ "classId": "class.paladin" }"""
-            )
-        )
-            .StatusCode.Should()
-            .Be(HttpStatusCode.BadRequest);
-    }
-
-    [Fact]
-    public async Task ChoosingForSomeoneElsesAvatar_IsForbidden()
-    {
-        await using WebApiTestFactory f = new();
-
-        (await PostAsync(f, "/api/user/avatars/999/class", """{ "classId": "class.warrior" }"""))
-            .StatusCode.Should()
-            .Be(HttpStatusCode.Forbidden);
-    }
-
-    [Fact]
-    public async Task ChoosingWithoutASession_IsUnauthorized()
-    {
-        await using WebApiTestFactory f = new();
-        using StringContent body = new(
-            """{ "classId": "class.warrior" }""",
-            Encoding.UTF8,
-            "application/json"
-        );
-
-        (
-            await f.Client.PostAsync(
-                $"/api/user/avatars/{FakePlayerService.OwnedUniqueId}/class",
-                body
-            )
-        )
-            .StatusCode.Should()
-            .Be(HttpStatusCode.Unauthorized);
-    }
-
-    [Fact]
-    public async Task TheAvatarList_CarriesClassAndLevel()
-    {
-        await using WebApiTestFactory f = new();
-        f.Characters.ByPlayer[long.Parse(FakePlayerService.OwnedUniqueId)] = new CharacterSummary
-        {
-            ClassId = "class.warrior",
-            SpecializationId = "spec.warrior.guardian",
-            Level = 3,
-            Xp = 10,
-        };
-
-        string json = await (
-            await f.CreateAuthenticatedClient().GetAsync("/api/user/avatars")
-        ).Content.ReadAsStringAsync();
-
-        json.Should().Contain("\"classId\":\"class.warrior\"").And.Contain("\"level\":3");
-    }
-
-    [Fact]
-    public async Task AnAvatarWithoutACharacter_IsListedWithoutAClass()
-    {
-        await using WebApiTestFactory f = new();
-
-        string json = await (
-            await f.CreateAuthenticatedClient().GetAsync("/api/user/avatars")
-        ).Content.ReadAsStringAsync();
-
-        json.Should().Contain("\"classId\":null").And.Contain("\"level\":null");
-    }
-
     private static async Task<HttpResponseMessage> PostAsync(
         WebApiTestFactory f,
         string url,
@@ -220,20 +36,6 @@ public sealed class CharacterEndpointsTests
         using StringContent body = new(json, Encoding.UTF8, "application/json");
 
         return await f.CreateAuthenticatedClient().PostAsync(url, body);
-    }
-
-    /// <summary>The list is how the site picks an avatar to sign in with: one failing character
-    /// shows without its class rather than taking the list, and the sign-in, down.</summary>
-    [Fact]
-    public async Task AFailingCharacter_StillListsTheAvatars()
-    {
-        await using WebApiTestFactory f = new();
-        f.Characters.Broken.Add(long.Parse(FakePlayerService.OwnedUniqueId));
-
-        HttpResponseMessage r = await f.CreateAuthenticatedClient().GetAsync("/api/user/avatars");
-
-        r.StatusCode.Should().Be(HttpStatusCode.OK);
-        (await r.Content.ReadAsStringAsync()).Should().Contain("\"classId\":null");
     }
 
     // The test grant (plan Personnage, décision 3): XP for the live proof, behind a capability.

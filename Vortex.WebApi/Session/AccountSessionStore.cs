@@ -10,15 +10,12 @@ namespace Vortex.WebApi.Session;
 /// The web API's session store sits on top of it.
 ///
 /// <para>
-/// What a session carries besides an account id is <typeparamref name="TState" />, and how long it
-/// lasts is the caller's to choose. Sessions do not survive a restart, which is deliberate --
-/// nothing persistent means no token to steal from a table.
+/// A session carries the account id alone, and how long it lasts is the caller's to choose.
+/// Sessions do not survive a restart, which is deliberate -- nothing persistent means no token to
+/// steal from a table.
 /// </para>
 /// </summary>
-/// <typeparam name="TState">
-/// What the session remembers besides the account: the selected avatar, for the web API.
-/// </typeparam>
-public sealed class AccountSessionStore<TState>
+public sealed class AccountSessionStore
 {
     /// <summary>Live sessions past which <see cref="Create" /> sweeps the expired ones first.</summary>
     private const int PRUNE_THRESHOLD = 64;
@@ -49,7 +46,7 @@ public sealed class AccountSessionStore<TState>
     /// the whole credential, so it is the one thing here that must not be guessable -- a GUID is
     /// random but says so by accident rather than by contract.
     /// </summary>
-    public string Create(int accountId, TState state)
+    public string Create(int accountId)
     {
         string sessionId = Convert.ToHexString(RandomNumberGenerator.GetBytes(32));
         DateTime now = DateTime.UtcNow;
@@ -64,14 +61,14 @@ public sealed class AccountSessionStore<TState>
                 PruneExpired(now);
             }
 
-            _sessions[sessionId] = new Entry(accountId, state, now.Add(_lifetime));
+            _sessions[sessionId] = new Entry(accountId, now.Add(_lifetime));
         }
 
         return sessionId;
     }
 
-    /// <summary>The account and state behind a token, or null when it is unknown or expired.</summary>
-    public (int AccountId, TState State)? Resolve(string? sessionId)
+    /// <summary>The account behind a token, or null when it is unknown or expired.</summary>
+    public int? Resolve(string? sessionId)
     {
         if (string.IsNullOrEmpty(sessionId))
         {
@@ -91,36 +88,7 @@ public sealed class AccountSessionStore<TState>
                 return null;
             }
 
-            return (entry.AccountId, entry.State);
-        }
-    }
-
-    /// <summary>
-    /// Replaces the state of a live session, leaving its expiry alone. False when the token is
-    /// unknown or expired -- an expired session must not be revived by writing to it.
-    /// </summary>
-    public bool TryUpdate(string? sessionId, Func<TState, TState> update)
-    {
-        if (string.IsNullOrEmpty(sessionId))
-        {
-            return false;
-        }
-
-        lock (_gate)
-        {
-            if (!_sessions.TryGetValue(sessionId, out Entry entry))
-            {
-                return false;
-            }
-
-            if (entry.ExpiresAt <= DateTime.UtcNow)
-            {
-                _sessions.Remove(sessionId);
-                return false;
-            }
-
-            _sessions[sessionId] = entry with { State = update(entry.State) };
-            return true;
+            return entry.AccountId;
         }
     }
 
@@ -195,5 +163,5 @@ public sealed class AccountSessionStore<TState>
         }
     }
 
-    private readonly record struct Entry(int AccountId, TState State, DateTime ExpiresAt);
+    private readonly record struct Entry(int AccountId, DateTime ExpiresAt);
 }

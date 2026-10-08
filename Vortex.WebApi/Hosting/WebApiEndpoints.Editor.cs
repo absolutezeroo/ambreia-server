@@ -344,23 +344,16 @@ internal static partial class WebApiEndpoints
                         );
                     }
 
-                    // The avatar the site selected, else the account's first: the one that plays.
-                    int? playerId = sessions.GetSelectedPlayer(ctx.SessionId());
+                    // The account's first character is the one that plays.
+                    int? playerId = await players
+                        .FirstPlayerIdAsync(ctx.AccountId(sessions)!.Value, ct)
+                        .ConfigureAwait(false);
 
                     if (playerId is null)
                     {
-                        List<AvatarInfo> avatars = await players
-                            .GetAvatarsForAccountAsync(ctx.AccountId(sessions)!.Value, ct)
-                            .ConfigureAwait(false);
-
-                        if (avatars.Count == 0 || !int.TryParse(avatars[0].UniqueId, out int first))
-                        {
-                            return TypedResults.NotFound(
-                                new ApiErrorResponse("pocket.auth.no_avatars")
-                            );
-                        }
-
-                        playerId = first;
+                        return TypedResults.NotFound(
+                            new ApiErrorResponse("pocket.auth.no_avatars")
+                        );
                     }
 
                     await grains

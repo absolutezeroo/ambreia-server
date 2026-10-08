@@ -109,7 +109,7 @@ public sealed class WebApiAuthService(
         return (true, ticket, null);
     }
 
-    public async Task<(bool Success, string? Ticket, string? Error)> GetAccountSsoTokenAsync(
+    public async Task<string> GetAccountSsoTokenAsync(
         int accountId,
         string ip,
         CancellationToken ct
@@ -120,6 +120,6 @@ public sealed class WebApiAuthService(
             .ConfigureAwait(false);
 
         _logger.LogInformation("Account SSO token issued for account {AccountId}", accountId);
-        return (true, ticket, null);
+        return ticket;
     }
 }

@@ -430,51 +430,59 @@ async function openWebSession() {
   return { cookie };
 }
 
-// The web session, an avatar, then a short-lived SSO ticket -- exactly what the site does before
-// it opens the client.
-async function ssoTicket() {
+// What the client does after its login: the account ticket, then the character screen on the
+// socket -- the account's first character, or a new one « Sans classe » -- entered into the world.
+// Answers the socket past AuthenticationOK, with the RoomForward when there is a start zone.
+async function enterWorld() {
   const base = `http://127.0.0.1:${WEBAPI}`;
-  const json = (o) => JSON.stringify(o);
   const headers = { cookie: (await webSession()).cookie };
-  let res;
-
-  let avatars = JSON.parse((await request(`${base}/api/user/avatars`, { headers })).body);
-  if (!avatars.length) {
-    res = await request(`${base}/api/user/avatars`, {
-      method: 'POST',
-      headers,
-      body: json({ name: '', figure: 'hd-180-1.ch-210-66.lg-270-82.sh-290-80', gender: 'M' }),
-    });
-    if (res.status !== 200) die(`Avatar creation failed: ${res.status} ${res.body}`);
-    avatars = JSON.parse(res.body);
-  }
-  res = await request(`${base}/api/user/avatars/select`, {
-    method: 'POST',
-    headers,
-    body: json({ uniqueId: avatars[0].uniqueId }),
-  });
-  if (res.status !== 200) die(`Avatar selection failed: ${res.status} ${res.body}`);
-  res = await request(`${base}/api/ssotoken`, { headers });
+  const res = await request(`${base}/api/ssotoken`, { headers });
   if (res.status !== 200) die(`SSO ticket refused: ${res.status} ${res.body}`);
-  log(`Player ${avatars[0].name} (id ${avatars[0].uniqueId}) holds an SSO ticket.`);
-  return JSON.parse(res.body).ssoToken;
-}
 
-// The core loop, end to end: SSO -> AuthenticationOK, UserRights, RoomForward -> room entry ->
-// heightmap and avatars -> one step -> the step echoed back.
-async function cmdPlay() {
-  const ticket = await ssoTicket();
   const g = await gameSocket().catch((e) => die(`Socket error on :${GAME_TCP}: ${e.message}`));
   const fail = (m) => {
     g.close();
     die(m);
   };
+  g.send(frame(H.sso, JSON.parse(res.body).ssoToken, 0));
+  const list = await g.wait([H.rpgCharacterList]);
+  if (!list) fail(`Account ticket -> ${g.frames.map((f) => f.header).join(', ')}: no character list.`);
 
-  g.send(frame(H.sso, ticket, 0));
-  const forward = await g.wait([H.roomForward]);
-  const seen = g.frames.map((f) => f.header);
-  log(`SSO -> ${seen.join(', ')}`);
-  if (!seen.includes(H.authOk)) fail('No AuthenticationOK: the ticket was refused.');
+  // RpgCharacterList: max, count, then per character its player id first.
+  const l = reader(list.body);
+  l.int();
+  let playerId = l.int() > 0 ? l.int() : 0;
+  if (!playerId) {
+    const from = g.frames.length;
+    const name = `Driver${Date.now() % 1_000_000}`;
+    g.send(frame(H.rpgCreate, name, 'hd-180-1.ch-210-66.lg-270-82.sh-290-80', 'M'));
+    const made = await g.wait([H.rpgResult], from);
+    if (!made) fail('No RpgCharacterResult for the create.');
+    const r = reader(made.body);
+    const [, code, id] = [r.int(), r.str(), r.int()];
+    if (code !== 'ok') fail(`Character creation refused: ${code}`);
+    log(`Created character ${name} (id ${id}).`);
+    playerId = id;
+  }
+
+  const from = g.frames.length;
+  g.send(frame(H.rpgEnterWorld, playerId));
+  const forward = await g.wait([H.roomForward], from);
+  if (!g.frames.slice(from).some((f) => f.header === H.authOk)) fail(`RpgEnterWorld(${playerId}): no AuthenticationOK.`);
+  log(`Player ${playerId} entered the world.`);
+  return { g, forward, from };
+}
+
+// The core loop, end to end: account ticket -> character -> AuthenticationOK, RoomForward -> room
+// entry -> heightmap and avatars -> one step -> the step echoed back.
+async function cmdPlay() {
+  const { g, forward, from: entered } = await enterWorld();
+  const fail = (m) => {
+    g.close();
+    die(m);
+  };
+
+  log(`RpgEnterWorld -> ${g.frames.slice(entered).map((f) => f.header).join(', ')}`);
   if (!forward) fail('No RoomForward: is world.start_room_id set? (scripts/sql/dev_zone.sql)');
   const roomId = forward.body.readInt32BE(0);
 
@@ -555,14 +563,11 @@ async function cmdZone() {
   const zones = JSON.parse((await request(`${base}/api/editor/zones`, { headers })).body);
   const roomId = zones.find((z) => z.key === ZONE_KEY).roomId;
 
-  const ticket = await ssoTicket();
-  const g = await gameSocket().catch((e) => die(`Socket error on :${GAME_TCP}: ${e.message}`));
+  const { g } = await enterWorld();
   const fail = (m) => {
     g.close();
     die(m);
   };
-  g.send(frame(H.sso, ticket, 0));
-  if (!(await g.wait([H.authOk]))) fail('No AuthenticationOK.');
 
   const enter = async () => {
     const before = g.frames.length;
@@ -657,14 +662,11 @@ async function cmdTravel() {
   }
   log(`Published proof_a (room ${rooms.proof_a}) and proof_b (room ${rooms.proof_b}).`);
 
-  const ticket = await ssoTicket();
-  const g = await gameSocket().catch((e) => die(`Socket error on :${GAME_TCP}: ${e.message}`));
+  const { g } = await enterWorld();
   const fail = (m) => {
     g.close();
     die(m);
   };
-  g.send(frame(H.sso, ticket, 0));
-  if (!(await g.wait([H.authOk]))) fail('No AuthenticationOK.');
 
   // Users: count, then per avatar id, name, motto, figure, room index, x, y...
   const firstUserAt = (f) => {
@@ -775,16 +777,12 @@ async function cmdDungeon() {
   const template = zones.find((z) => z.key === 'proof_crypt').roomId;
   log(`Published proof_crypt (Dungeon) on room ${template}.`);
 
-  const ticket = await ssoTicket();
-  const g = await gameSocket().catch((e) => die(`Socket error on :${GAME_TCP}: ${e.message}`));
+  // The sign-in's own RoomForward, to the start zone, comes first; the copy's is the next one.
+  const { g } = await enterWorld();
   const fail = (m) => {
     g.close();
     die(m);
   };
-  g.send(frame(H.sso, ticket, 0));
-  if (!(await g.wait([H.authOk]))) fail('No AuthenticationOK.');
-  // The sign-in's own RoomForward, to the start zone, comes first; the copy's is the next one.
-  await g.wait([H.roomForward]);
 
   let before = g.frames.length;
   g.send(frame(H.openFlat, template, '', -1));
@@ -831,7 +829,9 @@ async function cmdTestMode() {
   g.send(frame(H.openFlat, to, '', -1));
   const burst = await g.wait([H.objects, H.cantConnect], before, 10000);
   if (!burst || burst.header === H.cantConnect) die(`Room ${to} refused or silent.`);
-  const own = await g.wait([H.users], g.frames.indexOf(burst) + 1, 5000);
+  // Users can come before or after Objects; an empty room lists nobody first.
+  let own = await g.wait([H.users], before, 5000);
+  while (own && own.body.readInt32BE(0) === 0) own = await g.wait([H.users], g.frames.indexOf(own) + 1, 5000);
   g.close();
   if (!own) die('No avatar announced.');
   const b = own.body;
@@ -854,10 +854,7 @@ async function cmdEnter(key) {
   if (!zone) die(`No zone ${key} (or the account cannot list zones).`);
   if (!zone.publishedVersion) die(`Zone ${key} was never published.`);
 
-  const ticket = await ssoTicket();
-  const g = await gameSocket().catch((e) => die(`Socket error on :${GAME_TCP}: ${e.message}`));
-  g.send(frame(H.sso, ticket, 0));
-  if (!(await g.wait([H.authOk]))) die('No AuthenticationOK.');
+  const { g } = await enterWorld();
   const before = g.frames.length;
   g.send(frame(H.openFlat, zone.roomId, '', -1));
   const objects = await g.wait([H.objects], before, 10000);
@@ -911,15 +908,18 @@ async function cmdSmoke() {
 // With `wait`, drop again and stay away past the grace: the console log announces the leave.
 async function cmdGrace(wait) {
   const enter = async () => {
-    const g = await gameSocket().catch((e) => die(`Socket error on :${GAME_TCP}: ${e.message}`));
-    g.send(frame(H.sso, await ssoTicket(), 0));
-    const forward = await g.wait([H.roomForward]);
+    const { g, forward } = await enterWorld();
     if (!forward) die('No RoomForward at sign-in.');
     const roomId = forward.body.readInt32BE(0);
     const before = g.frames.length;
     g.send(frame(H.openFlat, roomId, '', -1));
-    const users = await g.wait([H.users, H.cantConnect], before, 10000);
+    let users = await g.wait([H.users, H.cantConnect], before, 10000);
     if (!users || users.header === H.cantConnect) die(`Room ${roomId} refused or silent.`);
+    // An empty room lists nobody first; the player's own avatar comes in a later Users.
+    while (users.body.readInt32BE(0) === 0) {
+      users = await g.wait([H.users], g.frames.indexOf(users) + 1, 5000);
+      if (!users) die(`No avatar announced in room ${roomId}.`);
+    }
     return { g, roomId, before, users };
   };
   // Users: count, then per avatar web id, name, motto, figure, object id, x, y, ...
@@ -932,14 +932,15 @@ async function cmdGrace(wait) {
   };
 
   const first = await enter();
-  const tile = first.g.frames.slice(first.before).find((f) => f.header === H.entryTile);
-  const [x, y] = tile ? [tile.body.readInt32BE(0), tile.body.readInt32BE(4)] : [3, 5];
+  // One step from where the avatar stands: a zone's arrival entry is not always by the door.
+  const at = firstAvatar(first.users.body);
+  const [x, y] = [at.x > 0 ? at.x - 1 : at.x + 1, at.y];
   const step = first.g.frames.length;
-  first.g.send(frame(H.moveAvatar, x + 1, y));
+  first.g.send(frame(H.moveAvatar, x, y));
   if (!(await first.g.wait([H.userUpdate], step, 5000))) die('No UserUpdate after the step.');
   await new Promise((r) => setTimeout(r, 1500));
   first.g.close();
-  log(`Entered room ${first.roomId}, stepped to (${x + 1},${y}), dropped the socket.`);
+  log(`Entered room ${first.roomId} on (${at.x},${at.y}), stepped to (${x},${y}), dropped the socket.`);
 
   await new Promise((r) => setTimeout(r, 1500));
   const back = await enter();
@@ -947,7 +948,7 @@ async function cmdGrace(wait) {
   log(`Back in room ${back.roomId}: ${seen.count} avatar(s), first ${seen.webId} on (${seen.x},${seen.y}).`);
   if (back.roomId !== first.roomId) die('Forwarded to another room: the grace room was not resumed.');
   if (seen.count !== 1) die('Not exactly one avatar in the room: a second avatar was made.');
-  if (seen.x !== x + 1 || seen.y !== y) die(`The avatar is not on (${x + 1},${y}).`);
+  if (seen.x !== x || seen.y !== y) die(`The avatar is not on (${x},${y}).`);
   log('Grace OK: same room, one avatar, same tile.');
 
   if (wait !== 'wait') {
@@ -963,47 +964,6 @@ async function cmdGrace(wait) {
   const line = tail.split(/\r?\n/).find((l) => l.includes('did not come back within the grace period'));
   if (!line) die('No grace-end line in the console log (is this an emulator the driver started?).');
   log(line.trim());
-}
-
-// The character of the throwaway avatar (spec Personnage §16): its class and level, an XP grant
-// through the admin route (the account made owner, like `zone`), the level read back.
-async function cmdCharacter(amount = '250') {
-  const base = `http://127.0.0.1:${WEBAPI}`;
-  const headers = { cookie: (await webSession()).cookie };
-  sql(`INSERT INTO player_account_roles (account_id, role_id)
-       SELECT a.id, r.id FROM player_accounts a, roles r
-       WHERE a.email='${PLAYER.email}' AND r.\`key\`='owner'
-         AND NOT EXISTS (SELECT 1 FROM player_account_roles x WHERE x.account_id=a.id AND x.role_id=r.id);`);
-
-  const avatars = async () => JSON.parse((await request(`${base}/api/user/avatars`, { headers })).body);
-  let avatar = (await avatars())[0];
-  if (!avatar) die('No avatar: run `play` first.');
-  log(`Avatar ${avatar.uniqueId}: ${avatar.classId}, level ${avatar.level}.`);
-  // Every avatar starts « Sans classe » (given at creation or selection); it leaves it once.
-  if (avatar.classId == null || avatar.classId === 'class.classless') {
-    const res = await request(`${base}/api/user/avatars/${avatar.uniqueId}/class`, {
-      method: 'POST',
-      headers,
-      body: JSON.stringify({ classId: 'class.warrior' }),
-    });
-    if (res.status !== 200) die(`Choosing a class failed: ${res.status} ${res.body} (content pushed?)`);
-    avatar = (await avatars())[0];
-  }
-  log(`Avatar ${avatar.uniqueId}: ${avatar.classId}, level ${avatar.level}.`);
-
-  const res = await request(`${base}/api/admin/characters/${avatar.uniqueId}/xp`, {
-    method: 'POST',
-    headers,
-    body: JSON.stringify({ amount: Number(amount) }),
-  });
-  if (res.status !== 200) die(`XP grant failed: ${res.status} ${res.body}`);
-  log(`Granted ${amount} XP: ${res.body}`);
-
-  const after = (await avatars())[0];
-  log(`Avatar ${after.uniqueId}: ${after.classId}, level ${after.level}.`);
-  if (!(after.level > avatar.level)) die('The level did not move.');
-  const row = sql(`SELECT level, xp FROM player_characters WHERE player_id=${Number(after.uniqueId)};`);
-  log(`player_characters row (level, xp): ${row.trim()}`);
 }
 
 // The RPG content pack through scripts/content/push.mjs, as the throwaway account (made owner on the
@@ -1035,7 +995,7 @@ async function cmdLobby() {
        WHERE a.email='${PLAYER.email}' AND r.\`key\`='owner'
          AND NOT EXISTS (SELECT 1 FROM player_account_roles x WHERE x.account_id=a.id AND x.role_id=r.id);`);
 
-  // A fresh web session has no selected avatar: the ticket names the account.
+  // The ticket names the account: the socket opens on the character screen.
   let res = await request(`${base}/api/ssotoken`, { headers });
   if (res.status !== 200) die(`SSO ticket refused: ${res.status} ${res.body}`);
   const ticket = JSON.parse(res.body).ssoToken;
@@ -1144,7 +1104,6 @@ const table = {
   testmode: cmdTestMode,
   dungeon: cmdDungeon,
   content: () => cmdContent(args[0]),
-  character: () => cmdCharacter(args[0]),
   lobby: cmdLobby,
   grace: () => cmdGrace(args[0]),
   cleanup: cmdCleanup,
@@ -1162,14 +1121,13 @@ if (!cmd || !table[cmd]) {
   logs [n]  tail the console log of the emulator this driver started
   health    /health and /api/public/info/hello
   ping      raw frame on :${GAME_TCP} -- ${H.initDiffie} out, ${H.initDiffieReply} back
-  play      throwaway player -> SSO -> start zone -> heightmap -> one step
+  play      throwaway account -> account ticket -> its character (made if none) -> start zone -> heightmap -> one step
   zone      publish a zone through /api/editor, enter it, republish while inside
   enter <k> enter the published zone <k> and count the floor items it sends
   travel    two proof zones: named area bubble, passage A -> B, arrival on the passage's entry
   testmode  the editor's test route: a ticket that signs in to proof_b on (6,6)
   dungeon   a Dungeon zone: its room forwards to the player's own copy, which is entered
   content [dir]  push the RPG content pack (default content/) through scripts/content/push.mjs
-  character [xp]  the throwaway avatar's character: class, an XP grant (default 250), the level read back
   lobby     the character screen by the socket: account ticket -> lists, create, class, enter world, HUD state, XP progress, phase gate
   grace [wait]  drop the socket in a room and come back: same room, one avatar, same tile (wait: then stay away past 60 s)
   cleanup   delete the throwaway account and its players`);

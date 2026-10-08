@@ -42,11 +42,12 @@ node .claude/skills/run-vortex-emulator/driver.mjs smoke
 
 `smoke` is start → health → game-socket ping → `play`. `play` is the core loop, end to end:
 
-1. registers `run-skill@vortex.local` through the web API (or logs it in), creates an avatar if it
-   has none, selects it and asks `/api/ssotoken` for a ticket — what the site does before it opens
-   the client;
-2. sends `SSOTicket` (882) on the game socket and expects `AuthenticationOK` (230), `UserRights`
-   (3599) and `RoomForward` (3339) carrying the start zone's id;
+1. registers `run-skill@vortex.local` through the web API (or logs it in) and asks `/api/ssotoken`
+   for an account ticket — what the client's login does;
+2. sends `SSOTicket` (882) on the game socket and expects `RpgCharacterList` (9000); creates a
+   character (`RpgCharacterCreate`, 9001) if the account has none, sends `RpgEnterWorld` (9003)
+   for the first one and expects `AuthenticationOK` (230) and `RoomForward` (3339) carrying the
+   start zone's id;
 3. sends `OpenFlatConnection` (3234) for that room and expects the entry burst, heightmaps (2260,
    2885) and `Users` (996) included;
 4. sends `MoveAvatar` (2364) one tile off the entry tile and expects a `UserUpdate` (2613).
@@ -68,7 +69,6 @@ node .claude/skills/run-vortex-emulator/driver.mjs smoke
 | `testmode` | the editor's test route: a ticket whose sign-in lands on `proof_b` (6,6); run `travel` first |
 | `dungeon` | publishes `proof_crypt` (type `Dungeon`), opens its room and expects a `RoomForward` to the player's own copy (id from 1 000 000 000), then enters the copy |
 | `content [dir]` | pushes the RPG content pack (`content/`, or a copy at `dir` relative to the repo) through `scripts/content/push.mjs` as the throwaway account, made owner on the target database. Prints every finding; exit 1 when the pack is refused. A second push of the same pack answers 0 added, 0 changed. By hand: `VORTEX_CONTENT_PASSWORD=… node scripts/content/push.mjs --email <owner>` |
-| `character [xp]` | the throwaway avatar's character (spec Personnage): moves it from « Sans classe » (`class.classless`, given at creation or selection) to `class.warrior`, grants `xp` (default 250) through `POST /api/admin/characters/{id}/xp` (account made owner on the target database), reads the level back and prints the `player_characters` row. Push the content first (`content`); `play` selects the avatar, which makes it « Sans classe » |
 | `lobby` | the character screen by the socket alone (spec F3a): a fresh web session's account ticket → `RpgCharacterList` and `RpgClassList`, no `AuthenticationOK`; `RpgCharacterCreate` → result `ok` and the list; `RpgCharacterChooseClass(class.warrior)` → `ok`; `RpgEnterWorld` → `AuthenticationOK`, `RoomForward`; room entry → `RpgCharacterState` (level 1); 250 XP by the admin route → `RpgCharacterStats`, `RpgCharacterProgress` (level 3); a create sent in the world → nothing (phase gate). Push the content first; a full account (5 characters) wants `cleanup` |
 | `cleanup` | deletes the throwaway account and its players |
 

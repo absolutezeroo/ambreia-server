@@ -82,9 +82,6 @@ internal sealed class FakeAuthService(WebApiSessionStore sessions) : IWebApiAuth
         return Task.FromResult<(bool, string?, string?)>((true, $"ticket-{playerId}", null));
     }
 
-    public Task<(bool Success, string? Ticket, string? Error)> GetAccountSsoTokenAsync(
-        int accountId,
-        string ip,
-        CancellationToken ct
-    ) => Task.FromResult<(bool, string?, string?)>((true, $"account-ticket-{accountId}", null));
+    public Task<string> GetAccountSsoTokenAsync(int accountId, string ip, CancellationToken ct) =>
+        Task.FromResult($"account-ticket-{accountId}");
 }

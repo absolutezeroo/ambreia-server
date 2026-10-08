@@ -43,11 +43,7 @@ public sealed class WebApiCredentialHardeningTests
     public void RegisterRequest_AcceptsAnAddress() =>
         new RegisterRequest(" a@b.co ", "password1", null).IsValid.Should().BeTrue();
 
-    [Fact]
-    public void CreateAvatarRequest_IsInvalidForALookWiderThanItsColumn() =>
-        new CreateAvatarRequest(null, new string('a', 256), "M").IsValid.Should().BeFalse();
-
-    // --- the player-name shape, on the HTTP routes that used to bypass it --------------------------
+    // --- the player-name shape, which the character screen applies at creation ---------------------
 
     [Theory]
     [InlineData("Habbo")]
@@ -70,32 +66,6 @@ public sealed class WebApiCredentialHardeningTests
     [Fact]
     public void NameShape_RefusesANameUpToTheColumnWidth() =>
         NameShape.IsWellFormed(new string('a', 512)).Should().BeFalse();
-
-    [Fact]
-    public void NameSelectRequest_IsInvalidForANameTheClientCouldNotHaveChosen()
-    {
-        new NameSelectRequest("Admin​", 1).IsValid.Should().BeFalse();
-        new NameSelectRequest("Habbo", 1).IsValid.Should().BeTrue();
-
-        // The owned-avatar id is still its own condition, unchanged by the name rule.
-        new NameSelectRequest("Habbo", 0)
-            .IsValid.Should()
-            .BeFalse();
-    }
-
-    [Fact]
-    public void CreateAvatarRequest_LeavesTheBlankRegistrationNameValid()
-    {
-        // Blank is the registration path: WebApiPlayerService assigns a placeholder that the
-        // onboarding rename replaces. Refusing it here would break account creation.
-        new CreateAvatarRequest(null, null, null)
-            .IsValid.Should()
-            .BeTrue();
-        new CreateAvatarRequest("  ", null, null).IsValid.Should().BeTrue();
-
-        new CreateAvatarRequest("Habbo", null, null).IsValid.Should().BeTrue();
-        new CreateAvatarRequest("bad name", null, null).IsValid.Should().BeFalse();
-    }
 
     // --- the session cookie's Secure flag, which the proxy deployment used to strip ----------------
 

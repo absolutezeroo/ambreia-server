@@ -15,7 +15,7 @@ namespace Vortex.WebApi.Http.Responses;
 /// </para>
 /// <para>
 /// Where a DTO lives: a shape only the ENDPOINT builds lives in this folder; a shape a SERVICE
-/// returns lives with its service interface (<c>AvatarInfo</c>). The test is one question: could the
+/// returns lives with its service interface. The test is one question: could the
 /// record exist without an HTTP route?
 /// </para>
 /// </remarks>

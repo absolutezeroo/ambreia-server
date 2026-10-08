@@ -1,13 +1,7 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Text.Json;
-using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
 using Orleans;
 using Vortex.Primitives.Orleans;
 using Vortex.Primitives.Permissions;
@@ -15,26 +9,18 @@ using Vortex.Primitives.Players;
 using Vortex.Primitives.Rpg.Characters;
 using Vortex.Primitives.Rpg.Characters.Grains;
 using Vortex.Primitives.Rpg.Content;
-using Vortex.WebApi.Http.Errors;
 using Vortex.WebApi.Http.Requests;
 using Vortex.WebApi.Http.Responses;
-using Vortex.WebApi.Services;
-using Vortex.WebApi.Session;
 
 namespace Vortex.WebApi.Hosting;
 
 /// <summary>
-/// The character routes (spec Personnage §8): the classes on offer, and the class of an avatar that
-/// has none — chosen through its grain, once, never written to the table from here.
+/// The character routes (spec Personnage §8): the classes on offer, and an XP grant for testing. A
+/// character is created, given its class and entered on the game socket (spec F3a §4), not here.
 /// </summary>
 internal static partial class WebApiEndpoints
 {
     private const string TagCharacters = "Characters";
-
-    private static ILogger CharactersLogger(HttpContext ctx) =>
-        ctx
-            .RequestServices.GetRequiredService<ILoggerFactory>()
-            .CreateLogger("Vortex.WebApi.Characters");
 
     private static void MapCharacters(WebApplication app)
     {
@@ -45,63 +31,6 @@ internal static partial class WebApiEndpoints
             .WithTags(TagCharacters)
             .WithName("ContentClasses")
             .WithSummary("The classes a new character may take.");
-
-        app.MapPost(
-                "/api/user/avatars/{uniqueId}/class",
-                async Task<IResult> (
-                    string uniqueId,
-                    HttpContext ctx,
-                    ChooseClassRequest body,
-                    WebApiSessionStore sessions,
-                    IWebApiPlayerService players,
-                    IGrainFactory grains,
-                    CancellationToken ct
-                ) =>
-                {
-                    int? accountId = ctx.AccountId(sessions);
-
-                    if (accountId is null)
-                    {
-                        return Unauthorized();
-                    }
-
-                    if (body is null || !body.IsValid || !int.TryParse(uniqueId, out int playerId))
-                    {
-                        return TypedResults.BadRequest(new ApiErrorResponse("invalid_request"));
-                    }
-
-                    List<AvatarInfo> owned = await players
-                        .GetAvatarsForAccountAsync(accountId.Value, ct)
-                        .ConfigureAwait(false);
-
-                    if (!owned.Exists(a => a.UniqueId == uniqueId))
-                    {
-                        return new ForbiddenError("avatar_not_owned");
-                    }
-
-                    ChooseClassOutcome outcome = await grains
-                        .GetPlayerCharacterGrain(new PlayerId(playerId))
-                        .ChooseClassAsync(body.ClassId!)
-                        .ConfigureAwait(false);
-
-                    return outcome switch
-                    {
-                        ChooseClassOutcome.Chosen => TypedResults.Ok(new EmptyResponse()),
-                        ChooseClassOutcome.AlreadyChosen => TypedResults.Conflict(
-                            new ApiErrorResponse("avatar.class_already_chosen")
-                        ),
-                        _ => TypedResults.BadRequest(new ApiErrorResponse("avatar.unknown_class")),
-                    };
-                }
-            )
-            .WithTags(TagCharacters)
-            .WithName("ChooseAvatarClass")
-            .WithSummary("Give an avatar without a class its class, once.")
-            .Produces<EmptyResponse>()
-            .Produces<ApiErrorResponse>(StatusCodes.Status400BadRequest)
-            .Produces(StatusCodes.Status401Unauthorized)
-            .Produces(StatusCodes.Status403Forbidden)
-            .Produces<ApiErrorResponse>(StatusCodes.Status409Conflict);
 
         app.MapPost(
                 "/api/admin/characters/{playerId:int}/xp",
@@ -139,113 +68,5 @@ internal static partial class WebApiEndpoints
             .Produces(StatusCodes.Status401Unauthorized)
             .Produces(StatusCodes.Status403Forbidden)
             .Produces<ApiErrorResponse>(StatusCodes.Status404NotFound);
-    }
-
-    /// <summary>The avatars with their character's class and level, read from their grains at once.</summary>
-    private static async Task<List<AvatarInfo>> WithCharactersAsync(
-        List<AvatarInfo> avatars,
-        IGrainFactory grains,
-        ILogger logger
-    )
-    {
-        CharacterSummary?[] summaries = await Task.WhenAll(
-                avatars.Select(a =>
-                    int.TryParse(a.UniqueId, out int id)
-                        ? SummaryOrNullAsync(grains, new PlayerId(id), logger)
-                        : Task.FromResult<CharacterSummary?>(null)
-                )
-            )
-            .ConfigureAwait(false);
-
-        return
-        [
-            .. avatars.Select(
-                (a, i) => a with { ClassId = summaries[i]?.ClassId, Level = summaries[i]?.Level }
-            ),
-        ];
-    }
-
-    /// <summary>The site lists avatars to sign in with: a character that fails to answer is listed
-    /// without its class rather than taking the whole list, and the sign-in, down.</summary>
-    private static async Task<CharacterSummary?> SummaryOrNullAsync(
-        IGrainFactory grains,
-        PlayerId playerId,
-        ILogger logger
-    )
-    {
-        try
-        {
-            return await grains
-                .GetPlayerCharacterGrain(playerId)
-                .GetSummaryAsync()
-                .ConfigureAwait(false);
-        }
-        catch (Exception ex) when (ex is not OperationCanceledException)
-        {
-            logger.LogWarning(
-                ex,
-                "The character of player {PlayerId} did not answer.",
-                playerId.Value
-            );
-
-            return null;
-        }
-    }
-
-    /// <summary>A named avatar needs a class once the content has classes; null when it may go on.</summary>
-    private static string? ClassRefusal(CreateAvatarRequest body, IRpgContentService content) =>
-        string.IsNullOrWhiteSpace(body.ClassId)
-        || content.GetClasses().Any(c => c.Id == body.ClassId)
-            ? null
-            : "avatar.unknown_class";
-
-    /// <summary>
-    /// The class a new avatar takes: the one asked for, else the starter class « Sans classe »
-    /// (owner decision, 2026-10-08); null while the content has neither.
-    /// </summary>
-    private static string? ClassToGive(string? asked, IRpgContentService content) =>
-        !string.IsNullOrWhiteSpace(asked)
-            ? asked
-            : content.GetClasses().FirstOrDefault(c => c.Starter)?.Id;
-
-    /// <summary>Makes the avatar a character in <paramref name="classId"/> if it is none yet; a
-    /// failure is logged and leaves the avatar as it was — it gets the class at a later try.</summary>
-    private static async Task GiveClassAsync(
-        IGrainFactory grains,
-        PlayerId playerId,
-        string? classId,
-        ILogger logger
-    )
-    {
-        if (classId is null)
-        {
-            return;
-        }
-
-        try
-        {
-            ChooseClassOutcome outcome = await grains
-                .GetPlayerCharacterGrain(playerId)
-                .ChooseClassAsync(classId)
-                .ConfigureAwait(false);
-
-            if (outcome == ChooseClassOutcome.UnknownClass)
-            {
-                logger.LogWarning(
-                    "Avatar {PlayerId} could not take class {ClassId}: unknown to the content.",
-                    playerId.Value,
-                    classId
-                );
-            }
-        }
-        catch (Exception ex) when (ex is not OperationCanceledException)
-        {
-            logger.LogWarning(
-                ex,
-                "Avatar {PlayerId} could not take class {ClassId}.",
-                playerId.Value,
-                classId
-            );
-        }
     }
 }

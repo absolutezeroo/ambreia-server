@@ -92,11 +92,6 @@ public sealed class WebApiConfig
     /// </summary>
     public int SessionLifetimeHours { get; set; } = 24;
 
-    public int MaxAvatarsPerAccount { get; set; } = 5;
-
-    public string DefaultFigure { get; set; } =
-        "hr-115-42.hd-195-19.ch-3030-82.lg-275-1408.fa-1201.ca-1804-64";
-
     /// <summary>
     /// Origins permitted by CORS. Empty means "no cross-origin browser access"; a wildcard is never
     /// emitted because the API relies on credentialed (cookie) requests.
