@@ -897,49 +897,6 @@ namespace Vortex.Database.Migrations
                         .HasDefaultValue(false)
                         .HasColumnName("allow_blocking");
 
-                    b.Property<bool>("AllowPets")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("tinyint(1)")
-                        .HasDefaultValue(false)
-                        .HasColumnName("allow_pets");
-
-                    b.Property<bool>("AllowPetsEat")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("tinyint(1)")
-                        .HasDefaultValue(false)
-                        .HasColumnName("allow_pets_eat");
-
-                    b.Property<int>("BanType")
-                        .HasColumnType("int")
-                        .HasDefaultValue(0)
-                        .HasColumnName("ban_type");
-
-                    b.Property<int>("ChatBubbleType")
-                        .HasColumnType("int")
-                        .HasDefaultValue(1)
-                        .HasColumnName("chat_bubble_type");
-
-                    b.Property<int>("ChatDistance")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
-                        .HasDefaultValue(50)
-                        .HasColumnName("chat_distance");
-
-                    b.Property<int>("ChatFloodType")
-                        .HasColumnType("int")
-                        .HasDefaultValue(2)
-                        .HasColumnName("chat_flood_type");
-
-                    b.Property<int>("ChatModeType")
-                        .HasColumnType("int")
-                        .HasDefaultValue(0)
-                        .HasColumnName("chat_mode_type");
-
-                    b.Property<int>("ChatSpeedType")
-                        .HasColumnType("int")
-                        .HasDefaultValue(1)
-                        .HasColumnName("chat_speed_type");
-
                     b.Property<DateTime>("CreatedAt")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("datetime(6)")
@@ -966,59 +923,6 @@ namespace Vortex.Database.Migrations
                         .HasColumnType("tinyint(1)")
                         .HasDefaultValue(false)
                         .HasColumnName("hide_walls");
-
-                    b.Property<bool>("IdleAutokickEnabled")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("tinyint(1)")
-                        .HasDefaultValue(false)
-                        .HasColumnName("idle_autokick_enabled");
-
-                    b.Property<int>("IdleAutokickTimeoutSeconds")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
-                        .HasDefaultValue(1800)
-                        .HasColumnName("idle_autokick_timeout_seconds");
-
-                    b.Property<bool>("IdleSleepEnabled")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("tinyint(1)")
-                        .HasDefaultValue(true)
-                        .HasColumnName("idle_sleep_enabled");
-
-                    b.Property<int>("IdleSleepTimeoutSeconds")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
-                        .HasDefaultValue(300)
-                        .HasColumnName("idle_sleep_timeout_seconds");
-
-                    b.Property<int>("KickType")
-                        .HasColumnType("int")
-                        .HasDefaultValue(0)
-                        .HasColumnName("kick_type");
-
-                    b.Property<DateTime>("LastActive")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("datetime(6)")
-                        .HasColumnName("last_active");
-
-                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<DateTime>("LastActive"));
-
-                    b.Property<bool>("LeaveOnDoorTile")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("tinyint(1)")
-                        .HasDefaultValue(false)
-                        .HasColumnName("leave_on_door_tile");
-
-                    b.Property<bool>("MuteAllPets")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("tinyint(1)")
-                        .HasDefaultValue(false)
-                        .HasColumnName("mute_all_pets");
-
-                    b.Property<int>("MuteType")
-                        .HasColumnType("int")
-                        .HasDefaultValue(0)
-                        .HasColumnName("mute_type");
 
                     b.Property<string>("Name")
                         .IsRequired()
@@ -1056,31 +960,9 @@ namespace Vortex.Database.Migrations
                         .HasDefaultValue(25)
                         .HasColumnName("players_max");
 
-                    b.Property<int>("Ranking")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
-                        .HasDefaultValue(0)
-                        .HasColumnName("ranking");
-
                     b.Property<int>("RoomModelEntityId")
                         .HasColumnType("int")
                         .HasColumnName("model_id");
-
-                    b.Property<int>("Score")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
-                        .HasDefaultValue(0)
-                        .HasColumnName("score");
-
-                    b.Property<string>("Tag1")
-                        .HasMaxLength(25)
-                        .HasColumnType("varchar(25)")
-                        .HasColumnName("tag_1");
-
-                    b.Property<string>("Tag2")
-                        .HasMaxLength(25)
-                        .HasColumnType("varchar(25)")
-                        .HasColumnName("tag_2");
 
                     b.Property<int>("ThicknessFloor")
                         .HasColumnType("int")
@@ -1092,23 +974,12 @@ namespace Vortex.Database.Migrations
                         .HasDefaultValue(0)
                         .HasColumnName("thickness_wall");
 
-                    b.Property<int>("TradeType")
-                        .HasColumnType("int")
-                        .HasDefaultValue(0)
-                        .HasColumnName("trade_type");
-
                     b.Property<DateTime>("UpdatedAt")
                         .ValueGeneratedOnAddOrUpdate()
                         .HasColumnType("datetime(6)")
                         .HasColumnName("updated_at");
 
                     MySqlPropertyBuilderExtensions.UseMySqlComputedColumn(b.Property<DateTime>("UpdatedAt"));
-
-                    b.Property<int>("UsersNow")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
-                        .HasDefaultValue(0)
-                        .HasColumnName("users_now");
 
                     b.Property<int>("WallHeight")
                         .ValueGeneratedOnAdd()

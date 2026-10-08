@@ -103,11 +103,10 @@ public sealed partial class ZoneEditorService(
         await ctx
             .Database.ExecuteSqlInterpolatedAsync(
                 $"""
-                INSERT INTO rooms (name, description, player_id, model_id, last_active)
+                INSERT INTO rooms (name, description, player_id, model_id)
                 SELECT {name}, {marker},
                        (SELECT id FROM players WHERE name = '__world__' ORDER BY id LIMIT 1),
-                       (SELECT id FROM room_models WHERE name = 'model_a' ORDER BY id LIMIT 1),
-                       CURRENT_TIMESTAMP
+                       (SELECT id FROM room_models WHERE name = 'model_a' ORDER BY id LIMIT 1)
                 """,
                 ct
             )

@@ -1,11 +1,8 @@
-using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using Microsoft.EntityFrameworkCore;
 using Vortex.Database.Entities.Players;
-using Vortex.Primitives.Navigator.Enums;
 using Vortex.Primitives.Rooms.Enums;
 
 namespace Vortex.Database.Entities.Room;
@@ -32,10 +29,6 @@ public class RoomEntity : VortexEntity
 
     [Column("model_id")]
     public required int RoomModelEntityId { get; set; }
-
-    [Column("users_now")]
-    [DefaultValue(0)]
-    public required int UsersNow { get; set; }
 
     [Column("players_max")]
     [DefaultValue(25)]
@@ -77,106 +70,6 @@ public class RoomEntity : VortexEntity
     [Column("allow_blocking")]
     [DefaultValue(false)]
     public required bool AllowBlocking { get; set; }
-
-    [Column("allow_pets")]
-    [DefaultValue(false)]
-    public required bool AllowPets { get; set; }
-
-    [Column("allow_pets_eat")]
-    [DefaultValue(false)]
-    public required bool AllowPetsEat { get; set; }
-
-    [Column("leave_on_door_tile")]
-    [DefaultValue(false)]
-    public bool LeaveOnDoorTile { get; set; }
-
-    [Column("idle_sleep_enabled")]
-    [DefaultValue(true)]
-    public bool IdleSleepEnabled { get; set; } = true;
-
-    [Column("idle_sleep_timeout_seconds")]
-    [DefaultValue(300)]
-    public int IdleSleepTimeoutSeconds { get; set; } = 300;
-
-    [Column("idle_autokick_enabled")]
-    [DefaultValue(false)]
-    public bool IdleAutokickEnabled { get; set; }
-
-    [Column("idle_autokick_timeout_seconds")]
-    [DefaultValue(1800)]
-    public int IdleAutokickTimeoutSeconds { get; set; } = 1800;
-
-    [Column("mute_all_pets")]
-    [DefaultValue(false)]
-    public bool MuteAllPets { get; set; }
-
-    [Column("trade_type")]
-    [DefaultValue(RoomTradeModeType.Disabled)]
-    [DatabaseGenerated(DatabaseGeneratedOption.None)]
-    public required RoomTradeModeType TradeType { get; set; }
-
-    [Column("mute_type")]
-    [DefaultValue(ModSettingType.Owner)]
-    [DatabaseGenerated(DatabaseGeneratedOption.None)]
-    public required ModSettingType MuteType { get; set; }
-
-    [Column("kick_type")]
-    [DefaultValue(ModSettingType.Owner)]
-    [DatabaseGenerated(DatabaseGeneratedOption.None)]
-    public required ModSettingType KickType { get; set; }
-
-    [Column("ban_type")]
-    [DefaultValue(ModSettingType.Owner)]
-    [DatabaseGenerated(DatabaseGeneratedOption.None)]
-    public required ModSettingType BanType { get; set; }
-
-    [Column("chat_mode_type")]
-    [DefaultValue(ChatModeType.FreeFlow)]
-    [DatabaseGenerated(DatabaseGeneratedOption.None)]
-    public required ChatModeType ChatModeType { get; set; }
-
-    [Column("chat_bubble_type")]
-    [DefaultValue(ChatBubbleWidthType.Normal)]
-    [DatabaseGenerated(DatabaseGeneratedOption.None)]
-    public required ChatBubbleWidthType ChatBubbleType { get; set; }
-
-    [Column("chat_speed_type")]
-    [DefaultValue(ChatScrollSpeedType.Normal)]
-    [DatabaseGenerated(DatabaseGeneratedOption.None)]
-    public required ChatScrollSpeedType ChatSpeedType { get; set; }
-
-    [Column("chat_flood_type")]
-    [DefaultValue(ChatFloodSensitivityType.Minimal)]
-    [DatabaseGenerated(DatabaseGeneratedOption.None)]
-    public required ChatFloodSensitivityType ChatFloodType { get; set; }
-
-    [Column("chat_distance")]
-    [DefaultValue(50)]
-    public required int ChatDistance { get; set; }
-
-    [Column("last_active")]
-    [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
-    public DateTime LastActive { get; set; }
-
-    [Column("tag_1")]
-    [MaxLength(25)]
-    public string? Tag1 { get; set; }
-
-    [Column("tag_2")]
-    [MaxLength(25)]
-    public string? Tag2 { get; set; }
-
-    [Column("score")]
-    [DefaultValue(0)]
-    public required int Score { get; set; }
-
-    /// <summary>1-based position in the hotel's top-rated-rooms table, 0 when the room is outside
-    /// it. The client labels it "Top rated rooms rank:" (<c>navigator.roomranking</c>) and hides the
-    /// field entirely when it is not positive, so 0 is the honest "unranked" value. Nothing computes
-    /// it since the navigator was removed: it is read as stored.</summary>
-    [Column("ranking")]
-    [DefaultValue(0)]
-    public int Ranking { get; set; }
 
     [ForeignKey(nameof(PlayerEntityId))]
     public required PlayerEntity PlayerEntity { get; set; }
