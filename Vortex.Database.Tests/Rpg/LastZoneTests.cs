@@ -12,6 +12,7 @@ using Vortex.Database.Entities.Rpg;
 using Vortex.Database.Tests.Support;
 using Vortex.Events.Registry;
 using Vortex.Primitives.Events;
+using Vortex.Primitives.Observability;
 using Vortex.Primitives.Rooms;
 using Vortex.Rpg.Characters.Configuration;
 using Vortex.Rpg.Characters.Grains;
@@ -101,6 +102,7 @@ public sealed class LastZoneTests : IAsyncLifetime
                     Task.FromResult(new EventContext { CorrelationId = "test" })
                 ),
                 Options.Create(new CharacterConfig()),
+                FakeProxy.Create<IVortexMetrics>(_ => null),
                 NullLogger<PlayerCharacterGrain>.Instance
             );
         await grain.OnActivateAsync(CancellationToken.None);

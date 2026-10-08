@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -13,6 +14,7 @@ using Vortex.Events.Registry;
 using Vortex.Logging.Extensions;
 using Vortex.Primitives.Events;
 using Vortex.Primitives.Events.Rpg;
+using Vortex.Primitives.Observability;
 using Vortex.Primitives.Players;
 using Vortex.Primitives.Rooms;
 using Vortex.Primitives.Rpg.Characters;
@@ -37,6 +39,7 @@ internal sealed class PlayerCharacterGrain(
     IEventPublisher events,
     ICancellableEventPublisher cancellableEvents,
     IOptions<CharacterConfig> config,
+    IVortexMetrics metrics,
     ILogger<PlayerCharacterGrain> logger
 ) : Grain, IPlayerCharacterGrain
 {
@@ -58,6 +61,7 @@ internal sealed class PlayerCharacterGrain(
     public override async Task OnActivateAsync(CancellationToken ct)
     {
         _playerId = PlayerId.Parse((int)this.GetPrimaryKeyLong());
+        metrics.CharacterActivated(1);
 
         _idsVersion = content.Version;
 
@@ -77,6 +81,7 @@ internal sealed class PlayerCharacterGrain(
     public override async Task OnDeactivateAsync(DeactivationReason reason, CancellationToken ct)
     {
         _flushTimer?.Dispose();
+        metrics.CharacterActivated(-1);
 
         await FlushAsync(ct);
     }
@@ -353,6 +358,8 @@ internal sealed class PlayerCharacterGrain(
             return;
         }
 
+        long started = Stopwatch.GetTimestamp();
+
         try
         {
             await using VortexDbContext db = await dbFactory.CreateDbContextAsync(ct);
@@ -366,9 +373,17 @@ internal sealed class PlayerCharacterGrain(
                     ct
                 );
             _dirty = false;
+            metrics.CharacterFlushCompleted(
+                Stopwatch.GetElapsedTime(started).TotalMilliseconds,
+                false
+            );
         }
         catch (Exception ex)
         {
+            metrics.CharacterFlushCompleted(
+                Stopwatch.GetElapsedTime(started).TotalMilliseconds,
+                true
+            );
             logger.LogWarning(
                 ex,
                 "Writing character {PlayerId} failed; it stays dirty for the next flush.",

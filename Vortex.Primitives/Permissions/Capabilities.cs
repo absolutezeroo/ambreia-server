@@ -94,6 +94,15 @@ public static class Capabilities
         public static IReadOnlyList<string> All { get; } = [ZoneEdit, ZonePublish];
     }
 
+    /// <summary>Acting on characters as the server would (<c>/api/admin/characters</c>).</summary>
+    public static class Rpg
+    {
+        /// <summary>Grant XP to a character: the test command of spec Personnage §16.</summary>
+        public const string GrantXp = "rpg.character.grant_xp";
+
+        public static IReadOnlyList<string> All { get; } = [GrantXp];
+    }
+
     /// <summary>The RPG content pipeline (<c>/api/content</c>, spec Contenu §6).</summary>
     public static class Content
     {
@@ -124,5 +133,6 @@ public static class Capabilities
         .. Server.All,
         .. World.All,
         .. Content.All,
+        .. Rpg.All,
     ];
 }

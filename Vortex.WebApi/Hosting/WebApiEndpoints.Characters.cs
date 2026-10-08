@@ -1,13 +1,16 @@
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Orleans;
 using Vortex.Primitives.Orleans;
+using Vortex.Primitives.Permissions;
 using Vortex.Primitives.Players;
 using Vortex.Primitives.Rpg.Characters;
+using Vortex.Primitives.Rpg.Characters.Grains;
 using Vortex.Primitives.Rpg.Content;
 using Vortex.WebApi.Http;
 using Vortex.WebApi.Services;
@@ -89,6 +92,64 @@ internal static partial class WebApiEndpoints
             .Produces(StatusCodes.Status401Unauthorized)
             .Produces(StatusCodes.Status403Forbidden)
             .Produces<ApiErrorResponse>(StatusCodes.Status409Conflict);
+
+        app.MapPost(
+                "/api/admin/characters/{playerId:int}/xp",
+                async Task<IResult> (
+                    int playerId,
+                    HttpContext ctx,
+                    GrantXpRequest body,
+                    WebApiSessionStore sessions,
+                    IPermissionService permissions,
+                    IGrainFactory grains,
+                    CancellationToken ct
+                ) =>
+                {
+                    IResult? denied = await DenyAsync(
+                            ctx,
+                            sessions,
+                            permissions,
+                            Capabilities.Rpg.GrantXp,
+                            ct
+                        )
+                        .ConfigureAwait(false);
+
+                    if (denied is not null)
+                    {
+                        return denied;
+                    }
+
+                    IPlayerCharacterGrain character = grains.GetPlayerCharacterGrain(
+                        new PlayerId(playerId)
+                    );
+                    XpGrantOutcome outcome = await character
+                        .GainXpAsync(body?.Amount ?? 0, "admin")
+                        .ConfigureAwait(false);
+
+                    if (outcome == XpGrantOutcome.NoCharacter)
+                    {
+                        return TypedResults.NotFound(new ApiErrorResponse("character_not_found"));
+                    }
+
+                    CharacterSummary? summary = await character
+                        .GetSummaryAsync()
+                        .ConfigureAwait(false);
+
+                    return TypedResults.Ok(
+                        new GrantXpResponse(
+                            JsonNamingPolicy.SnakeCaseLower.ConvertName(outcome.ToString()),
+                            summary?.Level ?? 0
+                        )
+                    );
+                }
+            )
+            .WithTags(TagCharacters)
+            .WithName("GrantCharacterXp")
+            .WithSummary("Grant XP to a character, as a server system would (test command).")
+            .Produces<GrantXpResponse>()
+            .Produces(StatusCodes.Status401Unauthorized)
+            .Produces(StatusCodes.Status403Forbidden)
+            .Produces<ApiErrorResponse>(StatusCodes.Status404NotFound);
     }
 
     /// <summary>The avatars with their character's class and level, read from their grains at once.</summary>

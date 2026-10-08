@@ -53,6 +53,14 @@ public interface IVortexMetrics
     /// </summary>
     void FurnitureLogicFallback(string logicName, string family);
 
+    /// <summary>A character grain activated (+1) or deactivated (−1): how many are live (spec
+    /// Personnage §13).</summary>
+    void CharacterActivated(int delta);
+
+    /// <summary>A character's progress was written; <paramref name="failed"/> when the write threw
+    /// and the state stays dirty for the next flush.</summary>
+    void CharacterFlushCompleted(double elapsedMilliseconds, bool failed);
+
     /// <summary>
     /// A call to the (single, global) room directory grain returned. <paramref name="method"/> is the
     /// grain method name, which is bounded by the interface.

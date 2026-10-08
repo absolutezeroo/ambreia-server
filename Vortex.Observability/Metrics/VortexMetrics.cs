@@ -27,6 +27,8 @@ public sealed class VortexMetrics : IVortexMetrics, IDisposable
     private readonly Histogram<double> _roomTickDuration;
     private readonly Histogram<double> _roomDirectoryCallDuration;
     private readonly Counter<long> _furnitureLogicFallback;
+    private readonly UpDownCounter<long> _charactersActive;
+    private readonly Histogram<double> _characterFlushDuration;
     private readonly Counter<long> _referenceDataPublished;
     private readonly Counter<long> _auditWriteFailure;
 
@@ -83,6 +85,17 @@ public sealed class VortexMetrics : IVortexMetrics, IDisposable
             unit: "{object}",
             description: "Room objects built on the family default because their logic name is not "
                 + "registered - the size of the unimplemented-behaviour backlog, by name."
+        );
+        _charactersActive = _meter.CreateUpDownCounter<long>(
+            "Vortex.character.active",
+            unit: "{character}",
+            description: "Character grains currently active in this silo."
+        );
+        _characterFlushDuration = _meter.CreateHistogram<double>(
+            "Vortex.character.flush.duration",
+            unit: "ms",
+            description: "Writes of a character's progress (level, XP, last zone), by outcome "
+                + "(ok, failed: the state stays dirty for the next flush)."
         );
         _auditWriteFailure = _meter.CreateCounter<long>(
             "Vortex.audit.write.failure",
@@ -148,6 +161,25 @@ public sealed class VortexMetrics : IVortexMetrics, IDisposable
                 1,
                 new KeyValuePair<string, object?>("logic_name", logicName),
                 new KeyValuePair<string, object?>("family", family)
+            );
+        }
+    }
+
+    public void CharacterActivated(int delta)
+    {
+        if (_enabled)
+        {
+            _charactersActive.Add(delta);
+        }
+    }
+
+    public void CharacterFlushCompleted(double elapsedMilliseconds, bool failed)
+    {
+        if (_enabled)
+        {
+            _characterFlushDuration.Record(
+                elapsedMilliseconds,
+                new KeyValuePair<string, object?>("outcome", failed ? "failed" : "ok")
             );
         }
     }

@@ -33,6 +33,7 @@
     "http:GET /zones  (Vortex.WebApi/Hosting/WebApiEndpoints.Editor.cs)": "capability",
     "http:GET /zones/{key}/document  (Vortex.WebApi/Hosting/WebApiEndpoints.Editor.cs)": "capability",
     "http:GET /zones/{key}/versions  (Vortex.WebApi/Hosting/WebApiEndpoints.Editor.cs)": "capability",
+    "http:POST /api/admin/characters/{playerId:int}/xp  (Vortex.WebApi/Hosting/WebApiEndpoints.Characters.cs)": "capability",
     "http:POST /api/content/import  (Vortex.WebApi/Hosting/WebApiEndpoints.Content.cs)": "account-id+capability",
     "http:POST /api/newuser/name/check  (Vortex.WebApi/Hosting/WebApiEndpoints.cs)": "NONE",
     "http:POST /api/newuser/name/select  (Vortex.WebApi/Hosting/WebApiEndpoints.cs)": "account-id",

@@ -3,6 +3,7 @@ using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
 using FluentAssertions;
+using Vortex.Primitives.Permissions;
 using Vortex.Primitives.Rpg.Characters;
 using Xunit;
 
@@ -179,5 +180,50 @@ public sealed class CharacterEndpointsTests
         using StringContent body = new(json, Encoding.UTF8, "application/json");
 
         return await f.CreateAuthenticatedClient().PostAsync(url, body);
+    }
+
+    // The test grant (plan Personnage, décision 3): XP for the live proof, behind a capability.
+
+    [Fact]
+    public async Task GrantingXp_WithoutTheCapability_IsForbidden()
+    {
+        await using WebApiTestFactory f = new(capabilities: []);
+
+        (await PostAsync(f, "/api/admin/characters/100/xp", """{ "amount": 250 }"""))
+            .StatusCode.Should()
+            .Be(HttpStatusCode.Forbidden);
+    }
+
+    [Fact]
+    public async Task GrantingXp_ReachesTheCharacter()
+    {
+        await using WebApiTestFactory f = new(capabilities: [Capabilities.Rpg.GrantXp]);
+        f.Characters.ByPlayer[100] = new CharacterSummary
+        {
+            ClassId = "class.warrior",
+            SpecializationId = "spec.warrior.guardian",
+            Level = 1,
+            Xp = 0,
+        };
+
+        HttpResponseMessage r = await PostAsync(
+            f,
+            "/api/admin/characters/100/xp",
+            """{ "amount": 250 }"""
+        );
+
+        r.StatusCode.Should().Be(HttpStatusCode.OK);
+        (await r.Content.ReadAsStringAsync()).Should().Contain("granted");
+        f.Characters.XpGrants.Should().Equal((100L, 250));
+    }
+
+    [Fact]
+    public async Task GrantingXp_ToAnAvatarWithoutACharacter_IsNotFound()
+    {
+        await using WebApiTestFactory f = new(capabilities: [Capabilities.Rpg.GrantXp]);
+
+        (await PostAsync(f, "/api/admin/characters/100/xp", """{ "amount": 250 }"""))
+            .StatusCode.Should()
+            .Be(HttpStatusCode.NotFound);
     }
 }

@@ -14,6 +14,7 @@ using Vortex.Database.Tests.Support;
 using Vortex.Events.Registry;
 using Vortex.Primitives.Events;
 using Vortex.Primitives.Events.Rpg;
+using Vortex.Primitives.Observability;
 using Vortex.Primitives.Rpg.Characters;
 using Vortex.Primitives.Rpg.Characters.Grains;
 using Vortex.Rpg.Characters.Configuration;
@@ -160,6 +161,7 @@ public sealed class PlayerCharacterGrainTests : IAsyncLifetime
                     Task.FromResult(new EventContext { CorrelationId = "test" })
                 ),
                 Options.Create(new CharacterConfig()),
+                FakeProxy.Create<IVortexMetrics>(_ => null),
                 _logger
             );
         await grain.OnActivateAsync(CancellationToken.None);
