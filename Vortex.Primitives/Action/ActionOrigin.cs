@@ -18,7 +18,9 @@ public enum ActionOrigin
     None = 0,
     Player = 1,
     Plugin = 2,
-    Wired = 3,
+
+    // 3 was Wired (removed with the wired system). Retired, never reused: the value crosses grains.
+
     Bot = 4,
 
     /// <summary>The server acting on its own behalf. Trusted everywhere, hence not zero.</summary>

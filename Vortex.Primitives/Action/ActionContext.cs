@@ -19,14 +19,8 @@ public readonly record struct ActionContext(
     public static ActionContext System { get; } =
         new(ActionOrigin.System, SessionKey.Invalid, PlayerId.Invalid, RoomId.Invalid);
 
-    public static ActionContext Wired { get; } =
-        new(ActionOrigin.Wired, SessionKey.Invalid, PlayerId.Invalid, RoomId.Invalid);
-
     public static ActionContext CreateForSystem(RoomId roomId) =>
         new(ActionOrigin.System, SessionKey.Invalid, PlayerId.Invalid, roomId);
-
-    public static ActionContext CreateForWired(RoomId roomId) =>
-        new(ActionOrigin.Wired, SessionKey.Invalid, PlayerId.Invalid, roomId);
 
     public static ActionContext CreateForPlayer(PlayerId playerId, RoomId roomId) =>
         new(ActionOrigin.Player, SessionKey.Invalid, playerId, roomId);
