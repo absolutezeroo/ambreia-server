@@ -19,6 +19,16 @@ public interface IAccountAuthenticator
         string password,
         CancellationToken ct = default
     );
+
+    /// <summary>
+    /// Creates an account: the password rules and the hash live next to the check that reads them,
+    /// and the address is normalised exactly as the login normalises it.
+    /// </summary>
+    Task<AccountCreation> CreateAccountAsync(
+        string email,
+        string password,
+        CancellationToken ct = default
+    );
 }
 
 /// <summary>Why a verification did or did not succeed.</summary>

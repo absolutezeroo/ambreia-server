@@ -36,7 +36,9 @@ layers share: grain interfaces, snapshots, ids, events.
    (`account_tickets`, one per account); with one (`/api/user/avatars/select`, the editor's test mode)
    a **player ticket** (`security_tickets`). Both follow the same rules: not single-use unless
    `Authentication:TicketSingleUse`, valid up to `TicketAbsoluteLifetimeSeconds` (300 s) from issue,
-   sliding on each use. `IAuthenticationService.ResolveTicketAsync` answers a `TicketOwner`.
+   sliding on each use. `IAuthenticationService` (`Vortex.Players/Authentication`) issues both
+   (`Issue…TicketAsync`) and resolves them (`ResolveTicketAsync` answers a `TicketOwner`); the
+   password rules, hash and check are `IAccountAuthenticator`'s (`Vortex.WebApi.Authentication`).
 2. The client connects to the game socket. Frames are `[int32 length][int16 header][body]`, plaintext
    until the Diffie handshake installs RC4 (`Vortex.Networking/Package`).
 3. `PackageHandler` finds the parser for the header in the session's revision

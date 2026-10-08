@@ -92,6 +92,27 @@ public sealed class AccountTicketTests
     public async Task AnUnknownTicket_ResolvesToNoOne() =>
         (await Service().ResolveTicketAsync("nope")).Should().Be(TicketOwner.None);
 
+    /// <summary>One ticket per account: a new sign-in replaces the last, and a ticket is 256
+    /// cryptographic bits, not two GUIDs.</summary>
+    [Fact]
+    public async Task IssuingAnAccountTicket_ReplacesTheLastOne()
+    {
+        int account = await SeedAccountAsync();
+
+        await Service().IssueAccountTicketAsync(account, null);
+        string second = await Service().IssueAccountTicketAsync(account, "203.0.113.7");
+
+        await using VortexDbContext db = new(_options);
+        AccountTicketEntity row = await db.AccountTickets.SingleAsync();
+
+        row.Ticket.Should().Be(second).And.MatchRegex("^[0-9A-F]{64}$");
+        row.IpAddress.Should().Be("203.0.113.7");
+    }
+
+    [Fact]
+    public async Task APlayerTicket_IsNotIssuedForNoOne() =>
+        (await Service().IssuePlayerTicketAsync(404, null)).Should().BeNull();
+
     private AuthenticationService Service() =>
         new(
             new OptionsDbContextFactory(_options),

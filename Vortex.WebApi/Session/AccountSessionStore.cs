@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Security.Cryptography;
 using System.Threading;
 
-namespace Vortex.Primitives.Authentication;
+namespace Vortex.WebApi.Session;
 
 /// <summary>
 /// In-memory table of authenticated sessions, keyed by an opaque token of 256 cryptographic bits.

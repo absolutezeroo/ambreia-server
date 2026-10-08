@@ -20,141 +20,15 @@ using Xunit;
 namespace Vortex.WebApi.Tests;
 
 /// <summary>
-/// Three credential rules the public web API used to state only on the paths that happened to run
-/// through the game client: the shape of a player name, the minimum length of a password, and
+/// Credential rules the public web API used to state only on the paths that happened to run
+/// through the game client: the shape of a player name, the address a registration accepts, and
 /// whether the session cookie insists on TLS. Each had a second, unguarded HTTP door onto the same
 /// state, so each is asserted here at the door rather than at the route that already behaved.
 /// </summary>
 public sealed class WebApiCredentialHardeningTests
 {
-    private sealed class TestDbContextFactory(DbContextOptions<VortexDbContext> options)
-        : IDbContextFactory<VortexDbContext>
-    {
-        public VortexDbContext CreateDbContext() => new(options);
-
-        public Task<VortexDbContext> CreateDbContextAsync(CancellationToken ct = default) =>
-            Task.FromResult(CreateDbContext());
-    }
-
-    /// <summary>Never consulted: every case here is refused before a credential is verified.</summary>
-    private sealed class UnusedAuthenticator : IAccountAuthenticator
-    {
-        public Task<AccountVerification> VerifyCredentialsAsync(
-            string email,
-            string password,
-            CancellationToken ct = default
-        ) =>
-            throw new InvalidOperationException("the request should have been refused before this");
-    }
-
-    private static (WebApiAuthService Service, TestDbContextFactory Factory) BuildAuth()
-    {
-        DbContextOptions<VortexDbContext> options = new DbContextOptionsBuilder<VortexDbContext>()
-            .UseInMemoryDatabase(Guid.NewGuid().ToString())
-            .Options;
-
-        TestDbContextFactory factory = new(options);
-        IOptions<WebApiConfig> config = Options.Create(new WebApiConfig());
-
-        return (
-            new WebApiAuthService(
-                factory,
-                new UnusedAuthenticator(),
-                new WebApiSessionStore(config),
-                config,
-                NullLogger<WebApiAuthService>.Instance
-            ),
-            factory
-        );
-    }
-
-    private static async Task<int> AccountCountAsync(TestDbContextFactory factory)
-    {
-        await using VortexDbContext db = factory.CreateDbContext();
-
-        return await db.PlayerAccounts.CountAsync();
-    }
-
-    // --- the password minimum, which registration used to skip -------------------------------------
-
-    [Theory]
-    [InlineData("a")]
-    [InlineData("short")]
-    [InlineData("1234567")]
-    public async Task Register_RefusesAPasswordShorterThanTheChangePathWouldAccept(string password)
-    {
-        password.Length.Should().BeLessThan(AccountPasswordRules.MINIMUM_LENGTH);
-
-        (WebApiAuthService service, TestDbContextFactory factory) = BuildAuth();
-
-        (bool success, int _, string? error) = await service.RegisterAsync(
-            "new@example.com",
-            password,
-            CancellationToken.None
-        );
-
-        success.Should().BeFalse();
-        error.Should().Be("pocket.auth.password_too_short");
-
-        // Nothing half-written: a refused registration leaves no account behind for the email.
-        (await AccountCountAsync(factory))
-            .Should()
-            .Be(0);
-    }
-
-    [Fact]
-    public async Task Register_RefusesAPasswordPastTheLengthBCryptActuallyHashes()
-    {
-        (WebApiAuthService service, TestDbContextFactory factory) = BuildAuth();
-
-        (bool success, int _, string? error) = await service.RegisterAsync(
-            "new@example.com",
-            new string('p', 73),
-            CancellationToken.None
-        );
-
-        success.Should().BeFalse();
-        error.Should().Be("pocket.auth.password_too_long");
-        (await AccountCountAsync(factory)).Should().Be(0);
-    }
-
-    [Fact]
-    public async Task Register_AcceptsAPasswordThatMeetsTheRule()
-    {
-        (WebApiAuthService service, TestDbContextFactory factory) = BuildAuth();
-
-        (bool success, int accountId, string? error) = await service.RegisterAsync(
-            "new@example.com",
-            new string('p', AccountPasswordRules.MINIMUM_LENGTH),
-            CancellationToken.None
-        );
-
-        success.Should().BeTrue();
-        error.Should().BeNull();
-        accountId.Should().BeGreaterThan(0);
-        (await AccountCountAsync(factory)).Should().Be(1);
-    }
-
-    // --- the address an account is found by again ---------------------------------------------------
-
-    /// <summary>
-    /// Registration lowered the address, login trimmed and lowered it: one typed with a stray space
-    /// was stored with it and could never sign in.
-    /// </summary>
-    [Fact]
-    public async Task Register_StoresTheAddressTheLoginLooksUp()
-    {
-        (WebApiAuthService service, TestDbContextFactory factory) = BuildAuth();
-
-        await service.RegisterAsync(
-            "  New@Example.com ",
-            new string('p', AccountPasswordRules.MINIMUM_LENGTH),
-            CancellationToken.None
-        );
-
-        await using VortexDbContext db = factory.CreateDbContext();
-        (await db.PlayerAccounts.SingleAsync()).Email.Should().Be("new@example.com");
-    }
+    // The password rules a registration applies are the authenticator's now, and tested there
+    // (AccountAuthenticatorTests).
 
     [Theory]
     [InlineData("not-an-address")]

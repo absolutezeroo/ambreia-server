@@ -8,7 +8,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Vortex.Database.Context;
 using Vortex.Database.Entities.Permissions;
-using Vortex.Primitives.Authentication;
+using Vortex.Permissions.Configuration;
 
 namespace Vortex.Permissions;
 
@@ -19,11 +19,11 @@ namespace Vortex.Permissions;
 /// </summary>
 internal sealed class PermissionSeederService(
     IDbContextFactory<VortexDbContext> dbContextFactory,
-    IOptions<AuthenticationConfig> config,
+    IOptions<PermissionsConfig> config,
     ILogger<PermissionSeederService> logger
 ) : IHostedService
 {
-    private readonly AuthenticationConfig _config = config.Value;
+    private readonly PermissionsConfig _config = config.Value;
 
     public async Task StartAsync(CancellationToken cancellationToken)
     {

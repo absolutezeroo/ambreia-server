@@ -2,10 +2,10 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using FluentAssertions;
-using Vortex.Primitives.Authentication;
+using Vortex.WebApi.Session;
 using Xunit;
 
-namespace Vortex.WebApi.Authentication.Tests;
+namespace Vortex.WebApi.Tests;
 
 /// <summary>
 /// The session table behind the web API. It replaced two implementations that had drifted,

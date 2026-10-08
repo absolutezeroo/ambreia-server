@@ -79,6 +79,62 @@ public sealed class AccountAuthenticatorTests
         result.AccountId.Should().Be(0);
     }
 
+    // --- registration: the rules and the hash live with the check ---------------------------------
+
+    [Theory]
+    [InlineData("a")]
+    [InlineData("short")]
+    [InlineData("1234567")]
+    public async Task Create_RefusesAPasswordShorterThanTheRule(string password)
+    {
+        password.Length.Should().BeLessThan(AccountPasswordRules.MINIMUM_LENGTH);
+        (AccountAuthenticator auth, _) = await BuildAsync();
+
+        (await auth.CreateAccountAsync("new@example.com", password))
+            .Should()
+            .Be(AccountCreation.Refused(AccountCreationOutcome.PasswordTooShort));
+        (await auth.VerifyCredentialsAsync("new@example.com", password))
+            .IsVerified.Should()
+            .BeFalse("nothing half-written");
+    }
+
+    [Fact]
+    public async Task Create_RefusesAPasswordPastTheLengthBCryptActuallyHashes()
+    {
+        (AccountAuthenticator auth, _) = await BuildAsync();
+
+        (await auth.CreateAccountAsync("new@example.com", new string('p', 73)))
+            .Outcome.Should()
+            .Be(AccountCreationOutcome.PasswordTooLong);
+    }
+
+    [Fact]
+    public async Task Create_RefusesAnAddressAlreadyTaken()
+    {
+        (AccountAuthenticator auth, _) = await BuildAsync();
+
+        (await auth.CreateAccountAsync(" OPS@example.com ", PASSWORD))
+            .Outcome.Should()
+            .Be(AccountCreationOutcome.EmailTaken);
+    }
+
+    /// <summary>
+    /// Registration lowered the address, login trimmed and lowered it: one typed with a stray space
+    /// was stored with it and could never sign in. Created, then signed in with.
+    /// </summary>
+    [Fact]
+    public async Task Create_StoresWhatTheLoginLooksUp()
+    {
+        (AccountAuthenticator auth, _) = await BuildAsync();
+        string password = new('p', AccountPasswordRules.MINIMUM_LENGTH);
+
+        AccountCreation created = await auth.CreateAccountAsync("  New@Example.com ", password);
+        AccountVerification login = await auth.VerifyCredentialsAsync("new@example.com", password);
+
+        created.IsCreated.Should().BeTrue();
+        login.AccountId.Should().Be(created.AccountId);
+    }
+
     [Fact]
     public async Task MatchesTheEmailCaseInsensitively()
     {

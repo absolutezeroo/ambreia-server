@@ -89,17 +89,17 @@ if (handlerDb.length > 0) {
 // the login that issues SSO tickets into the game. Verification now lives only in
 // Vortex.WebApi.Authentication, behind IAccountAuthenticator, so a factor added there reaches every caller.
 //
-// Hashing is not covered: registration legitimately creates a hash where the account is created.
-// It is the *checking* that must not fork.
+// Hashing is held there too (IAccountAuthenticator.CreateAccountAsync): the password rules a
+// registration applies and the hash a login reads are one decision, not two copies of it.
 // ---------------------------------------------------------------------------------------------
 const verifiers = fs
   .readdirSync(root, { withFileTypes: true })
   .filter((e) => e.isDirectory() && e.name.startsWith('Vortex.') && !e.name.endsWith('.Tests'))
   .filter((e) => e.name !== 'Vortex.WebApi.Authentication')
-  .flatMap((e) => hits(e.name, /BCrypt[\w.]*\.Verify\s*\(/));
+  .flatMap((e) => hits(e.name, /BCrypt[\w.]*\.(?:Verify|HashPassword)\s*\(/));
 if (verifiers.length > 0) {
   failures.push([
-    'A password is verified outside Vortex.WebApi.Authentication. Go through IAccountAuthenticator, or the '
+    'A password is verified or hashed outside Vortex.WebApi.Authentication. Go through IAccountAuthenticator, or the '
       + 'second factor will guard one login and not the other.',
     verifiers,
   ]);

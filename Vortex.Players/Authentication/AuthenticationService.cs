@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using Vortex.Database.Context;
+using Vortex.Database.Entities.Players;
 using Vortex.Database.Entities.Security;
 using Vortex.Primitives.Authentication;
 using Vortex.Primitives.Events;
@@ -38,81 +39,83 @@ public sealed class AuthenticationService(
             return 0;
         }
 
-        VortexDbContext dbCtx = await _dbCtxFactory.CreateDbContextAsync(ct).ConfigureAwait(false);
+        await using VortexDbContext dbCtx = await _dbCtxFactory
+            .CreateDbContextAsync(ct)
+            .ConfigureAwait(false);
 
-        try
+        SecurityTicketEntity? entity = await dbCtx
+            .SecurityTickets.FirstOrDefaultAsync(entity => entity.Ticket == ticket, ct)
+            .ConfigureAwait(false);
+
+        if (entity is null)
         {
-            if (dbCtx.SecurityTickets is null)
-            {
-                return 0;
-            }
-
-            SecurityTicketEntity? entity = await dbCtx
-                .SecurityTickets.FirstOrDefaultAsync(entity => entity.Ticket == ticket, ct)
+            await _events
+                .PublishAsync(new PlayerLoginFailedEvent(HashIp(remoteIp)), ct)
                 .ConfigureAwait(false);
 
-            if (entity is null)
-            {
-                await _events
-                    .PublishAsync(new PlayerLoginFailedEvent(HashIp(remoteIp)), ct)
-                    .ConfigureAwait(false);
+            return 0;
+        }
 
-                return 0;
-            }
+        return await ConsumePlayerTicketAsync(dbCtx, entity, remoteIp, ct).ConfigureAwait(false);
+    }
 
-            DateTime now = DateTime.UtcNow;
+    /// <summary>A player ticket found: expired ones fail (and go, unless locked), others slide or
+    /// are consumed. The player id, or 0.</summary>
+    private async Task<int> ConsumePlayerTicketAsync(
+        VortexDbContext dbCtx,
+        SecurityTicketEntity entity,
+        string? remoteIp,
+        CancellationToken ct
+    )
+    {
+        DateTime now = DateTime.UtcNow;
 
-            if (IsExpired(entity.CreatedAt, entity.ExpiresAt, now))
-            {
-                if (!entity.IsLocked)
-                {
-                    dbCtx.SecurityTickets.Remove(entity);
-
-                    await dbCtx.SaveChangesAsync(ct).ConfigureAwait(false);
-                }
-
-                await _events
-                    .PublishAsync(new PlayerLoginFailedEvent(HashIp(remoteIp)), ct)
-                    .ConfigureAwait(false);
-
-                return 0;
-            }
-
-            // `IsLocked` tickets are persistent ones written outside the emulator (the web API only
-            // mints unlocked ones) and intentionally never touched here
-            // (no slide, no single-use deletion, no expiry) — they are a separate mechanism from the
-            // one-ticket-per-login-attempt flow this method otherwise implements.
+        if (IsExpired(entity.CreatedAt, entity.ExpiresAt, now))
+        {
             if (!entity.IsLocked)
             {
-                if (_ticketSingleUse)
-                {
-                    // Consumed on first successful use: an observed ticket (proxy logs, browser
-                    // history, unencrypted transport, Referer) can no longer be replayed at all,
-                    // rather than being able to extend its own validity indefinitely.
-                    dbCtx.SecurityTickets.Remove(entity);
-                }
-                else
-                {
-                    // Refresh the expiry so the client can reconnect after a disconnect without a
-                    // new ticket, while keeping the replay window bounded per use. Left default
-                    // (TicketSingleUse = false) because the client re-reads its ticket from ?sso= on
-                    // a page reload.
-                    entity.ExpiresAt = SlidExpiry(entity.CreatedAt, now);
-                }
+                dbCtx.SecurityTickets.Remove(entity);
 
                 await dbCtx.SaveChangesAsync(ct).ConfigureAwait(false);
             }
 
             await _events
-                .PublishAsync(new PlayerLoggedInEvent(entity.PlayerEntityId, HashIp(remoteIp)), ct)
+                .PublishAsync(new PlayerLoginFailedEvent(HashIp(remoteIp)), ct)
                 .ConfigureAwait(false);
 
-            return entity.PlayerEntityId;
+            return 0;
         }
-        finally
+
+        // `IsLocked` tickets are persistent ones written outside the emulator (the web API only
+        // mints unlocked ones) and intentionally never touched here
+        // (no slide, no single-use deletion, no expiry) — they are a separate mechanism from the
+        // one-ticket-per-login-attempt flow this method otherwise implements.
+        if (!entity.IsLocked)
         {
-            await dbCtx.DisposeAsync().ConfigureAwait(false);
+            if (_ticketSingleUse)
+            {
+                // Consumed on first successful use: an observed ticket (proxy logs, browser
+                // history, unencrypted transport, Referer) can no longer be replayed at all,
+                // rather than being able to extend its own validity indefinitely.
+                dbCtx.SecurityTickets.Remove(entity);
+            }
+            else
+            {
+                // Refresh the expiry so the client can reconnect after a disconnect without a
+                // new ticket, while keeping the replay window bounded per use. Left default
+                // (TicketSingleUse = false) because the client re-reads its ticket from ?sso= on
+                // a page reload.
+                entity.ExpiresAt = SlidExpiry(entity.CreatedAt, now);
+            }
+
+            await dbCtx.SaveChangesAsync(ct).ConfigureAwait(false);
         }
+
+        await _events
+            .PublishAsync(new PlayerLoggedInEvent(entity.PlayerEntityId, HashIp(remoteIp)), ct)
+            .ConfigureAwait(false);
+
+        return entity.PlayerEntityId;
     }
 
     public async Task<TicketOwner> ResolveTicketAsync(
@@ -131,9 +134,13 @@ public sealed class AuthenticationService(
             .ConfigureAwait(false);
 
         // A player ticket keeps its own path, events included; 0 there means expired.
-        if (await dbCtx.SecurityTickets.AnyAsync(t => t.Ticket == ticket, ct).ConfigureAwait(false))
+        SecurityTicketEntity? playerTicket = await dbCtx
+            .SecurityTickets.FirstOrDefaultAsync(t => t.Ticket == ticket, ct)
+            .ConfigureAwait(false);
+
+        if (playerTicket is not null)
         {
-            int playerId = await GetPlayerIdFromTicketAsync(ticket, remoteIp, ct)
+            int playerId = await ConsumePlayerTicketAsync(dbCtx, playerTicket, remoteIp, ct)
                 .ConfigureAwait(false);
 
             return playerId > 0 ? new TicketOwner(playerId, 0) : TicketOwner.None;
@@ -173,6 +180,96 @@ public sealed class AuthenticationService(
 
         return new TicketOwner(0, entity.AccountId);
     }
+
+    public async Task<string?> IssuePlayerTicketAsync(
+        int playerId,
+        string? remoteIp,
+        CancellationToken ct = default
+    )
+    {
+        await using VortexDbContext dbCtx = await _dbCtxFactory
+            .CreateDbContextAsync(ct)
+            .ConfigureAwait(false);
+
+        PlayerEntity? player = await dbCtx
+            .Players.FirstOrDefaultAsync(p => p.Id == playerId, ct)
+            .ConfigureAwait(false);
+
+        if (player is null)
+        {
+            return null;
+        }
+
+        // One ticket per player: a new sign-in replaces the last.
+        SecurityTicketEntity? existing = await dbCtx
+            .SecurityTickets.FirstOrDefaultAsync(t => t.PlayerEntityId == playerId, ct)
+            .ConfigureAwait(false);
+
+        if (existing is not null)
+        {
+            dbCtx.SecurityTickets.Remove(existing);
+        }
+
+        string ticket = NewTicket();
+
+        dbCtx.SecurityTickets.Add(
+            new SecurityTicketEntity
+            {
+                PlayerEntityId = playerId,
+                Ticket = ticket,
+                IpAddress = IpOrLoopback(remoteIp),
+                IsLocked = false,
+                PlayerEntity = player,
+            }
+        );
+
+        await dbCtx.SaveChangesAsync(ct).ConfigureAwait(false);
+
+        return ticket;
+    }
+
+    public async Task<string> IssueAccountTicketAsync(
+        int accountId,
+        string? remoteIp,
+        CancellationToken ct = default
+    )
+    {
+        await using VortexDbContext dbCtx = await _dbCtxFactory
+            .CreateDbContextAsync(ct)
+            .ConfigureAwait(false);
+
+        // One ticket per account, as one per player.
+        AccountTicketEntity? existing = await dbCtx
+            .AccountTickets.FirstOrDefaultAsync(t => t.AccountId == accountId, ct)
+            .ConfigureAwait(false);
+
+        if (existing is not null)
+        {
+            dbCtx.AccountTickets.Remove(existing);
+        }
+
+        string ticket = NewTicket();
+
+        dbCtx.AccountTickets.Add(
+            new AccountTicketEntity
+            {
+                AccountId = accountId,
+                Ticket = ticket,
+                IpAddress = IpOrLoopback(remoteIp),
+            }
+        );
+
+        await dbCtx.SaveChangesAsync(ct).ConfigureAwait(false);
+
+        return ticket;
+    }
+
+    /// <summary>256 bits from the cryptographic generator, hex: the ticket is the whole credential.
+    /// Two GUIDs were random by accident, not by contract.</summary>
+    private static string NewTicket() => Convert.ToHexString(RandomNumberGenerator.GetBytes(32));
+
+    private static string IpOrLoopback(string? remoteIp) =>
+        string.IsNullOrWhiteSpace(remoteIp) ? "127.0.0.1" : remoteIp;
 
     public async Task RecordLoginAsync(
         int playerId,

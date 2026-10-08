@@ -105,8 +105,9 @@ public sealed class WebApiPlugin : IVortexPlugin
         services.UseHostService<IEventPublisher>();
         services.UseHostService<IAuditSink>();
 
-        // Accounts.
+        // Accounts: credentials, then the game's sign-in tickets.
         services.UseHostService<IAccountAuthenticator>();
+        services.UseHostService<IAuthenticationService>();
 
         // The map editor's routes: zones live in Vortex.World, rights in Vortex.Permissions.
         services.UseHostService<IZoneEditorService>();
