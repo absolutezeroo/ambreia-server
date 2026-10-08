@@ -22,6 +22,7 @@ public sealed class CharactersModule : IHostPluginModule
 
         // Declared, not scanned (plan Personnage, décision 1): a system that adds stats adds a line.
         services.AddSingleton<IStatSource, ClassLevelStatSource>();
+        services.AddSingleton<IStatSource, EquipmentStatSource>();
 
         // Characters hold class ids: an import that removes one needs a replace rule.
         services.AddSingleton<IContentReferences, ClassReferences>();
