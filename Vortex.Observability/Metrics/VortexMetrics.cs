@@ -29,6 +29,7 @@ public sealed class VortexMetrics : IVortexMetrics, IDisposable
     private readonly Counter<long> _furnitureLogicFallback;
     private readonly UpDownCounter<long> _charactersActive;
     private readonly Histogram<double> _characterFlushDuration;
+    private readonly Counter<long> _rpgPacketRefused;
     private readonly Counter<long> _referenceDataPublished;
     private readonly Counter<long> _auditWriteFailure;
 
@@ -96,6 +97,12 @@ public sealed class VortexMetrics : IVortexMetrics, IDisposable
             unit: "ms",
             description: "Writes of a character's progress (level, XP, last zone), by outcome "
                 + "(ok, failed: the state stays dirty for the next flush)."
+        );
+        _rpgPacketRefused = _meter.CreateCounter<long>(
+            "Vortex.rpg.packet.refused",
+            unit: "{packet}",
+            description: "Character-screen packets refused, by reason (phase: outside the account "
+                + "phase; rate_limited: above the per-intent limit)."
         );
         _auditWriteFailure = _meter.CreateCounter<long>(
             "Vortex.audit.write.failure",
@@ -181,6 +188,14 @@ public sealed class VortexMetrics : IVortexMetrics, IDisposable
                 elapsedMilliseconds,
                 new KeyValuePair<string, object?>("outcome", failed ? "failed" : "ok")
             );
+        }
+    }
+
+    public void RpgPacketRefused(string reason)
+    {
+        if (_enabled)
+        {
+            _rpgPacketRefused.Add(1, new KeyValuePair<string, object?>("reason", reason));
         }
     }
 

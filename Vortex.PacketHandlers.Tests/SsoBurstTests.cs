@@ -33,7 +33,20 @@ public sealed class SsoBurstTests
 {
     private const int PLAYER_ID = 501;
 
+    private const int ACCOUNT_ID = 3;
+
     private readonly List<object> _sent = [];
+    private readonly List<string> _calls = [];
+
+    /// <summary>An account ticket opens the character screen, not the world (spec F3a §4).</summary>
+    [Fact]
+    public async Task AnAccountTicket_OpensTheAccountPhase()
+    {
+        await LoginAsync(startRoomId: 42, owner: new TicketOwner(0, ACCOUNT_ID));
+
+        _calls.Should().Equal($"account:{ACCOUNT_ID}", "open");
+        _sent.Should().BeEmpty("no AuthenticationOK before a character is chosen");
+    }
 
     [Fact]
     public async Task SsoBurst_SendsOnlyTheCoreComposers()
@@ -117,68 +130,93 @@ public sealed class SsoBurstTests
         int? lastRoomId = null,
         bool lastRoomPublished = true,
         int? graceRoomId = null,
-        bool characterFails = false
+        bool characterFails = false,
+        TicketOwner? owner = null
     )
     {
+        ISessionGateway gateway = FakeProxy.Create<ISessionGateway>(call =>
+        {
+            if (call.Method.Name == nameof(ISessionGateway.AddSessionToAccountAsync))
+            {
+                _calls.Add($"account:{call.Args![1]}");
+            }
+
+            return null;
+        });
+        IGrainFactory grains = FakeProxy.Create<IGrainFactory>(call =>
+            call.Method.Name != nameof(IGrainFactory.GetGrain) ? null
+            : call.Method.GetGenericArguments()[0] == typeof(IAccountCharactersGrain)
+                ? FakeProxy.Create<IAccountCharactersGrain>(inner =>
+                {
+                    if (inner.Method.Name == nameof(IAccountCharactersGrain.OpenAsync))
+                    {
+                        _calls.Add("open");
+                    }
+
+                    return null;
+                })
+            : call.Method.GetGenericArguments()[0] == typeof(IServerConfigGrain)
+                ? FakeProxy.Create<IServerConfigGrain>(inner =>
+                    inner.Method.Name == nameof(IServerConfigGrain.GetIntAsync)
+                    && (string)inner.Args![0]! == WorldEntry.START_ROOM_KEY
+                        ? Task.FromResult(startRoomId)
+                        : null
+                )
+            : call.Method.GetGenericArguments()[0] == typeof(IZoneTestGrain)
+                ? FakeProxy.Create<IZoneTestGrain>(_ =>
+                    Task.FromResult(testRoomId is { } room ? (RoomId?)new RoomId(room) : null)
+                )
+            : call.Method.GetGenericArguments()[0] == typeof(IPlayerCharacterGrain)
+                ? FakeProxy.Create<IPlayerCharacterGrain>(inner =>
+                    inner.Method.Name != nameof(IPlayerCharacterGrain.GetLastRoomAsync) ? null
+                    : characterFails
+                        ? Task.FromException<RoomId?>(
+                            new InvalidOperationException("player_characters is missing")
+                        )
+                    : Task.FromResult(lastRoomId is { } room ? (RoomId?)new RoomId(room) : null)
+                )
+            : call.Method.GetGenericArguments()[0] == typeof(IPlayerPresenceGrain)
+                ? FakeProxy.Create<IPlayerPresenceGrain>(inner =>
+                {
+                    if (inner.Method.Name == nameof(IPlayerPresenceGrain.SendComposerAsync))
+                    {
+                        _sent.AddRange(((object[])inner.Args![0]!).Cast<object>());
+                    }
+
+                    return inner.Method.Name == nameof(IPlayerPresenceGrain.GetResumableRoomAsync)
+                        ? Task.FromResult(
+                            graceRoomId is { } room ? (RoomId?)new RoomId(room) : null
+                        )
+                        : null;
+                })
+            : null
+        );
         SSOTicketMessageHandler handler = new(
             FakeProxy.Create<IAuthenticationService>(call =>
                 call.Method.Name == nameof(IAuthenticationService.ResolveTicketAsync)
-                    ? Task.FromResult(new TicketOwner(PLAYER_ID, 0))
+                    ? Task.FromResult(owner ?? new TicketOwner(PLAYER_ID, 0))
                     : null
             ),
-            FakeProxy.Create<ISessionGateway>(_ => null),
-            FakeProxy.Create<IGrainFactory>(call =>
-                call.Method.Name != nameof(IGrainFactory.GetGrain) ? null
-                : call.Method.GetGenericArguments()[0] == typeof(IServerConfigGrain)
-                    ? FakeProxy.Create<IServerConfigGrain>(inner =>
-                        inner.Method.Name == nameof(IServerConfigGrain.GetIntAsync)
-                        && (string)inner.Args![0]! == SSOTicketMessageHandler.START_ROOM_KEY
-                            ? Task.FromResult(startRoomId)
-                            : null
-                    )
-                : call.Method.GetGenericArguments()[0] == typeof(IZoneTestGrain)
-                    ? FakeProxy.Create<IZoneTestGrain>(_ =>
-                        Task.FromResult(testRoomId is { } room ? (RoomId?)new RoomId(room) : null)
-                    )
-                : call.Method.GetGenericArguments()[0] == typeof(IPlayerCharacterGrain)
-                    ? FakeProxy.Create<IPlayerCharacterGrain>(inner =>
-                        inner.Method.Name != nameof(IPlayerCharacterGrain.GetLastRoomAsync) ? null
-                        : characterFails
-                            ? Task.FromException<RoomId?>(
-                                new InvalidOperationException("player_characters is missing")
-                            )
-                        : Task.FromResult(lastRoomId is { } room ? (RoomId?)new RoomId(room) : null)
-                    )
-                : call.Method.GetGenericArguments()[0] == typeof(IPlayerPresenceGrain)
-                    ? FakeProxy.Create<IPlayerPresenceGrain>(inner =>
-                    {
-                        if (inner.Method.Name == nameof(IPlayerPresenceGrain.SendComposerAsync))
-                        {
-                            _sent.AddRange(((object[])inner.Args![0]!).Cast<object>());
-                        }
-
-                        return
-                            inner.Method.Name == nameof(IPlayerPresenceGrain.GetResumableRoomAsync)
-                            ? Task.FromResult(
-                                graceRoomId is { } room ? (RoomId?)new RoomId(room) : null
-                            )
-                            : null;
-                    })
-                : null
-            ),
-            FakeProxy.Create<IPermissionService>(call =>
-                call.Method.Name == nameof(IPermissionService.ResolveForPlayerAsync)
-                    ? Task.FromResult(PermissionSet.Empty)
-                    : null
-            ),
-            FakeProxy.Create<IZoneRoomSource>(call =>
-                call.Method.Name == nameof(IZoneRoomSource.GetPublishedAsync)
-                    ? Task.FromResult(
-                        lastRoomPublished && ((RoomId)call.Args![0]!).Value == lastRoomId
-                            ? ZoneSamples.Minimal()
-                            : null
-                    )
-                    : null
+            gateway,
+            grains,
+            new WorldEntry(
+                gateway,
+                grains,
+                FakeProxy.Create<IPermissionService>(call =>
+                    call.Method.Name == nameof(IPermissionService.ResolveForPlayerAsync)
+                        ? Task.FromResult(PermissionSet.Empty)
+                        : null
+                ),
+                FakeProxy.Create<IZoneRoomSource>(call =>
+                    call.Method.Name == nameof(IZoneRoomSource.GetPublishedAsync)
+                        ? Task.FromResult(
+                            lastRoomPublished && ((RoomId)call.Args![0]!).Value == lastRoomId
+                                ? ZoneSamples.Minimal()
+                                : null
+                        )
+                        : null
+                ),
+                NullLogger<WorldEntry>.Instance
             ),
             NullLogger<SSOTicketMessageHandler>.Instance
         );

@@ -61,6 +61,10 @@ public interface IVortexMetrics
     /// and the state stays dirty for the next flush.</summary>
     void CharacterFlushCompleted(double elapsedMilliseconds, bool failed);
 
+    /// <summary>A character-screen packet refused (spec F3a §8): <paramref name="reason"/> is
+    /// <c>phase</c> (sent outside the account phase) or <c>rate_limited</c>.</summary>
+    void RpgPacketRefused(string reason);
+
     /// <summary>
     /// A call to the (single, global) room directory grain returned. <paramref name="method"/> is the
     /// grain method name, which is bounded by the interface.
