@@ -31,6 +31,8 @@ public sealed class VortexMetrics : IVortexMetrics, IDisposable
     private readonly Histogram<double> _characterFlushDuration;
     private readonly Histogram<double> _itemFlushDuration;
     private readonly Counter<long> _rpgPacketRefused;
+    private readonly Counter<long> _chatSent;
+    private readonly Counter<long> _chatRefused;
     private readonly Counter<long> _referenceDataPublished;
     private readonly Counter<long> _auditWriteFailure;
 
@@ -110,6 +112,16 @@ public sealed class VortexMetrics : IVortexMetrics, IDisposable
             unit: "{packet}",
             description: "Character-screen packets refused, by reason (phase: outside the account "
                 + "phase; rate_limited: above the per-intent limit)."
+        );
+        _chatSent = _meter.CreateCounter<long>(
+            "Vortex.chat.sent",
+            unit: "{message}",
+            description: "Chat lines delivered, by channel."
+        );
+        _chatRefused = _meter.CreateCounter<long>(
+            "Vortex.chat.refused",
+            unit: "{message}",
+            description: "Chat messages refused, by code (empty, too_long, rate_limited…)."
         );
         _auditWriteFailure = _meter.CreateCounter<long>(
             "Vortex.audit.write.failure",
@@ -214,6 +226,22 @@ public sealed class VortexMetrics : IVortexMetrics, IDisposable
         if (_enabled)
         {
             _rpgPacketRefused.Add(1, new KeyValuePair<string, object?>("reason", reason));
+        }
+    }
+
+    public void ChatSent(string channel)
+    {
+        if (_enabled)
+        {
+            _chatSent.Add(1, new KeyValuePair<string, object?>("channel", channel));
+        }
+    }
+
+    public void ChatRefused(string code)
+    {
+        if (_enabled)
+        {
+            _chatRefused.Add(1, new KeyValuePair<string, object?>("code", code));
         }
     }
 

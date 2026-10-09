@@ -69,6 +69,13 @@ public interface IVortexMetrics
     /// <c>phase</c> (sent outside the account phase) or <c>rate_limited</c>.</summary>
     void RpgPacketRefused(string reason);
 
+    /// <summary>A chat line delivered (spec F3c §12); <paramref name="channel"/> is a declared
+    /// channel key.</summary>
+    void ChatSent(string channel);
+
+    /// <summary>A chat message refused (spec F3c §12), by its refusal code.</summary>
+    void ChatRefused(string code);
+
     /// <summary>
     /// A call to the (single, global) room directory grain returned. <paramref name="method"/> is the
     /// grain method name, which is bounded by the interface.
