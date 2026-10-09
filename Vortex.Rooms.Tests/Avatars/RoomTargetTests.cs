@@ -180,4 +180,19 @@ public sealed class RoomTargetTests
         _harness.ComposersSent.Should().BeEmpty();
         _harness.Grain._state.Targets.Should().BeEmpty();
     }
+
+    /// <summary>A choice that arrives after its sender left (a Quit racing it), or before the
+    /// sender's avatar exists: nothing is kept — a target left behind would clear the player's
+    /// target in another zone later — and nothing about the target is told.</summary>
+    [Fact]
+    public async Task APlayerWithNoAvatarHere_KeepsNoTarget()
+    {
+        await TwoPlayersAsync();
+        PlayerId elsewhere = new(303);
+
+        await SelectAsync(elsewhere, _stranger.ObjectId.Value);
+
+        _harness.Grain._state.Targets.Should().BeEmpty();
+        _harness.ComposersSent.Should().BeEmpty();
+    }
 }

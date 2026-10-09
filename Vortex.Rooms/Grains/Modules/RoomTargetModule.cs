@@ -27,6 +27,13 @@ public sealed class RoomTargetModule(RoomGrain roomGrain) : IRoomEventListener
 {
     public async Task SelectAsync(ActionContext ctx, int objectId, CancellationToken ct)
     {
+        // Only a player standing here aims: a choice that arrives after its sender left (or before
+        // its avatar exists) would leave a target nothing clears, and tell it about the room.
+        if (!roomGrain._state.AvatarsByPlayerId.ContainsKey(ctx.PlayerId))
+        {
+            return;
+        }
+
         if (
             objectId <= 0
             || !roomGrain._state.AvatarsByObjectId.TryGetValue(
