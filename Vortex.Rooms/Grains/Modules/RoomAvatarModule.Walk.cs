@@ -271,6 +271,22 @@ public sealed partial class RoomAvatarModule
         // with the walk itself.
         _onWalkEnded.Remove(avatar.ObjectId.Value);
 
+        // Mid-step the avatar already stands in the next tile's stack while X, Y still name the
+        // tile it left: put it back there, or whoever removes or moves it by X, Y leaves its id
+        // behind on the next tile for good. Back, not forward: the step's passage never ran.
+        // A spawn's first step is in no stack yet, and is left alone.
+        int next = avatar.NextTileId;
+
+        if (
+            next >= 0
+            && next != _roomGrain.MapModule.ToIdx(avatar.X, avatar.Y)
+            && _roomGrain._state.TileAvatarStacks[next].Contains(avatar.ObjectId)
+        )
+        {
+            _roomGrain.MapModule.RemoveAvatarAtIdx(avatar, next, false);
+            _roomGrain.MapModule.AddAvatar(avatar, false);
+        }
+
         avatar.IsWalking = false;
         avatar.NextMoveStepAtMs = 0;
         avatar.NextMoveUpdateAtMs = 0;

@@ -173,10 +173,18 @@ public sealed class RoomZoneRuntime(RoomGrain room) : IZoneRuntime
 
         List<(int X, int Y)> goals = Goals(avatar, monster, from, x, y, within);
 
-        // Already in reach and in sight: nothing to walk.
-        if (goals.Count > 0 && goals[0] == (avatar.X, avatar.Y))
+        // Already in reach and in sight: nothing to walk. Mid-step, the step lands and the walk ends
+        // there, rather than a search from a cell to itself.
+        if (goals.Count > 0 && goals[0] == from)
         {
-            room.AvatarModule.CancelWalk(avatar);
+            if (avatar.NextTileId >= 0)
+            {
+                avatar.TilePath.Clear();
+            }
+            else
+            {
+                room.AvatarModule.CancelWalk(avatar);
+            }
 
             return WalkResult.Started;
         }
@@ -299,9 +307,9 @@ public sealed class RoomZoneRuntime(RoomGrain room) : IZoneRuntime
         {
             for (int gy = y - within; gy <= y + within; gy++)
             {
-                // Its own cell counts as free; with a range, the cell aimed at (the target's) is not
-                // a place to stand.
-                bool own = (gx, gy) == (avatar.X, avatar.Y);
+                // Its own cell (the one it is stepping onto, mid-step) counts as free; with a range,
+                // the cell aimed at (the target's) is not a place to stand.
+                bool own = (gx, gy) == from;
                 bool standable = own ? IsWalkable(gx, gy) : IsFree(gx, gy);
                 bool inSight = within == 0 || HasLineOfSight(gx, gy, x, y);
                 bool allowed = !monster || !RulesAt(gx, gy).Safe;
@@ -323,7 +331,8 @@ public sealed class RoomZoneRuntime(RoomGrain room) : IZoneRuntime
         (int X, int Y) goal
     ) =>
         // The flat search asks canOccupy of the two ends only: every step in between goes through
-        // canMove, so the safe cells are refused there too.
+        // canMove, so the safe cells are refused there too. It keeps no height per node: each step
+        // is measured from the top of the cell it leaves, as the walk itself will.
         room.PathingSystem.FindPath(
             from,
             goal,
@@ -334,7 +343,7 @@ public sealed class RoomZoneRuntime(RoomGrain room) : IZoneRuntime
                     avatar,
                     current,
                     next,
-                    avatar.Z,
+                    room.MapModule.GetTopSection(current).Height,
                     out _,
                     isGoal
                 )

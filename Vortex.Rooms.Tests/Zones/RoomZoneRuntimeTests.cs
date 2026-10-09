@@ -112,6 +112,83 @@ public sealed class RoomZoneRuntimeTests
             .NotContain(c => c.Item1 == 2 && c.Item2 < 5);
     }
 
+    /// <summary>One avatar tick into a one-cell walk from (0, 0) to (1, 0): the wolf is already on the
+    /// stack of (1, 0) while its X, Y still say (0, 0).</summary>
+    private async Task<IRoomAvatar> WolfMidStepAsync()
+    {
+        int id = Runtime.SpawnMonster(Wolf, 0, 0);
+        Runtime.WalkNear(id, 1, 0, 0).Should().Be(WalkResult.Started);
+        await _harness.TickAvatarsAsync();
+
+        IRoomAvatar wolf = _harness.Grain._state.AvatarsByObjectId[new RoomObjectId(id)];
+        _harness.Grain.MapModule.GetTileXY(wolf.NextTileId).Should().Be((1, 0), "mid-step");
+        (wolf.X, wolf.Y).Should().Be((0, 0));
+
+        return wolf;
+    }
+
+    private int[] StacksHolding(IRoomAvatar avatar) =>
+        [
+            .. Enumerable
+                .Range(0, _harness.Grain._state.TileAvatarStacks.Length)
+                .Where(i => _harness.Grain._state.TileAvatarStacks[i].Contains(avatar.ObjectId)),
+        ];
+
+    [Fact]
+    public async Task AMonsterRemovedMidStep_LeavesNoTileBlocked()
+    {
+        await ZoneAsync();
+        IRoomAvatar wolf = await WolfMidStepAsync();
+
+        Runtime.RemoveMonster(wolf.ObjectId.Value);
+
+        StacksHolding(wolf).Should().BeEmpty();
+        Runtime.IsFree(1, 0).Should().BeTrue();
+    }
+
+    [Fact]
+    public async Task AMonsterStoppedMidStep_StandsOnlyWhereItsPositionSays()
+    {
+        await ZoneAsync();
+        IRoomAvatar wolf = await WolfMidStepAsync();
+
+        Runtime.StopWalking(wolf.ObjectId.Value);
+
+        StacksHolding(wolf).Should().Equal(_harness.Grain.MapModule.ToIdx(wolf.X, wolf.Y));
+    }
+
+    [Fact]
+    public async Task InReachMidStep_TheStepLandsAndTheWalkEnds()
+    {
+        // The tile being stepped onto is already next to the target: no detour, no second step.
+        await ZoneAsync();
+        IRoomAvatar wolf = await WolfMidStepAsync();
+        Runtime.SpawnMonster(Wolf, 2, 0);
+
+        Runtime.WalkNear(wolf.ObjectId.Value, 2, 0, 1).Should().Be(WalkResult.Started);
+        await _harness.TickAvatarsAsync(4);
+
+        (wolf.X, wolf.Y, wolf.IsWalking).Should().Be((1, 0, false));
+    }
+
+    [Fact]
+    public async Task AMonster_ClimbsStairsOneStepAtATime()
+    {
+        // Heights 0, 1, 2, 3 along y = 0: each step rises by one, the climb by three.
+        ZoneDocument zone = ZoneSamples.Minimal();
+        ZoneTile[] tiles = [.. zone.Floor.Tiles];
+
+        for (int x = 1; x <= 3; x++)
+        {
+            tiles[x] = tiles[x] with { Height = x };
+        }
+
+        await ZoneAsync(zone with { Floor = zone.Floor with { Tiles = [.. tiles] } });
+        int id = Runtime.SpawnMonster(Wolf, 0, 0);
+
+        Runtime.WalkNear(id, 3, 0, 0).Should().Be(WalkResult.Started);
+    }
+
     [Fact]
     public async Task ThePathBudget_IsPerTick()
     {

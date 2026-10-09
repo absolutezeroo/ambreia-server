@@ -408,6 +408,25 @@ public sealed partial class RoomGrain : Grain, IRoomGrain
 
     public override async Task OnDeactivateAsync(DeactivationReason reason, CancellationToken ct)
     {
+        // Spec M1a §4.4: players still inside (an editor republish, a shutdown) give their health
+        // back now — the next activation has no avatar to leave the fights with.
+        try
+        {
+            await Task.WhenAll(
+                _state
+                    .AvatarsByPlayerId.Keys.ToArray()
+                    .Select(p => Simulation.PlayerLeftAsync(p, ct))
+            );
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(
+                ex,
+                "Failed to give the fighters' vitals back as room {RoomId} deactivates.",
+                _state.RoomId
+            );
+        }
+
         try
         {
             await FlushDirtyItemsAsync(ct);

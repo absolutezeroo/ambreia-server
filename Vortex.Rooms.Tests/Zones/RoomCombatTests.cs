@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using FluentAssertions;
+using Orleans;
 using Vortex.Primitives.Networking;
 using Vortex.Primitives.Orleans.Snapshots.Players;
 using Vortex.Primitives.Orleans.Snapshots.Room;
@@ -117,6 +118,29 @@ public sealed class RoomCombatTests
         );
 
         _calls.Should().Contain($"stop {RoomHarness.Owner.Value}");
+    }
+
+    [Fact]
+    public async Task ARoomGoingAway_GivesEveryPlayersVitalsBack()
+    {
+        // Spec M1a §4.4: an editor republish or a silo shutdown deactivates the room with players in
+        // it; their health is written back first, or the next entry reads it from before this one.
+        await ZoneAsync();
+        await EnterAsync(RoomHarness.Owner);
+        await EnterAsync(RoomHarness.Stranger);
+        _calls.Clear();
+
+        await _harness.Grain.OnDeactivateAsync(
+            new DeactivationReason(DeactivationReasonCode.ShuttingDown, "test"),
+            CancellationToken.None
+        );
+
+        _calls
+            .Should()
+            .BeEquivalentTo(
+                $"left {RoomHarness.Owner.Value}",
+                $"left {RoomHarness.Stranger.Value}"
+            );
     }
 
     [Fact]

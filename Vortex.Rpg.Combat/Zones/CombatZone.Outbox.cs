@@ -24,13 +24,13 @@ public sealed partial class CombatZone
 
     private async Task FlushAsync()
     {
-        List<Task> sends = [];
+        // Each composer is built now, before the outbox is cleared; only the send is deferred.
+        List<Func<Task>> sends = [];
 
         if (_hits.Count > 0)
         {
-            sends.Add(
-                runtime.BroadcastAsync(new RpgCombatEventsMessageComposer { Hits = [.. _hits] })
-            );
+            RpgCombatEventsMessageComposer events = new() { Hits = [.. _hits] };
+            sends.Add(() => runtime.BroadcastAsync(events));
         }
 
         ImmutableArray<RpgCombatantVitals> vitals =
@@ -40,35 +40,29 @@ public sealed partial class CombatZone
 
         if (vitals.Length > 0)
         {
-            sends.Add(runtime.BroadcastAsync(new RpgVitalsMessageComposer { Combatants = vitals }));
+            RpgVitalsMessageComposer changed = new() { Combatants = vitals };
+            sends.Add(() => runtime.BroadcastAsync(changed));
         }
 
         foreach (PlayerId player in _deaths)
         {
-            sends.Add(
-                runtime.SendToPlayerAsync(
-                    player,
-                    new RpgDeathMessageComposer { RespawnSeconds = config.GhostSeconds }
-                )
-            );
+            RpgDeathMessageComposer death = new() { RespawnSeconds = config.GhostSeconds };
+            sends.Add(() => runtime.SendToPlayerAsync(player, death));
         }
 
         foreach (int id in _selfChanged)
         {
             if (_combatants.TryGetValue(id, out Combatant? c) && c.PlayerId is { } player)
             {
-                sends.Add(runtime.SendToPlayerAsync(player, SelfVitals(c)));
+                RpgSelfVitalsMessageComposer self = SelfVitals(c);
+                sends.Add(() => runtime.SendToPlayerAsync(player, self));
             }
         }
 
         foreach ((PlayerId player, string code) in _results)
         {
-            sends.Add(
-                runtime.SendToPlayerAsync(
-                    player,
-                    new RpgCombatResultMessageComposer { Code = code }
-                )
-            );
+            RpgCombatResultMessageComposer result = new() { Code = code };
+            sends.Add(() => runtime.SendToPlayerAsync(player, result));
         }
 
         _hits.Clear();
@@ -82,11 +76,11 @@ public sealed partial class CombatZone
         await Task.WhenAll(sends.Select(GuardedAsync));
     }
 
-    private async Task GuardedAsync(Task send)
+    private async Task GuardedAsync(Func<Task> send)
     {
         try
         {
-            await send;
+            await send();
         }
         catch (Exception ex) when (ex is not OperationCanceledException)
         {
