@@ -343,6 +343,17 @@ const H = {
   rpgSelfVitals: 9014,
   rpgDeath: 9015,
   rpgCombatResult: 9016,
+  // Skills (spec M1b §10): in 9013-9015, out 9018-9024.
+  rpgSkillCast: 9013,
+  rpgActionBarSet: 9014,
+  rpgCastCancel: 9015,
+  rpgSkills: 9018,
+  rpgSkillResult: 9019,
+  rpgCastStart: 9020,
+  rpgCastEnd: 9021,
+  rpgCooldowns: 9022,
+  rpgStatuses: 9023,
+  rpgSkillEvents: 9024,
   quit: 3061,
   objectDataUpdate: 2329,
   objectUpdate: 114,
@@ -429,6 +440,8 @@ async function cmdHealth() {
 const PLAYER = { email: 'run-skill@vortex.local', password: 'RunSkill!2026' };
 // A second throwaway account, for what takes two players in a zone (`target`).
 const PLAYER_B = { email: 'run-skill-b@vortex.local', password: 'RunSkill!2026' };
+// A third one, made a mage for `skills`: the first keeps « Sans classe », which `items` relies on.
+const PLAYER_C = { email: 'run-skill-c@vortex.local', password: 'RunSkill!2026' };
 const WEB_COOKIE = 'habbo-web-session';
 
 function sessionCookie(res) {
@@ -467,8 +480,10 @@ async function openWebSession(account) {
 
 // What the client does after its login: the account ticket, then the character screen on the
 // socket -- the account's first character, or a new one « Sans classe » -- entered into the world.
-// Answers the socket past AuthenticationOK, with the RoomForward when there is a start zone.
-async function enterWorld(account = PLAYER) {
+// With a class, the starter class is left for it first (a real class stays: a second run is told
+// "already chosen"). Answers the socket past AuthenticationOK, with the RoomForward when there is a
+// start zone.
+async function enterWorld(account = PLAYER, classId = null) {
   const base = `http://127.0.0.1:${WEBAPI}`;
   const headers = { cookie: (await webSession(account)).cookie };
   const res = await request(`${base}/api/ssotoken`, { headers });
@@ -498,6 +513,15 @@ async function enterWorld(account = PLAYER) {
     if (code !== 'ok') fail(`Character creation refused: ${code}`);
     log(`Created character ${name} (id ${id}).`);
     playerId = id;
+  }
+
+  if (classId) {
+    const asked = g.frames.length;
+    g.send(frame(H.rpgChooseClass, playerId, classId));
+    const chosen = await g.wait([H.rpgResult], asked);
+    if (!chosen) fail(`No RpgCharacterResult for ${classId}.`);
+    const r = reader(chosen.body);
+    log(`Class ${classId} -> ${(r.int(), r.str())}`);
   }
 
   const from = g.frames.length;
@@ -1345,7 +1369,20 @@ function usersOf(f) {
 // zone change keeps that health.
 async function cmdCombat() {
   await cmdContent();
+  const rooms = await publishCombatZones();
 
+  const a = await enterWorld(PLAYER);
+  const fail = (m) => {
+    a.g.close();
+    die(m);
+  };
+  const g = a.g;
+  await combatSteps(a, g, rooms, fail);
+}
+
+// The two combat proof zones, published through the editor: proof_combat (a safe camp around the
+// arrival (1, 5), two wolves at (6, 4)-(7, 5), a brute at (9, 0)) and proof_combat_b. Their room ids.
+async function publishCombatZones() {
   const base = `http://127.0.0.1:${WEBAPI}`;
   const headers = { cookie: (await webSession()).cookie };
   const tiles = Array.from({ length: 100 }, () => ({ height: 0, walkable: true, hole: false }));
@@ -1401,13 +1438,10 @@ async function cmdCombat() {
   }
   log(`Published proof_combat (room ${rooms.proof_combat}) and proof_combat_b (room ${rooms.proof_combat_b}).`);
 
-  const a = await enterWorld(PLAYER);
-  const fail = (m) => {
-    a.g.close();
-    die(m);
-  };
-  const g = a.g;
+  return rooms;
+}
 
+async function combatSteps(a, g, rooms, fail) {
   // RpgSelfVitals: health, max, mana, max mana, in combat. RpgCombatEvents: count × hit.
   const selfOf = (f) => {
     const r = reader(f.body);
@@ -1517,6 +1551,136 @@ async function cmdCombat() {
 
   g.close();
   log('Combat OK.');
+}
+
+// The skills (spec M1b §17), a mage on a third account in proof_combat: his skills and bar, a
+// Firebolt cast then landing on a wolf, a second cast refused while the first runs, a cast cut by a
+// walk, a cast from the camp refused.
+async function cmdSkills() {
+  await cmdContent();
+  const rooms = await publishCombatZones();
+  const a = await enterWorld(PLAYER_C, 'class.mage');
+  const g = a.g;
+  const fail = (m) => {
+    g.close();
+    die(m);
+  };
+  const FIREBOLT = 'skill.mage.firebolt';
+  const after = (header, from) => g.frames.slice(from).filter((f) => f.header === header);
+  const until = async (test, ms) => {
+    for (let t = 0; t < ms; t += 100) {
+      const hit = test();
+      if (hit) return hit;
+      await sleep(100);
+    }
+    return null;
+  };
+  // RpgCastStart / RpgCastEnd: count × entry. RpgSkillEvents: impacts, then outcomes.
+  const starts = (from) =>
+    after(H.rpgCastStart, from).flatMap((f) => {
+      const r = reader(f.body);
+      return Array.from({ length: r.int() }, () => ({
+        caster: r.int(),
+        skill: r.str(),
+        durationMs: r.int(),
+        channel: r.bool(),
+        target: r.int(),
+        x: r.int(),
+        y: r.int(),
+      }));
+    });
+  const ends = (from) =>
+    after(H.rpgCastEnd, from).flatMap((f) => {
+      const r = reader(f.body);
+      return Array.from({ length: r.int() }, () => ({ caster: r.int(), skill: r.str(), reason: r.str() }));
+    });
+  const outcomes = (from) =>
+    after(H.rpgSkillEvents, from).flatMap((f) => {
+      const r = reader(f.body);
+      for (let n = r.int(); n > 0; n--) r.int(), r.str(), r.int(), r.int(), r.int();
+      return Array.from({ length: r.int() }, () => ({
+        source: r.int(),
+        sourceId: r.str(),
+        target: r.int(),
+        amount: r.int(),
+        absorbed: r.int(),
+        outcome: r.str(),
+        health: r.int(),
+        maxHealth: r.int(),
+        killed: r.bool(),
+      }));
+    });
+  const refusal = (from) => {
+    const f = after(H.rpgSkillResult, from)[0];
+    if (!f) return null;
+    const r = reader(f.body);
+    return { skill: r.str(), code: r.str() };
+  };
+  const cast = (target) => g.send(frame(H.rpgSkillCast, FIREBOLT, target, -1, -1));
+
+  // 1. Into the zone: the skills and the bar.
+  let mark = g.frames.length;
+  g.send(frame(H.openFlat, rooms.proof_combat, '', -1));
+  const avatars = await until(() => {
+    const all = after(H.users, mark).flatMap(usersOf);
+    return all.filter((x) => x.name === 'monster.forest.wolf').length >= 2 ? all : null;
+  }, 8000);
+  if (!avatars) fail('1. No wolves in proof_combat.');
+  const me = avatars.find((x) => x.type === 1 && x.webId === a.playerId);
+  const wolves = avatars.filter((x) => x.name === 'monster.forest.wolf');
+  const skills = await until(() => after(H.rpgSkills, mark)[0], 5000);
+  if (!me || !skills) fail('1. No avatar of mine or no RpgSkills on entering.');
+  const s = reader(skills.body);
+  const known = Array.from({ length: s.int() }, () => s.str());
+  const bar = Array.from({ length: s.int() }, () => s.str());
+  if (!known.includes(FIREBOLT) || bar[0] !== `skill:${FIREBOLT}`) fail(`1. RpgSkills ${JSON.stringify({ known, bar })}`);
+  log(`1. RpgSkills: known ${known.join(', ')}; bar ${JSON.stringify(bar)}`);
+
+  // 2. Out of the camp, Firebolt on a wolf: the cast, then the damage, then the recharges.
+  g.send(frame(H.moveAvatar, 4, 5));
+  await sleep(1500);
+  mark = g.frames.length;
+  cast(wolves[0].objectId);
+  const start = await until(() => starts(mark).find((x) => x.caster === me.objectId), 3000);
+  if (!start || start.durationMs !== 2000 || start.channel) fail(`2. RpgCastStart ${JSON.stringify(start)}; refused ${JSON.stringify(refusal(mark))}`);
+  const landed = await until(() => outcomes(mark).find((o) => o.sourceId === FIREBOLT && o.target === wolves[0].objectId), 5000);
+  if (!landed || landed.amount <= 0) fail(`2. No Firebolt damage: ${JSON.stringify(outcomes(mark))}`);
+  if (!(await until(() => after(H.rpgCooldowns, mark)[0], 2000))) fail('2. No RpgCooldowns after the cast.');
+  log(`2. RpgCastStart ${start.durationMs} ms -> ${JSON.stringify(landed)} -> RpgCooldowns`);
+
+  // 3. Two casts at once: the second is refused while the first runs.
+  await sleep(1200);
+  const alive = () => wolves.filter((w) => !outcomes(0).some((o) => o.target === w.objectId && o.killed));
+  mark = g.frames.length;
+  cast(alive()[0].objectId);
+  cast(alive()[0].objectId);
+  const second = await until(() => refusal(mark), 3000);
+  if (!second || !['casting', 'global_cooldown'].includes(second.code)) fail(`3. A second cast -> ${JSON.stringify(second)}`);
+  log(`3. A second Firebolt at once -> ${second.code}`);
+  if (!(await until(() => ends(mark).find((e) => e.caster === me.objectId), 4000))) fail('3. The first cast never ended.');
+
+  // 4. A cast cut short by a walk.
+  await sleep(1200);
+  if (!alive().length) fail('4. No wolf left alive.');
+  mark = g.frames.length;
+  cast(alive()[0].objectId);
+  if (!(await until(() => starts(mark).find((x) => x.caster === me.objectId), 3000))) fail(`4. No cast started: ${JSON.stringify(refusal(mark))}`);
+  g.send(frame(H.moveAvatar, 4, 3));
+  const cut = await until(() => ends(mark).find((e) => e.caster === me.objectId), 3000);
+  if (!cut || cut.reason !== 'cancelled') fail(`4. A walk mid-cast -> ${JSON.stringify(cut)}`);
+  log('4. A walk mid-cast -> RpgCastEnd(cancelled)');
+
+  // 5. Back in the camp, a cast is refused.
+  g.send(frame(H.moveAvatar, 1, 5));
+  await sleep(2500);
+  mark = g.frames.length;
+  cast(alive()[0]?.objectId ?? wolves[0].objectId);
+  const safe = await until(() => refusal(mark), 3000);
+  if (!safe || safe.code !== 'safe_zone') fail(`5. A cast from the camp -> ${JSON.stringify(safe)}`);
+  log('5. A cast from the camp -> safe_zone');
+
+  g.close();
+  log('Skills OK.');
 }
 
 // The chat (spec F3c §15), two accounts: Général within a zone, Monde across, a whisper by name
@@ -1693,6 +1857,7 @@ const table = {
   target: cmdTarget,
   chat: cmdChat,
   combat: cmdCombat,
+  skills: cmdSkills,
   grace: () => cmdGrace(args[0]),
   cleanup: cmdCleanup,
   smoke: cmdSmoke,

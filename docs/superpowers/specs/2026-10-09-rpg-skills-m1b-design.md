@@ -1,6 +1,7 @@
 # RPG — spec fille M1b « Compétences et effets de statut »
 
-> **Statut :** design approuvé par le propriétaire le 2026-10-09, section par section ·
+> **Statut :** livrée le 2026-10-10 (plan `docs/superpowers/plans/2026-10-09-rpg-skills-m1b.md`,
+> preuve `driver.mjs skills`) ; design approuvé par le propriétaire le 2026-10-09, section par section ·
 > **Date :** 2026-10-09 · **Langue :** français
 > **Dépôt :** `vortex-rpg-emulator`. Deuxième tranche du jalon M1 de la spec unifiée
 > `docs/superpowers/specs/2026-10-06-vortex-rpg-design.md` (§5.3 classes, §6 compétences, §7.1–7.2

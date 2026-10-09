@@ -16,6 +16,7 @@ single project, the code and `.claude/rules/` are enough.
 - Flow 9 — interaction
 - Flow 10 — chat
 - Flow 11 — combat
+- Flow 12 — skills and statuses
 - Persistence
 - Grains and their state
 - Plugins and the web API
@@ -250,6 +251,24 @@ deactivates); new stats, level or class reach the room as a fresh profile throug
 (`OnCharacterStatsChangedAsync` → `IRoomCombat`), whose health and mana the zone ignores. A click on a
 monster (`RpgTargetSelect`) goes to the simulation first; a manual walk stops the attack. Proof:
 `driver.mjs combat`.
+
+## Flow 12 — skills and statuses
+
+Spec `2026-10-09-rpg-skills-m1b-design.md`. `CombatZone` names no skill: it ticks the
+`ICombatSystem`s declared by DI (in their `Order`, before the swings), recomputes each fighter's
+effective stats from its base and every `IStatModifierSource`, and offers `Damage`/`Heal`/`AddThreat`,
+a message queue and parts on fighters and on the zone. `Vortex.Rpg.Skills` brings two systems:
+`StatusSystem` (order 100: pulses of damage and heal over time, expiries, modifiers, stun → rooted,
+slow → `SetMoveSpeed`; statuses drop on death, the persistent ones are carried out with the vitals
+and back in on entry) and `CastSystem` (order 200, the zone's `ICastingSystem`: the checks of spec
+§6.1, the approach, an instant landing at the next tick, a cast at its end, a channel by pulses, every
+cancellation). Effects are `ISkillEffect`s by key (`damage`, `heal`, `apply_status`, `interrupt`,
+`dispel`, `threat`), each one instance seen both by the import (`SkillKind` checks the fields) and by
+the zone; `DamageModifierStep` (350) and `ShieldStep` (950) join the hit chain. Skills a character knows
+come from content (`KnownSkills`), never stored; its bar is `action_bar`, written by
+`PlayerCharacterGrain`. Wire: `RpgSkillCast`/`RpgCastCancel` → `IRoomCombat` → simulation;
+`RpgActionBarSet` → the character; out `RpgSkills`, `RpgSkillResult`, `RpgCastStart`/`RpgCastEnd`,
+`RpgCooldowns`, `RpgStatuses`, `RpgSkillEvents`, grouped per tick. Proof: `driver.mjs skills`.
 
 ## Persistence
 
