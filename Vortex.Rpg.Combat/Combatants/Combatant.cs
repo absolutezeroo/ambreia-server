@@ -85,4 +85,13 @@ public sealed class Combatant : ICombatantStats
 
     /// <summary>Players who hit this monster: each gets its XP when it dies.</summary>
     public HashSet<PlayerId> Participants { get; } = [];
+
+    /// <summary>Who hit it last, by room object id: the killer when it dies.</summary>
+    public int? LastHitBy { get; set; }
+
+    /// <summary>A monster's content id; null for a player.</summary>
+    public string? DefinitionId { get; init; }
+
+    /// <summary>The XP a monster gives at its level, before the level gap.</summary>
+    public int Xp { get; init; }
 }

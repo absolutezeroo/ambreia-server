@@ -1,3 +1,4 @@
+using System;
 using Microsoft.Extensions.Options;
 using Vortex.Rpg.Combat.Configuration;
 
@@ -21,7 +22,7 @@ public sealed class BaseDamageStep(IOptions<CombatConfig> config) : IHitStep
                     + hit.Random.NextDouble()
                         * (_config.PlayerDamageMaxFactor - _config.PlayerDamageMinFactor)
                 )
-            : hit.Random.Next(a.DamageMin, a.DamageMax + 1);
+            : hit.Random.Next(a.DamageMin, Math.Max(a.DamageMin, a.DamageMax) + 1);
 
         return true;
     }

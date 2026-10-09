@@ -2,6 +2,7 @@ using System;
 using System.Threading.Tasks;
 using Vortex.Primitives.Networking;
 using Vortex.Primitives.Players;
+using Vortex.Primitives.Rooms;
 using Vortex.Primitives.World;
 
 namespace Vortex.Rpg.Zones;
@@ -13,12 +14,18 @@ namespace Vortex.Rpg.Zones;
 /// </summary>
 public interface IZoneRuntime
 {
+    /// <summary>The zone's room, for the events it publishes.</summary>
+    public RoomId ZoneId { get; }
+
     /// <summary>The instant of the tick being run, in milliseconds.</summary>
     public long NowMs { get; }
 
     public Random Random { get; }
 
     public bool IsWalkable(int x, int y);
+
+    /// <summary>Walkable and nobody stands there: where a monster may be born or wander to.</summary>
+    public bool IsFree(int x, int y);
 
     /// <summary>No wall, closed or disabled tile between the two cells (the ends excluded).</summary>
     public bool HasLineOfSight(int fromX, int fromY, int toX, int toY);
@@ -35,9 +42,12 @@ public interface IZoneRuntime
 
     public void RemoveMonster(int objectId);
 
-    /// <summary>Walks an avatar towards a cell; false when no path exists or this tick's path
-    /// budget is spent (try again next tick).</summary>
-    public bool WalkTo(int objectId, int x, int y);
+    /// <summary>
+    /// Walks an avatar to the nearest free cell within <paramref name="within"/> tiles (Chebyshev) of
+    /// (x, y), in sight of it — 0: onto the cell itself. The zone applies each avatar's own rules: a
+    /// monster never steps on a safe cell. Monster paths count against the zone's budget per tick.
+    /// </summary>
+    public WalkResult WalkNear(int objectId, int x, int y, int within);
 
     public void StopWalking(int objectId);
 

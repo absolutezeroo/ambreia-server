@@ -3,6 +3,9 @@ namespace Vortex.Rpg.Combat.Hits;
 /// <summary>What the hit chain reads of a fighter (spec M1a §6.2).</summary>
 public interface ICombatantStats
 {
+    /// <summary>The fighter's room object id: a step (a shield, a buff, M1b) finds its state by it.</summary>
+    public int ObjectId { get; }
+
     public bool IsPlayer { get; }
 
     /// <summary>A player's primary stat: his damage base.</summary>

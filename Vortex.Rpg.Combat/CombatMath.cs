@@ -23,7 +23,7 @@ public static class CombatMath
     {
         int gap = monsterLevel - playerLevel;
 
-        if (gap <= -config.XpCutoffLevels)
+        if (gap <= -Math.Max(1, config.XpCutoffLevels))
         {
             return 0;
         }

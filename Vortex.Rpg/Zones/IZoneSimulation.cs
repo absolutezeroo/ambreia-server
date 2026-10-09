@@ -9,7 +9,10 @@ namespace Vortex.Rpg.Zones;
 /// <summary>
 /// What a zone runs for its fights (spec M1a §4.3): one per zone activation, created by
 /// <see cref="IZoneSimulationFactory"/>. The zone calls it; it acts back through
-/// <see cref="IZoneRuntime"/>.
+/// <see cref="IZoneRuntime"/>, and publishes its events (a monster killed, a player dead) on the
+/// event bus it gets from DI. It lives and dies with the zone's activation: nothing to tear down,
+/// the monsters are the zone's avatars. With no player in the zone it does nothing (INV-003); the
+/// first one in wakes it.
 /// </summary>
 public interface IZoneSimulation
 {

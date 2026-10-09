@@ -34,9 +34,6 @@ public sealed class CombatConfig
     /// <summary>The share of each equipped item's max durability a death takes.</summary>
     public int DeathWearPercent { get; init; } = 10;
 
-    /// <summary>Monster path searches a zone may run in one tick.</summary>
-    public int MaxPathSearchesPerTick { get; init; } = 8;
-
     /// <summary>XP change per level of difference between monster and player.</summary>
     public int XpLevelStepPercent { get; init; } = 10;
 

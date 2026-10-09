@@ -31,6 +31,13 @@ public sealed class ThreatTable
 
     public bool Contains(int objectId) => _entries.FindIndex(e => e.ObjectId == objectId) >= 0;
 
+    public long ThreatOf(int objectId)
+    {
+        int at = _entries.FindIndex(e => e.ObjectId == objectId);
+
+        return at < 0 ? 0 : _entries[at].Threat;
+    }
+
     public void Add(int objectId, long amount)
     {
         int at = _entries.FindIndex(e => e.ObjectId == objectId);

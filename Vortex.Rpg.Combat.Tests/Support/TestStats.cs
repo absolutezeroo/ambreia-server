@@ -5,6 +5,8 @@ namespace Vortex.Rpg.Combat.Tests.Support;
 /// <summary>A fighter's numbers, for the hit chain tests.</summary>
 internal sealed record TestStats : ICombatantStats
 {
+    public int ObjectId { get; init; }
+
     public bool IsPlayer { get; init; }
 
     public int Power { get; init; }
