@@ -8,6 +8,7 @@ using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 using Vortex.Events.Registry;
 using Vortex.Players.Chat;
+using Vortex.Players.Chat.Channels;
 using Vortex.Players.Chat.Rules;
 using Vortex.Players.Configuration;
 using Vortex.Players.Tests.Support;
@@ -174,6 +175,20 @@ public sealed class ChatPipelineTests
     }
 
     [Fact]
+    public async Task ADeclaredChannel_ReplacesTheShippedPlaceholder_WhateverTheOrder()
+    {
+        // Program.cs registers the RPG system modules before PlayerModule: a group module's channel
+        // is declared before the shipped placeholder, and must still win.
+        ChatPipeline pipeline = Pipeline([
+            Echo("group"),
+            new InactiveChatChannel("group", "not_in_group"),
+        ]);
+
+        (await SendAsync(pipeline, "group", "hi")).Should().BeNull();
+        _routing.Deliveries.Select(d => d.To).Should().Equal("echo/0");
+    }
+
+    [Fact]
     public async Task ADeclaredRule_RefusesAtItsPriority()
     {
         bool muted = true;
@@ -242,6 +257,23 @@ public sealed class ChatPipelineTests
         await SendAsync(pipeline, "general", "hi");
 
         Delivered.Should().Equal("réécrit");
+    }
+
+    [Fact]
+    public async Task ATextRewrittenToNothing_IsEmpty()
+    {
+        ChatPipeline pipeline = Pipeline(
+            [Echo("general")],
+            sending: e =>
+            {
+                e.Text = "  ";
+
+                return new EventContext { CorrelationId = "test" };
+            }
+        );
+
+        (await SendAsync(pipeline, "general", "hi")).Should().Be("empty");
+        _routing.Deliveries.Should().BeEmpty();
     }
 
     [Fact]

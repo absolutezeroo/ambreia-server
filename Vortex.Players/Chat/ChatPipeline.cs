@@ -53,7 +53,10 @@ internal sealed class ChatPipeline
         _metrics = metrics;
         _logger = logger;
 
-        foreach (IChatChannel channel in channels)
+        // Placeholders first, so a module's channel replaces one even when that module loads
+        // before this one (Program.cs registers the RPG systems before PlayerModule). Stable:
+        // among the others, the last declared still wins.
+        foreach (IChatChannel channel in channels.OrderBy(c => c.IsPlaceholder ? 0 : 1))
         {
             if (_channels.TryGetValue(channel.Key, out IChatChannel? replaced))
             {
@@ -174,6 +177,12 @@ internal sealed class ChatPipeline
         if (ctx.Cancel)
         {
             return string.IsNullOrEmpty(ctx.CancelReason) ? Refused : ctx.CancelReason;
+        }
+
+        // A behaviour may rewrite the text; it is server code, but a line of nothing is no line.
+        if (string.IsNullOrWhiteSpace(sending.Text))
+        {
+            return Empty;
         }
 
         ChatLine line = new(channel.Key, send.Sender, send.SenderName, sending.Text, send.Now);
