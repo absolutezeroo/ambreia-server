@@ -330,6 +330,10 @@ const H = {
   rpgZoneInteractives: 9008,
   rpgTarget: 9009,
   rpgTargetSelect: 9010,
+  // Chat (spec F3c §10).
+  rpgChatSend: 9011,
+  rpgChatMessage: 9010,
+  rpgChatResult: 9011,
   quit: 3061,
   objectDataUpdate: 2329,
   objectUpdate: 114,
@@ -1299,6 +1303,140 @@ async function cmdTarget() {
   log('RpgTargetSelect(999999) -> RpgTarget(0). Target OK.');
 }
 
+// The chat (spec F3c §15), two accounts: Général within a zone, Monde across, a whisper by name
+// and its copy, the idle Guilde, an item link checked, the rate limit, unknown and offline names.
+async function cmdChat() {
+  const a = await enterWorld(PLAYER);
+  let b = null;
+  const closeAll = () => [a.g, b?.g].forEach((s) => s?.close());
+  const fail = (m) => {
+    closeAll();
+    die(m);
+  };
+  if (!a.forward) fail('A: no RoomForward at sign-in.');
+  const room = a.forward.body.readInt32BE(0);
+  let mark = a.g.frames.length;
+  a.g.send(frame(H.openFlat, room, '', -1));
+  if (!(await a.g.wait([H.objects], mark, 10000))) fail(`A: room ${room} silent.`);
+
+  b = await enterWorld(PLAYER_B);
+  mark = b.g.frames.length;
+  b.g.send(frame(H.openFlat, room, '', -1));
+  if (!(await b.g.wait([H.objects], mark, 10000))) fail(`B: room ${room} refused.`);
+
+  // RpgChatMessage: channel, sender id, sender name, text, sent at, target. RpgChatResult: channel, code.
+  const lineOf = (f) => {
+    const r = reader(f.body);
+    return { channel: r.str(), senderId: r.int(), senderName: r.str(), text: r.str(), sentAt: r.int(), target: r.str() };
+  };
+  const linesAfter = (g, from) => g.frames.slice(from).filter((f) => f.header === H.rpgChatMessage).map(lineOf);
+  const lineAfter = async (g, from, pred, ms = 5000) => {
+    for (let t = 0; t < ms; t += 50) {
+      const hit = linesAfter(g, from).find(pred);
+      if (hit) return hit;
+      await sleep(50);
+    }
+    return null;
+  };
+  const resultAfter = async (g, from) => {
+    const f = await g.wait([H.rpgChatResult], from);
+    if (!f) return null;
+    const r = reader(f.body);
+    return { channel: r.str(), code: r.str() };
+  };
+  const say = (who, channel, text, target = '') => who.g.send(frame(H.rpgChatSend, channel, target, text));
+
+  // 1. Général in the same zone.
+  let mb = b.g.frames.length;
+  say(a, 'general', 'bonjour de A');
+  const hello = await lineAfter(b.g, mb, (l) => l.text === 'bonjour de A');
+  if (hello?.channel !== 'general') fail('1. B did not read A in Général.');
+  const nameA = hello.senderName;
+  log(`1. Général, same zone: B reads ${JSON.stringify(hello)}`);
+
+  // 2. B speaks, A learns its name.
+  let ma = a.g.frames.length;
+  say(b, 'general', 'bonjour de B');
+  const back = await lineAfter(a.g, ma, (l) => l.text === 'bonjour de B');
+  if (!back) fail('2. A did not read B in Général.');
+  const nameB = back.senderName;
+  log(`2. A is "${nameA}", B is "${nameB}".`);
+
+  // 3. B leaves the room: no Général, Monde once.
+  b.g.send(frame(H.quit));
+  await sleep(1100);
+  mb = b.g.frames.length;
+  say(a, 'general', 'zone seulement');
+  if (await lineAfter(b.g, mb, (l) => l.text === 'zone seulement', 2000)) fail('3. B, out of the room, read Général.');
+  mb = b.g.frames.length;
+  say(a, 'world', 'au monde');
+  const world = await lineAfter(b.g, mb, (l) => l.text === 'au monde');
+  if (world?.channel !== 'world') fail('3. B did not read A in Monde.');
+  await sleep(500);
+  const copies = linesAfter(b.g, mb).filter((l) => l.text === 'au monde').length;
+  if (copies !== 1) fail(`3. B got ${copies} copies of the Monde line.`);
+  log('3. B out of the room: Général not read, Monde read once.');
+
+  // 4. Général outside any room.
+  mb = b.g.frames.length;
+  say(b, 'general', 'perdu');
+  const lost = await resultAfter(b.g, mb);
+  if (lost?.code !== 'not_in_zone') fail(`4. Général outside a room -> ${JSON.stringify(lost)}`);
+  log(`4. B in Général outside a room -> ${JSON.stringify(lost)}`);
+
+  // 5. A whisper by name, case aside: B reads it, A gets its copy.
+  ma = a.g.frames.length;
+  mb = b.g.frames.length;
+  say(a, 'whisper', 'psst', nameB.toUpperCase());
+  const heard = await lineAfter(b.g, mb, (l) => l.channel === 'whisper');
+  const copy = await lineAfter(a.g, ma, (l) => l.channel === 'whisper');
+  if (heard?.target !== nameA || copy?.target !== nameB || heard.text !== 'psst')
+    fail(`5. Whisper: B ${JSON.stringify(heard)}, A ${JSON.stringify(copy)}`);
+  log(`5. Whisper to "${nameB.toUpperCase()}": B reads target "${heard.target}", A's copy target "${copy.target}".`);
+
+  // 6. Guilde is ready but idle.
+  ma = a.g.frames.length;
+  say(a, 'guild', 'salut la guilde');
+  const guild = await resultAfter(a.g, ma);
+  if (guild?.code !== 'not_in_guild') fail(`6. Guilde -> ${JSON.stringify(guild)}`);
+  log(`6. Guilde -> ${JSON.stringify(guild)}`);
+
+  // 7. An item link kept, an invented one removed.
+  await sleep(1100);
+  ma = a.g.frames.length;
+  say(a, 'general', 'vend [item:item.material.amber_shard] et [item:item.fake.nothing]');
+  const linked = await lineAfter(a.g, ma, (l) => l.channel === 'general' && l.text.startsWith('vend'));
+  if (linked?.text !== 'vend [item:item.material.amber_shard] et') fail(`7. Links -> ${JSON.stringify(linked)}`);
+  log(`7. Links -> "${linked.text}"`);
+
+  // 8. Monde again within 10 s.
+  ma = a.g.frames.length;
+  say(a, 'world', 'encore');
+  const limited = await resultAfter(a.g, ma);
+  if (limited?.code !== 'rate_limited') fail(`8. Monde twice -> ${JSON.stringify(limited)}`);
+  log(`8. Monde twice within 10 s -> ${JSON.stringify(limited)}`);
+
+  // 9. An unknown name.
+  await sleep(1100);
+  ma = a.g.frames.length;
+  say(a, 'whisper', 'allo', 'personne_zz');
+  const nobody = await resultAfter(a.g, ma);
+  if (nobody?.code !== 'player_not_found') fail(`9. Unknown name -> ${JSON.stringify(nobody)}`);
+  log(`9. Whisper to "personne_zz" -> ${JSON.stringify(nobody)}`);
+
+  // 10. B's socket gone: offline (its presence waits in grace, without a socket).
+  b.g.close();
+  await sleep(1100);
+  ma = a.g.frames.length;
+  say(a, 'whisper', 'tu es là ?', nameB);
+  const offline = await resultAfter(a.g, ma);
+  if (offline?.code !== 'player_offline') fail(`10. Offline name -> ${JSON.stringify(offline)}`);
+  log(`10. Whisper to "${nameB}" after B left -> ${JSON.stringify(offline)}`);
+
+  closeAll();
+  log('Chat OK.');
+}
+
 // ---------------------------------------------------------------- dispatch
 
 const [cmd, ...args] = process.argv.slice(2);
@@ -1320,6 +1458,7 @@ const table = {
   lobby: cmdLobby,
   items: cmdItems,
   target: cmdTarget,
+  chat: cmdChat,
   grace: () => cmdGrace(args[0]),
   cleanup: cmdCleanup,
   smoke: cmdSmoke,

@@ -14,6 +14,7 @@ single project, the code and `.claude/rules/` are enough.
 - Flow 7 — the character
 - Flow 8 — items
 - Flow 9 — interaction
+- Flow 10 — chat
 - Persistence
 - Grains and their state
 - Plugins and the web API
@@ -199,6 +200,26 @@ player's target lives in the room: `IRoomTargets.SelectTargetAsync` (packet `Rpg
 and level and class read from the target's `PlayerCharacterGrain`) to that player alone, clears it
 for an id that is no avatar, and on `PlayerLeftEvent` clears it for whoever aimed at the one
 leaving. Runtime only. Proofs: `driver.mjs travel`, `target`.
+
+## Flow 10 — chat
+
+Spec `2026-10-09-rpg-chat-design.md`. No Habbo bubbles: a channelled RPG chat. `RpgChatSend` (9011:
+channel, target, text) → `RpgChatSendMessageHandler` → `PlayerPresenceGrain.SendChatAsync` of the
+sender → `ChatPipeline` (`Vortex.Players/Chat`): the channel declared and writable by a player, the
+text cleaned (control characters, outer spaces; empty → `empty`), the declared `IChatRule`s by
+priority (length 200 → `too_long`, rate per channel from `Vortex:Chat:RateLimits` → `rate_limited`;
+windows kept in the presence's `ChatSenderState`), the links (`[prefix:id]` of a declared
+`IChatLinkKind`, kept if the id exists, at most 5; `item` is declared by `RpgModule`), then the
+cancellable `ChatSendingEvent`. The channel routes through `IChatRouting`, which the presence
+implements: `general` publishes `RpgChatMessage` (9010) on the sender's room stream, `world` on the
+`world-chat` stream every presence joins on world entry, `whisper` finds the name in
+`PlayerDirectoryGrain` (case aside), asks the other presence `IsOnlineAsync` (interleaved) and sends
+to both. `group` and `guild` are placeholders refusing `not_in_group` / `not_in_guild`. A refusal
+is `RpgChatResult` (9011) to the sender alone; a delivered line gets none, and `ChatSentEvent`
+follows. `system` is server-only: `SendSystemChatAsync`. Extension points: a module declares an
+`IChatChannel` (the last one per key wins; a placeholder always yields), an `IChatRule` or an
+`IChatLinkKind` in its own `Chat/` folder; the core names none. Nothing stored, no text logged.
+Proof: `driver.mjs chat`.
 
 ## Persistence
 

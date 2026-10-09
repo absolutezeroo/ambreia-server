@@ -1,6 +1,7 @@
 # RPG — spec fille F3c « Chat » : canaux, privé, système, liens d'objets
 
-> **Statut :** design approuvé par le propriétaire le 2026-10-09 (conversation), à relire écrit ·
+> **Statut :** livrée le 2026-10-09 (plan `docs/superpowers/plans/2026-10-09-rpg-chat.md`, preuve
+> `driver.mjs chat`) ; design approuvé par le propriétaire le 2026-10-09 ·
 > **Date :** 2026-10-09 · **Langue :** français
 > **Dépôt :** `vortex-rpg-emulator`. Jalon F3 « Réseau RPG et interaction » de la spec unifiée
 > `docs/superpowers/specs/2026-10-06-vortex-rpg-design.md` (§13 Social, §16.3 HUD, §18 limitation de
@@ -137,7 +138,7 @@ Types sur le fil comme la spec F3a §6. Ids dans les régions `Vortex-specific` 
 | Id | Message | Champs, dans l'ordre |
 |---|---|---|
 | 9010 | `RpgChatMessage` | channel (chaîne, dont `system`) ; senderId (entier, 0 pour `system`) ; senderName (chaîne) ; text (chaîne, liens `[item:…]` compris) ; sentAt (entier : secondes depuis l'époque Unix, UTC) ; target (chaîne : pour `whisper`, le nom de l'autre joueur de la conversation, vide sinon) |
-| 9011 | `RpgChatResult` | channel (chaîne) ; code (chaîne : `empty`, `too_long`, `rate_limited`, `not_in_zone`, `player_not_found`, `player_offline`, `not_in_group`, `not_in_guild`, `unknown_channel`) |
+| 9011 | `RpgChatResult` | channel (chaîne) ; code (chaîne : `empty`, `too_long`, `rate_limited`, `not_in_zone`, `player_not_found`, `player_offline`, `not_in_group`, `not_in_guild`, `unknown_channel` ; et `refused` : un `ChatSendingEvent` annulé sans raison — avec une raison, c'est elle le code) |
 
 `target` de `RpgChatMessage` permet au client de ranger un privé dans l'onglet de l'autre joueur,
 qu'il en soit l'émetteur (sa copie) ou le destinataire.
@@ -200,7 +201,8 @@ pipeline — ne nomme aucun canal, aucune sorte de lien, aucun contrôle.
 | **Contrôle** | `IChatRule` : vérifie ou refuse un envoi avant la diffusion, avec un code | longueur, débit par canal | blocage et sourdine (social), filtre de mots, niveau minimum pour le Monde, anti-spam |
 
 - Un canal se remplace par sa clé : le module Groupe déclare son `group` et il prend la place du
-  canal inactif livré en F3c, sans rien changer d'autre (le registre garde le dernier déclaré pour
+  canal inactif livré en F3c, quel que soit l'ordre de chargement des modules (un canal en attente,
+  `IsPlaceholder`, cède toujours sa clé), sans rien changer d'autre (le registre garde le dernier déclaré pour
   une clé, et le journalise au démarrage).
 - L'ordre des contrôles est déclaré (une priorité), stable et journalisé au démarrage.
 - La diffusion passe par un **contexte** donné au canal (`ChatRouting`) : envoyer à un joueur, à
