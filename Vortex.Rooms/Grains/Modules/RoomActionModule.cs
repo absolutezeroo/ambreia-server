@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 using Vortex.Logging;
 using Vortex.Primitives;
 using Vortex.Primitives.Action;
@@ -182,6 +183,20 @@ public sealed partial class RoomActionModule(RoomGrain roomGrain)
         if (await _roomGrain.ZoneInteractions.TryUseAsync(ctx, item, param, ct))
         {
             return true;
+        }
+
+        // A zone's decor is frozen (spec F3b §4): without an interaction of its own a click is no
+        // furniture use, whatever the clicker's rights. Its Interact triggers have already fired.
+        if (_roomGrain._state.ZoneRuntime is not null)
+        {
+            _roomGrain._logger.LogDebug(
+                "Frozen decor {ObjectId} in zone room {RoomId}: player {PlayerId}'s click does nothing.",
+                itemId.Value,
+                _roomGrain.RoomId.Value,
+                ctx.PlayerId.Value
+            );
+
+            return false;
         }
 
         FurnitureUsageType usagePolicy = item.Logic.GetUsagePolicy();

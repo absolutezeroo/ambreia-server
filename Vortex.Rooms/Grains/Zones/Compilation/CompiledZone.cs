@@ -45,7 +45,28 @@ public sealed class CompiledZone
                 .Where(t => t.Seconds > 0),
         ];
         Areas = document.Zones.GroupBy(a => a.Id).ToDictionary(g => g.Key, g => g.First());
+        Interactives =
+        [
+            .. document
+                .Decor.Select((decor, index) => (Decor: decor, ObjectId: index + 1))
+                .Select(x =>
+                    x.Decor.Interaction is { Length: > 0 } kind
+                        ? new ZoneClickable(x.ObjectId, kind)
+                    : TriggersFor(ZoneTriggerType.Interact, x.Decor.Id).Any()
+                        ? new ZoneClickable(x.ObjectId, InteractTrigger)
+                    : null
+                )
+                .OfType<ZoneClickable>(),
+        ];
     }
+
+    /// <summary>What a decor aimed at by an Interact trigger, and with no interaction of its own,
+    /// does when clicked: it fires the trigger (plan F3b, décision 1).</summary>
+    public const string InteractTrigger = "interact";
+
+    /// <summary>What a player can click in this zone (spec F3b §5): every floor decor with an
+    /// interaction, or listened to by an Interact trigger, by room object id. The rest is frozen.</summary>
+    public IReadOnlyList<ZoneClickable> Interactives { get; }
 
     private readonly ILookup<(ZoneTriggerType Type, string Target), ZoneTrigger> _triggersByTarget;
 

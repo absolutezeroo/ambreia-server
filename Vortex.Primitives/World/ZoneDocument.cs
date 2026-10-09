@@ -27,6 +27,9 @@ public sealed record ZoneDocument
     public List<ZoneSpawn> Spawns { get; init; } = [];
     public List<ZoneResource> Resources { get; init; } = [];
     public List<ZoneChest> Chests { get; init; } = [];
+
+    /// <summary>Ignored at run time (spec F3b §4): what is clickable is each decor's own
+    /// <c>Interaction</c>. Kept so stored zone versions that carry it still parse.</summary>
     public List<ZoneInteractive> Interactives { get; init; } = [];
     public List<ZoneBoss> Bosses { get; init; } = [];
     public List<ZoneEvent> Events { get; init; } = [];

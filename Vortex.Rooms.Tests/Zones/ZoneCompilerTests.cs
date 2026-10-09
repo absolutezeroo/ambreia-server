@@ -3,6 +3,7 @@ using FluentAssertions;
 using Vortex.Primitives.World;
 using Vortex.Primitives.World.Geometry;
 using Vortex.Primitives.World.Layers;
+using Vortex.Primitives.World.Rules;
 using Vortex.Rooms.Grains.Zones.Compilation;
 using Vortex.Tests.Support;
 using Vortex.Tests.Support.World;
@@ -118,6 +119,53 @@ public sealed class ZoneCompilerTests
         zone.DecorId(1).Should().Be("throne_1");
         zone.DecorObjectId("nope").Should().BeNull();
     }
+
+    /// <summary>Spec F3b §5: what a player can click — the decor with an interaction, and the
+    /// decor an Interact trigger listens to (plan F3b, décision 1).</summary>
+    [Fact]
+    public void TheClickables_AreTheDecorWithAnInteractionOrAnInteractTrigger()
+    {
+        ZoneDecorObject Decor(string id, string? interaction) =>
+            new()
+            {
+                Id = id,
+                Definition = ZoneSamples.Throne,
+                Class = "throne",
+                X = 1,
+                Y = 1,
+                Interaction = interaction,
+            };
+        ZoneDocument doc = ZoneSamples.Minimal() with
+        {
+            Decor =
+            [
+                Decor("gate", "door"),
+                Decor("vase", null),
+                Decor("bell", null),
+                Decor("board", "sign"),
+            ],
+            Triggers =
+            [
+                new ZoneTrigger
+                {
+                    Id = "ring",
+                    Type = ZoneTriggerType.Interact,
+                    Target = "bell",
+                    Actions = [new ShowDialogueAction("Ding")],
+                },
+            ],
+        };
+
+        ZoneCompiler
+            .Compile(doc)
+            .Interactives.Select(c => (c.ObjectId, c.Interaction))
+            .Should()
+            .Equal((1, "door"), (3, "interact"), (4, "sign"));
+    }
+
+    [Fact]
+    public void AZoneWithoutInteractions_HasNoClickables() =>
+        ZoneCompiler.Compile(ZoneSamples.Minimal()).Interactives.Should().BeEmpty();
 
     [Fact]
     public void TriggersAreIndexedByWhatTheyListenTo()
