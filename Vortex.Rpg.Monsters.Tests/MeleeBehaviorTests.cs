@@ -109,6 +109,22 @@ public sealed class MeleeBehaviorTests
         WolfCombatant.Invulnerable.Should().BeFalse();
     }
 
+    /// <summary>No path home: it is put back there and healed, not left invulnerable for good.</summary>
+    [Fact]
+    public async Task AMonsterThatCannotWalkHome_IsPutBackThere()
+    {
+        await WolfAndPlayerAtAsync(4, 1);
+        _world.Zone.Positions[Wolf] = (12, 1);
+        WolfCombatant.Health = 10;
+        _world.Zone.PathsExist = false;
+
+        await _world.TickAsync();
+
+        _world.Zone.Teleports.Should().Contain((Wolf, 1, 1));
+        WolfCombatant.Invulnerable.Should().BeFalse();
+        WolfCombatant.Health.Should().Be(WolfCombatant.MaxHealth);
+    }
+
     [Fact]
     public async Task ADeclaredBehavior_IsUsedByItsKey()
     {

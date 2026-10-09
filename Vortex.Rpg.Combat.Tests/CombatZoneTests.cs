@@ -206,6 +206,50 @@ public sealed class CombatZoneTests
     }
 
     [Fact]
+    public async Task ARespawn_EndsTheCombat_WithCombatLeft()
+    {
+        await OnePlayerAsync();
+        int wolf = AddWolf(6, 5);
+        _combat.Combatants[1].Health = 4;
+        _combat.SetMonsterTarget(wolf, 1);
+        await _combat.TickAsync(CancellationToken.None);
+
+        _zone.NowMs += 5000;
+        await _combat.TickAsync(CancellationToken.None);
+
+        _combat.Combatants[1].InCombat.Should().BeFalse();
+        _events.OfType<CombatLeftEvent>().Should().ContainSingle();
+    }
+
+    [Fact]
+    public async Task LeavingInCombat_EndsTheCombat_WithCombatLeft()
+    {
+        await OnePlayerAsync();
+        int wolf = AddWolf(6, 5);
+        _combat.StartAttack(new PlayerId(7), wolf);
+        await _combat.TickAsync(CancellationToken.None);
+
+        await _combat.PlayerLeftAsync(new PlayerId(7), CancellationToken.None);
+
+        _events.OfType<CombatLeftEvent>().Should().ContainSingle();
+    }
+
+    /// <summary>Spec §8.2: XP goes to who touched it — a swing that missed gives threat only.</summary>
+    [Fact]
+    public async Task AMiss_MakesNoParticipant()
+    {
+        await OnePlayerAsync();
+        int wolf = AddWolf(6, 5);
+        _combat.Combatants[wolf].DodgePercent = 100;
+        _combat.StartAttack(new PlayerId(7), wolf);
+
+        await _combat.TickAsync(CancellationToken.None);
+
+        _combat.Combatants[wolf].Participants.Should().BeEmpty();
+        _combat.Combatants[wolf].Threat.Top.Should().Be(1);
+    }
+
+    [Fact]
     public async Task NoHitForFiveSeconds_LeavesCombat_AndRegenerates()
     {
         await OnePlayerAsync();

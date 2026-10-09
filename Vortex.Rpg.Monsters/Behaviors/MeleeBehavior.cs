@@ -147,7 +147,29 @@ public sealed class MeleeBehavior : IMonsterBehavior
         brain.Combatant.Invulnerable = true;
         brain.Combatant.Threat.Clear();
         brain.Combat.SetMonsterTarget(m.ObjectId, null);
-        brain.Runtime.WalkNear(m.ObjectId, m.Home.X, m.Home.Y, 0);
+        WalkHome(brain);
+    }
+
+    /// <summary>No path home: put back there at once rather than left invulnerable for good.</summary>
+    private static void WalkHome(MonsterBrain brain)
+    {
+        LiveMonster m = brain.Monster;
+
+        if (brain.Runtime.WalkNear(m.ObjectId, m.Home.X, m.Home.Y, 0) == WalkResult.NoPath)
+        {
+            brain.Runtime.Teleport(m.ObjectId, m.Home.X, m.Home.Y);
+            Arrived(brain);
+        }
+    }
+
+    private static void Arrived(MonsterBrain brain)
+    {
+        LiveMonster m = brain.Monster;
+
+        brain.Combat.HealFully(m.ObjectId);
+        brain.Combatant.Invulnerable = false;
+        m.State = MonsterState.Idle;
+        m.NextWanderAtMs = brain.Runtime.NowMs + MinWanderDelayMs;
     }
 
     private static void ReturnHome(MonsterBrain brain, (int X, int Y) at)
@@ -156,17 +178,14 @@ public sealed class MeleeBehavior : IMonsterBehavior
 
         if (Distance(at, m.Home) <= 1)
         {
-            brain.Combat.HealFully(m.ObjectId);
-            brain.Combatant.Invulnerable = false;
-            m.State = MonsterState.Idle;
-            m.NextWanderAtMs = brain.Runtime.NowMs + MinWanderDelayMs;
+            Arrived(brain);
 
             return;
         }
 
         if (!brain.Runtime.IsWalking(m.ObjectId))
         {
-            brain.Runtime.WalkNear(m.ObjectId, m.Home.X, m.Home.Y, 0);
+            WalkHome(brain);
         }
     }
 
@@ -182,7 +201,8 @@ public sealed class MeleeBehavior : IMonsterBehavior
         }
 
         m.NextWanderAtMs = zone.NowMs + zone.Random.Next(MinWanderDelayMs, MaxWanderDelayMs);
-        int radius = m.Spawn.Source.WanderRadius;
+        // Never past its leash, or it would wander off and straight back home in a loop.
+        int radius = System.Math.Min(m.Spawn.Source.WanderRadius, m.Spawn.LeashRadius);
 
         for (int attempt = 0; attempt < 8 && radius > 0; attempt++)
         {

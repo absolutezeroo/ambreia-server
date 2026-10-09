@@ -120,10 +120,16 @@ public sealed partial class CombatZone(
         }
 
         Forget(objectId);
+        LeaveCombat(c);
 
         foreach (Combatant m in _combatants.Values)
         {
             m.Participants.Remove(player);
+        }
+
+        if (_players.Count == 0)
+        {
+            ClearOutbox();
         }
 
         int health = c.IsGhost || c.IsDead ? RespawnHealth(c) : c.Health;

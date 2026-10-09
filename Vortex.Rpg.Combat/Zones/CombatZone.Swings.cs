@@ -114,7 +114,8 @@ public sealed partial class CombatZone
             // A miss is still a hostile act: the monster turns on whoever tried.
             t.Threat.Add(a.ObjectId, Math.Max(1L, (long)amount * a.ThreatMultiplier));
 
-            if (a.PlayerId is { } player)
+            // XP goes to who touched it (spec §8.2): a miss gives threat only.
+            if (a.PlayerId is { } player && amount > 0)
             {
                 t.Participants.Add(player);
             }
@@ -190,7 +191,22 @@ public sealed partial class CombatZone
                 continue;
             }
 
-            c.InCombat = false;
+            LeaveCombat(c);
+        }
+    }
+
+    /// <summary>Out of combat, told to the player and on the bus: every path out goes here.</summary>
+    private void LeaveCombat(Combatant c)
+    {
+        if (!c.InCombat)
+        {
+            return;
+        }
+
+        c.InCombat = false;
+
+        if (c.PlayerId is { } player)
+        {
             _selfChanged.Add(c.ObjectId);
             Publish(new CombatLeftEvent(player));
         }

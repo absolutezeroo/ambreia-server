@@ -72,6 +72,32 @@ public sealed class MonsterSpawnerTests
         _world.Zone.Spawned.Should().HaveCount(2);
     }
 
+    /// <summary>A send that fails (a player's presence just went away) must not cost the zone its
+    /// monster: the death is still counted and it comes back.</summary>
+    [Fact]
+    public async Task AFailingSend_DoesNotLoseARespawn()
+    {
+        _world.Start([MonsterWorld.WolvesAt(1, (1, 1))]);
+        await _world.EnterAsync(7, 1, 20, 20);
+        await _world.TickAsync();
+        int wolf = _world.Zone.Spawned.Single().ObjectId;
+
+        // The player kills it: his own vitals (now in combat) go out, and fail.
+        _world.Zone.Positions[1] = (2, 1);
+        _world.Simulation.Combat.Combatants[wolf].Health = 1;
+        _world.Simulation.Combat.StartAttack(new PlayerId(7), wolf);
+        _world.Zone.FailSends = true;
+        await _world.TickAsync();
+        _world.Zone.FailSends = false;
+
+        _world.Zone.Removed.Should().Equal(wolf);
+
+        _world.Zone.NowMs += 30_000;
+        await _world.TickAsync();
+
+        _world.Zone.Spawned.Should().HaveCount(2);
+    }
+
     [Fact]
     public async Task AnUnknownMonster_SpawnsNothing()
     {

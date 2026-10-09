@@ -1,7 +1,9 @@
+using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 using Vortex.Primitives.Players;
 using Vortex.Protocol.Messages.Outgoing.Rpg.Combat;
 using Vortex.Rpg.Combat.Combatants;
@@ -75,8 +77,35 @@ public sealed partial class CombatZone
         _deaths.Clear();
         _results.Clear();
 
-        // Different presences and the zone's stream: sent together.
-        await Task.WhenAll(sends);
+        // Different presences and the zone's stream: sent together. A send that fails (a presence
+        // that just went away) is logged and costs nothing else: the tick has done its work.
+        await Task.WhenAll(sends.Select(GuardedAsync));
+    }
+
+    private async Task GuardedAsync(Task send)
+    {
+        try
+        {
+            await send;
+        }
+        catch (Exception ex) when (ex is not OperationCanceledException)
+        {
+            logger.LogWarning(
+                ex,
+                "A combat message of zone {ZoneId} was not sent.",
+                runtime.ZoneId.Value
+            );
+        }
+    }
+
+    /// <summary>Nobody left to tell: what was pending is dropped, not sent to the next one in.</summary>
+    private void ClearOutbox()
+    {
+        _hits.Clear();
+        _vitalsChanged.Clear();
+        _selfChanged.Clear();
+        _deaths.Clear();
+        _results.Clear();
     }
 
     private static RpgCombatantVitals Vitals(Combatant c) =>

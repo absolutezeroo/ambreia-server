@@ -130,7 +130,7 @@ public sealed partial class CombatZone
 
             c.GhostUntilMs = null;
             c.Health = RespawnHealth(c);
-            c.InCombat = false;
+            LeaveCombat(c);
             runtime.SetPosture(c.ObjectId, null);
             _vitalsChanged.Add(c.ObjectId);
             _selfChanged.Add(c.ObjectId);

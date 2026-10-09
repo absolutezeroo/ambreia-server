@@ -91,11 +91,17 @@ public sealed class RpgZoneSimulation(IZoneRuntime zone, CombatZone combat, Mons
             }
         }
 
-        await combat.TickAsync(ct);
-
-        foreach (int died in combat.DiedMonsters)
+        try
         {
-            spawner.Died(died, now);
+            await combat.TickAsync(ct);
+        }
+        finally
+        {
+            // Whatever the tick threw, a monster removed from the zone comes back.
+            foreach (int died in combat.DiedMonsters)
+            {
+                spawner.Died(died, now);
+            }
         }
     }
 

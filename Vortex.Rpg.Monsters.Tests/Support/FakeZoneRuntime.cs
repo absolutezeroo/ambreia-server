@@ -135,8 +135,16 @@ internal sealed class FakeZoneRuntime : IZoneRuntime
         return Task.CompletedTask;
     }
 
+    /// <summary>Every send to a player fails: a presence that just went away.</summary>
+    public bool FailSends { get; set; }
+
     public Task SendToPlayerAsync(PlayerId player, IComposer composer)
     {
+        if (FailSends)
+        {
+            return Task.FromException(new System.InvalidOperationException("presence gone"));
+        }
+
         Sent.Add((player, composer));
 
         return Task.CompletedTask;
