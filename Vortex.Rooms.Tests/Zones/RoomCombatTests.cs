@@ -167,6 +167,68 @@ public sealed class RoomCombatTests
         _calls.Should().Contain($"stats {RoomHarness.Owner.Value} 120");
     }
 
+    /// <summary>Spec M1b §10.1: a cast, a cancel and a manual walk reach the zone's fights.</summary>
+    [Fact]
+    public async Task ACastACancelAndAWalk_GoToTheFights()
+    {
+        await ZoneAsync();
+        await EnterAsync(RoomHarness.Owner);
+        _calls.Clear();
+
+        await _harness.Grain.CastSkillAsync(
+            _harness.ContextFor(RoomHarness.Owner),
+            "skill.mage.firebolt",
+            9,
+            -1,
+            -1,
+            CancellationToken.None
+        );
+        await _harness.Grain.CancelCastAsync(
+            _harness.ContextFor(RoomHarness.Owner),
+            CancellationToken.None
+        );
+        await _harness.Grain.WalkAvatarToAsync(
+            _harness.ContextFor(RoomHarness.Owner),
+            4,
+            4,
+            null,
+            CancellationToken.None
+        );
+
+        _calls
+            .Should()
+            .ContainInOrder(
+                $"cast {RoomHarness.Owner.Value} skill.mage.firebolt 9 -1 -1",
+                $"cancel {RoomHarness.Owner.Value}",
+                $"walked {RoomHarness.Owner.Value}"
+            );
+    }
+
+    [Fact]
+    public async Task WithoutAnAvatarHere_OrWithoutAPlayer_NothingIsCast()
+    {
+        await ZoneAsync();
+
+        await _harness.Grain.CastSkillAsync(
+            _harness.ContextFor(RoomHarness.Owner),
+            "skill.mage.firebolt",
+            9,
+            -1,
+            -1,
+            CancellationToken.None
+        );
+        await _harness.Grain.CastSkillAsync(
+            _harness.ContextFor(PlayerId.Invalid),
+            "skill.mage.firebolt",
+            9,
+            -1,
+            -1,
+            CancellationToken.None
+        );
+
+        _calls.Should().NotContain(c => c.StartsWith("cast"));
+    }
+
     [Fact]
     public async Task TheEntryBurst_CarriesEveryFightersHealth()
     {
@@ -206,6 +268,17 @@ public sealed class RoomCombatTests
                     return null;
                 case nameof(IZoneSimulation.EntryVitals):
                     return new IComposer[] { new RpgVitalsMessageComposer { Combatants = [] } };
+                case nameof(IZoneSimulation.CastSkillAsync):
+                    _calls.Add(
+                        $"cast {((PlayerId)call.Args![0]!).Value} {call.Args[1]} {call.Args[2]} {call.Args[3]} {call.Args[4]}"
+                    );
+                    return Task.CompletedTask;
+                case nameof(IZoneSimulation.CancelCast):
+                    _calls.Add($"cancel {((PlayerId)call.Args![0]!).Value}");
+                    return null;
+                case nameof(IZoneSimulation.PlayerWalked):
+                    _calls.Add($"walked {((PlayerId)call.Args![0]!).Value}");
+                    return null;
                 default:
                     return null;
             }

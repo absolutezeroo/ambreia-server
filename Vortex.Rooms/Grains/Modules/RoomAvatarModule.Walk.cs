@@ -70,8 +70,10 @@ public sealed partial class RoomAvatarModule
             return false;
         }
 
-        // A player walking on his own gives up his attack (spec M1a §6.1).
+        // A player walking on his own gives up his attack (spec M1a §6.1) and a cast that does not
+        // allow moving (spec M1b §6.4).
         _roomGrain.Simulation.StopAttack(ctx.PlayerId);
+        _roomGrain.Simulation.PlayerWalked(ctx.PlayerId);
 
         return true;
     }

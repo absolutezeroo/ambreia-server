@@ -46,6 +46,12 @@ public sealed class RoomAvatarTickSystem(RoomGrain roomGrain)
         {
             try
             {
+                // A slowed avatar waits out the extra time of each step (spec M1b §7.2).
+                if (avatar.IsWalking && now < avatar.NextMoveStepAtMs)
+                {
+                    continue;
+                }
+
                 await _roomGrain.AvatarModule.ProcessNextAvatarStepAsync(avatar, ct);
 
                 if (avatar.TilePath.Count <= 0)
@@ -65,6 +71,16 @@ public sealed class RoomAvatarTickSystem(RoomGrain roomGrain)
                 else
                 {
                     await ProcessAvatarAsync(avatar, now, ct);
+
+                    if (avatar.MoveSpeedPercent is > 0 and < 100)
+                    {
+                        // Steps on an ideal clock, so the tick's rounding never adds up: at 40 %,
+                        // one step every 1250 ms on average, not every 1000 or 1500.
+                        int tick = _roomGrain._roomConfig.AvatarTickMs;
+                        long basis =
+                            avatar.NextMoveStepAtMs > now - tick ? avatar.NextMoveStepAtMs : now;
+                        avatar.NextMoveStepAtMs = basis + tick * 100 / avatar.MoveSpeedPercent;
+                    }
                 }
 
                 if (avatar.IsDirty)
