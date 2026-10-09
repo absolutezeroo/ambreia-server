@@ -196,3 +196,48 @@ Les quantités sont bornées (> 0, ≤ pile).
   pas de second exemplaire.
 - Équipée (test d'intégration du grain), les stats du personnage montent ; tout est relu à
   l'identique après désactivation du grain.
+
+## 17. Réseau (contrat pour les deux dépôts)
+
+Livré avec la spec à la demande du propriétaire (2026-10-09), pour que la session client construise
+la fenêtre Sac (I) et l'onglet Équipement de la fenêtre Personnage (C). Types sur le fil comme la
+spec F3a §6 : entier int32 gros-boutiste, chaîne int16 de longueur + UTF-8, booléen un octet. Ids
+dans les régions `Vortex-specific` de `Headers.cs`. Ce sont des paquets de **phase monde** : sans
+personnage en jeu, le serveur les ignore.
+
+### 17.1 Client → serveur (`MessageEvent`)
+
+| Id | Message | Champs, dans l'ordre |
+|---|---|---|
+| 9004 | `RpgItemMove` | from (case), to (case) |
+| 9005 | `RpgItemSplit` | from (case), quantity, to (case vide) |
+| 9006 | `RpgItemEquip` | bagSlot (case) — le serveur choisit l'emplacement |
+| 9007 | `RpgItemUnequip` | equipmentSlot (0–9) |
+| 9008 | `RpgItemDestroy` | bagSlot (case), quantity |
+| 9009 | `RpgItemClaimParcel` | parcel (numéro du colis) |
+
+### 17.2 Serveur → client (`MessageComposer`)
+
+| Id | Message | Champs, dans l'ordre |
+|---|---|---|
+| 9006 | `RpgInventory` | bagSize ; maxParcels ; count ; par exemplaire : itemId, definitionId (chaîne), quantity, durability (−1 si inusable), bound (booléen), container (0 sac, 1 équipement, 2 colis), slot |
+| 9007 | `RpgItemResult` | action (1 déplacer, 2 séparer, 3 équiper, 4 déséquiper, 5 détruire, 6 récupérer un colis), code (chaîne) |
+
+### 17.3 Règles
+
+- `RpgInventory` **remplace tout** l'état du client. Il arrive avec `RpgCharacterState` à l'entrée
+  en zone, après chaque opération réussie du joueur, et après une attribution ou un retrait du
+  serveur (sans `RpgItemResult`).
+- Chaque opération du joueur reçoit un `RpgItemResult`, puis `RpgInventory` si elle a réussi
+  (`ok`). Équiper ou déséquiper envoie aussi `RpgCharacterStats` (spec F3a §6.2), avant le résultat.
+- **Codes** : `ok`, `not_found` (case ou emplacement vide ou hors bornes), `bag_full`,
+  `slot_occupied`, `wrong_class`, `level_too_low`, `not_equipment`, `invalid_quantity`. Le client
+  traduit chaque code.
+- **Cases** de 0 à `bagSize − 1`. **Emplacements** de 0 à 9 : 0 tête, 1 torse, 2 jambes, 3 pieds,
+  4 mains, 5 arme, 6 main secondaire, 7 cou, 8 anneau 1, 9 anneau 2. **Colis** désignés par leur
+  `slot`.
+- Le nom et la description d'un objet viennent des textes : `<definitionId>.name`,
+  `<definitionId>.description` (`/api/public/content/texts/{langue}`). **Pas d'icône en V1** : le
+  client montre le nom.
+- Le client n'envoie que des cases, des emplacements et des quantités ; rien de ce qu'il envoie ne
+  crée d'objet (§14).

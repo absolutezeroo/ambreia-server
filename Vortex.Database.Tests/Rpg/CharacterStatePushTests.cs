@@ -19,6 +19,7 @@ using Vortex.Primitives.Players.Grains;
 using Vortex.Primitives.Rooms;
 using Vortex.Primitives.Rpg.Characters;
 using Vortex.Protocol.Messages.Outgoing.Rpg.Characters;
+using Vortex.Protocol.Messages.Outgoing.Rpg.Items;
 using Vortex.Rpg.Characters.Configuration;
 using Vortex.Rpg.Characters.Grains;
 using Vortex.Rpg.Characters.Stats;
@@ -59,10 +60,11 @@ public sealed class CharacterStatePushTests : IAsyncLifetime
 
         await grain.EnteredRoomAsync(new RoomId(12));
 
-        RpgCharacterStateMessageComposer state = _sent
+        // The state, then the bag that goes with it (spec Objets §12).
+        _sent.Should().HaveCount(2);
+        _sent[1].Should().BeOfType<RpgInventoryMessageComposer>();
+        RpgCharacterStateMessageComposer state = _sent[0]
             .Should()
-            .ContainSingle()
-            .Which.Should()
             .BeOfType<RpgCharacterStateMessageComposer>()
             .Subject;
         (state.PlayerId, state.ClassId, state.Level, state.MaxLevel, state.Xp, state.XpToNext)
@@ -162,7 +164,9 @@ public sealed class CharacterStatePushTests : IAsyncLifetime
 
         await grain.PushStateAsync();
 
-        RpgCharacterStateMessageComposer state = (RpgCharacterStateMessageComposer)_sent.Single();
+        RpgCharacterStateMessageComposer state = _sent
+            .OfType<RpgCharacterStateMessageComposer>()
+            .Single();
         (state.Level, state.MaxLevel, state.XpToNext).Should().Be((20, 20, 0));
     }
 

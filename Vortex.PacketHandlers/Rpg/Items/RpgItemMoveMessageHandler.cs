@@ -1,0 +1,30 @@
+using System.Threading;
+using System.Threading.Tasks;
+using Orleans;
+using Vortex.Messages.Registry;
+using Vortex.Primitives.Orleans;
+using Vortex.Protocol.Messages.Incoming.Rpg.Items;
+
+namespace Vortex.PacketHandlers.Rpg.Items;
+
+/// <summary>A bag move (spec Objets §17); the character checks and answers.</summary>
+public class RpgItemMoveMessageHandler(IGrainFactory grainFactory)
+    : IMessageHandler<RpgItemMoveMessage>
+{
+    public async ValueTask HandleAsync(
+        RpgItemMoveMessage message,
+        MessageContext ctx,
+        CancellationToken ct
+    )
+    {
+        if (ctx.PlayerId <= 0)
+        {
+            return;
+        }
+
+        await grainFactory
+            .GetPlayerCharacterGrain(ctx.PlayerId)
+            .MoveItemAsync(message.From, message.To)
+            .ConfigureAwait(false);
+    }
+}

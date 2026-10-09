@@ -21,19 +21,21 @@ internal sealed partial class PlayerCharacterGrain
         }
 
         ProgressionDefinition? progression = content.Get<ProgressionDefinition>(ProgressionId);
+        RpgCharacterStateMessageComposer state = new()
+        {
+            PlayerId = _playerId.Value,
+            ClassId = c.ClassId,
+            SpecializationId = c.SpecializationId,
+            Level = c.Level,
+            MaxLevel = progression?.MaxLevel ?? c.Level,
+            Xp = c.Xp,
+            XpToNext = XpToNext(c, progression),
+            Stats = stats,
+        };
 
+        // The bag with the state (spec Objets §12): loaded by the stats read above.
         await PushAsync(
-            new RpgCharacterStateMessageComposer
-            {
-                PlayerId = _playerId.Value,
-                ClassId = c.ClassId,
-                SpecializationId = c.SpecializationId,
-                Level = c.Level,
-                MaxLevel = progression?.MaxLevel ?? c.Level,
-                Xp = c.Xp,
-                XpToNext = XpToNext(c, progression),
-                Stats = stats,
-            }
+            _inventory is { } inventory ? [state, InventoryComposer(inventory)] : [state]
         );
     }
 

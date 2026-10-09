@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
@@ -9,6 +10,7 @@ using Vortex.Database.Entities.Rpg;
 using Vortex.Primitives.Events.Rpg;
 using Vortex.Primitives.Rpg.Items;
 using Vortex.Primitives.Rpg.Items.Enums;
+using Vortex.Protocol.Messages.Outgoing.Rpg.Items;
 using Vortex.Rpg.Content.Definitions;
 using Vortex.Rpg.Items;
 
@@ -86,6 +88,9 @@ internal sealed partial class PlayerCharacterGrain
             plan.ToParcels
         );
 
+        // A server gesture: no result to answer, the bag as it now is.
+        await PushAsync(InventoryComposer(next));
+
         return new ItemGrantResult
         {
             Outcome = ItemOutcome.Ok,
@@ -123,22 +128,33 @@ internal sealed partial class PlayerCharacterGrain
             Publish(new ItemRemovedEvent(_playerId, t.Item.Id, t.Item.DefinitionId, t.Quantity));
         }
 
+        await PushAsync(InventoryComposer(next));
+
         return outcome;
     }
 
     public async Task<ItemOutcome> MoveItemAsync(int from, int to) =>
         await InventoryAsync() is { } inventory
-            ? Logged("move", inventory.Move(from, to))
+            ? await AnsweredAsync(
+                RpgItemResultMessageComposer.ActionMove,
+                Logged("move", inventory.Move(from, to))
+            )
             : ItemOutcome.NoCharacter;
 
     public async Task<ItemOutcome> SplitItemAsync(int from, int quantity, int to) =>
         await InventoryAsync() is { } inventory
-            ? Logged("split", inventory.Split(from, quantity, to))
+            ? await AnsweredAsync(
+                RpgItemResultMessageComposer.ActionSplit,
+                Logged("split", inventory.Split(from, quantity, to))
+            )
             : ItemOutcome.NoCharacter;
 
     public async Task<ItemOutcome> ClaimParcelAsync(int parcel) =>
         await InventoryAsync() is { } inventory
-            ? Logged("claim", inventory.ClaimParcel(parcel))
+            ? await AnsweredAsync(
+                RpgItemResultMessageComposer.ActionClaim,
+                Logged("claim", inventory.ClaimParcel(parcel))
+            )
             : ItemOutcome.NoCharacter;
 
     public async Task<ItemOutcome> EquipItemAsync(int bagSlot)
@@ -155,7 +171,7 @@ internal sealed partial class PlayerCharacterGrain
 
         if (outcome != ItemOutcome.Ok)
         {
-            return outcome;
+            return await AnsweredAsync(RpgItemResultMessageComposer.ActionEquip, outcome);
         }
 
         bool boundNow = !wasBound && item!.Bound;
@@ -175,7 +191,7 @@ internal sealed partial class PlayerCharacterGrain
 
         await EquipmentChangedAsync();
 
-        return outcome;
+        return await AnsweredAsync(RpgItemResultMessageComposer.ActionEquip, outcome);
     }
 
     public async Task<ItemOutcome> UnequipItemAsync(int equipmentSlot)
@@ -192,7 +208,7 @@ internal sealed partial class PlayerCharacterGrain
             await EquipmentChangedAsync();
         }
 
-        return outcome;
+        return await AnsweredAsync(RpgItemResultMessageComposer.ActionUnequip, outcome);
     }
 
     public async Task<ItemOutcome> DestroyItemAsync(int bagSlot, int quantity)
@@ -212,15 +228,45 @@ internal sealed partial class PlayerCharacterGrain
 
         if (outcome != ItemOutcome.Ok)
         {
-            return outcome;
+            return await AnsweredAsync(RpgItemResultMessageComposer.ActionDestroy, outcome);
         }
 
         await WriteNowAsync(next);
         _inventory = next;
         Publish(new ItemDestroyedEvent(_playerId, item!.Id, item.DefinitionId, quantity));
 
+        return await AnsweredAsync(RpgItemResultMessageComposer.ActionDestroy, outcome);
+    }
+
+    /// <summary>The player is told how its operation ended, and given the bag after a change. A
+    /// view only: a failure to send is logged and never undoes what changed.</summary>
+    private async Task<ItemOutcome> AnsweredAsync(int action, ItemOutcome outcome)
+    {
+        RpgItemResultMessageComposer result = new()
+        {
+            Action = action,
+            Code = JsonNamingPolicy.SnakeCaseLower.ConvertName(outcome.ToString()),
+        };
+
+        if (outcome == ItemOutcome.Ok && _inventory is { } inventory)
+        {
+            await PushAsync(result, InventoryComposer(inventory));
+        }
+        else
+        {
+            await PushAsync(result);
+        }
+
         return outcome;
     }
+
+    private RpgInventoryMessageComposer InventoryComposer(CharacterInventory inventory) =>
+        new()
+        {
+            BagSize = _itemConfig.BagSize,
+            MaxParcels = _itemConfig.MaxParcels,
+            Items = [.. inventory.Snapshot()],
+        };
 
     public async Task<CharacterItemSnapshot[]> GetItemsAsync() =>
         (await InventoryAsync())?.Snapshot() ?? [];

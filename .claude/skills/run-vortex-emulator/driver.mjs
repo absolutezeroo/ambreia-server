@@ -315,6 +315,11 @@ const H = {
   rpgState: 9003,
   rpgProgress: 9004,
   rpgStats: 9005,
+  // Items (spec Objets §17).
+  rpgItemEquip: 9006,
+  rpgItemUnequip: 9007,
+  rpgInventory: 9006,
+  rpgItemResult: 9007,
 };
 
 // Reads a frame body in the client's order: int32 BE, int16-prefixed UTF-8, one-byte bool.
@@ -470,7 +475,7 @@ async function enterWorld() {
   const forward = await g.wait([H.roomForward], from);
   if (!g.frames.slice(from).some((f) => f.header === H.authOk)) fail(`RpgEnterWorld(${playerId}): no AuthenticationOK.`);
   log(`Player ${playerId} entered the world.`);
-  return { g, forward, from };
+  return { g, forward, from, playerId };
 }
 
 // The core loop, end to end: account ticket -> character -> AuthenticationOK, RoomForward -> room
@@ -1086,8 +1091,22 @@ async function cmdLobby() {
   log('RpgCharacterCreate in the world -> nothing (phase gate). Lobby OK.');
 }
 
-// The item grant (spec Objets §10): the admin route gives the throwaway account's first character a
-// sword, twice with the same key -- `granted` then `duplicate_grant`, and exactly one more sword row.
+// RpgInventory: bag size, parcel limit, then per copy id, definition, quantity, durability, bound,
+// container (0 bag, 1 equipment, 2 parcel), slot.
+function inventoryOf(frame) {
+  const r = reader(frame.body);
+  const [bagSize, maxParcels, count] = [r.int(), r.int(), r.int()];
+  const items = Array.from({ length: count }, () => ({
+    id: r.int(), definition: r.str(), quantity: r.int(), durability: r.int(),
+    bound: r.bool(), container: r.int(), slot: r.int(),
+  }));
+  return { bagSize, maxParcels, items };
+}
+
+// The items (spec Objets §10, §17). The admin route gives the throwaway account's first character a
+// sword, twice with the same key -- `ok` then `duplicate_grant`, and exactly one more sword row.
+// Then the socket: the bag arrives with the world entry; the sword is refused to a « Sans classe »
+// (wrong_class); a copper ring, which any class wears, goes to ring slot 8 with the stats, and back.
 async function cmdItems() {
   const base = `http://127.0.0.1:${WEBAPI}`;
   const headers = { cookie: (await webSession()).cookie };
@@ -1118,7 +1137,62 @@ async function cmdItems() {
   }
   const after = swords();
   if (after !== before + 1) die(`${before} -> ${after} swords: expected exactly one more.`);
-  log(`Player ${playerId}: ${before} -> ${after} swords; the replayed key granted nothing. Items OK.`);
+  log(`Player ${playerId}: ${before} -> ${after} swords; the replayed key granted nothing.`);
+
+  const RING = 'item.ring.copper_ring';
+  const ringGrant = JSON.stringify({ grantKey: `driver-ring-${Date.now()}`, definitionId: RING, quantity: 1 });
+  const ringRes = await request(`${base}/api/admin/characters/${playerId}/items`, { method: 'POST', headers, body: ringGrant });
+  if (ringRes.status !== 200) die(`Ring grant: ${ringRes.status} ${ringRes.body}`);
+
+  const { g, playerId: playing } = await enterWorld();
+  const fail = (m) => {
+    g.close();
+    die(m);
+  };
+  if (playing !== playerId) fail(`The socket plays ${playing}, the grants went to ${playerId}.`);
+  const first = await g.wait([H.rpgInventory], 0, 10000);
+  if (!first) fail('No RpgInventory with the world entry.');
+  const bag = inventoryOf(first);
+  const inBag = (inv, def) => inv.items.find((i) => i.definition === def && i.container === 0);
+  log(`RpgInventory: ${bag.items.length} item(s), bag ${bag.bagSize}, parcels up to ${bag.maxParcels}`);
+  const sword = inBag(bag, SWORD);
+  const ring = inBag(bag, RING);
+  if (!sword || !ring) fail('The sword and the ring are not both in the bag.');
+
+  const result = async (from, action, code) => {
+    const f = await g.wait([H.rpgItemResult], from, 5000);
+    if (!f) fail(`No RpgItemResult for action ${action}.`);
+    const r = reader(f.body);
+    const [a, c] = [r.int(), r.str()];
+    log(`  RpgItemResult(${a}, ${c})`);
+    if (a !== action || c !== code) fail(`Expected (${action}, ${code}).`);
+    return f;
+  };
+  const after1 = (f) => g.wait([H.rpgInventory], g.frames.indexOf(f) + 1, 5000);
+
+  let from = g.frames.length;
+  g.send(frame(H.rpgItemEquip, sword.slot));
+  log(`RpgItemEquip(${sword.slot}) — the sword, warriors only`);
+  await result(from, 3, 'wrong_class');
+
+  from = g.frames.length;
+  g.send(frame(H.rpgItemEquip, ring.slot));
+  log(`RpgItemEquip(${ring.slot}) — the copper ring`);
+  const equipped = await result(from, 3, 'ok');
+  if (!g.frames.slice(from).some((f) => f.header === H.rpgStats)) fail('No RpgCharacterStats after equipping.');
+  const worn = await after1(equipped);
+  const wornRing = worn && inventoryOf(worn).items.find((i) => i.id === ring.id);
+  if (!wornRing || wornRing.container !== 1) fail('The ring is not worn after the equip.');
+  log(`  RpgCharacterStats, RpgInventory: ring ${ring.id} in equipment slot ${wornRing.slot}`);
+
+  from = g.frames.length;
+  g.send(frame(H.rpgItemUnequip, wornRing.slot));
+  log(`RpgItemUnequip(${wornRing.slot})`);
+  const unequipped = await after1(await result(from, 4, 'ok'));
+  const back = unequipped && inventoryOf(unequipped).items.find((i) => i.id === ring.id);
+  g.close();
+  if (!back || back.container !== 0) die('The ring did not come back to the bag.');
+  log(`  RpgInventory: ring ${ring.id} back in case ${back.slot}. Items OK.`);
 }
 
 // ---------------------------------------------------------------- dispatch
