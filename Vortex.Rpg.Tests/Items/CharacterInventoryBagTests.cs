@@ -171,7 +171,10 @@ public sealed class CharacterInventoryBagTests
         inventory.Remove(TestItems.Shard.Id, 21).Outcome.Should().Be(ItemOutcome.NotFound);
         inventory.Dirty.Should().BeEmpty();
 
-        (ItemOutcome outcome, var taken) = inventory.Remove(TestItems.Shard.Id, 15);
+        (ItemOutcome outcome, IReadOnlyList<ItemQuantity> taken) = inventory.Remove(
+            TestItems.Shard.Id,
+            15
+        );
 
         outcome.Should().Be(ItemOutcome.Ok);
         taken.Select(t => (t.Item.Slot, t.Quantity)).Should().Equal((0, 10), (1, 5));

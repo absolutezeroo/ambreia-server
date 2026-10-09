@@ -17,7 +17,8 @@ import { fileURLToPath } from 'node:url';
 
 const SKILL_DIR = path.dirname(fileURLToPath(import.meta.url));
 const REPO = path.resolve(SKILL_DIR, '../../..'); // .claude/skills/run-vortex-emulator -> repo root
-const STATE = path.join(os.tmpdir(), 'vortex-run');
+// A second instance (VORTEX_MAIN_EXE) keeps its own pid and log, or `stop` would aim at the first.
+const STATE = path.join(os.tmpdir(), process.env.VORTEX_MAIN_EXE ? 'vortex-run-alt' : 'vortex-run');
 const PID_FILE = path.join(STATE, 'vortex-main.pid');
 const LOG_FILE = path.join(STATE, 'vortex-main.log');
 
@@ -27,7 +28,9 @@ const LOG_FILE = path.join(STATE, 'vortex-main.log');
 const GAME_TCP =
   Number(process.env.VORTEX_GAME_PORT) ||
   (fs.existsSync(path.join(REPO, 'appsettings.Development.json')) ? 40000 : 30000);
-const WEBAPI = 8080;
+// A second instance beside a running one (VORTEX_MAIN_EXE built elsewhere, its own ports) moves the
+// web API too: two listeners cannot share 8080.
+const WEBAPI = Number(process.env.VORTEX_WEBAPI_PORT) || 8080;
 const log = (...a) => console.log(...a);
 const die = (msg) => {
   console.error(msg);
@@ -176,6 +179,8 @@ async function cmdMysql() {
 // ---------------------------------------------------------------- lifecycle
 
 function exePath() {
+  // Built elsewhere (`dotnet build Vortex.Main -o <dir>`) while a running instance holds bin/.
+  if (process.env.VORTEX_MAIN_EXE) return fs.existsSync(process.env.VORTEX_MAIN_EXE) ? process.env.VORTEX_MAIN_EXE : null;
   for (const cfg of ['Debug', 'Release']) {
     const p = path.join(REPO, 'Vortex.Main', 'bin', cfg, 'net10.0', 'Vortex.Main.exe');
     if (fs.existsSync(p)) return p;
@@ -185,7 +190,8 @@ function exePath() {
 
 async function cmdStart() {
   const foreign = foreignPids();
-  if (foreign.length) {
+  // VORTEX_MAIN_EXE means a separate instance on its own ports: the running one is left alone.
+  if (foreign.length && !process.env.VORTEX_MAIN_EXE) {
     // Never stop it. It is the user's live-verification hotel, with activated RoomGrains and
     // connected sessions behind it.
     log(`Vortex.Main already running (pid ${foreign.join(', ')}) and NOT started by this driver.`);

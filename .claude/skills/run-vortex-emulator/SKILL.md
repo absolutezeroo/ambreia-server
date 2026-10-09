@@ -123,6 +123,15 @@ Restarting to pick up a host change is the **user's** call, not yours.
 - **Never read a build result through a pipe.** `dotnet build ... | tail -40` reported `exit 0` on a
   build that printed `ÉCHEC de la build`. Redirect to a file, then read it.
 - **Web sessions are in-memory.** A host restart drops them; `play` logs in again on every run.
+- **A second instance beside a running one** (another session's emulator holds `bin/` and :8080):
+  build with `dotnet build Vortex.Main/Vortex.Main.csproj -o Vortex.Main/bin/alt`, publish the web
+  plugin to another folder, and set `VORTEX_MAIN_EXE` (that exe; the driver then keeps its own pid
+  and log in `%TEMP%/vortex-run-alt` and ignores the other instance), `VORTEX_WEBAPI_PORT`, the game
+  ports, and `VORTEX__Vortex__Orleans__SiloPort` / `GatewayPort` / `VORTEX__Vortex__WebApi__Port`
+  so nothing collides. Point it at its own database (`fresh-db.ps1`).
+- **A role granted by SQL after a login is not seen** until the host restarts (the permission
+  service caches the account): after `cleanup` on a fresh database, `stop` + `start` before
+  `content`, `zone` or `items`.
 - Migrations are **never** applied at startup unless `Vortex:Database:MigrateOnStartup` is set. A
   schema change needs `scripts/ef.ps1 database update` run deliberately.
 
