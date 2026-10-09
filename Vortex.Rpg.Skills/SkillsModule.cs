@@ -24,12 +24,13 @@ public sealed class SkillsModule : IHostPluginModule
             builder.Configuration.GetSection(SkillsConfig.SECTION_NAME)
         );
 
-        services.AddSingleton<ISkillEffectRule, DamageEffect>();
-        services.AddSingleton<ISkillEffectRule, HealEffect>();
-        services.AddSingleton<ISkillEffectRule, ApplyStatusEffect>();
-        services.AddSingleton<ISkillEffectRule, InterruptEffect>();
-        services.AddSingleton<ISkillEffectRule, DispelEffect>();
-        services.AddSingleton<ISkillEffectRule, ThreatEffect>();
+        AddEffect<DamageEffect>(services);
+        AddEffect<HealEffect>(services);
+        AddEffect<ApplyStatusEffect>(services);
+        AddEffect<InterruptEffect>(services);
+        AddEffect<DispelEffect>(services);
+        AddEffect<ThreatEffect>(services);
+        services.AddSingleton<SkillEffects>();
 
         // Statuses (spec M1b §7): one system, ticked by every zone and asked for its modifiers.
         services.AddSingleton<StatusApplier>();
@@ -38,5 +39,14 @@ public sealed class SkillsModule : IHostPluginModule
         services.AddSingleton<IStatModifierSource>(sp => sp.GetRequiredService<StatusSystem>());
         services.AddSingleton<IHitStep, DamageModifierStep>();
         services.AddSingleton<IHitStep, ShieldStep>();
+    }
+
+    /// <summary>One instance, seen both by the import (its rule) and by the zone (its effect).</summary>
+    public static void AddEffect<T>(IServiceCollection services)
+        where T : class, ISkillEffect
+    {
+        services.AddSingleton<T>();
+        services.AddSingleton<ISkillEffectRule>(sp => sp.GetRequiredService<T>());
+        services.AddSingleton<ISkillEffect>(sp => sp.GetRequiredService<T>());
     }
 }
