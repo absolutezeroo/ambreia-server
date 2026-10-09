@@ -5,11 +5,13 @@ using Vortex.Primitives.Orleans;
 
 namespace Vortex.Players.Chat.Channels;
 
-/// <summary><c>world</c> (spec F3c §4.4): every player in the world, through the
-/// <see cref="OrleansStreamNames.WORLD_CHAT_STREAM"/> stream each presence joins on entry.</summary>
-internal sealed class WorldChatChannel : IChatChannel
+/// <summary>A channel every player in the world hears (spec F3c §4.4): <c>world</c>, and the
+/// <c>trade</c> and <c>recruitment</c> tabs, through the
+/// <see cref="OrleansStreamNames.WORLD_CHAT_STREAM"/> stream each presence joins on entry. The
+/// client sorts the lines by channel.</summary>
+internal sealed class WorldChatChannel(string key) : IChatChannel
 {
-    public string Key => "world";
+    public string Key => key;
 
     public bool PlayersCanSend => true;
 

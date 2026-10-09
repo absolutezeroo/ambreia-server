@@ -38,8 +38,23 @@ public sealed class ChatChannelTests
     [Fact]
     public async Task World_IsPublishedOnTheWorldChatStream()
     {
-        (await RouteAsync(new WorldChatChannel(), "world")).Should().BeNull();
+        (await RouteAsync(new WorldChatChannel("world"), "world")).Should().BeNull();
         _routing.Deliveries.Select(d => d.To).Should().Equal("world-chat/0");
+    }
+
+    /// <summary>Commerce and Recrutement reach everyone in the world, like Monde; the client sorts
+    /// the lines by channel.</summary>
+    [Theory]
+    [InlineData("trade")]
+    [InlineData("recruitment")]
+    public async Task TradeAndRecruitment_ArePublishedOnTheWorldChatStream(string key)
+    {
+        WorldChatChannel channel = new(key);
+
+        channel.Key.Should().Be(key);
+        (await RouteAsync(channel, key)).Should().BeNull();
+        _routing.Deliveries.Single().To.Should().Be("world-chat/0");
+        _routing.Deliveries.Single().Line.Channel.Should().Be(key);
     }
 
     [Fact]

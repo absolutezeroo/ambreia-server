@@ -48,7 +48,9 @@ public sealed class PlayerModule : IHostPluginModule
         // The chat (spec F3c §14): every channel, rule and link kind is declared by the module that
         // owns it; the pipeline keeps the last channel declared for a key.
         services.AddSingleton<IChatChannel, ZoneChatChannel>();
-        services.AddSingleton<IChatChannel, WorldChatChannel>();
+        services.AddSingleton<IChatChannel>(new WorldChatChannel("world"));
+        services.AddSingleton<IChatChannel>(new WorldChatChannel("trade"));
+        services.AddSingleton<IChatChannel>(new WorldChatChannel("recruitment"));
         services.AddSingleton<IChatChannel, WhisperChatChannel>();
         services.AddSingleton<IChatChannel, SystemChatChannel>();
 

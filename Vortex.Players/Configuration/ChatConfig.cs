@@ -22,5 +22,7 @@ public sealed class ChatConfig
             ["general"] = 1000,
             ["world"] = 10000,
             ["whisper"] = 1000,
+            ["trade"] = 30000,
+            ["recruitment"] = 30000,
         };
 }

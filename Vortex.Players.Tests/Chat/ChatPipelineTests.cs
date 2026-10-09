@@ -150,10 +150,22 @@ public sealed class ChatPipelineTests
     [Fact]
     public async Task AChannelWithoutALimit_IsNotRateLimited()
     {
-        ChatPipeline pipeline = Pipeline([Echo("trade")]);
+        ChatPipeline pipeline = Pipeline([Echo("bazaar")]);
 
-        (await SendAsync(pipeline, "trade", "un")).Should().BeNull();
-        (await SendAsync(pipeline, "trade", "deux")).Should().BeNull();
+        (await SendAsync(pipeline, "bazaar", "un")).Should().BeNull();
+        (await SendAsync(pipeline, "bazaar", "deux")).Should().BeNull();
+    }
+
+    [Theory]
+    [InlineData("trade")]
+    [InlineData("recruitment")]
+    public async Task TradeAndRecruitment_AllowOneMessageEveryThirtySeconds(string channel)
+    {
+        ChatPipeline pipeline = Pipeline([Echo(channel)]);
+
+        (await SendAsync(pipeline, channel, "un")).Should().BeNull();
+        (await SendAsync(pipeline, channel, "deux", T0.AddSeconds(29))).Should().Be("rate_limited");
+        (await SendAsync(pipeline, channel, "trois", T0.AddSeconds(30))).Should().BeNull();
     }
 
     [Fact]
