@@ -152,9 +152,9 @@ internal sealed class PlayerDirectoryGrain(
 
     public async Task<PlayerId?> GetPlayerIdByNameAsync(string name, CancellationToken ct)
     {
-        string lowered = name.Trim().ToLowerInvariant();
+        string trimmed = name.Trim();
 
-        if (lowered.Length == 0)
+        if (trimmed.Length == 0)
         {
             return null;
         }
@@ -165,12 +165,12 @@ internal sealed class PlayerDirectoryGrain(
         {
             await using VortexDbContext dbCtx = await _dbCtxFactory.CreateDbContextAsync(ct);
 
-            // ponytail: LOWER(name) reads past the unique index on players.name, one scan per
-            // whisper that the whisper rate limit bounds; a case-insensitive indexed lookup if
-            // players grow.
+            // Case aside through the column's collation (utf8mb4's default, _ai_ci), the one the
+            // unique index on players.name uses: a seek, not a scan, in this one grain every
+            // whisper waits on. EF InMemory compares exactly; `driver.mjs chat` proves the case.
             found = await dbCtx
                 .Players.AsNoTracking()
-                .Where(x => x.Name.ToLower() == lowered)
+                .Where(x => x.Name == trimmed)
                 .Select(x => new KeyValuePair<int, string>(x.Id, x.Name))
                 .FirstOrDefaultAsync(ct);
         }

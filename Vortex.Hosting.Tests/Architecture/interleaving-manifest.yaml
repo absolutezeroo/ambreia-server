@@ -50,6 +50,16 @@ entries:
       other at once would each wait on the other until the 30s call timeout.
     owner: players
 
+  - symbol: Vortex.Primitives.Players.Grains.IPlayerPresenceGrain.SendSystemChatAsync
+    overload: (String, CancellationToken)
+    category: SynchronousBoundedLivenessOperation
+    implementation: Vortex.Players/Grains/PlayerPresenceGrain.Chat.cs
+    justification: >
+      A system line (spec F3c §9) comes from grains this presence may be waiting on — the character
+      during the world entry, a room during a room entry — the same cycle SendComposerAsync breaks.
+      The system channel routes to this presence's own queue, which enqueues synchronously.
+    owner: players
+
   - symbol: Vortex.Primitives.Rooms.Grains.IRoomZone.ExpectArrivalAsync
     overload: (PlayerId, String)
     category: SynchronousBoundedLivenessOperation

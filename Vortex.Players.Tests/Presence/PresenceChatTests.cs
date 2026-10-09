@@ -17,9 +17,11 @@ using Vortex.Primitives.Events;
 using Vortex.Primitives.Networking;
 using Vortex.Primitives.Observability;
 using Vortex.Primitives.Orleans.Observers;
+using Vortex.Primitives.Orleans.Snapshots.Players;
 using Vortex.Primitives.Permissions;
 using Vortex.Primitives.Players;
 using Vortex.Primitives.Players.Grains;
+using Vortex.Primitives.Rooms.Enums;
 using Vortex.Primitives.World;
 using Vortex.Protocol.Messages.Outgoing.Rpg.Chat;
 using Vortex.Tests.Support;
@@ -127,6 +129,59 @@ public sealed class PresenceChatTests
             .NotBeNull();
     }
 
+    /// <summary>A system line comes from a grain the presence may be waiting on (the character
+    /// during the world entry, a room during a room entry): non-interleaved, both would wait out
+    /// the call timeout.</summary>
+    [Fact]
+    public void SendSystemChat_IsInterleaved()
+    {
+        typeof(IPlayerPresenceGrain)
+            .GetMethod(nameof(IPlayerPresenceGrain.SendSystemChatAsync))!
+            .GetCustomAttribute<AlwaysInterleaveAttribute>()
+            .Should()
+            .NotBeNull();
+    }
+
+    /// <summary>The directory is one grain for the whole server: the sender's own name is not
+    /// asked of it for every line.</summary>
+    [Fact]
+    public async Task TheSendersName_IsReadOnce()
+    {
+        PlayerPresenceGrain grain = await SignedInAsync();
+
+        await grain.SendChatAsync("guild", string.Empty, "un", CancellationToken.None);
+        await grain.SendChatAsync("guild", string.Empty, "deux", CancellationToken.None);
+
+        _directoryCalls
+            .Count(c => c == nameof(IPlayerDirectoryGrain.GetPlayerNameAsync))
+            .Should()
+            .Be(1);
+    }
+
+    [Fact]
+    public async Task ARename_ReachesTheNextLine()
+    {
+        PlayerPresenceGrain grain = await SignedInAsync();
+        await grain.SendChatAsync("guild", string.Empty, "avant", CancellationToken.None);
+
+        await grain.OnPlayerUpdatedAsync(
+            new PlayerSummarySnapshot
+            {
+                PlayerId = new PlayerId(ANN),
+                Name = "Annie",
+                Motto = string.Empty,
+                Figure = "hd-180-1",
+                Gender = AvatarGenderType.Female,
+                AchievementScore = 0,
+                CreatedAt = DateTime.UtcNow,
+            },
+            CancellationToken.None
+        );
+        await grain.SendChatAsync("whisper", "Bob", "salut", CancellationToken.None);
+
+        _bob.Cast<RpgChatMessageComposer>().Single().SenderName.Should().Be("Annie");
+    }
+
     /// <summary>The outgoing queue drains off the caller's turn: wait for it, two seconds at most.</summary>
     private async Task<List<IComposer>> ReceivedAsync(int count)
     {
@@ -216,14 +271,14 @@ public sealed class PresenceChatTests
                     inner.Method.Name switch
                     {
                         nameof(IPlayerPresenceGrain.IsOnlineAsync) => Task.FromResult(_bobOnline),
-                        nameof(IPlayerPresenceGrain.SendComposerAsync) => Record(inner),
+                        nameof(IPlayerPresenceGrain.SendComposerAsync) => RecordAsync(inner),
                         _ => null,
                     }
                 )
                 : null;
         });
 
-    private Task Record(ProxyCall call)
+    private Task RecordAsync(ProxyCall call)
     {
         _bob.Add((IComposer)call.Args![0]!);
 

@@ -27,6 +27,9 @@ internal sealed partial class PlayerPresenceGrain : IChatRouting
     private readonly ChatSenderState _chatState = new();
     private StreamSubscriptionHandle<RoomOutbound>? _worldChatSub;
 
+    /// <summary>The player's name on its chat lines, read once from the directory.</summary>
+    private string? _chatName;
+
     public async Task SendChatAsync(
         string channel,
         string target,
@@ -44,12 +47,14 @@ internal sealed partial class PlayerPresenceGrain : IChatRouting
 
         try
         {
-            string name = await _grainFactory
+            // Once per activation: the directory is one grain for the whole server. A rename comes
+            // through OnPlayerUpdatedAsync.
+            _chatName ??= await _grainFactory
                 .GetPlayerDirectoryGrain()
                 .GetPlayerNameAsync(PlayerId, ct);
 
             refusal = await _chat.SendAsync(
-                new ChatSend(PlayerId, name, channel, target, text, _chat.Time.GetUtcNow()),
+                new ChatSend(PlayerId, _chatName, channel, target, text, _chat.Time.GetUtcNow()),
                 _chatState,
                 this,
                 ct
@@ -71,8 +76,11 @@ internal sealed partial class PlayerPresenceGrain : IChatRouting
         }
     }
 
-    public Task SendSystemChatAsync(string text, CancellationToken ct) =>
-        _chat.SendSystemAsync(text, this, ct);
+    public Task SendSystemChatAsync(string text, CancellationToken ct)
+    {
+        // Interleaved: completes synchronously, the system channel only enqueues on this queue.
+        return _chat.SendSystemAsync(text, this, ct);
+    }
 
     PlayerId IChatRouting.Sender => PlayerId;
 

@@ -12,6 +12,8 @@ internal sealed partial class PlayerPresenceGrain
 {
     public async Task OnPlayerUpdatedAsync(PlayerSummarySnapshot snapshot, CancellationToken ct)
     {
+        _chatName = snapshot.Name;
+
         if (_state.ActiveRoomId > 0)
         {
             await SendComposerAsync(

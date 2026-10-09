@@ -83,16 +83,17 @@ public sealed class PlayerNameLookupTests
             .Be(new PlayerId(2));
     }
 
-    /// <summary>Spec F3c §8: case aside, like the unique index on players.name; the name found is
-    /// cached as stored.</summary>
+    /// <summary>Spec F3c §8: the name found is cached as stored, so the whisper's second question
+    /// costs no read. Case aside is the column's collation, which EF InMemory does not have:
+    /// `driver.mjs chat` whispers a name in capitals against MySQL.</summary>
     [Fact]
-    public async Task AName_IsFoundWhateverItsCase()
+    public async Task AName_FindsItsPlayer_AndCachesItsName()
     {
         DbContextOptions<VortexDbContext> options = Options();
         await SeedAsync(options, "Ann", "Bob");
         PlayerDirectoryGrain grain = Create(options);
 
-        (await grain.GetPlayerIdByNameAsync("bOB", CancellationToken.None))
+        (await grain.GetPlayerIdByNameAsync(" Bob ", CancellationToken.None))
             .Should()
             .Be(new PlayerId(2));
         grain.CachedNames.Should().Be(1);

@@ -29,10 +29,10 @@ internal sealed class RecordingChatRouting : IChatRouting
     public bool Fails { get; set; }
 
     public Task SendToPlayerAsync(PlayerId to, ChatLine line) =>
-        Deliver($"player {to.Value}", line);
+        DeliverAsync($"player {to.Value}", line);
 
     public Task PublishAsync(string stream, long key, ChatLine line) =>
-        Deliver($"{stream}/{key}", line);
+        DeliverAsync($"{stream}/{key}", line);
 
     public Task<ChatPlayer?> FindPlayerAsync(string name, CancellationToken ct) =>
         Task.FromResult(
@@ -44,7 +44,7 @@ internal sealed class RecordingChatRouting : IChatRouting
     public Task<bool> IsOnlineAsync(PlayerId player, CancellationToken ct) =>
         Task.FromResult(Online.Contains(player));
 
-    private Task Deliver(string to, ChatLine line)
+    private Task DeliverAsync(string to, ChatLine line)
     {
         if (Fails)
         {
