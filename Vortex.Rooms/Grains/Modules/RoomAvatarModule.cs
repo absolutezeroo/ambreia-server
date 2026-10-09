@@ -26,13 +26,17 @@ public sealed partial class RoomAvatarModule(RoomGrain roomGrain)
 
     private int _nextObjectId = 0;
 
+    /// <summary>A fresh avatar object id, never reused within the activation: a monster takes its
+    /// own from the same counter as the players.</summary>
+    public int NextObjectId() => _nextObjectId += 1;
+
     public async Task<IRoomAvatar> CreateAvatarFromPlayerAsync(
         ActionContext ctx,
         PlayerSummarySnapshot snapshot,
         CancellationToken ct
     )
     {
-        int objectId = _nextObjectId += 1;
+        int objectId = NextObjectId();
         int startX = _roomGrain._state.Model?.DoorX ?? 0;
         int startY = _roomGrain._state.Model?.DoorY ?? 0;
         Rotation startRot = _roomGrain._state.Model?.DoorRotation ?? Rotation.North;
@@ -77,6 +81,8 @@ public sealed partial class RoomAvatarModule(RoomGrain roomGrain)
 
         avatar.SetRotation(startRot);
 
+        await JoinFightsAsync(snapshot.PlayerId, objectId, ct);
+
         return avatar;
     }
 
@@ -101,6 +107,9 @@ public sealed partial class RoomAvatarModule(RoomGrain roomGrain)
             {
                 return;
             }
+
+            // Health and mana back to the character first, awaited: the next zone reads them.
+            await LeaveFightsAsync(playerId, ct);
 
             try
             {

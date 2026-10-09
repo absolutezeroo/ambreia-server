@@ -1,0 +1,160 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
+using FluentAssertions;
+using Vortex.Primitives.Networking;
+using Vortex.Primitives.Orleans.Snapshots.Players;
+using Vortex.Primitives.Orleans.Snapshots.Room;
+using Vortex.Primitives.Players;
+using Vortex.Primitives.Rooms.Enums;
+using Vortex.Primitives.Rooms.Object.Logic.Avatars;
+using Vortex.Primitives.Rpg.Characters;
+using Vortex.Primitives.World;
+using Vortex.Protocol.Messages.Outgoing.Rpg.Combat;
+using Vortex.Rooms.Tests.Support;
+using Vortex.Rpg.Zones;
+using Vortex.Tests.Support;
+using Vortex.Tests.Support.World;
+using Xunit;
+
+namespace Vortex.Rooms.Tests.Zones;
+
+/// <summary>Spec M1a §4.3–§4.4: a zone room runs its fights — a player joins them on entry and
+/// leaves them (awaited) on exit, a click on a monster goes to them first, walking by hand stops the
+/// attack, the combat step ticks, the entry burst carries every fighter's health.</summary>
+public sealed class RoomCombatTests
+{
+    private readonly List<string> _calls = [];
+
+    private RoomHarness _harness = null!;
+
+    private async Task ZoneAsync()
+    {
+        _harness = await RoomHarness.CreateZoneAsync(ZoneSamples.Minimal(), (_, _) => Recording());
+        _harness.LogicFactory = () => FakeProxy.Create<IRoomPlayerLogic>(_ => null);
+    }
+
+    private async Task EnterAsync(PlayerId player)
+    {
+        bool created = await _harness.Grain.CreateAvatarFromPlayerAsync(
+            _harness.ContextFor(player),
+            new PlayerSummarySnapshot
+            {
+                PlayerId = player,
+                Name = "P" + player.Value,
+                Motto = string.Empty,
+                Figure = "hd-180-1",
+                Gender = AvatarGenderType.Male,
+                AchievementScore = 0,
+                CreatedAt = DateTime.UtcNow,
+            },
+            CancellationToken.None
+        );
+
+        created.Should().BeTrue();
+    }
+
+    [Fact]
+    public async Task EnteringAZoneRoom_JoinsItsFights()
+    {
+        await ZoneAsync();
+
+        await EnterAsync(RoomHarness.Owner);
+
+        _calls
+            .Should()
+            .ContainSingle(c => c.StartsWith("entered"))
+            .Which.Should()
+            .Be($"entered {RoomHarness.Owner.Value}");
+    }
+
+    [Fact]
+    public async Task LeavingTheRoom_LeavesItsFights_BeforeTheAvatarGoes()
+    {
+        await ZoneAsync();
+        await EnterAsync(RoomHarness.Owner);
+        _calls.Clear();
+
+        await _harness.Grain.RemoveAvatarFromPlayerAsync(
+            _harness.ContextFor(RoomHarness.Owner),
+            RoomHarness.Owner,
+            CancellationToken.None
+        );
+
+        _calls.Should().Equal($"left {RoomHarness.Owner.Value}");
+    }
+
+    [Fact]
+    public async Task ClickingAMonster_GoesToTheFights()
+    {
+        await ZoneAsync();
+        await EnterAsync(RoomHarness.Owner);
+
+        await _harness.Grain.SelectTargetAsync(
+            _harness.ContextFor(RoomHarness.Owner),
+            99,
+            CancellationToken.None
+        );
+
+        _calls.Should().Contain($"select {RoomHarness.Owner.Value} 99");
+    }
+
+    [Fact]
+    public async Task WalkingByHand_StopsTheAttack()
+    {
+        await ZoneAsync();
+        await EnterAsync(RoomHarness.Owner);
+        _calls.Clear();
+
+        await _harness.Grain.WalkAvatarToAsync(
+            _harness.ContextFor(RoomHarness.Owner),
+            4,
+            4,
+            null,
+            CancellationToken.None
+        );
+
+        _calls.Should().Contain($"stop {RoomHarness.Owner.Value}");
+    }
+
+    [Fact]
+    public async Task TheEntryBurst_CarriesEveryFightersHealth()
+    {
+        await ZoneAsync();
+
+        RoomAdmissionSnapshot admission = await _harness.Grain.AdmitAsync(
+            _harness.ContextFor(RoomHarness.Owner),
+            string.Empty,
+            false,
+            CancellationToken.None
+        );
+
+        admission.Burst.OfType<RpgVitalsMessageComposer>().Should().ContainSingle();
+    }
+
+    private IZoneSimulation Recording() =>
+        FakeProxy.Create<IZoneSimulation>(call =>
+        {
+            switch (call.Method.Name)
+            {
+                case nameof(IZoneSimulation.PlayerEnteredAsync):
+                    _calls.Add($"entered {((PlayerId)call.Args![0]!).Value}");
+                    return Task.CompletedTask;
+                case nameof(IZoneSimulation.PlayerLeftAsync):
+                    _calls.Add($"left {((PlayerId)call.Args![0]!).Value}");
+                    return Task.CompletedTask;
+                case nameof(IZoneSimulation.SelectTargetAsync):
+                    _calls.Add($"select {((PlayerId)call.Args![0]!).Value} {call.Args[1]}");
+                    return Task.FromResult(true);
+                case nameof(IZoneSimulation.StopAttack):
+                    _calls.Add($"stop {((PlayerId)call.Args![0]!).Value}");
+                    return null;
+                case nameof(IZoneSimulation.EntryVitals):
+                    return new RpgVitalsMessageComposer { Combatants = [] };
+                default:
+                    return null;
+            }
+        });
+}

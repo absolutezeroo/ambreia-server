@@ -150,7 +150,8 @@ public sealed class RoomAvatarTickSystem(RoomGrain roomGrain)
                 )
             )
             {
-                if (!isGoal)
+                // A monster is re-pathed by its own AI, within its rules: it just stops here.
+                if (!isGoal && avatar is not IRoomMonster)
                 {
                     (int goalX, int goalY) = _roomGrain.MapModule.GetTileXY(avatar.GoalTileId);
 
@@ -172,8 +173,12 @@ public sealed class RoomAvatarTickSystem(RoomGrain roomGrain)
                 return;
             }
 
-            // A zone's Restricted area stops the walk at its edge for a player who may not enter.
-            if (!_roomGrain.ZoneAreas.MayStepOnto(avatar, nextX, nextY))
+            // A zone's Restricted area stops a player at its edge; a monster never steps on a safe
+            // cell (spec M1a §5.3), even if one turned safe under its path.
+            if (
+                !_roomGrain.ZoneAreas.MayStepOnto(avatar, nextX, nextY)
+                || avatar is IRoomMonster && _roomGrain.CombatRuntime.RulesAt(nextX, nextY).Safe
+            )
             {
                 await _roomGrain.AvatarModule.StopWalkingAsync(avatar, ct);
 
@@ -185,8 +190,10 @@ public sealed class RoomAvatarTickSystem(RoomGrain roomGrain)
             // under a platform and the walk-on trigger that fires is the floor's, not the roof's.
             RoomObjectId nextHighestItemId = nextSection.ItemId;
 
+            // A monster has no object logic: no furniture reacts to it walking on or off.
             if (
-                prevHighestItemId > 0
+                avatar.Logic is not null
+                && prevHighestItemId > 0
                 && _roomGrain._state.ItemsById.TryGetValue(
                     prevHighestItemId,
                     out IRoomItem? prevFloorItem
@@ -203,7 +210,8 @@ public sealed class RoomAvatarTickSystem(RoomGrain roomGrain)
             _roomGrain.MapModule.AddAvatarAtIdx(avatar, nextTileId, false);
 
             if (
-                nextHighestItemId > 0
+                avatar.Logic is not null
+                && nextHighestItemId > 0
                 && _roomGrain._state.ItemsById.TryGetValue(
                     nextHighestItemId,
                     out IRoomItem? nextFloorItem

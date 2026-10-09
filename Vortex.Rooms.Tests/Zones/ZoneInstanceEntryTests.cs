@@ -21,6 +21,7 @@ using Vortex.Rooms.Configuration;
 using Vortex.Rooms.Grains;
 using Vortex.Rooms.Providers;
 using Vortex.Rooms.Tests.Support;
+using Vortex.Rpg.Zones;
 using Vortex.Tests.Support;
 using Vortex.Tests.Support.World;
 using Xunit;
@@ -146,6 +147,7 @@ public sealed class ZoneInstanceEntryTests
                 zoneAsked((RoomId)call.Args![0]!);
 
                 return Task.FromResult<ZoneDocument?>(null);
-            })
+            }),
+            FakeProxy.Create<IZoneSimulationFactory>(_ => NoZoneSimulation.Instance)
         );
 }

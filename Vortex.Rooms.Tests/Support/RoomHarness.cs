@@ -47,6 +47,7 @@ using Vortex.Rooms.Grains;
 using Vortex.Rooms.Grains.Systems;
 using Vortex.Rooms.Object.Avatars.Player;
 using Vortex.Rooms.Providers;
+using Vortex.Rpg.Zones;
 using Vortex.Tests.Support;
 using Vortex.Tests.Support.World;
 
@@ -162,6 +163,10 @@ internal sealed class RoomHarness
                                     : null
                             )
                         : Task.FromResult(Zone)
+                ),
+                FakeProxy.Create<IZoneSimulationFactory>(call =>
+                    Simulation?.Invoke((IZoneRuntime)call.Args![0]!, (ZoneDocument)call.Args[1]!)
+                    ?? NoZoneSimulation.Instance
                 ),
             ]
         );
@@ -302,6 +307,9 @@ internal sealed class RoomHarness
     /// <summary>The published document the zone source answers with; null = an ordinary room.</summary>
     public ZoneDocument? Zone { get; set; }
 
+    /// <summary>The fights a zone runs; none unless the test gives them.</summary>
+    public Func<IZoneRuntime, ZoneDocument, IZoneSimulation>? Simulation { get; set; }
+
     /// <summary>The rooms of the other published zones, by zone key, for passages.</summary>
     public Dictionary<string, RoomId> ZoneRooms { get; } = [];
 
@@ -351,11 +359,15 @@ internal sealed class RoomHarness
 
     /// <summary>A room running <paramref name="zone"/>: the zone is applied the way activation
     /// applies it, then the map is rebuilt from the compiled model.</summary>
-    public static async Task<RoomHarness> CreateZoneAsync(ZoneDocument zone)
+    public static async Task<RoomHarness> CreateZoneAsync(
+        ZoneDocument zone,
+        Func<IZoneRuntime, ZoneDocument, IZoneSimulation>? simulation = null
+    )
     {
         RoomHarness harness = await CreateAsync().ConfigureAwait(true);
 
         harness.Zone = zone;
+        harness.Simulation = simulation;
         harness.Definitions[ZoneSamples.Throne] = TestDefinitions.Floor(
             ZoneSamples.Throne,
             "throne",

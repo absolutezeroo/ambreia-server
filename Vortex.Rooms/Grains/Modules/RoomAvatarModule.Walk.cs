@@ -70,6 +70,9 @@ public sealed partial class RoomAvatarModule
             return false;
         }
 
+        // A player walking on his own gives up his attack (spec M1a §6.1).
+        _roomGrain.Simulation.StopAttack(ctx.PlayerId);
+
         return true;
     }
 

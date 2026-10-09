@@ -26,6 +26,7 @@ public sealed class ContentPackInRepoTests
             new SpecializationKind(),
             new ProgressionKind(),
             new ItemKind(),
+            new MonsterKind(),
         ]).Validate(Read(), id => id == Throne);
 
         pack.Findings.Select(f => $"{f.Severity} {f.Code} {f.File} {f.ContentId}: {f.Message}")

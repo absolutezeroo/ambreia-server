@@ -22,7 +22,9 @@ public sealed partial class RoomMapModule
         {
             avatar.NeedsInvoke = false;
 
-            if (avatar.IsWalking)
+            // A movement-locked avatar (a ghost, lying until it respawns) keeps its posture; a
+            // monster has no logic for the furniture to answer.
+            if (avatar.IsWalking || avatar.IsMovementLocked || avatar.Logic is null)
             {
                 return;
             }

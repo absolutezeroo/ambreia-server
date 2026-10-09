@@ -34,6 +34,23 @@ public sealed class RoomTargetModule(RoomGrain roomGrain) : IRoomEventListener
             return;
         }
 
+        // A new choice, whatever it is, ends the attack under way; a monster starts another one
+        // (spec M1a §6.1), and the zone's fights answer it.
+        roomGrain.Simulation.StopAttack(ctx.PlayerId);
+
+        if (
+            objectId > 0
+            && await roomGrain.Simulation.SelectTargetAsync(ctx.PlayerId, objectId, ct)
+        )
+        {
+            roomGrain._state.Targets[ctx.PlayerId] = new RoomTarget(
+                new RoomObjectId(objectId),
+                default
+            );
+
+            return;
+        }
+
         if (
             objectId <= 0
             || !roomGrain._state.AvatarsByObjectId.TryGetValue(

@@ -42,6 +42,7 @@ using Vortex.Rooms.Grains.Zones.Compilation;
 using Vortex.Rooms.Grains.Zones.Modules;
 using Vortex.Rooms.Grains.Zones.Runtime;
 using Vortex.Rooms.Providers;
+using Vortex.Rpg.Zones;
 
 namespace Vortex.Rooms.Grains;
 
@@ -117,10 +118,12 @@ public sealed partial class RoomGrain : Grain, IRoomGrain
         // GrainActivationContext.CreateWithIntegerKey takes params object[]: a dependency changed
         // here compiles cleanly in every test that builds this grain and fails at activation.
         IVortexMetrics metrics,
-        IZoneRoomSource zoneSource
+        IZoneRoomSource zoneSource,
+        IZoneSimulationFactory simulationFactory
     )
     {
         _zoneSource = zoneSource;
+        _simulationFactory = simulationFactory;
         _dbCtxFactory = dbCtxFactory;
         _furnitureLocations = new RoomFurnitureLocationStore(dbCtxFactory);
         _definitionProvider = definitionProvider;
@@ -159,7 +162,18 @@ public sealed partial class RoomGrain : Grain, IRoomGrain
         EventModule.Register(EmoteModule);
 
         AvatarTickSystem = new RoomAvatarTickSystem(this);
+        CombatRuntime = new RoomZoneRuntime(this);
     }
+
+    private readonly IZoneSimulationFactory _simulationFactory;
+
+    /// <summary>The room as a zone for combat and monsters (spec M1a §4.2).</summary>
+    public readonly RoomZoneRuntime CombatRuntime;
+
+    /// <summary>The zone's fights; nothing for a room without a zone.</summary>
+    public IZoneSimulation Simulation { get; private set; } = NoZoneSimulation.Instance;
+
+    private long _nextCombatAtMs;
 
     public RoomId RoomId => _state.RoomId;
 
@@ -321,6 +335,14 @@ public sealed partial class RoomGrain : Grain, IRoomGrain
         // the fault lasted.
         await RunTickStepAsync("avatars", () => AvatarTickSystem.ProcessAvatarsAsync(now, ct));
         await RunTickStepAsync("zone-clock", () => ZoneTriggers.TickAsync(ct));
+
+        // Combat at its own pace (spec M1a §4.3): hits, monster AI, regeneration.
+        if (now >= _nextCombatAtMs)
+        {
+            _nextCombatAtMs = now + _roomConfig.CombatTickMs;
+            await RunTickStepAsync("combat", () => RunCombatAsync(now, ct));
+        }
+
         await RunTickStepAsync("flush-tiles", () => FlushDirtyTilesAsync(ct));
         await RunTickStepAsync("flush-items", () => FlushDirtyItemsAsync(ct));
 
@@ -426,6 +448,23 @@ public sealed partial class RoomGrain : Grain, IRoomGrain
         _state.Zone = zone;
         _state.ZoneRuntime = new ZoneRuntimeState(ZoneCompiler.Compile(zone));
         _state.Model = ZoneRoomLoader.CompileModel(zone, _state.RoomId.Value, _roomModelProvider);
+
+        // Its fights start from its spawns, whatever an earlier activation had.
+        Simulation = _simulationFactory.Create(CombatRuntime, zone);
+    }
+
+    private async Task RunCombatAsync(long now, CancellationToken ct)
+    {
+        CombatRuntime.BeginTick(now);
+
+        try
+        {
+            await Simulation.TickAsync(ct);
+        }
+        finally
+        {
+            await CombatRuntime.FlushAsync();
+        }
     }
 
     /// <summary>A zone's name, capacity and walls override the room row's, in memory.</summary>

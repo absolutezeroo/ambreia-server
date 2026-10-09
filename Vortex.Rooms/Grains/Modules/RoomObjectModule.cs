@@ -220,7 +220,11 @@ public sealed partial class RoomObjectModule(RoomGrain roomGrain)
 
                 try
                 {
-                    await avatar.Logic.OnDetachAsync(ct);
+                    // A monster has no object logic to detach.
+                    if (avatar.Logic is not null)
+                    {
+                        await avatar.Logic.OnDetachAsync(ct);
+                    }
                 }
                 finally
                 {

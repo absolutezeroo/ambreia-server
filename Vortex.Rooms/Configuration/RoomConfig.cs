@@ -72,6 +72,13 @@ public class RoomConfig
     public string[] EmoteKeys { get; init; } =
     ["wave", "laugh", "clap", "dance", "sad", "surprised"];
 
+    /// <summary>How often a zone's combat step runs (spec M1a §4.3): hits, monster AI, regeneration.</summary>
+    public int CombatTickMs { get; init; } = 250;
+
+    /// <summary>Monster path searches a zone may run in one combat tick (spec §7.3 budget); the
+    /// rest wait for the next tick.</summary>
+    public int MaxMonsterPathSearchesPerTick { get; init; } = 8;
+
     /// <summary>The least time between two RP actions of one player.</summary>
     public int EmoteIntervalMs { get; init; } = 2000;
 }

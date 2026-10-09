@@ -259,6 +259,12 @@ public sealed partial class RoomGrain
                     ],
                 }
             );
+
+            // Every fighter's health, for the bars over the avatars (spec M1a §9.2).
+            if (Simulation.EntryVitals() is { } vitals)
+            {
+                burst.Add(vitals);
+            }
         }
 
         return burst.ToImmutable();
