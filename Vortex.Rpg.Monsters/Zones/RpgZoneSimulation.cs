@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -105,8 +106,8 @@ public sealed class RpgZoneSimulation(IZoneRuntime zone, CombatZone combat, Mons
         }
     }
 
-    public IComposer? EntryVitals() => combat.EntryVitals();
+    public IEnumerable<IComposer> EntryVitals(PlayerId player) => combat.EntryVitals(player);
 
-    public void PlayerStatsChanged(PlayerId player, CharacterStatsSnapshot stats) =>
-        combat.PlayerStatsChanged(player, stats);
+    public void PlayerStatsChanged(PlayerId player, CharacterCombatProfile profile) =>
+        combat.PlayerStatsChanged(player, profile);
 }

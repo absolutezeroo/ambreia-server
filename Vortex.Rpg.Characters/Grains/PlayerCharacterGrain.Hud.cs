@@ -58,17 +58,25 @@ internal sealed partial class PlayerCharacterGrain
         }
     }
 
-    /// <summary>New stats reach the zone the player fights in (spec M1a §4.4), through his presence.
-    /// Never awaited: the zone may be waiting on this very grain (an XP grant during its tick).</summary>
-    private void TellTheZone(CharacterStatsSnapshot stats) =>
+    /// <summary>New stats, level or class reach the zone the player fights in (spec M1a §4.4),
+    /// through his presence. Never awaited: the zone may be waiting on this very grain (an XP grant
+    /// during its tick).</summary>
+    private void TellTheZone(CharacterStatsSnapshot stats)
+    {
+        if (_character is not { } c)
+        {
+            return;
+        }
+
         grainFactory
             .GetPlayerPresenceGrain(_playerId)
-            .OnCharacterStatsChangedAsync(stats, CancellationToken.None)
+            .OnCharacterStatsChangedAsync(Profile(stats, c), CancellationToken.None)
             .LogAndForget(
                 logger,
                 "Passing new stats of player {PlayerId} to its zone",
                 _playerId.Value
             );
+    }
 
     /// <summary>Progress, after the new stats on a level up. The level is already written: reading
     /// the stats may fail here, and that must not fail the grant.</summary>

@@ -35,12 +35,9 @@ public sealed class PresenceStatsTests
         PlayerPresenceGrain grain = Build();
         grain._state.ActiveRoomId = new RoomId(9);
 
-        await grain.OnCharacterStatsChangedAsync(
-            new CharacterStatsSnapshot { MaxHealth = 120 },
-            CancellationToken.None
-        );
+        await grain.OnCharacterStatsChangedAsync(Profile, CancellationToken.None);
 
-        _roomCalls.Should().Equal("room 9: player 42 max 120");
+        _roomCalls.Should().Equal("room 9: player 42 max 120 level 5");
     }
 
     [Fact]
@@ -48,13 +45,20 @@ public sealed class PresenceStatsTests
     {
         PlayerPresenceGrain grain = Build();
 
-        await grain.OnCharacterStatsChangedAsync(
-            new CharacterStatsSnapshot { MaxHealth = 120 },
-            CancellationToken.None
-        );
+        await grain.OnCharacterStatsChangedAsync(Profile, CancellationToken.None);
 
         _roomCalls.Should().BeEmpty();
     }
+
+    private static readonly CharacterCombatProfile Profile = new()
+    {
+        Stats = new CharacterStatsSnapshot { MaxHealth = 120 },
+        Health = 120,
+        Mana = 0,
+        Level = 5,
+        Range = 1,
+        ThreatMultiplier = 1,
+    };
 
     private PlayerPresenceGrain Build() =>
         GrainActivationContext.CreateWithIntegerKey<PlayerPresenceGrain>(
@@ -64,7 +68,7 @@ public sealed class PresenceStatsTests
                     ? FakeProxy.Create<IRoomCombat>(inner =>
                     {
                         _roomCalls.Add(
-                            $"room {(long)call.Args![0]!}: player {((PlayerId)inner.Args![0]!).Value} max {((CharacterStatsSnapshot)inner.Args[1]!).MaxHealth}"
+                            $"room {(long)call.Args![0]!}: player {((PlayerId)inner.Args![0]!).Value} max {((CharacterCombatProfile)inner.Args[1]!).Stats.MaxHealth} level {((CharacterCombatProfile)inner.Args[1]!).Level}"
                         );
 
                         return Task.CompletedTask;

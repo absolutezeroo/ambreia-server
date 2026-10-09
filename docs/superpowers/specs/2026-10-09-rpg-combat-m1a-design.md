@@ -109,8 +109,9 @@ qu'aucun joueur n'est dans la room.
 À l'entrée en zone, la room lit **une fois** stats et PV/mana du personnage ; à la sortie (changement
 de zone, déconnexion au-delà de la grâce, désactivation de la room), elle les rend **une fois**.
 Aucune écriture en base par coup. Un changement de stats du personnage pendant qu'il est en zone
-(objet équipé, niveau) est poussé à la room par la présence du joueur, sans attente (aucun cycle
-room ↔ personnage).
+(objet équipé, niveau, classe) est poussé à la room par la présence du joueur, sans attente (aucun
+cycle room ↔ personnage) : stats, niveau, portée et menace suivent ; les PV et la mana de la zone
+restent la référence.
 
 ## 5. Monstres
 

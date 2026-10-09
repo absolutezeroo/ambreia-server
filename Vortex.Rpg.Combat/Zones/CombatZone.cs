@@ -247,15 +247,19 @@ public sealed partial class CombatZone(
         }
     }
 
-    public void PlayerStatsChanged(PlayerId player, CharacterStatsSnapshot stats)
+    public void PlayerStatsChanged(PlayerId player, CharacterCombatProfile profile)
     {
         if (!_players.TryGetValue(player, out int id))
         {
             return;
         }
 
+        // The profile's health and mana are not read: here the zone's are the truth.
         Combatant c = _combatants[id];
-        Apply(c, stats);
+        c.Level = profile.Level;
+        c.Range = profile.Range;
+        c.ThreatMultiplier = profile.ThreatMultiplier;
+        Apply(c, profile.Stats);
         c.Health = Math.Min(c.Health, c.MaxHealth);
         c.Mana = Math.Min(c.Mana, c.MaxMana);
         _vitalsChanged.Add(id);
@@ -284,8 +288,18 @@ public sealed partial class CombatZone(
         await FlushAsync();
     }
 
-    public IComposer EntryVitals() =>
-        new RpgVitalsMessageComposer { Combatants = [.. _combatants.Values.Select(Vitals)] };
+    public IEnumerable<IComposer> EntryVitals(PlayerId player)
+    {
+        yield return new RpgVitalsMessageComposer
+        {
+            Combatants = [.. _combatants.Values.Select(Vitals)],
+        };
+
+        if (_players.TryGetValue(player, out int id))
+        {
+            yield return SelfVitals(_combatants[id]);
+        }
+    }
 
     private void Apply(Combatant c, CharacterStatsSnapshot stats)
     {

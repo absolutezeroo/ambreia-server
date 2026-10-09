@@ -245,8 +245,9 @@ it), the `IHitStep` chain (dodge, damage, crit, armor, minimum), threat, deaths 
 tick to the zone and `RpgSelfVitals`/`RpgDeath`/`RpgCombatResult` to the player. A monster is a
 `RoomMonsterAvatar` (a Habbo pet, no object logic). Health and mana belong to `PlayerCharacterGrain`
 (`current_health`, `current_mana`, `vitals_at`): the room reads them once on entry
-(`GetCombatProfileAsync`) and writes them back once, awaited, before the avatar leaves; new stats
-reach the room through the presence (`OnCharacterStatsChangedAsync` → `IRoomCombat`). A click on a
+(`GetCombatProfileAsync`) and writes them back once, awaited, before the avatar leaves (or the room
+deactivates); new stats, level or class reach the room as a fresh profile through the presence
+(`OnCharacterStatsChangedAsync` → `IRoomCombat`), whose health and mana the zone ignores. A click on a
 monster (`RpgTargetSelect`) goes to the simulation first; a manual walk stops the attack. Proof:
 `driver.mjs combat`.
 

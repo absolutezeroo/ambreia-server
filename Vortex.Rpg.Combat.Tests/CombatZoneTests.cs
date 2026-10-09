@@ -283,21 +283,81 @@ public sealed class CombatZoneTests
 
         _combat.PlayerStatsChanged(
             new PlayerId(7),
-            new CharacterStatsSnapshot
-            {
-                MaxHealth = 60,
-                MaxMana = 50,
-                SpeedPercent = 100,
-                Power = 25,
-            }
+            Profile(
+                new CharacterStatsSnapshot
+                {
+                    MaxHealth = 60,
+                    MaxMana = 50,
+                    SpeedPercent = 100,
+                    Power = 25,
+                },
+                health: 5
+            )
         );
         await _combat.TickAsync(CancellationToken.None);
 
         (_combat.Combatants[1].Health, _combat.Combatants[1].MaxHealth, _combat.Combatants[1].Power)
             .Should()
-            .Be((60, 60, 25));
+            .Be((60, 60, 25), "the zone's health is the truth: the profile's 5 is not read");
         Sent<RpgSelfVitalsMessageComposer>().Last().MaxHealth.Should().Be(60);
     }
+
+    /// <summary>A player back within the grace period keeps his combatant and gets no second
+    /// entry: the burst carries his own vitals, or his HUD stays empty (spec §9.2).</summary>
+    [Fact]
+    public async Task TheEntryBurst_CarriesTheEnteringPlayersOwnVitals()
+    {
+        await OnePlayerAsync();
+        _combat.Combatants[1].Health = 70;
+
+        IComposer[] own = [.. _combat.EntryVitals(new PlayerId(7))];
+        IComposer[] stranger = [.. _combat.EntryVitals(new PlayerId(8))];
+
+        own.OfType<RpgSelfVitalsMessageComposer>().Single().Health.Should().Be(70);
+        own.OfType<RpgVitalsMessageComposer>().Should().ContainSingle();
+        stranger.OfType<RpgSelfVitalsMessageComposer>().Should().BeEmpty();
+        stranger.OfType<RpgVitalsMessageComposer>().Should().ContainSingle();
+    }
+
+    /// <summary>A level gained in the zone counts at once for XP (spec §8.2), and a class chosen
+    /// there brings its range and threat.</summary>
+    [Fact]
+    public async Task ALevelOrClassGainedInZone_ScoresTheNextKill()
+    {
+        await OnePlayerAsync();
+        int wolf = AddWolf(6, 5);
+
+        _combat.PlayerStatsChanged(
+            new PlayerId(7),
+            Profile(_profiles[7].Stats, level: 20, range: 3, threatMultiplier: 4)
+        );
+        _combat.Combatants[wolf].Health = 1;
+        _combat.StartAttack(new PlayerId(7), wolf);
+        await _combat.TickAsync(CancellationToken.None);
+
+        (_combat.Combatants[1].Range, _combat.Combatants[1].ThreatMultiplier).Should().Be((3, 4));
+        _combat.DiedMonsters.Should().Equal(wolf);
+        _calls
+            .Should()
+            .NotContain(c => c.StartsWith("xp"), "a level 1 wolf gives a level 20 nothing");
+    }
+
+    private static CharacterCombatProfile Profile(
+        CharacterStatsSnapshot stats,
+        int health = 100,
+        int level = 1,
+        int range = 1,
+        int threatMultiplier = 1
+    ) =>
+        new()
+        {
+            Stats = stats,
+            Health = health,
+            Mana = 50,
+            Level = level,
+            Range = range,
+            ThreatMultiplier = threatMultiplier,
+        };
 
     [Fact]
     public async Task InCombat_NothingRegenerates()

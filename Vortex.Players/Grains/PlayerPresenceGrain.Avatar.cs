@@ -35,14 +35,14 @@ internal sealed partial class PlayerPresenceGrain
         }
     }
 
-    public Task OnCharacterStatsChangedAsync(CharacterStatsSnapshot stats, CancellationToken ct)
+    public Task OnCharacterStatsChangedAsync(CharacterCombatProfile profile, CancellationToken ct)
     {
         // Not awaited: the room may be in a tick that is itself waiting on this character.
         if (_state.ActiveRoomId > 0)
         {
             _grainFactory
                 .GetRoomCombat(_state.ActiveRoomId)
-                .UpdateCombatantStatsAsync(PlayerId, stats, ct)
+                .UpdateCombatantStatsAsync(PlayerId, profile, ct)
                 .LogAndForget(
                     _logger,
                     "Passing new stats of player {PlayerId} to its room",

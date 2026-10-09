@@ -1,5 +1,6 @@
 using System;
 using System.Threading.Tasks;
+using Vortex.Database.Entities.Rpg;
 using Vortex.Primitives.Rpg.Characters;
 using Vortex.Rpg.Content.Definitions;
 
@@ -22,6 +23,12 @@ internal sealed partial class PlayerCharacterGrain
             return null;
         }
 
+        return Profile(stats, c);
+    }
+
+    /// <summary>The profile read on entry, and passed on whenever the stats, level or class change.</summary>
+    private CharacterCombatProfile Profile(CharacterStatsSnapshot stats, PlayerCharacterEntity c)
+    {
         ClassDefinition? cls = content.Get<ClassDefinition>(c.ClassId);
 
         return new CharacterCombatProfile

@@ -226,7 +226,7 @@ public sealed class CharacterItemsPushTests : IAsyncLifetime
                         == nameof(IPlayerPresenceGrain.OnCharacterStatsChangedAsync)
                     )
                     {
-                        _statsForwarded.Add((CharacterStatsSnapshot)inner.Args![0]!);
+                        _statsForwarded.Add(((CharacterCombatProfile)inner.Args![0]!).Stats);
                     }
 
                     return null;

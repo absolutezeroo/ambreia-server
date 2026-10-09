@@ -150,7 +150,15 @@ public sealed class RoomCombatTests
 
         await _harness.Grain.UpdateCombatantStatsAsync(
             RoomHarness.Owner,
-            new CharacterStatsSnapshot { MaxHealth = 120 },
+            new CharacterCombatProfile
+            {
+                Stats = new CharacterStatsSnapshot { MaxHealth = 120 },
+                Health = 120,
+                Mana = 0,
+                Level = 1,
+                Range = 1,
+                ThreatMultiplier = 1,
+            },
             CancellationToken.None
         );
 
@@ -191,11 +199,11 @@ public sealed class RoomCombatTests
                     return null;
                 case nameof(IZoneSimulation.PlayerStatsChanged):
                     _calls.Add(
-                        $"stats {((PlayerId)call.Args![0]!).Value} {((CharacterStatsSnapshot)call.Args[1]!).MaxHealth}"
+                        $"stats {((PlayerId)call.Args![0]!).Value} {((CharacterCombatProfile)call.Args[1]!).Stats.MaxHealth}"
                     );
                     return null;
                 case nameof(IZoneSimulation.EntryVitals):
-                    return new RpgVitalsMessageComposer { Combatants = [] };
+                    return new IComposer[] { new RpgVitalsMessageComposer { Combatants = [] } };
                 default:
                     return null;
             }

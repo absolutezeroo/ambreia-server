@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using Vortex.Primitives.Networking;
@@ -24,7 +25,7 @@ public sealed class NoZoneSimulation : IZoneSimulation
 
     public Task TickAsync(CancellationToken ct) => Task.CompletedTask;
 
-    public IComposer? EntryVitals() => null;
+    public IEnumerable<IComposer> EntryVitals(PlayerId player) => [];
 
-    public void PlayerStatsChanged(PlayerId player, CharacterStatsSnapshot stats) { }
+    public void PlayerStatsChanged(PlayerId player, CharacterCombatProfile profile) { }
 }

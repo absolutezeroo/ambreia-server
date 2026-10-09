@@ -11,7 +11,7 @@ public sealed partial class RoomGrain
     /// <summary>Server side only: the player's presence passes on his character's new stats.</summary>
     public Task UpdateCombatantStatsAsync(
         PlayerId player,
-        CharacterStatsSnapshot stats,
+        CharacterCombatProfile profile,
         CancellationToken ct
     )
     {
@@ -21,7 +21,7 @@ public sealed partial class RoomGrain
             return Task.CompletedTask;
         }
 
-        Simulation.PlayerStatsChanged(player, stats);
+        Simulation.PlayerStatsChanged(player, profile);
 
         return Task.CompletedTask;
     }

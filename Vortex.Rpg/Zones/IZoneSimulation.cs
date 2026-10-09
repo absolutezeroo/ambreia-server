@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using Vortex.Primitives.Networking;
@@ -32,10 +33,12 @@ public interface IZoneSimulation
 
     public Task TickAsync(CancellationToken ct);
 
-    /// <summary>For the zone's entry burst: every combatant's health; null when there is nothing.</summary>
-    public IComposer? EntryVitals();
+    /// <summary>For the zone's entry burst of <paramref name="player"/>: every combatant's health,
+    /// and his own vitals when he already fights here (back within the grace period).</summary>
+    public IEnumerable<IComposer> EntryVitals(PlayerId player);
 
-    /// <summary>The player's stats changed in the zone (an item, a level): only the stats are taken,
-    /// health is bounded to the new maximum.</summary>
-    public void PlayerStatsChanged(PlayerId player, CharacterStatsSnapshot stats);
+    /// <summary>The player's character changed in the zone (an item, a level, a class): its stats,
+    /// level, range and threat are taken; its health and mana never are — in a zone the zone's own
+    /// are the truth, bounded to the new maximum.</summary>
+    public void PlayerStatsChanged(PlayerId player, CharacterCombatProfile profile);
 }

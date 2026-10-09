@@ -88,7 +88,13 @@ public sealed partial class RoomGrain
 
         return new RoomAdmissionSnapshot
         {
-            Burst = await BuildEntryBurstAsync(snapshot, controllerLevel, avatarSnapshots, ct)
+            Burst = await BuildEntryBurstAsync(
+                    ctx.PlayerId,
+                    snapshot,
+                    controllerLevel,
+                    avatarSnapshots,
+                    ct
+                )
                 .ConfigureAwait(true),
         };
     }
@@ -99,6 +105,7 @@ public sealed partial class RoomGrain
     /// a session that already exists rather than being queued against one.
     /// </summary>
     private async Task<ImmutableArray<IComposer>> BuildEntryBurstAsync(
+        PlayerId player,
         RoomSnapshot snapshot,
         RoomControllerType controllerLevel,
         ImmutableArray<RoomAvatarSnapshot> avatarSnapshots,
@@ -260,11 +267,9 @@ public sealed partial class RoomGrain
                 }
             );
 
-            // Every fighter's health, for the bars over the avatars (spec M1a §9.2).
-            if (Simulation.EntryVitals() is { } vitals)
-            {
-                burst.Add(vitals);
-            }
+            // Every fighter's health, for the bars over the avatars, and the player's own when he
+            // is back within the grace period (spec M1a §9.2).
+            burst.AddRange(Simulation.EntryVitals(player));
         }
 
         return burst.ToImmutable();

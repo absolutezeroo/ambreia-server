@@ -10,11 +10,12 @@ namespace Vortex.Primitives.Rooms.Grains;
 [Alias("Vortex.Primitives.Rooms.Grains.IRoomCombat")]
 public interface IRoomCombat : IGrainWithIntegerKey
 {
-    /// <summary>The player's character changed its stats while he is here (an item, a level): his
-    /// maximum follows, his health is bounded. Server side only, through his presence.</summary>
+    /// <summary>The player's character changed while he is here (an item, a level, a class): his
+    /// stats, level, range and threat follow, his health is bounded — the profile's own health and
+    /// mana are not read. Server side only, through his presence.</summary>
     public Task UpdateCombatantStatsAsync(
         PlayerId player,
-        CharacterStatsSnapshot stats,
+        CharacterCombatProfile profile,
         CancellationToken ct
     );
 }
