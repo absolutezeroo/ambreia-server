@@ -201,13 +201,15 @@ pipeline — ne nomme aucun canal, aucune sorte de lien, aucun contrôle.
 | **Contrôle** | `IChatRule` : vérifie ou refuse un envoi avant la diffusion, avec un code | longueur, débit par canal | blocage et sourdine (social), filtre de mots, niveau minimum pour le Monde, anti-spam |
 
 - Un canal se remplace par sa clé : le module Groupe déclare son `group` et il prend la place du
-  canal inactif livré en F3c, quel que soit l'ordre de chargement des modules (un canal en attente,
-  `IsPlaceholder`, cède toujours sa clé), sans rien changer d'autre (le registre garde le dernier déclaré pour
-  une clé, et le journalise au démarrage).
+  canal inactif livré en F3c, quel que soit l'ordre de chargement des modules (tout canal livré
+  par le cœur, `IsDefault`, cède sa clé à un canal déclaré par un module), sans rien changer
+  d'autre (le registre garde le dernier déclaré pour une clé, et le journalise au démarrage).
 - L'ordre des contrôles est déclaré (une priorité), stable et journalisé au démarrage.
 - La diffusion passe par un **contexte** donné au canal (`ChatRouting`) : envoyer à un joueur, à
-  la room d'un joueur, à un flux nommé. Un canal futur (groupe : un flux par groupe) n'a besoin de
-  rien d'autre, et ne touche jamais au grain de présence.
+  la room d'un joueur, à un flux nommé. Une présence n'écoute que le flux de sa room et
+  `world-chat` : un flux que personne n'a rejoint n'atteint personne. Un canal futur (groupe)
+  envoie donc membre par membre (`SendToPlayerAsync`), ce qui ne touche pas au grain de présence ;
+  un flux par groupe demandera d'ajouter son abonnement (décision du module Groupe, M4).
 
 ### 14.2 Les événements
 

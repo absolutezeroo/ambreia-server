@@ -217,7 +217,9 @@ implements: `general` publishes `RpgChatMessage` (9010) on the sender's room str
 to both. `group` and `guild` are placeholders refusing `not_in_group` / `not_in_guild`. A refusal
 is `RpgChatResult` (9011) to the sender alone; a delivered line gets none, and `ChatSentEvent`
 follows. `system` is server-only: `SendSystemChatAsync`. Extension points: a module declares an
-`IChatChannel` (the last one per key wins; a placeholder always yields), an `IChatRule` or an
+`IChatChannel` (the last one per key wins; a shipped channel, `IsDefault`, always yields; a
+presence listens to its room stream and `world-chat` only, so a group channel delivers member by
+member until its module adds a stream), an `IChatRule` or an
 `IChatLinkKind` in its own `Chat/` folder; the core names none. Nothing stored, no text logged.
 Proof: `driver.mjs chat`.
 

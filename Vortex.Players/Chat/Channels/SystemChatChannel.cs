@@ -12,6 +12,8 @@ internal sealed class SystemChatChannel : IChatChannel
 
     public bool PlayersCanSend => false;
 
+    public bool IsDefault => true;
+
     public async Task<string?> RouteAsync(
         ChatLine line,
         string target,

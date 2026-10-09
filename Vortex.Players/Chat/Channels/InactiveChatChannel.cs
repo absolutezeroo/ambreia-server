@@ -13,7 +13,7 @@ internal sealed class InactiveChatChannel(string key, string code) : IChatChanne
 
     public bool PlayersCanSend => true;
 
-    public bool IsPlaceholder => true;
+    public bool IsDefault => true;
 
     public Task<string?> RouteAsync(
         ChatLine line,

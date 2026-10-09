@@ -19,7 +19,11 @@ public interface IChatRouting
 
     public Task SendToPlayerAsync(PlayerId to, ChatLine line);
 
-    /// <summary>To every player listening on stream <paramref name="stream"/> with this key.</summary>
+    /// <summary>To every player listening on stream <paramref name="stream"/> with this key. A
+    /// presence listens to its room's stream and to <c>world-chat</c> only: a stream nobody joined
+    /// reaches no one, silently. A channel whose audience has no stream yet (a group, a guild)
+    /// delivers member by member through <see cref="SendToPlayerAsync"/>, or its module adds the
+    /// subscription (spec F3c §14.1).</summary>
     public Task PublishAsync(string stream, long key, ChatLine line);
 
     /// <summary>The player of this exact name, case aside, or null.</summary>

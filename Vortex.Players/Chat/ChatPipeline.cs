@@ -53,10 +53,10 @@ internal sealed class ChatPipeline
         _metrics = metrics;
         _logger = logger;
 
-        // Placeholders first, so a module's channel replaces one even when that module loads
-        // before this one (Program.cs registers the RPG systems before PlayerModule). Stable:
-        // among the others, the last declared still wins.
-        foreach (IChatChannel channel in channels.OrderBy(c => c.IsPlaceholder ? 0 : 1))
+        // The shipped channels first, so a module's channel replaces one even when that module
+        // loads before PlayerModule (Program.cs registers the RPG systems first). Stable: among
+        // the others, the last declared still wins.
+        foreach (IChatChannel channel in channels.OrderBy(c => c.IsDefault ? 0 : 1))
         {
             if (_channels.TryGetValue(channel.Key, out IChatChannel? replaced))
             {

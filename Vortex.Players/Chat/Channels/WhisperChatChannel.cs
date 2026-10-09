@@ -17,6 +17,8 @@ internal sealed class WhisperChatChannel : IChatChannel
 
     public bool PlayersCanSend => true;
 
+    public bool IsDefault => true;
+
     public async Task<string?> RouteAsync(
         ChatLine line,
         string target,

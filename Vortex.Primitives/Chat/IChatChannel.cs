@@ -15,9 +15,9 @@ public interface IChatChannel
     /// <summary>False for a channel only the server writes in (<c>system</c>).</summary>
     public bool PlayersCanSend { get; }
 
-    /// <summary>A channel ready but idle until its system exists (<c>group</c>, <c>guild</c>): any
-    /// other channel declared for its key replaces it, whatever the order the modules load in.</summary>
-    public bool IsPlaceholder => false;
+    /// <summary>A channel the core ships (<c>general</c>… and the idle <c>group</c>, <c>guild</c>):
+    /// any other channel declared for its key replaces it, whatever the order the modules load in.</summary>
+    public bool IsDefault => false;
 
     /// <summary>Delivers <paramref name="line"/> through <paramref name="routing"/>; a refusal
     /// code, or null once sent. <paramref name="target"/> is what the player named (a whisper's

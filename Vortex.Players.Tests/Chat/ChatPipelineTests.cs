@@ -189,6 +189,20 @@ public sealed class ChatPipelineTests
     }
 
     [Fact]
+    public async Task ADeclaredChannel_ReplacesAShippedOne_WhateverTheOrder()
+    {
+        // A system broadcast from a module loaded before PlayerModule (spec F3c §9, §14.1).
+        ChatPipeline pipeline = Pipeline([
+            Echo("system", playersCanSend: false),
+            new SystemChatChannel(),
+        ]);
+
+        await pipeline.SendSystemAsync("quest.done", _routing, CancellationToken.None);
+
+        _routing.Deliveries.Select(d => d.To).Should().Equal("echo/0");
+    }
+
+    [Fact]
     public async Task ADeclaredRule_RefusesAtItsPriority()
     {
         bool muted = true;
