@@ -4,7 +4,7 @@ using System.Linq;
 using Vortex.Rpg.Content;
 using Vortex.Rpg.Content.Definitions;
 
-namespace Vortex.Rpg.Skills;
+namespace Vortex.Rpg.Learning;
 
 /// <summary>
 /// The skills a character knows (spec M1b §9): those of its class — and of its specialization when a

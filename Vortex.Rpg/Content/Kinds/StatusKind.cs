@@ -62,5 +62,25 @@ public sealed class StatusKind : ContentKind<StatusDefinition>
                 "A shield needs a base or a coefficient."
             );
         }
+
+        if (s.Type is StatusType.Dot or StatusType.Hot && s.Base <= 0 && s.Coefficient <= 0)
+        {
+            yield return Error(
+                "PeriodicWithoutAmount",
+                s.Id,
+                $"A {s.Type} needs a base or a coefficient: it would pulse for nothing."
+            );
+        }
+
+        if (s.Type is StatusType.Buff or StatusType.Debuff && s.Modifiers.Count == 0)
+        {
+            yield return Error("NoModifier", s.Id, $"A {s.Type} changes at least one stat.");
+        }
+
+        // "modifiers":[null] parses: the JSON options do not look inside a list.
+        if (s.Modifiers.Any(m => m is null))
+        {
+            yield return Error("NullEntry", s.Id, "A modifier is null.");
+        }
     }
 }

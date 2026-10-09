@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 using Vortex.Database.Entities.Rpg;
 using Vortex.Protocol.Messages.Outgoing.Rpg.Skills;
 using Vortex.Rpg.Content.Definitions;
-using Vortex.Rpg.Skills;
+using Vortex.Rpg.Learning;
 
 namespace Vortex.Rpg.Characters.Grains;
 

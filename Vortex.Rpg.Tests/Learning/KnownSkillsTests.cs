@@ -1,11 +1,11 @@
 using System.Linq;
 using FluentAssertions;
 using Vortex.Rpg.Content.Definitions;
-using Vortex.Rpg.Skills;
+using Vortex.Rpg.Learning;
 using Vortex.Rpg.Tests.Support;
 using Xunit;
 
-namespace Vortex.Rpg.Tests.Skills;
+namespace Vortex.Rpg.Tests.Learning;
 
 /// <summary>Spec M1b §9: the skills a character knows come from its class, its specialization and its
 /// level — nothing is stored.</summary>

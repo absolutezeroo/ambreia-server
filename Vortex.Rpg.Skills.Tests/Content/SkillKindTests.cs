@@ -86,6 +86,12 @@ public sealed class SkillKindTests
                             [skill.Id] = skill,
                             [Mage.Id] = Mage,
                             [Burning.Id] = Burning,
+                            ["spec.mage.fire"] = new SpecializationDefinition
+                            {
+                                Id = "spec.mage.fire",
+                                Kind = "specialization",
+                                Class = "class.mage",
+                            },
                         },
                         _ => false
                     )
@@ -181,7 +187,15 @@ public sealed class SkillKindTests
     [InlineData(SkillTarget.AroundCaster)]
     [InlineData(SkillTarget.AroundTarget)]
     public void AnArea_WithoutARadius_IsRefused(SkillTarget target) =>
-        Codes(Firebolt with { Target = target }).Should().Equal("AreaWithoutRadius");
+        Codes(
+                Firebolt with
+                {
+                    Target = target,
+                    Range = target == SkillTarget.AroundCaster ? 0 : Firebolt.Range,
+                }
+            )
+            .Should()
+            .Equal("AreaWithoutRadius");
 
     [Fact]
     public void NoEffect_IsRefused() =>
@@ -194,4 +208,25 @@ public sealed class SkillKindTests
     [Fact]
     public void ALevelBelowOne_IsRefused() =>
         Codes(Firebolt with { Level = 0 }).Should().Equal("BadLevel");
+
+    /// <summary>"effects":[null] parses to a list holding null: a finding, not a crash.</summary>
+    [Fact]
+    public void ANullEffect_IsRefused() =>
+        Codes(Firebolt with { Effects = [null!] }).Should().Equal("NullEntry");
+
+    [Fact]
+    public void AnUnknownSpecialization_IsRefused() =>
+        Codes(Firebolt with { Specializations = ["spec.mage.pyr"] })
+            .Should()
+            .Equal("BrokenReference");
+
+    [Fact]
+    public void AKnownSpecialization_IsAccepted() =>
+        Codes(Firebolt with { Specializations = ["spec.mage.fire"] }).Should().BeEmpty();
+
+    [Theory]
+    [InlineData(SkillTarget.Self)]
+    [InlineData(SkillTarget.AroundCaster)]
+    public void ARange_OnASkillCastOnOneself_IsRefused(SkillTarget target) =>
+        Codes(Firebolt with { Target = target, Radius = 2 }).Should().Equal("RangeOnSelf");
 }

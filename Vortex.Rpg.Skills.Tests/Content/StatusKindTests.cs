@@ -79,11 +79,26 @@ public sealed class StatusKindTests
 
     [Fact]
     public void ANegativeValue_IsRefused() =>
-        Codes(Burning with { Coefficient = -1 }).Should().Equal("NegativeValue");
+        Codes(Burning with { Base = 1, Coefficient = -1 }).Should().Equal("NegativeValue");
 
     [Fact]
     public void AShield_WithoutAnAmount_IsRefused() =>
         Codes(Frozen with { Type = StatusType.Shield, SlowPercent = 0 })
             .Should()
             .Equal("ShieldWithoutAmount");
+
+    [Fact]
+    public void ADot_WithoutAnAmount_IsRefused() =>
+        Codes(Burning with { Coefficient = 0 }).Should().Equal("PeriodicWithoutAmount");
+
+    [Fact]
+    public void ABuff_WithoutAModifier_IsRefused() =>
+        Codes(Frozen with { Type = StatusType.Buff, SlowPercent = 0 }).Should().Equal("NoModifier");
+
+    /// <summary>"modifiers":[null] parses to a list holding null: a finding, not a crash in a tick.</summary>
+    [Fact]
+    public void ANullModifier_IsRefused() =>
+        Codes(Frozen with { Type = StatusType.Debuff, SlowPercent = 0, Modifiers = [null!] })
+            .Should()
+            .Equal("NullEntry");
 }

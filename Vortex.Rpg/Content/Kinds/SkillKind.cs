@@ -31,6 +31,14 @@ public sealed class SkillKind(IEnumerable<ISkillEffectRule> rules) : ContentKind
             yield return Error("BrokenReference", s.Id, $"Class '{cls}' does not exist.");
         }
 
+        // A typo here would make the skill silently unknowable.
+        foreach (
+            string spec in s.Specializations.Where(x => !check.Is<SpecializationDefinition>(x))
+        )
+        {
+            yield return Error("BrokenReference", s.Id, $"Specialization '{spec}' does not exist.");
+        }
+
         if (s.Level < 1)
         {
             yield return Error(
@@ -80,9 +88,27 @@ public sealed class SkillKind(IEnumerable<ISkillEffectRule> rules) : ContentKind
             );
         }
 
+        // Cast where one stands: a range would start an approach walk for nothing.
+        if (s.Target is SkillTarget.Self or SkillTarget.AroundCaster && s.Range != 0)
+        {
+            yield return Error(
+                "RangeOnSelf",
+                s.Id,
+                $"Target '{s.Target}' is cast where the caster stands: range is 0."
+            );
+        }
+
         if (s.Effects.Count == 0)
         {
             yield return Error("NoEffect", s.Id, "A skill applies at least one effect.");
+        }
+
+        // "effects":[null] parses: the JSON options do not look inside a list.
+        if (s.Effects.Any(e => e is null))
+        {
+            yield return Error("NullEntry", s.Id, "An effect is null.");
+
+            yield break;
         }
 
         foreach (ContentFinding finding in s.Effects.SelectMany(e => CheckEffect(s, e, check)))

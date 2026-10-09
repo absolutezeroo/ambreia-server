@@ -29,6 +29,7 @@ public sealed class ContentPackInRepoTests
             new ProgressionKind(),
             new ItemKind(),
             new MonsterKind(),
+            // The effect rules SkillsModule declares: a new shipped effect is added here too.
             new SkillKind([
                 new DamageEffect(),
                 new HealEffect(),
