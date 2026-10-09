@@ -138,7 +138,8 @@ public sealed partial class CombatZone(
 
         try
         {
-            await grains.GetPlayerCharacterGrain(player).SetVitalsAsync(health, c.Mana);
+            // The persistent statuses come with M1b's statuses (plan M1b, Task 4).
+            await grains.GetPlayerCharacterGrain(player).SetVitalsAsync(health, c.Mana, []);
         }
         catch (Exception ex) when (ex is not OperationCanceledException)
         {

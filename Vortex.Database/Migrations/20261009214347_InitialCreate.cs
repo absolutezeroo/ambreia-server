@@ -987,6 +987,9 @@ namespace Vortex.Database.Migrations
                         last_room_id = table.Column<int>(type: "int", nullable: true),
                         current_health = table.Column<int>(type: "int", nullable: true),
                         current_mana = table.Column<int>(type: "int", nullable: true),
+                        action_bar = table
+                            .Column<string>(type: "varchar(1024)", maxLength: 1024, nullable: true)
+                            .Annotation("MySql:CharSet", "utf8mb4"),
                         vitals_at = table.Column<DateTime>(type: "datetime(6)", nullable: true),
                         created_at = table
                             .Column<DateTime>(type: "datetime(6)", nullable: false)

@@ -1,3 +1,4 @@
+using System.Collections.Immutable;
 using Orleans;
 
 namespace Vortex.Primitives.Rpg.Characters;
@@ -28,4 +29,16 @@ public sealed record CharacterCombatProfile
 
     [Id(5)]
     public required int ThreatMultiplier { get; init; }
+
+    /// <summary>For the skills it knows (spec M1b §9).</summary>
+    [Id(6)]
+    public required string ClassId { get; init; }
+
+    [Id(7)]
+    public required string SpecializationId { get; init; }
+
+    /// <summary>Persistent statuses handed back by the last zone, with their time left; given once
+    /// (spec M1b §7.4). Never read from a relayed stats change.</summary>
+    [Id(8)]
+    public ImmutableArray<CarriedStatus> Statuses { get; init; } = [];
 }

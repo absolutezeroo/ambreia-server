@@ -16,6 +16,9 @@ namespace Vortex.Database.Entities.Rpg;
 [Index(nameof(PlayerEntityId), IsUnique = true)]
 public class PlayerCharacterEntity : VortexEntity
 {
+    /// <summary>Room for a few slots of <c>"skill:&lt;id&gt;"</c>: the bar's size is configured.</summary>
+    private const int ActionBarLength = 1024;
+
     [Column("player_id")]
     public required int PlayerEntityId { get; set; }
 
@@ -49,6 +52,12 @@ public class PlayerCharacterEntity : VortexEntity
     public int? CurrentMana { get; set; }
 
     /// <summary>When health and mana were last set: out of a zone, they regenerate from there.</summary>
+    /// <summary>The action bar (spec M1b §9): a JSON array of action ids, "" for an empty slot; null
+    /// for a bar never set. Written by the character grain alone.</summary>
+    [Column("action_bar")]
+    [MaxLength(ActionBarLength)]
+    public string? ActionBar { get; set; }
+
     [Column("vitals_at")]
     public DateTime? VitalsAt { get; set; }
 

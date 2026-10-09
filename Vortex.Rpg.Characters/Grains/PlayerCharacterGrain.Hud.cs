@@ -35,9 +35,12 @@ internal sealed partial class PlayerCharacterGrain
             Stats = stats,
         };
 
-        // The bag with the state (spec Objets §12): loaded by the stats read above.
+        // The bag with the state (spec Objets §12): loaded by the stats read above; then the skills
+        // and the bar (spec M1b §9).
         await PushAsync(
-            _inventory is { } inventory ? [state, InventoryComposer(inventory)] : [state]
+            _inventory is { } inventory
+                ? [state, InventoryComposer(inventory), SkillsComposer(c)]
+                : [state, SkillsComposer(c)]
         );
     }
 
@@ -89,9 +92,14 @@ internal sealed partial class PlayerCharacterGrain
 
         try
         {
-            if (levelledUp && await GetStatsAsync() is { } stats)
+            if (levelledUp && await GetStatsAsync() is { } stats && _character is { } c)
             {
-                composers = [new RpgCharacterStatsMessageComposer { Stats = stats }, progress];
+                composers =
+                [
+                    new RpgCharacterStatsMessageComposer { Stats = stats },
+                    progress,
+                    SkillsComposer(c),
+                ];
                 TellTheZone(stats);
             }
         }

@@ -158,6 +158,8 @@ public sealed class RoomCombatTests
                 Level = 1,
                 Range = 1,
                 ThreatMultiplier = 1,
+                ClassId = "class.warrior",
+                SpecializationId = "spec.warrior.guardian",
             },
             CancellationToken.None
         );

@@ -1,3 +1,4 @@
+using System.Collections.Immutable;
 using System.Threading.Tasks;
 using Orleans;
 using Vortex.Primitives.Rooms;
@@ -67,8 +68,13 @@ public interface IPlayerCharacterGrain : IGrainWithIntegerKey
     public Task<CharacterCombatProfile?> GetCombatProfileAsync();
 
     /// <summary>The zone gives health and mana back when the player leaves it: one write (spec M1a
-    /// §4.4), bounded to the maximum.</summary>
-    public Task SetVitalsAsync(int health, int mana);
+    /// §4.4), bounded to the maximum; with the persistent statuses he carries out (spec M1b §7.4),
+    /// kept in memory only.</summary>
+    public Task SetVitalsAsync(int health, int mana, ImmutableArray<CarriedStatus> statuses);
+
+    /// <summary>Puts an action (<c>skill:&lt;id&gt;</c>, or "" to clear) in a slot of the bar (spec M1b
+    /// §9); the player is told the new bar, or why not.</summary>
+    public Task SetActionBarAsync(int slot, string actionId);
 
     /// <summary>Equipped items lose <paramref name="percent"/> % of their max durability (death,
     /// spec M1a §8.1).</summary>

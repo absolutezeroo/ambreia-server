@@ -27,6 +27,7 @@ internal sealed partial class PlayerCharacterGrain
             if (outcome == ChooseClassOutcome.Chosen)
             {
                 await PushStatsAsync();
+                await PushAsync(SkillsComposer(current));
             }
 
             return outcome;
@@ -43,6 +44,7 @@ internal sealed partial class PlayerCharacterGrain
             ClassId = chosen.Id,
             // One specialization per class in V1, given at once (spec Personnage §2.4).
             SpecializationId = chosen.Specializations[0],
+            ActionBar = BarOfKnownSkills(chosen.Id, chosen.Specializations[0], 1),
         };
 
         await using VortexDbContext db = await dbFactory.CreateDbContextAsync();
@@ -94,6 +96,8 @@ internal sealed partial class PlayerCharacterGrain
 
         string oldClass = current.ClassId;
         string specialization = chosen.Specializations[0];
+        // The starter class has no skill: the bar becomes the new class's (spec M1b §9).
+        string bar = BarOfKnownSkills(chosen.Id, specialization, current.Level);
 
         await using VortexDbContext db = await dbFactory.CreateDbContextAsync();
         await db
@@ -101,10 +105,12 @@ internal sealed partial class PlayerCharacterGrain
             .ExecuteUpdateAsync(up =>
                 up.SetProperty(x => x.ClassId, chosen.Id)
                     .SetProperty(x => x.SpecializationId, specialization)
+                    .SetProperty(x => x.ActionBar, bar)
             );
 
         current.ClassId = chosen.Id;
         current.SpecializationId = specialization;
+        current.ActionBar = bar;
         _stats = null;
 
         logger.LogInformation(

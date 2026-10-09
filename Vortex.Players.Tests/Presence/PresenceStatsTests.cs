@@ -58,6 +58,8 @@ public sealed class PresenceStatsTests
         Level = 5,
         Range = 1,
         ThreatMultiplier = 1,
+        ClassId = "class.warrior",
+        SpecializationId = "spec.warrior.guardian",
     };
 
     private PlayerPresenceGrain Build() =>

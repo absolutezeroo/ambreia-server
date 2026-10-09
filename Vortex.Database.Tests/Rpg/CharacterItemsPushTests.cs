@@ -20,6 +20,7 @@ using Vortex.Primitives.Rpg.Items;
 using Vortex.Primitives.Rpg.Items.Enums;
 using Vortex.Protocol.Messages.Outgoing.Rpg.Characters;
 using Vortex.Protocol.Messages.Outgoing.Rpg.Items;
+using Vortex.Protocol.Messages.Outgoing.Rpg.Skills;
 using Vortex.Rpg.Characters.Configuration;
 using Vortex.Rpg.Characters.Grains;
 using Vortex.Rpg.Characters.Stats;
@@ -144,7 +145,14 @@ public sealed class CharacterItemsPushTests : IAsyncLifetime
 
         await grain.PushStateAsync();
 
-        _sent.Select(Describe).Should().Equal("state", $"inventory:30:50:{ItemContent.Shard.Id}@0");
+        _sent
+            .Select(Describe)
+            .Should()
+            .Equal(
+                "state",
+                $"inventory:30:50:{ItemContent.Shard.Id}@0",
+                nameof(RpgSkillsMessageComposer)
+            );
     }
 
     private static string Describe(object composer) =>

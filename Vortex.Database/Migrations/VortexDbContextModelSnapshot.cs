@@ -1174,6 +1174,11 @@ namespace Vortex.Database.Migrations
 
                     MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
 
+                    b.Property<string>("ActionBar")
+                        .HasMaxLength(1024)
+                        .HasColumnType("varchar(1024)")
+                        .HasColumnName("action_bar");
+
                     b.Property<string>("ClassId")
                         .IsRequired()
                         .HasMaxLength(64)

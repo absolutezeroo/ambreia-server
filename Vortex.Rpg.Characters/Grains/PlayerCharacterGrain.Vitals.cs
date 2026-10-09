@@ -1,4 +1,6 @@
 using System;
+using System.Collections.Immutable;
+using System.Linq;
 using System.Threading.Tasks;
 using Vortex.Database.Entities.Rpg;
 using Vortex.Primitives.Rpg.Characters;
@@ -16,6 +18,9 @@ internal sealed partial class PlayerCharacterGrain
     /// <summary>The clock vitals are timed with; the tests move it.</summary>
     public TimeProvider Time { get; set; } = TimeProvider.System;
 
+    private ImmutableArray<CarriedStatus> _carried = [];
+    private DateTimeOffset _carriedAt;
+
     public async Task<CharacterCombatProfile?> GetCombatProfileAsync()
     {
         if (await GetStatsAsync() is not { } stats || _character is not { } c)
@@ -23,7 +28,27 @@ internal sealed partial class PlayerCharacterGrain
             return null;
         }
 
-        return Profile(stats, c);
+        return Profile(stats, c) with
+        {
+            Statuses = TakeCarried(),
+        };
+    }
+
+    /// <summary>The persistent statuses handed back by the last zone, less the time spent out of
+    /// any zone, the expired ones dropped; given once (spec M1b §7.4).</summary>
+    private ImmutableArray<CarriedStatus> TakeCarried()
+    {
+        long elapsed = (long)(Time.GetUtcNow() - _carriedAt).TotalMilliseconds;
+        ImmutableArray<CarriedStatus> left =
+        [
+            .. _carried
+                .Where(s => s.RemainingMs > elapsed)
+                .Select(s => s with { RemainingMs = (int)(s.RemainingMs - elapsed) }),
+        ];
+
+        _carried = [];
+
+        return left;
     }
 
     /// <summary>The profile read on entry, and passed on whenever the stats, level or class change.</summary>
@@ -39,15 +64,21 @@ internal sealed partial class PlayerCharacterGrain
             Level = c.Level,
             Range = Math.Max(1, cls?.Range ?? 1),
             ThreatMultiplier = Math.Max(1, cls?.ThreatMultiplier ?? 1),
+            ClassId = c.ClassId,
+            SpecializationId = c.SpecializationId,
         };
     }
 
-    public async Task SetVitalsAsync(int health, int mana)
+    public async Task SetVitalsAsync(int health, int mana, ImmutableArray<CarriedStatus> statuses)
     {
         if (await GetStatsAsync() is not { } stats || _character is not { } c)
         {
             return;
         }
+
+        // Memory only (spec M1b decision 7): a logout past the grace period loses them.
+        _carried = statuses.IsDefault ? [] : statuses;
+        _carriedAt = Time.GetUtcNow();
 
         // Full is kept as null: a maximum that grows later still finds the character full.
         c.CurrentHealth = health >= stats.MaxHealth ? null : Math.Max(0, health);

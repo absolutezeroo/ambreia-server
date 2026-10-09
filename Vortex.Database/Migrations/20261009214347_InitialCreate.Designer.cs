@@ -12,7 +12,7 @@ using Vortex.Database.Context;
 namespace Vortex.Database.Migrations
 {
     [DbContext(typeof(VortexDbContext))]
-    [Migration("20261009175218_InitialCreate")]
+    [Migration("20261009214347_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -1176,6 +1176,11 @@ namespace Vortex.Database.Migrations
                         .HasColumnName("id");
 
                     MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("ActionBar")
+                        .HasMaxLength(1024)
+                        .HasColumnType("varchar(1024)")
+                        .HasColumnName("action_bar");
 
                     b.Property<string>("ClassId")
                         .IsRequired()

@@ -357,6 +357,8 @@ public sealed class CombatZoneTests
             Level = level,
             Range = range,
             ThreatMultiplier = threatMultiplier,
+            ClassId = "class.mage",
+            SpecializationId = "spec.mage.fire",
         };
 
     [Fact]
@@ -487,6 +489,8 @@ public sealed class CombatZoneTests
             Level = 1,
             Range = 1,
             ThreatMultiplier = threatMultiplier,
+            ClassId = "class.mage",
+            SpecializationId = "spec.mage.fire",
         };
 
         await _combat.PlayerEnteredAsync(new PlayerId(player), objectId, CancellationToken.None);

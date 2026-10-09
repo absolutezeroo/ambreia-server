@@ -57,7 +57,7 @@ public sealed class CharacterVitalsTests : IAsyncLifetime
     public async Task SetVitals_IsKept_AcrossAReactivation()
     {
         PlayerCharacterGrain grain = await ActivateAsync(withCharacter: true);
-        await grain.SetVitalsAsync(10, 5);
+        await grain.SetVitalsAsync(10, 5, []);
         await DeactivateAsync(grain);
 
         PlayerCharacterGrain again = await ActivateAsync(withCharacter: false);
@@ -71,7 +71,7 @@ public sealed class CharacterVitalsTests : IAsyncLifetime
     {
         PlayerCharacterGrain grain = await ActivateAsync(withCharacter: true);
         int max = (await grain.GetCombatProfileAsync())!.Stats.MaxHealth;
-        await grain.SetVitalsAsync(10, 0);
+        await grain.SetVitalsAsync(10, 0, []);
 
         _clock.Now = _clock.Now.AddSeconds(10);
 
@@ -89,7 +89,7 @@ public sealed class CharacterVitalsTests : IAsyncLifetime
     {
         PlayerCharacterGrain grain = await ActivateAsync(withCharacter: true);
 
-        await grain.SetVitalsAsync(99_999, 99_999);
+        await grain.SetVitalsAsync(99_999, 99_999, []);
 
         CharacterCombatProfile profile = (await grain.GetCombatProfileAsync())!;
         (profile.Health, profile.Mana)
@@ -105,7 +105,7 @@ public sealed class CharacterVitalsTests : IAsyncLifetime
         PlayerCharacterGrain grain = await ActivateAsync(withCharacter: true);
         CharacterCombatProfile profile = (await grain.GetCombatProfileAsync())!;
 
-        await grain.SetVitalsAsync(profile.Stats.MaxHealth, profile.Stats.MaxMana);
+        await grain.SetVitalsAsync(profile.Stats.MaxHealth, profile.Stats.MaxMana, []);
         await DeactivateAsync(grain);
 
         await using VortexDbContext db = new(_options);

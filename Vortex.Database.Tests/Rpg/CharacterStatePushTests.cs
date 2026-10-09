@@ -20,6 +20,7 @@ using Vortex.Primitives.Rooms;
 using Vortex.Primitives.Rpg.Characters;
 using Vortex.Protocol.Messages.Outgoing.Rpg.Characters;
 using Vortex.Protocol.Messages.Outgoing.Rpg.Items;
+using Vortex.Protocol.Messages.Outgoing.Rpg.Skills;
 using Vortex.Rpg.Characters.Configuration;
 using Vortex.Rpg.Characters.Grains;
 using Vortex.Rpg.Characters.Stats;
@@ -60,9 +61,11 @@ public sealed class CharacterStatePushTests : IAsyncLifetime
 
         await grain.EnteredRoomAsync(new RoomId(12));
 
-        // The state, then the bag that goes with it (spec Objets §12).
-        _sent.Should().HaveCount(2);
+        // The state, then the bag that goes with it (spec Objets §12), then the skills and the bar
+        // (spec M1b §9).
+        _sent.Should().HaveCount(3);
         _sent[1].Should().BeOfType<RpgInventoryMessageComposer>();
+        _sent[2].Should().BeOfType<RpgSkillsMessageComposer>();
         RpgCharacterStateMessageComposer state = _sent[0]
             .Should()
             .BeOfType<RpgCharacterStateMessageComposer>()
@@ -109,7 +112,8 @@ public sealed class CharacterStatePushTests : IAsyncLifetime
             .Should()
             .Equal(
                 typeof(RpgCharacterStatsMessageComposer),
-                typeof(RpgCharacterProgressMessageComposer)
+                typeof(RpgCharacterProgressMessageComposer),
+                typeof(RpgSkillsMessageComposer)
             );
         ((RpgCharacterStatsMessageComposer)_sent[0]).Stats.MaxHealth.Should().BeGreaterThan(120);
         _sent[1]
@@ -136,13 +140,13 @@ public sealed class CharacterStatePushTests : IAsyncLifetime
 
         await grain.ChooseClassAsync("class.warrior");
 
-        RpgCharacterStatsMessageComposer stats = _sent
+        _sent
+            .Select(c => c.GetType())
             .Should()
-            .ContainSingle()
-            .Which.Should()
-            .BeOfType<RpgCharacterStatsMessageComposer>()
-            .Subject;
-        stats.Stats.Strength.Should().Be(15, "a level 2 warrior: 12 + 3");
+            .Equal(typeof(RpgCharacterStatsMessageComposer), typeof(RpgSkillsMessageComposer));
+        ((RpgCharacterStatsMessageComposer)_sent[0])
+            .Stats.Strength.Should()
+            .Be(15, "a level 2 warrior: 12 + 3");
     }
 
     [Fact]

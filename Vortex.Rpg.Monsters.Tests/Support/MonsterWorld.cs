@@ -130,6 +130,8 @@ internal sealed class MonsterWorld
                                 Level = 1,
                                 Range = 1,
                                 ThreatMultiplier = 1,
+                                ClassId = "class.warrior",
+                                SpecializationId = "spec.warrior.guardian",
                             }
                         ),
                     nameof(IPlayerCharacterGrain.GainXpAsync) => Task.FromResult(

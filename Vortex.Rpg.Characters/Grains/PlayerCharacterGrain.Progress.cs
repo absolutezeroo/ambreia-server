@@ -83,6 +83,8 @@ internal sealed partial class PlayerCharacterGrain
             // Never lose a level (spec Personnage §7): written now, and announced only then, so a
             // reward given on LevelUp is never given for a level a crash could take back.
             _stats = null;
+            // A skill learned on the way goes on the bar, written with the level (spec M1b §9).
+            PlaceSkillsLearnedSince(c, oldLevel);
             await FlushAsync(CancellationToken.None);
 
             for (int level = oldLevel + 1; level <= c.Level; level++)

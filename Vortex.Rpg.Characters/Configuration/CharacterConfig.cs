@@ -18,6 +18,9 @@ public sealed class CharacterConfig
     /// <summary>Characters one account may hold on the character screen (spec F3a §5.3).</summary>
     public int MaxCharactersPerAccount { get; init; } = 5;
 
+    /// <summary>Slots of the action bar (spec M1b §9, plan M1b decision 5).</summary>
+    public int ActionBarSize { get; init; } = 6;
+
     /// <summary>The look of a character created without one.</summary>
     public string DefaultFigure { get; init; } = "hd-180-1.ch-210-66.lg-270-82.sh-290-80";
 }
