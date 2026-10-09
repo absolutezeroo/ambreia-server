@@ -120,5 +120,6 @@ internal static class MessageComposer
     public const int RpgCharacterStatsMessageComposer = 9005; // RPG (spec §3.7)
     public const int RpgInventoryMessageComposer = 9006; // RPG (spec §3.7)
     public const int RpgItemResultMessageComposer = 9007; // RPG (spec §3.7)
+    public const int RpgZoneInteractivesMessageComposer = 9008; // RPG (spec §3.7)
     #endregion
 }

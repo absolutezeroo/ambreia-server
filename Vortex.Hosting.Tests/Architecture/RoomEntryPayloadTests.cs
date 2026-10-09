@@ -41,6 +41,8 @@ public sealed class RoomEntryPayloadTests
         // Pins chooserDisabled, freeFurniMovementsEnabled and invisibleFurni on the client's room
         // object instead of leaving them to whatever the client defaults to.
         "HanditemConfigurationMessageComposer",
+        // What a player can click in a zone (spec F3b §5): the client asks for nothing after entry.
+        "RpgZoneInteractivesMessageComposer",
     ];
 
     /// <summary>

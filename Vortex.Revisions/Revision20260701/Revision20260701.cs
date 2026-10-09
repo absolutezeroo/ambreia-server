@@ -14,6 +14,7 @@ public sealed class Revision20260701()
             new AvailabilityMap(),
             new RpgCharactersMap(),
             new RpgItemsMap(),
+            new RpgInteractionMap(),
         }
     )
 {

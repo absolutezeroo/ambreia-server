@@ -20,6 +20,7 @@ using Vortex.Protocol.Messages.Outgoing.Room.Engine;
 using Vortex.Protocol.Messages.Outgoing.Room.Layout;
 using Vortex.Protocol.Messages.Outgoing.Room.Permissions;
 using Vortex.Protocol.Messages.Outgoing.Room.Session;
+using Vortex.Protocol.Messages.Outgoing.Rpg.Interaction;
 
 namespace Vortex.Rooms.Grains;
 
@@ -239,6 +240,25 @@ public sealed partial class RoomGrain
                     }
                 );
             }
+        }
+
+        // What a player can click here (spec F3b §5): every other decor object is frozen, and the
+        // client stops showing Habbo's furni info for it. Ours, after Sulake's captured order.
+        if (_state.ZoneRuntime is { } zone)
+        {
+            burst.Add(
+                new RpgZoneInteractivesMessageComposer
+                {
+                    Objects =
+                    [
+                        .. zone.Compiled.Interactives.Select(c => new RpgZoneInteractive
+                        {
+                            ObjectId = c.ObjectId,
+                            Interaction = c.Interaction,
+                        }),
+                    ],
+                }
+            );
         }
 
         return burst.ToImmutable();
