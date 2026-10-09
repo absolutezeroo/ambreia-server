@@ -1,0 +1,20 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+  </PropertyGroup>
+  <ItemGroup>
+    <InternalsVisibleTo Include="Vortex.Rpg.Combat.Tests" />
+    <InternalsVisibleTo Include="Vortex.Rpg.Monsters" />
+    <InternalsVisibleTo Include="Vortex.Rpg.Monsters.Tests" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.Hosting" />
+    <PackageReference Include="Microsoft.Orleans.Sdk" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Vortex.Logging\Vortex.Logging.csproj" />
+    <ProjectReference Include="..\Vortex.Primitives\Vortex.Primitives.csproj" />
+    <ProjectReference Include="..\Vortex.Protocol\Vortex.Protocol.csproj" />
+    <ProjectReference Include="..\Vortex.Rpg\Vortex.Rpg.csproj" />
+  </ItemGroup>
+</Project>

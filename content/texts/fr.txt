@@ -57,3 +57,8 @@ item.quest.sealed_letter.name=Lettre scellée
 item.quest.sealed_letter.description=Un pli cacheté de cire, à remettre en mains propres.
 item.furniture.amber_throne.name=Trône d'ambre
 item.furniture.amber_throne.description=Un trône à poser chez soi, digne des seigneurs d'Ambreia.
+
+monster.forest.wolf.name=Loup des bois
+monster.forest.wolf.description=Il chasse en meute dans les sous-bois, et ne laisse pas passer un intrus.
+monster.proof.brute.name=Brute d'essai
+monster.proof.brute.description=Un monstre de preuve, bien trop fort : il sert à tester la mort.

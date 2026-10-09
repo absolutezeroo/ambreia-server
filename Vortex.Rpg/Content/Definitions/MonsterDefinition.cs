@@ -1,0 +1,33 @@
+namespace Vortex.Rpg.Content.Definitions;
+
+/// <summary>
+/// A monster (spec M1a §5.1): how it looks (a Habbo pet), how it behaves, its stats at level 1 and
+/// growth per level, its attack and the XP it gives. Its level comes from the spawn that places it.
+/// </summary>
+public sealed record MonsterDefinition : ContentDefinition
+{
+    /// <summary>A Habbo pet figure: "&lt;type&gt; &lt;race&gt; &lt;colour&gt;".</summary>
+    public required string Figure { get; init; }
+
+    /// <summary>A behaviour key declared by a module (<c>melee</c>…).</summary>
+    public string Behavior { get; init; } = "melee";
+
+    /// <summary>Attacks on sight within its aggro radius; otherwise only when hit.</summary>
+    public bool Aggressive { get; init; }
+
+    public required MonsterStatBlock Base { get; init; }
+
+    public MonsterStatBlock PerLevel { get; init; } = new();
+
+    /// <summary>In tiles (Chebyshev).</summary>
+    public int AttackRange { get; init; } = 1;
+
+    public int AttackIntervalMs { get; init; } = 2000;
+
+    /// <summary>How far from its spawn it follows a player; 0: twice the spawn's aggro radius.</summary>
+    public int LeashRadius { get; init; }
+
+    public int Xp { get; init; }
+
+    public int XpPerLevel { get; init; }
+}

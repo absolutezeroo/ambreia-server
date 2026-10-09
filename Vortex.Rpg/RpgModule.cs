@@ -24,6 +24,7 @@ public sealed class RpgModule : IHostPluginModule
         services.AddSingleton<IContentKind, SpecializationKind>();
         services.AddSingleton<IContentKind, ProgressionKind>();
         services.AddSingleton<IContentKind, ItemKind>();
+        services.AddSingleton<IContentKind, MonsterKind>();
 
         // A chat link to an item (spec F3c §6), checked against this content.
         services.AddSingleton<IChatLinkKind, ItemChatLinkKind>();

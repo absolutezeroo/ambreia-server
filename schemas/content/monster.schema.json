@@ -1,0 +1,96 @@
+{
+  "type": "object",
+  "properties": {
+    "$schema": {
+      "type": "string"
+    },
+    "figure": {
+      "type": "string"
+    },
+    "behavior": {
+      "type": "string"
+    },
+    "aggressive": {
+      "type": "boolean"
+    },
+    "base": {
+      "type": "object",
+      "properties": {
+        "health": {
+          "type": "integer"
+        },
+        "armor": {
+          "type": "integer"
+        },
+        "damageMin": {
+          "type": "integer"
+        },
+        "damageMax": {
+          "type": "integer"
+        },
+        "critPercent": {
+          "type": "number"
+        },
+        "dodgePercent": {
+          "type": "number"
+        }
+      },
+      "additionalProperties": false
+    },
+    "perLevel": {
+      "type": "object",
+      "properties": {
+        "health": {
+          "type": "integer"
+        },
+        "armor": {
+          "type": "integer"
+        },
+        "damageMin": {
+          "type": "integer"
+        },
+        "damageMax": {
+          "type": "integer"
+        },
+        "critPercent": {
+          "type": "number"
+        },
+        "dodgePercent": {
+          "type": "number"
+        }
+      },
+      "additionalProperties": false
+    },
+    "attackRange": {
+      "type": "integer"
+    },
+    "attackIntervalMs": {
+      "type": "integer"
+    },
+    "leashRadius": {
+      "type": "integer"
+    },
+    "xp": {
+      "type": "integer"
+    },
+    "xpPerLevel": {
+      "type": "integer"
+    },
+    "id": {
+      "type": "string"
+    },
+    "kind": {
+      "type": "string"
+    },
+    "retired": {
+      "type": "boolean"
+    }
+  },
+  "required": [
+    "figure",
+    "base",
+    "id",
+    "kind"
+  ],
+  "additionalProperties": false
+}

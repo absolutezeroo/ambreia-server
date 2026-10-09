@@ -54,6 +54,8 @@
     <ProjectReference Include="..\Vortex.World\Vortex.World.csproj" />
     <ProjectReference Include="..\Vortex.Rpg\Vortex.Rpg.csproj" />
     <ProjectReference Include="..\Vortex.Rpg.Characters\Vortex.Rpg.Characters.csproj" />
+    <ProjectReference Include="..\Vortex.Rpg.Combat\Vortex.Rpg.Combat.csproj" />
+    <ProjectReference Include="..\Vortex.Rpg.Monsters\Vortex.Rpg.Monsters.csproj" />
     <ProjectReference Include="..\Vortex.Crypto\Vortex.Crypto.csproj" />
     <ProjectReference Include="..\Vortex.Database\Vortex.Database.csproj" />
     <ProjectReference Include="..\Vortex.Events\Vortex.Events.csproj" />

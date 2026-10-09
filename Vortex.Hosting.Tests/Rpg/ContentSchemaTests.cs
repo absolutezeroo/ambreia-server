@@ -19,7 +19,8 @@ namespace Vortex.Hosting.Tests.Rpg;
 /// </summary>
 public sealed class ContentSchemaTests
 {
-    public static TheoryData<string> Kinds() => ["class", "specialization", "progression", "item"];
+    public static TheoryData<string> Kinds() =>
+        ["class", "specialization", "progression", "item", "monster"];
 
     private static readonly Dictionary<string, IContentKind> ByName = new()
     {
@@ -27,6 +28,7 @@ public sealed class ContentSchemaTests
         ["specialization"] = new SpecializationKind(),
         ["progression"] = new ProgressionKind(),
         ["item"] = new ItemKind(),
+        ["monster"] = new MonsterKind(),
     };
 
     [Theory]

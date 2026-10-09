@@ -1,0 +1,26 @@
+{
+  "$schema": "../../schemas/content/monster.schema.json",
+  "id": "monster.forest.wolf",
+  "kind": "monster",
+  "figure": "0 3 C0A060",
+  "behavior": "melee",
+  "aggressive": true,
+  "base": {
+    "health": 40,
+    "armor": 2,
+    "damageMin": 3,
+    "damageMax": 5,
+    "critPercent": 5,
+    "dodgePercent": 3
+  },
+  "perLevel": {
+    "health": 12,
+    "armor": 1,
+    "damageMin": 1,
+    "damageMax": 2
+  },
+  "attackRange": 1,
+  "attackIntervalMs": 2000,
+  "xp": 20,
+  "xpPerLevel": 6
+}

@@ -1,0 +1,17 @@
+{
+  "$schema": "../../schemas/content/monster.schema.json",
+  "id": "monster.proof.brute",
+  "kind": "monster",
+  "figure": "4 0 FFFFFF",
+  "behavior": "melee",
+  "aggressive": true,
+  "base": {
+    "health": 5000,
+    "armor": 50,
+    "damageMin": 400,
+    "damageMax": 500
+  },
+  "attackRange": 1,
+  "attackIntervalMs": 1000,
+  "xp": 0
+}
