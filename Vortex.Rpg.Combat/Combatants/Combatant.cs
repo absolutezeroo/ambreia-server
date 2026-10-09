@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using Vortex.Primitives.Players;
 using Vortex.Rpg.Combat.Hits;
+using Vortex.Rpg.Combat.Stats;
 
 namespace Vortex.Rpg.Combat.Combatants;
 
@@ -11,6 +12,7 @@ namespace Vortex.Rpg.Combat.Combatants;
 /// </summary>
 public sealed class Combatant : ICombatantStats
 {
+    private readonly Dictionary<Type, object> _parts = [];
     private double _crit;
     private double _dodge;
 
@@ -97,4 +99,47 @@ public sealed class Combatant : ICombatantStats
 
     /// <summary>How long a monster's body stays in the room once killed; 0: it goes at once.</summary>
     public int CorpseMs { get; init; }
+
+    /// <summary>Its stats before any modifier; the effective ones above are recomputed from it
+    /// (spec M1b §7.3).</summary>
+    public CombatantBase Base { get; set; } = new();
+
+    /// <summary>A monster's own time between two hits, before a slow.</summary>
+    public int MonsterIntervalMs { get; set; }
+
+    public double DamageDealtPercent { get; set; }
+
+    public double DamageTakenPercent { get; set; }
+
+    /// <summary>The strongest slow on it, in percent.</summary>
+    public int SlowPercent { get; set; }
+
+    /// <summary>No hit, no cast, no walk (spec M1b §7.2).</summary>
+    public bool Stunned { get; set; }
+
+    /// <summary>An action occupies it (a cast): no automatic hit meanwhile.</summary>
+    public bool Busy { get; set; }
+
+    /// <summary>A player's class and specialization, for the skills he knows.</summary>
+    public string ClassId { get; set; } = string.Empty;
+
+    public string SpecializationId { get; set; } = string.Empty;
+
+    /// <summary>A module's own state on this fighter (its statuses, its cast); gone with it.</summary>
+    public T? Get<T>()
+        where T : class => _parts.TryGetValue(typeof(T), out object? part) ? (T)part : null;
+
+    /// <summary>Null removes the part.</summary>
+    public void Set<T>(T? part)
+        where T : class
+    {
+        if (part is null)
+        {
+            _parts.Remove(typeof(T));
+        }
+        else
+        {
+            _parts[typeof(T)] = part;
+        }
+    }
 }

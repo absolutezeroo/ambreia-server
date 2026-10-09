@@ -22,10 +22,25 @@ public sealed class HitResolver
     /// <summary>The steps in the order they run, for the start-up log.</summary>
     public IReadOnlyList<IHitStep> Steps => _steps;
 
+    /// <summary>An automatic swing: the damage the target takes, after any shield.</summary>
     public (int Amount, string Outcome) Resolve(
         ICombatantStats attacker,
         ICombatantStats target,
         Random random
+    )
+    {
+        (int amount, _, string outcome) = Resolve(attacker, target, random, HitOptions.None);
+
+        return (amount, outcome);
+    }
+
+    /// <summary>A hit shaped by <paramref name="options"/> (a skill, a status): the damage the
+    /// target takes and what a shield took instead.</summary>
+    public (int Amount, int Absorbed, string Outcome) Resolve(
+        ICombatantStats attacker,
+        ICombatantStats target,
+        Random random,
+        HitOptions options
     )
     {
         HitContext hit = new()
@@ -33,6 +48,7 @@ public sealed class HitResolver
             Attacker = attacker,
             Target = target,
             Random = random,
+            Options = options,
         };
 
         foreach (IHitStep step in _steps)
@@ -43,9 +59,9 @@ public sealed class HitResolver
             }
         }
 
-        return (
-            Math.Max(0, (int)Math.Round(hit.Damage, MidpointRounding.AwayFromZero)),
-            hit.Outcome
-        );
+        return (Round(hit.Damage), Round(hit.Absorbed), hit.Outcome);
     }
+
+    private static int Round(double value) =>
+        Math.Max(0, (int)Math.Round(value, MidpointRounding.AwayFromZero));
 }

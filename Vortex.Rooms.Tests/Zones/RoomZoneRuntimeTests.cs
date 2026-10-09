@@ -296,4 +296,51 @@ public sealed class RoomZoneRuntimeTests
             .Should()
             .Be((false, false));
     }
+
+    /// <summary>Spec M1b §7.2: a stunned avatar stops where it stands and starts no walk until freed.</summary>
+    [Fact]
+    public async Task SetRooted_LocksAndStopsTheWalk()
+    {
+        await ZoneAsync();
+        int id = Runtime.SpawnMonster(Wolf, 0, 0);
+        Runtime.WalkNear(id, 4, 0, 0).Should().Be(WalkResult.Started);
+
+        Runtime.SetRooted(id, true);
+
+        (Runtime.IsWalking(id), Runtime.WalkNear(id, 4, 0, 0))
+            .Should()
+            .Be((false, WalkResult.NoPath));
+
+        Runtime.SetRooted(id, false);
+        Runtime.BeginTick(2000);
+
+        Runtime.WalkNear(id, 4, 0, 0).Should().Be(WalkResult.Started);
+    }
+
+    [Fact]
+    public async Task UnrootingAGhost_KeepsItLocked()
+    {
+        await ZoneAsync();
+        IRoomAvatar player = _harness.PutRealPlayerInRoom(RoomHarness.Owner, 1, 1);
+        Runtime.SetPosture(player.ObjectId.Value, "lay");
+
+        Runtime.SetRooted(player.ObjectId.Value, true);
+        Runtime.SetRooted(player.ObjectId.Value, false);
+
+        player.IsMovementLocked.Should().BeTrue("a ghost still lies");
+    }
+
+    [Fact]
+    public async Task SetMoveSpeed_IsKeptOnTheAvatar()
+    {
+        await ZoneAsync();
+        int id = Runtime.SpawnMonster(Wolf, 0, 0);
+
+        Runtime.SetMoveSpeed(id, 40);
+
+        _harness
+            .Grain._state.AvatarsByObjectId[new RoomObjectId(id)]
+            .MoveSpeedPercent.Should()
+            .Be(40);
+    }
 }

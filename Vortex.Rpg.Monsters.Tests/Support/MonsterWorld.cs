@@ -68,7 +68,9 @@ internal sealed class MonsterWorld
             Characters(),
             FakeProxy.Create<IEventPublisher>(_ => Task.CompletedTask),
             FakeProxy.Create<IVortexMetrics>(_ => null),
-            NullLoggerFactory.Instance
+            NullLoggerFactory.Instance,
+            [],
+            []
         );
 
         Simulation = (RpgZoneSimulation)

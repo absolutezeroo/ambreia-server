@@ -7,7 +7,7 @@ public sealed class DodgeStep : IHitStep
 
     public bool Apply(HitContext hit)
     {
-        if (hit.Random.NextDouble() * 100 >= hit.Target.DodgePercent)
+        if (hit.Options.Unavoidable || hit.Random.NextDouble() * 100 >= hit.Target.DodgePercent)
         {
             return true;
         }

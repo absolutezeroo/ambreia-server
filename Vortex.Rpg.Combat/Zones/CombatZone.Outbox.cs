@@ -4,9 +4,11 @@ using System.Collections.Immutable;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
+using Vortex.Primitives.Networking;
 using Vortex.Primitives.Players;
 using Vortex.Protocol.Messages.Outgoing.Rpg.Combat;
 using Vortex.Rpg.Combat.Combatants;
+using Vortex.Rpg.Combat.Systems;
 
 namespace Vortex.Rpg.Combat.Zones;
 
@@ -24,6 +26,11 @@ public sealed partial class CombatZone
 
     private async Task FlushAsync()
     {
+        foreach (ICombatSystem system in _systems)
+        {
+            system.BeforeFlush(this);
+        }
+
         // Each composer is built now, before the outbox is cleared; only the send is deferred.
         List<Func<Task>> sends = [];
 
@@ -65,11 +72,18 @@ public sealed partial class CombatZone
             sends.Add(() => runtime.SendToPlayerAsync(player, result));
         }
 
-        _hits.Clear();
-        _vitalsChanged.Clear();
-        _selfChanged.Clear();
-        _deaths.Clear();
-        _results.Clear();
+        // Then what the modules queued (spec M1b): theirs come after combat's, in their order.
+        foreach (IComposer composer in _broadcasts)
+        {
+            sends.Add(() => runtime.BroadcastAsync(composer));
+        }
+
+        foreach ((PlayerId player, IComposer composer) in _sends)
+        {
+            sends.Add(() => runtime.SendToPlayerAsync(player, composer));
+        }
+
+        ClearOutbox();
 
         // Different presences and the zone's stream: sent together. A send that fails (a presence
         // that just went away) is logged and costs nothing else: the tick has done its work.
@@ -100,6 +114,8 @@ public sealed partial class CombatZone
         _selfChanged.Clear();
         _deaths.Clear();
         _results.Clear();
+        _broadcasts.Clear();
+        _sends.Clear();
     }
 
     private static RpgCombatantVitals Vitals(Combatant c) =>

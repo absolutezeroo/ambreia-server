@@ -28,4 +28,17 @@ public sealed class NoZoneSimulation : IZoneSimulation
     public IEnumerable<IComposer> EntryVitals(PlayerId player) => [];
 
     public void PlayerStatsChanged(PlayerId player, CharacterCombatProfile profile) { }
+
+    public Task CastSkillAsync(
+        PlayerId player,
+        string skillId,
+        int targetObjectId,
+        int x,
+        int y,
+        CancellationToken ct
+    ) => Task.CompletedTask;
+
+    public void CancelCast(PlayerId player) { }
+
+    public void PlayerWalked(PlayerId player) { }
 }

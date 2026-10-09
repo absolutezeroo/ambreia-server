@@ -17,6 +17,8 @@ using Vortex.Protocol.Messages.Outgoing.Rpg.Combat;
 using Vortex.Rpg.Combat.Combatants;
 using Vortex.Rpg.Combat.Configuration;
 using Vortex.Rpg.Combat.Hits;
+using Vortex.Rpg.Combat.Stats;
+using Vortex.Rpg.Combat.Systems;
 using Vortex.Rpg.Content.Definitions;
 using Vortex.Rpg.Zones;
 
@@ -35,9 +37,21 @@ public sealed partial class CombatZone(
     IGrainFactory grains,
     IEventPublisher events,
     IVortexMetrics metrics,
-    ILogger logger
+    ILogger logger,
+    IEnumerable<ICombatSystem>? systems = null,
+    IEnumerable<IStatModifierSource>? modifiers = null
 )
 {
+    /// <summary>By order, then full type name: a tie never depends on the declaration order.</summary>
+    private readonly ICombatSystem[] _systems =
+    [
+        .. (systems ?? [])
+            .OrderBy(s => s.Order)
+            .ThenBy(s => s.GetType().FullName, StringComparer.Ordinal),
+    ];
+
+    private readonly IStatModifierSource[] _modifiers = [.. modifiers ?? []];
+
     private readonly Dictionary<int, Combatant> _combatants = [];
     private readonly Dictionary<PlayerId, int> _players = [];
 
@@ -95,6 +109,8 @@ public sealed partial class CombatZone(
             Level = profile.Level,
             Range = profile.Range,
             ThreatMultiplier = profile.ThreatMultiplier,
+            ClassId = profile.ClassId,
+            SpecializationId = profile.SpecializationId,
         };
         Apply(c, profile.Stats);
 
@@ -106,6 +122,11 @@ public sealed partial class CombatZone(
         _players[player] = objectId;
         _vitalsChanged.Add(objectId);
 
+        foreach (ICombatSystem system in _systems)
+        {
+            system.Added(this, c, profile);
+        }
+
         await runtime.SendToPlayerAsync(player, SelfVitals(c));
     }
 
@@ -113,14 +134,16 @@ public sealed partial class CombatZone(
     /// them (spec M1a §4.4).</summary>
     public async Task PlayerLeftAsync(PlayerId player, CancellationToken ct)
     {
-        if (
-            !_players.Remove(player, out int objectId)
-            || !_combatants.Remove(objectId, out Combatant? c)
-        )
+        if (!_players.TryGetValue(player, out int objectId))
         {
             return;
         }
 
+        // Still in the zone while the systems see him go: a cast ends where everyone sees it.
+        Combatant c = _combatants[objectId];
+        List<CarriedStatus> carried = Removing(c, CombatantExit.Left);
+        _players.Remove(player);
+        _combatants.Remove(objectId);
         Forget(objectId);
         LeaveCombat(c);
 
@@ -138,8 +161,9 @@ public sealed partial class CombatZone(
 
         try
         {
-            // The persistent statuses come with M1b's statuses (plan M1b, Task 4).
-            await grains.GetPlayerCharacterGrain(player).SetVitalsAsync(health, c.Mana, []);
+            await grains
+                .GetPlayerCharacterGrain(player)
+                .SetVitalsAsync(health, c.Mana, [.. carried]);
         }
         catch (Exception ex) when (ex is not OperationCanceledException)
         {
@@ -166,21 +190,33 @@ public sealed partial class CombatZone(
             Xp = definition.Xp + definition.XpPerLevel * above,
             CorpseMs = Math.Max(0, definition.CorpseSeconds) * 1000,
             MaxHealth = Math.Max(1, b.Health + l.Health * above),
-            Armor = b.Armor + l.Armor * above,
             DamageMin = b.DamageMin + l.DamageMin * above,
             DamageMax = b.DamageMax + l.DamageMax * above,
-            CritPercent = b.CritPercent + l.CritPercent * above,
-            DodgePercent = b.DodgePercent + l.DodgePercent * above,
             Range = Math.Max(1, definition.AttackRange),
-            AttackIntervalMs = Math.Max(
+            MonsterIntervalMs = Math.Max(
                 config.MinAttackIntervalMs / 2,
                 definition.AttackIntervalMs
             ),
         };
+
+        // Its power, for a skill or a status it brings, is its average damage (plan M1b decision 4).
+        c.Base = new CombatantBase
+        {
+            Power = (c.DamageMin + c.DamageMax) / 2,
+            Armor = b.Armor + l.Armor * above,
+            CritPercent = b.CritPercent + l.CritPercent * above,
+            DodgePercent = b.DodgePercent + l.DodgePercent * above,
+        };
+        Recompute(c);
         c.Health = c.MaxHealth;
 
         _combatants[objectId] = c;
         _vitalsChanged.Add(objectId);
+
+        foreach (ICombatSystem system in _systems)
+        {
+            system.Added(this, c, null);
+        }
 
         return c;
     }
@@ -190,6 +226,7 @@ public sealed partial class CombatZone(
     {
         if (_combatants.TryGetValue(objectId, out Combatant? c) && !c.IsPlayer)
         {
+            Removing(c, CombatantExit.Left);
             _combatants.Remove(objectId);
             Forget(objectId);
             runtime.RemoveMonster(objectId);
@@ -261,6 +298,8 @@ public sealed partial class CombatZone(
         c.Level = profile.Level;
         c.Range = profile.Range;
         c.ThreatMultiplier = profile.ThreatMultiplier;
+        c.ClassId = profile.ClassId;
+        c.SpecializationId = profile.SpecializationId;
         Apply(c, profile.Stats);
         c.Health = Math.Min(c.Health, c.MaxHealth);
         c.Mana = Math.Min(c.Mana, c.MaxMana);
@@ -280,6 +319,12 @@ public sealed partial class CombatZone(
         if (!HasPlayers)
         {
             return;
+        }
+
+        // Statuses, casts: before the hits, so a stun or a cast begun stops this tick's swing.
+        foreach (ICombatSystem system in _systems)
+        {
+            system.Tick(this, now);
         }
 
         Swings(now);
@@ -303,17 +348,26 @@ public sealed partial class CombatZone(
         {
             yield return SelfVitals(_combatants[id]);
         }
+
+        foreach (IComposer composer in _systems.SelectMany(s => s.Entry(this)))
+        {
+            yield return composer;
+        }
     }
 
     private void Apply(Combatant c, CharacterStatsSnapshot stats)
     {
         c.MaxHealth = Math.Max(1, stats.MaxHealth);
         c.MaxMana = Math.Max(0, stats.MaxMana);
-        c.Power = stats.Power;
-        c.Armor = stats.Armor;
-        c.CritPercent = stats.CritPercent;
-        c.DodgePercent = stats.DodgePercent;
-        c.AttackIntervalMs = CombatMath.AttackIntervalMs(stats.SpeedPercent, config);
+        c.Base = new CombatantBase
+        {
+            Power = stats.Power,
+            Armor = stats.Armor,
+            CritPercent = stats.CritPercent,
+            DodgePercent = stats.DodgePercent,
+            SpeedPercent = stats.SpeedPercent,
+        };
+        Recompute(c);
     }
 
     private int RespawnHealth(Combatant c) =>

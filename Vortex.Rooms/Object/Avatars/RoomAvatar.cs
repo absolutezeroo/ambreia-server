@@ -35,6 +35,7 @@ public abstract class RoomAvatar<TSelf, TLogic, TContext>
     public List<int> TilePath { get; } = [];
 
     public long NextMoveStepAtMs { get; set; } = 0;
+    public int MoveSpeedPercent { get; set; } = 100;
     public long NextMoveUpdateAtMs { get; set; } = 0;
     public long PendingStopAtMs { get; set; } = 0;
 

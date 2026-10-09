@@ -15,6 +15,14 @@ public sealed class BaseDamageStep(IOptions<CombatConfig> config) : IHitStep
     {
         ICombatantStats a = hit.Attacker;
 
+        // A skill or a status brings its own amount (spec M1b §5.2).
+        if (hit.Options.BaseDamage is { } given)
+        {
+            hit.Damage = given;
+
+            return true;
+        }
+
         hit.Damage = a.IsPlayer
             ? a.Power
                 * (

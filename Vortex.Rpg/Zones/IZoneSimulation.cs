@@ -41,4 +41,21 @@ public interface IZoneSimulation
     /// level, range and threat are taken; its health and mana never are — in a zone the zone's own
     /// are the truth, bounded to the new maximum.</summary>
     public void PlayerStatsChanged(PlayerId player, CharacterCombatProfile profile);
+
+    /// <summary>The player casts a skill (spec M1b §6): refused at once (the player is told why), or
+    /// under way.</summary>
+    public Task CastSkillAsync(
+        PlayerId player,
+        string skillId,
+        int targetObjectId,
+        int x,
+        int y,
+        CancellationToken ct
+    );
+
+    /// <summary>The player stops his own cast.</summary>
+    public void CancelCast(PlayerId player);
+
+    /// <summary>The player walked on his own: a cast that does not allow it ends (spec M1b §6.4).</summary>
+    public void PlayerWalked(PlayerId player);
 }

@@ -15,7 +15,12 @@ public sealed class HitContext
 
     public required Random Random { get; init; }
 
+    public HitOptions Options { get; init; } = HitOptions.None;
+
     public double Damage { get; set; }
+
+    /// <summary>Taken by a shield instead of the target (spec M1b §7.2).</summary>
+    public double Absorbed { get; set; }
 
     public string Outcome { get; set; } = Hit;
 }

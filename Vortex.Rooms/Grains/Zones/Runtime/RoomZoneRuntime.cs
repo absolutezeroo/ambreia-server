@@ -160,6 +160,8 @@ public sealed class RoomZoneRuntime(RoomGrain room) : IZoneRuntime
                 new RoomObjectId(objectId),
                 out IRoomAvatar? avatar
             )
+            // Stunned, a ghost, a body: it walks nowhere.
+            || avatar.IsMovementLocked
         )
         {
             return WalkResult.NoPath;
@@ -275,6 +277,42 @@ public sealed class RoomZoneRuntime(RoomGrain room) : IZoneRuntime
         }
 
         a.SetMovementLocked(posture is "lay" or "ded");
+    }
+
+    public void SetMoveSpeed(int objectId, int percent)
+    {
+        if (
+            room._state.AvatarsByObjectId.TryGetValue(
+                new RoomObjectId(objectId),
+                out IRoomAvatar? a
+            )
+        )
+        {
+            a.MoveSpeedPercent = Math.Clamp(percent, 1, 100);
+        }
+    }
+
+    public void SetRooted(int objectId, bool rooted)
+    {
+        if (
+            !room._state.AvatarsByObjectId.TryGetValue(
+                new RoomObjectId(objectId),
+                out IRoomAvatar? a
+            )
+        )
+        {
+            return;
+        }
+
+        if (rooted)
+        {
+            room.AvatarModule.CancelWalk(a);
+        }
+
+        // A ghost or a body lies: freeing it from a stun does not stand it up.
+        a.SetMovementLocked(
+            rooted || a.HasStatus(AvatarStatusType.Lay) || a.HasStatus(AvatarStatusType.Dead)
+        );
     }
 
     /// <summary>Through the avatar's dirty flag: the next avatar tick sends it in a UserUpdate.</summary>

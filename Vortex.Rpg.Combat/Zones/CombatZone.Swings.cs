@@ -15,7 +15,8 @@ public sealed partial class CombatZone
     {
         foreach (Combatant a in _combatants.Values.ToArray())
         {
-            if (a.IsDead || a.IsGhost || a.TargetId is not { } targetId)
+            // A stunned fighter does nothing; a busy one (a cast) waits (spec M1b §6.3, §7.2).
+            if (a.IsDead || a.IsGhost || a.Stunned || a.Busy || a.TargetId is not { } targetId)
             {
                 continue;
             }
@@ -108,24 +109,8 @@ public sealed partial class CombatZone
         (int amount, string outcome) = hits.Resolve(a, t, runtime.Random);
         metrics.CombatHit(outcome);
 
-        t.Health = Math.Max(0, t.Health - amount);
-        t.LastHitBy = a.ObjectId;
         a.NextSwingAtMs = now + a.AttackIntervalMs;
-
-        if (!t.IsPlayer)
-        {
-            // A miss is still a hostile act: the monster turns on whoever tried.
-            t.Threat.Add(a.ObjectId, Math.Max(1L, (long)amount * a.ThreatMultiplier));
-
-            // XP goes to who touched it (spec §8.2): a miss gives threat only.
-            if (a.PlayerId is { } player && amount > 0)
-            {
-                t.Participants.Add(player);
-            }
-        }
-
-        Hostile(a, now);
-        Hostile(t, now);
+        Damage(a, t, amount, now);
 
         _hits.Add(
             new RpgCombatHit
@@ -139,14 +124,10 @@ public sealed partial class CombatZone
                 Killed = t.Health == 0,
             }
         );
-
-        if (t.IsPlayer)
-        {
-            _selfChanged.Add(t.ObjectId);
-        }
     }
 
-    private void Hostile(Combatant c, long now)
+    /// <summary>A hostile act by or against the fighter: in combat, for the timeout again.</summary>
+    public void Hostile(Combatant c, long now)
     {
         c.LastHostileAtMs = now;
 

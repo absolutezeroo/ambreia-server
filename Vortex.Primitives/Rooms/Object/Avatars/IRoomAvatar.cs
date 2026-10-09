@@ -33,6 +33,9 @@ public interface IRoomAvatar : IRoomObject
     public List<int> TilePath { get; }
 
     public long NextMoveStepAtMs { get; set; }
+
+    /// <summary>Walking speed in percent of normal: below 100 the avatar skips steps (a slow).</summary>
+    public int MoveSpeedPercent { get; set; }
     public long NextMoveUpdateAtMs { get; set; }
     public long PendingStopAtMs { get; set; }
 

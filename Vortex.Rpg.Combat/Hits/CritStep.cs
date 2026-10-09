@@ -12,7 +12,7 @@ public sealed class CritStep(IOptions<CombatConfig> config) : IHitStep
 
     public bool Apply(HitContext hit)
     {
-        if (hit.Random.NextDouble() * 100 < hit.Attacker.CritPercent)
+        if (!hit.Options.NoCrit && hit.Random.NextDouble() * 100 < hit.Attacker.CritPercent)
         {
             hit.Damage *= _multiplier;
             hit.Outcome = HitContext.Crit;

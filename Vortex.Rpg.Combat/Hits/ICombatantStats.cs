@@ -21,4 +21,10 @@ public interface ICombatantStats
     public double CritPercent { get; }
 
     public double DodgePercent { get; }
+
+    /// <summary>Damage it deals, in percent more (or less) (spec M1b §7.3); 0 without modifier.</summary>
+    public double DamageDealtPercent => 0;
+
+    /// <summary>Damage it takes, in percent more (or less).</summary>
+    public double DamageTakenPercent => 0;
 }

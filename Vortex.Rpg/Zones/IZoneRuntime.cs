@@ -60,6 +60,13 @@ public interface IZoneRuntime
     /// <summary>Turns the avatar, body and head, toward (x, y): a fighter faces what it strikes.</summary>
     public void Face(int objectId, int x, int y);
 
+    /// <summary>How fast the avatar walks, in percent of normal (a slow, spec M1b §7.2).</summary>
+    public void SetMoveSpeed(int objectId, int percent);
+
+    /// <summary>Rooted: the walk stops and none starts (a stun, spec M1b §7.2); a ghost or a body
+    /// stays unable to walk when freed.</summary>
+    public void SetRooted(int objectId, bool rooted);
+
     /// <summary>The zone's <c>respawn</c> entry, else its default arrival; null without either.</summary>
     public (int X, int Y)? RespawnCell();
 

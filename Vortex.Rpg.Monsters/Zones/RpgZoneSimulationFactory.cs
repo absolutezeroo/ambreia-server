@@ -10,6 +10,8 @@ using Vortex.Primitives.World;
 using Vortex.Primitives.World.Layers;
 using Vortex.Rpg.Combat.Configuration;
 using Vortex.Rpg.Combat.Hits;
+using Vortex.Rpg.Combat.Stats;
+using Vortex.Rpg.Combat.Systems;
 using Vortex.Rpg.Combat.Zones;
 using Vortex.Rpg.Content;
 using Vortex.Rpg.Content.Definitions;
@@ -36,6 +38,10 @@ public sealed class RpgZoneSimulationFactory : IZoneSimulationFactory
     private readonly ILoggerFactory _loggers;
     private readonly ILogger _logger;
 
+    /// <summary>What other modules add to the fights (statuses, casts, spec M1b), handed to each zone.</summary>
+    private readonly ICombatSystem[] _systems;
+    private readonly IStatModifierSource[] _modifiers;
+
     public RpgZoneSimulationFactory(
         IRpgContent content,
         IEnumerable<IMonsterBehavior> behaviors,
@@ -44,9 +50,13 @@ public sealed class RpgZoneSimulationFactory : IZoneSimulationFactory
         IGrainFactory grains,
         IEventPublisher events,
         IVortexMetrics metrics,
-        ILoggerFactory loggers
+        ILoggerFactory loggers,
+        IEnumerable<ICombatSystem> systems,
+        IEnumerable<IStatModifierSource> modifiers
     )
     {
+        _systems = [.. systems];
+        _modifiers = [.. modifiers];
         _metrics = metrics;
         _content = content;
         _hits = hits;
@@ -77,7 +87,9 @@ public sealed class RpgZoneSimulationFactory : IZoneSimulationFactory
             _grains,
             _events,
             _metrics,
-            _loggers.CreateLogger<CombatZone>()
+            _loggers.CreateLogger<CombatZone>(),
+            _systems,
+            _modifiers
         );
         List<SpawnPoint> points = [];
 

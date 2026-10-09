@@ -131,6 +131,26 @@ internal sealed class FakeZoneRuntime : IZoneRuntime
 
     public void Face(int objectId, int x, int y) => Faces.Add((objectId, x, y));
 
+    /// <summary>The last walking speed set, by object id.</summary>
+    public Dictionary<int, int> MoveSpeeds { get; } = [];
+
+    public HashSet<int> Rooted { get; } = [];
+
+    public void SetMoveSpeed(int objectId, int percent) => MoveSpeeds[objectId] = percent;
+
+    public void SetRooted(int objectId, bool rooted)
+    {
+        if (rooted)
+        {
+            Rooted.Add(objectId);
+            Walking.Remove(objectId);
+        }
+        else
+        {
+            Rooted.Remove(objectId);
+        }
+    }
+
     public (int X, int Y)? RespawnCell() => Respawn;
 
     public Task BroadcastAsync(IComposer composer)

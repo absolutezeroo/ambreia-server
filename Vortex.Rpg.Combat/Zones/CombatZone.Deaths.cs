@@ -9,6 +9,7 @@ using Vortex.Primitives.Orleans;
 using Vortex.Primitives.Players;
 using Vortex.Protocol.Messages.Outgoing.Rpg.Combat;
 using Vortex.Rpg.Combat.Combatants;
+using Vortex.Rpg.Combat.Systems;
 
 namespace Vortex.Rpg.Combat.Zones;
 
@@ -47,6 +48,8 @@ public sealed partial class CombatZone
         metrics.PlayerDied();
         c.GhostUntilMs = now + config.GhostSeconds * 1000L;
         c.TargetId = null;
+        // A death ends every cast and status (spec M1b §6.4, §7.4); a ghost carries nothing.
+        Removing(c, CombatantExit.Died);
         runtime.StopWalking(c.ObjectId);
         runtime.SetPosture(c.ObjectId, Lay);
         Forget(c.ObjectId);
@@ -88,6 +91,7 @@ public sealed partial class CombatZone
             )
         );
 
+        Removing(c, CombatantExit.Died);
         _combatants.Remove(c.ObjectId);
         Forget(c.ObjectId);
         _died.Add(c.ObjectId);

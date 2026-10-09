@@ -7,7 +7,9 @@ using Vortex.Primitives.Players;
 using Vortex.Primitives.Rpg.Characters;
 using Vortex.Protocol.Messages.Outgoing.Rpg.Combat;
 using Vortex.Protocol.Messages.Outgoing.Rpg.Interaction;
+using Vortex.Protocol.Messages.Outgoing.Rpg.Skills;
 using Vortex.Rpg.Combat.Combatants;
+using Vortex.Rpg.Combat.Systems;
 using Vortex.Rpg.Combat.Zones;
 using Vortex.Rpg.Monsters.Behaviors;
 using Vortex.Rpg.Monsters.Spawns;
@@ -81,7 +83,8 @@ public sealed class RpgZoneSimulation(IZoneRuntime zone, CombatZone combat, Mons
 
         foreach (LiveMonster m in spawner.Live.Values.ToArray())
         {
-            if (combat.Combatants.TryGetValue(m.ObjectId, out Combatant? c))
+            // A stunned monster does not think: no chase, no target, no way home (spec M1b §7.2).
+            if (combat.Combatants.TryGetValue(m.ObjectId, out Combatant? c) && !c.Stunned)
             {
                 m.Spawn.Behavior.Think(
                     new MonsterBrain
@@ -113,4 +116,26 @@ public sealed class RpgZoneSimulation(IZoneRuntime zone, CombatZone combat, Mons
 
     public void PlayerStatsChanged(PlayerId player, CharacterCombatProfile profile) =>
         combat.PlayerStatsChanged(player, profile);
+
+    public async Task CastSkillAsync(
+        PlayerId player,
+        string skillId,
+        int targetObjectId,
+        int x,
+        int y,
+        CancellationToken ct
+    )
+    {
+        if (combat.Cast(new CastRequest(player, skillId, targetObjectId, x, y)) is { } refusal)
+        {
+            await zone.SendToPlayerAsync(
+                player,
+                new RpgSkillResultMessageComposer { SkillId = skillId, Code = refusal }
+            );
+        }
+    }
+
+    public void CancelCast(PlayerId player) => combat.CancelCast(player);
+
+    public void PlayerWalked(PlayerId player) => combat.PlayerWalked(player);
 }
