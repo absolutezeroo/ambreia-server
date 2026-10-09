@@ -326,6 +326,13 @@ const H = {
   rpgItemUnequip: 9007,
   rpgInventory: 9006,
   rpgItemResult: 9007,
+  // Interaction (spec F3b §7).
+  rpgZoneInteractives: 9008,
+  rpgTarget: 9009,
+  rpgTargetSelect: 9010,
+  quit: 3061,
+  objectDataUpdate: 2329,
+  objectUpdate: 114,
 };
 
 // Reads a frame body in the client's order: int32 BE, int16-prefixed UTF-8, one-byte bool.
@@ -407,6 +414,8 @@ async function cmdHealth() {
 
 // A throwaway player, kept at a fixed address so re-runs reuse it; `cleanup` deletes it.
 const PLAYER = { email: 'run-skill@vortex.local', password: 'RunSkill!2026' };
+// A second throwaway account, for what takes two players in a zone (`target`).
+const PLAYER_B = { email: 'run-skill-b@vortex.local', password: 'RunSkill!2026' };
 const WEB_COOKIE = 'habbo-web-session';
 
 function sessionCookie(res) {
@@ -416,24 +425,26 @@ function sessionCookie(res) {
 
 // Login, or registration when the account does not exist yet: the site's web session. Login first:
 // registration allows 3 attempts per 5 minutes, and a few driver runs in a row used them all up.
-let webSessionOnce = null;
+const webSessions = new Map();
 
-// One login per driver run: the login allows 5 per minute, and a command logs in more than once.
-function webSession() {
-  return (webSessionOnce ??= openWebSession());
+// One login per account and driver run: the login allows 5 per minute, and a command logs in more
+// than once.
+function webSession(account = PLAYER) {
+  if (!webSessions.has(account.email)) webSessions.set(account.email, openWebSession(account));
+  return webSessions.get(account.email);
 }
 
-async function openWebSession() {
+async function openWebSession(account) {
   const base = `http://127.0.0.1:${WEBAPI}`;
   const json = (o) => JSON.stringify(o);
   let res = await request(`${base}/api/public/authentication/login`, {
     method: 'POST',
-    body: json({ email: PLAYER.email, password: PLAYER.password }),
+    body: json({ email: account.email, password: account.password }),
   });
   if (!sessionCookie(res) && res.status !== 429) {
     res = await request(`${base}/api/public/registration/new`, {
       method: 'POST',
-      body: json({ email: PLAYER.email, password: PLAYER.password, passwordRepeated: PLAYER.password }),
+      body: json({ email: account.email, password: account.password, passwordRepeated: account.password }),
     });
   }
   const cookie = sessionCookie(res);
@@ -444,9 +455,9 @@ async function openWebSession() {
 // What the client does after its login: the account ticket, then the character screen on the
 // socket -- the account's first character, or a new one « Sans classe » -- entered into the world.
 // Answers the socket past AuthenticationOK, with the RoomForward when there is a start zone.
-async function enterWorld() {
+async function enterWorld(account = PLAYER) {
   const base = `http://127.0.0.1:${WEBAPI}`;
-  const headers = { cookie: (await webSession()).cookie };
+  const headers = { cookie: (await webSession(account)).cookie };
   const res = await request(`${base}/api/ssotoken`, { headers });
   if (res.status !== 200) die(`SSO ticket refused: ${res.status} ${res.body}`);
 
@@ -634,12 +645,13 @@ async function cmdTravel() {
       floor,
       zones: [{ id: 'market', kind: 'Safe', name: 'Marché', polygon: [{ x: 3, y: 0 }, { x: 5, y: 0 }, { x: 5, y: 9 }, { x: 3, y: 9 }] }],
       passages: [{ id: 'road', area: [{ x: 7, y: 5 }], destinationZone: 'proof_b', destinationEntry: 'gate' }],
-      // Room objects 1 to 3: a closed door on (2,2), a sign on (1,1), and a closed gate on (6,2)
-      // that only the market's trigger opens.
+      // Room objects 1 to 4: a closed door on (2,2), a sign on (1,1), a closed gate on (6,2) that
+      // only the market's trigger opens, and a throne on (8,1) with no interaction: frozen decor.
       decor: [
         { id: 'door', definition: THRONE, class: 'throne', x: 2, y: 2, interaction: 'door' },
         { id: 'sign', definition: THRONE, class: 'throne', x: 1, y: 1, interaction: 'sign', tag: 'Bienvenue à Preuve A' },
         { id: 'gate', definition: THRONE, class: 'throne', x: 6, y: 2, interaction: 'door' },
+        { id: 'throne', definition: THRONE, class: 'throne', x: 8, y: 1 },
       ],
       triggers: [
         {
@@ -704,7 +716,24 @@ async function cmdTravel() {
     return g.wait(headersToWait, before, 8000);
   };
 
+  const entered = g.frames.length;
   log(`proof_a: arrived on (${(await enter(rooms.proof_a)).join(',')}) (door 0,5)`);
+
+  // What can be clicked here (spec F3b §5): the door, the sign and the gate; the throne is frozen.
+  const clickables = await g.wait([H.rpgZoneInteractives], entered, 5000);
+  if (!clickables) fail('No RpgZoneInteractives with the entry.');
+  const ci = reader(clickables.body);
+  const listed = Array.from({ length: ci.int() }, () => `${ci.int()}:${ci.str()}`);
+  log(`RpgZoneInteractives: ${listed.join(', ')}`);
+  if (listed.join(',') !== '1:door,2:sign,3:door') fail('Expected 1:door, 2:sign, 3:door.');
+  const frozenMark = g.frames.length;
+  g.send(frame(H.useFurniture, 4, 0));
+  await sleep(1500);
+  const answered = g.frames
+    .slice(frozenMark)
+    .some((f) => [H.objectDataUpdate, H.objectUpdate, H.notificationDialog].includes(f.header));
+  if (answered) fail('The frozen throne answered a click.');
+  log('UseFurniture on the frozen throne -> no answer.');
 
   // A UserUpdate whose status moves the avatar onto (x, y).
   const movesOnto = (x, y, from) =>
@@ -1201,6 +1230,75 @@ async function cmdItems() {
   log(`  RpgInventory: ring ${ring.id} back in case ${back.slot}. Items OK.`);
 }
 
+// The target (spec F3b §6): two throwaway accounts in the same zone. A aims at B and is told B's
+// name, level and class; B quits; A's target clears. Then an id that is no avatar clears it too.
+async function cmdTarget() {
+  const a = await enterWorld(PLAYER);
+  let b = null;
+  const closeAll = () => [a.g, b?.g].forEach((s) => s?.close());
+  const fail = (m) => {
+    closeAll();
+    die(m);
+  };
+  if (!a.forward) fail('A: no RoomForward at sign-in.');
+  const room = a.forward.body.readInt32BE(0);
+  let mark = a.g.frames.length;
+  a.g.send(frame(H.openFlat, room, '', -1));
+  if (!(await a.g.wait([H.objects], mark, 10000))) fail(`A: room ${room} silent.`);
+
+  b = await enterWorld(PLAYER_B);
+  const aBefore = a.g.frames.length;
+  mark = b.g.frames.length;
+  b.g.send(frame(H.openFlat, room, '', -1));
+  if (!(await b.g.wait([H.objects], mark, 10000))) fail(`B: room ${room} refused.`);
+
+  // Users: count, then per avatar web id, name, motto, figure, room object id, ...
+  const firstAvatar = (f) => {
+    const r = reader(f.body);
+    r.int();
+    const webId = r.int();
+    const name = r.str();
+    r.str(), r.str();
+    return { webId, name, objectId: r.int() };
+  };
+  let seenB = null;
+  for (let from = aBefore; !seenB; ) {
+    const users = await a.g.wait([H.users], from, 8000);
+    if (!users) fail('A was never told B arrived.');
+    const first = firstAvatar(users);
+    if (first.webId === b.playerId) seenB = first;
+    from = a.g.frames.indexOf(users) + 1;
+  }
+  log(`A sees B: player ${seenB.webId} "${seenB.name}" as room object ${seenB.objectId}`);
+
+  const targetFrom = async (from) => {
+    const f = await a.g.wait([H.rpgTarget], from, 5000);
+    if (!f) fail('No RpgTarget.');
+    const r = reader(f.body);
+    return { objectId: r.int(), kind: r.str(), name: r.str(), level: r.int(), classId: r.str() };
+  };
+
+  mark = a.g.frames.length;
+  a.g.send(frame(H.rpgTargetSelect, seenB.objectId));
+  const aimed = await targetFrom(mark);
+  log(`RpgTargetSelect(${seenB.objectId}) -> RpgTarget ${JSON.stringify(aimed)}`);
+  if (aimed.objectId !== seenB.objectId || aimed.kind !== 'player' || aimed.name !== seenB.name)
+    fail('The target is not B.');
+
+  mark = a.g.frames.length;
+  b.g.send(frame(H.quit));
+  const cleared = await targetFrom(mark);
+  log(`B quits -> A gets RpgTarget ${JSON.stringify(cleared)}`);
+  if (cleared.objectId !== 0) fail('The target did not clear when B left.');
+
+  mark = a.g.frames.length;
+  a.g.send(frame(H.rpgTargetSelect, 999999));
+  const none = await targetFrom(mark);
+  closeAll();
+  if (none.objectId !== 0) die('An id that is no avatar did not clear the target.');
+  log('RpgTargetSelect(999999) -> RpgTarget(0). Target OK.');
+}
+
 // ---------------------------------------------------------------- dispatch
 
 const [cmd, ...args] = process.argv.slice(2);
@@ -1221,6 +1319,7 @@ const table = {
   content: () => cmdContent(args[0]),
   lobby: cmdLobby,
   items: cmdItems,
+  target: cmdTarget,
   grace: () => cmdGrace(args[0]),
   cleanup: cmdCleanup,
   smoke: cmdSmoke,
@@ -1245,6 +1344,7 @@ if (!cmd || !table[cmd]) {
   dungeon   a Dungeon zone: its room forwards to the player's own copy, which is entered
   content [dir]  push the RPG content pack (default content/) through scripts/content/push.mjs
   lobby     the character screen by the socket: account ticket -> lists, create, class, enter world, HUD state, XP progress, phase gate
+  target    two accounts in one zone: A targets B (name, level, class), B quits, A's target clears
   items     the admin item grant: a sword to the first character, replayed with its key -> one sword more
   grace [wait]  drop the socket in a room and come back: same room, one avatar, same tile (wait: then stay away past 60 s)
   cleanup   delete the throwaway account and its players`);

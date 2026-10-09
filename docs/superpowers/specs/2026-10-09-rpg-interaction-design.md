@@ -1,6 +1,7 @@
 # RPG — spec fille F3b « Interaction » : décor figé, objets cliquables, cible
 
-> **Statut :** design approuvé par le propriétaire le 2026-10-09 (conversation), à relire écrit ·
+> **Statut :** approuvée par le propriétaire le 2026-10-09, livrée par le plan
+> `docs/superpowers/plans/2026-10-09-rpg-interaction.md` ·
 > **Date :** 2026-10-09 · **Langue :** français
 > **Dépôt :** `vortex-rpg-emulator`. Jalon F3 « Réseau RPG et interaction » de la spec unifiée
 > `docs/superpowers/specs/2026-10-06-vortex-rpg-design.md` (§3 bis « Interaction », §3.2 bis, §3.5,
@@ -106,7 +107,7 @@ Types sur le fil comme la spec F3a §6. Ids dans les régions `Vortex-specific` 
 
 | Id | Message | Champs, dans l'ordre |
 |---|---|---|
-| 9008 | `RpgZoneInteractives` | count ; par objet : objectId, interaction (chaîne : `door`, `lever`, `sign`, `teleport`, `sit`, `use`) |
+| 9008 | `RpgZoneInteractives` | count ; par objet : objectId, interaction (chaîne : `door`, `lever`, `sign`, `teleport`, `sit`, `use`, ou `interact` pour un décor sans interaction qu'un déclencheur Interagir écoute — plan F3b, décision 1) |
 | 9009 | `RpgTarget` | objectId (0 = aucune cible) ; kind (chaîne : `player`, vide si aucune) ; name ; level ; classId |
 
 ### 7.3 Côté client (pour la session client)

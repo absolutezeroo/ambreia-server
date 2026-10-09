@@ -13,6 +13,7 @@ single project, the code and `.claude/rules/` are enough.
 - Flow 6 — RPG content
 - Flow 7 — the character
 - Flow 8 — items
+- Flow 9 — interaction
 - Persistence
 - Grains and their state
 - Plugins and the web API
@@ -184,6 +185,20 @@ and at deactivation. The worn items reach the stats through `StatSourceContext.E
 rewrites it (`ItemReferences`) and the grain re-reads it when `IRpgContent.Version` moves. Grants,
 destroys, removals and bindings land in `item_events` under the `Rpg…` types. Admin grant:
 `POST /api/admin/characters/{playerId}/items` (`economy.item.grant`); proof: `driver.mjs items`.
+
+## Flow 9 — interaction
+
+Spec `2026-10-09-rpg-interaction-design.md`. A zone's decor is frozen: in a room with a
+`ZoneRuntime`, `RoomActionModule.UseItemByIdAsync` refuses the Habbo furniture path for any object
+the zone interactions (`ZoneInteractionModule`: door, lever, sign, teleport, sit, use) did not take,
+whatever the clicker's rights; the object's `Interact` triggers have already fired. What can be
+clicked is computed once, `CompiledZone.Interactives` (an interaction, or `interact` for decor an
+Interact trigger listens to), and sent with the entry burst as `RpgZoneInteractives` (9008). A
+player's target lives in the room: `IRoomTargets.SelectTargetAsync` (packet `RpgTargetSelect`,
+9010) → `RoomTargetModule` keeps it in `RoomLiveState.Targets`, answers `RpgTarget` (9009: name,
+and level and class read from the target's `PlayerCharacterGrain`) to that player alone, clears it
+for an id that is no avatar, and on `PlayerLeftEvent` clears it for whoever aimed at the one
+leaving. Runtime only. Proofs: `driver.mjs travel`, `target`.
 
 ## Persistence
 
