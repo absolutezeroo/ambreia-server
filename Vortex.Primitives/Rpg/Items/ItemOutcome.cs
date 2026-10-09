@@ -16,4 +16,8 @@ public enum ItemOutcome
     ParcelsFull = 9,
     DuplicateGrant = 10,
     UnknownItem = 11,
+
+    /// <summary>The database refused a write a player's gesture needed; logged, nothing changed
+    /// (spec Objets §17.3: <c>failed</c>).</summary>
+    Failed = 12,
 }

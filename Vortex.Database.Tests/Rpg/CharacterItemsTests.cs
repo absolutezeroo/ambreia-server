@@ -304,19 +304,43 @@ public sealed class CharacterItemsTests : IAsyncLifetime
     /// <summary>A destroy is written before it counts: a database that fails then leaves the copy
     /// whole, and nothing is audited.</summary>
     [Fact]
-    public async Task ADestroyWhoseWriteFails_DestroysNothing()
+    public async Task ADestroyWhoseWriteFails_AnswersFailedAndDestroysNothing()
     {
         PlayerCharacterGrain grain = await WarriorAsync();
         await grain.GrantItemsAsync("k1", [Line(ItemContent.Shard, 10)]);
         _saveFaults.FailNext = 1;
 
-        Func<Task> destroy = () => grain.DestroyItemAsync(0, 4);
+        // A player gesture: answered (the client waits for it), never thrown at the socket.
+        (await grain.DestroyItemAsync(0, 4))
+            .Should()
+            .Be(ItemOutcome.Failed);
 
-        await destroy.Should().ThrowAsync<Exception>();
         (await grain.GetItemsAsync()).Single().Quantity.Should().Be(10);
         _events.OfType<ItemDestroyedEvent>().Should().BeEmpty();
         await DeactivateAsync(grain);
         (await RowsAsync()).Single().Quantity.Should().Be(10);
+    }
+
+    /// <summary>A grant the database committed but answered with an error (a connection lost after
+    /// the commit): the bag is read again, so the granted items are there and a later flush cannot
+    /// write the old quantities over them; the key, written with them, makes a retry a duplicate.</summary>
+    [Fact]
+    public async Task AGrantCommittedButAnsweredWithAnError_IsReadBack()
+    {
+        PlayerCharacterGrain grain = await WarriorAsync();
+        await grain.GrantItemsAsync("k1", [Line(ItemContent.Shard, 10)]);
+        _faults.AfterCommit = () => throw new TimeoutException("connection lost after commit");
+
+        Func<Task> grant = () => grain.GrantItemsAsync("k2", [Line(ItemContent.Shard, 5)]);
+
+        await grant.Should().ThrowAsync<Exception>();
+        _faults.AfterCommit = null;
+        (await grain.GetItemsAsync()).Single().Quantity.Should().Be(15);
+        (await grain.GrantItemsAsync("k2", [Line(ItemContent.Shard, 5)]))
+            .Outcome.Should()
+            .Be(ItemOutcome.DuplicateGrant);
+        await DeactivateAsync(grain);
+        (await RowsAsync()).Single().Quantity.Should().Be(15);
     }
 
     /// <summary>A part split off and destroyed before any flush is audited with its real id.</summary>

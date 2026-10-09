@@ -231,7 +231,8 @@ personnage en jeu, le serveur les ignore.
 - Chaque opération du joueur reçoit un `RpgItemResult`, puis `RpgInventory` si elle a réussi
   (`ok`). Équiper ou déséquiper envoie aussi `RpgCharacterStats` (spec F3a §6.2), avant le résultat.
 - **Codes** : `ok`, `not_found` (case ou emplacement vide ou hors bornes), `bag_full`,
-  `slot_occupied`, `wrong_class`, `level_too_low`, `not_equipment`, `invalid_quantity`. Le client
+  `slot_occupied`, `wrong_class`, `level_too_low`, `not_equipment`, `invalid_quantity`, `failed`
+  (la base a refusé l'écriture : rien n'a changé, l'erreur est journalisée côté serveur). Le client
   traduit chaque code.
 - **Cases** de 0 à `bagSize − 1`. **Emplacements** de 0 à 9 : 0 tête, 1 torse, 2 jambes, 3 pieds,
   4 mains, 5 arme, 6 main secondaire, 7 cou, 8 anneau 1, 9 anneau 2. **Colis** désignés par leur

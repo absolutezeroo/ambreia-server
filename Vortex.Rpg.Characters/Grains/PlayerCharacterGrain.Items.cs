@@ -62,7 +62,19 @@ internal sealed partial class PlayerCharacterGrain
             return new ItemGrantResult { Outcome = Logged("grant", plan.Outcome) };
         }
 
-        await _itemStore.WriteAsync(_playerId, next.Dirty, grantKey, CancellationToken.None);
+        try
+        {
+            await _itemStore.WriteAsync(_playerId, next.Dirty, grantKey, CancellationToken.None);
+        }
+        catch
+        {
+            // It may have committed all the same (a connection lost after the commit): read the
+            // bag again rather than keep a memory a later flush would write over it.
+            _inventory = null;
+
+            throw;
+        }
+
         next.MarkWritten();
         _inventory = next;
 
@@ -176,10 +188,13 @@ internal sealed partial class PlayerCharacterGrain
 
         bool boundNow = !wasBound && item!.Bound;
 
-        if (boundNow)
+        // A binding is ownership: written before it counts, and audited with the copy's id.
+        if (boundNow && !await WrittenAsync(next, "equip"))
         {
-            // A binding is ownership: written before it counts, and audited with the copy's id.
-            await WriteNowAsync(next);
+            return await AnsweredAsync(
+                RpgItemResultMessageComposer.ActionEquip,
+                ItemOutcome.Failed
+            );
         }
 
         _inventory = next;
@@ -220,7 +235,13 @@ internal sealed partial class PlayerCharacterGrain
 
         // Written first, so the copy has its id for the audit, even a part split off since the
         // last flush; then the destroy on a copy, written before it counts.
-        await WriteNowAsync(inventory);
+        if (!await WrittenAsync(inventory, "destroy"))
+        {
+            return await AnsweredAsync(
+                RpgItemResultMessageComposer.ActionDestroy,
+                ItemOutcome.Failed
+            );
+        }
 
         CharacterInventory next = inventory.Clone();
         ItemInstance? item = next.At(ItemContainer.Bag, bagSlot);
@@ -231,11 +252,41 @@ internal sealed partial class PlayerCharacterGrain
             return await AnsweredAsync(RpgItemResultMessageComposer.ActionDestroy, outcome);
         }
 
-        await WriteNowAsync(next);
+        if (!await WrittenAsync(next, "destroy"))
+        {
+            return await AnsweredAsync(
+                RpgItemResultMessageComposer.ActionDestroy,
+                ItemOutcome.Failed
+            );
+        }
+
         _inventory = next;
         Publish(new ItemDestroyedEvent(_playerId, item!.Id, item.DefinitionId, quantity));
 
         return await AnsweredAsync(RpgItemResultMessageComposer.ActionDestroy, outcome);
+    }
+
+    /// <summary>A player gesture's write, done now: false, logged, when the database refused it —
+    /// the gesture is then answered <c>failed</c> rather than thrown at the socket.</summary>
+    private async Task<bool> WrittenAsync(CharacterInventory inventory, string operation)
+    {
+        try
+        {
+            await WriteNowAsync(inventory);
+
+            return true;
+        }
+        catch (Exception ex)
+        {
+            logger.LogWarning(
+                ex,
+                "Item {Operation} for player {PlayerId} failed: the write was refused.",
+                operation,
+                _playerId.Value
+            );
+
+            return false;
+        }
     }
 
     /// <summary>The player is told how its operation ended, and given the bag after a change. A
@@ -347,7 +398,18 @@ internal sealed partial class PlayerCharacterGrain
             return;
         }
 
-        await _itemStore.WriteAsync(_playerId, dirty, null, CancellationToken.None);
+        try
+        {
+            await _itemStore.WriteAsync(_playerId, dirty, null, CancellationToken.None);
+        }
+        catch
+        {
+            // Committed or not, the table is the truth now: read again on the next call.
+            _inventory = null;
+
+            throw;
+        }
+
         inventory.MarkWritten();
     }
 
