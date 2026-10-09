@@ -118,6 +118,12 @@ public sealed partial class CombatZone(
         c.Health = profile.Health > 0 ? Math.Min(profile.Health, c.MaxHealth) : RespawnHealth(c);
         c.Mana = Math.Clamp(profile.Mana, 0, c.MaxMana);
 
+        // The first one in gets nothing queued while the zone was empty (a monster removed then).
+        if (!HasPlayers)
+        {
+            ClearOutbox();
+        }
+
         _combatants[objectId] = c;
         _players[player] = objectId;
         _vitalsChanged.Add(objectId);

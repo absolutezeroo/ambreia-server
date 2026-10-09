@@ -330,6 +330,20 @@ public sealed class RoomZoneRuntimeTests
         player.IsMovementLocked.Should().BeTrue("a ghost still lies");
     }
 
+    /// <summary>Lying on a bed is not lying dead: a stun that ends frees him.</summary>
+    [Fact]
+    public async Task UnrootingAPlayerOnABed_FreesHim()
+    {
+        await ZoneAsync();
+        IRoomAvatar player = _harness.PutRealPlayerInRoom(RoomHarness.Owner, 1, 1);
+        player.Lay(true);
+
+        Runtime.SetRooted(player.ObjectId.Value, true);
+        Runtime.SetRooted(player.ObjectId.Value, false);
+
+        player.IsMovementLocked.Should().BeFalse();
+    }
+
     [Fact]
     public async Task SetMoveSpeed_IsKeptOnTheAvatar()
     {

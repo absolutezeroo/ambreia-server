@@ -26,6 +26,11 @@ namespace Vortex.Rooms.Grains.Zones.Runtime;
 public sealed class RoomZoneRuntime(RoomGrain room) : IZoneRuntime
 {
     private readonly List<IComposer> _pending = [];
+
+    /// <summary>Avatars the zone laid down (a ghost, a body) and those it rooted (a stun): either one
+    /// keeps the avatar from walking.</summary>
+    private readonly HashSet<int> _downed = [];
+    private readonly HashSet<int> _rooted = [];
     private int _pathSearches;
 
     public RoomId ZoneId => room._state.RoomId;
@@ -149,6 +154,8 @@ public sealed class RoomZoneRuntime(RoomGrain room) : IZoneRuntime
             room.AvatarModule.CancelWalk(a);
             room.MapModule.RemoveAvatar(a, false);
             room._state.AvatarsByObjectId.Remove(id);
+            _downed.Remove(objectId);
+            _rooted.Remove(objectId);
             _pending.Add(new UserRemoveMessageComposer { ObjectId = id });
         }
     }
@@ -276,7 +283,17 @@ public sealed class RoomZoneRuntime(RoomGrain room) : IZoneRuntime
             a.RemoveStatus(AvatarStatusType.Dead);
         }
 
-        a.SetMovementLocked(posture is "lay" or "ded");
+        if (posture is "lay" or "ded")
+        {
+            _downed.Add(objectId);
+        }
+        else
+        {
+            _downed.Remove(objectId);
+        }
+
+        // Standing up does not free a stunned avatar.
+        a.SetMovementLocked(_downed.Contains(objectId) || _rooted.Contains(objectId));
     }
 
     public void SetMoveSpeed(int objectId, int percent)
@@ -306,13 +323,17 @@ public sealed class RoomZoneRuntime(RoomGrain room) : IZoneRuntime
 
         if (rooted)
         {
+            _rooted.Add(objectId);
             room.AvatarModule.CancelWalk(a);
         }
+        else
+        {
+            _rooted.Remove(objectId);
+        }
 
-        // A ghost or a body lies: freeing it from a stun does not stand it up.
-        a.SetMovementLocked(
-            rooted || a.HasStatus(AvatarStatusType.Lay) || a.HasStatus(AvatarStatusType.Dead)
-        );
+        // A ghost or a body lies: freeing it from a stun does not stand it up. Lying on a bed is
+        // not that: only the zone's own postures count.
+        a.SetMovementLocked(rooted || _downed.Contains(objectId));
     }
 
     /// <summary>Through the avatar's dirty flag: the next avatar tick sends it in a UserUpdate.</summary>

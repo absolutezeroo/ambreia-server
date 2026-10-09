@@ -51,13 +51,13 @@ public class PlayerCharacterEntity : VortexEntity
     [Column("current_mana")]
     public int? CurrentMana { get; set; }
 
-    /// <summary>When health and mana were last set: out of a zone, they regenerate from there.</summary>
     /// <summary>The action bar (spec M1b §9): a JSON array of action ids, "" for an empty slot; null
     /// for a bar never set. Written by the character grain alone.</summary>
     [Column("action_bar")]
     [MaxLength(ActionBarLength)]
     public string? ActionBar { get; set; }
 
+    /// <summary>When health and mana were last set: out of a zone, they regenerate from there.</summary>
     [Column("vitals_at")]
     public DateTime? VitalsAt { get; set; }
 

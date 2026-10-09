@@ -22,6 +22,21 @@ public sealed partial class CombatZone
 {
     private readonly List<IComposer> _broadcasts = [];
     private readonly List<(PlayerId Player, IComposer Composer)> _sends = [];
+    private readonly Dictionary<Type, object> _parts = [];
+
+    /// <summary>A module's own state for this zone (what its skills did this tick); gone with the
+    /// zone's activation.</summary>
+    public T GetOrAdd<T>()
+        where T : class, new()
+    {
+        if (!_parts.TryGetValue(typeof(T), out object? part))
+        {
+            part = new T();
+            _parts[typeof(T)] = part;
+        }
+
+        return (T)part;
+    }
 
     public IZoneRuntime Runtime => runtime;
 
@@ -74,6 +89,13 @@ public sealed partial class CombatZone
     /// touched it, both in combat. Health left.</summary>
     public int Damage(Combatant source, Combatant target, int amount, long now)
     {
+        // A monster going home takes nothing; a dead one keeps its killer.
+        if (target.Invulnerable || target.IsDead)
+        {
+            return target.Health;
+        }
+
+        _vitalsChanged.Add(target.ObjectId);
         target.Health = Math.Max(0, target.Health - Math.Max(0, amount));
         target.LastHitBy = source.ObjectId;
 

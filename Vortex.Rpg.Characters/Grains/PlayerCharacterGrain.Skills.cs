@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 using Vortex.Database.Entities.Rpg;
 using Vortex.Protocol.Messages.Outgoing.Rpg.Skills;
 using Vortex.Rpg.Content.Definitions;
@@ -78,17 +79,32 @@ internal sealed partial class PlayerCharacterGrain
     private IReadOnlyList<SkillDefinition> Known(PlayerCharacterEntity c) =>
         KnownSkills.For(content, c.ClassId, c.SpecializationId, c.Level);
 
-    /// <summary>The stored bar, padded or cut to the configured size.</summary>
+    /// <summary>The stored bar, padded or cut to the configured size; one written wrong reads as
+    /// empty rather than costing the player his HUD.</summary>
     private string[] Bar(PlayerCharacterEntity c)
     {
-        string[] stored = c.ActionBar is { } json
-            ? JsonSerializer.Deserialize<string[]>(json) ?? []
-            : [];
+        string?[] stored = [];
+
+        try
+        {
+            stored = c.ActionBar is { } json
+                ? JsonSerializer.Deserialize<string?[]>(json) ?? []
+                : [];
+        }
+        catch (JsonException ex)
+        {
+            logger.LogWarning(
+                ex,
+                "The action bar of player {PlayerId} is unreadable.",
+                _playerId.Value
+            );
+        }
+
         string[] bar = new string[_config.ActionBarSize];
 
         for (int i = 0; i < bar.Length; i++)
         {
-            bar[i] = i < stored.Length ? stored[i] : string.Empty;
+            bar[i] = i < stored.Length ? stored[i] ?? string.Empty : string.Empty;
         }
 
         return bar;

@@ -163,6 +163,25 @@ public sealed class CharacterActionBarTests : IAsyncLifetime
         _sent.OfType<RpgSkillsMessageComposer>().Single().Bar.Should().OnlyContain(a => a == "");
     }
 
+    /// <summary>A bar written wrong by hand must not cost the player his HUD at login.</summary>
+    [Fact]
+    public async Task AMalformedStoredBar_ReadsAsEmpty()
+    {
+        PlayerCharacterGrain grain = await ActivateAsync("class.warrior", bar: null);
+        await using (VortexDbContext db = new(_options))
+        {
+            await db.PlayerCharacters.ExecuteUpdateAsync(up =>
+                up.SetProperty(x => x.ActionBar, "[\"skill:x\", null")
+            );
+        }
+        await DeactivateAsync(grain);
+        grain = await ActivateExistingAsync();
+
+        await grain.PushStateAsync();
+
+        _sent.OfType<RpgSkillsMessageComposer>().Single().Bar.Should().OnlyContain(a => a == "");
+    }
+
     [Fact]
     public async Task PushState_SendsTheSkills()
     {
@@ -272,6 +291,12 @@ public sealed class CharacterActionBarTests : IAsyncLifetime
             await db.SaveChangesAsync();
         }
 
+        return await ActivateExistingAsync();
+    }
+
+    /// <summary>The grain over the row already stored; what the activation pushed is forgotten.</summary>
+    private async Task<PlayerCharacterGrain> ActivateExistingAsync()
+    {
         PlayerCharacterGrain grain =
             GrainActivationContext.CreateWithIntegerKey<PlayerCharacterGrain>(
                 Player,

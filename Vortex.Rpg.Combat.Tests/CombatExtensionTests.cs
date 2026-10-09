@@ -220,6 +220,79 @@ public sealed class CombatExtensionTests
         (me.InCombat, wolf.InCombat).Should().Be((true, true));
     }
 
+    /// <summary>A damage over time on a wolf: everyone's bar over it follows.</summary>
+    [Fact]
+    public async Task DamageThroughTheZone_UpdatesTheBars()
+    {
+        Combatant me = await PlayerNextToAWolfAsync();
+        Combatant wolf = _combat.Combatants[AddWolf()];
+        await _combat.TickAsync(CancellationToken.None);
+        _zone.Broadcasts.Clear();
+
+        _combat.Damage(me, wolf, 10, _zone.NowMs);
+        await _combat.TickAsync(CancellationToken.None);
+
+        _zone
+            .Broadcasts.OfType<RpgVitalsMessageComposer>()
+            .SelectMany(v => v.Combatants)
+            .Should()
+            .Contain(v => v.ObjectId == wolf.ObjectId && v.Health == 30);
+    }
+
+    [Fact]
+    public async Task DamageOnAnInvulnerableOrDeadTarget_DoesNothing()
+    {
+        Combatant me = await PlayerNextToAWolfAsync();
+        Combatant wolf = _combat.Combatants[AddWolf()];
+        wolf.Invulnerable = true;
+
+        _combat.Damage(me, wolf, 10, _zone.NowMs);
+
+        (wolf.Health, wolf.LastHitBy, wolf.Threat.IsEmpty).Should().Be((40, null, true));
+
+        wolf.Invulnerable = false;
+        wolf.Health = 0;
+        wolf.LastHitBy = 99;
+
+        _combat.Damage(me, wolf, 10, _zone.NowMs);
+
+        wolf.LastHitBy.Should().Be(99, "a dead target's killer stays its killer");
+    }
+
+    /// <summary>A system dropping a stun on death without recomputing: the zone recomputes anyway,
+    /// or the respawned player never swings again.</summary>
+    [Fact]
+    public async Task ADeath_RecomputesTheFighter_AfterTheSystemsLetGo()
+    {
+        _systems.Add(new Recording(100, _log) { OnRemoving = () => _modifiers.Clear() });
+        Combatant me = await PlayerNextToAWolfAsync();
+        _modifiers.Stunned = true;
+        _combat.Recompute(me);
+        me.Health = 0;
+
+        await _combat.TickAsync(CancellationToken.None);
+
+        me.Stunned.Should().BeFalse();
+    }
+
+    /// <summary>What a removal queued while nobody was there is not sent to the next one in.</summary>
+    [Fact]
+    public async Task MessagesQueuedInAnEmptyZone_AreDropped()
+    {
+        IComposer stale = new RpgDeathMessageComposer { RespawnSeconds = 7 };
+        _systems.Add(new Recording(100, _log) { OnRemoving = () => _combat.Broadcast(stale) });
+        await PlayerNextToAWolfAsync();
+        int wolf = AddWolf();
+        await _combat.PlayerLeftAsync(new PlayerId(7), CancellationToken.None);
+        _zone.Broadcasts.Clear();
+
+        _combat.RemoveMonster(wolf);
+        await _combat.PlayerEnteredAsync(new PlayerId(7), 1, CancellationToken.None);
+        await _combat.TickAsync(CancellationToken.None);
+
+        _zone.Broadcasts.Should().NotContain(stale);
+    }
+
     [Fact]
     public async Task AHeal_IsBounded_AndSaysWhatItGaveBack()
     {
@@ -389,6 +462,8 @@ public sealed class CombatExtensionTests
 
         public IComposer? EntryComposer { get; init; }
 
+        public Action? OnRemoving { get; init; }
+
         public int Order => order;
 
         public void Tick(CombatZone zone, long now)
@@ -410,6 +485,7 @@ public sealed class CombatExtensionTests
         public IEnumerable<CarriedStatus> Removing(CombatZone zone, Combatant c, CombatantExit exit)
         {
             log.Add($"removing {c.ObjectId} {exit}");
+            OnRemoving?.Invoke();
 
             return Carried;
         }

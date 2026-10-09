@@ -1,9 +1,14 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Vortex.Primitives.Plugins;
+using Vortex.Rpg.Combat.Hits;
+using Vortex.Rpg.Combat.Stats;
+using Vortex.Rpg.Combat.Systems;
 using Vortex.Rpg.Content.Rules;
 using Vortex.Rpg.Skills.Configuration;
 using Vortex.Rpg.Skills.Effects;
+using Vortex.Rpg.Skills.Hits;
+using Vortex.Rpg.Skills.Statuses;
 
 namespace Vortex.Rpg.Skills;
 
@@ -25,5 +30,13 @@ public sealed class SkillsModule : IHostPluginModule
         services.AddSingleton<ISkillEffectRule, InterruptEffect>();
         services.AddSingleton<ISkillEffectRule, DispelEffect>();
         services.AddSingleton<ISkillEffectRule, ThreatEffect>();
+
+        // Statuses (spec M1b §7): one system, ticked by every zone and asked for its modifiers.
+        services.AddSingleton<StatusApplier>();
+        services.AddSingleton<StatusSystem>();
+        services.AddSingleton<ICombatSystem>(sp => sp.GetRequiredService<StatusSystem>());
+        services.AddSingleton<IStatModifierSource>(sp => sp.GetRequiredService<StatusSystem>());
+        services.AddSingleton<IHitStep, DamageModifierStep>();
+        services.AddSingleton<IHitStep, ShieldStep>();
     }
 }

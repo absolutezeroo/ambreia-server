@@ -50,6 +50,9 @@ public sealed partial class CombatZone
         c.TargetId = null;
         // A death ends every cast and status (spec M1b §6.4, §7.4); a ghost carries nothing.
         Removing(c, CombatantExit.Died);
+        // Whatever the systems let go (a stun, a slow) stops counting; before the posture, so the
+        // ghost's lock wins.
+        Recompute(c);
         runtime.StopWalking(c.ObjectId);
         runtime.SetPosture(c.ObjectId, Lay);
         Forget(c.ObjectId);
