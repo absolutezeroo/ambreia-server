@@ -18,7 +18,9 @@ using Vortex.Rpg.Combat.Hits;
 using Vortex.Rpg.Combat.Systems;
 using Vortex.Rpg.Combat.Zones;
 using Vortex.Rpg.Content.Definitions;
+using Vortex.Rpg.Skills.Casting;
 using Vortex.Rpg.Skills.Configuration;
+using Vortex.Rpg.Skills.Effects;
 using Vortex.Rpg.Skills.Hits;
 using Vortex.Rpg.Skills.Statuses;
 using Vortex.Rpg.Zones;
@@ -51,9 +53,23 @@ internal sealed class SkillWorld
     private readonly Dictionary<int, CharacterCombatProfile> _profiles = [];
 
     public SkillWorld(IEnumerable<ICombatSystem>? extra = null, params ContentDefinition[] content)
+        : this(extra, content, casting: false) { }
+
+    private SkillWorld(IEnumerable<ICombatSystem>? extra, ContentDefinition[] content, bool casting)
     {
         Content = new TestContent(content);
-        Statuses = new StatusApplier(Options.Create(Config));
+        Statuses = new StatusApplier(Options.Create(Config), Metrics);
+        Effects = new SkillEffects(
+            [
+                new DamageEffect(),
+                new HealEffect(),
+                new ApplyStatusEffect(),
+                new InterruptEffect(),
+                new DispelEffect(),
+                new ThreatEffect(),
+            ],
+            NullLogger<SkillEffects>.Instance
+        );
         Hits = new HitResolver([
             new DodgeStep(),
             new BaseDamageStep(Options.Create(CombatConfig)),
@@ -64,18 +80,56 @@ internal sealed class SkillWorld
             new ShieldStep(),
         ]);
         StatusSystem = new StatusSystem(Hits, Options.Create(Config), Content, Statuses);
+        Casting = casting
+            ? new CastSystem(Effects, Hits, Statuses, Options.Create(Config), Content, Metrics)
+            : null;
         Combat = new CombatZone(
             Zone,
             Hits,
             CombatConfig,
             Characters(),
             FakeProxy.Create<IEventPublisher>(_ => Task.CompletedTask),
-            FakeProxy.Create<IVortexMetrics>(_ => null),
+            Metrics,
             NullLogger.Instance,
-            [StatusSystem, .. extra ?? []],
+            [
+                StatusSystem,
+                .. Casting is null ? [] : new ICombatSystem[] { Casting },
+                .. extra ?? [],
+            ],
             [StatusSystem]
         );
     }
+
+    /// <summary>A world that casts: the skills module's <see cref="CastSystem"/> too.</summary>
+    public static SkillWorld WithCasting(params ContentDefinition[] content) =>
+        new(null, content, casting: true);
+
+    public SkillEffects Effects { get; }
+
+    public CastSystem? Casting { get; }
+
+    /// <summary>What was counted: "cast skill.x resolved", "status status.y".</summary>
+    public List<string> Counted { get; } = [];
+
+    private IVortexMetrics Metrics =>
+        FakeProxy.Create<IVortexMetrics>(call =>
+        {
+            switch (call.Method.Name)
+            {
+                case nameof(IVortexMetrics.SkillCast):
+                    Counted.Add($"cast {call.Args![0]} {call.Args[1]}");
+                    break;
+                case nameof(IVortexMetrics.StatusApplied):
+                    Counted.Add($"status {call.Args![0]}");
+                    break;
+            }
+
+            return null;
+        });
+
+    /// <summary>The player's cast, as the room hands it over.</summary>
+    public string? Cast(string skillId, int target = 0, int x = -1, int y = -1, int player = 7) =>
+        Combat.Cast(new CastRequest(new PlayerId(player), skillId, target, x, y));
 
     public FakeZoneRuntime Zone { get; } = new();
 

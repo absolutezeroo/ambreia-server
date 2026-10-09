@@ -37,6 +37,8 @@ public sealed class VortexMetrics : IVortexMetrics, IDisposable
     private readonly Counter<long> _monstersKilled;
     private readonly Counter<long> _playersDied;
     private readonly Counter<long> _monsterPathSearches;
+    private readonly Counter<long> _skillCasts;
+    private readonly Counter<long> _statusesApplied;
     private readonly Counter<long> _referenceDataPublished;
     private readonly Counter<long> _auditWriteFailure;
 
@@ -146,6 +148,16 @@ public sealed class VortexMetrics : IVortexMetrics, IDisposable
             "Vortex.combat.monster_path_searches",
             unit: "{search}",
             description: "Monster path searches, by outcome (run, or refused: the tick's budget spent)."
+        );
+        _skillCasts = _meter.CreateCounter<long>(
+            "Vortex.skills.casts",
+            unit: "{cast}",
+            description: "Skill casts, by skill and outcome (resolved, cancelled, interrupted, failed, or the refusal code)."
+        );
+        _statusesApplied = _meter.CreateCounter<long>(
+            "Vortex.skills.statuses_applied",
+            unit: "{status}",
+            description: "Statuses put on fighters, by status."
         );
         _auditWriteFailure = _meter.CreateCounter<long>(
             "Vortex.audit.write.failure",
@@ -301,6 +313,26 @@ public sealed class VortexMetrics : IVortexMetrics, IDisposable
                 1,
                 new KeyValuePair<string, object?>("outcome", refused ? "refused" : "run")
             );
+        }
+    }
+
+    public void SkillCast(string skillId, string outcome)
+    {
+        if (_enabled)
+        {
+            _skillCasts.Add(
+                1,
+                new KeyValuePair<string, object?>("skill", skillId),
+                new KeyValuePair<string, object?>("outcome", outcome)
+            );
+        }
+    }
+
+    public void StatusApplied(string statusId)
+    {
+        if (_enabled)
+        {
+            _statusesApplied.Add(1, new KeyValuePair<string, object?>("status", statusId));
         }
     }
 

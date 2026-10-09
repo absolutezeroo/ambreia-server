@@ -1,5 +1,7 @@
+using System;
 using System.Linq;
 using Microsoft.Extensions.Options;
+using Vortex.Primitives.Observability;
 using Vortex.Rpg.Combat.Combatants;
 using Vortex.Rpg.Combat.Zones;
 using Vortex.Rpg.Content.Definitions;
@@ -9,7 +11,7 @@ namespace Vortex.Rpg.Skills.Statuses;
 
 /// <summary>Puts statuses on fighters and takes them off (spec M1b §7.1): the stacking rules, the cap,
 /// the fight they start; the target's stats recomputed each time.</summary>
-public sealed class StatusApplier(IOptions<SkillsConfig> config)
+public sealed class StatusApplier(IOptions<SkillsConfig> config, IVortexMetrics metrics)
 {
     private readonly SkillsConfig _config = config.Value;
 
@@ -34,7 +36,7 @@ public sealed class StatusApplier(IOptions<SkillsConfig> config)
                 set.Changed = true;
                 break;
             case StatusStacking.Stack when existing is not null:
-                existing.Stacks = System.Math.Min(status.MaxStacks, existing.Stacks + 1);
+                existing.Stacks = Math.Min(status.MaxStacks, existing.Stacks + 1);
                 existing.EndsAtMs = now + status.DurationMs;
                 set.Changed = true;
                 break;
@@ -59,6 +61,7 @@ public sealed class StatusApplier(IOptions<SkillsConfig> config)
 
         StartsAFight(zone, caster, target, status, now);
         zone.Recompute(target);
+        metrics.StatusApplied(status.Id);
 
         return true;
     }

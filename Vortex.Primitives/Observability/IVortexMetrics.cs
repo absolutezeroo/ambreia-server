@@ -86,6 +86,13 @@ public interface IVortexMetrics
     /// <summary>A monster path search, or one refused because the tick's budget was spent.</summary>
     void MonsterPathSearch(bool refused);
 
+    /// <summary>A skill cast (spec M1b §13), by skill and outcome: resolved, cancelled, interrupted,
+    /// failed, or the refusal code.</summary>
+    void SkillCast(string skillId, string outcome);
+
+    /// <summary>A status put on a fighter (spec M1b §13).</summary>
+    void StatusApplied(string statusId);
+
     /// <summary>
     /// A call to the (single, global) room directory grain returned. <paramref name="method"/> is the
     /// grain method name, which is bounded by the interface.

@@ -145,6 +145,18 @@ public sealed partial class CombatZone
         return healed;
     }
 
+    /// <summary>Its health or mana changed outside a hit or a heal (a cast's cost): the zone and the
+    /// player are told with the tick.</summary>
+    public void VitalsChanged(Combatant c)
+    {
+        _vitalsChanged.Add(c.ObjectId);
+
+        if (c.IsPlayer)
+        {
+            _selfChanged.Add(c.ObjectId);
+        }
+    }
+
     public void AddThreat(Combatant monster, int playerObjectId, long amount)
     {
         if (!monster.IsPlayer && amount > 0)

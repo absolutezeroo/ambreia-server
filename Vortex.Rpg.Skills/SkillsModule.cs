@@ -5,6 +5,7 @@ using Vortex.Rpg.Combat.Hits;
 using Vortex.Rpg.Combat.Stats;
 using Vortex.Rpg.Combat.Systems;
 using Vortex.Rpg.Content.Rules;
+using Vortex.Rpg.Skills.Casting;
 using Vortex.Rpg.Skills.Configuration;
 using Vortex.Rpg.Skills.Effects;
 using Vortex.Rpg.Skills.Hits;
@@ -39,6 +40,10 @@ public sealed class SkillsModule : IHostPluginModule
         services.AddSingleton<IStatModifierSource>(sp => sp.GetRequiredService<StatusSystem>());
         services.AddSingleton<IHitStep, DamageModifierStep>();
         services.AddSingleton<IHitStep, ShieldStep>();
+
+        // Casts (spec M1b §6): the zone hands it the players' requests.
+        services.AddSingleton<CastSystem>();
+        services.AddSingleton<ICombatSystem>(sp => sp.GetRequiredService<CastSystem>());
     }
 
     /// <summary>One instance, seen both by the import (its rule) and by the zone (its effect).</summary>
