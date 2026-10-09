@@ -1,6 +1,7 @@
 # RPG — spec fille Objets : objet unique, sac, équipement, colis, liaison
 
-> **Statut :** à relire par le propriétaire · **Date :** 2026-10-08 · **Langue :** français
+> **Statut :** approuvée par le propriétaire le 2026-10-09 (« Fais tout ça »), livrée par le plan
+> `docs/superpowers/plans/2026-10-09-rpg-objets.md` · **Date :** 2026-10-08 · **Langue :** français
 > **Dépôt :** `vortex-rpg-emulator`. Spec fille « Objets » (§23 n° 4) de la spec unifiée
 > `docs/superpowers/specs/2026-10-06-vortex-rpg-design.md` (§3 bis « Objet unique », §3.5, §8.3, §8.4,
 > §18, INV-005). Dépend des specs Contenu (`2026-10-08-rpg-content-design.md`) et Personnage
@@ -33,6 +34,18 @@ avec un sac plein (il part en colis) et le récupère ; tout est là après un r
    (n° 5).
 6. **L'équipement ne change pas l'apparence** en V1 ; seuls les cosmétiques le feront (avec leur
    spec).
+
+**Écarts de la livraison** (plan 2026-10-09, décisions 1 à 10) :
+- les modules sac, équipement et colis sont les `partial` d'une seule classe pure, `CharacterInventory` ;
+- `rpg_items.id` est un `int` ;
+- seuls `ItemGranted`, `ItemDestroyed`, `ItemRemoved` et `ItemBound` existent, les autres attendent la synchronisation du client ;
+- l'audit va dans `item_events`, sous des types `Rpg…` ;
+- une clé rejouée répond `duplicate_grant` sans rendre le premier résultat ;
+- il n'y a pas de code `bound` ni `not_stackable`, mais il y a `unknown_item` ;
+- destruction, retrait et liaison sont écrits tout de suite ;
+- la route prend `{playerId}`, avec la capability `economy.item.grant` ;
+- le réseau est livré avec la spec (§17) ;
+- pas d'icône en V1.
 
 ## 3. Périmètre
 

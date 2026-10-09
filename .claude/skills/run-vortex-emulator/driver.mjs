@@ -1086,6 +1086,41 @@ async function cmdLobby() {
   log('RpgCharacterCreate in the world -> nothing (phase gate). Lobby OK.');
 }
 
+// The item grant (spec Objets §10): the admin route gives the throwaway account's first character a
+// sword, twice with the same key -- `granted` then `duplicate_grant`, and exactly one more sword row.
+async function cmdItems() {
+  const base = `http://127.0.0.1:${WEBAPI}`;
+  const headers = { cookie: (await webSession()).cookie };
+  sql(`INSERT INTO player_account_roles (account_id, role_id)
+       SELECT a.id, r.id FROM player_accounts a, roles r
+       WHERE a.email='${PLAYER.email}' AND r.\`key\`='owner'
+         AND NOT EXISTS (SELECT 1 FROM player_account_roles x WHERE x.account_id=a.id AND x.role_id=r.id);`);
+
+  const playerId = Number(
+    sql(`SELECT p.id FROM players p JOIN player_characters c ON c.player_id = p.id
+         JOIN player_accounts a ON a.id = p.account_id
+         WHERE a.email='${PLAYER.email}' AND p.deleted_at IS NULL ORDER BY p.id LIMIT 1;`).trim(),
+  );
+  if (!playerId) die('No character on the throwaway account: run `play` first.');
+
+  const SWORD = 'item.weapon.rusted_sword';
+  const swords = () =>
+    Number(
+      sql(`SELECT COUNT(*) FROM rpg_items
+           WHERE player_id=${playerId} AND definition_id='${SWORD}' AND deleted_at IS NULL;`).trim(),
+    );
+  const before = swords();
+  const grant = JSON.stringify({ grantKey: `driver-${Date.now()}`, definitionId: SWORD, quantity: 1 });
+  for (const expected of ['ok', 'duplicate_grant']) {
+    const res = await request(`${base}/api/admin/characters/${playerId}/items`, { method: 'POST', headers, body: grant });
+    log(`POST /api/admin/characters/${playerId}/items -> ${res.status} ${res.body}`);
+    if (res.status !== 200 || JSON.parse(res.body).result !== expected) die(`Expected ${expected}.`);
+  }
+  const after = swords();
+  if (after !== before + 1) die(`${before} -> ${after} swords: expected exactly one more.`);
+  log(`Player ${playerId}: ${before} -> ${after} swords; the replayed key granted nothing. Items OK.`);
+}
+
 // ---------------------------------------------------------------- dispatch
 
 const [cmd, ...args] = process.argv.slice(2);
@@ -1105,6 +1140,7 @@ const table = {
   dungeon: cmdDungeon,
   content: () => cmdContent(args[0]),
   lobby: cmdLobby,
+  items: cmdItems,
   grace: () => cmdGrace(args[0]),
   cleanup: cmdCleanup,
   smoke: cmdSmoke,
@@ -1129,6 +1165,7 @@ if (!cmd || !table[cmd]) {
   dungeon   a Dungeon zone: its room forwards to the player's own copy, which is entered
   content [dir]  push the RPG content pack (default content/) through scripts/content/push.mjs
   lobby     the character screen by the socket: account ticket -> lists, create, class, enter world, HUD state, XP progress, phase gate
+  items     the admin item grant: a sword to the first character, replayed with its key -> one sword more
   grace [wait]  drop the socket in a room and come back: same room, one avatar, same tile (wait: then stay away past 60 s)
   cleanup   delete the throwaway account and its players`);
   process.exit(cmd ? 1 : 0);

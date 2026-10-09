@@ -12,6 +12,7 @@ single project, the code and `.claude/rules/` are enough.
 - Flow 5 — a zone at run time
 - Flow 6 — RPG content
 - Flow 7 — the character
+- Flow 8 — items
 - Persistence
 - Grains and their state
 - Plugins and the web API
@@ -166,7 +167,23 @@ published, else `world.start_room_id`. `LastZoneHandler` offers every room enter
 which keeps world zones only. A socket that drops in a room leaves the avatar there, still, for
 `PlayerPresenceConfig.DisconnectGraceSeconds` (60): a sign-in in time resumes it
 (`TakeResumeAsync`, no second avatar), otherwise it leaves as before. Proofs: `driver.mjs
-character`, `grace wait`.
+lobby`, `grace wait`.
+
+## Flow 8 — items
+
+A character's items (spec `2026-10-08-rpg-items-design.md`) belong to its `PlayerCharacterGrain`
+(`PlayerCharacterGrain.Items.cs`): a bag of `ItemConfig.BagSize` (30) cases, ten equipment slots
+(`EquipmentSlots`), up to `MaxParcels` (50) parcels for what a full bag could not take. The rules
+are a pure class, `CharacterInventory` (`Vortex.Rpg/Items`): every operation checks before it
+changes anything. `CharacterItemStore` is the only code on `rpg_items` / `rpg_item_grants`. A
+grant is server side only, placed on a copy and written at once in one transaction with its key,
+so a replayed key grants nothing (`duplicate_grant`); a destroy, a removal and a binding are also
+written before they count; moves, splits and equipment are flushed every `FlushIntervalMs` (2 s)
+and at deactivation. The worn items reach the stats through `StatSourceContext.Equipment`
+(`EquipmentStatSource`). `definition_id` is never written from memory: an import's `replace` rule
+rewrites it (`ItemReferences`) and the grain re-reads it when `IRpgContent.Version` moves. Grants,
+destroys, removals and bindings land in `item_events` under the `Rpg…` types. Admin grant:
+`POST /api/admin/characters/{playerId}/items` (`economy.item.grant`); proof: `driver.mjs items`.
 
 ## Persistence
 
@@ -176,6 +193,7 @@ character`, `grace wait`.
 | presence (session, active/pending room) | `PlayerPresenceGrain` | in memory (Orleans storage) |
 | placed furniture | `RoomGrain` → `RoomPersistenceGrain` | queued, flushed every `DirtyItemsTickMs` and drained on deactivation |
 | tile heights | `RoomGrain` | flushed by the tick |
+| character items (`rpg_items`, `rpg_item_grants`) | `PlayerCharacterGrain` | grant, destroy, removal, binding at once; moves every 2 s and on deactivation |
 | server config (`world.start_room_id`, `motd.lines`) | `ServerConfigGrain` | through the grain |
 | audit, item forensics, errors | Observability writers | off the hot path, batched from a channel |
 
