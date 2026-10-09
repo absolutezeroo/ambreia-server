@@ -127,8 +127,11 @@ internal static class MessageComposer
     public const int RpgTargetMessageComposer = 9009; // RPG (spec §3.7)
     public const int RpgChatMessageComposer = 9010; // RPG (spec §3.7)
     public const int RpgChatResultMessageComposer = 9011; // RPG (spec §3.7)
-
-    // 9012-9016 are taken by the M1a combat messages (spec 2026-10-09-rpg-combat-m1a §9.2).
+    public const int RpgCombatEventsMessageComposer = 9012; // RPG (spec §3.7)
+    public const int RpgVitalsMessageComposer = 9013; // RPG (spec §3.7)
+    public const int RpgSelfVitalsMessageComposer = 9014; // RPG (spec §3.7)
+    public const int RpgDeathMessageComposer = 9015; // RPG (spec §3.7)
+    public const int RpgCombatResultMessageComposer = 9016; // RPG (spec §3.7)
     public const int RpgEmoteMessageComposer = 9017; // RPG (spec §3.7)
     #endregion
 }

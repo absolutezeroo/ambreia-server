@@ -12,6 +12,9 @@ public sealed record RpgTargetMessageComposer : IComposer
 {
     public const string KindPlayer = "player";
 
+    /// <summary>A monster (spec M1a §9.1): its name is its content id, its class empty.</summary>
+    public const string KindMonster = "monster";
+
     /// <summary>No target: cleared by the player, an invalid id, or the target leaving.</summary>
     public static readonly RpgTargetMessageComposer None = new()
     {
