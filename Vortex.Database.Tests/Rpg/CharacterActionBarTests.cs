@@ -182,6 +182,25 @@ public sealed class CharacterActionBarTests : IAsyncLifetime
         _sent.OfType<RpgSkillsMessageComposer>().Single().Bar.Should().OnlyContain(a => a == "");
     }
 
+    /// <summary>An import renamed a skill or moved the class: a slot holding a skill the character no
+    /// longer knows reads as empty, never as a dead button (AGENTS: content ids in grain rows).</summary>
+    [Fact]
+    public async Task ASlotWithASkillNoLongerKnown_ReadsAsEmpty()
+    {
+        PlayerCharacterGrain grain = await ActivateAsync(
+            "class.warrior",
+            ["skill:skill.warrior.renamed", Strike, "skill:skill.archer.aimed_shot"]
+        );
+
+        await grain.PushStateAsync();
+
+        _sent
+            .OfType<RpgSkillsMessageComposer>()
+            .Single()
+            .Bar.Should()
+            .Equal("", Strike, "", "", "", "");
+    }
+
     [Fact]
     public async Task PushState_SendsTheSkills()
     {

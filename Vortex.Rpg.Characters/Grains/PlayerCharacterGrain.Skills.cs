@@ -101,10 +101,17 @@ internal sealed partial class PlayerCharacterGrain
         }
 
         string[] bar = new string[_config.ActionBarSize];
+        // A skill an import renamed, or that a class moved away from, is no button (AGENTS: content
+        // ids in a grain's row).
+        HashSet<string> known = [.. Known(c).Select(s => SkillPrefix + s.Id)];
 
         for (int i = 0; i < bar.Length; i++)
         {
-            bar[i] = i < stored.Length ? stored[i] ?? string.Empty : string.Empty;
+            string action = i < stored.Length ? stored[i] ?? string.Empty : string.Empty;
+            bar[i] =
+                action.StartsWith(SkillPrefix, StringComparison.Ordinal) && !known.Contains(action)
+                    ? string.Empty
+                    : action;
         }
 
         return bar;
