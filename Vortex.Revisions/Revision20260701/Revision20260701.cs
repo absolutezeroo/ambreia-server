@@ -15,6 +15,7 @@ public sealed class Revision20260701()
             new RpgCharactersMap(),
             new RpgItemsMap(),
             new RpgInteractionMap(),
+            new RpgChatMap(),
         }
     )
 {
