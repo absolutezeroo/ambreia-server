@@ -18,6 +18,7 @@ using Vortex.Primitives.Players;
 using Vortex.Primitives.Rpg.Characters;
 using Vortex.Primitives.Rpg.Characters.Grains;
 using Vortex.Rpg.Characters.Configuration;
+using Vortex.Rpg.Characters.Grains.Persistence;
 using Vortex.Rpg.Content;
 using Vortex.Rpg.Content.Definitions;
 using Vortex.Rpg.Stats;
@@ -29,7 +30,7 @@ namespace Vortex.Rpg.Characters.Grains;
 /// activation, progress written on a timer and on deactivation. Class ids are never written back
 /// from memory: an import's replace rule owns that column once the row exists. Its parts: the class
 /// (<c>PlayerCharacterGrain.Class.cs</c>), XP and levels (<c>.Progress.cs</c>), the HUD
-/// (<c>.Hud.cs</c>) and the last zone (<c>.Rooms.cs</c>).
+/// (<c>.Hud.cs</c>), the last zone (<c>.Rooms.cs</c>) and the items (<c>.Items.cs</c>).
 /// </summary>
 internal sealed partial class PlayerCharacterGrain(
     IDbContextFactory<VortexDbContext> dbFactory,
@@ -40,13 +41,16 @@ internal sealed partial class PlayerCharacterGrain(
     IOptions<CharacterConfig> config,
     IVortexMetrics metrics,
     ILogger<PlayerCharacterGrain> logger,
-    IGrainFactory grainFactory
+    IGrainFactory grainFactory,
+    IOptions<ItemConfig> itemConfig
 ) : Grain, IPlayerCharacterGrain
 {
     internal const string ProgressionId = "progression.default";
 
     private readonly IStatSource[] _sources = [.. sources];
     private readonly CharacterConfig _config = config.Value;
+    private readonly ItemConfig _itemConfig = itemConfig.Value;
+    private readonly CharacterItemStore _itemStore = new(dbFactory);
 
     private PlayerId _playerId;
     private PlayerCharacterEntity? _character;
@@ -76,14 +80,22 @@ internal sealed partial class PlayerCharacterGrain(
             TimeSpan.FromMilliseconds(_config.FlushIntervalMs),
             TimeSpan.FromMilliseconds(_config.FlushIntervalMs)
         );
+        _itemFlushTimer = this.RegisterGrainTimer<object?>(
+            static async (self, ct) => await ((PlayerCharacterGrain)self!).FlushItemsAsync(ct),
+            this,
+            TimeSpan.FromMilliseconds(_itemConfig.FlushIntervalMs),
+            TimeSpan.FromMilliseconds(_itemConfig.FlushIntervalMs)
+        );
     }
 
     public override async Task OnDeactivateAsync(DeactivationReason reason, CancellationToken ct)
     {
         _flushTimer?.Dispose();
+        _itemFlushTimer?.Dispose();
         metrics.CharacterActivated(-1);
 
         await FlushAsync(ct);
+        await FlushItemsAsync(ct);
     }
 
     public async Task<CharacterSummary?> GetSummaryAsync()
@@ -134,7 +146,8 @@ internal sealed partial class PlayerCharacterGrain(
 
     public async Task<CharacterStatsSnapshot?> GetStatsAsync()
     {
-        await RefreshIdsAsync();
+        // The equipment is part of the stats: loaded (and its ids re-read) before they are computed.
+        await InventoryAsync();
 
         if (_character is null)
         {
@@ -168,7 +181,10 @@ internal sealed partial class PlayerCharacterGrain(
             );
         }
 
-        StatSourceContext context = new(_playerId, cls, character.Level);
+        StatSourceContext context = new(_playerId, cls, character.Level)
+        {
+            Equipment = _inventory?.EquippedStats() ?? [],
+        };
         List<(string, StatBlock)> contributions = new(_sources.Length);
 
         foreach (IStatSource source in _sources)

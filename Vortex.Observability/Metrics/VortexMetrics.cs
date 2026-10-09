@@ -29,6 +29,7 @@ public sealed class VortexMetrics : IVortexMetrics, IDisposable
     private readonly Counter<long> _furnitureLogicFallback;
     private readonly UpDownCounter<long> _charactersActive;
     private readonly Histogram<double> _characterFlushDuration;
+    private readonly Histogram<double> _itemFlushDuration;
     private readonly Counter<long> _rpgPacketRefused;
     private readonly Counter<long> _referenceDataPublished;
     private readonly Counter<long> _auditWriteFailure;
@@ -97,6 +98,12 @@ public sealed class VortexMetrics : IVortexMetrics, IDisposable
             unit: "ms",
             description: "Writes of a character's progress (level, XP, last zone), by outcome "
                 + "(ok, failed: the state stays dirty for the next flush)."
+        );
+        _itemFlushDuration = _meter.CreateHistogram<double>(
+            "Vortex.item.flush.duration",
+            unit: "ms",
+            description: "Writes of a character's moved items, by outcome (ok, failed: they "
+                + "stay dirty for the next flush)."
         );
         _rpgPacketRefused = _meter.CreateCounter<long>(
             "Vortex.rpg.packet.refused",
@@ -185,6 +192,17 @@ public sealed class VortexMetrics : IVortexMetrics, IDisposable
         if (_enabled)
         {
             _characterFlushDuration.Record(
+                elapsedMilliseconds,
+                new KeyValuePair<string, object?>("outcome", failed ? "failed" : "ok")
+            );
+        }
+    }
+
+    public void ItemFlushCompleted(double elapsedMilliseconds, bool failed)
+    {
+        if (_enabled)
+        {
+            _itemFlushDuration.Record(
                 elapsedMilliseconds,
                 new KeyValuePair<string, object?>("outcome", failed ? "failed" : "ok")
             );

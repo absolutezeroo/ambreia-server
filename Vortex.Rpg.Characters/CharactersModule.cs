@@ -19,6 +19,7 @@ public sealed class CharactersModule : IHostPluginModule
         services.Configure<CharacterConfig>(
             builder.Configuration.GetSection(CharacterConfig.SECTION_NAME)
         );
+        services.Configure<ItemConfig>(builder.Configuration.GetSection(ItemConfig.SECTION_NAME));
 
         // Declared, not scanned (plan Personnage, décision 1): a system that adds stats adds a line.
         services.AddSingleton<IStatSource, ClassLevelStatSource>();

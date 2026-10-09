@@ -207,7 +207,8 @@ public sealed class CharacterStatePushTests : IAsyncLifetime
                 Options.Create(new CharacterConfig()),
                 FakeProxy.Create<IVortexMetrics>(_ => null),
                 NullLogger<PlayerCharacterGrain>.Instance,
-                Presence()
+                Presence(),
+                Options.Create(new ItemConfig())
             );
         await grain.OnActivateAsync(CancellationToken.None);
 

@@ -61,6 +61,10 @@ public interface IVortexMetrics
     /// and the state stays dirty for the next flush.</summary>
     void CharacterFlushCompleted(double elapsedMilliseconds, bool failed);
 
+    /// <summary>A character's moved items were written (spec Objets §13); <paramref name="failed"/>
+    /// when the write threw and they stay dirty for the next flush.</summary>
+    void ItemFlushCompleted(double elapsedMilliseconds, bool failed);
+
     /// <summary>A character-screen packet refused (spec F3a §8): <paramref name="reason"/> is
     /// <c>phase</c> (sent outside the account phase) or <c>rate_limited</c>.</summary>
     void RpgPacketRefused(string reason);

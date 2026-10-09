@@ -1,6 +1,7 @@
 using System.Threading.Tasks;
 using Orleans;
 using Vortex.Primitives.Rooms;
+using Vortex.Primitives.Rpg.Items;
 
 namespace Vortex.Primitives.Rpg.Characters.Grains;
 
@@ -38,4 +39,29 @@ public interface IPlayerCharacterGrain : IGrainWithIntegerKey
 
     /// <summary>The world zone to sign in to (spec Personnage §9); null without a character or a zone.</summary>
     public Task<RoomId?> GetLastRoomAsync();
+
+    // Items (spec Objets §7): every call answers NoCharacter, or nothing, for an avatar without a
+    // class. A refusal changes nothing.
+
+    /// <summary>Server side only: <paramref name="grantKey"/> already seen grants nothing more
+    /// (DuplicateGrant); the items and the key are written together, at once.</summary>
+    public Task<ItemGrantResult> GrantItemsAsync(string grantKey, ItemGrantLine[] items);
+
+    /// <summary>Server side only (quests, crafting): from the bag's stacks, all or nothing.</summary>
+    public Task<ItemOutcome> RemoveItemsAsync(string definitionId, int quantity);
+
+    public Task<ItemOutcome> MoveItemAsync(int from, int to);
+
+    public Task<ItemOutcome> SplitItemAsync(int from, int quantity, int to);
+
+    public Task<ItemOutcome> EquipItemAsync(int bagSlot);
+
+    public Task<ItemOutcome> UnequipItemAsync(int equipmentSlot);
+
+    public Task<ItemOutcome> DestroyItemAsync(int bagSlot, int quantity);
+
+    public Task<ItemOutcome> ClaimParcelAsync(int parcel);
+
+    /// <summary>Every copy held: bag, equipment, parcels.</summary>
+    public Task<CharacterItemSnapshot[]> GetItemsAsync();
 }
