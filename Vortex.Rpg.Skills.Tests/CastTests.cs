@@ -364,6 +364,8 @@ public sealed class CastTests
             .Cast(Zap.Id, wolf.ObjectId)
             .Should()
             .Be(RpgSkillResultMessageComposer.GlobalCooldown);
+        // The spark lands; the global cooldown still runs, and focus is not subject to it.
+        await _world.TickAsync();
         _world.Cast(Focus.Id).Should().BeNull();
     }
 
@@ -391,6 +393,62 @@ public sealed class CastTests
             );
         Outcomes().Should().ContainSingle();
         me.Mana.Should().Be(95);
+    }
+
+    /// <summary>An instant paid and waiting for its tick is not replaced by the next packet.</summary>
+    [Fact]
+    public async Task APaidInstant_IsNotReplaced_BeforeItLands()
+    {
+        Combatant me = await _world.PlayerAsync();
+        Combatant wolf = ToughWolf();
+        _world.Cast(Spark.Id, wolf.ObjectId).Should().BeNull();
+
+        _world.Cast(Focus.Id).Should().Be(RpgSkillResultMessageComposer.Casting);
+        await _world.TickAsync();
+
+        (wolf.Health, me.Mana).Should().Be((490, 95));
+    }
+
+    /// <summary>A cast that does not allow moving stops the walk under way.</summary>
+    [Fact]
+    public async Task ACastStartedWhileWalking_StopsTheWalk()
+    {
+        await _world.PlayerAsync();
+        Combatant wolf = ToughWolf();
+        _world.Zone.Walking.Add(1);
+
+        _world.Cast(Bolt.Id, wolf.ObjectId).Should().BeNull();
+
+        _world.Zone.Walking.Should().NotContain(1);
+    }
+
+    /// <summary>While a cast walks him to its target, the attack does not drag him back to its own.</summary>
+    [Fact]
+    public async Task ACastApproach_IsNotUndoneByTheAttacksApproach()
+    {
+        await _world.PlayerAsync();
+        Combatant near = ToughWolf();
+        Combatant far = ToughWolf(12, 5);
+        _world.Combat.StartAttack(new PlayerId(7), near.ObjectId);
+        await _world.TickAsync();
+        _world.Cast(Spark.Id, far.ObjectId).Should().BeNull();
+
+        _world.Zone.Positions[1] = (5, 7);
+        await _world.TickAsync();
+
+        _world.Zone.Walks.Should().NotContain(w => w.X == 6 && w.Y == 5);
+    }
+
+    /// <summary>A refusal of an id nobody declared is counted under "unknown": a client string never
+    /// becomes a metric label.</summary>
+    [Fact]
+    public async Task AnUnknownSkillId_IsCountedAsUnknown()
+    {
+        await _world.PlayerAsync();
+
+        _world.Cast("skill.whatever.1234");
+
+        _world.Counted.Should().Equal("cast unknown unknown_skill");
     }
 
     [Fact]

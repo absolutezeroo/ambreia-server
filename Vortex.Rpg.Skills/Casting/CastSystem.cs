@@ -48,7 +48,16 @@ public sealed class CastSystem(
 
         if (refusal is not null)
         {
-            metrics.SkillCast(request.SkillId, refusal);
+            // A client string never becomes a metric label: an id nobody declared is "unknown".
+            string label = content.Get<SkillDefinition>(request.SkillId) is null
+                ? "unknown"
+                : request.SkillId;
+            metrics.SkillCast(label, refusal);
+        }
+
+        if (zone.PlayerCombatant(request.Player) is { } caster)
+        {
+            Steer(caster);
         }
 
         return refusal;
@@ -88,6 +97,7 @@ public sealed class CastSystem(
     {
         End(zone, c, RpgCastEnd.Cancelled);
         c.Set<PendingCast>(null);
+        Steer(c);
 
         return [];
     }
@@ -106,6 +116,8 @@ public sealed class CastSystem(
             {
                 TickPending(zone, c, pending, now);
             }
+
+            Steer(c);
         }
     }
 
@@ -159,6 +171,12 @@ public sealed class CastSystem(
 
         if (Centre(zone, caster, pending) is { } centre && !InReach(zone, caster, skill, centre))
         {
+            // An approach would replace an instant already paid and waiting for its tick.
+            if (caster.Get<PendingCast>() is { Ready: true })
+            {
+                return RpgSkillResultMessageComposer.Casting;
+            }
+
             if (
                 zone.Runtime.WalkNear(caster.ObjectId, centre.X, centre.Y, skill.Range)
                 == WalkResult.NoPath
@@ -195,6 +213,12 @@ public sealed class CastSystem(
         if (caster.Mana < skill.Cost)
         {
             return RpgSkillResultMessageComposer.NoMana;
+        }
+
+        // An instant already paid and waiting for its tick is never replaced.
+        if (caster.Get<PendingCast>() is { Ready: true })
+        {
+            return RpgSkillResultMessageComposer.Casting;
         }
 
         if (skill.GlobalCooldown)
@@ -352,7 +376,8 @@ public sealed class CastSystem(
                 skill,
                 InRange(zone, c, skill, centre)
                     ? RpgSkillResultMessageComposer.NoLineOfSight
-                    : RpgSkillResultMessageComposer.Unreachable
+                    : RpgSkillResultMessageComposer.Unreachable,
+                count: false
             );
 
             return;
@@ -361,14 +386,15 @@ public sealed class CastSystem(
         if (c.Mana < skill.Cost)
         {
             End(zone, c, RpgCastEnd.Failed);
-            Refuse(zone, c, skill, RpgSkillResultMessageComposer.NoMana);
+            Refuse(zone, c, skill, RpgSkillResultMessageComposer.NoMana, count: false);
 
             return;
         }
 
+        // Ended before it lands: an effect that throws never leaves a cast to be paid again.
         Pay(zone, c, skill, now);
-        Land(zone, c, skill, state.TargetObjectId, state.Cell, now);
         End(zone, c, RpgCastEnd.Done);
+        Land(zone, c, skill, state.TargetObjectId, state.Cell, now);
         SendCooldowns(zone, c, now);
     }
 
@@ -393,6 +419,12 @@ public sealed class CastSystem(
             }
         );
         c.Busy = true;
+
+        // A cast that does not allow moving stops the walk under way (spec §6.4).
+        if (!pending.Skill.MoveAllowed)
+        {
+            zone.Runtime.StopWalking(c.ObjectId);
+        }
         zone.GetOrAdd<CastNews>()
             .Started(
                 new RpgCastStart
@@ -513,9 +545,19 @@ public sealed class CastSystem(
         );
     }
 
-    private void Refuse(CombatZone zone, Combatant c, SkillDefinition skill, string code)
+    /// <summary>The player is told; counted unless the end of the cast already was (failed).</summary>
+    private void Refuse(
+        CombatZone zone,
+        Combatant c,
+        SkillDefinition skill,
+        string code,
+        bool count = true
+    )
     {
-        metrics.SkillCast(skill.Id, code);
+        if (count)
+        {
+            metrics.SkillCast(skill.Id, code);
+        }
 
         if (c.PlayerId is { } player)
         {
@@ -584,7 +626,12 @@ public sealed class CastSystem(
         {
             c.Set<PendingCast>(null);
         }
+
+        Steer(c);
     }
+
+    /// <summary>While a cast walks him to its target, the attack does not walk him to its own.</summary>
+    private static void Steer(Combatant c) => c.Steered = c.Get<PendingCast>() is { Ready: false };
 
     private static SkillCooldowns Cooldowns(Combatant c)
     {

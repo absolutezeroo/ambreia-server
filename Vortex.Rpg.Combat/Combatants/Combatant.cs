@@ -120,6 +120,10 @@ public sealed class Combatant : ICombatantStats
     /// <summary>An action occupies it (a cast): no automatic hit meanwhile.</summary>
     public bool Busy { get; set; }
 
+    /// <summary>A module walks it somewhere (a cast's approach): the attack hits what it reaches but
+    /// does not walk it back to its own target meanwhile.</summary>
+    public bool Steered { get; set; }
+
     /// <summary>A player's class and specialization, for the skills he knows.</summary>
     public string ClassId { get; set; } = string.Empty;
 

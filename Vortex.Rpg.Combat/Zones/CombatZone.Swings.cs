@@ -55,7 +55,7 @@ public sealed partial class CombatZone
 
             if (!inReach)
             {
-                if (a.IsPlayer)
+                if (a.IsPlayer && !a.Steered)
                 {
                     Approach(a, to);
                 }

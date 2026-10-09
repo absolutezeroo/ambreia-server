@@ -445,7 +445,7 @@ public sealed class CombatExtensionTests
                                     SpecializationId = "spec.mage.fire",
                                 }
                             ),
-                        nameof(IPlayerCharacterGrain.SetVitalsAsync) => Log(
+                        nameof(IPlayerCharacterGrain.SetVitalsAsync) => LogAsync(
                             $"vitals {(long)call.Args![0]!}: {inner.Args![0]}/{inner.Args[1]} {string.Join(',', ((ImmutableArray<CarriedStatus>)inner.Args[2]!).Select(s => s.StatusId))}"
                         ),
                         _ => null,
@@ -453,7 +453,7 @@ public sealed class CombatExtensionTests
                 )
         );
 
-    private Task Log(string line)
+    private Task LogAsync(string line)
     {
         _log.Add(line);
 

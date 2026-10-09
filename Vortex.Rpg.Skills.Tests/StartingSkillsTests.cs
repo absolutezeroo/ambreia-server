@@ -29,7 +29,7 @@ public sealed class StartingSkillsTests
             }
         );
 
-    private Task<Combatant> Hero(string cls) => _world.PlayerAsync(classId: cls);
+    private Task<Combatant> HeroAsync(string cls) => _world.PlayerAsync(classId: cls);
 
     private static string[] StatusesOn(Combatant c) =>
         [.. (c.Get<StatusSet>()?.All ?? []).Select(s => s.Definition.Id)];
@@ -49,7 +49,7 @@ public sealed class StartingSkillsTests
     [Fact]
     public async Task HeroicStrike_HitsAndAngers()
     {
-        await Hero("class.warrior");
+        await HeroAsync("class.warrior");
         Combatant wolf = Wolf();
 
         await CastAsync("skill.warrior.heroic_strike", wolf.ObjectId);
@@ -60,7 +60,7 @@ public sealed class StartingSkillsTests
     [Fact]
     public async Task ChallengingShout_WeakensEveryEnemyAround()
     {
-        await Hero("class.warrior");
+        await HeroAsync("class.warrior");
         Combatant near = Wolf(6, 5);
         Combatant other = Wolf(4, 6);
 
@@ -75,7 +75,7 @@ public sealed class StartingSkillsTests
     [Fact]
     public async Task ShieldBash_HitsAndStuns()
     {
-        await Hero("class.warrior");
+        await HeroAsync("class.warrior");
         Combatant wolf = Wolf();
 
         await CastAsync("skill.warrior.shield_bash", wolf.ObjectId);
@@ -86,7 +86,7 @@ public sealed class StartingSkillsTests
     [Fact]
     public async Task AimedShot_LandsAfterItsCast()
     {
-        await Hero("class.archer");
+        await HeroAsync("class.archer");
         Combatant wolf = Wolf(11, 5);
 
         await CastAsync("skill.archer.aimed_shot", wolf.ObjectId, ms: 1500);
@@ -97,7 +97,7 @@ public sealed class StartingSkillsTests
     [Fact]
     public async Task Focus_RaisesCrit_OffTheGlobalCooldown()
     {
-        Combatant me = await Hero("class.archer");
+        Combatant me = await HeroAsync("class.archer");
         Combatant wolf = Wolf(11, 5);
         _world.Cast("skill.archer.aimed_shot", wolf.ObjectId).Should().BeNull();
         await _world.RunAsync(1500);
@@ -114,7 +114,7 @@ public sealed class StartingSkillsTests
     [Fact]
     public async Task Volley_RainsOnTheGround_ForThreePulses()
     {
-        await Hero("class.archer");
+        await HeroAsync("class.archer");
         Combatant wolf = Wolf(10, 5);
 
         await CastAsync("skill.archer.volley", 0, 10, 5, ms: 3000);
@@ -125,7 +125,7 @@ public sealed class StartingSkillsTests
     [Fact]
     public async Task Firebolt_LandsAfterTwoSeconds()
     {
-        await Hero("class.mage");
+        await HeroAsync("class.mage");
         Combatant wolf = Wolf();
 
         await CastAsync("skill.mage.firebolt", wolf.ObjectId, ms: 2000);
@@ -136,7 +136,7 @@ public sealed class StartingSkillsTests
     [Fact]
     public async Task FlameBurst_BurnsTheTargetAndItsNeighbours()
     {
-        await Hero("class.mage");
+        await HeroAsync("class.mage");
         Combatant target = Wolf(8, 5);
         Combatant beside = Wolf(9, 5);
 
@@ -151,7 +151,7 @@ public sealed class StartingSkillsTests
     [Fact]
     public async Task FrostNova_HitsAndSlowsAround()
     {
-        await Hero("class.mage");
+        await HeroAsync("class.mage");
         Combatant wolf = Wolf();
 
         await CastAsync("skill.mage.frost_nova");
@@ -162,7 +162,7 @@ public sealed class StartingSkillsTests
     [Fact]
     public async Task Heal_HealsAnAlly()
     {
-        Combatant me = await Hero("class.cleric");
+        Combatant me = await HeroAsync("class.cleric");
         me.Health = 10;
 
         await CastAsync("skill.cleric.heal", ms: 1500);
@@ -173,7 +173,7 @@ public sealed class StartingSkillsTests
     [Fact]
     public async Task Renew_HealsOverTime()
     {
-        Combatant me = await Hero("class.cleric");
+        Combatant me = await HeroAsync("class.cleric");
         _world.Combat.Hostile(me, _world.Now);
         me.Health = 10;
 
@@ -186,7 +186,7 @@ public sealed class StartingSkillsTests
     [Fact]
     public async Task Aegis_ShieldsAnAlly()
     {
-        Combatant me = await Hero("class.cleric");
+        Combatant me = await HeroAsync("class.cleric");
 
         await CastAsync("skill.cleric.aegis");
 
