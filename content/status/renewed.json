@@ -1,0 +1,10 @@
+{
+  "$schema": "../../schemas/content/status.schema.json",
+  "id": "status.renewed",
+  "kind": "status",
+  "type": "hot",
+  "durationMs": 12000,
+  "periodMs": 3000,
+  "stacking": "refresh",
+  "coefficient": 0.4
+}

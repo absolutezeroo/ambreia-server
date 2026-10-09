@@ -1,0 +1,96 @@
+{
+  "type": "object",
+  "properties": {
+    "$schema": {
+      "type": "string"
+    },
+    "type": {
+      "enum": [
+        "buff",
+        "debuff",
+        "dot",
+        "hot",
+        "stun",
+        "slow",
+        "shield"
+      ]
+    },
+    "durationMs": {
+      "type": "integer"
+    },
+    "periodMs": {
+      "type": "integer"
+    },
+    "stacking": {
+      "enum": [
+        "replace",
+        "refresh",
+        "stack",
+        "ignore"
+      ]
+    },
+    "maxStacks": {
+      "type": "integer"
+    },
+    "dispellable": {
+      "type": "boolean"
+    },
+    "persistent": {
+      "type": "boolean"
+    },
+    "modifiers": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "stat": {
+            "enum": [
+              "power",
+              "armor",
+              "crit_percent",
+              "dodge_percent",
+              "speed_percent",
+              "damage_dealt_percent",
+              "damage_taken_percent"
+            ]
+          },
+          "percent": {
+            "type": "number"
+          },
+          "flat": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "stat"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "base": {
+      "type": "number"
+    },
+    "coefficient": {
+      "type": "number"
+    },
+    "slowPercent": {
+      "type": "integer"
+    },
+    "id": {
+      "type": "string"
+    },
+    "kind": {
+      "type": "string"
+    },
+    "retired": {
+      "type": "boolean"
+    }
+  },
+  "required": [
+    "type",
+    "durationMs",
+    "id",
+    "kind"
+  ],
+  "additionalProperties": false
+}

@@ -101,6 +101,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Vortex.Rpg.Combat.Tests", "
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Vortex.Rpg.Monsters.Tests", "Vortex.Rpg.Monsters.Tests\Vortex.Rpg.Monsters.Tests.csproj", "{56F55ABF-F2CE-4588-A539-44C463B102FE}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Vortex.Rpg.Skills", "Vortex.Rpg.Skills\Vortex.Rpg.Skills.csproj", "{DC009A06-CE37-41E9-B0EA-C0FAC9CE403D}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Vortex.Rpg.Skills.Tests", "Vortex.Rpg.Skills.Tests\Vortex.Rpg.Skills.Tests.csproj", "{F8A9034C-CAE2-4F0F-9DCE-DEB32AD85A8C}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -627,6 +631,30 @@ Global
 		{56F55ABF-F2CE-4588-A539-44C463B102FE}.Release|x64.Build.0 = Release|Any CPU
 		{56F55ABF-F2CE-4588-A539-44C463B102FE}.Release|x86.ActiveCfg = Release|Any CPU
 		{56F55ABF-F2CE-4588-A539-44C463B102FE}.Release|x86.Build.0 = Release|Any CPU
+		{DC009A06-CE37-41E9-B0EA-C0FAC9CE403D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DC009A06-CE37-41E9-B0EA-C0FAC9CE403D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DC009A06-CE37-41E9-B0EA-C0FAC9CE403D}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{DC009A06-CE37-41E9-B0EA-C0FAC9CE403D}.Debug|x64.Build.0 = Debug|Any CPU
+		{DC009A06-CE37-41E9-B0EA-C0FAC9CE403D}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{DC009A06-CE37-41E9-B0EA-C0FAC9CE403D}.Debug|x86.Build.0 = Debug|Any CPU
+		{DC009A06-CE37-41E9-B0EA-C0FAC9CE403D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DC009A06-CE37-41E9-B0EA-C0FAC9CE403D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{DC009A06-CE37-41E9-B0EA-C0FAC9CE403D}.Release|x64.ActiveCfg = Release|Any CPU
+		{DC009A06-CE37-41E9-B0EA-C0FAC9CE403D}.Release|x64.Build.0 = Release|Any CPU
+		{DC009A06-CE37-41E9-B0EA-C0FAC9CE403D}.Release|x86.ActiveCfg = Release|Any CPU
+		{DC009A06-CE37-41E9-B0EA-C0FAC9CE403D}.Release|x86.Build.0 = Release|Any CPU
+		{F8A9034C-CAE2-4F0F-9DCE-DEB32AD85A8C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F8A9034C-CAE2-4F0F-9DCE-DEB32AD85A8C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F8A9034C-CAE2-4F0F-9DCE-DEB32AD85A8C}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{F8A9034C-CAE2-4F0F-9DCE-DEB32AD85A8C}.Debug|x64.Build.0 = Debug|Any CPU
+		{F8A9034C-CAE2-4F0F-9DCE-DEB32AD85A8C}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{F8A9034C-CAE2-4F0F-9DCE-DEB32AD85A8C}.Debug|x86.Build.0 = Debug|Any CPU
+		{F8A9034C-CAE2-4F0F-9DCE-DEB32AD85A8C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F8A9034C-CAE2-4F0F-9DCE-DEB32AD85A8C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F8A9034C-CAE2-4F0F-9DCE-DEB32AD85A8C}.Release|x64.ActiveCfg = Release|Any CPU
+		{F8A9034C-CAE2-4F0F-9DCE-DEB32AD85A8C}.Release|x64.Build.0 = Release|Any CPU
+		{F8A9034C-CAE2-4F0F-9DCE-DEB32AD85A8C}.Release|x86.ActiveCfg = Release|Any CPU
+		{F8A9034C-CAE2-4F0F-9DCE-DEB32AD85A8C}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

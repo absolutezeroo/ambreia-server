@@ -1,0 +1,11 @@
+{
+  "$schema": "../../schemas/content/status.schema.json",
+  "id": "status.burning",
+  "kind": "status",
+  "type": "dot",
+  "durationMs": 6000,
+  "periodMs": 2000,
+  "stacking": "stack",
+  "maxStacks": 3,
+  "coefficient": 0.2
+}

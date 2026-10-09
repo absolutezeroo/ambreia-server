@@ -1,0 +1,15 @@
+{
+  "$schema": "../../schemas/content/skill.schema.json",
+  "id": "skill.warrior.challenging_shout",
+  "kind": "skill",
+  "classes": ["class.warrior"],
+  "level": 3,
+  "cost": 10,
+  "cooldownMs": 15000,
+  "type": "instant",
+  "range": 0,
+  "target": "around_caster",
+  "radius": 2,
+  "effects": [{ "kind": "apply_status", "status": "status.weakened" }],
+  "vfx": "shout"
+}

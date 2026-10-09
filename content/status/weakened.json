@@ -1,0 +1,9 @@
+{
+  "$schema": "../../schemas/content/status.schema.json",
+  "id": "status.weakened",
+  "kind": "status",
+  "type": "debuff",
+  "durationMs": 8000,
+  "stacking": "replace",
+  "modifiers": [{ "stat": "damage_dealt_percent", "flat": -20 }]
+}

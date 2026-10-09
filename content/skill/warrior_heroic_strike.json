@@ -1,0 +1,17 @@
+{
+  "$schema": "../../schemas/content/skill.schema.json",
+  "id": "skill.warrior.heroic_strike",
+  "kind": "skill",
+  "classes": ["class.warrior"],
+  "level": 1,
+  "cost": 5,
+  "cooldownMs": 4000,
+  "type": "instant",
+  "range": 1,
+  "target": "enemy",
+  "effects": [
+    { "kind": "damage", "base": 4, "coefficient": 1.0 },
+    { "kind": "threat", "threatPercent": 50 }
+  ],
+  "animation": "strike"
+}

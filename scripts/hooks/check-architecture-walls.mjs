@@ -250,6 +250,7 @@ const PLATFORM = [
   'Rpg.Characters',
   'Rpg.Combat',
   'Rpg.Monsters',
+  'Rpg.Skills',
 ];
 const layerOf = (project) => {
   const name = project.replace(/^Vortex\./, '');

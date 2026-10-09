@@ -1,0 +1,8 @@
+{
+  "$schema": "../../schemas/content/status.schema.json",
+  "id": "status.stunned",
+  "kind": "status",
+  "type": "stun",
+  "durationMs": 2000,
+  "stacking": "ignore"
+}

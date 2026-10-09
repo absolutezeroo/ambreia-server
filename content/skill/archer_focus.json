@@ -1,0 +1,15 @@
+{
+  "$schema": "../../schemas/content/skill.schema.json",
+  "id": "skill.archer.focus",
+  "kind": "skill",
+  "classes": ["class.archer"],
+  "level": 3,
+  "cost": 6,
+  "cooldownMs": 30000,
+  "globalCooldown": false,
+  "type": "instant",
+  "range": 0,
+  "target": "self",
+  "effects": [{ "kind": "apply_status", "status": "status.focused" }],
+  "vfx": "focus"
+}

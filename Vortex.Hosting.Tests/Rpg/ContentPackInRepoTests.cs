@@ -3,8 +3,10 @@ using System.Linq;
 using FluentAssertions;
 using Vortex.Hosting.Tests.Architecture;
 using Vortex.Primitives.Rpg.Content;
+using Vortex.Rpg.Content.Definitions;
 using Vortex.Rpg.Content.Kinds;
 using Vortex.Rpg.Content.Validation;
+using Vortex.Rpg.Skills.Effects;
 using Xunit;
 
 namespace Vortex.Hosting.Tests.Rpg;
@@ -27,12 +29,24 @@ public sealed class ContentPackInRepoTests
             new ProgressionKind(),
             new ItemKind(),
             new MonsterKind(),
+            new SkillKind([
+                new DamageEffect(),
+                new HealEffect(),
+                new ApplyStatusEffect(),
+                new InterruptEffect(),
+                new DispelEffect(),
+                new ThreatEffect(),
+            ]),
+            new StatusKind(),
         ]).Validate(Read(), id => id == Throne);
 
         pack.Findings.Select(f => $"{f.Severity} {f.Code} {f.File} {f.ContentId}: {f.Message}")
             .Should()
             .BeEmpty();
         pack.Definitions.Should().HaveCountGreaterThan(15);
+        // Spec M1b §16: three skills per class, and the statuses they apply.
+        pack.Definitions.Values.OfType<SkillDefinition>().Should().HaveCount(12);
+        pack.Definitions.Values.OfType<StatusDefinition>().Should().HaveCount(7);
     }
 
     /// <summary>Reads content/ as push.mjs does: documents by path relative to content/, the

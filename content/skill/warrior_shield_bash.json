@@ -1,0 +1,18 @@
+{
+  "$schema": "../../schemas/content/skill.schema.json",
+  "id": "skill.warrior.shield_bash",
+  "kind": "skill",
+  "classes": ["class.warrior"],
+  "level": 6,
+  "cost": 8,
+  "cooldownMs": 12000,
+  "type": "instant",
+  "range": 1,
+  "target": "enemy",
+  "effects": [
+    { "kind": "damage", "coefficient": 0.5 },
+    { "kind": "apply_status", "status": "status.stunned" },
+    { "kind": "interrupt" }
+  ],
+  "animation": "bash"
+}

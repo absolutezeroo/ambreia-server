@@ -1,0 +1,135 @@
+{
+  "type": "object",
+  "properties": {
+    "$schema": {
+      "type": "string"
+    },
+    "classes": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "specializations": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "level": {
+      "type": "integer"
+    },
+    "cost": {
+      "type": "integer"
+    },
+    "cooldownMs": {
+      "type": "integer"
+    },
+    "globalCooldown": {
+      "type": "boolean"
+    },
+    "type": {
+      "enum": [
+        "instant",
+        "cast",
+        "channel"
+      ]
+    },
+    "castMs": {
+      "type": "integer"
+    },
+    "channelMs": {
+      "type": "integer"
+    },
+    "pulseMs": {
+      "type": "integer"
+    },
+    "range": {
+      "type": "integer"
+    },
+    "target": {
+      "enum": [
+        "self",
+        "ally",
+        "enemy",
+        "ground",
+        "around_caster",
+        "around_target"
+      ]
+    },
+    "radius": {
+      "type": "integer"
+    },
+    "maxTargets": {
+      "type": "integer"
+    },
+    "moveAllowed": {
+      "type": "boolean"
+    },
+    "unavoidable": {
+      "type": "boolean"
+    },
+    "effects": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "kind": {
+            "type": "string"
+          },
+          "base": {
+            "type": "number"
+          },
+          "coefficient": {
+            "type": "number"
+          },
+          "status": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "amount": {
+            "type": "integer"
+          },
+          "threatPercent": {
+            "type": "integer"
+          }
+        },
+        "required": [
+          "kind"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "animation": {
+      "type": "string"
+    },
+    "vfx": {
+      "type": "string"
+    },
+    "sound": {
+      "type": "string"
+    },
+    "id": {
+      "type": "string"
+    },
+    "kind": {
+      "type": "string"
+    },
+    "retired": {
+      "type": "boolean"
+    }
+  },
+  "required": [
+    "classes",
+    "level",
+    "type",
+    "range",
+    "target",
+    "effects",
+    "id",
+    "kind"
+  ],
+  "additionalProperties": false
+}

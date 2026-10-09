@@ -1,0 +1,19 @@
+{
+  "$schema": "../../schemas/content/skill.schema.json",
+  "id": "skill.archer.volley",
+  "kind": "skill",
+  "classes": ["class.archer"],
+  "level": 6,
+  "cost": 15,
+  "cooldownMs": 15000,
+  "type": "channel",
+  "channelMs": 3000,
+  "pulseMs": 1000,
+  "range": 6,
+  "target": "ground",
+  "radius": 1,
+  "maxTargets": 5,
+  "effects": [{ "kind": "damage", "coefficient": 0.5 }],
+  "animation": "shoot",
+  "vfx": "arrow_rain"
+}

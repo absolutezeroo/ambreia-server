@@ -1,0 +1,15 @@
+{
+  "$schema": "../../schemas/content/skill.schema.json",
+  "id": "skill.cleric.heal",
+  "kind": "skill",
+  "classes": ["class.cleric"],
+  "level": 1,
+  "cost": 12,
+  "type": "cast",
+  "castMs": 1500,
+  "range": 5,
+  "target": "ally",
+  "effects": [{ "kind": "heal", "base": 10, "coefficient": 1.5 }],
+  "animation": "cast",
+  "vfx": "heal"
+}

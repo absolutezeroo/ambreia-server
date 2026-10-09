@@ -1,0 +1,18 @@
+{
+  "$schema": "../../schemas/content/skill.schema.json",
+  "id": "skill.mage.frost_nova",
+  "kind": "skill",
+  "classes": ["class.mage"],
+  "level": 6,
+  "cost": 15,
+  "cooldownMs": 20000,
+  "type": "instant",
+  "range": 0,
+  "target": "around_caster",
+  "radius": 2,
+  "effects": [
+    { "kind": "damage", "coefficient": 0.4 },
+    { "kind": "apply_status", "status": "status.frozen" }
+  ],
+  "vfx": "frost_nova"
+}

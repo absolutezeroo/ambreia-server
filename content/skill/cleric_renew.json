@@ -1,0 +1,13 @@
+{
+  "$schema": "../../schemas/content/skill.schema.json",
+  "id": "skill.cleric.renew",
+  "kind": "skill",
+  "classes": ["class.cleric"],
+  "level": 3,
+  "cost": 10,
+  "type": "instant",
+  "range": 5,
+  "target": "ally",
+  "effects": [{ "kind": "apply_status", "status": "status.renewed" }],
+  "vfx": "renew"
+}

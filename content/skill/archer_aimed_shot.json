@@ -1,0 +1,15 @@
+{
+  "$schema": "../../schemas/content/skill.schema.json",
+  "id": "skill.archer.aimed_shot",
+  "kind": "skill",
+  "classes": ["class.archer"],
+  "level": 1,
+  "cost": 8,
+  "type": "cast",
+  "castMs": 1500,
+  "range": 6,
+  "target": "enemy",
+  "effects": [{ "kind": "damage", "base": 6, "coefficient": 1.6 }],
+  "animation": "shoot",
+  "vfx": "arrow"
+}

@@ -1,0 +1,20 @@
+{
+  "$schema": "../../schemas/content/skill.schema.json",
+  "id": "skill.mage.flame_burst",
+  "kind": "skill",
+  "classes": ["class.mage"],
+  "level": 3,
+  "cost": 18,
+  "cooldownMs": 10000,
+  "type": "cast",
+  "castMs": 1500,
+  "range": 5,
+  "target": "around_target",
+  "radius": 1,
+  "effects": [
+    { "kind": "damage", "coefficient": 0.8 },
+    { "kind": "apply_status", "status": "status.burning" }
+  ],
+  "animation": "cast",
+  "vfx": "fire_burst"
+}

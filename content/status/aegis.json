@@ -1,0 +1,10 @@
+{
+  "$schema": "../../schemas/content/status.schema.json",
+  "id": "status.aegis",
+  "kind": "status",
+  "type": "shield",
+  "durationMs": 10000,
+  "stacking": "ignore",
+  "base": 20,
+  "coefficient": 2
+}

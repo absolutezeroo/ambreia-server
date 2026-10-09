@@ -1,0 +1,9 @@
+{
+  "$schema": "../../schemas/content/status.schema.json",
+  "id": "status.focused",
+  "kind": "status",
+  "type": "buff",
+  "durationMs": 10000,
+  "stacking": "refresh",
+  "modifiers": [{ "stat": "crit_percent", "flat": 20 }]
+}

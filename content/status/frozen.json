@@ -1,0 +1,9 @@
+{
+  "$schema": "../../schemas/content/status.schema.json",
+  "id": "status.frozen",
+  "kind": "status",
+  "type": "slow",
+  "durationMs": 5000,
+  "stacking": "replace",
+  "slowPercent": 60
+}
