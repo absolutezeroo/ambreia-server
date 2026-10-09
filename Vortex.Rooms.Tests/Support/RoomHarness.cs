@@ -37,6 +37,8 @@ using Vortex.Primitives.Rooms.Providers;
 using Vortex.Primitives.Rooms.Snapshots;
 using Vortex.Primitives.Rooms.Snapshots.Avatars;
 using Vortex.Primitives.Rooms.Snapshots.Mapping;
+using Vortex.Primitives.Rpg.Characters;
+using Vortex.Primitives.Rpg.Characters.Grains;
 using Vortex.Primitives.Server.Grains;
 using Vortex.Primitives.World;
 using Vortex.Primitives.World.Grains;
@@ -264,6 +266,12 @@ internal sealed class RoomHarness
 
     /// <summary>What the whole room was told, in order.</summary>
     public List<IComposer> BroadcastToRoom { get; } = [];
+
+    /// <summary>The characters the room reads (a target's level and class); none by default.</summary>
+    public Dictionary<PlayerId, CharacterSummary> Characters { get; } = [];
+
+    /// <summary>Every character grain throws, as one whose database read failed.</summary>
+    public bool CharacterFails { get; set; }
 
     /// <summary>
     /// Room events as they were published, so a test can see that something fired.
@@ -650,6 +658,21 @@ internal sealed class RoomHarness
 
                     return Task.FromResult(InstanceToGive);
                 });
+            }
+
+            if (call.Method.GetGenericArguments()[0] == typeof(IPlayerCharacterGrain))
+            {
+                PlayerId character = new((int)(long)call.Args![0]!);
+
+                return FakeProxy.Create<IPlayerCharacterGrain>(inner =>
+                    inner.Method.Name == nameof(IPlayerCharacterGrain.GetSummaryAsync)
+                        ? CharacterFails
+                            ? Task.FromException<CharacterSummary?>(
+                                new InvalidOperationException("character grain down")
+                            )
+                            : Task.FromResult(Characters.GetValueOrDefault(character))
+                        : null
+                );
             }
 
             if (call.Method.GetGenericArguments()[0] != typeof(IPlayerPresenceGrain))

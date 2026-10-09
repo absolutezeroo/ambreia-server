@@ -41,6 +41,7 @@ internal static class MessageEvent
     public const int RpgItemUnequipMessageEvent = 9007; // RPG (spec §3.7)
     public const int RpgItemDestroyMessageEvent = 9008; // RPG (spec §3.7)
     public const int RpgItemClaimParcelMessageEvent = 9009; // RPG (spec §3.7)
+    public const int RpgTargetSelectMessageEvent = 9010; // RPG (spec §3.7)
     #endregion
 }
 
@@ -121,5 +122,6 @@ internal static class MessageComposer
     public const int RpgInventoryMessageComposer = 9006; // RPG (spec §3.7)
     public const int RpgItemResultMessageComposer = 9007; // RPG (spec §3.7)
     public const int RpgZoneInteractivesMessageComposer = 9008; // RPG (spec §3.7)
+    public const int RpgTargetMessageComposer = 9009; // RPG (spec §3.7)
     #endregion
 }

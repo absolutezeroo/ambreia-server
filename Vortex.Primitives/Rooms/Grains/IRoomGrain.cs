@@ -23,4 +23,5 @@ public interface IRoomGrain
         IRoomMap,
         IRoomFurni,
         IRoomSecurity,
-        IRoomZone { }
+        IRoomZone,
+        IRoomTargets { }

@@ -19,6 +19,7 @@
     "grain:Rooms/IRoomFurni.Wall.cs::PlaceWallItemAsync": "security-module+can-helper",
     "grain:Rooms/IRoomMap.cs::ClickTileAsync": "actor-guard",
     "grain:Rooms/IRoomSecurity.cs::GetControllerLevelAsync": "controller-level+owner-compare+explicit-rights",
+    "grain:Rooms/IRoomTargets.cs::SelectTargetAsync": "actor-guard",
     "grain:Rooms/IRoomZone.cs::ExpectArrivalAsync": "NONE",
     "grain:Rooms/IRoomZone.cs::ExpectArrivalAtAsync": "NONE",
     "grain:Rooms/IRoomZone.cs::InstanceForAsync": "NONE",

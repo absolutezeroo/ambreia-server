@@ -1,7 +1,9 @@
 using System;
+using System.Buffers.Binary;
 using FluentAssertions;
 using Vortex.Primitives.Networking;
 using Vortex.Primitives.Packets;
+using Vortex.Protocol.Messages.Incoming.Rpg.Interaction;
 using Vortex.Protocol.Messages.Outgoing.Rpg.Interaction;
 using Xunit;
 using Rev = Vortex.Revisions.Revision20260701.Revision20260701;
@@ -40,5 +42,36 @@ public sealed class RpgInteractionWireTests
         (p.PopInt(), p.PopString()).Should().Be((1, "door"));
         (p.PopInt(), p.PopString()).Should().Be((4, "sign"));
         p.Remaining.Should().Be(0);
+    }
+
+    [Fact]
+    public void TheTarget_IsReadInTheClientsOrder()
+    {
+        ClientPacket p = Serialize(
+            new RpgTargetMessageComposer
+            {
+                ObjectId = 202,
+                Kind = RpgTargetMessageComposer.KindPlayer,
+                Name = "Ann",
+                Level = 3,
+                ClassId = "class.warrior",
+            }
+        );
+
+        (p.PopInt(), p.PopString(), p.PopString(), p.PopInt(), p.PopString())
+            .Should()
+            .Be((202, "player", "Ann", 3, "class.warrior"));
+        p.Remaining.Should().Be(0);
+    }
+
+    [Fact]
+    public void ATargetSelect_ReadsTheObjectId()
+    {
+        byte[] body = new byte[4];
+        BinaryPrimitives.WriteInt32BigEndian(body, 202);
+
+        ((RpgTargetSelectMessage)Revision.Parsers[9010].Parse(new ClientPacket(9010, body)))
+            .ObjectId.Should()
+            .Be(202);
     }
 }

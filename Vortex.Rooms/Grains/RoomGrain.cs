@@ -94,6 +94,7 @@ public sealed partial class RoomGrain : Grain, IRoomGrain
     public readonly ZonePassageModule ZonePassages;
     public readonly ZoneInteractionModule ZoneInteractions;
     public readonly ZoneTriggerModule ZoneTriggers;
+    public readonly RoomTargetModule TargetModule;
 
     internal IAsyncStream<RoomOutbound> _roomOutbound = default!;
 
@@ -151,6 +152,8 @@ public sealed partial class RoomGrain : Grain, IRoomGrain
         ZoneInteractions = new ZoneInteractionModule(this);
         ZoneTriggers = new ZoneTriggerModule(this);
         EventModule.Register(ZoneTriggers);
+        TargetModule = new RoomTargetModule(this);
+        EventModule.Register(TargetModule);
 
         AvatarTickSystem = new RoomAvatarTickSystem(this);
     }

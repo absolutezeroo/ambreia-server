@@ -39,6 +39,9 @@ public sealed class RoomLiveState
 
     public HashSet<PlayerId> PlayerIdsWithRights { get; } = [];
 
+    /// <summary>Each player's target (spec F3b §6): runtime only, never stored.</summary>
+    public Dictionary<PlayerId, RoomTarget> Targets { get; } = [];
+
     public Dictionary<string, string> RoomProperties { get; } = [];
 
     public HashSet<int> DirtyHeightTileIds { get; set; } = [];
