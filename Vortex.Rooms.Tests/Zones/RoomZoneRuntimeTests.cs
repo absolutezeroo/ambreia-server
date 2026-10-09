@@ -237,6 +237,50 @@ public sealed class RoomZoneRuntimeTests
     }
 
     [Fact]
+    public async Task Facing_TurnsBodyAndHead_InTheNextUserUpdate_OnlyWhenItChanges()
+    {
+        await ZoneAsync();
+        int id = Runtime.SpawnMonster(Wolf, 3, 3);
+        await _harness.TickAvatarsAsync();
+        int before = _harness.BroadcastToRoom.OfType<UserUpdateMessageComposer>().Count();
+
+        Runtime.Face(id, 4, 2);
+        await _harness.TickAvatarsAsync();
+
+        RoomAvatarSnapshot sent = _harness
+            .BroadcastToRoom.OfType<UserUpdateMessageComposer>()
+            .Skip(before)
+            .SelectMany(u => u.Avatars)
+            .Single();
+        (sent.BodyRotation, sent.HeadRotation)
+            .Should()
+            .Be((Rotation.NorthEast, Rotation.NorthEast));
+
+        Runtime.Face(id, 5, 1);
+        await _harness.TickAvatarsAsync();
+
+        _harness
+            .BroadcastToRoom.OfType<UserUpdateMessageComposer>()
+            .Should()
+            .HaveCount(before + 1, "it already faced that way");
+    }
+
+    [Fact]
+    public async Task AKilledMonster_LiesDeadAndCannotWalk()
+    {
+        await ZoneAsync();
+        int id = Runtime.SpawnMonster(Wolf, 3, 3);
+        IRoomAvatar wolf = _harness.Grain._state.AvatarsByObjectId[new RoomObjectId(id)];
+
+        Runtime.SetPosture(id, "ded");
+
+        (wolf.Statuses[AvatarStatusType.Dead], wolf.IsMovementLocked)
+            .Should()
+            .Be((string.Empty, true));
+        wolf.GetSnapshot().Status.Should().Contain("/ded /");
+    }
+
+    [Fact]
     public async Task AGhost_LiesAndCannotWalk()
     {
         await ZoneAsync();

@@ -11,6 +11,7 @@ namespace Vortex.Rpg.Content.Kinds;
 public sealed class MonsterKind : ContentKind<MonsterDefinition>
 {
     private const int MinAttackIntervalMs = 500;
+    private const int MaxCorpseSeconds = 10;
 
     public override string Kind => "monster";
 
@@ -60,6 +61,15 @@ public sealed class MonsterKind : ContentKind<MonsterDefinition>
                 "BadInterval",
                 m.Id,
                 $"Attack interval {m.AttackIntervalMs} ms: at least {MinAttackIntervalMs}."
+            );
+        }
+
+        if (m.CorpseSeconds is < 0 or > MaxCorpseSeconds)
+        {
+            yield return Error(
+                "BadCorpse",
+                m.Id,
+                $"Corpse {m.CorpseSeconds} s: between 0 and {MaxCorpseSeconds}."
             );
         }
 

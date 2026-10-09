@@ -66,9 +66,12 @@ public sealed class RpgZoneSimulation(IZoneRuntime zone, CombatZone combat, Mons
 
     public async Task TickAsync(CancellationToken ct)
     {
-        // INV-003: no player, no simulation — no birth, no AI.
+        // INV-003: no player, no simulation — no birth, no AI. The combat still sends its dead
+        // monsters' bodies away on time.
         if (!combat.HasPlayers)
         {
+            await combat.TickAsync(ct);
+
             return;
         }
 

@@ -30,4 +30,8 @@ public sealed record MonsterDefinition : ContentDefinition
     public int Xp { get; init; }
 
     public int XpPerLevel { get; init; }
+
+    /// <summary>How long its body stays in the room once killed, lying dead (status <c>ded</c>):
+    /// 0 to 10 seconds; 0 removes it at once.</summary>
+    public int CorpseSeconds { get; init; } = 2;
 }

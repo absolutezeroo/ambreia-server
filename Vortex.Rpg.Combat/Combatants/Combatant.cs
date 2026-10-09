@@ -94,4 +94,7 @@ public sealed class Combatant : ICombatantStats
 
     /// <summary>The XP a monster gives at its level, before the level gap.</summary>
     public int Xp { get; init; }
+
+    /// <summary>How long a monster's body stays in the room once killed; 0: it goes at once.</summary>
+    public int CorpseMs { get; init; }
 }

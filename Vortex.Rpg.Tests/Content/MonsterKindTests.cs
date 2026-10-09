@@ -96,6 +96,18 @@ public sealed class MonsterKindTests
     public void AFigureThatIsNotTypeRaceColour_IsRefused(string figure) =>
         Codes(Wolf with { Figure = figure }).Should().Equal("BadFigure");
 
+    [Theory]
+    [InlineData(-1)]
+    [InlineData(11)]
+    public void ACorpseDelayOutOfZeroToTen_IsRefused(int seconds) =>
+        Codes(Wolf with { CorpseSeconds = seconds }).Should().Equal("BadCorpse");
+
+    [Theory]
+    [InlineData(0)]
+    [InlineData(10)]
+    public void ACorpseDelayOfZeroToTen_IsAllowed(int seconds) =>
+        Codes(Wolf with { CorpseSeconds = seconds }).Should().BeEmpty();
+
     [Fact]
     public void NoHealth_IsRefused() =>
         Codes(Wolf with { Base = Wolf.Base with { Health = 0 } }).Should().Equal("NoHealth");

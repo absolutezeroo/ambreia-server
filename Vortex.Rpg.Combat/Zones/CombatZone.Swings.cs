@@ -72,6 +72,8 @@ public sealed partial class CombatZone
                 continue;
             }
 
+            // Hit, crit or miss: the striker turns toward what it strikes.
+            runtime.Face(a.ObjectId, to.X, to.Y);
             Hit(a, t, now);
         }
     }

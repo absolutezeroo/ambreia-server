@@ -126,6 +126,11 @@ internal sealed class FakeZoneRuntime : IZoneRuntime
 
     public void SetPosture(int objectId, string? posture) => Postures[objectId] = posture;
 
+    /// <summary>Every turn asked for: object id and the cell faced.</summary>
+    public List<(int ObjectId, int X, int Y)> Faces { get; } = [];
+
+    public void Face(int objectId, int x, int y) => Faces.Add((objectId, x, y));
+
     public (int X, int Y)? RespawnCell() => Respawn;
 
     public Task BroadcastAsync(IComposer composer)

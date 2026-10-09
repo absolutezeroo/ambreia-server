@@ -2,7 +2,7 @@
   "$schema": "../../schemas/content/monster.schema.json",
   "id": "monster.proof.brute",
   "kind": "monster",
-  "figure": "4 0 FFFFFF",
+  "figure": "37 0 FFFFFF",
   "behavior": "melee",
   "aggressive": true,
   "base": {

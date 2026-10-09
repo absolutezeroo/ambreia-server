@@ -61,10 +61,11 @@ public sealed class MonsterSpawnerTests
         _world.Simulation.Combat.Combatants[wolf].Health = 0;
         await _world.TickAsync();
 
-        _world.Zone.Removed.Should().Equal(wolf);
+        _world.Zone.Postures[wolf].Should().Be("ded");
 
         _world.Zone.NowMs += 29_000;
         await _world.TickAsync();
+        _world.Zone.Removed.Should().Equal(wolf);
         _world.Zone.Spawned.Should().HaveCount(1, "30 s have not passed");
 
         _world.Zone.NowMs += 1_000;
@@ -90,12 +91,41 @@ public sealed class MonsterSpawnerTests
         await _world.TickAsync();
         _world.Zone.FailSends = false;
 
-        _world.Zone.Removed.Should().Equal(wolf);
+        _world.Zone.Postures[wolf].Should().Be("ded");
 
-        _world.Zone.NowMs += 30_000;
+        // Its body leaves 2 s later, then its spawn's delay runs out.
+        _world.Zone.NowMs += 2_000;
+        await _world.TickAsync();
+        _world.Zone.NowMs += 28_000;
         await _world.TickAsync();
 
         _world.Zone.Spawned.Should().HaveCount(2);
+    }
+
+    /// <summary>A respawn due while the body still lies on the only cell waits for it to go, and
+    /// comes with a new object id.</summary>
+    [Fact]
+    public async Task ARespawn_NeverTakesTheCorpsesCell_NorItsId()
+    {
+        _world.Start([MonsterWorld.WolvesAt(1, (1, 1)) with { RespawnSeconds = 0 }]);
+        await _world.EnterAsync(7, 1, 20, 20);
+        await _world.TickAsync();
+        int wolf = _world.Zone.Spawned.Single().ObjectId;
+
+        _world.Simulation.Combat.Combatants[wolf].Health = 0;
+        await _world.TickAsync();
+        _world.Zone.NowMs += 1_000;
+        await _world.TickAsync();
+        _world.Zone.Spawned.Should().HaveCount(1, "its body still lies on the cell");
+
+        _world.Zone.NowMs += 1_000;
+        await _world.TickAsync();
+        _world.Zone.NowMs += 1_000;
+        await _world.TickAsync();
+
+        _world.Zone.Removed.Should().Equal(wolf);
+        _world.Zone.Spawned.Should().HaveCount(2);
+        _world.Zone.Spawned[1].ObjectId.Should().NotBe(wolf);
     }
 
     [Fact]

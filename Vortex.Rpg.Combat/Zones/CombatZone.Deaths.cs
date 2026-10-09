@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
@@ -12,10 +13,17 @@ using Vortex.Rpg.Combat.Combatants;
 namespace Vortex.Rpg.Combat.Zones;
 
 /// <summary>Deaths (spec M1a §8): a player becomes a ghost, then respawns at half health with his
-/// equipment worn; a monster gives its XP to each player who hit it and is still here, then goes.</summary>
+/// equipment worn; a monster gives its XP to each player who hit it and is still here, then its body
+/// lies dead for its <see cref="Combatant.CorpseMs"/> and goes.</summary>
 public sealed partial class CombatZone
 {
     private const string Lay = "lay";
+    private const string Dead = "ded";
+
+    /// <summary>Killed monsters' bodies still in the room, by object id: when each one goes. No
+    /// longer combatants, so nobody aims at, hits or keeps threat on them. They die with the zone's
+    /// activation, the avatars with them.</summary>
+    private readonly Dictionary<int, long> _corpses = [];
 
     private async Task DeathsAsync(long now)
     {
@@ -27,7 +35,7 @@ public sealed partial class CombatZone
             }
             else
             {
-                await MonsterDiesAsync(c);
+                await MonsterDiesAsync(c, now);
             }
         }
     }
@@ -63,7 +71,7 @@ public sealed partial class CombatZone
         );
     }
 
-    private async Task MonsterDiesAsync(Combatant c)
+    private async Task MonsterDiesAsync(Combatant c, long now)
     {
         metrics.MonsterKilled();
         PlayerId[] present = [.. c.Participants.Where(_players.ContainsKey)];
@@ -82,8 +90,18 @@ public sealed partial class CombatZone
 
         _combatants.Remove(c.ObjectId);
         Forget(c.ObjectId);
-        runtime.RemoveMonster(c.ObjectId);
         _died.Add(c.ObjectId);
+
+        if (c.CorpseMs <= 0)
+        {
+            runtime.RemoveMonster(c.ObjectId);
+        }
+        else
+        {
+            runtime.StopWalking(c.ObjectId);
+            runtime.SetPosture(c.ObjectId, Dead);
+            _corpses[c.ObjectId] = now + c.CorpseMs;
+        }
 
         logger.LogDebug(
             "Monster {MonsterId} ({ObjectId}) died in zone {ZoneId}.",
@@ -91,6 +109,23 @@ public sealed partial class CombatZone
             c.ObjectId,
             runtime.ZoneId.Value
         );
+    }
+
+    private void RemoveCorpses(long now)
+    {
+        if (_corpses.Count == 0)
+        {
+            return;
+        }
+
+        foreach ((int objectId, long until) in _corpses.ToArray())
+        {
+            if (now >= until)
+            {
+                _corpses.Remove(objectId);
+                runtime.RemoveMonster(objectId);
+            }
+        }
     }
 
     private async Task GrantXpAsync(PlayerId player, Combatant monster)

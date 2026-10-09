@@ -249,7 +249,8 @@ public sealed class RoomZoneRuntime(RoomGrain room) : IZoneRuntime
         }
     }
 
-    /// <summary>A ghost lies down and cannot walk; standing again frees it.</summary>
+    /// <summary>A ghost lies down and a killed monster lies dead: neither walks; standing again
+    /// frees it.</summary>
     public void SetPosture(int objectId, string? posture)
     {
         if (
@@ -262,9 +263,38 @@ public sealed class RoomZoneRuntime(RoomGrain room) : IZoneRuntime
             return;
         }
 
-        bool lying = posture == "lay";
-        a.Lay(lying);
-        a.SetMovementLocked(lying);
+        a.Lay(posture == "lay");
+
+        if (posture == "ded")
+        {
+            a.AddStatus(AvatarStatusType.Dead, string.Empty);
+        }
+        else
+        {
+            a.RemoveStatus(AvatarStatusType.Dead);
+        }
+
+        a.SetMovementLocked(posture is "lay" or "ded");
+    }
+
+    /// <summary>Through the avatar's dirty flag: the next avatar tick sends it in a UserUpdate.</summary>
+    public void Face(int objectId, int x, int y)
+    {
+        if (
+            !room._state.AvatarsByObjectId.TryGetValue(
+                new RoomObjectId(objectId),
+                out IRoomAvatar? a
+            )
+            || (a.X, a.Y) == (x, y)
+        )
+        {
+            return;
+        }
+
+        // Each one does nothing when already facing that way: no update for nothing.
+        Rotation rotation = RotationExtensions.FromPoints(a.X, a.Y, x, y);
+        a.SetBodyRotation(rotation);
+        a.SetHeadRotation(rotation);
     }
 
     public (int X, int Y)? RespawnCell()

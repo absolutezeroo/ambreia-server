@@ -53,8 +53,12 @@ public interface IZoneRuntime
 
     public void Teleport(int objectId, int x, int y);
 
-    /// <summary>"lay" while a ghost; null to stand again.</summary>
+    /// <summary>"lay" while a ghost, "ded" for a killed monster's body; null to stand again. Either
+    /// one keeps the avatar from walking.</summary>
     public void SetPosture(int objectId, string? posture);
+
+    /// <summary>Turns the avatar, body and head, toward (x, y): a fighter faces what it strikes.</summary>
+    public void Face(int objectId, int x, int y);
 
     /// <summary>The zone's <c>respawn</c> entry, else its default arrival; null without either.</summary>
     public (int X, int Y)? RespawnCell();

@@ -69,6 +69,20 @@ public sealed class RpgZoneSimulationTests
             .Be("safe_zone");
     }
 
+    /// <summary>A killed monster's body is no target: the click goes to the room, which clears it.</summary>
+    [Fact]
+    public async Task SelectingAMonstersCorpse_IsLeftToTheRoom()
+    {
+        int wolf = await AWolfAsync();
+        _world.Simulation.Combat.Combatants[wolf].Health = 0;
+        await _world.TickAsync();
+
+        _world.Zone.Removed.Should().BeEmpty("its body still lies there");
+        (await _world.Simulation.SelectTargetAsync(new PlayerId(7), wolf, CancellationToken.None))
+            .Should()
+            .BeFalse();
+    }
+
     [Fact]
     public async Task SelectingSomethingElse_IsLeftToTheRoom()
     {

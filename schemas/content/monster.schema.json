@@ -76,6 +76,9 @@
     "xpPerLevel": {
       "type": "integer"
     },
+    "corpseSeconds": {
+      "type": "integer"
+    },
     "id": {
       "type": "string"
     },

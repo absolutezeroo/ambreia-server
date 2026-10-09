@@ -174,8 +174,66 @@ public sealed class CombatZoneTests
 
         _calls.Where(c => c.StartsWith("xp")).Should().BeEquivalentTo("xp 7: 20", "xp 8: 20");
         _combat.DiedMonsters.Should().Equal(wolf);
-        _zone.Removed.Should().Equal(wolf);
+        _zone.Postures[wolf].Should().Be("ded");
         _events.OfType<MonsterKilledEvent>().Should().ContainSingle();
+    }
+
+    /// <summary>Its body lies dead for its corpse delay (2 s by default), out of the fight, then
+    /// leaves the room.</summary>
+    [Fact]
+    public async Task AKilledMonster_LiesDead_UntargetableUntilItsBodyLeaves()
+    {
+        await OnePlayerAsync();
+        int wolf = AddWolf(6, 5);
+        _combat.Combatants[wolf].Health = 1;
+        _combat.StartAttack(new PlayerId(7), wolf);
+        await _combat.TickAsync(CancellationToken.None);
+
+        (_zone.Postures[wolf], _zone.Walking.Contains(wolf)).Should().Be(("ded", false));
+        _combat.Combatants.Should().NotContainKey(wolf);
+        _combat.StartAttack(new PlayerId(7), wolf).Should().Be("dead");
+        _combat.Combatants[1].TargetId.Should().BeNull();
+
+        _zone.NowMs += 1999;
+        await _combat.TickAsync(CancellationToken.None);
+        _zone.Removed.Should().BeEmpty("2 s have not passed");
+        _combat.DiedMonsters.Should().BeEmpty("it died once");
+
+        _zone.NowMs += 1;
+        await _combat.TickAsync(CancellationToken.None);
+        _zone.Removed.Should().Equal(wolf);
+    }
+
+    [Fact]
+    public async Task ACorpseDelayOfZero_RemovesTheMonsterAtOnce()
+    {
+        await OnePlayerAsync();
+        int wolf = AddWolf(6, 5, Wolf with { CorpseSeconds = 0 });
+        _combat.Combatants[wolf].Health = 1;
+        _combat.StartAttack(new PlayerId(7), wolf);
+
+        await _combat.TickAsync(CancellationToken.None);
+
+        _zone.Removed.Should().Equal(wolf);
+        _zone.Postures.Should().NotContainKey(wolf);
+    }
+
+    /// <summary>Without anyone left to watch, the body still leaves on time: nothing lingers for
+    /// the next player.</summary>
+    [Fact]
+    public async Task ACorpse_LeavesOnTime_AfterTheLastPlayerWent()
+    {
+        await OnePlayerAsync();
+        int wolf = AddWolf(6, 5);
+        _combat.Combatants[wolf].Health = 1;
+        _combat.StartAttack(new PlayerId(7), wolf);
+        await _combat.TickAsync(CancellationToken.None);
+        await _combat.PlayerLeftAsync(new PlayerId(7), CancellationToken.None);
+
+        _zone.NowMs += 2000;
+        await _combat.TickAsync(CancellationToken.None);
+
+        _zone.Removed.Should().Equal(wolf);
     }
 
     [Fact]
@@ -441,6 +499,25 @@ public sealed class CombatZoneTests
             .HaveCount(2);
     }
 
+    /// <summary>Hit or miss, each striker turns toward its target.</summary>
+    [Theory]
+    [InlineData(0)]
+    [InlineData(100)]
+    public async Task EachSwing_TurnsTheStrikerTowardItsTarget(int dodgePercent)
+    {
+        await OnePlayerAsync();
+        int wolf = AddWolf(6, 5);
+        _combat.Combatants[1].DodgePercent = dodgePercent;
+        _combat.Combatants[wolf].DodgePercent = dodgePercent;
+        _combat.StartAttack(new PlayerId(7), wolf);
+        _combat.SetMonsterTarget(wolf, 1);
+
+        await _combat.TickAsync(CancellationToken.None);
+
+        Hits().Should().HaveCount(2);
+        _zone.Faces.Should().Equal((1, 6, 5), (wolf, 5, 5));
+    }
+
     [Fact]
     public async Task NoPlayer_TheTickDoesNothing()
     {
@@ -496,10 +573,10 @@ public sealed class CombatZoneTests
         await _combat.PlayerEnteredAsync(new PlayerId(player), objectId, CancellationToken.None);
     }
 
-    private int AddWolf(int x, int y)
+    private int AddWolf(int x, int y, MonsterDefinition? wolf = null)
     {
         int id = _zone.SpawnMonster(new MonsterAppearance(Wolf.Id, Wolf.Figure, 1), x, y);
-        _combat.AddMonster(id, 1, Wolf);
+        _combat.AddMonster(id, 1, wolf ?? Wolf);
 
         return id;
     }

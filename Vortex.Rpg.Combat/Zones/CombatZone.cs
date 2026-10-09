@@ -164,6 +164,7 @@ public sealed partial class CombatZone(
             Level = level,
             DefinitionId = definition.Id,
             Xp = definition.Xp + definition.XpPerLevel * above,
+            CorpseMs = Math.Max(0, definition.CorpseSeconds) * 1000,
             MaxHealth = Math.Max(1, b.Health + l.Health * above),
             Armor = b.Armor + l.Armor * above,
             DamageMin = b.DamageMin + l.DamageMin * above,
@@ -270,14 +271,16 @@ public sealed partial class CombatZone(
     public async Task TickAsync(CancellationToken ct)
     {
         _died.Clear();
+        long now = runtime.NowMs;
+
+        // Before the gate: a body leaves on time even after the last player went.
+        RemoveCorpses(now);
 
         // INV-003: a zone without a player does not simulate.
         if (!HasPlayers)
         {
             return;
         }
-
-        long now = runtime.NowMs;
 
         Swings(now);
         await DeathsAsync(now);
