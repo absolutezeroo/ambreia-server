@@ -40,6 +40,16 @@ entries:
     justification: Same deadlock and same synchronous enqueue as the single-composer overload.
     owner: players
 
+  - symbol: Vortex.Primitives.Players.Grains.IPlayerPresenceGrain.IsOnlineAsync
+    overload: (CancellationToken)
+    category: ImmutableRead
+    implementation: Vortex.Players/Grains/PlayerPresenceGrain.cs
+    justification: >
+      Reads whether a socket is attached and mutates nothing. A whisper (spec F3c §11) asks it of
+      another player's presence from inside the sender's own turn, and two players whispering each
+      other at once would each wait on the other until the 30s call timeout.
+    owner: players
+
   - symbol: Vortex.Primitives.Rooms.Grains.IRoomZone.ExpectArrivalAsync
     overload: (PlayerId, String)
     category: SynchronousBoundedLivenessOperation

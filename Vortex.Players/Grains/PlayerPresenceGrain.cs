@@ -7,6 +7,7 @@ using Microsoft.Extensions.Options;
 using Orleans;
 using Orleans.Streams;
 using Vortex.Logging.Extensions;
+using Vortex.Players.Chat;
 using Vortex.Players.Configuration;
 using Vortex.Primitives.Events;
 using Vortex.Primitives.Networking;
@@ -63,9 +64,11 @@ internal sealed partial class PlayerPresenceGrain
         IVortexMetrics metrics,
         IOptions<PlayerPresenceConfig> config,
         IPermissionService permissions,
-        IZoneRoomSource zoneSource
+        IZoneRoomSource zoneSource,
+        ChatPipeline chat
     )
     {
+        _chat = chat;
         _grainFactory = grainFactory;
         _events = events;
         _logger = logger;
@@ -188,6 +191,8 @@ internal sealed partial class PlayerPresenceGrain
             // nobody, and the keep-alive taken in RegisterSessionObserverAsync goes with it.
             // Harmless on the OnDeactivateAsync path, which is already deactivating.
             _sessionObserver = null;
+
+            await LeaveWorldChatAsync();
 
             DeactivateOnIdle();
         }

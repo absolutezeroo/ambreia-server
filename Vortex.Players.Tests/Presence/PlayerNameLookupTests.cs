@@ -72,6 +72,49 @@ public sealed class PlayerNameLookupTests
             .Be("Ann", "a name evicted from the cache is read again");
     }
 
+    [Fact]
+    public async Task AName_FindsItsPlayer()
+    {
+        DbContextOptions<VortexDbContext> options = Options();
+        await SeedAsync(options, "Ann", "Bob");
+
+        (await Create(options).GetPlayerIdByNameAsync("Bob", CancellationToken.None))
+            .Should()
+            .Be(new PlayerId(2));
+    }
+
+    /// <summary>Spec F3c §8: case aside, like the unique index on players.name; the name found is
+    /// cached as stored.</summary>
+    [Fact]
+    public async Task AName_IsFoundWhateverItsCase()
+    {
+        DbContextOptions<VortexDbContext> options = Options();
+        await SeedAsync(options, "Ann", "Bob");
+        PlayerDirectoryGrain grain = Create(options);
+
+        (await grain.GetPlayerIdByNameAsync("bOB", CancellationToken.None))
+            .Should()
+            .Be(new PlayerId(2));
+        grain.CachedNames.Should().Be(1);
+        (await grain.GetPlayerNameAsync(new PlayerId(2), CancellationToken.None))
+            .Should()
+            .Be("Bob");
+    }
+
+    [Theory]
+    [InlineData("Zed")]
+    [InlineData("")]
+    [InlineData("   ")]
+    public async Task AnUnknownOrBlankName_FindsNobody(string name)
+    {
+        DbContextOptions<VortexDbContext> options = Options();
+        await SeedAsync(options, "Ann", "Bob");
+
+        (await Create(options).GetPlayerIdByNameAsync(name, CancellationToken.None))
+            .Should()
+            .BeNull();
+    }
+
     private static DbContextOptions<VortexDbContext> Options() =>
         new DbContextOptionsBuilder<VortexDbContext>()
             .UseInMemoryDatabase($"directory-{Guid.NewGuid():N}")

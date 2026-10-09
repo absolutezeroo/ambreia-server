@@ -37,6 +37,8 @@ internal sealed partial class PlayerPresenceGrain
         // burst cannot overtake or fall behind what the other grains send.
         await SendComposerAsync(burst);
 
+        await JoinWorldChatAsync();
+
         if (burst[^1] is not RoomForwardMessageComposer)
         {
             // No zone to land in: no HUD on the hotel view.

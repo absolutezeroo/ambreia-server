@@ -9,6 +9,7 @@ using Microsoft.Extensions.Options;
 using Orleans;
 using Vortex.Players.Configuration;
 using Vortex.Players.Grains;
+using Vortex.Players.Tests.Support;
 using Vortex.Primitives.Events;
 using Vortex.Primitives.Observability;
 using Vortex.Primitives.Orleans.Observers;
@@ -164,6 +165,7 @@ public sealed class PresenceSessionLifetimeTests
                 Options.Create(new PlayerPresenceConfig { DisconnectGraceSeconds = 0 }),
                 FakeProxy.Create<IPermissionService>(_ => null),
                 FakeProxy.Create<IZoneRoomSource>(_ => null),
+                TestChat.Pipeline(),
             ]
         );
 

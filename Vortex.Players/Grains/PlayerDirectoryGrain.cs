@@ -150,6 +150,48 @@ internal sealed class PlayerDirectoryGrain(
         return Task.CompletedTask;
     }
 
+    public async Task<PlayerId?> GetPlayerIdByNameAsync(string name, CancellationToken ct)
+    {
+        string lowered = name.Trim().ToLowerInvariant();
+
+        if (lowered.Length == 0)
+        {
+            return null;
+        }
+
+        KeyValuePair<int, string> found;
+
+        try
+        {
+            await using VortexDbContext dbCtx = await _dbCtxFactory.CreateDbContextAsync(ct);
+
+            // ponytail: LOWER(name) reads past the unique index on players.name, one scan per
+            // whisper that the whisper rate limit bounds; a case-insensitive indexed lookup if
+            // players grow.
+            found = await dbCtx
+                .Players.AsNoTracking()
+                .Where(x => x.Name.ToLower() == lowered)
+                .Select(x => new KeyValuePair<int, string>(x.Id, x.Name))
+                .FirstOrDefaultAsync(ct);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Failed to resolve a player by name.");
+
+            throw;
+        }
+
+        // No row: the default pair, id 0.
+        if (found.Key <= 0)
+        {
+            return null;
+        }
+
+        SetNameCache(found.Key, found.Value);
+
+        return found.Key;
+    }
+
     private void SetNameCache(PlayerId playerId, string name)
     {
         // ponytail: starts over when full rather than evicting the least used; an LRU if the

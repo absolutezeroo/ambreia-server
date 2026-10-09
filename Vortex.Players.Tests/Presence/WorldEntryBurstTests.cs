@@ -9,6 +9,7 @@ using Microsoft.Extensions.Options;
 using Orleans;
 using Vortex.Players.Configuration;
 using Vortex.Players.Grains;
+using Vortex.Players.Tests.Support;
 using Vortex.Primitives.Events;
 using Vortex.Primitives.Networking;
 using Vortex.Primitives.Observability;
@@ -198,7 +199,8 @@ public sealed class WorldEntryBurstTests
                             : null
                     )
                     : null
-            )
+            ),
+            TestChat.Pipeline()
         );
 
     private IGrainFactory Grains() =>

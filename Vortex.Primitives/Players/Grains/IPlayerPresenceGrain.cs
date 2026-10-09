@@ -31,7 +31,12 @@ public partial interface IPlayerPresenceGrain : IGrainWithIntegerKey
     /// a late arrival harmless instead of destructive.
     /// </remarks>
     public Task RegisterSessionObserverAsync(ISessionContextObserver observer, long generation);
+
     public Task UnregisterSessionObserverAsync(CancellationToken ct);
+
+    // Interleaved: a read. Two players whispering each other at once (spec F3c §11) each ask the
+    // other's presence while in their own turn, and would both wait out the call timeout.
+    [AlwaysInterleave]
     public Task<bool> IsOnlineAsync(CancellationToken ct);
 
     // Interleaved on purpose. Rooms push composers at a player from inside calls that the player's own

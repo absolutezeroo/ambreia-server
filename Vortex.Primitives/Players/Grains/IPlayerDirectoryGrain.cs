@@ -9,9 +9,14 @@ namespace Vortex.Primitives.Players.Grains;
 public interface IPlayerDirectoryGrain : IGrainWithStringKey
 {
     public Task<string> GetPlayerNameAsync(PlayerId playerId, CancellationToken ct);
+
     public Task<ImmutableDictionary<PlayerId, string>> GetPlayerNamesAsync(
         List<PlayerId> playerIds,
         CancellationToken ct
     );
+
     public Task SetPlayerNameAsync(PlayerId playerId, string name, CancellationToken ct);
+
+    /// <summary>The player of this exact name, case aside (spec F3c §8), or null.</summary>
+    public Task<PlayerId?> GetPlayerIdByNameAsync(string name, CancellationToken ct);
 }
