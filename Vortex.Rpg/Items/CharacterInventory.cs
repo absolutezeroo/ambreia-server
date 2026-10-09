@@ -59,6 +59,36 @@ public sealed partial class CharacterInventory
         }
     }
 
+    /// <summary>
+    /// The definition ids as the table holds them (<paramref name="definitionIds"/>, by row id),
+    /// after an import's replace rule rewrote them. A copy not written yet has no row: it follows
+    /// the copy it was split from, whose id moved the same way.
+    /// </summary>
+    public void ReadDefinitionIds(IReadOnlyDictionary<int, string> definitionIds)
+    {
+        Dictionary<string, string> moved = new(StringComparer.Ordinal);
+
+        foreach (ItemInstance item in _items.Where(i => i.Id > 0))
+        {
+            if (
+                definitionIds.TryGetValue(item.Id, out string? id)
+                && !string.Equals(id, item.DefinitionId, StringComparison.Ordinal)
+            )
+            {
+                moved[item.DefinitionId] = id;
+                item.DefinitionId = id;
+            }
+        }
+
+        foreach (ItemInstance item in _items.Where(i => i.Id == 0))
+        {
+            if (moved.TryGetValue(item.DefinitionId, out string? id))
+            {
+                item.DefinitionId = id;
+            }
+        }
+    }
+
     public ItemInstance? At(ItemContainer container, int slot) =>
         Live.FirstOrDefault(i => i.Container == container && i.Slot == slot);
 

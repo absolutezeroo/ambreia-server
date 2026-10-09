@@ -101,10 +101,11 @@ internal sealed partial class PlayerCharacterGrain
             return ItemOutcome.NoCharacter;
         }
 
-        // So every copy taken from has its id for the audit.
-        await FlushItemsAsync(CancellationToken.None);
+        // Written first, so every copy taken from has its id for the audit.
+        await WriteNowAsync(inventory);
 
-        (ItemOutcome outcome, IReadOnlyList<ItemQuantity> taken) = inventory.Remove(
+        CharacterInventory next = inventory.Clone();
+        (ItemOutcome outcome, IReadOnlyList<ItemQuantity> taken) = next.Remove(
             definitionId,
             quantity
         );
@@ -114,7 +115,8 @@ internal sealed partial class PlayerCharacterGrain
             return outcome;
         }
 
-        await FlushItemsAsync(CancellationToken.None);
+        await WriteNowAsync(next);
+        _inventory = next;
 
         foreach (ItemQuantity t in taken)
         {
@@ -146,20 +148,29 @@ internal sealed partial class PlayerCharacterGrain
             return ItemOutcome.NoCharacter;
         }
 
-        ItemInstance? item = inventory.At(ItemContainer.Bag, bagSlot);
+        CharacterInventory next = inventory.Clone();
+        ItemInstance? item = next.At(ItemContainer.Bag, bagSlot);
         bool wasBound = item?.Bound ?? false;
-        ItemOutcome outcome = Logged("equip", inventory.Equip(bagSlot, c.ClassId, c.Level));
+        ItemOutcome outcome = Logged("equip", next.Equip(bagSlot, c.ClassId, c.Level));
 
         if (outcome != ItemOutcome.Ok)
         {
             return outcome;
         }
 
-        if (!wasBound && item!.Bound)
+        bool boundNow = !wasBound && item!.Bound;
+
+        if (boundNow)
         {
-            // A binding is ownership: written now, and audited with the copy's id.
-            await FlushItemsAsync(CancellationToken.None);
-            Publish(new ItemBoundEvent(_playerId, item.Id, item.DefinitionId));
+            // A binding is ownership: written before it counts, and audited with the copy's id.
+            await WriteNowAsync(next);
+        }
+
+        _inventory = next;
+
+        if (boundNow)
+        {
+            Publish(new ItemBoundEvent(_playerId, item!.Id, item.DefinitionId));
         }
 
         await EquipmentChangedAsync();
@@ -191,18 +202,21 @@ internal sealed partial class PlayerCharacterGrain
             return ItemOutcome.NoCharacter;
         }
 
-        // So the copy has its id for the audit, even a part split off since the last flush.
-        await FlushItemsAsync(CancellationToken.None);
+        // Written first, so the copy has its id for the audit, even a part split off since the
+        // last flush; then the destroy on a copy, written before it counts.
+        await WriteNowAsync(inventory);
 
-        ItemInstance? item = inventory.At(ItemContainer.Bag, bagSlot);
-        ItemOutcome outcome = Logged("destroy", inventory.Destroy(bagSlot, quantity));
+        CharacterInventory next = inventory.Clone();
+        ItemInstance? item = next.At(ItemContainer.Bag, bagSlot);
+        ItemOutcome outcome = Logged("destroy", next.Destroy(bagSlot, quantity));
 
         if (outcome != ItemOutcome.Ok)
         {
             return outcome;
         }
 
-        await FlushItemsAsync(CancellationToken.None);
+        await WriteNowAsync(next);
+        _inventory = next;
         Publish(new ItemDestroyedEvent(_playerId, item!.Id, item.DefinitionId, quantity));
 
         return outcome;
@@ -252,26 +266,43 @@ internal sealed partial class PlayerCharacterGrain
             );
             _itemIdsVersion = version;
         }
-        else if (_itemIdsVersion != version)
+        else
         {
-            Dictionary<int, string> ids = await _itemStore.ReadDefinitionIdsAsync(
-                _playerId,
-                CancellationToken.None
-            );
-
-            foreach (ItemInstance item in _inventory.Live)
-            {
-                if (item.Id > 0 && ids.TryGetValue(item.Id, out string? id))
-                {
-                    item.DefinitionId = id;
-                }
-            }
-
-            _itemIdsVersion = version;
-            _stats = null;
+            await RefreshItemIdsAsync(_inventory);
         }
 
         return _inventory;
+    }
+
+    /// <summary>When the content version moved: the definition ids as an import left them in the
+    /// table, onto the written copies and the parts split from them.</summary>
+    private async Task RefreshItemIdsAsync(CharacterInventory inventory)
+    {
+        long version = content.Version;
+
+        if (_itemIdsVersion == version)
+        {
+            return;
+        }
+
+        inventory.ReadDefinitionIds(
+            await _itemStore.ReadDefinitionIdsAsync(_playerId, CancellationToken.None)
+        );
+        _itemIdsVersion = version;
+        _stats = null;
+    }
+
+    /// <summary>What must be written before it counts: the dirty copies of
+    /// <paramref name="inventory"/> now, an exception if the database refuses.</summary>
+    private async Task WriteNowAsync(CharacterInventory inventory)
+    {
+        if (inventory.Dirty is not { Count: > 0 } dirty)
+        {
+            return;
+        }
+
+        await _itemStore.WriteAsync(_playerId, dirty, null, CancellationToken.None);
+        inventory.MarkWritten();
     }
 
     private ItemDefinition? Definition(string id) => content.Get<ItemDefinition>(id);
@@ -311,6 +342,8 @@ internal sealed partial class PlayerCharacterGrain
 
         try
         {
+            // A part split off before an import must not reach its row with a removed id.
+            await RefreshItemIdsAsync(inventory);
             await _itemStore.WriteAsync(_playerId, dirty, null, ct);
             inventory.MarkWritten();
             metrics.ItemFlushCompleted(Stopwatch.GetElapsedTime(started).TotalMilliseconds, false);

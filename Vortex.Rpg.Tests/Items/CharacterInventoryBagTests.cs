@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.Linq;
 using FluentAssertions;
 using Vortex.Primitives.Rpg.Items;
@@ -192,6 +193,28 @@ public sealed class CharacterInventoryBagTests
 
         inventory.Dirty.Should().BeEmpty();
         inventory.Live.Should().ContainSingle().Which.Slot.Should().Be(2);
+    }
+
+    [Fact]
+    public void ReadDefinitionIds_MoveTheWrittenCopiesAndThePartsSplitFromThem()
+    {
+        CharacterInventory inventory = TestItems.Inventory(
+            TestItems.InBag(TestItems.Shard, 0, 20),
+            TestItems.InBag(TestItems.Sword, 2)
+        );
+        inventory.Split(0, 5, 1);
+
+        inventory.ReadDefinitionIds(
+            new Dictionary<int, string>
+            {
+                [inventory.At(ItemContainer.Bag, 0)!.Id] = "item.material.new_shard",
+                [inventory.At(ItemContainer.Bag, 2)!.Id] = TestItems.Sword.Id,
+            }
+        );
+
+        inventory.At(ItemContainer.Bag, 0)!.DefinitionId.Should().Be("item.material.new_shard");
+        inventory.At(ItemContainer.Bag, 1)!.DefinitionId.Should().Be("item.material.new_shard");
+        inventory.At(ItemContainer.Bag, 2)!.DefinitionId.Should().Be(TestItems.Sword.Id);
     }
 
     [Fact]

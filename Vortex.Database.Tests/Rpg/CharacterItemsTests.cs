@@ -46,6 +46,7 @@ public sealed class CharacterItemsTests : IAsyncLifetime
     };
 
     private readonly CommitFaults _faults = new();
+    private readonly FailingSaveInterceptor _saveFaults = new();
     private readonly RecordingLogger<PlayerCharacterGrain> _logger = new();
     private SqliteConnection _conn = null!;
     private DbContextOptions<VortexDbContext> _options = null!;
@@ -274,6 +275,77 @@ public sealed class CharacterItemsTests : IAsyncLifetime
             .Contain(e => e.Level == LogLevel.Warning && e.Message.Contains("item.weapon.gone"));
     }
 
+    /// <summary>A part split off and not written yet holds the definition id it was split with: an
+    /// import that replaces it must move the part too, or the flush inserts a removed id.</summary>
+    [Fact]
+    public async Task AReplacedDefinition_ReachesAPartNotYetWritten()
+    {
+        PlayerCharacterGrain grain = await WarriorAsync();
+        await grain.GrantItemsAsync("k1", [Line(ItemContent.Shard, 20)]);
+        await grain.SplitItemAsync(0, 5, 1);
+        await using (VortexDbContext db = new(_options))
+        {
+            await db
+                .RpgItems.Where(i => i.DefinitionId == ItemContent.Shard.Id)
+                .ExecuteUpdateAsync(up =>
+                    up.SetProperty(i => i.DefinitionId, ItemContent.NewShard.Id)
+                );
+        }
+        _contentVersion = 2;
+
+        await DeactivateAsync(grain);
+
+        (await RowsAsync())
+            .Select(r => r.DefinitionId)
+            .Should()
+            .Equal(ItemContent.NewShard.Id, ItemContent.NewShard.Id);
+    }
+
+    /// <summary>A destroy is written before it counts: a database that fails then leaves the copy
+    /// whole, and nothing is audited.</summary>
+    [Fact]
+    public async Task ADestroyWhoseWriteFails_DestroysNothing()
+    {
+        PlayerCharacterGrain grain = await WarriorAsync();
+        await grain.GrantItemsAsync("k1", [Line(ItemContent.Shard, 10)]);
+        _saveFaults.FailNext = 1;
+
+        Func<Task> destroy = () => grain.DestroyItemAsync(0, 4);
+
+        await destroy.Should().ThrowAsync<Exception>();
+        (await grain.GetItemsAsync()).Single().Quantity.Should().Be(10);
+        _events.OfType<ItemDestroyedEvent>().Should().BeEmpty();
+        await DeactivateAsync(grain);
+        (await RowsAsync()).Single().Quantity.Should().Be(10);
+    }
+
+    /// <summary>A part split off and destroyed before any flush is audited with its real id.</summary>
+    [Fact]
+    public async Task ADestroyedSplitPart_IsAuditedWithItsId()
+    {
+        PlayerCharacterGrain grain = await WarriorAsync();
+        await grain.GrantItemsAsync("k1", [Line(ItemContent.Shard, 20)]);
+        await grain.SplitItemAsync(0, 5, 1);
+
+        await grain.DestroyItemAsync(1, 5);
+
+        _events.OfType<ItemDestroyedEvent>().Single().ItemId.Should().BeGreaterThan(0);
+    }
+
+    [Fact]
+    public async Task ARemovalWhoseWriteFails_RemovesNothing()
+    {
+        PlayerCharacterGrain grain = await WarriorAsync();
+        await grain.GrantItemsAsync("k1", [Line(ItemContent.Shard, 10)]);
+        _saveFaults.FailNext = 1;
+
+        Func<Task> remove = () => grain.RemoveItemsAsync(ItemContent.Shard.Id, 4);
+
+        await remove.Should().ThrowAsync<Exception>();
+        (await grain.GetItemsAsync()).Single().Quantity.Should().Be(10);
+        _events.OfType<ItemRemovedEvent>().Should().BeEmpty();
+    }
+
     [Fact]
     public async Task ADestroy_IsWrittenAtOnce()
     {
@@ -330,7 +402,7 @@ public sealed class CharacterItemsTests : IAsyncLifetime
         DbContextOptions<VortexDbContext> options = new DbContextOptionsBuilder<VortexDbContext>(
             _options
         )
-            .AddInterceptors(_faults)
+            .AddInterceptors(_faults, _saveFaults)
             .Options;
         PlayerCharacterGrain grain =
             GrainActivationContext.CreateWithIntegerKey<PlayerCharacterGrain>(
