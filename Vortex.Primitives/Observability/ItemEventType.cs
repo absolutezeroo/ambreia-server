@@ -13,4 +13,10 @@ public enum ItemEventType
     Deleted,
     StaffAction,
     AnomalyFlagged,
+
+    // RPG items (spec Objets §13): their item_id is an rpg_items id, not a furniture id.
+    RpgGranted,
+    RpgDestroyed,
+    RpgRemoved,
+    RpgBound,
 }
