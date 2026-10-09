@@ -30,6 +30,10 @@ internal sealed class FakeRpgContentService : IRpgContentService
     public Task<string?> GetTextsAsync(string language, CancellationToken ct) =>
         Task.FromResult(language == "fr" ? "class.warrior.name=Guerrier" : null);
 
+    /// <summary>Only skills are public here, at content version 3.</summary>
+    public ContentDefinitions? GetDefinitions(string kind) =>
+        kind == "skill" ? new ContentDefinitions(3, """[{"id":"skill.mage.firebolt"}]""") : null;
+
     public IReadOnlyList<ClassSummary> GetClasses() =>
         [
             new ClassSummary(

@@ -51,6 +51,14 @@ public sealed class RpgContentRegistry(
     public IReadOnlyList<T> All<T>()
         where T : ContentDefinition => Volatile.Read(ref _set).All<T>();
 
+    /// <summary>One kind's live definitions as JSON, with the version of the very set they come from.</summary>
+    public ContentDefinitions Definitions(string kind)
+    {
+        ContentSet set = Volatile.Read(ref _set);
+
+        return new ContentDefinitions(set.Version, set.JsonOf(kind));
+    }
+
     /// <summary>One reload at a time: two overlapping (a console reload during an import) would
     /// otherwise let the one that read first swap its older set in last.</summary>
     public async Task ReloadAsync(CancellationToken ct)

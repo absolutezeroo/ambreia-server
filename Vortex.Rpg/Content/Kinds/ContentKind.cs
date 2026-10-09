@@ -14,6 +14,8 @@ public abstract class ContentKind<TDefinition> : IContentKind
 
     public virtual string IdPrefix => Kind;
 
+    public virtual bool Public => false;
+
     public Type DefinitionType => typeof(TDefinition);
 
     public ContentDefinition Parse(string json) => ContentJson.Deserialize<TDefinition>(json);

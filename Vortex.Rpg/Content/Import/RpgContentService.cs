@@ -37,6 +37,7 @@ public sealed class RpgContentService(
 {
     private readonly ContentPackValidator _validator = new(kinds);
     private readonly IContentReferences[] _references = [.. references];
+    private readonly HashSet<string> _public = [.. kinds.Where(k => k.Public).Select(k => k.Kind)];
 
     // ponytail: one import at a time in this one silo; a second host would need a database lock.
     private readonly SemaphoreSlim _gate = new(1, 1);
@@ -58,6 +59,9 @@ public sealed class RpgContentService(
             _gate.Release();
         }
     }
+
+    public ContentDefinitions? GetDefinitions(string kind) =>
+        _public.Contains(kind) ? registry.Definitions(kind) : null;
 
     public IReadOnlyList<ClassSummary> GetClasses() =>
         [

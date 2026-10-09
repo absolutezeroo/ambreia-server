@@ -145,7 +145,10 @@ against `rpg_content`, refuses a removal players still hold without a `replace` 
 it reads the tables, validates them like an import and swaps its whole set; invalid stored content
 refuses the start, and a failed reload keeps the set it had. Every system reads content through
 `IRpgContent.Get<T>/All<T>` and listens to `ContentReloadedEvent`. Texts are served raw by
-`GET /api/public/content/texts/{language}`.
+`GET /api/public/content/texts/{language}`. A kind whose `IContentKind.Public` is true (skills,
+statuses) is served whole by `GET /api/public/content/definitions/{kind}`: a JSON array in the shape
+of its files, retired ones left out, with the content version as `ETag` (a matching
+`If-None-Match` gets 304); any other kind is a 404.
 
 ## Flow 7 — the character
 

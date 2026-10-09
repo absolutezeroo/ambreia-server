@@ -30,8 +30,26 @@ internal sealed class ContentSet(
     /// <summary>Hash of each definition's canonical JSON: what a reload compares.</summary>
     public FrozenDictionary<string, string> Hashes { get; } = hashes;
 
+    // Asked only for public kinds (the content service filters), so it stays a handful of entries.
+    private readonly ConcurrentDictionary<string, string> _jsonByKind = new();
+
     public IReadOnlyList<T> All<T>()
         where T : ContentDefinition =>
         (IReadOnlyList<T>)
             _byType.GetOrAdd(typeof(T), _ => ById.Values.OfType<T>().OrderBy(d => d.Id).ToArray());
+
+    /// <summary>The live definitions of one kind as a JSON array, in the shape of their files.</summary>
+    public string JsonOf(string kind) =>
+        _jsonByKind.GetOrAdd(
+            kind,
+            k =>
+                "["
+                + string.Join(
+                    ',',
+                    ById.Values.Where(d => d.Kind == k && !d.Retired)
+                        .OrderBy(d => d.Id, StringComparer.Ordinal)
+                        .Select(ContentJson.Serialize)
+                )
+                + "]"
+        );
 }

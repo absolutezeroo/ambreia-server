@@ -29,6 +29,7 @@
     "grain:Rooms/IRoomZone.cs::InstanceForAsync": "NONE",
     "http:DELETE /zones/{key}/lock  (Vortex.WebApi/Hosting/WebApiEndpoints.Editor.cs)": "account-id+capability",
     "http:GET /api/public/content/classes  (Vortex.WebApi/Hosting/WebApiEndpoints.Characters.cs)": "NONE",
+    "http:GET /api/public/content/definitions/{kind}  (Vortex.WebApi/Hosting/WebApiEndpoints.Content.cs)": "NONE",
     "http:GET /api/public/content/texts/{language}  (Vortex.WebApi/Hosting/WebApiEndpoints.Content.cs)": "NONE",
     "http:GET /api/public/info/hello  (Vortex.WebApi/Hosting/WebApiEndpoints.cs)": "NONE",
     "http:GET /api/ssotoken  (Vortex.WebApi/Hosting/WebApiEndpoints.cs)": "account-id",

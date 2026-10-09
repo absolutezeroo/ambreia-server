@@ -13,6 +13,8 @@ public sealed class StatusKind : ContentKind<StatusDefinition>
 
     public override string Kind => "status";
 
+    public override bool Public => true;
+
     protected override IEnumerable<ContentFinding> Check(StatusDefinition s, ContentCheck check)
     {
         if (s.DurationMs <= 0)

@@ -92,5 +92,29 @@ internal static partial class WebApiEndpoints
             .WithTags(TagContent)
             .WithName("ContentTexts")
             .Produces<string>(StatusCodes.Status200OK, "text/plain");
+
+        // The content version is the ETag: a client that cached this version gets a 304.
+        app.MapGet(
+                "/api/public/content/definitions/{kind}",
+                IResult (string kind, HttpContext ctx, IRpgContentService content) =>
+                {
+                    if (content.GetDefinitions(kind) is not { } definitions)
+                    {
+                        return TypedResults.NotFound();
+                    }
+
+                    string etag = $"\"{definitions.Version}\"";
+                    ctx.Response.Headers.ETag = etag;
+
+                    return ctx.Request.Headers.IfNoneMatch == etag
+                        ? TypedResults.StatusCode(StatusCodes.Status304NotModified)
+                        : TypedResults.Text(definitions.Json, "application/json; charset=utf-8");
+                }
+            )
+            .WithTags(TagContent)
+            .WithName("ContentDefinitions")
+            .Produces<object[]>(StatusCodes.Status200OK, "application/json")
+            .Produces(StatusCodes.Status304NotModified)
+            .Produces(StatusCodes.Status404NotFound);
     }
 }

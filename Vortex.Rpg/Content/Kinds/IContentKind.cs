@@ -19,6 +19,10 @@ public interface IContentKind
     /// specializations (spec Contenu §4.1).</summary>
     public string IdPrefix { get; }
 
+    /// <summary>Served to anyone at <c>/api/public/content/definitions/{kind}</c>: what the client
+    /// draws (skills, statuses). False keeps a kind server-side (monsters, loot).</summary>
+    public bool Public { get; }
+
     public Type DefinitionType { get; }
 
     /// <exception cref="System.Text.Json.JsonException">The document does not fit the record.</exception>

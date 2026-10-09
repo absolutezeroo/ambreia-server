@@ -359,6 +359,43 @@
         }
       }
     },
+    "/api/public/content/definitions/{kind}": {
+      "get": {
+        "tags": [
+          "Content"
+        ],
+        "operationId": "ContentDefinitions",
+        "parameters": [
+          {
+            "name": "kind",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {}
+                }
+              }
+            }
+          },
+          "304": {
+            "description": "Not Modified"
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        }
+      }
+    },
     "/api/editor/zones": {
       "get": {
         "tags": [

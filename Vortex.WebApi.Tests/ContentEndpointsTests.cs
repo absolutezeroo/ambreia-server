@@ -91,6 +91,42 @@ public sealed class ContentEndpointsTests
             .Be(HttpStatusCode.NotFound);
     }
 
+    [Fact]
+    public async Task APublicKind_IsServedAsJson_WithItsVersionAsETag()
+    {
+        await using WebApiTestFactory f = new();
+
+        HttpResponseMessage r = await f.Client.GetAsync("/api/public/content/definitions/skill");
+
+        r.StatusCode.Should().Be(HttpStatusCode.OK);
+        r.Content.Headers.ContentType!.MediaType.Should().Be("application/json");
+        r.Headers.ETag!.Tag.Should().Be("\"3\"");
+        (await r.Content.ReadAsStringAsync()).Should().Be("""[{"id":"skill.mage.firebolt"}]""");
+    }
+
+    [Fact]
+    public async Task AnUnchangedVersion_IsNotModified()
+    {
+        await using WebApiTestFactory f = new();
+        using HttpRequestMessage request = new(
+            HttpMethod.Get,
+            "/api/public/content/definitions/skill"
+        );
+        request.Headers.IfNoneMatch.ParseAdd("\"3\"");
+
+        (await f.Client.SendAsync(request)).StatusCode.Should().Be(HttpStatusCode.NotModified);
+    }
+
+    [Fact]
+    public async Task APrivateOrUnknownKind_IsNotFound()
+    {
+        await using WebApiTestFactory f = new();
+
+        (await f.Client.GetAsync("/api/public/content/definitions/monster"))
+            .StatusCode.Should()
+            .Be(HttpStatusCode.NotFound);
+    }
+
     private static StringContent Json(string json) => new(json, Encoding.UTF8, "application/json");
 
     private static async Task<HttpResponseMessage> PostAsync(WebApiTestFactory f, string json)

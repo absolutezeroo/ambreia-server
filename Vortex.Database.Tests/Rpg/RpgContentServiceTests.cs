@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.Json.Nodes;
 using System.Threading;
 using System.Threading.Tasks;
 using FluentAssertions;
@@ -39,6 +40,10 @@ public sealed class RpgContentServiceTests : IAsyncLifetime
 
     private const string Sword = """
         { "id": "item.weapon.sword", "kind": "item", "category": "equipment", "rarity": "common", "slot": "weapon" }
+        """;
+
+    private const string Burning = """
+        { "id": "status.burning", "kind": "status", "type": "dot", "durationMs": 6000, "periodMs": 2000, "coefficient": 0.2 }
         """;
 
     private const string Axe = """
@@ -304,6 +309,28 @@ public sealed class RpgContentServiceTests : IAsyncLifetime
         (await Service().GetTextsAsync("de", CancellationToken.None)).Should().BeNull();
     }
 
+    /// <summary>The client reads what it needs to show a skill or a status (its target, range,
+    /// times, type) from the served content; a kind that does not say it is public is not served.</summary>
+    [Fact]
+    public async Task APublicKind_IsServedAsJson_APrivateOrUnknownOneIsNot()
+    {
+        await ImportAsync(WarriorPack(("status/burning.json", Burning)));
+
+        ContentDefinitions statuses = Service().GetDefinitions("status")!;
+
+        statuses.Version.Should().Be(1);
+        JsonNode node = JsonNode.Parse(statuses.Json)!.AsArray().Single()!;
+        (
+            node["id"]!.GetValue<string>(),
+            node["type"]!.GetValue<string>(),
+            node["durationMs"]!.GetValue<int>()
+        )
+            .Should()
+            .Be(("status.burning", "dot", 6000));
+        Service().GetDefinitions("class").Should().BeNull("classes are not a public kind");
+        Service().GetDefinitions("nope").Should().BeNull();
+    }
+
     [Fact]
     public async Task TwoImportsAtOnce_AreSerialized()
     {
@@ -325,7 +352,13 @@ public sealed class RpgContentServiceTests : IAsyncLifetime
     }
 
     private static IContentKind[] Kinds() =>
-        [new ClassKind(), new SpecializationKind(), new ProgressionKind(), new ItemKind()];
+        [
+            new ClassKind(),
+            new SpecializationKind(),
+            new ProgressionKind(),
+            new ItemKind(),
+            new StatusKind(),
+        ];
 
     private RpgContentService Service() =>
         new(

@@ -19,6 +19,8 @@ public sealed class SkillKind(IEnumerable<ISkillEffectRule> rules) : ContentKind
 
     public override string Kind => "skill";
 
+    public override bool Public => true;
+
     protected override IEnumerable<ContentFinding> Check(SkillDefinition s, ContentCheck check)
     {
         if (s.Classes.Count == 0)
