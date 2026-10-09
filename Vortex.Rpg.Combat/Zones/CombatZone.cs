@@ -220,6 +220,16 @@ public sealed partial class CombatZone(
         }
     }
 
+    /// <summary>A monster back at its spawn heals entirely (spec §5.3).</summary>
+    public void HealFully(int objectId)
+    {
+        if (_combatants.TryGetValue(objectId, out Combatant? c) && c.Health < c.MaxHealth)
+        {
+            c.Health = c.MaxHealth;
+            _vitalsChanged.Add(objectId);
+        }
+    }
+
     /// <summary>A monster's AI decides whom it attacks.</summary>
     public void SetMonsterTarget(int monsterId, int? playerObjectId)
     {
