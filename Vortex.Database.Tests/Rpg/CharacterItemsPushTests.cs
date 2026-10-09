@@ -15,6 +15,7 @@ using Vortex.Events.Registry;
 using Vortex.Primitives.Events;
 using Vortex.Primitives.Observability;
 using Vortex.Primitives.Players.Grains;
+using Vortex.Primitives.Rpg.Characters;
 using Vortex.Primitives.Rpg.Items;
 using Vortex.Primitives.Rpg.Items.Enums;
 using Vortex.Protocol.Messages.Outgoing.Rpg.Characters;
@@ -36,6 +37,7 @@ public sealed class CharacterItemsPushTests : IAsyncLifetime
     private const int Player = 7;
 
     private readonly List<object> _sent = [];
+    private readonly List<CharacterStatsSnapshot> _statsForwarded = [];
     private readonly Dictionary<string, ContentDefinition> _content = new()
     {
         ["class.warrior"] = CharacterContent.Warrior,
@@ -90,6 +92,17 @@ public sealed class CharacterItemsPushTests : IAsyncLifetime
                 "result:3:ok",
                 $"inventory:30:50:{ItemContent.Sword.Id}@{(int)EquipmentSlot.Weapon}"
             );
+    }
+
+    /// <summary>Spec M1a §4.4: new stats reach the zone the player is in, through his presence.</summary>
+    [Fact]
+    public async Task AnEquip_TellsThePresenceTheNewStats()
+    {
+        PlayerCharacterGrain grain = await WarriorWithAsync(ItemContent.Sword, 1);
+
+        await grain.EquipItemAsync(0);
+
+        _statsForwarded.Should().ContainSingle().Which.Strength.Should().Be(15);
     }
 
     /// <summary>Spec M1a §8.1: dying wears the equipment; the bag shows the new durability.</summary>
@@ -206,6 +219,14 @@ public sealed class CharacterItemsPushTests : IAsyncLifetime
                     if (inner.Method.Name == nameof(IPlayerPresenceGrain.SendComposerAsync))
                     {
                         _sent.AddRange(inner.Args![0] is object[] many ? many : [inner.Args[0]!]);
+                    }
+
+                    if (
+                        inner.Method.Name
+                        == nameof(IPlayerPresenceGrain.OnCharacterStatsChangedAsync)
+                    )
+                    {
+                        _statsForwarded.Add((CharacterStatsSnapshot)inner.Args![0]!);
                     }
 
                     return null;

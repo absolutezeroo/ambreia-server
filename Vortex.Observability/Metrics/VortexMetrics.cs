@@ -33,6 +33,10 @@ public sealed class VortexMetrics : IVortexMetrics, IDisposable
     private readonly Counter<long> _rpgPacketRefused;
     private readonly Counter<long> _chatSent;
     private readonly Counter<long> _chatRefused;
+    private readonly Counter<long> _combatHits;
+    private readonly Counter<long> _monstersKilled;
+    private readonly Counter<long> _playersDied;
+    private readonly Counter<long> _monsterPathSearches;
     private readonly Counter<long> _referenceDataPublished;
     private readonly Counter<long> _auditWriteFailure;
 
@@ -122,6 +126,26 @@ public sealed class VortexMetrics : IVortexMetrics, IDisposable
             "Vortex.chat.refused",
             unit: "{message}",
             description: "Chat messages refused, by code (empty, too_long, rate_limited…)."
+        );
+        _combatHits = _meter.CreateCounter<long>(
+            "Vortex.combat.hits",
+            unit: "{hit}",
+            description: "Hits in the zones, by outcome (hit, crit, miss)."
+        );
+        _monstersKilled = _meter.CreateCounter<long>(
+            "Vortex.combat.monsters_killed",
+            unit: "{monster}",
+            description: "Monsters killed in the zones."
+        );
+        _playersDied = _meter.CreateCounter<long>(
+            "Vortex.combat.players_died",
+            unit: "{player}",
+            description: "Player deaths in the zones."
+        );
+        _monsterPathSearches = _meter.CreateCounter<long>(
+            "Vortex.combat.monster_path_searches",
+            unit: "{search}",
+            description: "Monster path searches, by outcome (run, or refused: the tick's budget spent)."
         );
         _auditWriteFailure = _meter.CreateCounter<long>(
             "Vortex.audit.write.failure",
@@ -242,6 +266,41 @@ public sealed class VortexMetrics : IVortexMetrics, IDisposable
         if (_enabled)
         {
             _chatRefused.Add(1, new KeyValuePair<string, object?>("code", code));
+        }
+    }
+
+    public void CombatHit(string outcome)
+    {
+        if (_enabled)
+        {
+            _combatHits.Add(1, new KeyValuePair<string, object?>("outcome", outcome));
+        }
+    }
+
+    public void MonsterKilled()
+    {
+        if (_enabled)
+        {
+            _monstersKilled.Add(1);
+        }
+    }
+
+    public void PlayerDied()
+    {
+        if (_enabled)
+        {
+            _playersDied.Add(1);
+        }
+    }
+
+    public void MonsterPathSearch(bool refused)
+    {
+        if (_enabled)
+        {
+            _monsterPathSearches.Add(
+                1,
+                new KeyValuePair<string, object?>("outcome", refused ? "refused" : "run")
+            );
         }
     }
 

@@ -5,6 +5,7 @@ using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 using Orleans;
 using Vortex.Primitives.Events;
+using Vortex.Primitives.Observability;
 using Vortex.Primitives.Players;
 using Vortex.Primitives.Rpg.Characters;
 using Vortex.Primitives.Rpg.Characters.Grains;
@@ -66,6 +67,7 @@ internal sealed class MonsterWorld
             Options.Create(new CombatConfig()),
             Characters(),
             FakeProxy.Create<IEventPublisher>(_ => Task.CompletedTask),
+            FakeProxy.Create<IVortexMetrics>(_ => null),
             NullLoggerFactory.Instance
         );
 

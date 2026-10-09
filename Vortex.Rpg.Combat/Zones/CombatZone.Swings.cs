@@ -104,6 +104,7 @@ public sealed partial class CombatZone
     private void Hit(Combatant a, Combatant t, long now)
     {
         (int amount, string outcome) = hits.Resolve(a, t, runtime.Random);
+        metrics.CombatHit(outcome);
 
         t.Health = Math.Max(0, t.Health - amount);
         t.LastHitBy = a.ObjectId;

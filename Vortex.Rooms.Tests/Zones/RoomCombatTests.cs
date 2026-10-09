@@ -120,6 +120,20 @@ public sealed class RoomCombatTests
     }
 
     [Fact]
+    public async Task AStatsChangeInZone_ReachesTheFights()
+    {
+        await ZoneAsync();
+
+        await _harness.Grain.UpdateCombatantStatsAsync(
+            RoomHarness.Owner,
+            new CharacterStatsSnapshot { MaxHealth = 120 },
+            CancellationToken.None
+        );
+
+        _calls.Should().Contain($"stats {RoomHarness.Owner.Value} 120");
+    }
+
+    [Fact]
     public async Task TheEntryBurst_CarriesEveryFightersHealth()
     {
         await ZoneAsync();
@@ -150,6 +164,11 @@ public sealed class RoomCombatTests
                     return Task.FromResult(true);
                 case nameof(IZoneSimulation.StopAttack):
                     _calls.Add($"stop {((PlayerId)call.Args![0]!).Value}");
+                    return null;
+                case nameof(IZoneSimulation.PlayerStatsChanged):
+                    _calls.Add(
+                        $"stats {((PlayerId)call.Args![0]!).Value} {((CharacterStatsSnapshot)call.Args[1]!).MaxHealth}"
+                    );
                     return null;
                 case nameof(IZoneSimulation.EntryVitals):
                     return new RpgVitalsMessageComposer { Combatants = [] };

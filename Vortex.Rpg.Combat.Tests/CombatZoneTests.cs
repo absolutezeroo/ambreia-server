@@ -9,6 +9,7 @@ using Orleans;
 using Vortex.Primitives.Events;
 using Vortex.Primitives.Events.Combat;
 using Vortex.Primitives.Networking;
+using Vortex.Primitives.Observability;
 using Vortex.Primitives.Players;
 using Vortex.Primitives.Rpg.Characters;
 using Vortex.Primitives.Rpg.Characters.Grains;
@@ -274,6 +275,30 @@ public sealed class CombatZoneTests
         _combat.Combatants[1].Health.Should().Be(before + 2, "2 % of 100 per second");
     }
 
+    /// <summary>Spec M1a §4.4: an item taken off in the zone lowers the maximum; health follows.</summary>
+    [Fact]
+    public async Task AStatsChange_BoundsHealthToTheNewMaximum()
+    {
+        await OnePlayerAsync();
+
+        _combat.PlayerStatsChanged(
+            new PlayerId(7),
+            new CharacterStatsSnapshot
+            {
+                MaxHealth = 60,
+                MaxMana = 50,
+                SpeedPercent = 100,
+                Power = 25,
+            }
+        );
+        await _combat.TickAsync(CancellationToken.None);
+
+        (_combat.Combatants[1].Health, _combat.Combatants[1].MaxHealth, _combat.Combatants[1].Power)
+            .Should()
+            .Be((60, 60, 25));
+        Sent<RpgSelfVitalsMessageComposer>().Last().MaxHealth.Should().Be(60);
+    }
+
     [Fact]
     public async Task InCombat_NothingRegenerates()
     {
@@ -433,6 +458,7 @@ public sealed class CombatZoneTests
 
                 return Task.CompletedTask;
             }),
+            FakeProxy.Create<IVortexMetrics>(_ => null),
             NullLogger.Instance
         );
 

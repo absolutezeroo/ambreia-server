@@ -5,6 +5,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Orleans;
 using Vortex.Primitives.Events;
+using Vortex.Primitives.Observability;
 using Vortex.Primitives.World;
 using Vortex.Primitives.World.Layers;
 using Vortex.Rpg.Combat.Configuration;
@@ -31,6 +32,7 @@ public sealed class RpgZoneSimulationFactory : IZoneSimulationFactory
     private readonly CombatConfig _config;
     private readonly IGrainFactory _grains;
     private readonly IEventPublisher _events;
+    private readonly IVortexMetrics _metrics;
     private readonly ILoggerFactory _loggers;
     private readonly ILogger _logger;
 
@@ -41,9 +43,11 @@ public sealed class RpgZoneSimulationFactory : IZoneSimulationFactory
         IOptions<CombatConfig> config,
         IGrainFactory grains,
         IEventPublisher events,
+        IVortexMetrics metrics,
         ILoggerFactory loggers
     )
     {
+        _metrics = metrics;
         _content = content;
         _hits = hits;
         _config = config.Value;
@@ -72,6 +76,7 @@ public sealed class RpgZoneSimulationFactory : IZoneSimulationFactory
             _config,
             _grains,
             _events,
+            _metrics,
             _loggers.CreateLogger<CombatZone>()
         );
         List<SpawnPoint> points = [];

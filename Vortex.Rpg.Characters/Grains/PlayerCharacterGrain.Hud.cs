@@ -1,6 +1,8 @@
 using System;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
+using Vortex.Logging.Extensions;
 using Vortex.Primitives.Networking;
 using Vortex.Primitives.Orleans;
 using Vortex.Primitives.Rpg.Characters;
@@ -47,6 +49,7 @@ internal sealed partial class PlayerCharacterGrain
             if (await GetStatsAsync() is { } stats)
             {
                 await PushAsync(new RpgCharacterStatsMessageComposer { Stats = stats });
+                TellTheZone(stats);
             }
         }
         catch (Exception ex)
@@ -54,6 +57,18 @@ internal sealed partial class PlayerCharacterGrain
             logger.LogWarning(ex, "Could not read the stats of player {PlayerId}", _playerId.Value);
         }
     }
+
+    /// <summary>New stats reach the zone the player fights in (spec M1a §4.4), through his presence.
+    /// Never awaited: the zone may be waiting on this very grain (an XP grant during its tick).</summary>
+    private void TellTheZone(CharacterStatsSnapshot stats) =>
+        grainFactory
+            .GetPlayerPresenceGrain(_playerId)
+            .OnCharacterStatsChangedAsync(stats, CancellationToken.None)
+            .LogAndForget(
+                logger,
+                "Passing new stats of player {PlayerId} to its zone",
+                _playerId.Value
+            );
 
     /// <summary>Progress, after the new stats on a level up. The level is already written: reading
     /// the stats may fail here, and that must not fail the grant.</summary>
@@ -69,6 +84,7 @@ internal sealed partial class PlayerCharacterGrain
             if (levelledUp && await GetStatsAsync() is { } stats)
             {
                 composers = [new RpgCharacterStatsMessageComposer { Stats = stats }, progress];
+                TellTheZone(stats);
             }
         }
         catch (Exception ex)

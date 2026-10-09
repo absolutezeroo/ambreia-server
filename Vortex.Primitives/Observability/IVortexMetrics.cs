@@ -76,6 +76,16 @@ public interface IVortexMetrics
     /// <summary>A chat message refused (spec F3c §12), by its refusal code.</summary>
     void ChatRefused(string code);
 
+    /// <summary>A hit in a zone (spec M1a §12), by outcome: hit, crit, miss.</summary>
+    void CombatHit(string outcome);
+
+    void MonsterKilled();
+
+    void PlayerDied();
+
+    /// <summary>A monster path search, or one refused because the tick's budget was spent.</summary>
+    void MonsterPathSearch(bool refused);
+
     /// <summary>
     /// A call to the (single, global) room directory grain returned. <paramref name="method"/> is the
     /// grain method name, which is bounded by the interface.

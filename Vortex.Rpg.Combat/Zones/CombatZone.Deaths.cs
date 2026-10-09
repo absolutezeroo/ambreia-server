@@ -36,6 +36,7 @@ public sealed partial class CombatZone
     {
         PlayerId player = c.PlayerId!.Value;
 
+        metrics.PlayerDied();
         c.GhostUntilMs = now + config.GhostSeconds * 1000L;
         c.TargetId = null;
         runtime.StopWalking(c.ObjectId);
@@ -64,6 +65,7 @@ public sealed partial class CombatZone
 
     private async Task MonsterDiesAsync(Combatant c)
     {
+        metrics.MonsterKilled();
         PlayerId[] present = [.. c.Participants.Where(_players.ContainsKey)];
 
         // Different characters: told together.

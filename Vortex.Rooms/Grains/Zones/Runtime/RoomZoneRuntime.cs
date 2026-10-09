@@ -183,7 +183,10 @@ public sealed class RoomZoneRuntime(RoomGrain room) : IZoneRuntime
 
         if (monster)
         {
-            if (_pathSearches >= room._roomConfig.MaxMonsterPathSearchesPerTick)
+            bool refused = _pathSearches >= room._roomConfig.MaxMonsterPathSearchesPerTick;
+            room._metrics.MonsterPathSearch(refused);
+
+            if (refused)
             {
                 return WalkResult.BudgetSpent;
             }

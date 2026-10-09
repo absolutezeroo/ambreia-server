@@ -9,6 +9,7 @@ using Orleans;
 using Vortex.Logging.Extensions;
 using Vortex.Primitives.Events;
 using Vortex.Primitives.Networking;
+using Vortex.Primitives.Observability;
 using Vortex.Primitives.Orleans;
 using Vortex.Primitives.Players;
 using Vortex.Primitives.Rpg.Characters;
@@ -33,6 +34,7 @@ public sealed partial class CombatZone(
     CombatConfig config,
     IGrainFactory grains,
     IEventPublisher events,
+    IVortexMetrics metrics,
     ILogger logger
 )
 {

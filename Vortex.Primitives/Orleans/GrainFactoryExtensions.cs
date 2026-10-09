@@ -46,6 +46,9 @@ public static class GrainFactoryExtensions
     public static IRoomEmotes GetRoomEmotes(this IGrainFactory factory, RoomId roomId) =>
         factory.GetGrain<IRoomEmotes>((long)roomId.Value);
 
+    public static IRoomCombat GetRoomCombat(this IGrainFactory factory, RoomId roomId) =>
+        factory.GetGrain<IRoomCombat>((long)roomId.Value);
+
     public static IZoneTestGrain GetZoneTestGrain(this IGrainFactory factory) =>
         factory.GetGrain<IZoneTestGrain>(0);
 
