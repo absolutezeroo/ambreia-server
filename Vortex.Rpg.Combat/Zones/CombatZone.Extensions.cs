@@ -159,7 +159,8 @@ public sealed partial class CombatZone
 
     public void AddThreat(Combatant monster, int playerObjectId, long amount)
     {
-        if (!monster.IsPlayer && amount > 0)
+        // A monster walking home is angered by nobody on the way.
+        if (!monster.IsPlayer && !monster.Invulnerable && amount > 0)
         {
             monster.Threat.Add(playerObjectId, amount);
         }

@@ -137,6 +137,12 @@ public sealed class StatusSystem(
                 ]
                 : [];
 
+        // A monster's body stays shown a while: told it carries nothing now.
+        if (exit == CombatantExit.Died && !c.IsPlayer && set.All.Count > 0)
+        {
+            zone.GetOrAdd<ClearedFighters>().ObjectIds.Add(c.ObjectId);
+        }
+
         applier.Clear(zone, c);
 
         return carried;
@@ -144,12 +150,19 @@ public sealed class StatusSystem(
 
     public void BeforeFlush(CombatZone zone)
     {
+        ClearedFighters cleared = zone.GetOrAdd<ClearedFighters>();
         ImmutableArray<RpgCombatantStatuses> changed =
         [
             .. zone
                 .Combatants.Values.Where(c => c.Get<StatusSet>() is { Changed: true })
                 .Select(c => Entries(c, zone.Runtime.NowMs)),
+            .. cleared.ObjectIds.Select(id => new RpgCombatantStatuses
+            {
+                ObjectId = id,
+                Statuses = [],
+            }),
         ];
+        cleared.ObjectIds.Clear();
 
         foreach (Combatant c in zone.Combatants.Values)
         {
@@ -194,7 +207,12 @@ public sealed class StatusSystem(
 
         while (status.NextPulseAtMs <= now && status.NextPulseAtMs <= status.EndsAtMs && !c.IsDead)
         {
-            if (!zone.Combatants.TryGetValue(status.CasterObjectId, out Combatant? caster))
+            // Its caster gone or dead (a ghost): it stops, and nobody is angered for it.
+            if (
+                !zone.Combatants.TryGetValue(status.CasterObjectId, out Combatant? caster)
+                || caster.IsDead
+                || caster.IsGhost
+            )
             {
                 set.Remove(status);
 
@@ -224,6 +242,12 @@ public sealed class StatusSystem(
         long now
     )
     {
+        // A monster walking home takes nothing, and nothing is shown as taken.
+        if (target.Invulnerable)
+        {
+            return;
+        }
+
         (int dealt, int absorbed, _) = hits.Resolve(
             caster,
             target,

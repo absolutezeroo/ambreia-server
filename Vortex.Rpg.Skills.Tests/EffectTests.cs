@@ -126,6 +126,18 @@ public sealed class EffectTests
     }
 
     [Fact]
+    public async Task Damage_OnAMonsterGoingHome_IsNotReported()
+    {
+        Combatant me = await _world.PlayerAsync();
+        Combatant wolf = ToughWolf();
+        wolf.Invulnerable = true;
+
+        Effects.Apply(Context(me, Skill(Firebolt)), wolf);
+
+        (wolf.Health, (await OutcomesAsync()).Count()).Should().Be((100, 0));
+    }
+
+    [Fact]
     public async Task ADodge_LandsNothing_UnlessTheSkillIsUnavoidable()
     {
         Combatant me = await _world.PlayerAsync();

@@ -455,6 +455,59 @@ public sealed class StatusTests
             .ContainSingle("nothing changed since");
     }
 
+    /// <summary>The wolf killed its burner: the dot stops, the ghost is not put back on its table.</summary>
+    [Fact]
+    public async Task ADot_StopsWhenItsCasterDies()
+    {
+        Combatant me = await _world.PlayerAsync();
+        Combatant wolf = _world.Wolf(
+            definition: SkillWorld.WolfDefinition with
+            {
+                Base = SkillWorld.WolfDefinition.Base with { Health = 500 },
+            }
+        );
+        Apply(me, wolf, Burning);
+        me.Health = 0;
+        await _world.TickAsync();
+
+        await _world.RunAsync(2000);
+
+        (wolf.Health, wolf.Threat.Contains(1), On(wolf).Count).Should().Be((500, false, 0));
+    }
+
+    /// <summary>A killed monster's body shows no status left.</summary>
+    [Fact]
+    public async Task AKilledMonster_IsShownWithoutStatuses()
+    {
+        Combatant me = await _world.PlayerAsync();
+        Combatant wolf = _world.Wolf();
+        Apply(me, wolf, Burning);
+        await _world.TickAsync();
+        wolf.Health = 0;
+
+        await _world.TickAsync();
+
+        _world
+            .Broadcast<RpgStatusesMessageComposer>()
+            .Last()
+            .Combatants.Should()
+            .ContainSingle(c => c.ObjectId == wolf.ObjectId && c.Statuses.IsEmpty);
+    }
+
+    /// <summary>A monster walking home takes nothing, and nothing is shown as taken.</summary>
+    [Fact]
+    public async Task ADot_OnAMonsterGoingHome_LandsNothing()
+    {
+        Combatant me = await _world.PlayerAsync();
+        Combatant wolf = _world.Wolf();
+        Apply(me, wolf, Burning);
+        wolf.Invulnerable = true;
+
+        await _world.RunAsync(2000);
+
+        (wolf.Health, Outcomes().Count()).Should().Be((40, 0));
+    }
+
     [Fact]
     public async Task TheEntryBurst_CarriesStatuses()
     {

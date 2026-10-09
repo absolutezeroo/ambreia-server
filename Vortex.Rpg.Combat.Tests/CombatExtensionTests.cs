@@ -294,6 +294,18 @@ public sealed class CombatExtensionTests
     }
 
     [Fact]
+    public async Task AMonsterGoingHome_TakesNoThreat()
+    {
+        await PlayerNextToAWolfAsync();
+        Combatant wolf = _combat.Combatants[AddWolf()];
+        wolf.Invulnerable = true;
+
+        _combat.AddThreat(wolf, 1, 10);
+
+        wolf.Threat.IsEmpty.Should().BeTrue();
+    }
+
+    [Fact]
     public async Task AHeal_IsBounded_AndSaysWhatItGaveBack()
     {
         Combatant me = await PlayerNextToAWolfAsync();

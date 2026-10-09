@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.Extensions.Logging;
@@ -16,7 +17,9 @@ namespace Vortex.Rpg.Skills.Effects;
 public sealed class SkillEffects
 {
     private readonly Dictionary<string, ISkillEffect> _effects = new(StringComparer.Ordinal);
-    private readonly HashSet<string> _warned = new(StringComparer.Ordinal);
+
+    /// <summary>Shared by every zone, which tick at the same time: a concurrent set.</summary>
+    private readonly ConcurrentDictionary<string, byte> _warned = new(StringComparer.Ordinal);
     private readonly ILogger<SkillEffects> _logger;
 
     public SkillEffects(IEnumerable<ISkillEffect> effects, ILogger<SkillEffects> logger)
@@ -30,7 +33,7 @@ public sealed class SkillEffects
     }
 
     /// <summary>The ids already warned about.</summary>
-    public IReadOnlyCollection<string> Warned => _warned;
+    public IReadOnlyCollection<string> Warned => [.. _warned.Keys];
 
     public ISkillEffect? Find(string kind) => _effects.GetValueOrDefault(kind);
 
@@ -65,7 +68,7 @@ public sealed class SkillEffects
     /// <summary>Once per id: the log says what the content lacks, not every time it lacks it.</summary>
     public void WarnMissing(string id)
     {
-        if (_warned.Add(id))
+        if (_warned.TryAdd(id, 0))
         {
             _logger.LogWarning("Skill content {Id} is not available: skipped.", id);
         }

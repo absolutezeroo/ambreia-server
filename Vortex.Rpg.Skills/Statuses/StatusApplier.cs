@@ -63,6 +63,12 @@ public sealed class StatusApplier(IOptions<SkillsConfig> config, IVortexMetrics 
         zone.Recompute(target);
         metrics.StatusApplied(status.Id);
 
+        // A stun breaks a cast the moment it lands (spec M1b §7.2), not at the caster's next turn.
+        if (status.Type == StatusType.Stun)
+        {
+            zone.Interrupt(target);
+        }
+
         return true;
     }
 

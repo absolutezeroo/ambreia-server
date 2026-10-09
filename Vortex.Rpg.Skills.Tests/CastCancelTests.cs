@@ -94,6 +94,20 @@ public sealed class CastCancelTests
         wolf.Health.Should().Be(500);
     }
 
+    /// <summary>A stun breaks the cast the moment it lands, not at the caster's next turn: a cast
+    /// ending later in the same tick does not resolve stunned.</summary>
+    [Fact]
+    public async Task AStun_InterruptsAtOnce()
+    {
+        Combatant me = await _world.PlayerAsync();
+        Combatant wolf = ToughWolf();
+        _world.Cast(Bolt.Id, wolf.ObjectId);
+
+        _world.Statuses.Apply(_world.Combat, wolf, me, CastTests.Stunned, _world.Now);
+
+        me.Busy.Should().BeFalse();
+    }
+
     [Fact]
     public async Task AnInterruptEffect_Interrupts()
     {

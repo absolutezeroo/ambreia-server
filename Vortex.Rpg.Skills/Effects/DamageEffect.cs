@@ -24,6 +24,12 @@ public sealed class DamageEffect : ISkillEffect
 
     public void Apply(SkillContext ctx, Combatant target, SkillEffectDefinition effect)
     {
+        // A monster walking home takes nothing, and nothing is shown as taken.
+        if (target.Invulnerable)
+        {
+            return;
+        }
+
         (int amount, int absorbed, string outcome) = ctx.Hits.Resolve(
             ctx.Caster,
             target,
