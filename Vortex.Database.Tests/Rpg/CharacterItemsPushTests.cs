@@ -92,6 +92,22 @@ public sealed class CharacterItemsPushTests : IAsyncLifetime
             );
     }
 
+    /// <summary>Spec M1a §8.1: dying wears the equipment; the bag shows the new durability.</summary>
+    [Fact]
+    public async Task AWear_SendsTheBag()
+    {
+        PlayerCharacterGrain grain = await WarriorWithAsync(ItemContent.Sword, 1);
+        await grain.EquipItemAsync(0);
+        _sent.Clear();
+
+        await grain.WearEquipmentAsync(10);
+
+        _sent
+            .Select(Describe)
+            .Should()
+            .Contain($"inventory:30:50:{ItemContent.Sword.Id}@{(int)EquipmentSlot.Weapon}");
+    }
+
     [Fact]
     public async Task AGrant_SendsTheBag()
     {

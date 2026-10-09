@@ -38,7 +38,7 @@ public sealed class CharacterInventoryWearTests
         );
         ItemInstance blade = inventory.At(ItemContainer.Equipment, WeaponSlot)!;
 
-        inventory.WearEquipped(10).Should().BeFalse();
+        inventory.WearEquipped(10).Should().Be((false, false));
 
         blade.Durability.Should().BeNull();
         blade.Dirty.Should().BeFalse();
@@ -61,11 +61,11 @@ public sealed class CharacterInventoryWearTests
             TestItems.At(TestItems.Sword, ItemContainer.Equipment, WeaponSlot)
         );
 
-        inventory.WearEquipped(10).Should().BeFalse();
+        inventory.WearEquipped(10).Should().Be((true, false));
 
         inventory.At(ItemContainer.Equipment, WeaponSlot)!.Durability = 5;
 
-        inventory.WearEquipped(10).Should().BeTrue();
-        inventory.WearEquipped(10).Should().BeFalse("already at 0: nothing more goes");
+        inventory.WearEquipped(10).Should().Be((true, true));
+        inventory.WearEquipped(10).Should().Be((false, false), "already at 0: nothing more goes");
     }
 }

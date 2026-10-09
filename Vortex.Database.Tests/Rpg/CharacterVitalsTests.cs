@@ -97,6 +97,24 @@ public sealed class CharacterVitalsTests : IAsyncLifetime
             .Be((profile.Stats.MaxHealth, profile.Stats.MaxMana));
     }
 
+    /// <summary>Full is kept as "full", not as a number: a maximum that grows later (a level, an
+    /// item) finds the character full, not short of the difference.</summary>
+    [Fact]
+    public async Task FullVitals_AreStoredAsFull()
+    {
+        PlayerCharacterGrain grain = await ActivateAsync(withCharacter: true);
+        CharacterCombatProfile profile = (await grain.GetCombatProfileAsync())!;
+
+        await grain.SetVitalsAsync(profile.Stats.MaxHealth, profile.Stats.MaxMana);
+        await DeactivateAsync(grain);
+
+        await using VortexDbContext db = new(_options);
+        PlayerCharacterEntity row = await db
+            .PlayerCharacters.AsNoTracking()
+            .SingleAsync(c => c.PlayerEntityId == Player);
+        (row.CurrentHealth, row.CurrentMana).Should().Be((null, null));
+    }
+
     [Fact]
     public async Task WithoutACharacter_TheProfileIsNull()
     {

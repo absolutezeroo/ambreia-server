@@ -42,8 +42,9 @@ internal sealed partial class PlayerCharacterGrain
             return;
         }
 
-        c.CurrentHealth = Math.Clamp(health, 0, stats.MaxHealth);
-        c.CurrentMana = Math.Clamp(mana, 0, stats.MaxMana);
+        // Full is kept as null: a maximum that grows later still finds the character full.
+        c.CurrentHealth = health >= stats.MaxHealth ? null : Math.Max(0, health);
+        c.CurrentMana = mana >= stats.MaxMana ? null : Math.Max(0, mana);
         c.VitalsAt = Time.GetUtcNow().UtcDateTime;
         _dirty = true;
     }
@@ -56,9 +57,17 @@ internal sealed partial class PlayerCharacterGrain
         }
 
         // Written by the item flush, like any other change to a copy.
-        if (inventory.WearEquipped(percent))
+        (bool changed, bool broke) = inventory.WearEquipped(percent);
+
+        if (broke)
         {
+            // Its stats are gone: recomputed, announced and pushed.
             await EquipmentChangedAsync();
+        }
+
+        if (changed)
+        {
+            await PushAsync(InventoryComposer(inventory));
         }
     }
 
