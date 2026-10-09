@@ -1,8 +1,10 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Vortex.Primitives.Chat;
 using Vortex.Primitives.Hosting;
 using Vortex.Primitives.Plugins;
 using Vortex.Primitives.Rpg.Content;
+using Vortex.Rpg.Chat;
 using Vortex.Rpg.Content;
 using Vortex.Rpg.Content.Import;
 using Vortex.Rpg.Content.Kinds;
@@ -22,6 +24,9 @@ public sealed class RpgModule : IHostPluginModule
         services.AddSingleton<IContentKind, SpecializationKind>();
         services.AddSingleton<IContentKind, ProgressionKind>();
         services.AddSingleton<IContentKind, ItemKind>();
+
+        // A chat link to an item (spec F3c §6), checked against this content.
+        services.AddSingleton<IChatLinkKind, ItemChatLinkKind>();
 
         // One instance behind both: the reloader loads the very registry the systems read.
         services.AddSingleton<RpgContentRegistry>();
