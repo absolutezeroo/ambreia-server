@@ -66,4 +66,12 @@ public class RoomConfig
 
     /// <summary>Copies one dungeon can have at once (plan D23); at most ZoneInstanceIds.SlotsPerZone - 1.</summary>
     public int MaxInstancesPerZone { get; init; } = 200;
+
+    /// <summary>The RP actions an avatar may do (an array: configuration replaces it whole). A new
+    /// one is a line here and its animation in the client.</summary>
+    public string[] EmoteKeys { get; init; } =
+    ["wave", "laugh", "clap", "dance", "sad", "surprised"];
+
+    /// <summary>The least time between two RP actions of one player.</summary>
+    public int EmoteIntervalMs { get; init; } = 2000;
 }

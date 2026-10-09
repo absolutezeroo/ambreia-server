@@ -221,7 +221,10 @@ follows. `system` is server-only: `SendSystemChatAsync`. Extension points: a mod
 presence listens to its room stream and `world-chat` only, so a group channel delivers member by
 member until its module adds a stream), an `IChatRule` or an
 `IChatLinkKind` in its own `Chat/` folder; the core names none. Nothing stored, no text logged.
-Proof: `driver.mjs chat`.
+`trade` and `recruitment` are two more `WorldChatChannel`s on `world-chat` (1 message / 30 s). RP
+actions (`RpgEmote`, in 9012 / out 9017) go to the room, not the presence: `IRoomEmotes` →
+`RoomEmoteModule` checks a configured key (`Vortex:Rooms:EmoteKeys`), an avatar here and the
+interval, and broadcasts on the room stream; nothing is kept. Proof: `driver.mjs chat`.
 
 ## Persistence
 

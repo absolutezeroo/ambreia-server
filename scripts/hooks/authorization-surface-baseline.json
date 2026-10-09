@@ -10,6 +10,7 @@
     "grain:Rooms/IRoomCore.cs::AdmitAsync": "controller-level",
     "grain:Rooms/IRoomDirectoryGrain.cs::AddPlayerToRoomAsync": "NONE",
     "grain:Rooms/IRoomDirectoryGrain.cs::RemovePlayerFromRoomAsync": "NONE",
+    "grain:Rooms/IRoomEmotes.cs::EmoteAsync": "actor-guard",
     "grain:Rooms/IRoomFurni.cs::ClickItemByIdAsync": "NONE",
     "grain:Rooms/IRoomFurni.cs::RemoveItemByIdAsync": "security-module",
     "grain:Rooms/IRoomFurni.cs::UseItemByIdAsync": "security-module+can-helper",

@@ -253,3 +253,20 @@ pipeline — ne nomme aucun canal, aucune sorte de lien, aucun contrôle.
   - A écrit en Guilde → `not_in_guild` ;
   - A écrit un lien vers un objet inventé : la ligne reçue ne contient plus le jeton.
 - La porte de qualité est verte.
+
+## 16. Ajout F3c+ (2026-10-09, approuvé en conversation) — Commerce, Recrutement, actions RP
+
+Demande de la session client (maquettes du propriétaire), approuvée par le propriétaire.
+
+- **Canaux `trade` (Commerce) et `recruitment` (Recrutement)** : deux pièces `IChatChannel` de plus,
+  déclarées par `PlayerModule` (`WorldChatChannel` prend sa clé), diffusées sur `world-chat` comme
+  `world` ; débit par défaut 1 message / 30 s chacun (`RateLimits`). Côté client, « Général »
+  affiche `world` et « Zone » affiche `general` ; les clés sur le fil ne changent pas.
+- **Actions RP** : entrant **9012 `RpgEmote`** (clé) ; sortant **9017 `RpgEmote`** (objectId, clé),
+  diffusé à la room (les ids sortants 9012–9016 sont pris par M1a). Clés dans
+  `Vortex:Rooms:EmoteKeys` (`wave`, `laugh`, `clap`, `dance`, `sad`, `surprised`) ; une clé
+  inconnue, un joueur sans avatar dans la room ou une action à moins de `EmoteIntervalMs` (2000)
+  de la précédente ne montrent rien. La room porte l'action (`IRoomEmotes`, `RoomEmoteModule`) ;
+  rien n'est gardé : le client rejoue l'action (une danse dure jusqu'à ce que l'avatar marche), et
+  un joueur entré après coup ne voit pas une action déjà en cours.
+- Preuve : `driver.mjs chat`, étapes 2b (une action vue par B) et 9b (Commerce lu hors room).

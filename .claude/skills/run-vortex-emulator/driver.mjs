@@ -334,6 +334,9 @@ const H = {
   rpgChatSend: 9011,
   rpgChatMessage: 9010,
   rpgChatResult: 9011,
+  // RP actions: in 9012, out 9017 (9012-9016 out are the M1a combat messages).
+  rpgEmote: 9012,
+  rpgEmoteShown: 9017,
   quit: 3061,
   objectDataUpdate: 2329,
   objectUpdate: 114,
@@ -1362,6 +1365,16 @@ async function cmdChat() {
   const nameB = back.senderName;
   log(`2. A is "${nameA}", B is "${nameB}".`);
 
+  // 2b. An RP action of A, seen by B in the same room (RpgEmote in 9012, out 9017).
+  mb = b.g.frames.length;
+  a.g.send(frame(H.rpgEmote, 'wave'));
+  const wave = await b.g.wait([H.rpgEmoteShown], mb);
+  if (!wave) fail('2b. B did not see A wave.');
+  const w = reader(wave.body);
+  const shown = { objectId: w.int(), key: w.str() };
+  if (shown.key !== 'wave') fail(`2b. Emote -> ${JSON.stringify(shown)}`);
+  log(`2b. A waves: B sees ${JSON.stringify(shown)}`);
+
   // 3. B leaves the room: no Général, Monde once.
   b.g.send(frame(H.quit));
   await sleep(1100);
@@ -1423,6 +1436,13 @@ async function cmdChat() {
   const nobody = await resultAfter(a.g, ma);
   if (nobody?.code !== 'player_not_found') fail(`9. Unknown name -> ${JSON.stringify(nobody)}`);
   log(`9. Whisper to "personne_zz" -> ${JSON.stringify(nobody)}`);
+
+  // 9b. Commerce reaches B outside any room, like Monde.
+  mb = b.g.frames.length;
+  say(a, 'trade', 'vends épée rouillée');
+  const trade = await lineAfter(b.g, mb, (l) => l.channel === 'trade');
+  if (trade?.text !== 'vends épée rouillée') fail(`9b. Commerce -> ${JSON.stringify(trade)}`);
+  log(`9b. Commerce: B reads ${JSON.stringify(trade)}`);
 
   // 10. B's socket gone: offline (its presence waits in grace, without a socket).
   b.g.close();
