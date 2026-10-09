@@ -1,3 +1,4 @@
+using System;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
@@ -38,6 +39,18 @@ public class PlayerCharacterEntity : VortexEntity
     /// <summary>The world zone the character last entered (never a dungeon copy).</summary>
     [Column("last_room_id")]
     public int? LastRoomId { get; set; }
+
+    /// <summary>Health the character had when it was last written (spec M1a §7); null: full.</summary>
+    [Column("current_health")]
+    public int? CurrentHealth { get; set; }
+
+    /// <summary>Mana the character had when it was last written; null: full.</summary>
+    [Column("current_mana")]
+    public int? CurrentMana { get; set; }
+
+    /// <summary>When health and mana were last set: out of a zone, they regenerate from there.</summary>
+    [Column("vitals_at")]
+    public DateTime? VitalsAt { get; set; }
 
     [ForeignKey(nameof(PlayerEntityId))]
     public PlayerEntity? PlayerEntity { get; set; }

@@ -985,6 +985,9 @@ namespace Vortex.Database.Migrations
                         level = table.Column<int>(type: "int", nullable: false, defaultValue: 1),
                         xp = table.Column<int>(type: "int", nullable: false, defaultValue: 0),
                         last_room_id = table.Column<int>(type: "int", nullable: true),
+                        current_health = table.Column<int>(type: "int", nullable: true),
+                        current_mana = table.Column<int>(type: "int", nullable: true),
+                        vitals_at = table.Column<DateTime>(type: "datetime(6)", nullable: true),
                         created_at = table
                             .Column<DateTime>(type: "datetime(6)", nullable: false)
                             .Annotation(

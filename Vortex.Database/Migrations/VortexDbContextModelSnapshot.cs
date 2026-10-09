@@ -1187,6 +1187,14 @@ namespace Vortex.Database.Migrations
 
                     MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<DateTime>("CreatedAt"));
 
+                    b.Property<int?>("CurrentHealth")
+                        .HasColumnType("int")
+                        .HasColumnName("current_health");
+
+                    b.Property<int?>("CurrentMana")
+                        .HasColumnType("int")
+                        .HasColumnName("current_mana");
+
                     b.Property<DateTime?>("DeletedAt")
                         .HasColumnType("datetime(6)")
                         .HasColumnName("deleted_at");
@@ -1217,6 +1225,10 @@ namespace Vortex.Database.Migrations
                         .HasColumnName("updated_at");
 
                     MySqlPropertyBuilderExtensions.UseMySqlComputedColumn(b.Property<DateTime>("UpdatedAt"));
+
+                    b.Property<DateTime?>("VitalsAt")
+                        .HasColumnType("datetime(6)")
+                        .HasColumnName("vitals_at");
 
                     b.Property<int>("Xp")
                         .ValueGeneratedOnAdd()

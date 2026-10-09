@@ -222,7 +222,10 @@ internal sealed partial class PlayerCharacterGrain(
                     up =>
                         up.SetProperty(x => x.Level, c.Level)
                             .SetProperty(x => x.Xp, c.Xp)
-                            .SetProperty(x => x.LastRoomId, c.LastRoomId),
+                            .SetProperty(x => x.LastRoomId, c.LastRoomId)
+                            .SetProperty(x => x.CurrentHealth, c.CurrentHealth)
+                            .SetProperty(x => x.CurrentMana, c.CurrentMana)
+                            .SetProperty(x => x.VitalsAt, c.VitalsAt),
                     ct
                 );
             _dirty = false;

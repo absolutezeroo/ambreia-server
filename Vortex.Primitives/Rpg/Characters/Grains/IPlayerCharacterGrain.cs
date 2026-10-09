@@ -62,6 +62,18 @@ public interface IPlayerCharacterGrain : IGrainWithIntegerKey
 
     public Task<ItemOutcome> ClaimParcelAsync(int parcel);
 
+    /// <summary>Stats, current health and mana (out-of-zone regeneration applied, bounded to the
+    /// maximum), level, range and threat multiplier; null without a character (spec M1a §7).</summary>
+    public Task<CharacterCombatProfile?> GetCombatProfileAsync();
+
+    /// <summary>The zone gives health and mana back when the player leaves it: one write (spec M1a
+    /// §4.4), bounded to the maximum.</summary>
+    public Task SetVitalsAsync(int health, int mana);
+
+    /// <summary>Equipped items lose <paramref name="percent"/> % of their max durability (death,
+    /// spec M1a §8.1).</summary>
+    public Task WearEquipmentAsync(int percent);
+
     /// <summary>Every copy held: bag, equipment, parcels.</summary>
     public Task<CharacterItemSnapshot[]> GetItemsAsync();
 }
