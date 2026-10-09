@@ -34,6 +34,7 @@ Architecture map: `docs/architecture.md` (read it when a task crosses projects).
 | A contract two layers share (snapshot, id, interface) | `Vortex.Primitives` — never a reference upward | `Orleans/Snapshots/Players/PlayerSummarySnapshot.cs` |
 | A table | an entity in `Vortex.Database/Entities` + regenerated `InitialCreate` | `Entities/Room/RoomEntity.cs` |
 | A web route | `Vortex.WebApi/Hosting/WebApiEndpoints.cs` + `Services/` | `/api/ssotoken` |
+| A monster behaviour or a hit step | an `IMonsterBehavior` (key, `Vortex.Rpg.Monsters/Behaviors`) or an `IHitStep` (priority, `Vortex.Rpg.Combat/Hits`) declared by DI in its module; the monster's content names its behaviour | `Behaviors/MeleeBehavior.cs`, `Hits/ArmorStep.cs` |
 | A chat channel, rule or link kind | an `IChatChannel` / `IChatRule` / `IChatLinkKind` in its module's `Chat/` folder, declared by DI in that module (the last channel per key wins; a shipped one, `IsDefault`, always yields) | `Vortex.Players/Chat/Channels/WorldChatChannel.cs` |
 | RPG content (a class, an item…) | a JSON file in `content/<kind>/`, its texts in `content/texts/fr.txt`; pushed with `driver.mjs content` | `content/item/rusted_sword.json` |
 | A new kind of content | an `IContentKind` in `Vortex.Rpg/Content/Kinds` + its record in `Definitions/`, declared in `RpgModule`; `UPDATE_CONTENT_SCHEMAS=1` for its schema | `Kinds/ItemKind.cs` |

@@ -1,6 +1,7 @@
 # RPG — spec fille M1a « Premier combat » : monstres, attaque automatique, PV, mort, XP
 
-> **Statut :** design approuvé par le propriétaire le 2026-10-09 (conversation), à relire écrit ·
+> **Statut :** livrée le 2026-10-09 (plan `docs/superpowers/plans/2026-10-09-rpg-combat-m1a.md`,
+> preuve `driver.mjs combat`) ; design approuvé par le propriétaire le 2026-10-09 ·
 > **Date :** 2026-10-09 · **Langue :** français
 > **Dépôt :** `vortex-rpg-emulator`. Jalon M1 de la spec unifiée
 > `docs/superpowers/specs/2026-10-06-vortex-rpg-design.md` (§3.3 runtime de zone, §3.4 projets,

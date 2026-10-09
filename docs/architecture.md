@@ -15,6 +15,7 @@ single project, the code and `.claude/rules/` are enough.
 - Flow 8 — items
 - Flow 9 — interaction
 - Flow 10 — chat
+- Flow 11 — combat
 - Persistence
 - Grains and their state
 - Plugins and the web API
@@ -225,6 +226,29 @@ member until its module adds a stream), an `IChatRule` or an
 actions (`RpgEmote`, in 9012 / out 9017) go to the room, not the presence: `IRoomEmotes` →
 `RoomEmoteModule` checks a configured key (`Vortex:Rooms:EmoteKeys`), an avatar here and the
 interval, and broadcasts on the room stream; nothing is kept. Proof: `driver.mjs chat`.
+
+## Flow 11 — combat
+
+Spec `2026-10-09-rpg-combat-m1a-design.md`. The core `Vortex.Rpg` defines the seam: `IZoneRuntime`
+(grid, sight, avatars, walking within each avatar's rules and a per-tick path budget, sending, the
+clock) and `IZoneSimulation` (+ `IZoneSimulationFactory`). `RoomGrain` implements the runtime
+(`Zones/Runtime/RoomZoneRuntime.cs`), creates the simulation in `ApplyZoneAsync` (none for a room
+without a zone) and runs it in a `"combat"` tick step every `CombatTickMs` (250 ms). `Vortex.Rooms`
+references the core only: the simulation is `Vortex.Rpg.Monsters`' `RpgZoneSimulationFactory`, by
+DI. It runs, per tick and only with a player in the zone: `MonsterSpawner` (the zone's `ZoneSpawn`s,
+born on the first tick with a player, back after `RespawnSeconds`), each monster's `IMonsterBehavior`
+by key (`melee`: wander, aggro, chase, leash → home invulnerable, never on a safe cell), then
+`Vortex.Rpg.Combat`'s `CombatZone`: swings at each fighter's cadence (a player out of reach walks to
+it), the `IHitStep` chain (dodge, damage, crit, armor, minimum), threat, deaths (a player: ghost
+5 s, respawn entry at 50 %, equipment worn; a monster: XP to each participant still here,
+`MonsterKilledEvent`), combat exits and regeneration, then one `RpgCombatEvents`/`RpgVitals` per
+tick to the zone and `RpgSelfVitals`/`RpgDeath`/`RpgCombatResult` to the player. A monster is a
+`RoomMonsterAvatar` (a Habbo pet, no object logic). Health and mana belong to `PlayerCharacterGrain`
+(`current_health`, `current_mana`, `vitals_at`): the room reads them once on entry
+(`GetCombatProfileAsync`) and writes them back once, awaited, before the avatar leaves; new stats
+reach the room through the presence (`OnCharacterStatsChangedAsync` → `IRoomCombat`). A click on a
+monster (`RpgTargetSelect`) goes to the simulation first; a manual walk stops the attack. Proof:
+`driver.mjs combat`.
 
 ## Persistence
 

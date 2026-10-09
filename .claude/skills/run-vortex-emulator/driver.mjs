@@ -337,6 +337,12 @@ const H = {
   // RP actions: in 9012, out 9017 (9012-9016 out are the M1a combat messages).
   rpgEmote: 9012,
   rpgEmoteShown: 9017,
+  // Combat (spec M1a §9.2).
+  rpgCombatEvents: 9012,
+  rpgVitals: 9013,
+  rpgSelfVitals: 9014,
+  rpgDeath: 9015,
+  rpgCombatResult: 9016,
   quit: 3061,
   objectDataUpdate: 2329,
   objectUpdate: 114,
@@ -1306,6 +1312,213 @@ async function cmdTarget() {
   log('RpgTargetSelect(999999) -> RpgTarget(0). Target OK.');
 }
 
+// The avatars of a Users frame: the common block, then the player's or the pet's own fields.
+function usersOf(f) {
+  const r = reader(f.body);
+  const count = r.int();
+  const avatars = [];
+  for (let i = 0; i < count; i++) {
+    const a = { webId: r.int(), name: r.str() };
+    r.str(); // motto
+    a.figure = r.str();
+    a.objectId = r.int();
+    a.x = r.int();
+    a.y = r.int();
+    r.str(); // z
+    r.int(); // rotation
+    a.type = r.int();
+    if (a.type === 1) {
+      r.str(), r.int(), r.bool();
+    } else if (a.type === 2) {
+      r.int(), r.int(), r.str(), r.bool(), r.bool();
+      a.level = r.int();
+      r.str();
+    }
+    avatars.push(a);
+  }
+  return avatars;
+}
+
+// The first combat (spec M1a §15): wolves and a brute born in a proof zone when a player comes in;
+// a click from a safe cell refused; a click outside it targets a wolf, the avatar walks to it and
+// kills it for XP; a wolf hits back; the brute kills the player, who comes back at half health; a
+// zone change keeps that health.
+async function cmdCombat() {
+  await cmdContent();
+
+  const base = `http://127.0.0.1:${WEBAPI}`;
+  const headers = { cookie: (await webSession()).cookie };
+  const tiles = Array.from({ length: 100 }, () => ({ height: 0, walkable: true, hole: false }));
+  const floor = { width: 10, length: 10, tiles, door: { x: 0, y: 5 }, doorDirection: 2 };
+  const docs = {
+    proof_combat: {
+      schemaVersion: 1,
+      settings: { id: 'proof_combat', name: 'Preuve combat' },
+      floor,
+      entries: [
+        { id: 'start', kind: 'arrival', cell: { x: 1, y: 5 } },
+        { id: 'grave', kind: 'respawn', cell: { x: 1, y: 1 } },
+      ],
+      zones: [{ id: 'camp', kind: 'Safe', name: 'Camp', polygon: [{ x: 0, y: 4 }, { x: 2, y: 4 }, { x: 2, y: 6 }, { x: 0, y: 6 }] }],
+      spawns: [
+        {
+          id: 'wolves',
+          area: [{ x: 6, y: 4 }, { x: 6, y: 6 }, { x: 7, y: 5 }],
+          monster: 'monster.forest.wolf',
+          min: 2,
+          max: 2,
+          respawnSeconds: 60,
+          wanderRadius: 1,
+          aggroRadius: 2,
+        },
+        { id: 'brute', area: [{ x: 9, y: 0 }], monster: 'monster.proof.brute', aggroRadius: 1, wanderRadius: 0, respawnSeconds: 60 },
+      ],
+    },
+    proof_combat_b: {
+      schemaVersion: 1,
+      settings: { id: 'proof_combat_b', name: 'Preuve combat B' },
+      floor,
+      // Not (1, 5): the next sign-in lands here, and `smoke` walks the player from the door to (1, 5).
+      entries: [{ id: 'start', kind: 'arrival', cell: { x: 3, y: 3 } }],
+    },
+  };
+
+  const rooms = {};
+  for (const [key, doc] of Object.entries(docs)) {
+    let r = await request(`${base}/api/editor/zones`, { method: 'POST', headers, body: JSON.stringify({ key, name: doc.settings.name }) });
+    if (r.status !== 200 && r.status !== 409) die(`Zone creation ${key}: ${r.status} ${r.body}`);
+    r = await request(`${base}/api/editor/zones/${key}/lock`, { method: 'POST', headers });
+    if (r.status !== 200) die(`Lock ${key}: ${r.status} ${r.body}`);
+    r = await request(`${base}/api/editor/zones/${key}/versions?comment=driver`, { method: 'POST', headers, body: JSON.stringify(doc) });
+    if (r.status !== 200) die(`Save ${key}: ${r.status} ${r.body}`);
+    const saved = JSON.parse(r.body);
+    if (!saved.published) {
+      r = await request(`${base}/api/editor/zones/${key}/publish/${saved.version}`, { method: 'POST', headers });
+      if (r.status !== 200) die(`Publish ${key}: ${r.status} ${r.body}`);
+    }
+    const zones = JSON.parse((await request(`${base}/api/editor/zones`, { headers })).body);
+    rooms[key] = zones.find((z) => z.key === key).roomId;
+  }
+  log(`Published proof_combat (room ${rooms.proof_combat}) and proof_combat_b (room ${rooms.proof_combat_b}).`);
+
+  const a = await enterWorld(PLAYER);
+  const fail = (m) => {
+    a.g.close();
+    die(m);
+  };
+  const g = a.g;
+
+  // RpgSelfVitals: health, max, mana, max mana, in combat. RpgCombatEvents: count × hit.
+  const selfOf = (f) => {
+    const r = reader(f.body);
+    return { health: r.int(), maxHealth: r.int(), mana: r.int(), maxMana: r.int(), inCombat: r.bool() };
+  };
+  const hitsAfter = (from) =>
+    g.frames.slice(from).filter((f) => f.header === H.rpgCombatEvents).flatMap((f) => {
+      const r = reader(f.body);
+      return Array.from({ length: r.int() }, () => ({
+        attacker: r.int(),
+        target: r.int(),
+        amount: r.int(),
+        outcome: r.str(),
+        health: r.int(),
+        maxHealth: r.int(),
+        killed: r.bool(),
+      }));
+    });
+  const until = async (test, ms) => {
+    for (let t = 0; t < ms; t += 100) {
+      const hit = test();
+      if (hit) return hit;
+      await sleep(100);
+    }
+    return null;
+  };
+  const lastSelf = (from) => {
+    const frames = g.frames.slice(from).filter((f) => f.header === H.rpgSelfVitals);
+    return frames.length ? selfOf(frames[frames.length - 1]) : null;
+  };
+  const resultAfter = async (from) => {
+    const f = await g.wait([H.rpgCombatResult], from, 5000);
+    return f ? reader(f.body).str() : null;
+  };
+
+  // 1. Into the combat zone: monsters are born as pets.
+  let mark = g.frames.length;
+  g.send(frame(H.openFlat, rooms.proof_combat, '', -1));
+  const avatars = await until(() => {
+    const all = g.frames.slice(mark).filter((f) => f.header === H.users).flatMap(usersOf);
+    return all.some((x) => x.name === 'monster.proof.brute') && all.filter((x) => x.name === 'monster.forest.wolf').length >= 2 ? all : null;
+  }, 8000);
+  if (!avatars) fail('1. No wolves and brute born as pets in proof_combat.');
+  const me = avatars.find((x) => x.type === 1 && x.webId === a.playerId);
+  const wolves = avatars.filter((x) => x.name === 'monster.forest.wolf');
+  const brute = avatars.find((x) => x.name === 'monster.proof.brute');
+  if (!me || wolves.some((w) => w.type !== 2 || w.webId !== -w.objectId)) fail(`1. Avatars: ${JSON.stringify(avatars)}`);
+  const entered = await until(() => lastSelf(mark), 3000);
+  if (!entered) fail('1. No RpgSelfVitals on entering.');
+  log(`1. In proof_combat: me ${me.objectId}, wolves ${wolves.map((w) => `${w.objectId}@${w.x},${w.y} L${w.level}`).join(' ')}, brute ${brute.objectId}; vitals ${JSON.stringify(entered)}`);
+
+  // 2. From the camp (safe), an attack is refused.
+  mark = g.frames.length;
+  g.send(frame(H.rpgTargetSelect, wolves[0].objectId));
+  const safe = await resultAfter(mark);
+  if (safe !== 'safe_zone') fail(`2. Click from the camp -> ${safe}`);
+  log('2. Click on a wolf from the camp -> safe_zone');
+
+  // 3. Out of the camp, a click targets the wolf, the avatar walks to it and kills it.
+  g.send(frame(H.moveAvatar, 4, 5));
+  await sleep(1500);
+  mark = g.frames.length;
+  g.send(frame(H.rpgTargetSelect, wolves[0].objectId));
+  const target = await g.wait([H.rpgTarget], mark, 5000);
+  if (!target) fail('3. No RpgTarget for the wolf.');
+  const t = reader(target.body);
+  const shown = { objectId: t.int(), kind: t.str(), name: t.str(), level: t.int(), classId: t.str() };
+  if (shown.kind !== 'monster' || shown.name !== 'monster.forest.wolf') fail(`3. RpgTarget ${JSON.stringify(shown)}`);
+  const kill = await until(() => hitsAfter(mark).find((h) => h.target === wolves[0].objectId && h.killed), 40000);
+  if (!kill) fail(`3. The wolf did not die: ${JSON.stringify(hitsAfter(mark).slice(-5))}`);
+  const progress = await g.wait([H.rpgProgress], mark, 5000);
+  if (!progress) fail('3. No RpgCharacterProgress (XP) after the kill.');
+  const mine = hitsAfter(mark).filter((h) => h.attacker === me.objectId);
+  log(`3. RpgTarget ${JSON.stringify(shown)}; ${mine.length} hits of mine, the wolf died; XP granted`);
+
+  // 4. A wolf hits the player (the second one is aggressive).
+  const bitten = await until(() => hitsAfter(0).find((h) => h.target === me.objectId && wolves.some((w) => w.objectId === h.attacker)), 20000);
+  if (!bitten) fail('4. No wolf ever hit the player.');
+  log(`4. A wolf hit me: ${JSON.stringify(bitten)}`);
+
+  // 5. The brute kills the player; he comes back at half health.
+  mark = g.frames.length;
+  g.send(frame(H.rpgTargetSelect, 0));
+  g.send(frame(H.moveAvatar, 8, 0));
+  const death = await g.wait([H.rpgDeath], mark, 25000);
+  if (!death) fail('5. No RpgDeath next to the brute.');
+  const seconds = reader(death.body).int();
+  const back = await until(() => {
+    const s = g.frames.slice(g.frames.indexOf(death) + 1).filter((f) => f.header === H.rpgSelfVitals).map(selfOf);
+    return s.find((v) => v.health > 0);
+  }, (seconds + 3) * 1000);
+  if (!back) fail('5. No respawn after the death.');
+  const half = Math.max(1, Math.floor((back.maxHealth * 50) / 100));
+  if (Math.abs(back.health - half) > Math.ceil(back.maxHealth * 0.05)) fail(`5. Respawned at ${back.health}/${back.maxHealth}, expected about ${half}.`);
+  log(`5. RpgDeath(${seconds}), back at ${back.health}/${back.maxHealth}`);
+
+  // 6. Another zone: the same health.
+  await sleep(500);
+  const before = lastSelf(0);
+  mark = g.frames.length;
+  g.send(frame(H.openFlat, rooms.proof_combat_b, '', -1));
+  const there = await until(() => lastSelf(mark), 8000);
+  if (!there) fail('6. No RpgSelfVitals in proof_combat_b.');
+  if (there.health < before.health || there.health > before.health + Math.ceil(before.maxHealth * 0.05))
+    fail(`6. Health ${before.health} in proof_combat became ${there.health} in proof_combat_b.`);
+  log(`6. proof_combat_b: ${there.health}/${there.maxHealth} (was ${before.health})`);
+
+  g.close();
+  log('Combat OK.');
+}
+
 // The chat (spec F3c §15), two accounts: Général within a zone, Monde across, a whisper by name
 // and its copy, the idle Guilde, an item link checked, the rate limit, unknown and offline names.
 async function cmdChat() {
@@ -1479,6 +1692,7 @@ const table = {
   items: cmdItems,
   target: cmdTarget,
   chat: cmdChat,
+  combat: cmdCombat,
   grace: () => cmdGrace(args[0]),
   cleanup: cmdCleanup,
   smoke: cmdSmoke,
