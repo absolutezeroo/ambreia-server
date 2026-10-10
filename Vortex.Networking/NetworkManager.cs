@@ -13,6 +13,7 @@ using SuperSocket.Server.Abstractions.Host;
 using SuperSocket.Server.Host;
 using SuperSocket.WebSocket.Server;
 using Vortex.Messages;
+using Vortex.Messages.RateLimit;
 using Vortex.Networking.Configuration;
 using Vortex.Networking.Extensions;
 using Vortex.Networking.Package;
@@ -36,9 +37,11 @@ public sealed class NetworkManager(
     IGrainFactory grainFactory,
     IVortexContextAccessor contextAccessor,
     IErrorGroupingSink errorSink,
-    IVortexMetrics metrics
+    IVortexMetrics metrics,
+    IRateLimiter limiter
 ) : INetworkManager
 {
+    private readonly IRateLimiter _limiter = limiter;
     private readonly NetworkingConfig _config = config.Value;
     private readonly IGrainFactory _grainFactory = grainFactory;
     private readonly ILogger<NetworkManager> _logger = loggerFactory.CreateLogger<NetworkManager>();
@@ -150,7 +153,9 @@ public sealed class NetworkManager(
             _loggerFactory.CreateLogger<PackageHandler>(),
             _contextAccessor,
             _errorSink,
-            _config
+            _config,
+            _limiter,
+            _metrics
         );
         WsPackageHandler wsPackageHandler = new(
             decoder,
@@ -338,6 +343,9 @@ public sealed class NetworkManager(
         services.AddSingleton(_contextAccessor);
         services.AddSingleton(_errorSink);
         services.AddSingleton(_metrics);
+        // The same per-session bucket as the pipeline's RateLimitBehavior: an unknown header
+        // spends from it too (PackageHandler), so it has to be the one instance.
+        services.AddSingleton(_limiter);
         // PackageHandler reads LogPacketPayloadOnError from this. Forwarded resolved rather than as
         // IOptions<> for the same reason as the rest: this container only holds what is handed to it.
         services.AddSingleton(_config);

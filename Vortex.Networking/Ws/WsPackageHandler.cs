@@ -79,21 +79,21 @@ internal sealed class WsPackageHandler(
             ctx.WsBuffer?.Write(segment.Span);
         }
 
-        while (true)
+        if (ctx.WsBuffer is null)
         {
-            if (ctx.WsBuffer is null)
-            {
-                break;
-            }
+            return;
+        }
 
-            ReadOnlyMemory<byte> memory = ctx.WsBuffer.WrittenMemory;
+        // Every whole packet in the buffer is read by offset and handed on; the buffer is compacted
+        // ONCE at the end, not after each packet — a frame of ten thousand six-byte packets used to
+        // copy the whole remainder ten thousand times. Nothing writes the buffer meanwhile: frames of
+        // one session arrive one after the other, and the decoder copies what it reads.
+        ReadOnlyMemory<byte> memory = ctx.WsBuffer.WrittenMemory;
+        int consumed = 0;
 
-            if (memory.Length == 0)
-            {
-                break;
-            }
-
-            SequenceReader<byte> reader = new(new ReadOnlySequence<byte>(memory));
+        while (consumed < memory.Length)
+        {
+            SequenceReader<byte> reader = new(new ReadOnlySequence<byte>(memory[consumed..]));
 
             IClientPacket? packet;
 
@@ -122,16 +122,23 @@ internal sealed class WsPackageHandler(
                 break;
             }
 
-            byte[] remaining = ctx.WsBuffer.WrittenSpan[(int)reader.Consumed..].ToArray();
-
-            ctx.WsBuffer.Clear();
-
-            if (remaining.Length > 0)
-            {
-                ctx.WsBuffer.Write(remaining);
-            }
+            consumed += (int)reader.Consumed;
 
             await _inner.HandleAsync(ctx, packet, ct).ConfigureAwait(false);
+        }
+
+        if (consumed == 0)
+        {
+            return;
+        }
+
+        byte[] remaining = memory[consumed..].ToArray();
+
+        ctx.WsBuffer.Clear();
+
+        if (remaining.Length > 0)
+        {
+            ctx.WsBuffer.Write(remaining);
         }
     }
 }

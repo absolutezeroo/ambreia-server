@@ -3,9 +3,11 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using FluentAssertions;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 using Vortex.Messages;
+using Vortex.Messages.RateLimit;
 using Vortex.Networking.Configuration;
 using Vortex.Networking.Package;
 using Vortex.Primitives.Networking;
@@ -68,7 +70,53 @@ public sealed class UnknownHeaderTests
         probe.Closed.Should().BeTrue();
     }
 
-    private static PackageHandler Handler() =>
+    /// <summary>
+    /// An unknown header costs a token of the session's own bucket, and a header with no token
+    /// left is a parse failure: a frame of ten thousand of them is one closed connection and a
+    /// bounded number of log lines, not ten thousand.
+    /// </summary>
+    [Fact]
+    public async Task TenThousandUnknownHeaders_CloseTheSessionOnce_WithBoundedLogs()
+    {
+        const int burst = 100;
+        const int budget = 10;
+        int tokens = burst;
+        int logLines = 0;
+        SessionProbe probe = new();
+        PackageHandler handler = Handler(
+            parseBudget: budget,
+            limiter: FakeProxy.Create<IRateLimiter>(_ => tokens-- > 0),
+            logger: FakeProxy.Create<ILogger<PackageHandler>>(call =>
+            {
+                if (call.Method.Name == nameof(ILogger.Log))
+                {
+                    logLines++;
+                }
+
+                return call.Method.Name == nameof(ILogger.IsEnabled) ? true : null;
+            })
+        );
+        ClientPacket unknown = new(REMOVED_HEADER, ReadOnlyMemory<byte>.Empty);
+
+        for (int i = 0; i < 10_000; i++)
+        {
+            await handler.HandleAsync(probe.Session, unknown, default);
+        }
+
+        // The fake socket does not go away when closed, so the rest of the flood still arrives:
+        // each of those costs a counter increment and nothing else.
+        probe.CloseCalls.Should().Be(1, "closed once, on the budget's last failure");
+        probe.ParseFailures.Should().BeGreaterThanOrEqualTo(budget);
+        logLines
+            .Should()
+            .BeLessThanOrEqualTo(burst + 1, "one line per token, then one line for the close");
+    }
+
+    private static PackageHandler Handler(
+        int parseBudget = 1,
+        IRateLimiter? limiter = null,
+        ILogger<PackageHandler>? logger = null
+    ) =>
         new(
             FakeProxy.Create<IRevisionManager>(call =>
                 call.Method.Name == nameof(IRevisionManager.GetRevision) ? Revision : null
@@ -82,17 +130,21 @@ public sealed class UnknownHeaderTests
                 null!,
                 NullLogger<MessageSystem>.Instance
             ),
-            NullLogger<PackageHandler>.Instance,
+            logger ?? NullLogger<PackageHandler>.Instance,
             FakeProxy.Create<IVortexContextAccessor>(_ => null),
             FakeProxy.Create<IErrorGroupingSink>(_ => null),
-            // A budget of one: any parse failure at all closes the session.
-            new NetworkingConfig { MaxParseFailuresPerSession = 1 }
+            // A budget of one by default: any parse failure at all closes the session.
+            new NetworkingConfig { MaxParseFailuresPerSession = parseBudget },
+            // Tokens for everyone by default: the bucket is not what these tests are about.
+            limiter ?? FakeProxy.Create<IRateLimiter>(_ => true),
+            FakeProxy.Create<IVortexMetrics>(_ => null)
         );
 
     private sealed class SessionProbe
     {
         public int ParseFailures;
         public bool Closed;
+        public int CloseCalls;
 
         public ISessionContext Session { get; }
 
@@ -112,6 +164,7 @@ public sealed class UnknownHeaderTests
         private Task CloseAsync()
         {
             Closed = true;
+            CloseCalls++;
             return Task.CompletedTask;
         }
     }
