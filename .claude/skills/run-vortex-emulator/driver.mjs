@@ -1735,15 +1735,13 @@ async function publishBossZone() {
 async function cmdBoss() {
   await cmdContent();
   const base = `http://127.0.0.1:${WEBAPI}`;
-  // The admin XP route and the editor need the owner role on the proof accounts: each signed in
-  // first, so that a new one exists (the role is read at each request).
-  for (const account of [PLAYER, PLAYER_D]) {
-    await webSession(account);
-    sql(`INSERT INTO player_account_roles (account_id, role_id)
-         SELECT a.id, r.id FROM player_accounts a, roles r
-         WHERE a.email='${account.email}' AND r.\`key\`='owner'
-           AND NOT EXISTS (SELECT 1 FROM player_account_roles x WHERE x.account_id=a.id AND x.role_id=r.id);`);
-  }
+  // The editor and the admin XP route need the owner role: the first proof account holds it (signed
+  // in first, so that it exists; the role is read at each request). The mage's account needs none.
+  await webSession(PLAYER);
+  sql(`INSERT INTO player_account_roles (account_id, role_id)
+       SELECT a.id, r.id FROM player_accounts a, roles r
+       WHERE a.email='${PLAYER.email}' AND r.\`key\`='owner'
+         AND NOT EXISTS (SELECT 1 FROM player_account_roles x WHERE x.account_id=a.id AND x.role_id=r.id);`);
   const room = await publishBossZone();
   const a = await enterWorld(PLAYER_D, 'class.mage');
   const g = a.g;
@@ -1763,14 +1761,26 @@ async function cmdBoss() {
     return null;
   };
 
-  // 1. Level 6 for the mage: Firebolt hits hard enough, and its three skills are known.
-  const xp = await request(`${base}/api/admin/characters/${a.playerId}/xp`, {
-    method: 'POST',
-    headers: { cookie: (await webSession(PLAYER_D)).cookie },
-    body: JSON.stringify({ amount: 1200 }),
-  });
-  if (xp.status !== 200) fail(`1. POST /api/admin/characters/${a.playerId}/xp -> ${xp.status} ${xp.body}`);
-  log(`1. XP granted: ${xp.body}`);
+  // 1. Level 6 for the mage, no more: Firebolt hits hard enough to reach phase 2 without killing the
+  // guardian past it, run after run. XP to reach each level (content/progression): 100, 150, 220,
+  // 300, 400.
+  const toLevel = [0, 100, 250, 470, 770, 1170];
+  const [level, xpNow] = sql(`SELECT level, xp FROM player_characters WHERE player_id=${a.playerId};`)
+    .trim()
+    .split(/\s+/)
+    .map(Number);
+  const missing = level >= 6 ? 0 : toLevel[5] - toLevel[level - 1] - xpNow;
+  if (missing > 0) {
+    const xp = await request(`${base}/api/admin/characters/${a.playerId}/xp`, {
+      method: 'POST',
+      headers: { cookie: (await webSession(PLAYER)).cookie },
+      body: JSON.stringify({ amount: missing }),
+    });
+    if (xp.status !== 200) fail(`1. POST /api/admin/characters/${a.playerId}/xp -> ${xp.status} ${xp.body}`);
+    log(`1. ${missing} XP granted: ${xp.body}`);
+  } else {
+    log(`1. The mage is level ${level} already.`);
+  }
 
   // 2. Into the arena: the guardian, the archer and the shaman.
   let mark = g.frames.length;

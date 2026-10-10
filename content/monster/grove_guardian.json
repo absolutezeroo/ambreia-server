@@ -44,6 +44,7 @@
         { "skill": "skill.monster.root_lash", "priority": 20 },
         { "skill": "skill.monster.sweep", "priority": 10 }
       ],
+      "status": "status.enraged",
       "yell": "monster.grove.guardian.phase3"
     }
   ]
