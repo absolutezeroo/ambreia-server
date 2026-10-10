@@ -7,6 +7,7 @@ using Vortex.Primitives.Rooms.Events.Zone;
 using Vortex.Primitives.Rooms.Object.Avatars;
 using Vortex.Primitives.World;
 using Vortex.Primitives.World.Layers;
+using Vortex.Primitives.World.Rules;
 using Vortex.Rooms.Grains.Zones.Messaging;
 using Vortex.Rooms.Grains.Zones.Runtime;
 
@@ -30,6 +31,14 @@ public sealed class ZoneAreaModule(RoomGrain roomGrain)
         if (!zone.Visitors.TryGetValue(playerId, out ZoneVisitor? visitor))
         {
             zone.Visitors[playerId] = visitor = new ZoneVisitor();
+
+            // The arrival step: the zone's own recommended level (spec Z1 §7).
+            AdviseLevel(
+                playerId,
+                visitor,
+                "zone",
+                zone.Compiled.Document.Settings.RecommendedLevel
+            );
         }
 
         IReadOnlyList<ZoneArea> before = visitor.Areas;
@@ -94,6 +103,37 @@ public sealed class ZoneAreaModule(RoomGrain roomGrain)
                     : $"Vous entrez : {named.Name}"
             );
         }
+
+        if (!Moved(visitor, now))
+        {
+            foreach (ZoneArea area in entered)
+            {
+                AdviseLevel(playerId, visitor, area.Id, area.RecommendedLevel);
+            }
+        }
+    }
+
+    /// <summary>
+    /// Spec Z1 §7: under the recommended level, the player is told, once per visit for each place.
+    /// The room does not read the level: it asks the document's own condition "below it", which a
+    /// module answers; no facts, no answer, a broken piece — false, and nothing is said.
+    /// </summary>
+    private void AdviseLevel(PlayerId playerId, ZoneVisitor visitor, string place, int recommended)
+    {
+        if (
+            recommended < 2
+            || visitor.Advised.Contains(place)
+            || !roomGrain.ZoneTriggers.ConditionsHold(
+                [new PlayerLevelCondition(1, recommended - 1)],
+                playerId
+            )
+        )
+        {
+            return;
+        }
+
+        visitor.Advised.Add(place);
+        ZoneBubble.Show(roomGrain, playerId, "zone.level", $"Niveau conseillé : {recommended}.");
     }
 
     /// <summary>
