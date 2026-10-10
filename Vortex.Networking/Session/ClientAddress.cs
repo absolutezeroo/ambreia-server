@@ -30,6 +30,8 @@ public static class ClientAddress
             return null;
         }
 
+        transport = Normalize(transport);
+
         if (!trusted.Contains(transport))
         {
             return transport.ToString();
@@ -37,7 +39,7 @@ public static class ClientAddress
 
         if (proxyProtocolSource is not null)
         {
-            return proxyProtocolSource.ToString();
+            return Normalize(proxyProtocolSource).ToString();
         }
 
         // "client, proxy1, proxy2": read from the right, the side the proxies wrote. The first hop
@@ -58,6 +60,8 @@ public static class ClientAddress
                 return transport.ToString();
             }
 
+            hop = Normalize(hop);
+
             if (!trusted.Contains(hop))
             {
                 return hop.ToString();
@@ -73,5 +77,11 @@ public static class ClientAddress
         entries
             .Select(e => IPAddress.TryParse(e.Trim(), out IPAddress? address) ? address : null)
             .OfType<IPAddress>()
+            .Select(Normalize)
             .ToHashSet();
+
+    /// <summary>A dual-stack listener reports an IPv4 peer as <c>::ffff:10.0.0.2</c>, which
+    /// <see cref="IPAddress" /> does not equate to <c>10.0.0.2</c>: compared in its IPv4 form.</summary>
+    private static IPAddress Normalize(IPAddress address) =>
+        address.IsIPv4MappedToIPv6 ? address.MapToIPv4() : address;
 }

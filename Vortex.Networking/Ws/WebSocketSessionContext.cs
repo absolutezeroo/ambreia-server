@@ -1,5 +1,6 @@
 using System;
 using System.Buffers;
+using System.Collections.Generic;
 using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
@@ -33,14 +34,19 @@ public sealed class WebSocketSessionContext(
     public DateTime LastActivityUtc { get; private set; } = DateTime.UtcNow;
     public CancellationTokenSource HeartbeatCts { get; } = new();
 
+    private readonly IReadOnlySet<IPAddress> _trustedProxies = ClientAddress.ParseTrusted(
+        networking.TrustedProxies
+    );
+
     // The client's address, not the proxy's, when a listed proxy spoke PROXY protocol or set
-    // X-Forwarded-For on the handshake (audit P0-4). Read once: the handshake does not change.
-    public string? RemoteIpAddress { get; } =
+    // X-Forwarded-For on the handshake (audit P0-4). Resolved on each read, like the TCP session's:
+    // the handshake header is read when it is asked for, not frozen at a moment it might not be there.
+    public string? RemoteIpAddress =>
         ClientAddress.Resolve(
             (session.RemoteEndPoint as IPEndPoint)?.Address,
             ((IAppSession)session).Connection?.ProxyInfo?.SourceIPAddress,
             session.HttpHeader?.Items["X-Forwarded-For"],
-            ClientAddress.ParseTrusted(networking.TrustedProxies)
+            _trustedProxies
         );
 
     public IRc4Engine? CryptoIn { get; private set; }

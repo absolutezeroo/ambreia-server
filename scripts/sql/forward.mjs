@@ -118,15 +118,25 @@ function main(argv) {
   const conn = parseConnection(connectionString(root));
   if (!conn.database) throw new Error('The connection string names no database.');
 
-  mysql(conn, [conn.database, '-e',
-    `CREATE TABLE IF NOT EXISTS \`${HISTORY_TABLE}\` (` +
-      '`name` varchar(128) NOT NULL PRIMARY KEY, ' +
-      '`applied_at` datetime(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6)) CHARACTER SET = utf8mb4;']);
+  // Inspection writes nothing: a database without the history table simply has applied nothing.
+  const historyExists =
+    mysql(conn, [conn.database, '-e',
+      `SELECT COUNT(*) FROM information_schema.tables WHERE table_schema = DATABASE() AND table_name = '${HISTORY_TABLE}';`,
+    ]).trim() === '1';
+
+  if (!historyExists && !list && !dryRun) {
+    mysql(conn, [conn.database, '-e',
+      `CREATE TABLE IF NOT EXISTS \`${HISTORY_TABLE}\` (` +
+        '`name` varchar(128) NOT NULL PRIMARY KEY, ' +
+        '`applied_at` datetime(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6)) CHARACTER SET = utf8mb4;']);
+  }
 
   const applied = new Set(
-    mysql(conn, [conn.database, '-e', `SELECT name FROM \`${HISTORY_TABLE}\` ORDER BY name;`])
-      .split(/\r?\n/)
-      .filter(Boolean),
+    historyExists
+      ? mysql(conn, [conn.database, '-e', `SELECT name FROM \`${HISTORY_TABLE}\` ORDER BY name;`])
+          .split(/\r?\n/)
+          .filter(Boolean)
+      : [],
   );
   const { toRun, unknown } = pending(chain, applied);
 

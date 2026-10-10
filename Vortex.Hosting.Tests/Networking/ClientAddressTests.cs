@@ -95,6 +95,17 @@ public sealed class ClientAddressTests
         ClientAddress.Resolve(Proxy, null, "unknown", Trusted).Should().Be("10.0.0.2");
     }
 
+    /// <summary>A dual-stack listener reports an IPv4 peer as ::ffff:a.b.c.d; the operator wrote
+    /// a.b.c.d. The two are the same proxy.</summary>
+    [Fact]
+    public void AnIPv4MappedTransportAddress_MatchesTheListedProxy()
+    {
+        ClientAddress
+            .Resolve(IPAddress.Parse("::ffff:10.0.0.2"), null, "::ffff:203.0.113.7", Trusted)
+            .Should()
+            .Be("203.0.113.7");
+    }
+
     [Fact]
     public void NoTransportAddress_IsNoAddress()
     {

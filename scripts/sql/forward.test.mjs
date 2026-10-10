@@ -40,4 +40,12 @@ test('the connection string gives host, port, user, database; the password stays
     { host: 'db.local', port: '3307', user: 'vortex', password: 's3cret', database: 'vortex' },
   );
   assert.equal(parseConnection('Database=x').host, '127.0.0.1');
+  // The short spellings MySqlConnector accepts too, with the spaces people type.
+  assert.deepEqual(parseConnection('Host=h; Uid = u ; Pwd=p; Database = d'), {
+    host: 'h',
+    port: '3306',
+    user: 'u',
+    password: 'p',
+    database: 'd',
+  });
 });
