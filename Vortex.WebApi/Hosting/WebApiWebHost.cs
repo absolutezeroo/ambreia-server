@@ -156,11 +156,10 @@ internal sealed class WebApiWebHost(
 
         ConfigureKestrel(builder);
 
-        // The web app is its own host with its own logging: cleared, then pointed at the hotel's
-        // logger factory, so a Kestrel or route exception lands in the same console and sinks as
-        // everything else instead of nowhere.
+        // The web app is its own host with its own logging: cleared here, then pointed at the
+        // hotel's logger factory by ForwardSingletons, so a Kestrel or route exception lands in the
+        // same console and sinks as everything else instead of nowhere.
         builder.Logging.ClearProviders();
-        builder.Services.AddSingleton(rootServices.GetRequiredService<ILoggerFactory>());
 
         ForwardSingletons(builder.Services);
         ConfigureForwardedHeaders(builder.Services);
@@ -266,6 +265,9 @@ internal sealed class WebApiWebHost(
     /// </summary>
     private void ForwardSingletons(IServiceCollection services)
     {
+        // The hotel's factory, borrowed by WebApiPlugin.BorrowFromHost: the plugin container itself
+        // holds only prefixed ILogger<T>s, which is what made this resolution fail at start-up once.
+        services.AddSingleton(rootServices.GetRequiredService<ILoggerFactory>());
         services.AddSingleton(rootServices.GetRequiredService<WebApiSessionStore>());
         services.AddSingleton(rootServices.GetRequiredService<IWebApiAuthService>());
         services.AddSingleton(rootServices.GetRequiredService<IWebApiPlayerService>());

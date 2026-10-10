@@ -6,6 +6,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Orleans;
 using Vortex.Database.Context;
@@ -98,6 +99,9 @@ public sealed class WebApiPlugin : IVortexPlugin
         services.UseHostService<IConfiguration>();
         services.UseHostService<IHostEnvironment>();
         services.UseHostService<IHostApplicationLifetime>();
+        // A plugin container gets prefixed ILogger<T>s, not the factory; the Kestrel sub-host needs
+        // the factory itself to log through the hotel's sinks (WebApiWebHost.ForwardSingletons).
+        services.UseHostService<ILoggerFactory>();
 
         // Data and the live server.
         services.UseHostService<IHostReadiness>();
