@@ -45,6 +45,8 @@ public sealed class ZoneTriggerModule(RoomGrain roomGrain) : IRoomEventListener
             ),
             ZoneAreaLeftEvent e => FireAsync(ZoneTriggerType.LeaveZone, e.AreaId, e.PlayerId, ct),
             ZoneDecorUsedEvent e => FireAsync(ZoneTriggerType.Interact, e.DecorId, e.PlayerId, ct),
+            // What a module saw happen (spec Z1 §5): the room runs the triggers, not knowing why.
+            ZoneTriggerRaisedEvent e => FireAsync(e.Type, e.Target, e.PlayerId, ct),
             _ => Task.CompletedTask,
         };
 

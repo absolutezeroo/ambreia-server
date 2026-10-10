@@ -1,9 +1,12 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Vortex.Primitives.Players;
+using Vortex.Primitives.Rooms.Events.Zone;
+using Vortex.Primitives.World.Layers;
 using Vortex.Primitives.World.Rules;
 using Vortex.Rpg.Zones.Rules;
 
@@ -14,9 +17,11 @@ public sealed partial class RoomGrain
 {
     /// <summary>
     /// Server side only: the player's presence passes on a part of what the zone knows of them.
-    /// A part older than the one held arrived late, past a newer one: it is dropped.
+    /// A part older than the one held arrived late, past a newer one: it is dropped. Against the
+    /// part held, the module that declared it says what the change sets off (spec Z1 §5.2–5.3); a
+    /// first part has nothing to compare with.
     /// </summary>
-    public Task UpdatePlayerFactsAsync(PlayerId player, ZoneFacts facts)
+    public async Task UpdatePlayerFactsAsync(PlayerId player, ZoneFacts facts)
     {
         // A relay that arrives after the player left must not bring them back.
         if (
@@ -25,23 +30,66 @@ public sealed partial class RoomGrain
             || !_state.AvatarsByPlayerId.ContainsKey(player)
         )
         {
-            return Task.CompletedTask;
+            return;
         }
 
+        Type type = facts.GetType();
         Dictionary<Type, ZoneFacts> parts = PartsOf(zone.Facts, player);
+        parts.TryGetValue(type, out ZoneFacts? held);
 
-        if (
-            parts.TryGetValue(facts.GetType(), out ZoneFacts? held)
-            && held.Sequence >= facts.Sequence
-        )
+        if (held is not null && held.Sequence >= facts.Sequence)
         {
-            return Task.CompletedTask;
+            return;
         }
 
-        parts[facts.GetType()] = facts;
+        parts[type] = facts;
 
-        return Task.CompletedTask;
+        if (held is null || _zoneRules.SourceOf(type) is not { } source)
+        {
+            return;
+        }
+
+        foreach (ZoneTriggerSignal signal in SignalsOf(source, held, facts))
+        {
+            await RaiseZoneTriggerAsync(player, signal.Type, signal.Target);
+        }
     }
+
+    private ZoneTriggerSignal[] SignalsOf(
+        IZoneFactsSource source,
+        ZoneFacts before,
+        ZoneFacts after
+    )
+    {
+        try
+        {
+            return [.. source.Changes(before, after)];
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(
+                ex,
+                "{Source} could not say what a change sets off in room {RoomId}.",
+                source.GetType().Name,
+                RoomId.Value
+            );
+
+            return [];
+        }
+    }
+
+    /// <summary>The zone's triggers of this type and target run for the player (spec Z1 §5).</summary>
+    internal Task RaiseZoneTriggerAsync(PlayerId player, ZoneTriggerType type, string target) =>
+        EventModule.PublishAsync(
+            new ZoneTriggerRaisedEvent
+            {
+                RoomId = RoomId,
+                PlayerId = player,
+                Type = type,
+                Target = target,
+            },
+            CancellationToken.None
+        );
 
     /// <summary>
     /// Every declared part of the player, read at once (spec Z1 §4.3). A source that fails is

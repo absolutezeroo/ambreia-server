@@ -2,8 +2,10 @@ using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using FluentAssertions;
+using Orleans;
 using Vortex.Primitives.Players;
 using Vortex.Primitives.Rpg.Characters;
+using Vortex.Primitives.World.Layers;
 using Vortex.Primitives.World.Rules;
 using Vortex.Rpg.Characters.Zones;
 using Vortex.Rpg.Zones;
@@ -70,6 +72,33 @@ public sealed class CharacterZoneConditionsTests
             .Holds(new HasItemCondition("item.key", count), Ctx(Facts(1, owned)))
             .Should()
             .Be(holds);
+
+    /// <summary>Spec Z1 §5.2–5.3: what a change of the character's part sets off.</summary>
+    [Fact]
+    public void Changes_AreEachLevelCrossedAndEachItemGained()
+    {
+        CharacterZoneFacts before = Facts(1, keys: 2) with
+        {
+            Items = ImmutableDictionary<string, int>.Empty.Add("item.key", 2).Add("item.gem", 1),
+        };
+        CharacterZoneFacts after = Facts(3, keys: 3);
+
+        new CharacterFactsSource(FakeProxy.Create<IGrainFactory>(_ => null))
+            .Changes(before, after)
+            .Should()
+            .Equal(
+                new ZoneTriggerSignal(ZoneTriggerType.PlayerLevel, "2"),
+                new ZoneTriggerSignal(ZoneTriggerType.PlayerLevel, "3"),
+                new ZoneTriggerSignal(ZoneTriggerType.ItemOwned, "item.key")
+            );
+    }
+
+    [Fact]
+    public void NoChange_SetsOffNothing() =>
+        new CharacterFactsSource(FakeProxy.Create<IGrainFactory>(_ => null))
+            .Changes(Facts(2, keys: 1), Facts(2, keys: 1))
+            .Should()
+            .BeEmpty();
 
     [Fact]
     public void HasItem_WithoutFacts_IsFalse() =>
