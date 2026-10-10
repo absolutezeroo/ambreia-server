@@ -2,8 +2,13 @@ using System.Collections.Immutable;
 using System.Threading.Tasks;
 using FluentAssertions;
 using Vortex.Primitives.Players;
+using Vortex.Primitives.Rooms.Object.Logic.Avatars;
 using Vortex.Primitives.Rpg.Characters;
+using Vortex.Primitives.World;
+using Vortex.Primitives.World.Rules;
 using Vortex.Rooms.Tests.Support;
+using Vortex.Rpg.Characters.Zones;
+using Vortex.Tests.Support;
 using Vortex.Tests.Support.World;
 using Xunit;
 using static Vortex.Rooms.Tests.Zones.ZoneVisits;
@@ -29,6 +34,37 @@ public sealed class ZoneFactsTests
         }
 
         return new CharacterZoneFacts { Level = level, Items = owned.ToImmutable() };
+    }
+
+    /// <summary>Spec Z1 §4.4, plugged in: the characters module's condition reads the zone's facts.</summary>
+    [Fact]
+    public async Task ARestrictedArea_LetsInOnlyTheLevelItAsks()
+    {
+        ZoneDocument doc = ZoneSamples.Minimal() with
+        {
+            Zones =
+            [
+                Area("vault", ZoneAreaKinds.Restricted, "Chambre forte", 3, 5) with
+                {
+                    Conditions = [new PlayerLevelCondition(2, 0)],
+                },
+            ],
+        };
+        RoomHarness harness = await RoomHarness.CreateZoneAsync(
+            doc,
+            conditions: [new PlayerLevelEvaluator()]
+        );
+        harness.LogicFactory = () => FakeProxy.Create<IRoomPlayerLogic>(_ => null);
+        harness.Facts[Walker] = Level(1);
+        await EnterAsync(harness);
+
+        await WalkAsync(harness, 4, 2);
+        AvatarOf(harness).X.Should().BeLessThan(3, "a level 1 is kept out");
+
+        await harness.Grain.UpdatePlayerFactsAsync(Walker, Level(2));
+        await WalkAsync(harness, 4, 2);
+
+        (AvatarOf(harness).X, AvatarOf(harness).Y).Should().Be((4, 2));
     }
 
     [Fact]

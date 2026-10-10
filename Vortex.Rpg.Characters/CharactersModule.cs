@@ -4,8 +4,10 @@ using Vortex.Primitives.Plugins;
 using Vortex.Rpg.Characters.Configuration;
 using Vortex.Rpg.Characters.Content;
 using Vortex.Rpg.Characters.Stats;
+using Vortex.Rpg.Characters.Zones;
 using Vortex.Rpg.Content.Migrations;
 using Vortex.Rpg.Stats;
+using Vortex.Rpg.Zones.Rules;
 
 namespace Vortex.Rpg.Characters;
 
@@ -29,5 +31,9 @@ public sealed class CharactersModule : IHostPluginModule
         services.AddSingleton<IContentReferences, ClassReferences>();
         services.AddSingleton<IContentReferences, SpecializationReferences>();
         services.AddSingleton<IContentReferences, ItemReferences>();
+
+        // Spec Z1 §4.4: the zone conditions that read a character.
+        services.AddZoneCondition<PlayerLevelEvaluator>();
+        services.AddZoneCondition<HasItemEvaluator>();
     }
 }

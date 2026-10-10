@@ -26,6 +26,8 @@
     <ProjectReference Include="..\Vortex.Primitives\Vortex.Primitives.csproj" />
     <ProjectReference Include="..\Vortex.Protocol\Vortex.Protocol.csproj" />
     <ProjectReference Include="..\Vortex.Rooms\Vortex.Rooms.csproj" />
+    <!-- Zone rules a module declares, run in a real room (spec Z1). -->
+    <ProjectReference Include="..\Vortex.Rpg.Characters\Vortex.Rpg.Characters.csproj" />
     <ProjectReference Include="..\Vortex.Tests.Support\Vortex.Tests.Support.csproj" />
   </ItemGroup>
 </Project>
