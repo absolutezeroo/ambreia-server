@@ -68,12 +68,23 @@ public sealed class OrleansHostConfigValidator(
             );
         }
 
-        if (!IPAddress.TryParse(options.AdvertisedIp, out _))
+        if (!IPAddress.TryParse(options.AdvertisedIp, out IPAddress? advertised))
         {
             failures.Add(
                 $"'{OrleansHostConfig.SECTION_NAME}:{nameof(OrleansHostConfig.AdvertisedIp)}' must be "
                     + $"a literal IP address (got '{options.AdvertisedIp}'). Orleans advertises this "
                     + "address to other silos and to gateway clients; host names are not resolved."
+            );
+        }
+        else if (options.ClusteringProvider == "localhost" && !IPAddress.IsLoopback(advertised))
+        {
+            // Localhost clustering pins the primary silo to 127.0.0.1, and the silo now listens on
+            // the advertised address alone: any other address is a silo that cannot find itself.
+            failures.Add(
+                $"'{OrleansHostConfig.SECTION_NAME}:{nameof(OrleansHostConfig.AdvertisedIp)}' must be "
+                    + $"a loopback address with the 'localhost' clustering provider (got "
+                    + $"'{options.AdvertisedIp}'). A single in-process silo listens on loopback only; "
+                    + "advertise another address with the 'adonet' provider."
             );
         }
 

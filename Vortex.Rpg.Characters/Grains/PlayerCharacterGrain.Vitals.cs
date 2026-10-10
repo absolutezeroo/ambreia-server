@@ -89,6 +89,8 @@ internal sealed partial class PlayerCharacterGrain
 
         // The zone hands them back once, on exit: written now rather than at the next timer, so a
         // silo lost in between does not revive the character with the health it had before the fight.
+        // The room awaits this call from its own turn (leaving a zone), so the write is paid by the
+        // room, like the level-up's: one UPDATE per exit, and a failure stays dirty for the timer.
         await FlushAsync(CancellationToken.None);
     }
 

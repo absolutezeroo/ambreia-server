@@ -75,6 +75,8 @@ public sealed class OrleansEndpointTests
     {
         EndpointOptions endpoints = ResolveEndpoints(clusteringProvider: "localhost");
 
+        // What the silo binds: the explicit listening endpoint when ConfigureEndpoints set one
+        // (listenOnAnyHostAddress), the advertised address otherwise.
         (endpoints.SiloListeningEndpoint?.Address ?? endpoints.AdvertisedIPAddress)
             .Should()
             .Be(IPAddress.Loopback);

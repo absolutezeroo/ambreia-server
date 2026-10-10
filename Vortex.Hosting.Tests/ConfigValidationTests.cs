@@ -496,6 +496,22 @@ public sealed class ConfigValidationTests
             .BeTrue();
 
     [Fact]
+    public void LocalhostClusteringWithANonLoopbackAdvertisedIp_IsRefused() =>
+        OrleansValidator()
+            .Validate(
+                null,
+                new OrleansHostConfig
+                {
+                    ClusteringProvider = "localhost",
+                    AdvertisedIp = "10.0.0.5",
+                }
+            )
+            .Failed.Should()
+            .BeTrue(
+                "the silo listens on the advertised address and the primary is pinned to loopback"
+            );
+
+    [Fact]
     public void ACollidingSiloAndGatewayPort_IsRefused() =>
         OrleansValidator()
             .Validate(null, new OrleansHostConfig { SiloPort = 11111, GatewayPort = 11111 })
