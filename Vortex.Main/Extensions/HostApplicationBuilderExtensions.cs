@@ -117,11 +117,15 @@ public static class HostApplicationBuilderExtensions
                     // Last writer wins on EndpointOptions, and UseLocalhostClustering configures it
                     // too (forcing loopback and its own ports). Applying the bound configuration
                     // after the clustering provider keeps it authoritative for both branches.
+                    //
+                    // Neither port carries authentication or TLS, so the silo listens on every
+                    // interface only when another silo has to reach it (adonet clustering). A single
+                    // in-process silo listens on its advertised (loopback) address and nothing else.
                     silo.ConfigureEndpoints(
                         hostConfig.AdvertisedIp,
                         siloPort: hostConfig.SiloPort,
                         gatewayPort: hostConfig.GatewayPort,
-                        listenOnAnyHostAddress: true
+                        listenOnAnyHostAddress: hostConfig.ClusteringProvider == "adonet"
                     );
 
                     // PLAYER_STORE/ROOM_STORE were never wired to a [PersistentState] grain — every

@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Net;
 using FluentAssertions;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -62,6 +63,34 @@ public sealed class OrleansEndpointTests
         EndpointOptions endpoints = ResolveEndpoints(clusteringProvider: "adonet");
 
         endpoints.GatewayPort.Should().Be(3000);
+    }
+
+    /// <summary>
+    /// One silo in one process: nothing outside it has any business reaching 11111 or 3000, and
+    /// neither port carries authentication or TLS. Localhost clustering listens on the advertised
+    /// (loopback) address, not on every interface.
+    /// </summary>
+    [Fact]
+    public void LocalhostClustering_ListensOnLoopbackOnly()
+    {
+        EndpointOptions endpoints = ResolveEndpoints(clusteringProvider: "localhost");
+
+        (endpoints.SiloListeningEndpoint?.Address ?? endpoints.AdvertisedIPAddress)
+            .Should()
+            .Be(IPAddress.Loopback);
+        (endpoints.GatewayListeningEndpoint?.Address ?? endpoints.AdvertisedIPAddress)
+            .Should()
+            .Be(IPAddress.Loopback);
+    }
+
+    /// <summary>A second silo has to reach this one, so a clustered deployment keeps the wide bind.</summary>
+    [Fact]
+    public void AdoNetClustering_ListensOnEveryInterface()
+    {
+        EndpointOptions endpoints = ResolveEndpoints(clusteringProvider: "adonet");
+
+        endpoints.SiloListeningEndpoint!.Address.Should().Be(IPAddress.Any);
+        endpoints.GatewayListeningEndpoint!.Address.Should().Be(IPAddress.Any);
     }
 
     private static EndpointOptions ResolveEndpoints(
