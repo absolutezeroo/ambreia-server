@@ -3,6 +3,7 @@ using System.Threading.Tasks;
 using FluentAssertions;
 using Vortex.Rpg.Combat;
 using Vortex.Rpg.Monsters.Tests.Support;
+using Vortex.Rpg.Zones;
 using Xunit;
 
 namespace Vortex.Rpg.Monsters.Tests;
@@ -23,7 +24,7 @@ public sealed class SummonTests
         _boss.SummonIds.Should().HaveCount(2);
         (int X, int Y) at = _boss.World.Zone.PositionOf(_boss.BossId)!.Value;
 
-        foreach ((var appearance, int id) in _boss.World.Zone.Spawned.Skip(1))
+        foreach ((MonsterAppearance appearance, int id) in _boss.World.Zone.Spawned.Skip(1))
         {
             appearance.DefinitionId.Should().Be(MonsterWorld.Wolf.Id);
             appearance.Level.Should().Be(3);

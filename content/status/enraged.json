@@ -1,0 +1,10 @@
+{
+  "$schema": "../../schemas/content/status.schema.json",
+  "id": "status.enraged",
+  "kind": "status",
+  "type": "buff",
+  "durationMs": 1000,
+  "stacking": "refresh",
+  "dispellable": false,
+  "modifiers": [{ "stat": "damage_dealt_percent", "flat": 30 }]
+}

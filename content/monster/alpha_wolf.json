@@ -1,0 +1,28 @@
+{
+  "$schema": "../../schemas/content/monster.schema.json",
+  "id": "monster.forest.alpha_wolf",
+  "kind": "monster",
+  "figure": "38 0 808080",
+  "behavior": "melee",
+  "aggressive": true,
+  "rank": "elite",
+  "base": {
+    "health": 45,
+    "armor": 3,
+    "damageMin": 4,
+    "damageMax": 6,
+    "critPercent": 8,
+    "dodgePercent": 5
+  },
+  "perLevel": {
+    "health": 14,
+    "armor": 1,
+    "damageMin": 1,
+    "damageMax": 2
+  },
+  "attackRange": 1,
+  "attackIntervalMs": 2000,
+  "xp": 25,
+  "xpPerLevel": 8,
+  "skills": [{ "skill": "skill.monster.howl", "priority": 10 }]
+}

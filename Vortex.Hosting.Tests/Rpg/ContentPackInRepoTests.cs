@@ -55,9 +55,11 @@ public sealed class ContentPackInRepoTests
             .Should()
             .BeEmpty();
         pack.Definitions.Should().HaveCountGreaterThan(15);
-        // Spec M1b §16: three skills per class, and the statuses they apply.
-        pack.Definitions.Values.OfType<SkillDefinition>().Should().HaveCount(12);
-        pack.Definitions.Values.OfType<StatusDefinition>().Should().HaveCount(7);
+        // Spec M1b §16: three skills per class, and the statuses they apply; spec M1c §15: six
+        // monster skills, two statuses and four monsters more.
+        pack.Definitions.Values.OfType<SkillDefinition>().Should().HaveCount(18);
+        pack.Definitions.Values.OfType<StatusDefinition>().Should().HaveCount(9);
+        pack.Definitions.Values.OfType<MonsterDefinition>().Should().HaveCount(6);
     }
 
     /// <summary>Reads content/ as push.mjs does: documents by path relative to content/, the

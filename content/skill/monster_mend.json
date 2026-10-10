@@ -1,0 +1,14 @@
+{
+  "$schema": "../../schemas/content/skill.schema.json",
+  "id": "skill.monster.mend",
+  "kind": "skill",
+  "classes": [],
+  "level": 1,
+  "cooldownMs": 8000,
+  "type": "instant",
+  "range": 5,
+  "target": "ally",
+  "effects": [{ "kind": "heal", "base": 10, "coefficient": 1.0 }],
+  "animation": "cast",
+  "vfx": "mend"
+}

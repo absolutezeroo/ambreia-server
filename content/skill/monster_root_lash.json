@@ -1,0 +1,20 @@
+{
+  "$schema": "../../schemas/content/skill.schema.json",
+  "id": "skill.monster.root_lash",
+  "kind": "skill",
+  "classes": [],
+  "level": 1,
+  "cooldownMs": 8000,
+  "type": "cast",
+  "castMs": 1500,
+  "range": 5,
+  "target": "enemy",
+  "maxTargets": 5,
+  "effects": [
+    { "kind": "damage", "coefficient": 1.0 },
+    { "kind": "apply_status", "status": "status.frozen" }
+  ],
+  "animation": "cast",
+  "vfx": "roots",
+  "telegraph": { "shape": "line", "size": 5, "width": 1 }
+}

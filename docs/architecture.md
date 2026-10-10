@@ -17,6 +17,7 @@ single project, the code and `.claude/rules/` are enough.
 - Flow 10 — chat
 - Flow 11 — combat
 - Flow 12 — skills and statuses
+- Flow 13 — advanced monsters
 - Persistence
 - Grains and their state
 - Plugins and the web API
@@ -272,6 +273,25 @@ come from content (`KnownSkills`), never stored; its bar is `action_bar`, writte
 `PlayerCharacterGrain`. Wire: `RpgSkillCast`/`RpgCastCancel` → `IRoomCombat` → simulation;
 `RpgActionBarSet` → the character; out `RpgSkills`, `RpgSkillResult`, `RpgCastStart`/`RpgCastEnd`,
 `RpgCooldowns`, `RpgStatuses`, `RpgSkillEvents`, grouped per tick. Proof: `driver.mjs skills`.
+
+## Flow 13 — advanced monsters
+
+Spec `2026-10-10-rpg-monsters-m1c-design.md`. A monster casts through the same `CastSystem` as a
+player: a `CastRequest` names its caster by object id; a monster pays no mana, never approaches (its
+behavior places it), and its refusals go nowhere (nor into `SkillCast`). Camps are relative to the
+caster (`SkillTargets.IsAlly`/`IsEnemy`). A skill with a `telegraph` fixes its cells at the start
+(`TelegraphCells`: circle, line, cone; `CentresOnAim` says which sits on its aim), shows them
+(`RpgTelegraphs`, also in the entry burst) and lands on whoever still stands there, never on a safe
+cell. In `Vortex.Rpg.Monsters`, `MonsterBehavior` keeps leash, threat, chase and the way home, and
+its kinds (`melee`, `ranged` aiming `RangedAimMs` after a move, `caster` at its least offensive
+range) choose only their distance and their action, which is `MonsterSkillSelector`: the rules by
+priority, then `CombatZone.Cast`, a refusal handing over to the next rule. The content import reads
+the declared kinds through `IMonsterBehaviorKeys` (`DeclaredBehaviors`). A rank (`Vortex:Monsters`)
+scales a monster at spawn (`RankScale`: health, damage, XP, immunities). `BossPhases` plays each
+phase once below its threshold — skills, a permanent status through `IStatusSystem`
+(`CombatZone.ApplyStatus`), summons by `MonsterSpawner.Summon` taking the boss's threat, a yell
+(`RpgMonsterYell`) — and a monster going home resets: casts and cooldowns (`ResetCasts`), phase,
+phase status, skills, summons gone without XP. Proof: `driver.mjs boss`.
 
 ## Persistence
 

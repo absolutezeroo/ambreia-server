@@ -1,0 +1,50 @@
+{
+  "$schema": "../../schemas/content/monster.schema.json",
+  "id": "monster.grove.guardian",
+  "kind": "monster",
+  "figure": "12 0 6A8F3A",
+  "behavior": "melee",
+  "aggressive": true,
+  "rank": "boss",
+  "base": {
+    "health": 40,
+    "armor": 0,
+    "damageMin": 2,
+    "damageMax": 4,
+    "critPercent": 5
+  },
+  "perLevel": {
+    "health": 20,
+    "armor": 1,
+    "damageMin": 1,
+    "damageMax": 2
+  },
+  "attackRange": 1,
+  "attackIntervalMs": 2500,
+  "leashRadius": 9,
+  "xp": 30,
+  "xpPerLevel": 10,
+  "corpseSeconds": 5,
+  "skills": [{ "skill": "skill.monster.sweep", "priority": 10 }],
+  "phases": [
+    {
+      "atHealthPercent": 66,
+      "skills": [
+        { "skill": "skill.monster.root_lash", "priority": 20 },
+        { "skill": "skill.monster.sweep", "priority": 10 }
+      ],
+      "status": "status.enraged",
+      "summon": { "monster": "monster.forest.wolf", "count": 2 },
+      "yell": "monster.grove.guardian.phase2"
+    },
+    {
+      "atHealthPercent": 33,
+      "skills": [
+        { "skill": "skill.monster.quake", "priority": 30 },
+        { "skill": "skill.monster.root_lash", "priority": 20 },
+        { "skill": "skill.monster.sweep", "priority": 10 }
+      ],
+      "yell": "monster.grove.guardian.phase3"
+    }
+  ]
+}

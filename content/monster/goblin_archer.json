@@ -1,0 +1,25 @@
+{
+  "$schema": "../../schemas/content/monster.schema.json",
+  "id": "monster.goblin.archer",
+  "kind": "monster",
+  "figure": "8 0 7FA040",
+  "behavior": "ranged",
+  "aggressive": true,
+  "base": {
+    "health": 30,
+    "armor": 1,
+    "damageMin": 3,
+    "damageMax": 5,
+    "critPercent": 5,
+    "dodgePercent": 5
+  },
+  "perLevel": {
+    "health": 9,
+    "damageMin": 1,
+    "damageMax": 2
+  },
+  "attackRange": 5,
+  "attackIntervalMs": 2500,
+  "xp": 22,
+  "xpPerLevel": 6
+}

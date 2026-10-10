@@ -354,6 +354,10 @@ const H = {
   rpgCooldowns: 9022,
   rpgStatuses: 9023,
   rpgSkillEvents: 9024,
+  // Monsters (spec M1c §9.2).
+  rpgTelegraphs: 9025,
+  rpgMonsterYell: 9026,
+  userRemove: 3693,
   quit: 3061,
   objectDataUpdate: 2329,
   objectUpdate: 114,
@@ -442,6 +446,9 @@ const PLAYER = { email: 'run-skill@vortex.local', password: 'RunSkill!2026' };
 const PLAYER_B = { email: 'run-skill-b@vortex.local', password: 'RunSkill!2026' };
 // A third one, made a mage for `skills`: the first keeps « Sans classe », which `items` relies on.
 const PLAYER_C = { email: 'run-skill-c@vortex.local', password: 'RunSkill!2026' };
+// A fourth, the mage `boss` raises to level 6: `skills` keeps its level-1 mage, whose Firebolt does
+// not kill a wolf at once.
+const PLAYER_D = { email: 'run-skill-d@vortex.local', password: 'RunSkill!2026' };
 const WEB_COOKIE = 'habbo-web-session';
 
 function sessionCookie(res) {
@@ -1683,6 +1690,215 @@ async function cmdSkills() {
   log('Skills OK.');
 }
 
+// The boss (spec M1c §16): the mage of PLAYER_D raised to level 6, the arena proof_boss published,
+// the guardian's cone shown on the ground and dodged, its second phase (yell, enraged, two wolves)
+// reached by Firebolt, then the mage back in the camp: the guardian goes home, its wolves leave and
+// its health comes back whole.
+async function publishBossZone() {
+  const base = `http://127.0.0.1:${WEBAPI}`;
+  const headers = { cookie: (await webSession()).cookie };
+  const size = 12;
+  const tiles = Array.from({ length: size * size }, () => ({ height: 0, walkable: true, hole: false }));
+  const key = 'proof_boss';
+  const doc = {
+    schemaVersion: 1,
+    settings: { id: key, name: 'Preuve boss' },
+    floor: { width: size, length: size, tiles, door: { x: 0, y: 6 }, doorDirection: 2 },
+    entries: [
+      { id: 'start', kind: 'arrival', cell: { x: 1, y: 6 } },
+      { id: 'grave', kind: 'respawn', cell: { x: 1, y: 6 } },
+    ],
+    zones: [{ id: 'camp', kind: 'Safe', name: 'Camp', polygon: [{ x: 0, y: 5 }, { x: 2, y: 5 }, { x: 2, y: 7 }, { x: 0, y: 7 }] }],
+    spawns: [
+      { id: 'guardian', area: [{ x: 8, y: 6 }], monster: 'monster.grove.guardian', aggroRadius: 3, wanderRadius: 0, respawnSeconds: 30 },
+      { id: 'archer', area: [{ x: 11, y: 0 }], monster: 'monster.goblin.archer', aggroRadius: 1, wanderRadius: 0, respawnSeconds: 30 },
+      { id: 'shaman', area: [{ x: 11, y: 11 }], monster: 'monster.goblin.shaman', aggroRadius: 1, wanderRadius: 0, respawnSeconds: 30 },
+    ],
+  };
+  let r = await request(`${base}/api/editor/zones`, { method: 'POST', headers, body: JSON.stringify({ key, name: doc.settings.name }) });
+  if (r.status !== 200 && r.status !== 409) die(`Zone creation ${key}: ${r.status} ${r.body}`);
+  r = await request(`${base}/api/editor/zones/${key}/lock`, { method: 'POST', headers });
+  if (r.status !== 200) die(`Lock ${key}: ${r.status} ${r.body}`);
+  r = await request(`${base}/api/editor/zones/${key}/versions?comment=driver`, { method: 'POST', headers, body: JSON.stringify(doc) });
+  if (r.status !== 200) die(`Save ${key}: ${r.status} ${r.body}`);
+  const saved = JSON.parse(r.body);
+  if (!saved.published) {
+    r = await request(`${base}/api/editor/zones/${key}/publish/${saved.version}`, { method: 'POST', headers });
+    if (r.status !== 200) die(`Publish ${key}: ${r.status} ${r.body}`);
+  }
+  const zones = JSON.parse((await request(`${base}/api/editor/zones`, { headers })).body);
+  const room = zones.find((z) => z.key === key).roomId;
+  log(`Published ${key} (room ${room}).`);
+  return room;
+}
+
+async function cmdBoss() {
+  await cmdContent();
+  const base = `http://127.0.0.1:${WEBAPI}`;
+  // The admin XP route and the editor need the owner role on the proof accounts: each signed in
+  // first, so that a new one exists (the role is read at each request).
+  for (const account of [PLAYER, PLAYER_D]) {
+    await webSession(account);
+    sql(`INSERT INTO player_account_roles (account_id, role_id)
+         SELECT a.id, r.id FROM player_accounts a, roles r
+         WHERE a.email='${account.email}' AND r.\`key\`='owner'
+           AND NOT EXISTS (SELECT 1 FROM player_account_roles x WHERE x.account_id=a.id AND x.role_id=r.id);`);
+  }
+  const room = await publishBossZone();
+  const a = await enterWorld(PLAYER_D, 'class.mage');
+  const g = a.g;
+  const fail = (m) => {
+    g.close();
+    die(m);
+  };
+  const GUARDIAN = 'monster.grove.guardian';
+  const FIREBOLT = 'skill.mage.firebolt';
+  const after = (header, from) => g.frames.slice(from).filter((f) => f.header === header);
+  const until = async (test, ms) => {
+    for (let t = 0; t < ms; t += 100) {
+      const hit = test();
+      if (hit) return hit;
+      await sleep(100);
+    }
+    return null;
+  };
+
+  // 1. Level 6 for the mage: Firebolt hits hard enough, and its three skills are known.
+  const xp = await request(`${base}/api/admin/characters/${a.playerId}/xp`, {
+    method: 'POST',
+    headers: { cookie: (await webSession(PLAYER_D)).cookie },
+    body: JSON.stringify({ amount: 1200 }),
+  });
+  if (xp.status !== 200) fail(`1. POST /api/admin/characters/${a.playerId}/xp -> ${xp.status} ${xp.body}`);
+  log(`1. XP granted: ${xp.body}`);
+
+  // 2. Into the arena: the guardian, the archer and the shaman.
+  let mark = g.frames.length;
+  g.send(frame(H.openFlat, room, '', -1));
+  const avatars = await until(() => {
+    const all = after(H.users, mark).flatMap(usersOf);
+    return all.some((x) => x.name === GUARDIAN) && all.some((x) => x.type === 1 && x.webId === a.playerId) ? all : null;
+  }, 8000);
+  if (!avatars) fail('2. No guardian or no avatar of mine in proof_boss.');
+  const me = avatars.find((x) => x.type === 1 && x.webId === a.playerId);
+  const guardian = avatars.find((x) => x.name === GUARDIAN);
+  log(`2. In proof_boss: guardian ${guardian.objectId} at (${guardian.x}, ${guardian.y}), level ${guardian.level}.`);
+
+  // 3. Close to it: it comes, casts its cone, the cells shown; step aside, the impact misses.
+  // RpgTelegraphs: count × (caster, skill, shape, delay, count × (x, y)).
+  const telegraphs = (from) =>
+    after(H.rpgTelegraphs, from).flatMap((f) => {
+      const r = reader(f.body);
+      return Array.from({ length: r.int() }, () => {
+        const t = { caster: r.int(), skill: r.str(), shape: r.str(), delayMs: r.int() };
+        t.cells = Array.from({ length: r.int() }, () => [r.int(), r.int()]);
+        return t;
+      });
+    });
+  // RpgSkillEvents: impacts (caster, skill, target, x, y), then outcomes.
+  const events = (from) =>
+    after(H.rpgSkillEvents, from).map((f) => {
+      const r = reader(f.body);
+      const impacts = Array.from({ length: r.int() }, () => ({ caster: r.int(), skill: r.str(), target: r.int(), x: r.int(), y: r.int() }));
+      const outcomes = Array.from({ length: r.int() }, () => ({
+        source: r.int(),
+        sourceId: r.str(),
+        target: r.int(),
+        amount: r.int(),
+        absorbed: r.int(),
+        outcome: r.str(),
+        health: r.int(),
+        maxHealth: r.int(),
+        killed: r.bool(),
+      }));
+      return { impacts, outcomes };
+    });
+  mark = g.frames.length;
+  g.send(frame(H.moveAvatar, 5, 6));
+  const shown = await until(() => telegraphs(mark).find((t) => t.caster === guardian.objectId), 12000);
+  if (!shown) fail('3. The guardian showed no telegraph.');
+  log(`3. RpgTelegraphs: ${shown.skill} ${shown.shape}, ${shown.delayMs} ms, ${shown.cells.length} cells.`);
+  const marked = new Set(shown.cells.map(([x, y]) => `${x},${y}`));
+  // Two steps across the cone's axis leave it (a 90° cone of 3 holds no cell two off its side).
+  const escapes = [[5, 8], [5, 4], [4, 8], [4, 4], [3, 6]].filter(([x, y]) => !marked.has(`${x},${y}`));
+  g.send(frame(H.moveAvatar, ...escapes[0]));
+  const landed = await until(
+    () => events(mark).find((e) => e.impacts.some((i) => i.caster === guardian.objectId && i.skill === shown.skill)),
+    shown.delayMs + 3000,
+  );
+  if (!landed) fail('3. The telegraph never landed.');
+  const hitMe = landed.outcomes.some((o) => o.target === me.objectId);
+  if (hitMe) fail(`3. Out of the cells and hit anyway: ${JSON.stringify(landed.outcomes)}`);
+  log(`3. Stepped to (${escapes[0].join(', ')}); the ${shown.skill} landed without me.`);
+
+  // 4. Firebolt until it falls under 66 %: its yell, its rage, two wolves more.
+  // RpgVitals: count × (object, health, max).
+  const guardianHealth = (from) => {
+    let last = null;
+    for (const f of after(H.rpgVitals, from)) {
+      const r = reader(f.body);
+      for (let n = r.int(); n > 0; n--) {
+        const [id, health, max] = [r.int(), r.int(), r.int()];
+        if (id === guardian.objectId) last = { health, max };
+      }
+    }
+    return last;
+  };
+  // RpgStatuses: count × (object, count × (status, remaining, stacks)).
+  const statusesOf = (from, objectId) => {
+    let last = null;
+    for (const f of after(H.rpgStatuses, from)) {
+      const r = reader(f.body);
+      for (let n = r.int(); n > 0; n--) {
+        const id = r.int();
+        const list = Array.from({ length: r.int() }, () => ({ status: r.str(), remainingMs: r.int(), stacks: r.int() }));
+        if (id === objectId) last = list;
+      }
+    }
+    return last;
+  };
+  const fightFrom = g.frames.length;
+  g.send(frame(H.rpgTargetSelect, guardian.objectId));
+  let yell = null;
+  for (let t = 0; t < 40000 && !yell; t += 2500) {
+    g.send(frame(H.rpgSkillCast, FIREBOLT, guardian.objectId, -1, -1));
+    await sleep(2500);
+    yell = after(H.rpgMonsterYell, fightFrom)
+      .map((f) => reader(f.body))
+      .map((r) => ({ objectId: r.int(), textKey: r.str() }))
+      .find((y) => y.objectId === guardian.objectId);
+  }
+  const hp = guardianHealth(fightFrom);
+  if (!yell) fail(`4. No yell from the guardian; its health ${JSON.stringify(hp)}.`);
+  log(`4. RpgMonsterYell ${yell.textKey} at ${JSON.stringify(hp)}.`);
+  const rage = await until(() => statusesOf(fightFrom, guardian.objectId)?.find((s) => s.status === 'status.enraged'), 3000);
+  if (!rage || rage.remainingMs !== -1) fail(`4. The guardian is not enraged for good: ${JSON.stringify(statusesOf(fightFrom, guardian.objectId))}`);
+  const wolves = await until(() => {
+    const w = after(H.users, fightFrom).flatMap(usersOf).filter((x) => x.name === 'monster.forest.wolf');
+    return w.length >= 2 ? w : null;
+  }, 3000);
+  if (!wolves) fail('4. No wolves summoned.');
+  log(`4. status.enraged (no end) and ${wolves.length} wolves: ${wolves.map((w) => w.objectId).join(', ')}.`);
+
+  // 5. Back to the camp: the guardian goes home, its wolves leave, its health comes back whole.
+  mark = g.frames.length;
+  g.send(frame(H.moveAvatar, 1, 6));
+  const gone = await until(() => {
+    const removed = after(H.userRemove, mark).map((f) => Number(reader(f.body).str()));
+    return wolves.every((w) => removed.includes(w.objectId)) ? removed : null;
+  }, 12000);
+  if (!gone) fail('5. The wolves did not leave when the guardian reset.');
+  const whole = await until(() => {
+    const h = guardianHealth(mark);
+    return h && h.health === h.max ? h : null;
+  }, 15000);
+  if (!whole) fail(`5. The guardian did not heal at home: ${JSON.stringify(guardianHealth(mark))}`);
+  log(`5. Wolves gone; guardian back to ${whole.health}/${whole.max}.`);
+
+  g.close();
+  log('Boss OK.');
+}
+
 // The chat (spec F3c §15), two accounts: Général within a zone, Monde across, a whisper by name
 // and its copy, the idle Guilde, an item link checked, the rate limit, unknown and offline names.
 async function cmdChat() {
@@ -1858,6 +2074,7 @@ const table = {
   chat: cmdChat,
   combat: cmdCombat,
   skills: cmdSkills,
+  boss: cmdBoss,
   grace: () => cmdGrace(args[0]),
   cleanup: cmdCleanup,
   smoke: cmdSmoke,
@@ -1885,6 +2102,7 @@ if (!cmd || !table[cmd]) {
   target    two accounts in one zone: A targets B (name, level, class), B quits, A's target clears
   items     the admin item grant: a sword to the first character, replayed with its key -> one sword more
   grace [wait]  drop the socket in a room and come back: same room, one avatar, same tile (wait: then stay away past 60 s)
+  boss      proof_boss: a cone telegraph dodged, phase 2 by Firebolt (yell, enraged, two wolves), back to camp -> reset
   cleanup   delete the throwaway account and its players`);
   process.exit(cmd ? 1 : 0);
 }

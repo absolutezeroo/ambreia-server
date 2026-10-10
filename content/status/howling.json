@@ -1,0 +1,9 @@
+{
+  "$schema": "../../schemas/content/status.schema.json",
+  "id": "status.howling",
+  "kind": "status",
+  "type": "buff",
+  "durationMs": 8000,
+  "stacking": "refresh",
+  "modifiers": [{ "stat": "damage_dealt_percent", "flat": 20 }]
+}

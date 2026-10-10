@@ -1,0 +1,18 @@
+{
+  "$schema": "../../schemas/content/skill.schema.json",
+  "id": "skill.monster.frost_bolt",
+  "kind": "skill",
+  "classes": [],
+  "level": 1,
+  "cooldownMs": 4000,
+  "type": "cast",
+  "castMs": 1500,
+  "range": 4,
+  "target": "enemy",
+  "effects": [
+    { "kind": "damage", "coefficient": 0.6 },
+    { "kind": "apply_status", "status": "status.frozen" }
+  ],
+  "animation": "cast",
+  "vfx": "frost_bolt"
+}

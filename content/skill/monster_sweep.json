@@ -1,0 +1,17 @@
+{
+  "$schema": "../../schemas/content/skill.schema.json",
+  "id": "skill.monster.sweep",
+  "kind": "skill",
+  "classes": [],
+  "level": 1,
+  "cooldownMs": 6000,
+  "type": "cast",
+  "castMs": 1500,
+  "range": 2,
+  "target": "enemy",
+  "maxTargets": 5,
+  "effects": [{ "kind": "damage", "coefficient": 1.2 }],
+  "animation": "attack",
+  "vfx": "sweep",
+  "telegraph": { "shape": "cone", "size": 3, "angle": 90 }
+}

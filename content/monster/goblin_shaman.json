@@ -1,0 +1,27 @@
+{
+  "$schema": "../../schemas/content/monster.schema.json",
+  "id": "monster.goblin.shaman",
+  "kind": "monster",
+  "figure": "11 0 60A0C0",
+  "behavior": "caster",
+  "aggressive": true,
+  "base": {
+    "health": 28,
+    "damageMin": 1,
+    "damageMax": 2,
+    "critPercent": 5
+  },
+  "perLevel": {
+    "health": 8,
+    "damageMin": 1,
+    "damageMax": 1
+  },
+  "attackRange": 4,
+  "attackIntervalMs": 2500,
+  "xp": 24,
+  "xpPerLevel": 7,
+  "skills": [
+    { "skill": "skill.monster.mend", "priority": 20, "belowHealthPercent": 50 },
+    { "skill": "skill.monster.frost_bolt", "priority": 10 }
+  ]
+}

@@ -1,0 +1,17 @@
+{
+  "$schema": "../../schemas/content/skill.schema.json",
+  "id": "skill.monster.quake",
+  "kind": "skill",
+  "classes": [],
+  "level": 1,
+  "cooldownMs": 10000,
+  "type": "cast",
+  "castMs": 2000,
+  "range": 6,
+  "target": "around_target",
+  "radius": 3,
+  "effects": [{ "kind": "damage", "coefficient": 1.5 }],
+  "animation": "cast",
+  "vfx": "quake",
+  "telegraph": { "shape": "circle", "size": 3 }
+}

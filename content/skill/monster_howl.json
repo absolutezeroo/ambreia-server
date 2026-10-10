@@ -1,0 +1,14 @@
+{
+  "$schema": "../../schemas/content/skill.schema.json",
+  "id": "skill.monster.howl",
+  "kind": "skill",
+  "classes": [],
+  "level": 1,
+  "cooldownMs": 20000,
+  "type": "instant",
+  "range": 0,
+  "target": "self",
+  "effects": [{ "kind": "apply_status", "status": "status.howling" }],
+  "animation": "howl",
+  "sound": "howl"
+}

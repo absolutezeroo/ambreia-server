@@ -1,6 +1,7 @@
 # RPG — spec fille M1c « Monstres avancés »
 
-> **Statut :** design approuvé par le propriétaire le 2026-10-10, section par section ·
+> **Statut :** livrée le 2026-10-10 (plan `docs/superpowers/plans/2026-10-10-rpg-monsters-m1c.md`,
+> preuve `driver.mjs boss`) ; design approuvé par le propriétaire le 2026-10-10, section par section ·
 > **Date :** 2026-10-10 · **Langue :** français
 > **Dépôt :** `vortex-rpg-emulator`. Troisième et dernière tranche du jalon M1 de la spec unifiée
 > `docs/superpowers/specs/2026-10-06-vortex-rpg-design.md` (§7.3 monstres, §7.5 boss). S'appuie sur
@@ -262,7 +263,7 @@ réactivation, après son délai s'il avait été tué.
 
 ### 8.1 Les cases
 
-Calculées **une fois, au début de l'incantation**, par `TelegraphShape` (pur, testé) :
+Calculées **une fois, au début de l'incantation**, par `TelegraphCells` (pur, testé) :
 
 | Forme | Origine | Cases |
 |---|---|---|
@@ -270,8 +271,10 @@ Calculées **une fois, au début de l'incantation**, par `TelegraphShape` (pur, 
 | `line` | le lanceur, vers la cible ou le point (8 directions) | `size` cases devant lui, élargies de `(width − 1) / 2` de chaque côté |
 | `cone` | le lanceur, vers la cible ou le point (angle continu) | distance euclidienne 1–`size`, écart d'angle ≤ `angle / 2` |
 
-Cible sur la case du lanceur : la direction est son orientation. Les cases hors carte ou non
-marchables sont retirées. Le lanceur ne se tourne plus jusqu'à l'impact.
+Une ligne ou un cône exige une direction : l'import les refuse en mode `self` ou `around_caster`
+(`TelegraphNeedsAim`, décision 4 du plan) ; une cible sur la case même du lanceur, impossible en jeu,
+donne l'est. Une ligne en diagonale prend les cases par projection sur sa direction (sans trous).
+Les cases hors carte ou non marchables sont retirées. Le lanceur ne se tourne plus jusqu'à l'impact.
 
 ### 8.2 L'impact
 
