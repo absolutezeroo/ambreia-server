@@ -28,6 +28,10 @@ public sealed partial class SessionGateway
             return;
         }
 
+        // The ticket was accepted: the handshake is done. Before the mapping gate, which can wait
+        // behind another login's grain calls — a wait the deadline must not count against this one.
+        DisarmHandshakeDeadline(key);
+
         IAccountSessionGrain accountSession = _grainFactory.GetAccountSessionGrain(accountId);
         long generation;
 
@@ -82,8 +86,6 @@ public sealed partial class SessionGateway
 
             _sessionToAccount[key] = accountId;
             _accountToSession[accountId] = key;
-            // An account: the handshake is done, the connection has earned its slot.
-            DisarmHandshakeDeadline(key);
 
             // Claimed with the mapping, so the order of the generations is the order the
             // replacements were decided; counted here because the gateway outlives the grain.

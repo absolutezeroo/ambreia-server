@@ -139,7 +139,9 @@ public sealed class PackageHandler(
     /// <summary>
     /// One more packet the session should not have sent; the budget's last one closes it. Exactly
     /// the last one: the frame that crossed the line may still carry thousands more, and each must
-    /// cost a counter increment, not a log line and a second close.
+    /// cost a counter increment, not a log line and a second close. A close that throws is not
+    /// retried by the next packet (the count is past the line by then): the transport's own close
+    /// path is what ends such a session.
     /// </summary>
     private async Task CloseIfOverTheParseBudgetAsync(ISessionContext ctx)
     {

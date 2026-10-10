@@ -91,6 +91,27 @@ internal sealed class WsPackageHandler(
         ReadOnlyMemory<byte> memory = ctx.WsBuffer.WrittenMemory;
         int consumed = 0;
 
+        try
+        {
+            await DeliverWholePacketsAsync(ctx, memory, ct, count => consumed = count)
+                .ConfigureAwait(false);
+        }
+        finally
+        {
+            // Compacted whatever happened downstream: a packet handed on is never replayed.
+            Compact(ctx.WsBuffer, memory, consumed);
+        }
+    }
+
+    private async ValueTask DeliverWholePacketsAsync(
+        ISessionContext ctx,
+        ReadOnlyMemory<byte> memory,
+        CancellationToken ct,
+        Action<int> progress
+    )
+    {
+        int consumed = 0;
+
         while (consumed < memory.Length)
         {
             SequenceReader<byte> reader = new(new ReadOnlySequence<byte>(memory[consumed..]));
@@ -110,7 +131,7 @@ internal sealed class WsPackageHandler(
                     ctx.RemoteIpAddress
                 );
 
-                ctx.WsBuffer.Clear();
+                ctx.WsBuffer?.Clear();
 
                 await ctx.CloseSessionAsync().ConfigureAwait(false);
 
@@ -123,22 +144,31 @@ internal sealed class WsPackageHandler(
             }
 
             consumed += (int)reader.Consumed;
+            progress(consumed);
 
             await _inner.HandleAsync(ctx, packet, ct).ConfigureAwait(false);
         }
+    }
 
-        if (consumed == 0)
+    private static void Compact(
+        ArrayBufferWriter<byte> buffer,
+        ReadOnlyMemory<byte> memory,
+        int consumed
+    )
+    {
+        if (consumed == 0 || buffer.WrittenCount == 0)
         {
+            // Nothing read, or the invalid-frame path already cleared it.
             return;
         }
 
         byte[] remaining = memory[consumed..].ToArray();
 
-        ctx.WsBuffer.Clear();
+        buffer.Clear();
 
         if (remaining.Length > 0)
         {
-            ctx.WsBuffer.Write(remaining);
+            buffer.Write(remaining);
         }
     }
 }
