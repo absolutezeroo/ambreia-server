@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Immutable;
 using System.Linq;
 using System.Threading;
@@ -14,20 +15,33 @@ namespace Vortex.Rpg.Characters.Grains;
 /// <summary>
 /// What a zone's rules read of the character (spec Z1 §4.3): its level and what it owns, bag and
 /// equipment — a parcel is not claimed, so not owned yet. The zone reads them on entry and is told
-/// each change after.
+/// each change after; every reading carries a sequence that only grows, seeded from the clock at
+/// activation, so the zone drops one that arrives after a newer one.
 /// </summary>
 internal sealed partial class PlayerCharacterGrain
 {
+    private long _zoneFactsSequence = DateTime.UtcNow.Ticks;
+
+    /// <summary>The last facts the zone was given or read: an operation that changes nothing in
+    /// them (a move, an equip) tells it nothing.</summary>
+    private CharacterZoneFacts? _zoneFactsTold;
+
     public async Task<CharacterZoneFacts?> GetZoneFactsAsync()
     {
         CharacterInventory? inventory = await InventoryAsync();
 
-        return _character is { } c && inventory is not null ? Facts(c.Level, inventory) : null;
+        if (_character is not { } c || inventory is null)
+        {
+            return null;
+        }
+
+        return _zoneFactsTold = Facts(c.Level, inventory);
     }
 
-    private static CharacterZoneFacts Facts(int level, CharacterInventory inventory) =>
+    private CharacterZoneFacts Facts(int level, CharacterInventory inventory) =>
         new()
         {
+            Sequence = ++_zoneFactsSequence,
             Level = level,
             Items = inventory
                 .Live.Where(i => i.Container is ItemContainer.Bag or ItemContainer.Equipment)
@@ -36,23 +50,46 @@ internal sealed partial class PlayerCharacterGrain
         };
 
     /// <summary>
-    /// The level or what is owned changed: the zone the player stands in is told, through the
-    /// presence. Never awaited, as the stats: the zone may be waiting on this very grain.
+    /// The level or what is owned may have changed: the zone the player stands in is told, through
+    /// the presence. From memory only — no read, nothing that can fail after the change is written;
+    /// an inventory not loaded yet has never been read by a zone either. Never awaited, as the
+    /// stats: the zone may be waiting on this very grain.
     /// </summary>
-    private async Task TellTheZoneFactsAsync()
+    private void TellTheZoneFacts()
     {
-        if (await GetZoneFactsAsync() is not { } facts)
+        if (_character is not { } c || _inventory is not { } inventory)
         {
             return;
         }
 
-        grainFactory
-            .GetPlayerPresenceGrain(_playerId)
-            .OnCharacterFactsChangedAsync(facts, CancellationToken.None)
-            .LogAndForget(
-                logger,
-                "Passing the zone facts of player {PlayerId} to its zone",
-                _playerId.Value
-            );
+        CharacterZoneFacts facts = Facts(c.Level, inventory);
+
+        if (_zoneFactsTold is { } told && Same(told, facts))
+        {
+            return;
+        }
+
+        _zoneFactsTold = facts;
+
+        try
+        {
+            grainFactory
+                .GetPlayerPresenceGrain(_playerId)
+                .OnZoneFactsChangedAsync(facts, CancellationToken.None)
+                .LogAndForget(
+                    logger,
+                    "Passing the zone facts of player {PlayerId} to its zone",
+                    _playerId.Value
+                );
+        }
+        catch (Exception ex)
+        {
+            logger.LogWarning(ex, "Zone facts of player {PlayerId} not sent", _playerId.Value);
+        }
     }
+
+    private static bool Same(CharacterZoneFacts a, CharacterZoneFacts b) =>
+        a.Level == b.Level
+        && a.Items.Count == b.Items.Count
+        && a.Items.All(i => b.Items.TryGetValue(i.Key, out int n) && n == i.Value);
 }

@@ -5,6 +5,7 @@ using Vortex.Primitives.Orleans;
 using Vortex.Primitives.Orleans.Snapshots.Players;
 using Vortex.Primitives.Rooms.Grains;
 using Vortex.Primitives.Rpg.Characters;
+using Vortex.Primitives.World.Rules;
 using Vortex.Protocol.Messages.Outgoing.Avatar;
 using Vortex.Protocol.Messages.Outgoing.Room.Engine;
 
@@ -53,7 +54,7 @@ internal sealed partial class PlayerPresenceGrain
         return Task.CompletedTask;
     }
 
-    public Task OnCharacterFactsChangedAsync(CharacterZoneFacts facts, CancellationToken ct)
+    public Task OnZoneFactsChangedAsync(ZoneFacts facts, CancellationToken ct)
     {
         // Not awaited, as the stats: the room may be in a tick waiting on this character.
         if (_state.ActiveRoomId > 0)
@@ -63,7 +64,7 @@ internal sealed partial class PlayerPresenceGrain
                 .UpdatePlayerFactsAsync(PlayerId, facts)
                 .LogAndForget(
                     _logger,
-                    "Passing the character facts of player {PlayerId} to its room",
+                    "Passing the zone facts of player {PlayerId} to its room",
                     PlayerId.Value
                 );
         }

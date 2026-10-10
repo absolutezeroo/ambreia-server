@@ -1,4 +1,5 @@
 using System;
+using Vortex.Primitives.Rpg.Characters;
 using Vortex.Primitives.World.Rules;
 using Vortex.Rpg.Zones.Rules;
 
@@ -9,7 +10,7 @@ namespace Vortex.Rpg.Characters.Zones;
 public sealed class HasItemEvaluator : ZoneConditionEvaluator<HasItemCondition>
 {
     protected override bool Holds(HasItemCondition condition, ZoneRuleContext ctx) =>
-        ctx.Facts is { } facts
+        ctx.FactsOf<CharacterZoneFacts>() is { } facts
         && facts.Items.TryGetValue(condition.Item, out int owned)
         && owned >= Math.Max(1, condition.Count);
 }

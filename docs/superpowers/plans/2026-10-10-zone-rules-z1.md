@@ -267,21 +267,26 @@ mise à jour niveau 2 → vrai.
 
 ### Tâche 4 : déclencheurs niveau atteint et objet obtenu
 
+> **Révisée après la relecture des tâches 1–2 :** le noyau des rooms ne compare ni niveau ni objets.
+> La source de la partie (`CharacterFactsSource.Changes`) dit ce qu'un changement déclenche ; les rooms
+> publient un seul événement générique.
+
 **Fichiers :**
-- Créer : `Vortex.Primitives/Rooms/Events/Zone/ZonePlayerLevelReachedEvent.cs`, `ZonePlayerItemGainedEvent.cs` (records `PlayerEvent`, comme `ZoneAreaEnteredEvent` : `Level`, resp. `ItemId`)
-- Modifier : `RoomGrain.Facts.cs` (compare ancien et nouveau relevé, publie les événements), `ZoneTriggerModule.OnRoomEventAsync` (deux branches)
-- Test : `Vortex.Rooms.Tests/Zones/ZoneFactTriggersTests.cs`
+- Créer : `Vortex.Primitives/Rooms/Events/Zone/ZoneTriggerRaisedEvent.cs` (record `PlayerEvent` : `ZoneTriggerType Type`, `string Target`)
+- Modifier : `RoomGrain.Facts.cs` (après remplacement d'une partie : `_zoneRules.SourceOf(type)?.Changes(before, after)` → un `ZoneTriggerRaisedEvent` par signal), `ZoneTriggerModule.OnRoomEventAsync` (une branche)
+- Modifier : `Vortex.Rpg.Characters/Zones/CharacterFactsSource.cs` (`Changes` : niveaux franchis, objets en hausse)
+- Test : `Vortex.Rooms.Tests/Zones/ZoneFactTriggersTests.cs` (+ `Vortex.Database.Tests/Rpg/CharacterZoneConditionsTests.cs` pour `Changes`)
 
 - [ ] **Étape 1 : tests rouges.** Une zone avec un déclencheur `PlayerLevel` cible `"3"` qui fait `ShowDialogue "lvl3"` et un `ItemOwned` cible `"item.key"` qui fait `ShowDialogue "key"` ; on lit les bulles envoyées (`harness.SentToPlayer`).
   - `ReachingTheLevel_FiresItsTrigger` (2 → 3 : une bulle `lvl3`) ;
   - `SkippingLevels_FiresEachOne` (1 → 4 : déclencheurs `2`, `3`, `4` ; seul `3` existe → une bulle) ;
   - `TheFirstReadingOnEntry_FiresNothing` (entrée au niveau 5) ;
   - `GainingTheItem_FiresItsTrigger` (`{}` → `{item.key:1}`) ; `LosingOrKeeping_FiresNothing` (2 → 1, 1 → 1).
-- [ ] **Étape 2 :** échec. **Étape 3 :** implémenter : dans `UpdatePlayerFactsAsync`, avec un ancien relevé
-  seulement : pour `l` de `old.Level+1` à `new.Level` publier `ZonePlayerLevelReachedEvent`; pour chaque
-  objet dont `new > old` (absent = 0) publier `ZonePlayerItemGainedEvent`. `ZoneTriggerModule` :
-  `ZonePlayerLevelReachedEvent e => FireAsync(PlayerLevel, e.Level.ToString(CultureInfo.InvariantCulture), …)`,
-  `ZonePlayerItemGainedEvent e => FireAsync(ItemOwned, e.ItemId, …)`.
+- [ ] **Étape 2 :** échec. **Étape 3 :** implémenter : `CharacterFactsSource.Changes` donne pour `l`
+  de `old.Level+1` à `new.Level` un `ZoneTriggerSignal(PlayerLevel, l)` et pour chaque objet dont
+  `new > old` (absent = 0) un `ZoneTriggerSignal(ItemOwned, id)`. `UpdatePlayerFactsAsync`, avec une
+  partie déjà tenue seulement, publie un `ZoneTriggerRaisedEvent` par signal. `ZoneTriggerModule` :
+  `ZoneTriggerRaisedEvent e => FireAsync(e.Type, e.Target, e.PlayerId, ct)`.
 - [ ] **Étape 4 :** vert. **Étape 5 : commit** `zones : déclencheurs niveau atteint et objet obtenu`.
 
 ---
@@ -291,15 +296,14 @@ mise à jour niveau 2 → vrai.
 **Fichiers :**
 - Créer : `Vortex.Rpg.Combat/Zones/MonsterDeath.cs` : `public sealed record MonsterDeath(int ObjectId, string MonsterId, IReadOnlyList<PlayerId> Participants);`
 - Modifier : `Vortex.Rpg.Combat/Zones/CombatZone.Deaths.cs` (`_died` devient `List<MonsterDeath>`), `CombatZone.cs:71` (`IReadOnlyList<MonsterDeath> DiedMonsters`)
-- Modifier : `Vortex.Rpg/Zones/IZoneRuntime.cs` (+ `void MonsterKilled(string spawnId, string monsterId, IReadOnlyList<PlayerId> participants);`) et les trois `FakeZoneRuntime` (Combat, Monsters, Skills tests : enregistrent l'appel dans `Killed`)
-- Modifier : `Vortex.Rpg.Monsters/Spawns/MonsterSpawner.cs` (`Died` renvoie `string?` : l'id du point, celui du boss pour un renfort), `RpgZoneSimulation.TickAsync` (appelle `zone.MonsterKilled` puis `spawner.Died`)
-- Créer : `Vortex.Primitives/Rooms/Events/Zone/ZoneMonsterKilledEvent.cs` (`SpawnId`, `MonsterId`)
-- Modifier : `RoomZoneRuntime.cs` (file `_kills`, vidée dans `FlushAsync` : un événement par participant encore dans la room), `ZoneTriggerModule.OnRoomEventAsync`
+- Modifier : `Vortex.Rpg/Zones/IZoneRuntime.cs` (+ `void RaiseTrigger(PlayerId player, ZoneTriggerType type, string target);` — générique, révisé après la relecture des tâches 1–2) et les trois `FakeZoneRuntime` (Combat, Monsters, Skills tests : enregistrent l'appel dans `Raised`)
+- Modifier : `Vortex.Rpg.Monsters/Spawns/MonsterSpawner.cs` (`SpawnOf(objectId)` : l'id du point, celui du boss pour un renfort), `RpgZoneSimulation.TickAsync` (signale `MonsterKilled` point puis monstre pour chaque participant, puis `spawner.Died`)
+- Modifier : `RoomZoneRuntime.cs` (file de signaux, vidée dans `FlushAsync` : un `ZoneTriggerRaisedEvent` (tâche 4) par signal dont le joueur est encore dans la room)
 - Tests : `Vortex.Rpg.Monsters.Tests/MonsterKilledTests.cs`, `Vortex.Rooms.Tests/Zones/ZoneMonsterKilledTests.cs`
 
 - [ ] **Étape 1 : tests rouges.**
   - Monstres : `ADeath_IsToldWithItsSpawnAndParticipants` (monde de test : un loup du point `wolves`
-    tué → `Zone.Killed` contient `("wolves", "monster.forest.wolf", [joueur])`) ;
+    tué → `Zone.Raised` contient `(joueur, MonsterKilled, "wolves")` puis `(joueur, MonsterKilled, "monster.forest.wolf")`) ;
     `ASummonsDeath_IsToldUnderItsBossSpawn`.
   - Rooms : `AKill_FiresTriggersOnTheSpawnAndOnTheMonster` (deux déclencheurs, cibles `wolves` et
     `monster.forest.wolf` → deux bulles) ; `OneRunPerParticipant` (2 joueurs → 2 bulles) ;
@@ -311,17 +315,19 @@ mise à jour niveau 2 → vrai.
   {
       if (spawner.SpawnOf(death.ObjectId) is { } spawnId)
       {
-          zone.MonsterKilled(spawnId, death.MonsterId, death.Participants);
+          foreach (PlayerId p in death.Participants)
+          {
+              zone.RaiseTrigger(p, ZoneTriggerType.MonsterKilled, spawnId);
+              zone.RaiseTrigger(p, ZoneTriggerType.MonsterKilled, death.MonsterId);
+          }
       }
       spawner.Died(death.ObjectId, now);
   }
   ```
   (`SpawnOf` : `_live[id].Parent` → id du point du parent, sinon `Spawn.Source.Id`.)
-  `RoomZoneRuntime.FlushAsync` publie, après les composers, `ZoneMonsterKilledEvent` par participant
-  présent dans `room._state.ZoneRuntime.Visitors` ; une publication qui lève est journalisée, la file
-  est vidée quand même.
-  `ZoneTriggerModule` : `ZoneMonsterKilledEvent e` → `FireAsync(MonsterKilled, e.SpawnId)` puis
-  `FireAsync(MonsterKilled, e.MonsterId)`.
+  `RoomZoneRuntime.FlushAsync` publie, après les composers, un `ZoneTriggerRaisedEvent` par signal dont
+  le joueur a encore un avatar dans la room ; une publication qui lève est journalisée, la file est
+  vidée quand même.
 - [ ] **Étape 4 :** `Vortex.Rpg.Combat.Tests`, `Vortex.Rpg.Monsters.Tests`, `Vortex.Rpg.Skills.Tests`, `Vortex.Rooms.Tests` verts.
 - [ ] **Étape 5 : commit** `zones : déclencheur monstre tué`.
 
@@ -380,8 +386,12 @@ mise à jour niveau 2 → vrai.
 - Créer : `Vortex.Rooms/Grains/Zones/Modules/ZoneLevelAdvice.cs` (`static void Check(RoomGrain room, ZoneRuntimeState zone, PlayerId p, string key, int recommended)`)
 - Test : `Vortex.Rooms.Tests/Zones/ZoneLevelAdviceTests.cs`
 
-- [ ] **Étape 1 : tests rouges.** `UnderTheLevel_ThePlayerIsWarned` (bulle `zone.level` « Niveau conseillé : 5 — vous êtes niveau 2. ») ; `AtTheLevel_Nothing` ; `OncePerAreaAndVisit` (sortir et rentrer dans l'aire : une seule ; quitter la zone et revenir : une nouvelle) ; `WithoutFacts_Nothing` ; `TheZonesOwnLevel_OnArrival`.
-- [ ] **Étape 2 :** échec. **Étape 3 :** implémenter. Clé de recharge `level:<aire>` / `level:zone`
+> **Révisée après la relecture des tâches 1–2 :** le noyau ne lit pas le niveau. Il pose au registre la
+> condition du document `PlayerLevelCondition(N, 0)` ; s'il n'y a pas de réponse déclarée
+> (`ZoneRuleRegistry.Answers`), il ne dit rien. Le message ne cite donc pas le niveau du joueur.
+
+- [ ] **Étape 1 : tests rouges.** `UnderTheLevel_ThePlayerIsWarned` (bulle `zone.level` « Niveau conseillé : 5. », `PlayerLevelEvaluator` déclaré) ; `AtTheLevel_Nothing` ; `OncePerAreaAndVisit` (sortir et rentrer dans l'aire : une seule ; quitter la zone et revenir : une nouvelle) ; `WithoutFacts_Nothing` ; `NobodyAnswersLevel_Nothing` ; `TheZonesOwnLevel_OnArrival`.
+- [ ] **Étape 2 :** échec. **Étape 3 :** implémenter. Clé « déjà dit » `level:<aire>` / `level:zone`
   dans un `HashSet<string>` du `ZoneVisitor` (oublié avec lui au départ — « par visite »).
 - [ ] **Étape 4 :** vert. **Étape 5 : commit** `zones : avertissement de niveau conseillé`.
 

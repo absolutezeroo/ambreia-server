@@ -32,7 +32,8 @@ public sealed class CharactersModule : IHostPluginModule
         services.AddSingleton<IContentReferences, SpecializationReferences>();
         services.AddSingleton<IContentReferences, ItemReferences>();
 
-        // Spec Z1 §4.4: the zone conditions that read a character.
+        // Spec Z1 §4.3–4.4: the character's part of a zone's facts, and the conditions reading it.
+        services.AddZoneFactsSource<CharacterFactsSource>();
         services.AddZoneCondition<PlayerLevelEvaluator>();
         services.AddZoneCondition<HasItemEvaluator>();
     }

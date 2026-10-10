@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Collections.Immutable;
 using FluentAssertions;
 using Vortex.Primitives.Players;
@@ -18,7 +19,9 @@ public sealed class CharacterZoneConditionsTests
     private static ZoneRuleContext Ctx(CharacterZoneFacts? facts) =>
         new(
             new PlayerId(7),
-            facts,
+            facts is null
+                ? new Dictionary<Type, ZoneFacts>()
+                : new Dictionary<Type, ZoneFacts> { [typeof(CharacterZoneFacts)] = facts },
             DateTimeOffset.Now,
             FakeProxy.Create<IZoneRuntime>(_ => null),
             NoZoneSimulation.Instance

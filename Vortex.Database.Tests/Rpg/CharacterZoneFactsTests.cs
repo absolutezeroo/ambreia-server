@@ -110,6 +110,32 @@ public sealed class CharacterZoneFactsTests : IAsyncLifetime
         _forwarded.Last().Items[ItemContent.Shard.Id].Should().Be(2);
     }
 
+    /// <summary>Bag and equipment both count: a move or an equip changes nothing a zone reads.</summary>
+    [Fact]
+    public async Task AMoveOrAnEquip_TellsNothing()
+    {
+        PlayerCharacterGrain grain = await WarriorAsync(
+            (ItemContent.Sword, 1, ItemContainer.Bag, 0)
+        );
+
+        await grain.MoveItemAsync(0, 1);
+        await grain.EquipItemAsync(1);
+
+        _forwarded.Should().BeEmpty();
+    }
+
+    /// <summary>The zone drops a reading older than the one it holds: each one is newer.</summary>
+    [Fact]
+    public async Task EachReading_IsNewerThanTheLast()
+    {
+        PlayerCharacterGrain grain = await WarriorAsync();
+        long first = (await grain.GetZoneFactsAsync())!.Sequence;
+
+        await grain.GainXpAsync(100, "test");
+
+        _forwarded.Single().Sequence.Should().BeGreaterThan(first);
+    }
+
     [Fact]
     public async Task ALevelUp_TellsTheZone()
     {
@@ -174,6 +200,8 @@ public sealed class CharacterZoneFactsTests : IAsyncLifetime
 
         PlayerCharacterGrain grain = Grain();
         await grain.OnActivateAsync(CancellationToken.None);
+        // As a zone does when the player enters: what it reads then is what later changes compare to.
+        await grain.GetZoneFactsAsync();
         _forwarded.Clear();
 
         return grain;
@@ -203,7 +231,7 @@ public sealed class CharacterZoneFactsTests : IAsyncLifetime
                 {
                     if (
                         inner.Method.Name
-                        == nameof(IPlayerPresenceGrain.OnCharacterFactsChangedAsync)
+                        == nameof(IPlayerPresenceGrain.OnZoneFactsChangedAsync)
                     )
                     {
                         _forwarded.Add((CharacterZoneFacts)inner.Args![0]!);

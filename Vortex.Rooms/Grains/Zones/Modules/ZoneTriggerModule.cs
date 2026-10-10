@@ -212,7 +212,7 @@ public sealed class ZoneTriggerModule(RoomGrain roomGrain) : IRoomEventListener
             playerId,
             PlayerAvatar(playerId),
             Time.GetLocalNow(),
-            zone.Facts.GetValueOrDefault(playerId)
+            zone.FactsOf(playerId)
         );
 
     /// <remarks>

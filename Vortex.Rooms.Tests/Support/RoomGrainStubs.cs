@@ -26,5 +26,5 @@ internal static class RoomGrainStubs
 
     /// <summary>The room's own zone rules, nothing a module declared.</summary>
     public static ZoneRuleRegistry RoomRulesOnly() =>
-        new([], [], NullLogger<ZoneRuleRegistry>.Instance);
+        new([], [], [], NullLogger<ZoneRuleRegistry>.Instance);
 }

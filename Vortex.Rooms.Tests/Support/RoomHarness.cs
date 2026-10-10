@@ -49,6 +49,7 @@ using Vortex.Rooms.Grains.Systems;
 using Vortex.Rooms.Grains.Zones.Triggers;
 using Vortex.Rooms.Object.Avatars.Player;
 using Vortex.Rooms.Providers;
+using Vortex.Rpg.Characters.Zones;
 using Vortex.Rpg.Zones;
 using Vortex.Rpg.Zones.Rules;
 using Vortex.Tests.Support;
@@ -174,7 +175,13 @@ internal sealed class RoomHarness
                     Simulation?.Invoke((IZoneRuntime)call.Args![0]!, (ZoneDocument)call.Args[1]!)
                     ?? NoZoneSimulation.Instance
                 ),
-                new ZoneRuleRegistry(conditions, actions, NullLogger<ZoneRuleRegistry>.Instance),
+                // The character's part of the zone's facts, read from the fake character grain.
+                new ZoneRuleRegistry(
+                    conditions,
+                    actions,
+                    [new CharacterFactsSource(BuildGrainFactory())],
+                    NullLogger<ZoneRuleRegistry>.Instance
+                ),
             ]
         );
 
@@ -709,9 +716,11 @@ internal sealed class RoomHarness
                                 new InvalidOperationException("character grain down")
                             )
                             : Task.FromResult(Characters.GetValueOrDefault(character)),
-                        nameof(IPlayerCharacterGrain.GetZoneFactsAsync) => Task.FromResult(
-                            Facts.GetValueOrDefault(character)
-                        ),
+                        nameof(IPlayerCharacterGrain.GetZoneFactsAsync) => CharacterFails
+                            ? Task.FromException<CharacterZoneFacts?>(
+                                new InvalidOperationException("character grain down")
+                            )
+                            : Task.FromResult(Facts.GetValueOrDefault(character)),
                         _ => null,
                     }
                 );

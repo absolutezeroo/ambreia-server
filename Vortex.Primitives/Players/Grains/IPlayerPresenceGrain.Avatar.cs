@@ -2,6 +2,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Vortex.Primitives.Orleans.Snapshots.Players;
 using Vortex.Primitives.Rpg.Characters;
+using Vortex.Primitives.World.Rules;
 
 namespace Vortex.Primitives.Players.Grains;
 
@@ -15,7 +16,7 @@ public partial interface IPlayerPresenceGrain
     /// zone room the player stands in, without waiting on it.</summary>
     public Task OnCharacterStatsChangedAsync(CharacterCombatProfile profile, CancellationToken ct);
 
-    /// <summary>The character's level or what it owns changed (spec Z1 §4.3): passed on to the
+    /// <summary>A part of what a zone knows of the player changed (spec Z1 §4.3): passed on to the
     /// zone room the player stands in, without waiting on it.</summary>
-    public Task OnCharacterFactsChangedAsync(CharacterZoneFacts facts, CancellationToken ct);
+    public Task OnZoneFactsChangedAsync(ZoneFacts facts, CancellationToken ct);
 }

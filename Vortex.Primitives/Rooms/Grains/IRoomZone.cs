@@ -2,8 +2,8 @@ using System.Threading.Tasks;
 using Orleans;
 using Orleans.Concurrency;
 using Vortex.Primitives.Players;
-using Vortex.Primitives.Rpg.Characters;
 using Vortex.Primitives.World;
+using Vortex.Primitives.World.Rules;
 
 namespace Vortex.Primitives.Rooms.Grains;
 
@@ -39,8 +39,9 @@ public interface IRoomZone : IGrainWithIntegerKey
     public Task<ZoneCellRules?> GetRulesAtAsync(int x, int y);
 
     /// <summary>
-    /// Server side only: the player's presence passes on what changed in their character (spec Z1
-    /// §4.3). Ignored for a player not in the room.
+    /// Server side only: the player's presence passes on a part of what the zone knows of them
+    /// that changed (spec Z1 §4.3). Ignored for a player not in the room, or older than the part
+    /// the zone holds.
     /// </summary>
-    public Task UpdatePlayerFactsAsync(PlayerId player, CharacterZoneFacts facts);
+    public Task UpdatePlayerFactsAsync(PlayerId player, ZoneFacts facts);
 }

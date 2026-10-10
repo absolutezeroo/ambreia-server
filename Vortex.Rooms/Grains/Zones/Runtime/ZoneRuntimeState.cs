@@ -2,9 +2,9 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Vortex.Primitives.Players;
-using Vortex.Primitives.Rpg.Characters;
 using Vortex.Primitives.World;
 using Vortex.Primitives.World.Layers;
+using Vortex.Primitives.World.Rules;
 using Vortex.Rooms.Grains.Zones.Compilation;
 
 namespace Vortex.Rooms.Grains.Zones.Runtime;
@@ -101,8 +101,17 @@ public sealed class ZoneRuntimeState(CompiledZone compiled)
     public Dictionary<PlayerId, ZoneVisitor> Visitors { get; } = [];
 
     /// <summary>
-    /// What the zone knows of each player's character (spec Z1 §4.3): read on entry, replaced on
-    /// each change the character pushes, forgotten on exit. None for a player without a character.
+    /// What the zone knows of each player, part by part as the modules declare them (spec Z1 §4.3):
+    /// read on entry, a part replaced by a newer one when its module pushes it, all forgotten on
+    /// exit. The zone never looks inside a part.
     /// </summary>
-    public Dictionary<PlayerId, CharacterZoneFacts> Facts { get; } = [];
+    public Dictionary<PlayerId, Dictionary<Type, ZoneFacts>> Facts { get; } = [];
+
+    /// <summary>What the zone knows of nobody.</summary>
+    public static IReadOnlyDictionary<Type, ZoneFacts> NoFacts { get; } =
+        new Dictionary<Type, ZoneFacts>();
+
+    /// <summary>The parts the zone holds for <paramref name="player"/>, none if it holds nothing.</summary>
+    public IReadOnlyDictionary<Type, ZoneFacts> FactsOf(PlayerId player) =>
+        Facts.TryGetValue(player, out Dictionary<Type, ZoneFacts>? parts) ? parts : NoFacts;
 }

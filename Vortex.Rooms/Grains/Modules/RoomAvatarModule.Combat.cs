@@ -1,25 +1,21 @@
 using System;
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
-using Vortex.Primitives.Orleans;
 using Vortex.Primitives.Players;
-using Vortex.Primitives.Rpg.Characters;
+using Vortex.Primitives.World.Rules;
 
 namespace Vortex.Rooms.Grains.Modules;
 
 /// <summary>
 /// A player's avatar in the zone's fights (spec M1a §4.4): on entry the zone reads his health and
-/// mana once, and what its rules need of his character (spec Z1 §4.3), both at once; on exit it
-/// gives health and mana back once. A fault there is logged and never blocks the entry or the exit
-/// itself.
+/// mana once, on exit it gives them back once. A fault there is logged and never blocks the entry
+/// or the exit itself. And what the zone's rules know of him (spec Z1 §4.3), kept from the entry.
 /// </summary>
 public sealed partial class RoomAvatarModule
 {
-    private Task JoinFightsAsync(PlayerId player, int objectId, CancellationToken ct) =>
-        Task.WhenAll(EnterFightsAsync(player, objectId, ct), ReadFactsAsync(player));
-
-    private async Task EnterFightsAsync(PlayerId player, int objectId, CancellationToken ct)
+    private async Task JoinFightsAsync(PlayerId player, int objectId, CancellationToken ct)
     {
         try
         {
@@ -36,37 +32,19 @@ public sealed partial class RoomAvatarModule
         }
     }
 
-    private async Task ReadFactsAsync(PlayerId player)
+    /// <summary>The parts read on entry, each replacing what an earlier visit left.</summary>
+    private void KeepFacts(PlayerId player, ZoneFacts[] facts)
     {
-        if (_roomGrain._state.ZoneRuntime is null)
+        if (_roomGrain._state.ZoneRuntime is not { } zone || facts.Length == 0)
         {
             return;
         }
 
-        try
-        {
-            CharacterZoneFacts? facts = await _roomGrain
-                ._grainFactory.GetPlayerCharacterGrain(player)
-                .GetZoneFactsAsync();
+        Dictionary<Type, ZoneFacts> parts = RoomGrain.PartsOf(zone.Facts, player);
 
-            // The zone may have been replaced, or the player gone, while the read was out.
-            if (
-                facts is not null
-                && _roomGrain._state.ZoneRuntime is { } zone
-                && _roomGrain._state.AvatarsByPlayerId.ContainsKey(player)
-            )
-            {
-                zone.Facts[player] = facts;
-            }
-        }
-        catch (Exception ex) when (ex is not OperationCanceledException)
+        foreach (ZoneFacts part in facts)
         {
-            _roomGrain._logger.LogWarning(
-                ex,
-                "The character of player {PlayerId} could not be read in room {RoomId}.",
-                player.Value,
-                _roomGrain.RoomId.Value
-            );
+            parts[part.GetType()] = part;
         }
     }
 

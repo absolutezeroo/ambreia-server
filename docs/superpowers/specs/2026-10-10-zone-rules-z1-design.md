@@ -53,10 +53,10 @@ effet) ; PvP (Z5) ; musique, météo, sons (Z6) ; PNJ (Z2).
 
 | Projet | Change |
 |---|---|
-| `Vortex.Primitives` | `CharacterZoneFacts` (niveau, objets) ; `IZoneRuleDeclaration` ; `IPlayerCharacterGrain.GetZoneFactsAsync` ; `IRoomZone.UpdatePlayerFactsAsync` ; `IPlayerPresenceGrain.OnCharacterFactsChangedAsync` ; `IRpgContentService.GetItemIds` |
-| `Vortex.Rpg` (`Zones/`) | contrats `IZoneConditionEvaluator`, `IZoneActionExecutor`, `ZoneRuleContext` ; `IZoneRuntime.ConditionsHold`, `MonsterKilled`, `PlayerCells` |
-| `Vortex.Rooms` | registre des règles (les siennes + celles de DI) ; faits par joueur ; déclencheurs monstre tué / niveau / objet ; avertissement de niveau |
-| `Vortex.Rpg.Characters` | évaluateurs `PlayerLevel`, `HasItem` ; relevé des faits ; envoi à chaque changement |
+| `Vortex.Primitives` | `ZoneFacts` (partie abstraite, `Sequence`) ; `CharacterZoneFacts` (niveau, objets) ; `IZoneRuleDeclaration` ; `IPlayerCharacterGrain.GetZoneFactsAsync` ; `IRoomZone.UpdatePlayerFactsAsync(ZoneFacts)` ; `IPlayerPresenceGrain.OnZoneFactsChangedAsync` ; `IRpgContentService.GetItemIds` |
+| `Vortex.Rpg` (`Zones/`) | contrats `IZoneConditionEvaluator`, `IZoneActionExecutor`, `IZoneFactsSource`, `ZoneRuleContext`, `ZoneTriggerSignal` ; `IZoneRuntime.ConditionsHold`, `RaiseTrigger`, `PlayerCells` |
+| `Vortex.Rooms` | registre des règles et des sources de faits (les siennes + celles de DI) ; parties de faits par joueur sans jamais les lire ; déclencheurs signalés ; avertissement de niveau |
+| `Vortex.Rpg.Characters` | source `CharacterFactsSource` (lecture, changements → signaux niveau / objet) ; évaluateurs `PlayerLevel`, `HasItem` ; envoi à chaque changement |
 | `Vortex.Rpg.Monsters` | exécuteur `SpawnGroup` ; sommeil, vagues, `min`, conditions, proximité |
 | `Vortex.Players` | relais des faits présence → room |
 | `Vortex.World` | validateur : « sans effet » d'après les règles déclarées ; nouvelles vérifications |
@@ -73,12 +73,16 @@ public interface IZoneActionExecutor : IZoneRuleDeclaration
 {   Task RunAsync(ZoneAction action, ZoneRuleContext ctx, CancellationToken ct); }
 
 public sealed record ZoneRuleContext(
-    PlayerId PlayerId,               // PlayerId.Invalid pour l'horloge ou un point d'apparition
-    CharacterZoneFacts? Facts,       // null : aucun joueur, ou faits pas encore lus
+    PlayerId PlayerId,                              // PlayerId.Invalid pour l'horloge ou un point
+    IReadOnlyDictionary<Type, ZoneFacts> Facts,     // les parties tenues pour ce joueur (vide : personne)
     DateTimeOffset LocalNow,
     IZoneRuntime Runtime,
-    IZoneSimulation Simulation);
+    IZoneSimulation Simulation)
+{   T? FactsOf<T>() where T : ZoneFacts; }
 ```
+
+Les pièces sont des singletons partagés par toutes les rooms : sans état. Une condition qui lève
+vaut faux (journalisée) : une pièce cassée ferme son contenu, elle n'arrête pas la marche.
 
 `IZoneRuleDeclaration` (dans `Vortex.Primitives/World/Rules/`) : `Type RuleType { get; }`. Il sert au
 validateur (§9), qui ne référence pas `Vortex.Rpg`.
@@ -96,21 +100,36 @@ validateur (§9), qui ne référence pas `Vortex.Rpg`.
 
 ### 4.3 Les faits du joueur
 
+Ce que la zone sait d'un joueur est fait de **parties**, une par module (relecture des tâches 1–2 :
+une seule partie fermée aurait obligé le futur module de quêtes à modifier les rooms) :
+
 ```csharp
-[GenerateSerializer, Immutable]
-public sealed record CharacterZoneFacts
+[GenerateSerializer, Immutable] public abstract record ZoneFacts { [Id(0)] long Sequence; }
+[GenerateSerializer, Immutable] public sealed record CharacterZoneFacts : ZoneFacts
 {   [Id(0)] int Level;  [Id(1)] ImmutableDictionary<string, int> Items; }   // définition → quantité
+
+public interface IZoneFactsSource          // déclarée par AddZoneFactsSource<T>
+{   Type FactsType;
+    Task<ZoneFacts?> ReadAsync(PlayerId player);                                    // à l'entrée
+    IEnumerable<ZoneTriggerSignal> Changes(ZoneFacts before, ZoneFacts after); }    // §5.2–5.3
 ```
 
-- **Compte :** sac et équipement (pas les colis : non réclamés, ils ne sont pas « possédés »).
-- **Lecture à l'entrée :** quand un joueur entre dans une room de zone, la room lit
-  `GetZoneFactsAsync()` en même temps que le profil de combat (pas d'aller-retour en plus sur le
-  chemin critique) et le range dans `ZoneRuntimeState.Facts[player]`. Sans personnage : pas de faits,
-  les conditions de niveau et d'objet valent faux.
-- **Mise à jour :** `PlayerCharacterGrain` envoie ses faits après une montée de niveau, un objet
-  reçu, retiré, détruit, équipé ou déséquipé. Même chemin que les stats : présence → room, jamais
-  attendu (la room peut attendre ce personnage pendant son tick). La room remplace le relevé.
-- **Départ :** le relevé du joueur est retiré.
+- **Les rooms ne lisent jamais l'intérieur d'une partie :** elles les rangent par type
+  (`ZoneRuntimeState.Facts[player][type]`), les passent aux conditions, et demandent à la source ce
+  qu'un changement déclenche.
+- **Compte du personnage :** sac et équipement (pas les colis : non réclamés, ils ne sont pas
+  « possédés »).
+- **Lecture à l'entrée :** chaque source est lue en parallèle, à côté des droits, et les parties sont
+  rangées **avant** l'attache de l'avatar : le pas d'arrivée se fait pendant l'attache et ses
+  déclencheurs `EnterZone` les lisent. Une source qui échoue est journalisée, le joueur entre.
+- **Mise à jour :** le personnage pousse sa partie après une montée de niveau, un don, un retrait,
+  une destruction, un colis réclamé — construite depuis la mémoire (aucune lecture, rien qui puisse
+  échouer après l'écriture), et seulement si elle diffère de la dernière envoyée (un déplacement ou
+  un équipement ne change rien). Présence → room, jamais attendu.
+- **Ordre :** deux sauts non attendus, sans garantie d'ordre. Chaque partie porte un `Sequence`
+  qui ne fait que croître (graine : l'horloge à l'activation du personnage, puis +1 par relevé) ;
+  la room ignore une partie pas plus récente que celle qu'elle tient.
+- **Départ :** les parties du joueur sont retirées.
 
 ### 4.4 Évaluateurs RPG (`Vortex.Rpg.Characters/Zones/`)
 
@@ -119,26 +138,31 @@ public sealed record CharacterZoneFacts
 
 ## 5. Déclencheurs
 
+Le noyau des rooms lance un déclencheur **signalé** — `(type, cible, joueur)` — sans savoir ce
+qu'il veut dire : un seul événement de room, `ZoneTriggerRaisedEvent`, une seule branche dans
+`ZoneTriggerModule`. Deux chemins le signalent : la source d'une partie de faits (`Changes`, à la
+mise à jour) et la simulation (`IZoneRuntime.RaiseTrigger`, mis en file et publié après le tick).
+Le futur module de quêtes signalera `QuestState` par le premier chemin, sans toucher aux rooms.
+
 ### 5.1 Monstre tué
 
-- `RpgZoneSimulation`, à chaque mort d'un monstre issu d'un point d'apparition, appelle
-  `IZoneRuntime.MonsterKilled(spawnId, monsterId, participants)`. Un renfort de boss compte aussi
-  (son point est celui du boss).
-- `RoomZoneRuntime` met l'événement en file ; après le tick de combat la room publie un
-  `ZoneMonsterKilledEvent` par participant encore dans la room ; `ZoneTriggerModule` lance les
-  déclencheurs `MonsterKilled` dont la cible est **l'id du point** ou **l'id du monstre**.
+- `RpgZoneSimulation`, à chaque mort d'un monstre issu d'un point d'apparition, signale pour chaque
+  participant `MonsterKilled` avec pour cible **l'id du point**, puis **l'id du monstre**. Un renfort
+  de boss compte sous le point du boss.
+- `RoomZoneRuntime` met les signaux en file ; après le tick de combat la room les publie, pour les
+  participants encore dans la room.
 - Contexte : le participant (chacun a son temps de recharge et ses conditions).
 
 ### 5.2 Niveau atteint
 
-À la mise à jour des faits, pour chaque niveau franchi (ancien + 1 … nouveau) : les déclencheurs
+`CharacterFactsSource.Changes` : pour chaque niveau franchi (ancien + 1 … nouveau), un signal
 `PlayerLevel` de cible ce niveau (`"5"`). Pas à l'entrée dans la zone : il faut franchir le niveau
 sur place.
 
 ### 5.3 Objet obtenu
 
-À la mise à jour des faits, pour chaque objet dont la quantité augmente : les déclencheurs
-`ItemOwned` de cible l'id de l'objet. Une première lecture (entrée) ne déclenche rien.
+`CharacterFactsSource.Changes` : pour chaque objet dont la quantité augmente, un signal `ItemOwned`
+de cible l'id de l'objet. Une première lecture (entrée) ne déclenche rien.
 
 ## 6. Points d'apparition
 
@@ -183,9 +207,10 @@ le point se remplit à nouveau.
 ## 7. Niveau conseillé
 
 À l'arrivée dans la zone (`settings.recommendedLevel`) et à l'entrée d'une aire (son
-`recommendedLevel`, déjà dans `ZoneCellRules`) : si le joueur a des faits et un niveau inférieur,
-une bulle `zone.level` « Niveau conseillé : N — vous êtes niveau M. » Une fois par aire et par
-visite de la zone (recharge par joueur `level:<aire>`). Rien sans faits.
+`recommendedLevel`, déjà dans `ZoneCellRules`) : le noyau ne lit pas le niveau ; il pose au registre
+la condition du document `PlayerLevel {min: N}`. Si un module y répond et qu'elle ne tient pas,
+une bulle `zone.level` « Niveau conseillé : N. » Une fois par aire et par visite de la zone.
+Personne ne répond à `PlayerLevel` (aucun module de personnages) : rien.
 
 ## 8. Réseau
 
@@ -208,9 +233,11 @@ Aucun nouveau paquet. Les messages passent par `ZoneBubble` (2243) comme les aut
 
 ## 10. Erreurs et concurrence
 
-- Les faits arrivent par un appel de grain non attendu par l'émetteur ; un relevé plus ancien qui
-  arriverait après un plus récent n'est pas possible : un seul émetteur (le personnage), appels
-  ordonnés vers une même room.
+- Les faits arrivent par deux appels non attendus (personnage → présence → room), sans garantie
+  d'ordre : un relevé plus ancien peut arriver après un plus récent. Le `Sequence` de chaque partie
+  le fait ignorer (§4.3).
+- L'envoi des faits ne fait aucune lecture et ne lève pas : un don ou une montée de niveau écrits ne
+  sont jamais suivis d'une erreur (relecture des tâches 1–2).
 - Une action qui lève est journalisée et la suivante continue (inchangé).
 - La file des morts est vidée après chaque tick, même si une publication échoue (journal).
 

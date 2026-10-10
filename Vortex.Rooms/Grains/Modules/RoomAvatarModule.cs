@@ -12,6 +12,7 @@ using Vortex.Primitives.Rooms.Enums;
 using Vortex.Primitives.Rooms.Object;
 using Vortex.Primitives.Rooms.Object.Avatars;
 using Vortex.Primitives.Rooms.Snapshots.Avatars;
+using Vortex.Primitives.World.Rules;
 using Vortex.Protocol.Messages.Outgoing.Room.Engine;
 
 namespace Vortex.Rooms.Grains.Modules;
@@ -68,14 +69,33 @@ public sealed partial class RoomAvatarModule(RoomGrain roomGrain)
             snapshot
         );
 
+        // What the zone's rules read of the player, read beside the rights (spec Z1 §4.3).
+        Task<ZoneFacts[]> reading = _roomGrain._state.ZoneRuntime is null
+            ? Task.FromResult<ZoneFacts[]>([])
+            : _roomGrain.ReadFactsAsync(snapshot.PlayerId);
+
         RoomControllerType controllerLevel =
             await _roomGrain.SecurityModule.GetControllerLevelAsync(ctx);
+        ZoneFacts[] facts = await reading;
 
         avatar.AddStatus(AvatarStatusType.FlatControl, ((int)controllerLevel).ToString());
 
         avatar.NextTileId = _roomGrain.MapModule.ToIdx(startX, startY);
 
-        await _roomGrain.ObjectModule.AttatchObjectAsync(avatar, ct);
+        // Held before the attach: the arrival step runs inside it, and its EnterZone triggers
+        // read them.
+        KeepFacts(snapshot.PlayerId, facts);
+
+        try
+        {
+            await _roomGrain.ObjectModule.AttatchObjectAsync(avatar, ct);
+        }
+        catch
+        {
+            _roomGrain._state.ZoneRuntime?.Facts.Remove(snapshot.PlayerId);
+
+            throw;
+        }
 
         _roomGrain._state.AvatarsByPlayerId[snapshot.PlayerId] = avatar.ObjectId;
 
