@@ -34,6 +34,13 @@ public sealed class StatusApplier(IOptions<SkillsConfig> config, IVortexMetrics 
         StatusSet set = SetOf(target);
         ActiveStatus? existing = set.Find(status.Id);
 
+        // A phase's status stays until the phase takes it off: a skill putting it again changes
+        // nothing (spec M1c §7.2).
+        if (existing is { Permanent: true } && !permanent)
+        {
+            return false;
+        }
+
         switch (permanent ? StatusStacking.Replace : status.Stacking)
         {
             case StatusStacking.Ignore when existing is not null:

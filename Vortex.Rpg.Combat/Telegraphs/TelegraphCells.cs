@@ -27,7 +27,14 @@ public static class TelegraphCells
         {
             TelegraphShape.Circle => Square(origin, size).Where(c => Sq(c, origin) <= size * size),
             TelegraphShape.Line => Line(origin, angle, size, telegraph.Width),
-            _ => Square(origin, size).Where(c => InCone(c, origin, angle, size, telegraph.Angle)),
+            TelegraphShape.Cone => Square(origin, size)
+                .Where(c => InCone(c, origin, angle, size, telegraph.Angle)),
+            // A new shape is drawn here first: never silently as another one.
+            _ => throw new ArgumentOutOfRangeException(
+                nameof(telegraph),
+                telegraph.Shape,
+                "No cells are known for this telegraph shape."
+            ),
         };
 
         return

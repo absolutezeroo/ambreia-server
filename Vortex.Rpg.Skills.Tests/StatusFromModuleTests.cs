@@ -90,6 +90,19 @@ public sealed class StatusFromModuleTests
     }
 
     [Fact]
+    public async Task APermanentStatus_StaysPermanent_WhenASkillPutsItAgain()
+    {
+        await _world.PlayerAsync();
+        Combatant boss = Boss();
+        _world.Combat.ApplyStatus(boss, boss, Enraged.Id, permanent: true);
+
+        _world.Statuses.Apply(_world.Combat, boss, boss, Enraged, _world.Now);
+        await _world.RunAsync(5000);
+
+        boss.DamageDealtPercent.Should().Be(30);
+    }
+
+    [Fact]
     public async Task RemoveStatus_TakesItOff()
     {
         await _world.PlayerAsync();

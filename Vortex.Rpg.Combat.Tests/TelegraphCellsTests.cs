@@ -127,6 +127,27 @@ public sealed class TelegraphCellsTests
             .Equal((1, 0), (3, 0));
 
     [Fact]
+    public void AShapeNobodyDrawsYet_IsRefused() =>
+        FluentActions
+            .Invoking(() =>
+                TelegraphCells.Of(
+                    new SkillTelegraph { Shape = (TelegraphShape)99, Size = 2 },
+                    (0, 0),
+                    (5, 0),
+                    Open
+                )
+            )
+            .Should()
+            .Throw<System.ArgumentOutOfRangeException>();
+
+    [Theory]
+    [InlineData(TelegraphShape.Circle, true)]
+    [InlineData(TelegraphShape.Line, false)]
+    [InlineData(TelegraphShape.Cone, false)]
+    public void OnlyACircle_CentresOnTheAim(TelegraphShape shape, bool centres) =>
+        shape.CentresOnAim().Should().Be(centres);
+
+    [Fact]
     public void NoAim_PointsEast() =>
         TelegraphCells.Of(Line(2), (4, 4), (4, 4), Open).Should().Equal((5, 4), (6, 4));
 }

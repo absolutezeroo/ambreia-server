@@ -589,7 +589,7 @@ public sealed class CastSystem(
         (int X, int Y) me = zone.Runtime.PositionOf(caster.ObjectId) ?? (0, 0);
         (int X, int Y) aim = pending.Cell ?? zone.Runtime.PositionOf(pending.TargetObjectId) ?? me;
         (int X, int Y) origin =
-            telegraph.Shape == TelegraphShape.Circle
+            telegraph.Shape.CentresOnAim()
             && skill.Target is not (SkillTarget.Self or SkillTarget.AroundCaster)
                 ? aim
                 : me;

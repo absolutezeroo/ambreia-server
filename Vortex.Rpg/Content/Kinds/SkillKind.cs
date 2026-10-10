@@ -149,10 +149,7 @@ public sealed class SkillKind(IEnumerable<ISkillEffectRule> rules) : ContentKind
             );
         }
 
-        if (
-            t.Shape != TelegraphShape.Circle
-            && s.Target is SkillTarget.Self or SkillTarget.AroundCaster
-        )
+        if (!t.Shape.CentresOnAim() && s.Target is SkillTarget.Self or SkillTarget.AroundCaster)
         {
             yield return Error(
                 "TelegraphNeedsAim",
