@@ -12,10 +12,14 @@ Answer the owner in French. Work on `main`; the owner runs everything locally an
 | Add or change an entity, a table, a seed | `changing-the-schema` |
 | Give a furniture a behaviour | `adding-a-room-object-logic` |
 | Delete a feature or hunt dead code | `removing-dead-code` |
+| Add or change RPG content (item, monster, skill, status, class), a content record or kind | `adding-rpg-content` |
+| Add a pluggable RPG piece (skill effect, monster behaviour, hit step, combat system, chat channel) | `adding-an-rpg-extension` |
 | Run the emulator, log a player in, prove a change live | `run-vortex-emulator` |
+| Execute, continue or resume a plan from `docs/superpowers/plans/` | `executing-a-vortex-plan` |
 | One-off data correction | `/sql-fix` (owner-invoked; propose it) |
 
-Agent: `grain-rules-reviewer` reviews a diff under `Grains/` against `.claude/rules/grains.md`.
+Agents: `grain-rules-reviewer` reviews a diff under `Grains/` against `.claude/rules/grains.md`;
+`modularity-reviewer` checks a diff keeps the core free of named variants (pieces declared by their module).
 
 ## Hooks (`.claude/settings.json`)
 
