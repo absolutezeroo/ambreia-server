@@ -1778,7 +1778,8 @@ async function cmdBoss() {
     const xp = await request(`${base}/api/admin/characters/${a.playerId}/xp`, {
       method: 'POST',
       headers: { cookie: (await webSession(PLAYER)).cookie },
-      body: JSON.stringify({ amount: missing }),
+      // The route wants a grant key of the caller's (a replayed request grants nothing more).
+      body: JSON.stringify({ amount: missing, grantKey: `driver-boss-${a.playerId}-${Date.now()}` }),
     });
     if (xp.status !== 200) fail(`1. POST /api/admin/characters/${a.playerId}/xp -> ${xp.status} ${xp.body}`);
     log(`1. ${missing} XP granted: ${xp.body}`);

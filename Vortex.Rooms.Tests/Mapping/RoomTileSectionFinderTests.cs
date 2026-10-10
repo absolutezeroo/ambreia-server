@@ -212,6 +212,31 @@ public sealed class RoomTileSectionFinderTests
     }
 
     /// <summary>
+    /// A rug and something flat that blocks (weeds, a campfire, a junk wall of no height) placed at
+    /// the same height: whatever the order they were placed in, the tile blocks. The rug placed
+    /// first used to form the surface, and avatars walked through the obstacle.
+    /// </summary>
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public void SharedTopAndBottom_ABlockingItemWins_WhateverTheOrder(bool rugFirst)
+    {
+        RoomTileOccupant rug = Item(1, bottom: 0, top: 0.01, RoomTileFlags.Walkable);
+        RoomTileOccupant weeds = Item(2, bottom: 0, top: 0.01);
+
+        RoomTileSection? section = RoomTileSectionFinder.Find(
+            Floor,
+            rugFirst ? [rug, weeds] : [weeds, rug],
+            Floor,
+            AnyStep
+        );
+
+        section.Should().NotBeNull();
+        section!.Value.ItemId.Should().Be(2);
+        section.Value.IsWalkable.Should().BeFalse();
+    }
+
+    /// <summary>
     /// <see cref="RoomTileSectionFinder.FindTop" /> must keep answering what the tile has always
     /// answered — the highest surface — because that is the one the client is told about in its
     /// height map, and it must not move for a change the client knows nothing about.

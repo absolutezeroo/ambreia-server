@@ -183,10 +183,18 @@ public static class RoomTileSectionFinder
 
             // The forming item is the one whose top *is* this surface. Two items can share a top —
             // a pair of rugs at the same height — and the one resting highest is the one you are
-            // actually standing on, so its flags are the ones that count.
+            // actually standing on, so its flags are the ones that count. Resting at the same height
+            // too (a rug and flat weeds placed on it), the one that blocks wins, whatever the order
+            // they were placed in: otherwise the rug placed first let avatars walk through.
             if (
                 occupant.Top == surface
-                && (forming is null || occupant.Bottom > forming.Value.Bottom)
+                && (
+                    forming is null
+                    || occupant.Bottom > forming.Value.Bottom
+                    || occupant.Bottom == forming.Value.Bottom
+                        && forming.Value.Flags.Has(RoomTileFlags.Walkable)
+                        && !occupant.Flags.Has(RoomTileFlags.Walkable)
+                )
             )
             {
                 forming = occupant;
