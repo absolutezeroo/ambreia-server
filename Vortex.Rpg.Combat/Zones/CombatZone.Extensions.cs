@@ -187,6 +187,15 @@ public sealed partial class CombatZone
     /// <summary>A monster's casting starts over: no cast under way, no cooldown.</summary>
     public void ResetCasts(Combatant c) => Casting?.Reset(this, c);
 
+    /// <summary>A status put by another module (spec M1c §7.2), through the status system declared.</summary>
+    public void ApplyStatus(Combatant source, Combatant target, string statusId, bool permanent) =>
+        Statuses?.Apply(this, source, target, statusId, permanent);
+
+    public void RemoveStatus(Combatant target, string statusId) =>
+        Statuses?.Remove(this, target, statusId);
+
+    private IStatusSystem? Statuses => _systems.OfType<IStatusSystem>().LastOrDefault();
+
     public void PlayerWalked(PlayerId player)
     {
         if (PlayerCombatant(player) is not { } c)

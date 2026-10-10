@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using Vortex.Protocol.Messages.Outgoing.Rpg.Skills;
 using Vortex.Rpg.Combat.Combatants;
 using Vortex.Rpg.Content;
 using Vortex.Rpg.Content.Definitions;
@@ -33,6 +34,14 @@ public sealed class ApplyStatusEffect : ISkillEffect
         )
         {
             ctx.Effects.WarnMissing(effect.Status ?? Kind);
+
+            return;
+        }
+
+        // Turned away by the target's rank: shown as such (spec M1c §7.1).
+        if (StatusApplier.IsImmune(target, status))
+        {
+            ctx.Report(target, 0, 0, RpgSkillOutcome.Immune);
 
             return;
         }

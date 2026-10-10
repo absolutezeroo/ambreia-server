@@ -15,19 +15,26 @@ public sealed class StatusApplier(IOptions<SkillsConfig> config, IVortexMetrics 
 {
     private readonly SkillsConfig _config = config.Value;
 
-    /// <summary>False when the rule keeps the one already there (ignore).</summary>
+    /// <summary>False when the target's rank ignores it (spec M1c §7.1) or the rule keeps the one
+    /// already there (ignore). <paramref name="permanent"/>: until taken off, whatever its rule.</summary>
     public bool Apply(
         CombatZone zone,
         Combatant caster,
         Combatant target,
         StatusDefinition status,
-        long now
+        long now,
+        bool permanent = false
     )
     {
+        if (IsImmune(target, status))
+        {
+            return false;
+        }
+
         StatusSet set = SetOf(target);
         ActiveStatus? existing = set.Find(status.Id);
 
-        switch (status.Stacking)
+        switch (permanent ? StatusStacking.Replace : status.Stacking)
         {
             case StatusStacking.Ignore when existing is not null:
                 return false;
@@ -54,7 +61,8 @@ public sealed class StatusApplier(IOptions<SkillsConfig> config, IVortexMetrics 
                     now,
                     status.DurationMs,
                     1,
-                    Amount(status, caster)
+                    Amount(status, caster),
+                    permanent
                 );
                 break;
         }
@@ -123,6 +131,10 @@ public sealed class StatusApplier(IOptions<SkillsConfig> config, IVortexMetrics 
         }
     }
 
+    /// <summary>The target's rank ignores this type of status (spec M1c §7.1).</summary>
+    public static bool IsImmune(Combatant target, StatusDefinition status) =>
+        target.Immunities.Contains(status.Type);
+
     /// <summary>What helps its carrier: buffs, heals over time, shields.</summary>
     public static bool IsBuff(StatusDefinition status) =>
         status.Type is StatusType.Buff or StatusType.Hot or StatusType.Shield;
@@ -134,7 +146,8 @@ public sealed class StatusApplier(IOptions<SkillsConfig> config, IVortexMetrics 
         long now,
         int durationMs,
         int stacks,
-        double amount
+        double amount,
+        bool permanent = false
     )
     {
         set.Add(
@@ -142,7 +155,8 @@ public sealed class StatusApplier(IOptions<SkillsConfig> config, IVortexMetrics 
             {
                 Definition = status,
                 CasterObjectId = casterObjectId,
-                EndsAtMs = now + durationMs,
+                EndsAtMs = permanent ? long.MaxValue : now + durationMs,
+                Permanent = permanent,
                 NextPulseAtMs = now + status.PeriodMs,
                 Stacks = stacks,
                 Amount = amount,

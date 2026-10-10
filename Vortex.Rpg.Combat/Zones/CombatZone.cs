@@ -181,11 +181,18 @@ public sealed partial class CombatZone(
         }
     }
 
-    public Combatant AddMonster(int objectId, int level, MonsterDefinition definition)
+    /// <summary>A monster comes in at its level, scaled by its rank (spec M1c §7.1).</summary>
+    public Combatant AddMonster(
+        int objectId,
+        int level,
+        MonsterDefinition definition,
+        RankScale? rank = null
+    )
     {
         int above = Math.Max(0, level - 1);
         MonsterStatBlock b = definition.Base;
         MonsterStatBlock l = definition.PerLevel;
+        RankScale r = rank ?? RankScale.None;
 
         Combatant c = new()
         {
@@ -193,11 +200,12 @@ public sealed partial class CombatZone(
             Kind = CombatantKind.Monster,
             Level = level,
             DefinitionId = definition.Id,
-            Xp = definition.Xp + definition.XpPerLevel * above,
+            Xp = Scale(definition.Xp + definition.XpPerLevel * above, r.Xp),
             CorpseMs = Math.Max(0, definition.CorpseSeconds) * 1000,
-            MaxHealth = Math.Max(1, b.Health + l.Health * above),
-            DamageMin = b.DamageMin + l.DamageMin * above,
-            DamageMax = b.DamageMax + l.DamageMax * above,
+            MaxHealth = Math.Max(1, Scale(b.Health + l.Health * above, r.Health)),
+            DamageMin = Scale(b.DamageMin + l.DamageMin * above, r.Damage),
+            DamageMax = Scale(b.DamageMax + l.DamageMax * above, r.Damage),
+            Immunities = r.Immunities,
             Range = Math.Max(1, definition.AttackRange),
             MonsterIntervalMs = Math.Max(
                 config.MinAttackIntervalMs / 2,
@@ -226,6 +234,9 @@ public sealed partial class CombatZone(
 
         return c;
     }
+
+    private static int Scale(int value, double by) =>
+        (int)Math.Round(value * by, MidpointRounding.AwayFromZero);
 
     /// <summary>A monster leaves the zone, its avatar with it.</summary>
     public void RemoveMonster(int objectId)

@@ -12,6 +12,9 @@ public sealed class ActiveStatus
 
     public required long EndsAtMs { get; set; }
 
+    /// <summary>Until taken off (a boss's phase, spec M1c §7.2): sent with no end (−1).</summary>
+    public bool Permanent { get; init; }
+
     /// <summary>Dot and hot only.</summary>
     public long NextPulseAtMs { get; set; }
 

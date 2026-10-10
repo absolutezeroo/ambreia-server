@@ -28,11 +28,34 @@ public sealed class StatusSystem(
     IOptions<SkillsConfig> config,
     IRpgContent content,
     StatusApplier applier
-) : ICombatSystem, IStatModifierSource
+) : IStatusSystem, IStatModifierSource
 {
     private readonly SkillsConfig _config = config.Value;
 
     public int Order => 100;
+
+    public void Apply(
+        CombatZone zone,
+        Combatant source,
+        Combatant target,
+        string statusId,
+        bool permanent
+    )
+    {
+        if (content.Get<StatusDefinition>(statusId) is { Retired: false } status)
+        {
+            applier.Apply(zone, source, target, status, zone.Runtime.NowMs, permanent);
+        }
+    }
+
+    public void Remove(CombatZone zone, Combatant target, string statusId)
+    {
+        if (target.Get<StatusSet>() is { } set && set.Find(statusId) is { } active)
+        {
+            set.Remove(active);
+            zone.Recompute(target);
+        }
+    }
 
     public void Tick(CombatZone zone, long now)
     {
@@ -310,7 +333,7 @@ public sealed class StatusSystem(
                     .Select(s => new RpgStatusEntry
                     {
                         StatusId = s.Definition.Id,
-                        RemainingMs = (int)Math.Max(0, s.EndsAtMs - now),
+                        RemainingMs = s.Permanent ? -1 : (int)Math.Max(0, s.EndsAtMs - now),
                         Stacks = s.Stacks,
                     }),
             ],

@@ -1,8 +1,10 @@
 using System;
+using System.Collections.Frozen;
 using System.Collections.Generic;
 using Vortex.Primitives.Players;
 using Vortex.Rpg.Combat.Hits;
 using Vortex.Rpg.Combat.Stats;
+using Vortex.Rpg.Content.Definitions;
 
 namespace Vortex.Rpg.Combat.Combatants;
 
@@ -116,6 +118,9 @@ public sealed class Combatant : ICombatantStats
 
     /// <summary>No hit, no cast, no walk (spec M1b §7.2).</summary>
     public bool Stunned { get; set; }
+
+    /// <summary>The status types its rank ignores (spec M1c §7.1); a player ignores none.</summary>
+    public IReadOnlySet<StatusType> Immunities { get; init; } = FrozenSet<StatusType>.Empty;
 
     /// <summary>An action occupies it (a cast): no automatic hit meanwhile.</summary>
     public bool Busy { get; set; }
