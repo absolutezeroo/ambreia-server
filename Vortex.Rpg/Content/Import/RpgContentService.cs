@@ -63,6 +63,20 @@ public sealed class RpgContentService(
     public ContentDefinitions? GetDefinitions(string kind) =>
         _public.Contains(kind) ? registry.Definitions(kind) : null;
 
+    public IReadOnlyList<MonsterSummary> GetMonsters() =>
+        [
+            .. registry
+                .All<MonsterDefinition>()
+                .Select(m => new MonsterSummary(
+                    m.Id,
+                    JsonNamingPolicy.SnakeCaseLower.ConvertName(m.Rank.ToString()),
+                    m.Behavior,
+                    m.Aggressive,
+                    m.Figure,
+                    m.Retired
+                )),
+        ];
+
     public IReadOnlyList<ClassSummary> GetClasses() =>
         [
             .. registry

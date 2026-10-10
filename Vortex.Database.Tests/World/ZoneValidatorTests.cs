@@ -4,6 +4,7 @@ using FluentAssertions;
 using Microsoft.Extensions.Options;
 using Vortex.Primitives.Furniture.Providers;
 using Vortex.Primitives.Furniture.Snapshots;
+using Vortex.Primitives.Rpg.Content;
 using Vortex.Primitives.World;
 using Vortex.Primitives.World.Layers;
 using Vortex.Tests.Support;
@@ -250,11 +251,90 @@ public sealed class ZoneValidatorTests
             .Should()
             .Contain(f => f.Code == "OverBudget" && f.Severity == ZoneSeverity.Warning);
 
-    private static IReadOnlyList<ZoneFinding> Validate(ZoneDocument doc) =>
+    private static IReadOnlyList<ZoneFinding> Validate(
+        ZoneDocument doc,
+        params MonsterSummary[] monsters
+    ) =>
         new ZoneValidator(
             Definitions(),
-            Options.Create(new WorldConfig { DecorBudget = 3 })
+            Options.Create(new WorldConfig { DecorBudget = 3 }),
+            FakeProxy.Create<IRpgContentService>(call =>
+                call.Method.Name == nameof(IRpgContentService.GetMonsters)
+                    ? (IReadOnlyList<MonsterSummary>)monsters
+                    : null
+            )
         ).Validate(doc, Known);
+
+    private static MonsterSummary Monster(string id, bool retired = false) =>
+        new(id, "normal", "melee", true, "38 0 FFFFFF", retired);
+
+    private static ZoneDocument WithSpawn(ZoneSpawn spawn) =>
+        ZoneSamples.Minimal() with
+        {
+            Spawns = [spawn],
+        };
+
+    private static readonly ZoneSpawn Wolves = new()
+    {
+        Id = "spawn_1",
+        Area = [new(4, 4)],
+        Monster = "monster.forest.wolf",
+    };
+
+    [Fact]
+    public void AKnownMonster_HasNoFinding() =>
+        Validate(WithSpawn(Wolves), Monster("monster.forest.wolf")).Should().BeEmpty();
+
+    [Fact]
+    public void AnUnknownMonster_IsAnError() =>
+        Validate(WithSpawn(Wolves with { Monster = "rat" }), Monster("monster.forest.wolf"))
+            .Should()
+            .ContainSingle(f =>
+                f.Code == "UnknownMonster"
+                && f.Severity == ZoneSeverity.Error
+                && f.ElementId == "spawn_1"
+            );
+
+    [Fact]
+    public void ARetiredMonster_IsAnError() =>
+        Validate(WithSpawn(Wolves), Monster("monster.forest.wolf", retired: true))
+            .Should()
+            .ContainSingle(f => f.Code == "RetiredMonster" && f.Severity == ZoneSeverity.Error);
+
+    [Fact]
+    public void WithoutAnyMonsterInTheContent_AnUnknownOneIsOnlyAWarning() =>
+        Validate(WithSpawn(Wolves with { Monster = "rat" }))
+            .Should()
+            .ContainSingle(f =>
+                f.Code == "UnresolvedReference" && f.Severity == ZoneSeverity.Warning
+            );
+
+    [Theory]
+    [InlineData(3, 1, 1, 1, 30)]
+    [InlineData(1, 1, 5, 2, 30)]
+    [InlineData(-1, 1, 1, 1, 30)]
+    [InlineData(1, 1, 1, 1, -5)]
+    public void SpawnBoundsThatCannotWork_AreAnError(
+        int min,
+        int max,
+        int levelMin,
+        int levelMax,
+        int respawnSeconds
+    ) =>
+        Errors(
+                WithSpawn(
+                    Wolves with
+                    {
+                        Min = min,
+                        Max = max,
+                        LevelMin = levelMin,
+                        LevelMax = levelMax,
+                        RespawnSeconds = respawnSeconds,
+                    }
+                )
+            )
+            .Should()
+            .Contain("BadSpawn");
 
     private static string[] Errors(ZoneDocument doc) =>
         [.. Validate(doc).Where(f => f.Severity == ZoneSeverity.Error).Select(f => f.Code)];

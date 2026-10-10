@@ -15,6 +15,7 @@ using Vortex.Primitives.Orleans;
 using Vortex.Primitives.Permissions;
 using Vortex.Primitives.Players;
 using Vortex.Primitives.Rooms;
+using Vortex.Primitives.Rpg.Content;
 using Vortex.Primitives.World;
 using Vortex.Primitives.World.Editing;
 using Vortex.WebApi.Http.Errors;
@@ -390,6 +391,29 @@ internal static partial class WebApiEndpoints
             .RequireCapability(Capabilities.World.ZoneEdit)
             .WithName("EditorFurniturePalette")
             .Produces<IReadOnlyList<FurniturePaletteEntry>>();
+
+        // What a spawn can name (spec M1c §5.1): the served monsters, the retired ones left out.
+        editor
+            .MapGet(
+                "/monsters",
+                (IRpgContentService content) =>
+                    TypedResults.Ok(
+                        content
+                            .GetMonsters()
+                            .Where(m => !m.Retired)
+                            .Select(m => new MonsterPaletteEntry(
+                                m.Id,
+                                m.Rank,
+                                m.Behavior,
+                                m.Aggressive,
+                                m.Figure
+                            ))
+                            .ToList()
+                    )
+            )
+            .RequireCapability(Capabilities.World.ZoneEdit)
+            .WithName("EditorMonsterPalette")
+            .Produces<IReadOnlyList<MonsterPaletteEntry>>();
     }
 
     /// <summary>

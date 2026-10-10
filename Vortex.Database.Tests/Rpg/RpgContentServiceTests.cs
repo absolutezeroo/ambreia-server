@@ -18,6 +18,7 @@ using Vortex.Rpg.Content.Import;
 using Vortex.Rpg.Content.Kinds;
 using Vortex.Rpg.Content.Migrations;
 using Vortex.Rpg.Content.Registry;
+using Vortex.Rpg.Content.Rules;
 using Vortex.Tests.Support;
 using Xunit;
 
@@ -44,6 +45,16 @@ public sealed class RpgContentServiceTests : IAsyncLifetime
 
     private const string Burning = """
         { "id": "status.burning", "kind": "status", "type": "dot", "durationMs": 6000, "periodMs": 2000, "coefficient": 0.2 }
+        """;
+
+    private const string Archer = """
+        { "id": "monster.goblin.archer", "kind": "monster", "figure": "8 0 7FA040", "behavior": "ranged",
+          "aggressive": true, "rank": "elite", "base": { "health": 30, "damageMin": 1, "damageMax": 2 }, "attackRange": 5 }
+        """;
+
+    private const string OldWolf = """
+        { "id": "monster.old.wolf", "kind": "monster", "figure": "38 0 FFFFFF", "retired": true,
+          "base": { "health": 30, "damageMin": 1, "damageMax": 2 } }
         """;
 
     private const string Axe = """
@@ -331,6 +342,38 @@ public sealed class RpgContentServiceTests : IAsyncLifetime
         Service().GetDefinitions("nope").Should().BeNull();
     }
 
+    /// <summary>The map editor picks a spawn's monster from these (spec M1c §5.1): every monster of
+    /// the served content, retired ones flagged, its rank and behaviour as written in the files.</summary>
+    [Fact]
+    public async Task TheMonsters_AreListed_WithRankBehaviourAndRetirement()
+    {
+        await ImportAsync(
+            WarriorPack(("monster/archer.json", Archer), ("monster/old.json", OldWolf))
+        );
+
+        Service()
+            .GetMonsters()
+            .Should()
+            .Equal(
+                new MonsterSummary(
+                    "monster.goblin.archer",
+                    "elite",
+                    "ranged",
+                    true,
+                    "8 0 7FA040",
+                    false
+                ),
+                new MonsterSummary(
+                    "monster.old.wolf",
+                    "normal",
+                    "melee",
+                    false,
+                    "38 0 FFFFFF",
+                    true
+                )
+            );
+    }
+
     [Fact]
     public async Task TwoImportsAtOnce_AreSerialized()
     {
@@ -358,6 +401,11 @@ public sealed class RpgContentServiceTests : IAsyncLifetime
             new ProgressionKind(),
             new ItemKind(),
             new StatusKind(),
+            new MonsterKind(
+                FakeProxy.Create<IMonsterBehaviorKeys>(_ =>
+                    (IReadOnlySet<string>)new HashSet<string> { "melee", "ranged" }
+                )
+            ),
         ];
 
     private RpgContentService Service() =>

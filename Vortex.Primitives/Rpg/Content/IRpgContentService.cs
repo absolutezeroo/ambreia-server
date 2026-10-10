@@ -21,6 +21,10 @@ public interface IRpgContentService
     /// null for a private or unknown kind.</summary>
     public ContentDefinitions? GetDefinitions(string kind);
 
+    /// <summary>Every monster of the served content, retired ones included and flagged, by id: the
+    /// map editor's choice for a spawn, and the zone validation's check.</summary>
+    public IReadOnlyList<MonsterSummary> GetMonsters();
+
     /// <summary>The classes a new character may take: those of the served content, not retired.</summary>
     public IReadOnlyList<ClassSummary> GetClasses();
 }

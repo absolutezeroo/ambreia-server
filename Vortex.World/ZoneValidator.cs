@@ -5,6 +5,7 @@ using Microsoft.Extensions.Options;
 using Vortex.Primitives.Furniture.Enums;
 using Vortex.Primitives.Furniture.Providers;
 using Vortex.Primitives.Furniture.Snapshots;
+using Vortex.Primitives.Rpg.Content;
 using Vortex.Primitives.World;
 using Vortex.Primitives.World.Layers;
 
@@ -13,7 +14,8 @@ namespace Vortex.World;
 /// <summary>The rules of spec §5. Errors refuse a save; warnings do not.</summary>
 public sealed class ZoneValidator(
     IFurnitureDefinitionProvider definitions,
-    IOptions<WorldConfig> config
+    IOptions<WorldConfig> config,
+    IRpgContentService? content = null
 )
 {
     private static readonly int[] AllowedRotations = [0, 2, 4, 6];
@@ -99,6 +101,7 @@ public sealed class ZoneValidator(
 
         CheckReachability(doc, f);
         DeferredReferences(doc, f);
+        CheckSpawns(doc, f);
 
         if (doc.Decor.Count + doc.WallDecor.Count > config.Value.DecorBudget)
         {
@@ -425,11 +428,6 @@ public sealed class ZoneValidator(
             Unresolved(f, n.Id, "npc template", n.Template);
         }
 
-        foreach (ZoneSpawn s in d.Spawns)
-        {
-            Unresolved(f, s.Id, "monster", s.Monster);
-        }
-
         foreach (ZoneResource r in d.Resources)
         {
             Unresolved(f, r.Id, "resource", r.Template);
@@ -448,6 +446,58 @@ public sealed class ZoneValidator(
         foreach (ZoneEvent e in d.Events)
         {
             Unresolved(f, e.Id, "event", e.Definition);
+        }
+    }
+
+    /// <summary>
+    /// A spawn names a monster of the served content, not retired, and bounds that can work (spec
+    /// M1c §5.1): otherwise nothing would spawn. With no monster in the content at all (a fresh
+    /// install), an unknown one is only a warning.
+    /// </summary>
+    private void CheckSpawns(ZoneDocument d, List<ZoneFinding> f)
+    {
+        Dictionary<string, MonsterSummary> monsters = (content?.GetMonsters() ?? []).ToDictionary(
+            m => m.Id
+        );
+
+        foreach (ZoneSpawn s in d.Spawns)
+        {
+            if (monsters.Count == 0)
+            {
+                Unresolved(f, s.Id, "monster", s.Monster);
+            }
+            else if (!monsters.TryGetValue(s.Monster, out MonsterSummary? monster))
+            {
+                f.Add(Error("UnknownMonster", s.Id, $"No monster '{s.Monster}' in the content."));
+            }
+            else if (monster.Retired)
+            {
+                f.Add(
+                    Error(
+                        "RetiredMonster",
+                        s.Id,
+                        $"'{s.Monster}' is retired: it is no longer placed."
+                    )
+                );
+            }
+
+            if (
+                s.Min < 0
+                || s.Min > s.Max
+                || s.LevelMin > s.LevelMax
+                || s.RespawnSeconds < 0
+                || s.WanderRadius < 0
+                || s.AggroRadius < 0
+            )
+            {
+                f.Add(
+                    Error(
+                        "BadSpawn",
+                        s.Id,
+                        "Counts, levels, delay and radii: never negative, min never above max."
+                    )
+                );
+            }
         }
     }
 

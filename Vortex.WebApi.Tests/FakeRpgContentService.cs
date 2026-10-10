@@ -34,6 +34,20 @@ internal sealed class FakeRpgContentService : IRpgContentService
     public ContentDefinitions? GetDefinitions(string kind) =>
         kind == "skill" ? new ContentDefinitions(3, """[{"id":"skill.mage.firebolt"}]""") : null;
 
+    /// <summary>A wolf, and a retired one the editor must not offer.</summary>
+    public IReadOnlyList<MonsterSummary> GetMonsters() =>
+        [
+            new MonsterSummary(
+                "monster.forest.wolf",
+                "normal",
+                "melee",
+                true,
+                "38 0 FFFFFF",
+                false
+            ),
+            new MonsterSummary("monster.old.wolf", "normal", "melee", true, "38 0 FFFFFF", true),
+        ];
+
     public IReadOnlyList<ClassSummary> GetClasses() =>
         [
             new ClassSummary(

@@ -54,6 +54,7 @@ public sealed class EditorEndpointsTests
     [InlineData("DELETE", "/api/editor/zones/village/lock", false)]
     [InlineData("POST", "/api/editor/zones/village/test", false)]
     [InlineData("GET", "/api/editor/furniture", false)]
+    [InlineData("GET", "/api/editor/monsters", false)]
     public async Task EveryEditorRoute_RequiresItsOwnCapability(
         string method,
         string path,
@@ -185,6 +186,21 @@ public sealed class EditorEndpointsTests
         )
             .Should()
             .Contain("\"class\":\"throne\"");
+    }
+
+    [Fact]
+    public async Task TheMonsters_AreListed_WithoutTheRetiredOnes()
+    {
+        await using WebApiTestFactory f = new();
+
+        string body = await (
+            await f.CreateAuthenticatedClient().GetAsync("/api/editor/monsters")
+        ).Content.ReadAsStringAsync();
+
+        body.Should()
+            .Be(
+                """[{"id":"monster.forest.wolf","rank":"normal","behavior":"melee","aggressive":true,"figure":"38 0 FFFFFF"}]"""
+            );
     }
 
     [Fact]
