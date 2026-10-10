@@ -1,7 +1,9 @@
 using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Linq;
 using Microsoft.Extensions.Options;
+using Vortex.Primitives.Networking;
 using Vortex.Primitives.Observability;
 using Vortex.Primitives.Players;
 using Vortex.Primitives.Rpg.Characters;
@@ -10,6 +12,7 @@ using Vortex.Rpg.Combat;
 using Vortex.Rpg.Combat.Combatants;
 using Vortex.Rpg.Combat.Hits;
 using Vortex.Rpg.Combat.Systems;
+using Vortex.Rpg.Combat.Telegraphs;
 using Vortex.Rpg.Combat.Zones;
 using Vortex.Rpg.Content;
 using Vortex.Rpg.Content.Definitions;
@@ -102,7 +105,25 @@ public sealed class CastSystem(
         if (c.IsPlayer && zone.Players.Count() == 1)
         {
             zone.GetOrAdd<CastNews>().Clear();
+            zone.GetOrAdd<TelegraphNews>().Clear();
         }
+    }
+
+    /// <summary>A player coming in sees the telegraphs under way, with the time they have left.</summary>
+    public IEnumerable<IComposer> Entry(CombatZone zone)
+    {
+        long now = zone.Runtime.NowMs;
+        ImmutableArray<RpgTelegraph> live =
+        [
+            .. zone
+                .Combatants.Values.Select(c => (Caster: c, State: c.Get<CastState>()))
+                .Where(x => x.State is { Cells: not null })
+                .Select(x =>
+                    Telegraph(x.Caster, x.State!, (int)Math.Max(0, x.State!.EndsAtMs - now))
+                ),
+        ];
+
+        return live.Length > 0 ? [new RpgTelegraphsMessageComposer { Telegraphs = live }] : [];
     }
 
     public IEnumerable<CarriedStatus> Removing(CombatZone zone, Combatant c, CombatantExit exit)
@@ -114,7 +135,11 @@ public sealed class CastSystem(
         return [];
     }
 
-    public void BeforeFlush(CombatZone zone) => zone.GetOrAdd<CastNews>().Flush(zone);
+    public void BeforeFlush(CombatZone zone)
+    {
+        zone.GetOrAdd<CastNews>().Flush(zone);
+        zone.GetOrAdd<TelegraphNews>().Flush(zone);
+    }
 
     public void Tick(CombatZone zone, long now)
     {
@@ -348,9 +373,11 @@ public sealed class CastSystem(
             return;
         }
 
-        // One target: dead, gone or no longer fit, the cast stops (spec §6.4).
+        // One target: dead, gone or no longer fit, the cast stops (spec §6.4). A telegraph's target
+        // no longer counts: it lands on its cells (spec M1c §8.2).
         if (
-            SingleTarget(skill, state.TargetObjectId)
+            state.Cells is null
+            && SingleTarget(skill, state.TargetObjectId)
             && Check(zone, c, skill, state.TargetObjectId, state.Cell) is not null
         )
         {
@@ -388,7 +415,11 @@ public sealed class CastSystem(
             Cell = state.Cell,
         };
 
-        if (Centre(zone, c, target) is { } centre && !InReach(zone, c, skill, centre))
+        if (
+            state.Cells is null
+            && Centre(zone, c, target) is { } centre
+            && !InReach(zone, c, skill, centre)
+        )
         {
             End(zone, c, RpgCastEnd.Failed);
             Refuse(
@@ -415,7 +446,7 @@ public sealed class CastSystem(
         // Ended before it lands: an effect that throws never leaves a cast to be paid again.
         Pay(zone, c, skill, now);
         End(zone, c, RpgCastEnd.Done);
-        Land(zone, c, skill, state.TargetObjectId, state.Cell, now);
+        Land(zone, c, skill, state.TargetObjectId, state.Cell, now, state);
         SendCooldowns(zone, c, now);
     }
 
@@ -428,18 +459,25 @@ public sealed class CastSystem(
         long now
     )
     {
-        c.Set(
-            new CastState
-            {
-                Skill = pending.Skill,
-                TargetObjectId = pending.TargetObjectId,
-                Cell = pending.Cell,
-                EndsAtMs = endsAt,
-                NextPulseAtMs = now + pending.Skill.PulseMs,
-                Channel = channel,
-            }
-        );
+        (IReadOnlyList<(int X, int Y)>? cells, (int X, int Y) origin) = Mark(zone, c, pending);
+        CastState state = new()
+        {
+            Skill = pending.Skill,
+            TargetObjectId = pending.TargetObjectId,
+            Cell = pending.Cell,
+            EndsAtMs = endsAt,
+            NextPulseAtMs = now + pending.Skill.PulseMs,
+            Channel = channel,
+            Cells = cells,
+            Origin = origin,
+        };
+        c.Set(state);
         c.Busy = true;
+
+        if (cells is not null)
+        {
+            zone.GetOrAdd<TelegraphNews>().Started(Telegraph(c, state, (int)(endsAt - now)));
+        }
 
         // A cast that does not allow moving stops the walk under way (spec §6.4).
         if (!pending.Skill.MoveAllowed)
@@ -495,7 +533,8 @@ public sealed class CastSystem(
         SkillDefinition skill,
         int targetObjectId,
         (int X, int Y)? cell,
-        long now
+        long now,
+        CastState? state = null
     )
     {
         SkillContext ctx = new()
@@ -522,11 +561,51 @@ public sealed class CastSystem(
             }
         );
 
-        foreach (Combatant target in SkillTargets.Resolve(ctx, targetObjectId, cell))
+        IReadOnlyList<Combatant> targets = state?.Cells is { } cells
+            ? SkillTargets.InCells(ctx, cells, state.Origin)
+            : SkillTargets.Resolve(ctx, targetObjectId, cell);
+
+        foreach (Combatant target in targets)
         {
             effects.Apply(ctx, target);
         }
     }
+
+    /// <summary>A telegraph's cells (spec M1c §8.1): a circle around the target, the cell or the
+    /// caster; a line or a cone from the caster toward the target or the cell.</summary>
+    private static ((int X, int Y)[]? Cells, (int X, int Y) Origin) Mark(
+        CombatZone zone,
+        Combatant caster,
+        PendingCast pending
+    )
+    {
+        SkillDefinition skill = pending.Skill;
+
+        if (skill.Telegraph is not { } telegraph)
+        {
+            return (null, default);
+        }
+
+        (int X, int Y) me = zone.Runtime.PositionOf(caster.ObjectId) ?? (0, 0);
+        (int X, int Y) aim = pending.Cell ?? zone.Runtime.PositionOf(pending.TargetObjectId) ?? me;
+        (int X, int Y) origin =
+            telegraph.Shape == TelegraphShape.Circle
+            && skill.Target is not (SkillTarget.Self or SkillTarget.AroundCaster)
+                ? aim
+                : me;
+
+        return ([.. TelegraphCells.Of(telegraph, origin, aim, zone.Runtime.IsWalkable)], origin);
+    }
+
+    private static RpgTelegraph Telegraph(Combatant caster, CastState state, int delayMs) =>
+        new()
+        {
+            CasterObjectId = caster.ObjectId,
+            SkillId = state.Skill.Id,
+            Shape = state.Skill.Telegraph!.Shape.ToString().ToLowerInvariant(),
+            DelayMs = delayMs,
+            Cells = [.. state.Cells!],
+        };
 
     private void Pay(CombatZone zone, Combatant c, SkillDefinition skill, long now)
     {

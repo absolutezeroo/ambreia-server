@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using Vortex.Rpg.Content.Definitions;
 
 namespace Vortex.Rpg.Skills.Casting;
@@ -17,4 +18,10 @@ public sealed class CastState
     public long NextPulseAtMs { get; set; }
 
     public required bool Channel { get; init; }
+
+    /// <summary>A telegraph's cells, fixed at the start (spec M1c §8): it lands on them alone.</summary>
+    public IReadOnlyList<(int X, int Y)>? Cells { get; init; }
+
+    /// <summary>Where a telegraph's targets are measured from, nearest first.</summary>
+    public (int X, int Y) Origin { get; init; }
 }

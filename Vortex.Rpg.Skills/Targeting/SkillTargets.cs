@@ -65,6 +65,41 @@ public static class SkillTargets
 
     private static bool Standing(Combatant c) => !c.IsDead && !c.IsGhost && !c.Invulnerable;
 
+    /// <summary>A telegraph landing (spec M1c §8.2): the fighters of the skill's camp standing on its
+    /// cells — never on a safe cell for a harmful one — nearest the origin first, at most its
+    /// <c>maxTargets</c>.</summary>
+    public static IReadOnlyList<Combatant> InCells(
+        SkillContext ctx,
+        IReadOnlyList<(int X, int Y)> cells,
+        (int X, int Y) origin
+    )
+    {
+        bool offensive = ctx.Effects.IsOffensive(ctx.Skill, ctx.Content);
+        IZoneRuntime runtime = ctx.Zone.Runtime;
+        HashSet<(int X, int Y)> marked = [.. cells];
+
+        return
+        [
+            .. ctx
+                .Zone.Combatants.Values.Where(c =>
+                    offensive ? IsEnemy(ctx.Caster, c) : IsAlly(ctx.Caster, c)
+                )
+                .Select(c => (Fighter: c, At: runtime.PositionOf(c.ObjectId)))
+                .Where(x =>
+                    x.At is { } at
+                    && marked.Contains(at)
+                    && !(offensive && ctx.Zone.IsSafeCell(at.X, at.Y))
+                )
+                .OrderBy(x =>
+                    (x.At!.Value.X - origin.X) * (x.At.Value.X - origin.X)
+                    + (x.At.Value.Y - origin.Y) * (x.At.Value.Y - origin.Y)
+                )
+                .ThenBy(x => x.Fighter.ObjectId)
+                .Take(ctx.Skill.MaxTargets)
+                .Select(x => x.Fighter),
+        ];
+    }
+
     private static Combatant? Find(CombatZone zone, int objectId) =>
         zone.Combatants.TryGetValue(objectId, out Combatant? c) ? c : null;
 
