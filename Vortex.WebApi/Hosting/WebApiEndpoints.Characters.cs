@@ -52,7 +52,13 @@ internal static partial class WebApiEndpoints
                         return TypedResults.BadRequest(new ApiErrorResponse("invalid_request"));
                     }
 
-                    int? actor = ctx.AccountId(sessions);
+                    // The capability gate already required a session; an actor the audit cannot
+                    // name is refused rather than written as "admin:".
+                    if (ctx.AccountId(sessions) is not { } actor)
+                    {
+                        return TypedResults.Unauthorized();
+                    }
+
                     IPlayerCharacterGrain character = grains.GetPlayerCharacterGrain(
                         new PlayerId(playerId)
                     );
@@ -67,10 +73,10 @@ internal static partial class WebApiEndpoints
                         {
                             Category = AuditCategory.Progression,
                             Action = "admin.xp.granted",
-                            Result =
-                                outcome == XpGrantOutcome.Granted
-                                    ? AuditResult.Success
-                                    : AuditResult.Failed,
+                            // A replay is the same grant answered again, not a failure of it.
+                            Result = outcome is XpGrantOutcome.Granted or XpGrantOutcome.Duplicate
+                                ? AuditResult.Success
+                                : AuditResult.Failed,
                             TargetPlayerId = playerId,
                             Amount = body.Amount,
                             Data = JsonSerializer.Serialize(
@@ -156,10 +162,9 @@ internal static partial class WebApiEndpoints
                         {
                             Category = AuditCategory.Economy,
                             Action = "admin.items.granted",
-                            Result =
-                                result.Outcome == ItemOutcome.Ok
-                                    ? AuditResult.Success
-                                    : AuditResult.Failed,
+                            Result = result.Outcome is ItemOutcome.Ok or ItemOutcome.DuplicateGrant
+                                ? AuditResult.Success
+                                : AuditResult.Failed,
                             TargetPlayerId = playerId,
                             Quantity = body.Quantity,
                             Data = JsonSerializer.Serialize(

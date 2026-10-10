@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
@@ -32,6 +33,9 @@ public sealed class CharacterXpGrantTests : IAsyncLifetime
 {
     private const int Player = 7;
 
+    private readonly ManualClock _clock = new(
+        new DateTimeOffset(2026, 10, 10, 12, 0, 0, TimeSpan.Zero)
+    );
     private SqliteConnection _conn = null!;
     private DbContextOptions<VortexDbContext> _options = null!;
 
@@ -77,6 +81,36 @@ public sealed class CharacterXpGrantTests : IAsyncLifetime
         (await db.RpgXpGrants.SumAsync(g => g.Amount)).Should().Be(100);
     }
 
+    /// <summary>A key is consumed by what it gave: a grant the character could not take (already at
+    /// the top level) leaves no key behind, so the same key given later, or the day's sum, tells
+    /// the truth.</summary>
+    [Fact]
+    public async Task AKeyWhoseGrantWasNotTaken_IsNotConsumed()
+    {
+        PlayerCharacterGrain grain = await ActivateAsync(
+            level: CharacterContent.Progression.MaxLevel
+        );
+
+        XpGrantOutcome atTop = await grain.GrantXpAsync("ops-8", 50, "admin:1");
+
+        atTop.Should().Be(XpGrantOutcome.AtMaxLevel);
+
+        await using VortexDbContext db = new(_options);
+        (await db.RpgXpGrants.CountAsync()).Should().Be(0);
+    }
+
+    [Fact]
+    public async Task YesterdaysGrants_DoNotCountToday()
+    {
+        PlayerCharacterGrain grain = await ActivateAsync(maxXpPerDay: 60);
+
+        await grain.GrantXpAsync("ops-9", 50, "admin:1");
+        _clock.Now = _clock.Now.AddDays(1);
+        XpGrantOutcome nextDay = await grain.GrantXpAsync("ops-10", 50, "admin:1");
+
+        nextDay.Should().Be(XpGrantOutcome.Granted);
+    }
+
     [Fact]
     public async Task ARefusedKey_IsNotConsumed()
     {
@@ -102,7 +136,7 @@ public sealed class CharacterXpGrantTests : IAsyncLifetime
             .SingleAsync(c => c.PlayerEntityId == Player);
     }
 
-    private async Task<PlayerCharacterGrain> ActivateAsync(int maxXpPerDay = 500_000)
+    private async Task<PlayerCharacterGrain> ActivateAsync(int maxXpPerDay = 500_000, int level = 1)
     {
         await using (VortexDbContext db = new(_options))
         {
@@ -112,6 +146,7 @@ public sealed class CharacterXpGrantTests : IAsyncLifetime
                     PlayerEntityId = Player,
                     ClassId = "class.warrior",
                     SpecializationId = "spec.warrior.guardian",
+                    Level = level,
                 }
             );
             await db.SaveChangesAsync();
@@ -140,6 +175,7 @@ public sealed class CharacterXpGrantTests : IAsyncLifetime
                 SilentPresence.Grains(),
                 Options.Create(new ItemConfig())
             );
+        grain.Time = _clock;
         await grain.OnActivateAsync(CancellationToken.None);
 
         return grain;

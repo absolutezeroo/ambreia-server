@@ -101,6 +101,8 @@ public sealed class CharacterEndpointsTests
         replay.StatusCode.Should().Be(HttpStatusCode.OK);
         (await replay.Content.ReadAsStringAsync()).Should().Contain("duplicate");
         f.Characters.XpGrants.Should().ContainSingle();
+        // Both calls are audited, and neither is a failure: the second is the first answered again.
+        f.Audit.Events.Should().HaveCount(2).And.OnlyContain(e => e.Result == AuditResult.Success);
     }
 
     /// <summary>Who gave what to whom: the audit row names the operator's account, not "admin".</summary>

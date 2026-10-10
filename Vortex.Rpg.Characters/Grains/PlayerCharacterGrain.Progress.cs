@@ -187,7 +187,16 @@ internal sealed partial class PlayerCharacterGrain
             }
             catch (DbUpdateException ex)
             {
-                // The unique index: the same key reached another activation first.
+                // The unique index: the same key reached another activation first. Any other
+                // failure (connection, timeout) propagates: the operator must not read "duplicate"
+                // for a grant that was never recorded.
+                db.ChangeTracker.Clear();
+
+                if (!await db.RpgXpGrants.AnyAsync(g => g.GrantKey == grantKey))
+                {
+                    throw;
+                }
+
                 logger.LogInformation(
                     ex,
                     "XP grant key {GrantKey} for player {PlayerId} was taken meanwhile.",
@@ -203,8 +212,17 @@ internal sealed partial class PlayerCharacterGrain
 
         if (outcome == XpGrantOutcome.Granted)
         {
-            // An operator's grant is written at once, like a level: its key already is.
+            // An operator's grant is written at once, like a level: its key already is. At most
+            // once: a process lost between the key and this write keeps the key and loses the XP,
+            // and a write that fails here stays dirty for the timer.
             await FlushAsync(CancellationToken.None);
+        }
+        else
+        {
+            // Nothing was given (top level, a behaviour cancelled it): the key is handed back, so
+            // the day's sum and a later use of the same key tell the truth.
+            await using VortexDbContext db = await dbFactory.CreateDbContextAsync();
+            await db.RpgXpGrants.Where(g => g.GrantKey == grantKey).ExecuteDeleteAsync();
         }
 
         return outcome;

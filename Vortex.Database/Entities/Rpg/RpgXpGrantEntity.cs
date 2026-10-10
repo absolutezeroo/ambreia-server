@@ -8,7 +8,8 @@ namespace Vortex.Database.Entities.Rpg;
 /// <summary>
 /// An XP grant already made by an operator (spec Personnage §7, audit P0-6): written before the XP
 /// it gives, so a replayed request finds its key and gives nothing more, and summed per day for the
-/// cap on what an operator can hand out.
+/// cap on what an operator can hand out. At most once: a process lost between this row and the XP
+/// write keeps the key and loses the grant; a grant the character could not take hands its key back.
 /// </summary>
 [Table("rpg_xp_grants")]
 [Index(nameof(GrantKey), IsUnique = true)]
