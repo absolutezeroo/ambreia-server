@@ -9,23 +9,16 @@ using Vortex.Rpg.Zones;
 namespace Vortex.Rpg.Monsters;
 
 /// <summary>Monsters (spec M1a §5): the behaviors it ships and the zone simulation that runs them
-/// with combat. A module that brings a behavior (M1c) declares its own line.</summary>
+/// with combat. A module that brings a behavior declares one line, as here: the content import sees
+/// it through <see cref="DeclaredBehaviors"/>.</summary>
 public sealed class MonstersModule : IHostPluginModule
 {
     public string Key => "vortex-rpg-monsters";
 
     public void ConfigureServices(IServiceCollection services, HostApplicationBuilder builder)
     {
-        AddBehavior<MeleeBehavior>(services);
+        services.AddSingleton<IMonsterBehavior, MeleeBehavior>();
+        services.AddSingleton<IMonsterBehaviorKeys, DeclaredBehaviors>();
         services.AddSingleton<IZoneSimulationFactory, RpgZoneSimulationFactory>();
-    }
-
-    /// <summary>One instance, seen as a behavior by the zones and as a key by the content import.</summary>
-    public static void AddBehavior<T>(IServiceCollection services)
-        where T : class, IMonsterBehavior
-    {
-        services.AddSingleton<T>();
-        services.AddSingleton<IMonsterBehavior>(sp => sp.GetRequiredService<T>());
-        services.AddSingleton<IMonsterBehaviorKey>(sp => sp.GetRequiredService<T>());
     }
 }

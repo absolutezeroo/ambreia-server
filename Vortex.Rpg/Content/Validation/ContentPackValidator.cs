@@ -186,7 +186,7 @@ public sealed partial class ContentPackValidator(IEnumerable<IContentKind> kinds
         return [.. rules.OfType<ContentMigrationRule>()];
     }
 
-    private static void CheckTexts(
+    private void CheckTexts(
         IReadOnlyDictionary<string, IReadOnlyDictionary<string, string>> texts,
         IReadOnlyDictionary<string, ContentDefinition> definitions,
         List<ContentFinding> findings
@@ -219,9 +219,13 @@ public sealed partial class ContentPackValidator(IEnumerable<IContentKind> kinds
             return;
         }
 
-        foreach (string id in definitions.Keys)
+        foreach ((string id, ContentDefinition definition) in definitions)
         {
-            foreach (string key in new[] { $"{id}.name", $"{id}.description" })
+            IEnumerable<string> extra = _kinds.TryGetValue(definition.Kind, out IContentKind? kind)
+                ? kind.TextKeys(definition)
+                : [];
+
+            foreach (string key in extra.Prepend($"{id}.description").Prepend($"{id}.name"))
             {
                 if (!fr.ContainsKey(key))
                 {

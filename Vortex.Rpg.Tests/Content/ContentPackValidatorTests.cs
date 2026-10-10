@@ -4,6 +4,7 @@ using FluentAssertions;
 using Vortex.Primitives.Rpg.Content;
 using Vortex.Rpg.Content.Kinds;
 using Vortex.Rpg.Content.Validation;
+using Vortex.Rpg.Tests.Support;
 using Xunit;
 
 namespace Vortex.Rpg.Tests.Content;
@@ -107,6 +108,29 @@ public sealed class ContentPackValidatorTests
         RunWarrior(new Dictionary<string, string> { ["fr"] = "" })
             .Findings.Should()
             .Contain(f => f.Code == "MissingText" && f.Severity == ContentSeverity.Warning);
+
+    [Fact]
+    public void AYellWithoutFrenchText_IsAWarning()
+    {
+        const string Wolf = """
+            { "id": "monster.forest.wolf", "kind": "monster", "figure": "0 3 C0A060",
+              "base": { "health": 40, "damageMin": 1, "damageMax": 2 },
+              "phases": [{ "atHealthPercent": 50, "yell": "monster.forest.wolf.howl" }] }
+            """;
+        Dictionary<string, string> texts = new()
+        {
+            ["fr"] = "monster.forest.wolf.name=Loup\nmonster.forest.wolf.description=x",
+        };
+
+        ValidatedPack pack = new ContentPackValidator([
+            new MonsterKind(new BehaviorKeys("melee")),
+        ]).Validate(new ContentPack([F("monster/wolf.json", Wolf)], null, texts), _ => true);
+
+        pack.Findings.Should()
+            .ContainSingle(f => f.Code == "MissingText")
+            .Which.Message.Should()
+            .Contain("monster.forest.wolf.howl");
+    }
 
     [Fact]
     public void NoFrenchTexts_IsAnError() =>

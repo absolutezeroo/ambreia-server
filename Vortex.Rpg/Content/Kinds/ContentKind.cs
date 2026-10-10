@@ -23,6 +23,11 @@ public abstract class ContentKind<TDefinition> : IContentKind
     public IEnumerable<ContentFinding> Check(ContentDefinition definition, ContentCheck check) =>
         Check((TDefinition)definition, check);
 
+    public IEnumerable<string> TextKeys(ContentDefinition definition) =>
+        TextKeys((TDefinition)definition);
+
+    protected virtual IEnumerable<string> TextKeys(TDefinition definition) => [];
+
     protected abstract IEnumerable<ContentFinding> Check(
         TDefinition definition,
         ContentCheck check

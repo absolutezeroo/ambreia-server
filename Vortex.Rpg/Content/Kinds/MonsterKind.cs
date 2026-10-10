@@ -9,14 +9,11 @@ namespace Vortex.Rpg.Content.Kinds;
 
 /// <summary>Monsters (spec M1a §5.1, M1c §5.4): stats, a behaviour some module declares, skill rules
 /// and phases.</summary>
-public sealed class MonsterKind(IEnumerable<IMonsterBehaviorKey> behaviors)
-    : ContentKind<MonsterDefinition>
+public sealed class MonsterKind(IMonsterBehaviorKeys behaviors) : ContentKind<MonsterDefinition>
 {
     private const int MinAttackIntervalMs = 500;
     private const int MaxCorpseSeconds = 10;
     private const int MaxSummonCount = 8;
-
-    private readonly HashSet<string> _behaviors = [.. behaviors.Select(b => b.Key)];
 
     public override string Kind => "monster";
 
@@ -27,7 +24,7 @@ public sealed class MonsterKind(IEnumerable<IMonsterBehaviorKey> behaviors)
             yield return finding;
         }
 
-        if (!_behaviors.Contains(m.Behavior))
+        if (!behaviors.Keys.Contains(m.Behavior))
         {
             yield return Error(
                 "UnknownBehavior",
@@ -73,6 +70,9 @@ public sealed class MonsterKind(IEnumerable<IMonsterBehaviorKey> behaviors)
             );
         }
     }
+
+    protected override IEnumerable<string> TextKeys(MonsterDefinition m) =>
+        m.Phases.Where(p => p is not null).Select(p => p.Yell).OfType<string>();
 
     private static IEnumerable<ContentFinding> CheckRule(
         MonsterDefinition m,
@@ -123,6 +123,15 @@ public sealed class MonsterKind(IEnumerable<IMonsterBehaviorKey> behaviors)
                     "BadPhase",
                     m.Id,
                     $"Phase at {phase.AtHealthPercent} %: between 1 and 99."
+                );
+            }
+
+            if (phase.Yell is { } yell && string.IsNullOrWhiteSpace(yell))
+            {
+                yield return Error(
+                    "BadPhase",
+                    m.Id,
+                    "A yell is a text key; leave it out for none."
                 );
             }
 

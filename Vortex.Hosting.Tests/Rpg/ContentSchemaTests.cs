@@ -9,6 +9,7 @@ using FluentAssertions;
 using Vortex.Hosting.Tests.Architecture;
 using Vortex.Rpg.Content;
 using Vortex.Rpg.Content.Kinds;
+using Vortex.Rpg.Monsters.Behaviors;
 using Xunit;
 
 namespace Vortex.Hosting.Tests.Rpg;
@@ -28,7 +29,7 @@ public sealed class ContentSchemaTests
         ["specialization"] = new SpecializationKind(),
         ["progression"] = new ProgressionKind(),
         ["item"] = new ItemKind(),
-        ["monster"] = new MonsterKind([]),
+        ["monster"] = new MonsterKind(new DeclaredBehaviors([])),
         ["skill"] = new SkillKind([]),
         ["status"] = new StatusKind(),
     };

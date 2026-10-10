@@ -86,11 +86,10 @@ public sealed class MonsterKindTests
             [Boss.Id] = Boss,
         };
 
-        return new MonsterKind([
-            new BehaviorKey("melee"),
-            new BehaviorKey("ranged"),
-            new BehaviorKey("caster"),
-        ]).Check(wolf, new ContentCheck(all, _ => false));
+        return new MonsterKind(new BehaviorKeys("melee", "ranged", "caster")).Check(
+            wolf,
+            new ContentCheck(all, _ => false)
+        );
     }
 
     private static string[] Codes(MonsterDefinition wolf) =>
@@ -226,6 +225,12 @@ public sealed class MonsterKindTests
             )
             .Should()
             .Equal("BrokenReference", "BrokenReference");
+
+    [Fact]
+    public void AnEmptyYell_IsRefused() =>
+        Codes(WithPhase(new MonsterPhase { AtHealthPercent = 50, Yell = " " }))
+            .Should()
+            .Equal("BadPhase");
 
     [Fact]
     public void ABossSummon_IsRefused() =>

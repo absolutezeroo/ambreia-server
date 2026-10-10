@@ -6,6 +6,7 @@ using Vortex.Primitives.Rpg.Content;
 using Vortex.Rpg.Content.Definitions;
 using Vortex.Rpg.Content.Kinds;
 using Vortex.Rpg.Content.Validation;
+using Vortex.Rpg.Monsters.Behaviors;
 using Vortex.Rpg.Skills.Effects;
 using Xunit;
 
@@ -28,7 +29,8 @@ public sealed class ContentPackInRepoTests
             new SpecializationKind(),
             new ProgressionKind(),
             new ItemKind(),
-            new MonsterKind(ShippedBehaviorKey.All),
+            // The behaviors MonstersModule declares: a new shipped behavior is added here too.
+            new MonsterKind(new DeclaredBehaviors([new MeleeBehavior()])),
             // The effect rules SkillsModule declares: a new shipped effect is added here too.
             new SkillKind([
                 new DamageEffect(),

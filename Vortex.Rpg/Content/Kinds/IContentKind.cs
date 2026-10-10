@@ -28,6 +28,10 @@ public interface IContentKind
     /// <exception cref="System.Text.Json.JsonException">The document does not fit the record.</exception>
     public ContentDefinition Parse(string json);
 
+    /// <summary>Text keys the definition uses besides its name and description (a monster's yells,
+    /// spec M1c §5.4): each one without a French text is a warning.</summary>
+    public IEnumerable<string> TextKeys(ContentDefinition definition);
+
     /// <summary>The kind's own rules and its references (spec Contenu §9, levels 2 and 3).</summary>
     public IEnumerable<ContentFinding> Check(ContentDefinition definition, ContentCheck check);
 }
