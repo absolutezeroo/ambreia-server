@@ -1,3 +1,5 @@
+using System.Collections.Generic;
+
 namespace Vortex.Rpg.Content.Definitions;
 
 /// <summary>
@@ -34,4 +36,13 @@ public sealed record MonsterDefinition : ContentDefinition
     /// <summary>How long its body stays in the room once killed, lying dead (status <c>ded</c>):
     /// 0 to 10 seconds; 0 removes it at once.</summary>
     public int CorpseSeconds { get; init; } = 2;
+
+    /// <summary>Scales its stats by configuration (spec M1c §7.1).</summary>
+    public MonsterRank Rank { get; init; } = MonsterRank.Normal;
+
+    /// <summary>When it uses which skill, outside its phases (spec M1c §5.2).</summary>
+    public List<MonsterSkillRule> Skills { get; init; } = [];
+
+    /// <summary>What changes as its health falls (spec M1c §7.2).</summary>
+    public List<MonsterPhase> Phases { get; init; } = [];
 }

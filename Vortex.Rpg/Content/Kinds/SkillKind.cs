@@ -23,11 +23,6 @@ public sealed class SkillKind(IEnumerable<ISkillEffectRule> rules) : ContentKind
 
     protected override IEnumerable<ContentFinding> Check(SkillDefinition s, ContentCheck check)
     {
-        if (s.Classes.Count == 0)
-        {
-            yield return Error("NoClass", s.Id, "A skill belongs to at least one class.");
-        }
-
         foreach (string cls in s.Classes.Where(c => !check.Is<ClassDefinition>(c)))
         {
             yield return Error("BrokenReference", s.Id, $"Class '{cls}' does not exist.");
@@ -100,6 +95,14 @@ public sealed class SkillKind(IEnumerable<ISkillEffectRule> rules) : ContentKind
             );
         }
 
+        if (s.Telegraph is { } t)
+        {
+            foreach (ContentFinding finding in CheckTelegraph(s, t))
+            {
+                yield return finding;
+            }
+        }
+
         if (s.Effects.Count == 0)
         {
             yield return Error("NoEffect", s.Id, "A skill applies at least one effect.");
@@ -116,6 +119,46 @@ public sealed class SkillKind(IEnumerable<ISkillEffectRule> rules) : ContentKind
         foreach (ContentFinding finding in s.Effects.SelectMany(e => CheckEffect(s, e, check)))
         {
             yield return finding;
+        }
+    }
+
+    /// <summary>Spec M1c §5.4: bounds, a cast to wait through, and a direction for a line or a cone
+    /// (plan M1c decision 4).</summary>
+    private static IEnumerable<ContentFinding> CheckTelegraph(SkillDefinition s, SkillTelegraph t)
+    {
+        if (
+            t.Size is < 1 or > 10
+            || t.Width is < 1 or > 5
+            || t.Width % 2 == 0
+            || t.Angle is < 30 or > 180
+        )
+        {
+            yield return Error(
+                "BadTelegraph",
+                s.Id,
+                "Telegraph: size 1–10, odd width 1–5, angle 30–180."
+            );
+        }
+
+        if (s.Type != SkillType.Cast)
+        {
+            yield return Error(
+                "TelegraphWithoutCast",
+                s.Id,
+                "A telegraph lasts the time of a cast: type cast, with castMs."
+            );
+        }
+
+        if (
+            t.Shape != TelegraphShape.Circle
+            && s.Target is SkillTarget.Self or SkillTarget.AroundCaster
+        )
+        {
+            yield return Error(
+                "TelegraphNeedsAim",
+                s.Id,
+                "A line or a cone needs a target or a cell to aim at."
+            );
         }
     }
 

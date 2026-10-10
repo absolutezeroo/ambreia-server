@@ -28,7 +28,7 @@ public sealed class ContentSchemaTests
         ["specialization"] = new SpecializationKind(),
         ["progression"] = new ProgressionKind(),
         ["item"] = new ItemKind(),
-        ["monster"] = new MonsterKind(),
+        ["monster"] = new MonsterKind([]),
         ["skill"] = new SkillKind([]),
         ["status"] = new StatusKind(),
     };

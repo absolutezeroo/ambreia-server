@@ -1,6 +1,7 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Vortex.Primitives.Plugins;
+using Vortex.Rpg.Content.Rules;
 using Vortex.Rpg.Monsters.Behaviors;
 using Vortex.Rpg.Monsters.Zones;
 using Vortex.Rpg.Zones;
@@ -15,7 +16,16 @@ public sealed class MonstersModule : IHostPluginModule
 
     public void ConfigureServices(IServiceCollection services, HostApplicationBuilder builder)
     {
-        services.AddSingleton<IMonsterBehavior, MeleeBehavior>();
+        AddBehavior<MeleeBehavior>(services);
         services.AddSingleton<IZoneSimulationFactory, RpgZoneSimulationFactory>();
+    }
+
+    /// <summary>One instance, seen as a behavior by the zones and as a key by the content import.</summary>
+    public static void AddBehavior<T>(IServiceCollection services)
+        where T : class, IMonsterBehavior
+    {
+        services.AddSingleton<T>();
+        services.AddSingleton<IMonsterBehavior>(sp => sp.GetRequiredService<T>());
+        services.AddSingleton<IMonsterBehaviorKey>(sp => sp.GetRequiredService<T>());
     }
 }

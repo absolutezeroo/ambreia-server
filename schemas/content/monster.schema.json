@@ -79,6 +79,94 @@
     "corpseSeconds": {
       "type": "integer"
     },
+    "rank": {
+      "enum": [
+        "normal",
+        "elite",
+        "boss"
+      ]
+    },
+    "skills": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "skill": {
+            "type": "string"
+          },
+          "priority": {
+            "type": "integer"
+          },
+          "minRange": {
+            "type": "integer"
+          },
+          "belowHealthPercent": {
+            "type": "integer"
+          },
+          "chance": {
+            "type": "integer"
+          }
+        },
+        "required": [
+          "skill"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "phases": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "atHealthPercent": {
+            "type": "integer"
+          },
+          "skills": {
+            "type": "array",
+            "items": {
+              "$ref": "#/properties/skills/items"
+            }
+          },
+          "status": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "summon": {
+            "type": [
+              "object",
+              "null"
+            ],
+            "properties": {
+              "monster": {
+                "type": "string"
+              },
+              "count": {
+                "type": "integer"
+              },
+              "level": {
+                "type": "integer"
+              }
+            },
+            "required": [
+              "monster"
+            ],
+            "additionalProperties": false
+          },
+          "yell": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        },
+        "required": [
+          "atHealthPercent"
+        ],
+        "additionalProperties": false
+      }
+    },
     "id": {
       "type": "string"
     },

@@ -1,9 +1,11 @@
 using System.Collections.Generic;
 using System.Linq;
 using FluentAssertions;
+using Vortex.Primitives.Rpg.Content;
 using Vortex.Rpg.Content.Definitions;
 using Vortex.Rpg.Content.Kinds;
 using Vortex.Rpg.Content.Validation;
+using Vortex.Rpg.Tests.Support;
 using Xunit;
 
 namespace Vortex.Rpg.Tests.Content;
@@ -38,18 +40,212 @@ public sealed class MonsterKindTests
         XpPerLevel = 6,
     };
 
+    private static readonly SkillDefinition Bite = new()
+    {
+        Id = "skill.monster.bite",
+        Kind = "skill",
+        Classes = [],
+        Level = 1,
+        Type = SkillType.Instant,
+        Range = 3,
+        Target = SkillTarget.Enemy,
+        Effects = [new SkillEffectDefinition { Kind = "damage", Base = 4 }],
+    };
+
+    private static readonly StatusDefinition Enraged = new()
+    {
+        Id = "status.enraged",
+        Kind = "status",
+        Type = StatusType.Buff,
+        DurationMs = 1000,
+    };
+
+    private static readonly ProgressionDefinition Progression = new()
+    {
+        Id = "progression.default",
+        Kind = "progression",
+        MaxLevel = 20,
+        XpToNext = [.. Enumerable.Repeat(100, 19)],
+        HealthPerStrength = 5,
+        ManaPerIntelligence = 5,
+        CritBasePercent = 5,
+        CritPerAgilityPercent = 0.1,
+        CritCapPercent = 50,
+        DodgePerAgilityPercent = 0.1,
+        DodgeCapPercent = 30,
+    };
+
+    private static IEnumerable<ContentFinding> Findings(MonsterDefinition wolf)
+    {
+        Dictionary<string, ContentDefinition> all = new()
+        {
+            [wolf.Id] = wolf,
+            [Bite.Id] = Bite,
+            [Enraged.Id] = Enraged,
+            [Progression.Id] = Progression,
+            [Boss.Id] = Boss,
+        };
+
+        return new MonsterKind([
+            new BehaviorKey("melee"),
+            new BehaviorKey("ranged"),
+            new BehaviorKey("caster"),
+        ]).Check(wolf, new ContentCheck(all, _ => false));
+    }
+
     private static string[] Codes(MonsterDefinition wolf) =>
-        [
-            .. new MonsterKind()
-                .Check(
-                    wolf,
-                    new ContentCheck(
-                        new Dictionary<string, ContentDefinition> { [wolf.Id] = wolf },
-                        _ => false
-                    )
+        [.. Findings(wolf).Where(f => f.Severity == ContentSeverity.Error).Select(f => f.Code)];
+
+    private static readonly MonsterDefinition Boss = Wolf with
+    {
+        Id = "monster.grove.guardian",
+        Rank = MonsterRank.Boss,
+    };
+
+    private static MonsterSkillRule Rule(
+        int minRange = 0,
+        int below = 100,
+        int chance = 100,
+        string skill = "skill.monster.bite"
+    ) =>
+        new()
+        {
+            Skill = skill,
+            MinRange = minRange,
+            BelowHealthPercent = below,
+            Chance = chance,
+        };
+
+    private static MonsterDefinition WithPhase(MonsterPhase phase) =>
+        Wolf with
+        {
+            Phases = [phase],
+        };
+
+    [Fact]
+    public void AnUndeclaredBehavior_IsRefused() =>
+        Codes(Wolf with { Behavior = "flying" }).Should().Equal("UnknownBehavior");
+
+    [Theory]
+    [InlineData("ranged")]
+    [InlineData("caster")]
+    public void ADeclaredBehavior_HasNoFinding(string behavior) =>
+        Codes(Wolf with { Behavior = behavior }).Should().BeEmpty();
+
+    [Fact]
+    public void AValidRule_HasNoFinding() =>
+        Codes(Wolf with { Skills = [Rule(minRange: 3, below: 50, chance: 30)] }).Should().BeEmpty();
+
+    [Fact]
+    public void ARuleToAnUnknownSkill_IsRefused() =>
+        Codes(Wolf with { Skills = [Rule(skill: "skill.monster.nope")] })
+            .Should()
+            .Equal("BrokenReference");
+
+    [Theory]
+    [InlineData(-1, 100, 100)]
+    [InlineData(4, 100, 100)]
+    [InlineData(0, 0, 100)]
+    [InlineData(0, 101, 100)]
+    [InlineData(0, 100, 0)]
+    [InlineData(0, 100, 101)]
+    public void ARuleOutOfBounds_IsRefused(int minRange, int below, int chance) =>
+        Codes(Wolf with { Skills = [Rule(minRange, below, chance)] }).Should().Equal("BadRule");
+
+    [Fact]
+    public void AValidPhase_HasNoFinding() =>
+        Codes(
+                WithPhase(
+                    new MonsterPhase
+                    {
+                        AtHealthPercent = 66,
+                        Skills = [Rule()],
+                        Status = Enraged.Id,
+                        Summon = new MonsterSummon { Monster = Wolf.Id, Count = 8 },
+                        Yell = "monster.forest.wolf.phase2",
+                    }
                 )
-                .Select(f => f.Code),
-        ];
+            )
+            .Should()
+            .BeEmpty();
+
+    [Theory]
+    [InlineData(0)]
+    [InlineData(100)]
+    public void APhaseThresholdOutOfOneToNinetyNine_IsRefused(int percent) =>
+        Codes(WithPhase(new MonsterPhase { AtHealthPercent = percent })).Should().Equal("BadPhase");
+
+    [Fact]
+    public void TwoPhasesAtTheSameThreshold_AreRefused() =>
+        Codes(
+                Wolf with
+                {
+                    Phases =
+                    [
+                        new MonsterPhase { AtHealthPercent = 50 },
+                        new MonsterPhase { AtHealthPercent = 50 },
+                    ],
+                }
+            )
+            .Should()
+            .Equal("BadPhase");
+
+    [Theory]
+    [InlineData(0, 0)]
+    [InlineData(9, 0)]
+    [InlineData(1, 21)]
+    public void ASummonOutOfBounds_IsRefused(int count, int level) =>
+        Codes(
+                WithPhase(
+                    new MonsterPhase
+                    {
+                        AtHealthPercent = 50,
+                        Summon = new MonsterSummon
+                        {
+                            Monster = Wolf.Id,
+                            Count = count,
+                            Level = level,
+                        },
+                    }
+                )
+            )
+            .Should()
+            .Equal("BadPhase");
+
+    [Fact]
+    public void AnUnknownPhaseStatusOrSummon_IsRefused() =>
+        Codes(
+                WithPhase(
+                    new MonsterPhase
+                    {
+                        AtHealthPercent = 50,
+                        Status = "status.nope",
+                        Summon = new MonsterSummon { Monster = "monster.nope" },
+                    }
+                )
+            )
+            .Should()
+            .Equal("BrokenReference", "BrokenReference");
+
+    [Fact]
+    public void ABossSummon_IsRefused() =>
+        Codes(
+                WithPhase(
+                    new MonsterPhase
+                    {
+                        AtHealthPercent = 50,
+                        Summon = new MonsterSummon { Monster = Boss.Id },
+                    }
+                )
+            )
+            .Should()
+            .Equal("BossSummon");
+
+    [Fact]
+    public void AnEliteWithoutSkills_IsAWarning() =>
+        Findings(Wolf with { Rank = MonsterRank.Elite })
+            .Should()
+            .ContainSingle(f => f.Code == "NoSkills" && f.Severity == ContentSeverity.Warning);
 
     [Fact]
     public void AValidWolf_HasNoFinding() => Codes(Wolf).Should().BeEmpty();

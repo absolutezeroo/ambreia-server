@@ -6,7 +6,7 @@ namespace Vortex.Rpg.Content.Definitions;
 /// and the effects it applies to each target.</summary>
 public sealed record SkillDefinition : ContentDefinition
 {
-    /// <summary>Class ids; at least one.</summary>
+    /// <summary>Class ids; none: a monster's skill, learned by nobody (spec M1c §5.3).</summary>
     public required List<string> Classes { get; init; }
 
     /// <summary>Specialization ids; empty = every specialization of those classes.</summary>
@@ -59,4 +59,7 @@ public sealed record SkillDefinition : ContentDefinition
     public string Vfx { get; init; } = string.Empty;
 
     public string Sound { get; init; } = string.Empty;
+
+    /// <summary>Marks its ground for the cast's time before it lands (spec M1c §8).</summary>
+    public SkillTelegraph? Telegraph { get; init; }
 }

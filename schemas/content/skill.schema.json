@@ -111,6 +111,35 @@
     "sound": {
       "type": "string"
     },
+    "telegraph": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "properties": {
+        "shape": {
+          "enum": [
+            "circle",
+            "line",
+            "cone"
+          ]
+        },
+        "size": {
+          "type": "integer"
+        },
+        "width": {
+          "type": "integer"
+        },
+        "angle": {
+          "type": "integer"
+        }
+      },
+      "required": [
+        "shape",
+        "size"
+      ],
+      "additionalProperties": false
+    },
     "id": {
       "type": "string"
     },

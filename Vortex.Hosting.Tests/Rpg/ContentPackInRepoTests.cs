@@ -28,7 +28,7 @@ public sealed class ContentPackInRepoTests
             new SpecializationKind(),
             new ProgressionKind(),
             new ItemKind(),
-            new MonsterKind(),
+            new MonsterKind(ShippedBehaviorKey.All),
             // The effect rules SkillsModule declares: a new shipped effect is added here too.
             new SkillKind([
                 new DamageEffect(),

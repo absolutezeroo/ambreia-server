@@ -1,3 +1,5 @@
+using Vortex.Rpg.Content.Rules;
+
 namespace Vortex.Rpg.Monsters.Behaviors;
 
 /// <summary>
@@ -5,10 +7,8 @@ namespace Vortex.Rpg.Monsters.Behaviors;
 /// its key from the monster's content (<c>melee</c>; <c>ranged</c>, <c>caster</c> and bosses come with
 /// M1c). The last one declared for a key wins.
 /// </summary>
-public interface IMonsterBehavior
+public interface IMonsterBehavior : IMonsterBehaviorKey
 {
-    public string Key { get; }
-
     /// <summary>One decision per combat tick: state, target, movement.</summary>
     public void Think(MonsterBrain brain);
 }

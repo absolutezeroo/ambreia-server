@@ -155,8 +155,92 @@ public sealed class SkillKindTests
         Codes(Firebolt with { Classes = ["class.bard"] }).Should().Equal("BrokenReference");
 
     [Fact]
-    public void NoClass_IsRefused() =>
-        Codes(Firebolt with { Classes = [] }).Should().Equal("NoClass");
+    public void NoClass_IsAMonsterSkill() =>
+        Codes(Firebolt with { Classes = [] }).Should().BeEmpty();
+
+    [Theory]
+    [InlineData(TelegraphShape.Circle, 3, 1, 90)]
+    [InlineData(TelegraphShape.Line, 5, 3, 90)]
+    [InlineData(TelegraphShape.Cone, 10, 5, 180)]
+    public void AValidTelegraph_HasNoFinding(
+        TelegraphShape shape,
+        int size,
+        int width,
+        int angle
+    ) => Codes(Telegraphed(shape, size, width, angle)).Should().BeEmpty();
+
+    [Theory]
+    [InlineData(0, 1, 90)]
+    [InlineData(11, 1, 90)]
+    [InlineData(3, 2, 90)]
+    [InlineData(3, 7, 90)]
+    [InlineData(3, 1, 20)]
+    [InlineData(3, 1, 190)]
+    public void ATelegraphOutOfBounds_IsRefused(int size, int width, int angle) =>
+        Codes(Telegraphed(TelegraphShape.Cone, size, width, angle)).Should().Equal("BadTelegraph");
+
+    [Fact]
+    public void AnInstantTelegraph_IsRefused() =>
+        Codes(
+                Telegraphed(TelegraphShape.Circle, 3, 1, 90) with
+                {
+                    Type = SkillType.Instant,
+                    CastMs = 0,
+                }
+            )
+            .Should()
+            .Equal("TelegraphWithoutCast");
+
+    [Fact]
+    public void AChannelTelegraph_IsRefused() =>
+        Codes(
+                Telegraphed(TelegraphShape.Circle, 3, 1, 90) with
+                {
+                    Type = SkillType.Channel,
+                    ChannelMs = 3000,
+                    PulseMs = 1000,
+                }
+            )
+            .Should()
+            .Equal("TelegraphWithoutCast");
+
+    [Theory]
+    [InlineData(TelegraphShape.Line, SkillTarget.Self)]
+    [InlineData(TelegraphShape.Cone, SkillTarget.AroundCaster)]
+    public void ALineOrConeWithoutAim_IsRefused(TelegraphShape shape, SkillTarget target) =>
+        Codes(Telegraphed(shape, 3, 1, 90) with { Target = target, Radius = 2, Range = 0 })
+            .Should()
+            .Equal("TelegraphNeedsAim");
+
+    [Fact]
+    public void ACircleAroundTheCaster_HasNoFinding() =>
+        Codes(
+                Telegraphed(TelegraphShape.Circle, 3, 1, 90) with
+                {
+                    Target = SkillTarget.AroundCaster,
+                    Radius = 3,
+                    Range = 0,
+                }
+            )
+            .Should()
+            .BeEmpty();
+
+    private static SkillDefinition Telegraphed(
+        TelegraphShape shape,
+        int size,
+        int width,
+        int angle
+    ) =>
+        Firebolt with
+        {
+            Telegraph = new SkillTelegraph
+            {
+                Shape = shape,
+                Size = size,
+                Width = width,
+                Angle = angle,
+            },
+        };
 
     [Fact]
     public void ACast_WithoutItsTime_IsRefused() =>
