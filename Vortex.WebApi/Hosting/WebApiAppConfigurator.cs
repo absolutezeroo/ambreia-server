@@ -23,8 +23,12 @@ internal static class WebApiAppConfigurator
 
     public static void ConfigureServices(IServiceCollection services, WebApiConfig config)
     {
-        // The body of a 500: a problem document, never the exception (see ConfigurePipeline).
-        services.AddProblemDetails();
+        // The body of a 500: a problem document, never the exception (see ConfigurePipeline). The
+        // exception handler clears the response before writing it, so the hardening set earlier in
+        // the pipeline is put back here: a 500 is the one answer served from a failed state.
+        services.AddProblemDetails(options =>
+            options.CustomizeProblemDetails = ctx => ApplySecurityHeaders(ctx.HttpContext.Response)
+        );
         AddCors(services, config);
         AddRateLimiting(services, config);
         AddHttpsRedirection(services, config);

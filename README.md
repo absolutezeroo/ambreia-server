@@ -234,6 +234,10 @@ To run this anywhere else:
   `AllowUnclusteredOutsideDevelopment` if a single node with non-durable Orleans state is genuinely
   what you want.
 - Drop the two `AllowInsecureRemoteHttp` opt-ins and terminate TLS in front of the listeners.
+- Behind that proxy, set `Vortex:WebApi:UseForwardedHeaders` and list it in `KnownProxies` or
+  `KnownNetworks`: outside Development the host refuses to start without them, because the login,
+  registration and ticket rate limits would otherwise see the proxy's address and throttle the
+  whole hotel as one client.
 
 ## Quality Model (Two-Phase)
 - Fast local commit check:

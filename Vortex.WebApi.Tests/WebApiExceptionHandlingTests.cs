@@ -27,6 +27,14 @@ public sealed class WebApiExceptionHandlingTests
         response.StatusCode.Should().Be(HttpStatusCode.InternalServerError);
         response.Content.Headers.ContentType!.MediaType.Should().Be("application/problem+json");
         body.Should().NotContain("secret-detail").And.NotContain("   at ");
+        // The handler clears the response before writing the problem: the hardening set earlier in
+        // the pipeline has to be put back, or the one answer served from a failed state loses it.
+        response
+            .Headers.GetValues("X-Content-Type-Options")
+            .Should()
+            .ContainSingle()
+            .Which.Should()
+            .Be("nosniff");
     }
 
     private static string Boom() =>

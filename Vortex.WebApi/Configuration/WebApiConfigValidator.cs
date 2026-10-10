@@ -99,10 +99,11 @@ public sealed class WebApiConfigValidator(IHostEnvironment environment)
         {
             failures.Add(
                 $"'{WebApiConfig.SECTION_NAME}:{nameof(WebApiConfig.UseForwardedHeaders)}' must be "
-                    + $"enabled outside Development when the web API has no TLS of its own (host "
-                    + $"'{options.Host}', HTTPS {(options.HttpsEnabled ? "on" : "off")}): it is then "
-                    + "served through a reverse proxy, and the per-address rate limits would see the "
-                    + "proxy's address and throttle the whole hotel as one client. Enable it and list "
+                    + $"enabled outside Development when the web API is bound to loopback or runs "
+                    + $"without HTTPS (host '{options.Host}', HTTPS "
+                    + $"{(options.HttpsEnabled ? "on" : "off")}): it is then only reachable through "
+                    + "a reverse proxy, and the per-address rate limits would see the proxy's "
+                    + "address and throttle the whole hotel as one client. Enable it and list "
                     + $"the proxy in '{WebApiConfig.SECTION_NAME}:{nameof(WebApiConfig.KnownProxies)}' "
                     + $"or '{WebApiConfig.SECTION_NAME}:{nameof(WebApiConfig.KnownNetworks)}'."
             );
