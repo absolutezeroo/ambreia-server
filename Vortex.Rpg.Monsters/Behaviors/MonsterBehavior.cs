@@ -47,13 +47,19 @@ public abstract class MonsterBehavior : IMonsterBehavior
             return;
         }
 
-        // A cast holds it where it stands (spec M1c §4.3).
+        DropPlayersOnSafeCells(brain);
+
+        // A cast holds it where it stands (spec M1c §4.3), unless nobody is left to fight: then it
+        // goes home, which cancels the cast (spec M1c §4.2).
         if (c.Busy)
         {
+            if (c.Threat.IsEmpty)
+            {
+                GoHome(brain);
+            }
+
             return;
         }
-
-        DropPlayersOnSafeCells(brain);
 
         if (c.Threat.IsEmpty && (m.Definition.Aggressive || zone.RulesAt(at.X, at.Y).Hostile))
         {

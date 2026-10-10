@@ -153,6 +153,24 @@ public sealed class TelegraphTests
     }
 
     [Fact]
+    public async Task ACasterDyingTheTickItStarts_ShowsNoTelegraph()
+    {
+        Combatant me = await _world.PlayerAsync();
+        Combatant wolf = _world.Wolf(x: 7, y: 5);
+
+        Telegraph(wolf, me);
+        _world.Combat.Damage(me, wolf, 1000, _world.Now);
+        await _world.TickAsync();
+
+        _world.Broadcast<RpgTelegraphsMessageComposer>().Should().BeEmpty();
+        _world
+            .Broadcast<RpgCastEndMessageComposer>()
+            .SelectMany(e => e.Ends)
+            .Should()
+            .ContainSingle(e => e.Reason == RpgCastEnd.Cancelled);
+    }
+
+    [Fact]
     public async Task ACasterDyingMidTelegraph_LandsNothing()
     {
         Combatant me = await _world.PlayerAsync();

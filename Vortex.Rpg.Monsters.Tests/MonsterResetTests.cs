@@ -60,6 +60,20 @@ public sealed class MonsterResetTests
     }
 
     [Fact]
+    public async Task EveryoneInTheCamp_MidCast_SendsItHome()
+    {
+        await _boss.StartAsync();
+        _boss.BossCombatant.Busy = true;
+        _boss.World.Zone.SafeCells.Add((2, 1));
+
+        _boss.World.Zone.NowMs += 250;
+        await _boss.World.TickAsync();
+
+        _boss.BossCombatant.Invulnerable.Should().BeTrue();
+        _boss.Casting.Resets.Should().Contain(_boss.BossId);
+    }
+
+    [Fact]
     public async Task AMonsterWithoutPhases_GoesHomeAsBefore()
     {
         await _boss.StartAsync(MonsterWorld.Wolf);

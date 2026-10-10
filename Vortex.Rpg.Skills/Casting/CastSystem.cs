@@ -514,6 +514,12 @@ public sealed class CastSystem(
 
         c.Set<CastState>(null);
         c.Busy = false;
+
+        if (state.Cells is not null)
+        {
+            zone.GetOrAdd<TelegraphNews>().Ended(c.ObjectId);
+        }
+
         zone.GetOrAdd<CastNews>()
             .Ended(
                 new RpgCastEnd

@@ -12,6 +12,11 @@ public sealed class TelegraphNews
 
     public void Started(RpgTelegraph telegraph) => _started.Add(telegraph);
 
+    /// <summary>A cast that ended the tick it began: its telegraph never goes out, or it would reach
+    /// the client after the end that clears it.</summary>
+    public void Ended(int casterObjectId) =>
+        _started.RemoveAll(t => t.CasterObjectId == casterObjectId);
+
     public void Clear() => _started.Clear();
 
     /// <summary>Queued with the tick's messages, then forgotten.</summary>
