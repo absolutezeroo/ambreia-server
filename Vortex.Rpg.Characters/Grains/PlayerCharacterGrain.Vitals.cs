@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Immutable;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Vortex.Database.Entities.Rpg;
 using Vortex.Primitives.Rpg.Characters;
@@ -85,6 +86,10 @@ internal sealed partial class PlayerCharacterGrain
         c.CurrentMana = mana >= stats.MaxMana ? null : Math.Max(0, mana);
         c.VitalsAt = Time.GetUtcNow().UtcDateTime;
         _dirty = true;
+
+        // The zone hands them back once, on exit: written now rather than at the next timer, so a
+        // silo lost in between does not revive the character with the health it had before the fight.
+        await FlushAsync(CancellationToken.None);
     }
 
     public async Task WearEquipmentAsync(int percent)

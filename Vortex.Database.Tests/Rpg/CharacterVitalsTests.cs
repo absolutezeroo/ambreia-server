@@ -66,6 +66,22 @@ public sealed class CharacterVitalsTests : IAsyncLifetime
         (profile.Health, profile.Mana).Should().Be((10, 5));
     }
 
+    /// <summary>The zone hands the vitals back once, on exit: a silo that dies before the next
+    /// flush would otherwise revive the character with the health it had before the fight.</summary>
+    [Fact]
+    public async Task SetVitals_IsWritten_BeforeTheCallReturns()
+    {
+        PlayerCharacterGrain grain = await ActivateAsync(withCharacter: true);
+
+        await grain.SetVitalsAsync(10, 5, []);
+
+        await using VortexDbContext db = new(_options);
+        PlayerCharacterEntity row = await db
+            .PlayerCharacters.AsNoTracking()
+            .SingleAsync(c => c.PlayerEntityId == Player);
+        (row.CurrentHealth, row.CurrentMana).Should().Be((10, 5));
+    }
+
     [Fact]
     public async Task OutOfZone_HealthRegenerates_FromVitalsAt()
     {
