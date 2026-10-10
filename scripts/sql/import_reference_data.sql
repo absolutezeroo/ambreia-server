@@ -43,5 +43,13 @@ SET @t = 'furniture_definitions'; EXECUTE gen; PREPARE cp FROM @sql; EXECUTE cp;
 
 SET FOREIGN_KEY_CHECKS = 1;
 
+-- Wired is not in the RPG, and neither are its furni: triggers, effects, conditions and add-ons
+-- (wf_*), the test conditions (test_cnd_*), the room-settings furni (conf_*) and the score boards
+-- (highscore_*). Removed after the copy, with the checks back on, so the cascade on
+-- furniture.definition_id takes any copy a player still holds with them. The served furnidata and
+-- the asset pack drop the same four families.
+DELETE FROM `furniture_definitions`
+ WHERE `name` LIKE 'wf\_%' OR `name` LIKE 'test\_cnd\_%' OR `name` LIKE 'conf\_%' OR `name` LIKE 'highscore\_%';
+
 DEALLOCATE PREPARE cp;
 DEALLOCATE PREPARE gen;
