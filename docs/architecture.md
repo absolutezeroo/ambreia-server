@@ -120,7 +120,8 @@ thing:
 | `ZoneAreaModule` | which areas a player stands in; `ZoneAreaEntered/LeftEvent`, the area bubble | each committed step (`OnZoneStepAsync`) |
 | `ZonePassageModule` | passages: same zone on the spot, another through `IRoomZone.ExpectArrivalAsync` + `RoomForward` | the step, teleporters, `Teleport` actions |
 | `ZoneInteractionModule` + `Interactions/` | `UseFurniture`/`UseWallItem` on zone decor: one class per `interaction` | `RoomActionModule.UseItemByIdAsync` |
-| `ZoneTriggerModule` + `Triggers/` | triggers on the room event bus and the `zone-clock` tick step; one evaluator per condition, one executor per action | `RoomEventModule`, the room tick |
+| `ZoneTriggerModule` + `Triggers/` | triggers on the room event bus and the `zone-clock` tick step; `ZoneRuleRegistry` answers each condition and action — the room's own (`RoomRules`), then those the modules declare (`Vortex.Rpg/Zones/Rules`); a `ZoneTriggerRaisedEvent` runs whatever a module raised | `RoomEventModule`, the room tick |
+| `ZoneRuntimeState.Facts` + `RoomGrain.Facts.cs` | what the zone knows of each player, part by part as the modules declare them (`IZoneFactsSource`): read before the arrival step, a newer part pushed by its module replaces the old one (`Sequence`), its source says which triggers the change raises | `RoomAvatarModule.CreateAvatarFromPlayerAsync`, `IRoomZone.UpdatePlayerFactsAsync` |
 
 A `Dungeon` zone is played in copies, one per group: the room entry asks the room
 `IRoomZone.InstanceForAsync` and forwards the player to the copy `IZoneInstanceGrain` hands out. A

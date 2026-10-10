@@ -453,6 +453,8 @@ const PLAYER_C = { email: 'run-skill-c@vortex.local', password: 'RunSkill!2026' 
 // A fourth, the mage `boss` raises to level 6: `skills` keeps its level-1 mage, whose Firebolt does
 // not kill a wolf at once.
 const PLAYER_D = { email: 'run-skill-d@vortex.local', password: 'RunSkill!2026' };
+// A fifth, the mage `rules` levels up and gives items: the others keep their levels and bags.
+const PLAYER_E = { email: 'run-skill-e@vortex.local', password: 'RunSkill!2026' };
 const WEB_COOKIE = 'habbo-web-session';
 
 function sessionCookie(res) {
@@ -1914,6 +1916,183 @@ async function cmdBoss() {
   log('Boss OK.');
 }
 
+// The zone rules (spec Z1 §13): proof_rules holds a vault open from the mage's next level, a wolf
+// whose death wakes a sleeping ambush, and triggers on that level and on an amber shard. The mage of
+// PLAYER_E is refused the vault, kills the wolf and sees the ambush born, gains the level and the
+// shard (admin routes) and hears both triggers, then walks into the vault.
+async function cmdRules() {
+  await cmdContent();
+  const base = `http://127.0.0.1:${WEBAPI}`;
+  await webSession(PLAYER);
+  sql(`INSERT INTO player_account_roles (account_id, role_id)
+       SELECT a.id, r.id FROM player_accounts a, roles r
+       WHERE a.email='${PLAYER.email}' AND r.\`key\`='owner'
+         AND NOT EXISTS (SELECT 1 FROM player_account_roles x WHERE x.account_id=a.id AND x.role_id=r.id);`);
+  const a = await enterWorld(PLAYER_E, 'class.mage');
+  const g = a.g;
+  const fail = (m) => {
+    g.close();
+    die(m);
+  };
+  const SHARD = 'item.material.amber_shard';
+  const WOLF = 'monster.forest.wolf';
+  const FIREBOLT = 'skill.mage.firebolt';
+  const owner = { cookie: (await webSession(PLAYER)).cookie };
+  const [level, xpNow] = sql(`SELECT level, xp FROM player_characters WHERE player_id=${a.playerId};`)
+    .trim()
+    .split(/\s+/)
+    .map(Number);
+  // Re-runs keep levelling the mage: the vault and the level trigger aim at the next level.
+  const next = level + 1;
+
+  // 1. proof_rules, published through the editor with no rule flagged as having no effect.
+  const size = 12;
+  const tiles = Array.from({ length: size * size }, () => ({ height: 0, walkable: true, hole: false }));
+  const key = 'proof_rules';
+  const say = (id, type, target, text, extra = {}) => ({
+    id,
+    type,
+    target,
+    actions: [{ kind: 'ShowDialogue', dialogue: text }],
+    ...extra,
+  });
+  const doc = {
+    schemaVersion: 1,
+    settings: { id: key, name: 'Preuve règles' },
+    floor: { width: size, length: size, tiles, door: { x: 0, y: 6 }, doorDirection: 2 },
+    entries: [{ id: 'start', kind: 'arrival', cell: { x: 1, y: 6 } }],
+    zones: [
+      {
+        id: 'vault',
+        kind: 'Restricted',
+        name: 'Chambre forte',
+        polygon: [{ x: 9, y: 0 }, { x: 11, y: 0 }, { x: 11, y: 11 }, { x: 9, y: 11 }],
+        conditions: [{ kind: 'PlayerLevel', min: next, max: 0 }],
+      },
+    ],
+    spawns: [
+      { id: 'wolves', area: [{ x: 4, y: 6 }], monster: WOLF, aggroRadius: 1, wanderRadius: 0, respawnSeconds: 120, aoiActivation: false },
+      {
+        id: 'ambush',
+        area: [{ x: 5, y: 10 }, { x: 6, y: 10 }],
+        monster: WOLF,
+        min: 2,
+        max: 2,
+        aggroRadius: 1,
+        wanderRadius: 0,
+        aoiActivation: false,
+      },
+    ],
+    triggers: [
+      { id: 't_kill', type: 'MonsterKilled', target: 'wolves', actions: [{ kind: 'SpawnGroup', spawn: 'ambush' }] },
+      say('t_level', 'PlayerLevel', String(next), 'rules.level'),
+      say('t_shard', 'ItemOwned', SHARD, 'rules.shard'),
+    ],
+  };
+  let r = await request(`${base}/api/editor/zones`, { method: 'POST', headers: owner, body: JSON.stringify({ key, name: doc.settings.name }) });
+  if (r.status !== 200 && r.status !== 409) fail(`1. Zone creation: ${r.status} ${r.body}`);
+  r = await request(`${base}/api/editor/zones/${key}/lock`, { method: 'POST', headers: owner });
+  if (r.status !== 200) fail(`1. Lock: ${r.status} ${r.body}`);
+  r = await request(`${base}/api/editor/zones/${key}/versions?comment=driver`, { method: 'POST', headers: owner, body: JSON.stringify(doc) });
+  if (r.status !== 200) fail(`1. Save: ${r.status} ${r.body}`);
+  const saved = JSON.parse(r.body);
+  const inert = (saved.findings ?? []).filter((f) => f.code === 'InertUntilRpg');
+  if (inert.length) fail(`1. Rules flagged as having no effect: ${JSON.stringify(inert)}`);
+  if (!saved.published) {
+    r = await request(`${base}/api/editor/zones/${key}/publish/${saved.version}`, { method: 'POST', headers: owner });
+    if (r.status !== 200) fail(`1. Publish: ${r.status} ${r.body}`);
+  }
+  const room = JSON.parse((await request(`${base}/api/editor/zones`, { headers: owner })).body).find((z) => z.key === key).roomId;
+  log(`1. Published ${key} (room ${room}), findings ${JSON.stringify((saved.findings ?? []).map((f) => f.code))}; vault from level ${next}.`);
+
+  const after = (header, from) => g.frames.slice(from).filter((f) => f.header === header);
+  const until = async (test, ms) => {
+    for (let t = 0; t < ms; t += 100) {
+      const hit = test();
+      if (hit) return hit;
+      await sleep(100);
+    }
+    return null;
+  };
+  // NotificationDialog: type, count × (key, value).
+  const bubbles = (from) =>
+    after(H.notificationDialog, from).map((f) => {
+      const b = reader(f.body);
+      const type = b.str();
+      const params = Object.fromEntries(Array.from({ length: b.int() }, () => [b.str(), b.str()]));
+      return { type, message: params.message ?? '' };
+    });
+
+  // 2. In, and refused at the vault.
+  let mark = g.frames.length;
+  g.send(frame(H.openFlat, room, '', -1));
+  const inside = await until(() => {
+    const all = after(H.users, mark).flatMap(usersOf);
+    return all.some((x) => x.name === WOLF) && all.some((x) => x.type === 1 && x.webId === a.playerId) ? all : null;
+  }, 8000);
+  if (!inside) fail('2. No wolf or no avatar of mine in proof_rules.');
+  const wolf = inside.find((x) => x.name === WOLF);
+  mark = g.frames.length;
+  g.send(frame(H.moveAvatar, 10, 3));
+  const refused = await until(() => bubbles(mark).find((b) => b.type === 'zone.restricted'), 8000);
+  if (!refused) fail(`2. No refusal at the vault: ${JSON.stringify(bubbles(mark))}`);
+  log(`2. Level ${level}: ${refused.type} "${refused.message}".`);
+
+  // 3. The wolf killed: the ambush wakes, two wolves born on its area.
+  g.send(frame(H.moveAvatar, 2, 6));
+  await sleep(1500);
+  const fightFrom = g.frames.length;
+  g.send(frame(H.rpgTargetSelect, wolf.objectId));
+  let ambush = null;
+  for (let t = 0; t < 40000 && !ambush; t += 2500) {
+    g.send(frame(H.rpgSkillCast, FIREBOLT, wolf.objectId, -1, -1));
+    await sleep(2500);
+    const born = after(H.users, fightFrom)
+      .flatMap(usersOf)
+      .filter((x) => x.name === WOLF && x.objectId !== wolf.objectId && x.y === 10);
+    ambush = born.length >= 2 ? born : null;
+  }
+  if (!ambush) fail('3. The ambush never came.');
+  log(`3. Wolf killed; the ambush: ${ambush.map((w) => `${w.objectId} at (${w.x}, ${w.y})`).join(', ')}.`);
+
+  // 4. The next level, by the admin route: the level trigger speaks.
+  const toLevel = [0, 100, 250, 470, 770, 1170, 1670, 2270, 2970, 3770];
+  const needed = (toLevel[next - 1] ?? toLevel[level - 1] + 1000) - toLevel[level - 1] - xpNow + 1;
+  mark = g.frames.length;
+  r = await request(`${base}/api/admin/characters/${a.playerId}/xp`, {
+    method: 'POST',
+    headers: owner,
+    body: JSON.stringify({ amount: Math.max(1, needed), grantKey: `driver-rules-${a.playerId}-${Date.now()}` }),
+  });
+  if (r.status !== 200) fail(`4. XP: ${r.status} ${r.body}`);
+  const levelled = await until(() => bubbles(mark).find((b) => b.message === 'rules.level'), 6000);
+  if (!levelled) fail(`4. No level trigger: ${JSON.stringify(bubbles(mark))} (XP ${r.body})`);
+  log(`4. Level ${next}: "${levelled.message}".`);
+
+  // 5. An amber shard, by the admin route: the item trigger speaks.
+  mark = g.frames.length;
+  r = await request(`${base}/api/admin/characters/${a.playerId}/items`, {
+    method: 'POST',
+    headers: owner,
+    body: JSON.stringify({ grantKey: `driver-rules-${Date.now()}`, definitionId: SHARD, quantity: 1 }),
+  });
+  if (r.status !== 200) fail(`5. Item: ${r.status} ${r.body}`);
+  const shard = await until(() => bubbles(mark).find((b) => b.message === 'rules.shard'), 6000);
+  if (!shard) fail(`5. No item trigger: ${JSON.stringify(bubbles(mark))}`);
+  log(`5. An amber shard: "${shard.message}".`);
+
+  // 6. Now the vault lets the mage in: its name, no refusal.
+  mark = g.frames.length;
+  g.send(frame(H.moveAvatar, 10, 3));
+  const entered = await until(() => bubbles(mark).find((b) => b.type === 'zone.area'), 10000);
+  const refusedAgain = bubbles(mark).find((b) => b.type === 'zone.restricted');
+  if (!entered || refusedAgain) fail(`6. The vault: ${JSON.stringify(bubbles(mark))}`);
+  log(`6. Into the vault: "${entered.message.split('\n')[0]}".`);
+
+  g.close();
+  log('Rules OK.');
+}
+
 // The chat (spec F3c §15), two accounts: Général within a zone, Monde across, a whisper by name
 // and its copy, the idle Guilde, an item link checked, the rate limit, unknown and offline names.
 async function cmdChat() {
@@ -2090,6 +2269,7 @@ const table = {
   combat: cmdCombat,
   skills: cmdSkills,
   boss: cmdBoss,
+  rules: cmdRules,
   grace: () => cmdGrace(args[0]),
   cleanup: cmdCleanup,
   smoke: cmdSmoke,
@@ -2118,6 +2298,7 @@ if (!cmd || !table[cmd]) {
   items     the admin item grant: a sword to the first character, replayed with its key -> one sword more
   grace [wait]  drop the socket in a room and come back: same room, one avatar, same tile (wait: then stay away past 60 s)
   boss      proof_boss: a cone telegraph dodged, phase 2 by Firebolt (yell, enraged, two wolves), back to camp -> reset
+  rules     proof_rules: vault refused, a kill wakes an ambush, level and item triggers speak, vault opens
   cleanup   delete the throwaway account and its players`);
   process.exit(cmd ? 1 : 0);
 }
