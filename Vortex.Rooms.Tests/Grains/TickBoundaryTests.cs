@@ -118,7 +118,8 @@ public sealed class TickBoundaryTests
             FakeProxy.Create<IPermissionService>(_ => null),
             FakeProxy.Create<IVortexMetrics>(_ => null),
             FakeProxy.Create<IZoneRoomSource>(_ => Task.FromResult<ZoneDocument?>(null)),
-            FakeProxy.Create<IZoneSimulationFactory>(_ => NoZoneSimulation.Instance)
+            FakeProxy.Create<IZoneSimulationFactory>(_ => NoZoneSimulation.Instance),
+            RoomGrainStubs.RoomRulesOnly()
         );
 
         grain._state.EpochMs = epoch;

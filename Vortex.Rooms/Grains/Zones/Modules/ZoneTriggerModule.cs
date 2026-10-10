@@ -14,8 +14,6 @@ using Vortex.Primitives.World.Layers;
 using Vortex.Primitives.World.Rules;
 using Vortex.Rooms.Grains.Zones.Runtime;
 using Vortex.Rooms.Grains.Zones.Triggers;
-using Vortex.Rooms.Grains.Zones.Triggers.Actions;
-using Vortex.Rooms.Grains.Zones.Triggers.Conditions;
 
 namespace Vortex.Rooms.Grains.Zones.Modules;
 
@@ -85,7 +83,7 @@ public sealed class ZoneTriggerModule(RoomGrain roomGrain) : IRoomEventListener
     public bool ConditionsHold(IReadOnlyList<ZoneCondition> conditions, PlayerId playerId) =>
         conditions.Count == 0
         || roomGrain._state.ZoneRuntime is { } zone
-            && ZoneConditions.AllHold(conditions, ContextFor(zone, playerId));
+            && roomGrain._zoneRules.AllHold(conditions, ContextFor(zone, playerId));
 
     private Task FireAsync(
         ZoneTriggerType type,
@@ -178,7 +176,7 @@ public sealed class ZoneTriggerModule(RoomGrain roomGrain) : IRoomEventListener
 
         ZoneTriggerContext ctx = ContextFor(zone, playerId);
 
-        if (!ZoneConditions.AllHold(trigger.Conditions, ctx))
+        if (!roomGrain._zoneRules.AllHold(trigger.Conditions, ctx))
         {
             return;
         }
@@ -192,7 +190,7 @@ public sealed class ZoneTriggerModule(RoomGrain roomGrain) : IRoomEventListener
         {
             try
             {
-                await ZoneActions.RunAsync(action, ctx, ct);
+                await roomGrain._zoneRules.RunAsync(action, ctx, ct);
             }
             catch (Exception ex) when (ex is not OperationCanceledException)
             {
@@ -208,7 +206,7 @@ public sealed class ZoneTriggerModule(RoomGrain roomGrain) : IRoomEventListener
     }
 
     private ZoneTriggerContext ContextFor(ZoneRuntimeState zone, PlayerId playerId) =>
-        new(roomGrain, zone, playerId, PlayerAvatar(playerId), Time.GetLocalNow());
+        new(roomGrain, zone, playerId, PlayerAvatar(playerId), Time.GetLocalNow(), null);
 
     /// <remarks>
     /// The arrival step runs inside the avatar's attach, before the room maps the player to it:

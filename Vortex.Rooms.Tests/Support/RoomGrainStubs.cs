@@ -1,8 +1,10 @@
 using System;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging.Abstractions;
 using Vortex.Events.Registry;
 using Vortex.Primitives.Rooms;
 using Vortex.Primitives.Rooms.Providers;
+using Vortex.Rooms.Grains.Zones.Triggers;
 using Vortex.Tests.Support;
 
 namespace Vortex.Rooms.Tests.Support;
@@ -21,4 +23,8 @@ internal static class RoomGrainStubs
         FakeProxy.Create<ICancellableEventPublisher>(_ =>
             Task.FromResult(new EventContext { CorrelationId = string.Empty })
         );
+
+    /// <summary>The room's own zone rules, nothing a module declared.</summary>
+    public static ZoneRuleRegistry RoomRulesOnly() =>
+        new([], [], NullLogger<ZoneRuleRegistry>.Instance);
 }

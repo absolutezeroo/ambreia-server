@@ -3,7 +3,7 @@ using Vortex.Primitives.World.Rules;
 
 namespace Vortex.Rooms.Grains.Zones.Triggers.Conditions;
 
-public abstract class ZoneConditionEvaluator<TCondition> : IZoneConditionEvaluator
+public abstract class RoomConditionEvaluator<TCondition> : IRoomConditionEvaluator
     where TCondition : ZoneCondition
 {
     public Type ConditionType => typeof(TCondition);

@@ -8,7 +8,7 @@ namespace Vortex.Rooms.Grains.Zones.Triggers.Actions;
 /// Switches an area off: it no longer rules its cells, no one enters it, and those inside leave it
 /// at their next step (one last LeaveZone); its triggers stay silent until it is switched on.
 /// </summary>
-public sealed class DeactivateZoneExecutor : ZoneActionExecutor<DeactivateZoneAction>
+public sealed class DeactivateZoneExecutor : RoomActionExecutor<DeactivateZoneAction>
 {
     protected override Task RunAsync(
         DeactivateZoneAction action,

@@ -46,9 +46,11 @@ using Vortex.Primitives.World.Grains;
 using Vortex.Rooms.Configuration;
 using Vortex.Rooms.Grains;
 using Vortex.Rooms.Grains.Systems;
+using Vortex.Rooms.Grains.Zones.Triggers;
 using Vortex.Rooms.Object.Avatars.Player;
 using Vortex.Rooms.Providers;
 using Vortex.Rpg.Zones;
+using Vortex.Rpg.Zones.Rules;
 using Vortex.Tests.Support;
 using Vortex.Tests.Support.World;
 
@@ -80,7 +82,9 @@ internal sealed class RoomHarness
     private RoomHarness(
         DbContextOptions<VortexDbContext> options,
         bool canManipulate,
-        string[] capabilities
+        string[] capabilities,
+        IZoneConditionEvaluator[] conditions,
+        IZoneActionExecutor[] actions
     )
     {
         _options = options;
@@ -170,6 +174,7 @@ internal sealed class RoomHarness
                     Simulation?.Invoke((IZoneRuntime)call.Args![0]!, (ZoneDocument)call.Args[1]!)
                     ?? NoZoneSimulation.Instance
                 ),
+                new ZoneRuleRegistry(conditions, actions, NullLogger<ZoneRuleRegistry>.Instance),
             ]
         );
 
@@ -363,10 +368,13 @@ internal sealed class RoomHarness
     /// applies it, then the map is rebuilt from the compiled model.</summary>
     public static async Task<RoomHarness> CreateZoneAsync(
         ZoneDocument zone,
-        Func<IZoneRuntime, ZoneDocument, IZoneSimulation>? simulation = null
+        Func<IZoneRuntime, ZoneDocument, IZoneSimulation>? simulation = null,
+        IZoneConditionEvaluator[]? conditions = null,
+        IZoneActionExecutor[]? actions = null
     )
     {
-        RoomHarness harness = await CreateAsync().ConfigureAwait(true);
+        RoomHarness harness = await CreateAsync(conditions: conditions, actions: actions)
+            .ConfigureAwait(true);
 
         harness.Zone = zone;
         harness.Simulation = simulation;
@@ -419,16 +427,28 @@ internal sealed class RoomHarness
     /// The hotel-wide capabilities the permission service answers with, for the grain methods that
     /// gate on a staff power rather than on an in-room controller level.
     /// </param>
+    /// <param name="conditions">Zone conditions a module would declare (spec Z1 §4.2).</param>
+    /// <param name="actions">Zone actions a module would declare.</param>
     public static Task<RoomHarness> CreateAsync(
         bool canManipulate = true,
-        string[]? capabilities = null
+        string[]? capabilities = null,
+        IZoneConditionEvaluator[]? conditions = null,
+        IZoneActionExecutor[]? actions = null
     )
     {
         DbContextOptions<VortexDbContext> options = new DbContextOptionsBuilder<VortexDbContext>()
             .UseInMemoryDatabase($"room-{Guid.NewGuid():N}")
             .Options;
 
-        return Task.FromResult(new RoomHarness(options, canManipulate, capabilities ?? []));
+        return Task.FromResult(
+            new RoomHarness(
+                options,
+                canManipulate,
+                capabilities ?? [],
+                conditions ?? [],
+                actions ?? []
+            )
+        );
     }
 
     public VortexDbContext NewDbContext() => new(_options);

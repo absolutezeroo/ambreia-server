@@ -10,7 +10,7 @@ namespace Vortex.Rooms.Grains.Zones.Triggers.Actions;
 /// A bubble for the player who set it off, or -- on a clock, set off by nobody -- one message on
 /// the room's stream for everyone in it.
 /// </summary>
-public sealed class ShowDialogueExecutor : ZoneActionExecutor<ShowDialogueAction>
+public sealed class ShowDialogueExecutor : RoomActionExecutor<ShowDialogueAction>
 {
     protected override Task RunAsync(
         ShowDialogueAction action,

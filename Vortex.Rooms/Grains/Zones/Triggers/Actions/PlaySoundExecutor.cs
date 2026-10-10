@@ -6,7 +6,7 @@ using Vortex.Primitives.World.Rules;
 namespace Vortex.Rooms.Grains.Zones.Triggers.Actions;
 
 /// <summary>Logged only: the client has no sound since the core cut (plan D17).</summary>
-public sealed class PlaySoundExecutor : ZoneActionExecutor<PlaySoundAction>
+public sealed class PlaySoundExecutor : RoomActionExecutor<PlaySoundAction>
 {
     protected override Task RunAsync(
         PlaySoundAction action,

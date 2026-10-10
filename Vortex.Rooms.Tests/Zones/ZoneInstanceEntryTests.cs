@@ -148,6 +148,7 @@ public sealed class ZoneInstanceEntryTests
 
                 return Task.FromResult<ZoneDocument?>(null);
             }),
-            FakeProxy.Create<IZoneSimulationFactory>(_ => NoZoneSimulation.Instance)
+            FakeProxy.Create<IZoneSimulationFactory>(_ => NoZoneSimulation.Instance),
+            RoomGrainStubs.RoomRulesOnly()
         );
 }

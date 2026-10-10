@@ -5,7 +5,7 @@ using Vortex.Primitives.World.Rules;
 
 namespace Vortex.Rooms.Grains.Zones.Triggers.Actions;
 
-public abstract class ZoneActionExecutor<TAction> : IZoneActionExecutor
+public abstract class RoomActionExecutor<TAction> : IRoomActionExecutor
     where TAction : ZoneAction
 {
     public Type ActionType => typeof(TAction);

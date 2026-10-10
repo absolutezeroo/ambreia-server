@@ -6,7 +6,7 @@ using Vortex.Primitives.World.Rules;
 namespace Vortex.Rooms.Grains.Zones.Triggers.Actions;
 
 /// <summary>Sends the player to an entry: of this zone at once, of another through a passage.</summary>
-public sealed class TeleportExecutor : ZoneActionExecutor<TeleportAction>
+public sealed class TeleportExecutor : RoomActionExecutor<TeleportAction>
 {
     protected override async Task RunAsync(
         TeleportAction action,

@@ -9,7 +9,7 @@ using Vortex.Rooms.Grains.Zones.Interactions;
 namespace Vortex.Rooms.Grains.Zones.Triggers.Actions;
 
 /// <summary>Opens the named "door" furni if it is shut.</summary>
-public sealed class OpenDoorExecutor : ZoneActionExecutor<OpenDoorAction>
+public sealed class OpenDoorExecutor : RoomActionExecutor<OpenDoorAction>
 {
     protected override async Task RunAsync(
         OpenDoorAction action,

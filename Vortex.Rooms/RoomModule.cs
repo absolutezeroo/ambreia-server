@@ -1,11 +1,14 @@
+using System;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Vortex.Primitives.Hosting;
 using Vortex.Primitives.Plugins;
 using Vortex.Primitives.Rooms;
 using Vortex.Primitives.Rooms.Providers;
+using Vortex.Primitives.World.Rules;
 using Vortex.Rooms.Configuration;
 using Vortex.Rooms.Events;
+using Vortex.Rooms.Grains.Zones.Triggers;
 using Vortex.Rooms.Object.Logic;
 using Vortex.Rooms.Providers;
 using Vortex.Runtime.AssemblyProcessing;
@@ -31,5 +34,14 @@ public sealed class RoomModule : IHostPluginModule
 
         services.AddSingleton<IAssemblyFeatureProcessor, RoomObjectLogicFeatureProcessor>();
         services.AddSingleton<IAssemblyFeatureProcessor, RoomEventListenerFeatureProcessor>();
+
+        // Spec Z1 §4.2: the room's own zone rules, declared to the editor's validator like a
+        // module's; the registry adds what the modules declare.
+        foreach (Type rule in RoomRules.Shipped)
+        {
+            services.AddSingleton<IZoneRuleDeclaration>(new DeclaredZoneRule(rule));
+        }
+
+        services.AddSingleton<ZoneRuleRegistry>();
     }
 }

@@ -41,6 +41,7 @@ using Vortex.Rooms.Grains.Systems;
 using Vortex.Rooms.Grains.Zones.Compilation;
 using Vortex.Rooms.Grains.Zones.Modules;
 using Vortex.Rooms.Grains.Zones.Runtime;
+using Vortex.Rooms.Grains.Zones.Triggers;
 using Vortex.Rooms.Providers;
 using Vortex.Rpg.Zones;
 
@@ -119,9 +120,11 @@ public sealed partial class RoomGrain : Grain, IRoomGrain
         // here compiles cleanly in every test that builds this grain and fails at activation.
         IVortexMetrics metrics,
         IZoneRoomSource zoneSource,
-        IZoneSimulationFactory simulationFactory
+        IZoneSimulationFactory simulationFactory,
+        ZoneRuleRegistry zoneRules
     )
     {
+        _zoneRules = zoneRules;
         _zoneSource = zoneSource;
         _simulationFactory = simulationFactory;
         _dbCtxFactory = dbCtxFactory;
@@ -166,6 +169,9 @@ public sealed partial class RoomGrain : Grain, IRoomGrain
     }
 
     private readonly IZoneSimulationFactory _simulationFactory;
+
+    /// <summary>Who answers the zone's conditions and actions (spec Z1 §4.2).</summary>
+    internal readonly ZoneRuleRegistry _zoneRules;
 
     /// <summary>The room as a zone for combat and monsters (spec M1a §4.2).</summary>
     public readonly RoomZoneRuntime CombatRuntime;
