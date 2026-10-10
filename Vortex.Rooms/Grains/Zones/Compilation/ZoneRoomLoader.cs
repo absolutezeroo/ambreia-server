@@ -1,12 +1,15 @@
 using System.Collections.Generic;
 using System.Globalization;
 using System.Text;
+using System.Text.Json;
 using Microsoft.Extensions.Logging;
 using Vortex.Primitives.Furniture.Enums;
 using Vortex.Primitives.Furniture.Providers;
 using Vortex.Primitives.Furniture.Snapshots;
+using Vortex.Primitives.Furniture.StuffData;
 using Vortex.Primitives.Players;
 using Vortex.Primitives.Rooms.Enums;
+using Vortex.Primitives.Rooms.Object.Furniture;
 using Vortex.Primitives.Rooms.Object.Furniture.Floor;
 using Vortex.Primitives.Rooms.Object.Furniture.Wall;
 using Vortex.Primitives.Rooms.Providers;
@@ -84,6 +87,7 @@ internal static class ZoneRoomLoader
         ZoneDocument zone,
         PlayerId owner,
         IFurnitureDefinitionProvider definitions,
+        IStuffDataFactory stuff,
         ILogger logger
     )
     {
@@ -117,7 +121,7 @@ internal static class ZoneRoomLoader
             item.SetPosition(o.X, o.Y);
             item.SetPositionZ(o.Z);
             item.SetRotation((Rotation)o.Rotation);
-            item.SetExtraData(o.State.ToString(CultureInfo.InvariantCulture));
+            SetState(item, o.State, stuff);
             floor.Add(item);
         }
 
@@ -150,10 +154,33 @@ internal static class ZoneRoomLoader
             item.SetPositionZ(o.OffsetY);
             item.SetRotation(o.Side == ZoneWallSide.Left ? Rotation.South : Rotation.East);
             item.SetWallOffset(o.OffsetX);
-            item.SetExtraData(o.State.ToString(CultureInfo.InvariantCulture));
+            SetState(item, o.State, stuff);
             wall.Add(item);
         }
 
         return (floor, wall);
+    }
+
+    /// <summary>
+    /// The published state goes where a furniture logic reads it: the stuff section of the extra
+    /// data, in the definition's stuff format. A bare "2" there was no section at all, and every
+    /// decor showed its first state in game.
+    /// </summary>
+    private static void SetState(IRoomItem item, int state, IStuffDataFactory stuff)
+    {
+        item.SetExtraData(null);
+
+        if (state == 0)
+        {
+            return;
+        }
+
+        IStuffData data = stuff.CreateStuffData(item.Definition.StuffDataType);
+
+        data.SetState(state.ToString(CultureInfo.InvariantCulture));
+        item.ExtraData.UpdateSection(
+            ExtraDataSectionType.STUFF,
+            JsonSerializer.SerializeToNode(data, data.GetType())
+        );
     }
 }

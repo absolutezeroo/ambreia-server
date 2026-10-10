@@ -1,7 +1,9 @@
 using System.Linq;
 using System.Threading.Tasks;
 using FluentAssertions;
+using Vortex.Furniture.Providers;
 using Vortex.Primitives.Rooms.Enums;
+using Vortex.Primitives.Rooms.Object.Furniture;
 using Vortex.Primitives.Rooms.Object.Furniture.Wall;
 using Vortex.Primitives.Rooms.Object.Logic.Furniture;
 using Vortex.Primitives.World;
@@ -117,6 +119,28 @@ public sealed class ZoneRoomTests
             .Which.ConvertWallPositionToString()
             .Should()
             .Be(expected);
+    }
+
+    /// <summary>
+    /// The state set in the map editor reaches the client: the decor's extra data carries it in its
+    /// stuff section, where a furniture logic reads its state. A bare "2" was written there, the
+    /// logic found no section, and every decor showed its first state.
+    /// </summary>
+    [Fact]
+    public async Task ADecorsPublishedState_IsTheStateItsLogicReads()
+    {
+        ZoneDocument doc = ZoneSamples.EveryLayer();
+        doc = doc with { Decor = [doc.Decor[0] with { State = 2 }] };
+        RoomHarness harness = await RoomHarness.CreateZoneAsync(doc);
+
+        await harness.Grain.FurniModule.EnsureFurniLoadedAsync(default);
+
+        IRoomItem item = harness.Grain._state.ItemsById.Values.Single();
+        new StuffDataFactory()
+            .CreateStuffDataFromExtraData(item.Definition.StuffDataType, item.ExtraData)
+            .GetState()
+            .Should()
+            .Be(2);
     }
 
     [Fact]

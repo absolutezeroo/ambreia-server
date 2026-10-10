@@ -91,6 +91,7 @@ public sealed partial class RoomFurniModule(RoomGrain roomGrain)
                 zone,
                 owner,
                 _roomGrain._definitionProvider,
+                _roomGrain._stuffDataFactory,
                 _roomGrain._logger
             );
 

@@ -12,6 +12,7 @@ using Orleans.Streams;
 using Vortex.Database.Context;
 using Vortex.Database.Entities.Room;
 using Vortex.Events.Registry;
+using Vortex.Furniture.Providers;
 using Vortex.Primitives;
 using Vortex.Primitives.Action;
 using Vortex.Primitives.Events;
@@ -94,7 +95,8 @@ internal sealed class RoomHarness
                         ? Definitions.GetValueOrDefault((int)call.Args![0]!)
                         : null
                 ),
-                FakeProxy.Create<IStuffDataFactory>(_ => null),
+                // The real one: pure, and a zone's decor states are written through it.
+                new StuffDataFactory(),
                 Options.Create(new RoomConfig()),
                 NullLogger<IRoomGrain>.Instance,
                 FakeProxy.Create<IRoomModelProvider>(call =>
