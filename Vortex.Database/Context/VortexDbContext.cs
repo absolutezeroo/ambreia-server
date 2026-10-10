@@ -68,4 +68,6 @@ public class VortexDbContext(DbContextOptions<VortexDbContext> options)
     public DbSet<RpgItemEntity> RpgItems { get; init; } = null!;
 
     public DbSet<RpgItemGrantEntity> RpgItemGrants { get; init; } = null!;
+
+    public DbSet<RpgXpGrantEntity> RpgXpGrants { get; init; } = null!;
 }

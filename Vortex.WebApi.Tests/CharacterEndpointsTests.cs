@@ -3,6 +3,7 @@ using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
 using FluentAssertions;
+using Vortex.Primitives.Observability;
 using Vortex.Primitives.Permissions;
 using Vortex.Primitives.Rpg.Characters;
 using Xunit;
@@ -65,12 +66,64 @@ public sealed class CharacterEndpointsTests
         HttpResponseMessage r = await PostAsync(
             f,
             "/api/admin/characters/100/xp",
-            """{ "amount": 250 }"""
+            """{ "amount": 250, "grantKey": "ops-1" }"""
         );
 
         r.StatusCode.Should().Be(HttpStatusCode.OK);
         (await r.Content.ReadAsStringAsync()).Should().Contain("granted");
-        f.Characters.XpGrants.Should().Equal((100L, 250));
+        f.Characters.XpGrants.Should().Equal((100L, "ops-1", 250));
+    }
+
+    /// <summary>A retry is the same request: without the caller's key the server cannot tell it
+    /// from a second grant, so the key is not optional.</summary>
+    [Fact]
+    public async Task GrantingXp_WithoutAKey_IsRejected()
+    {
+        await using WebApiTestFactory f = new(capabilities: [Capabilities.Rpg.GrantXp]);
+        f.Characters.ByPlayer[100] = Warrior();
+
+        (await PostAsync(f, "/api/admin/characters/100/xp", """{ "amount": 250 }"""))
+            .StatusCode.Should()
+            .Be(HttpStatusCode.BadRequest);
+        f.Characters.XpGrants.Should().BeEmpty();
+    }
+
+    [Fact]
+    public async Task GrantingXp_Replayed_AnswersDuplicate_AndGrantsOnce()
+    {
+        await using WebApiTestFactory f = new(capabilities: [Capabilities.Rpg.GrantXp]);
+        f.Characters.ByPlayer[100] = Warrior();
+        const string grant = """{ "amount": 250, "grantKey": "ops-2" }""";
+
+        await PostAsync(f, "/api/admin/characters/100/xp", grant);
+        HttpResponseMessage replay = await PostAsync(f, "/api/admin/characters/100/xp", grant);
+
+        replay.StatusCode.Should().Be(HttpStatusCode.OK);
+        (await replay.Content.ReadAsStringAsync()).Should().Contain("duplicate");
+        f.Characters.XpGrants.Should().ContainSingle();
+    }
+
+    /// <summary>Who gave what to whom: the audit row names the operator's account, not "admin".</summary>
+    [Fact]
+    public async Task GrantingXp_IsAudited_WithTheActorAccount()
+    {
+        await using WebApiTestFactory f = new(capabilities: [Capabilities.Rpg.GrantXp]);
+        f.Characters.ByPlayer[100] = Warrior();
+
+        await PostAsync(
+            f,
+            "/api/admin/characters/100/xp",
+            """{ "amount": 250, "grantKey": "ops-3" }"""
+        );
+
+        AuditEvent audit = f.Audit.Events.Should().ContainSingle().Which;
+        audit.Action.Should().Be("admin.xp.granted");
+        audit.Category.Should().Be(AuditCategory.Progression);
+        audit.Result.Should().Be(AuditResult.Success);
+        audit.TargetPlayerId.Should().Be(100);
+        audit.Amount.Should().Be(250);
+        audit.Data.Should().Contain($"\"actorAccountId\":{FakeAuthService.AccountId}");
+        audit.Data.Should().Contain("\"grantKey\":\"ops-3\"");
     }
 
     // The item grant (spec Objets §10): the caller's key makes a replay grant nothing more.
@@ -188,7 +241,13 @@ public sealed class CharacterEndpointsTests
     {
         await using WebApiTestFactory f = new(capabilities: [Capabilities.Rpg.GrantXp]);
 
-        (await PostAsync(f, "/api/admin/characters/100/xp", """{ "amount": 250 }"""))
+        (
+            await PostAsync(
+                f,
+                "/api/admin/characters/100/xp",
+                """{ "amount": 250, "grantKey": "ops-9" }"""
+            )
+        )
             .StatusCode.Should()
             .Be(HttpStatusCode.NotFound);
     }

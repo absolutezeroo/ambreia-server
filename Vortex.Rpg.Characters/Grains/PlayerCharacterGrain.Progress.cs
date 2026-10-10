@@ -1,6 +1,10 @@
+using System;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using Vortex.Database.Context;
 using Vortex.Database.Entities.Rpg;
 using Vortex.Primitives.Events.Rpg;
 using Vortex.Primitives.Rpg.Characters;
@@ -107,6 +111,103 @@ internal sealed partial class PlayerCharacterGrain
         await PushProgressAsync(c.Level != oldLevel, progress);
 
         return XpGrantOutcome.Granted;
+    }
+
+    public async Task<XpGrantOutcome> GrantXpAsync(string grantKey, int amount, string source)
+    {
+        if (
+            string.IsNullOrWhiteSpace(grantKey)
+            || grantKey.Length > RpgXpGrantEntity.GrantKeyLength
+        )
+        {
+            throw new ArgumentException(
+                $"A grant key is 1 to {RpgXpGrantEntity.GrantKeyLength} characters.",
+                nameof(grantKey)
+            );
+        }
+
+        await RefreshIdsAsync();
+
+        if (_character is not { } c)
+        {
+            return XpGrantOutcome.NoCharacter;
+        }
+
+        if (amount < 1 || amount > _config.MaxXpPerGrant)
+        {
+            return Refuse(amount, source);
+        }
+
+        await using (VortexDbContext db = await dbFactory.CreateDbContextAsync())
+        {
+            if (await db.RpgXpGrants.AnyAsync(g => g.GrantKey == grantKey))
+            {
+                return XpGrantOutcome.Duplicate;
+            }
+
+            DateTime now = Time.GetUtcNow().UtcDateTime;
+            int givenToday = await db
+                .RpgXpGrants.Where(g =>
+                    g.PlayerEntityId == c.PlayerEntityId && g.CreatedAt >= now.Date
+                )
+                .SumAsync(g => g.Amount);
+
+            if (givenToday + amount > _config.MaxXpPerDay)
+            {
+                logger.LogWarning(
+                    "XP grant of {Amount} from {Source} to player {PlayerId} refused: {Given} given today, {Max} per day.",
+                    amount,
+                    source,
+                    _playerId.Value,
+                    givenToday,
+                    _config.MaxXpPerDay
+                );
+
+                return XpGrantOutcome.DailyCapReached;
+            }
+
+            // The key before the XP: a replay that lands between the two finds it and gives nothing.
+            db.RpgXpGrants.Add(
+                new RpgXpGrantEntity
+                {
+                    GrantKey = grantKey,
+                    PlayerEntityId = c.PlayerEntityId,
+                    Amount = amount,
+                    Source =
+                        source.Length > RpgXpGrantEntity.SourceLength
+                            ? source[..RpgXpGrantEntity.SourceLength]
+                            : source,
+                    CreatedAt = now,
+                }
+            );
+
+            try
+            {
+                await db.SaveChangesAsync();
+            }
+            catch (DbUpdateException ex)
+            {
+                // The unique index: the same key reached another activation first.
+                logger.LogInformation(
+                    ex,
+                    "XP grant key {GrantKey} for player {PlayerId} was taken meanwhile.",
+                    grantKey,
+                    _playerId.Value
+                );
+
+                return XpGrantOutcome.Duplicate;
+            }
+        }
+
+        XpGrantOutcome outcome = await GainXpAsync(amount, source);
+
+        if (outcome == XpGrantOutcome.Granted)
+        {
+            // An operator's grant is written at once, like a level: its key already is.
+            await FlushAsync(CancellationToken.None);
+        }
+
+        return outcome;
     }
 
     private static int XpToNext(PlayerCharacterEntity c, ProgressionDefinition? progression) =>

@@ -158,7 +158,7 @@
         "tags": [
           "Characters"
         ],
-        "summary": "Grant XP to a character, as a server system would (test command).",
+        "summary": "Grant XP to a character, once per key (administration and tests); the day\u0027s grants are capped.",
         "operationId": "GrantCharacterXp",
         "parameters": [
           {
@@ -192,11 +192,31 @@
               }
             }
           },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
           "401": {
             "description": "Unauthorized"
           },
           "403": {
             "description": "Forbidden"
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
           },
           "404": {
             "description": "Not Found",
@@ -758,6 +778,29 @@
         }
       }
     },
+    "/api/editor/monsters": {
+      "get": {
+        "tags": [
+          "Editor"
+        ],
+        "operationId": "EditorMonsterPalette",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/MonsterPaletteEntry"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/public/info/hello": {
       "get": {
         "tags": [
@@ -1157,13 +1200,22 @@
       },
       "GrantXpRequest": {
         "required": [
-          "amount"
+          "amount",
+          "isValid"
         ],
         "type": "object",
         "properties": {
           "amount": {
             "type": "integer",
             "format": "int32"
+          },
+          "grantKey": {
+            "type": "string",
+            "nullable": true
+          },
+          "isValid": {
+            "type": "boolean",
+            "readOnly": true
           }
         },
         "additionalProperties": false
@@ -1237,6 +1289,34 @@
           "isValid": {
             "type": "boolean",
             "readOnly": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "MonsterPaletteEntry": {
+        "required": [
+          "aggressive",
+          "behavior",
+          "figure",
+          "id",
+          "rank"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "rank": {
+            "type": "string"
+          },
+          "behavior": {
+            "type": "string"
+          },
+          "aggressive": {
+            "type": "boolean"
+          },
+          "figure": {
+            "type": "string"
           }
         },
         "additionalProperties": false

@@ -12,4 +12,11 @@ public enum XpGrantOutcome
     /// <summary>A behaviour of <c>XpGainingEvent</c> cancelled it.</summary>
     Cancelled = 3,
     AtMaxLevel = 4,
+
+    /// <summary>The grant key was seen already: the XP was given the first time, not again.</summary>
+    Duplicate = 5,
+
+    /// <summary>The character's operator grants of the day, this one included, would pass
+    /// <c>CharacterConfig.MaxXpPerDay</c>.</summary>
+    DailyCapReached = 6,
 }

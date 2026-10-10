@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Orleans;
+using Vortex.Primitives.Observability;
 using Vortex.Primitives.Orleans;
 using Vortex.Primitives.Permissions;
 using Vortex.Primitives.Players;
@@ -13,6 +14,7 @@ using Vortex.Primitives.Rpg.Content;
 using Vortex.Primitives.Rpg.Items;
 using Vortex.WebApi.Http.Requests;
 using Vortex.WebApi.Http.Responses;
+using Vortex.WebApi.Session;
 
 namespace Vortex.WebApi.Hosting;
 
@@ -36,44 +38,96 @@ internal static partial class WebApiEndpoints
 
         app.MapPost(
                 "/api/admin/characters/{playerId:int}/xp",
-                async Task<IResult> (int playerId, GrantXpRequest body, IGrainFactory grains) =>
+                async Task<IResult> (
+                    int playerId,
+                    GrantXpRequest body,
+                    HttpContext ctx,
+                    WebApiSessionStore sessions,
+                    IGrainFactory grains,
+                    IAuditSink audit
+                ) =>
                 {
+                    if (body is null || !body.IsValid)
+                    {
+                        return TypedResults.BadRequest(new ApiErrorResponse("invalid_request"));
+                    }
+
+                    int? actor = ctx.AccountId(sessions);
                     IPlayerCharacterGrain character = grains.GetPlayerCharacterGrain(
                         new PlayerId(playerId)
                     );
                     XpGrantOutcome outcome = await character
-                        .GainXpAsync(body?.Amount ?? 0, "admin")
+                        .GrantXpAsync(body.GrantKey!, body.Amount, $"admin:{actor}")
                         .ConfigureAwait(false);
+                    string code = JsonNamingPolicy.SnakeCaseLower.ConvertName(outcome.ToString());
 
-                    if (outcome == XpGrantOutcome.NoCharacter)
+                    // Who gave what to whom: the operator's account, not the word "admin".
+                    audit.Emit(
+                        new AuditEvent
+                        {
+                            Category = AuditCategory.Progression,
+                            Action = "admin.xp.granted",
+                            Result =
+                                outcome == XpGrantOutcome.Granted
+                                    ? AuditResult.Success
+                                    : AuditResult.Failed,
+                            TargetPlayerId = playerId,
+                            Amount = body.Amount,
+                            Data = JsonSerializer.Serialize(
+                                new
+                                {
+                                    actorAccountId = actor,
+                                    grantKey = body.GrantKey,
+                                    outcome = code,
+                                }
+                            ),
+                        }
+                    );
+
+                    switch (outcome)
                     {
-                        return TypedResults.NotFound(new ApiErrorResponse("character_not_found"));
+                        case XpGrantOutcome.NoCharacter:
+                            return TypedResults.NotFound(
+                                new ApiErrorResponse("character_not_found")
+                            );
+                        case XpGrantOutcome.Refused:
+                            return TypedResults.BadRequest(new ApiErrorResponse(code));
+                        case XpGrantOutcome.DailyCapReached:
+                        case XpGrantOutcome.Cancelled:
+                            return TypedResults.Conflict(new ApiErrorResponse(code));
                     }
 
                     CharacterSummary? summary = await character
                         .GetSummaryAsync()
                         .ConfigureAwait(false);
 
-                    return TypedResults.Ok(
-                        new GrantXpResponse(
-                            JsonNamingPolicy.SnakeCaseLower.ConvertName(outcome.ToString()),
-                            summary?.Level ?? 0
-                        )
-                    );
+                    return TypedResults.Ok(new GrantXpResponse(code, summary?.Level ?? 0));
                 }
             )
             .RequireCapability(Capabilities.Rpg.GrantXp)
             .WithTags(TagCharacters)
             .WithName("GrantCharacterXp")
-            .WithSummary("Grant XP to a character, as a server system would (test command).")
+            .WithSummary(
+                "Grant XP to a character, once per key (administration and tests); the day's grants "
+                    + "are capped."
+            )
             .Produces<GrantXpResponse>()
+            .Produces<ApiErrorResponse>(StatusCodes.Status400BadRequest)
             .Produces(StatusCodes.Status401Unauthorized)
             .Produces(StatusCodes.Status403Forbidden)
+            .Produces<ApiErrorResponse>(StatusCodes.Status409Conflict)
             .Produces<ApiErrorResponse>(StatusCodes.Status404NotFound);
 
         app.MapPost(
                 "/api/admin/characters/{playerId:int}/items",
-                async Task<IResult> (int playerId, GrantItemsRequest body, IGrainFactory grains) =>
+                async Task<IResult> (
+                    int playerId,
+                    GrantItemsRequest body,
+                    HttpContext ctx,
+                    WebApiSessionStore sessions,
+                    IGrainFactory grains,
+                    IAuditSink audit
+                ) =>
                 {
                     if (body is null || !body.IsValid)
                     {
@@ -95,6 +149,29 @@ internal static partial class WebApiEndpoints
                         .ConfigureAwait(false);
                     string code = JsonNamingPolicy.SnakeCaseLower.ConvertName(
                         result.Outcome.ToString()
+                    );
+
+                    audit.Emit(
+                        new AuditEvent
+                        {
+                            Category = AuditCategory.Economy,
+                            Action = "admin.items.granted",
+                            Result =
+                                result.Outcome == ItemOutcome.Ok
+                                    ? AuditResult.Success
+                                    : AuditResult.Failed,
+                            TargetPlayerId = playerId,
+                            Quantity = body.Quantity,
+                            Data = JsonSerializer.Serialize(
+                                new
+                                {
+                                    actorAccountId = ctx.AccountId(sessions),
+                                    grantKey = body.GrantKey,
+                                    definitionId = body.DefinitionId,
+                                    outcome = code,
+                                }
+                            ),
+                        }
                     );
 
                     return result.Outcome switch

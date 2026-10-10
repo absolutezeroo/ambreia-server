@@ -16,7 +16,9 @@ internal sealed class FakeCharacters
 {
     public Dictionary<long, CharacterSummary> ByPlayer { get; } = [];
 
-    public List<(long Player, int Amount)> XpGrants { get; } = [];
+    /// <summary>Every XP grant that went through, with the operator's key; a key seen before grants
+    /// nothing more.</summary>
+    public List<(long Player, string Key, int Amount)> XpGrants { get; } = [];
 
     /// <summary>Every item grant that went through; a key seen before grants nothing.</summary>
     public List<(long Player, string Key, string Definition, int Quantity)> ItemGrants { get; } =
@@ -31,8 +33,8 @@ internal sealed class FakeCharacters
                 nameof(IPlayerCharacterGrain.GetSummaryAsync) => Task.FromResult(
                     ByPlayer.GetValueOrDefault(player)
                 ),
-                nameof(IPlayerCharacterGrain.GainXpAsync) => Task.FromResult(
-                    Grant(player, (int)call.Args![0]!)
+                nameof(IPlayerCharacterGrain.GrantXpAsync) => Task.FromResult(
+                    Grant(player, (string)call.Args![0]!, (int)call.Args[1]!)
                 ),
                 nameof(IPlayerCharacterGrain.GrantItemsAsync) => Task.FromResult(
                     GrantItems(player, (string)call.Args![0]!, (ItemGrantLine[])call.Args[1]!)
@@ -61,14 +63,19 @@ internal sealed class FakeCharacters
         return new ItemGrantResult { Outcome = ItemOutcome.Ok, ToBag = items.Sum(i => i.Quantity) };
     }
 
-    private XpGrantOutcome Grant(long player, int amount)
+    private XpGrantOutcome Grant(long player, string key, int amount)
     {
         if (!ByPlayer.ContainsKey(player))
         {
             return XpGrantOutcome.NoCharacter;
         }
 
-        XpGrants.Add((player, amount));
+        if (!_grantKeys.Add(key))
+        {
+            return XpGrantOutcome.Duplicate;
+        }
+
+        XpGrants.Add((player, key, amount));
 
         return XpGrantOutcome.Granted;
     }

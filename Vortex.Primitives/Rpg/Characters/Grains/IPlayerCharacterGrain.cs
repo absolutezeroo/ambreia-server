@@ -30,6 +30,10 @@ public interface IPlayerCharacterGrain : IGrainWithIntegerKey
     /// written at once.</summary>
     public Task<XpGrantOutcome> GainXpAsync(int amount, string source);
 
+    /// <summary>An operator's grant: <paramref name="grantKey"/> already seen gives nothing more
+    /// (Duplicate), the day's grants are capped (DailyCapReached), and the XP is written at once.</summary>
+    public Task<XpGrantOutcome> GrantXpAsync(string grantKey, int amount, string source);
+
     /// <summary>The character entered this room: kept as its last zone if it is a world zone (never
     /// a dungeon copy), written at the next flush; then its state is pushed to the player.</summary>
     public Task EnteredRoomAsync(RoomId roomId);

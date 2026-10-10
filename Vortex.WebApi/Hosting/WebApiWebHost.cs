@@ -271,6 +271,8 @@ internal sealed class WebApiWebHost(
         services.AddSingleton(rootServices.GetRequiredService<IWebApiPlayerService>());
         services.AddSingleton(rootServices.GetRequiredService<RequiredServiceGuard>());
         services.AddSingleton(rootServices.GetRequiredService<IHostReadiness>());
+        // The admin routes write who did what to whom.
+        services.AddSingleton(rootServices.GetRequiredService<IAuditSink>());
         services.AddSingleton(rootServices.GetRequiredService<IZoneEditorService>());
         services.AddSingleton(rootServices.GetRequiredService<IRpgContentService>());
         services.AddSingleton(rootServices.GetRequiredService<IPermissionService>());

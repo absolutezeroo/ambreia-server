@@ -11,6 +11,9 @@ public sealed class CharacterConfig
     /// <summary>The most XP one grant may give: anything above is refused and logged.</summary>
     public int MaxXpPerGrant { get; init; } = 100_000;
 
+    /// <summary>What an operator can grant one character in a day (UTC), all keys together.</summary>
+    public int MaxXpPerDay { get; init; } = 500_000;
+
     /// <summary>Out of any zone, health and mana come back by this share of their maximum per
     /// second, counted from the last write (spec M1a §7); the same rate as out of combat in a zone.</summary>
     public int RegenPercentPerSecond { get; init; } = 2;
