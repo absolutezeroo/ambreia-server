@@ -1,29 +1,6 @@
 # syntax=docker/dockerfile:1
 
 # =================================================================================================
-# Dashboard front-end stage
-# =================================================================================================
-# Vortex.Dashboard.API embeds Vite's output from Assets\, and Assets\ is generated, not committed
-# (see the .csproj), so the build context never carries it. The SDK image has no Node, so the
-# .csproj's own front-end target died with "npm: not found" and took the publish with it. Built here
-# on an image that does have Node, then copied into the build stage.
-#
-# WORKDIR mirrors the repository layout on purpose: vite.config.js writes to the RELATIVE
-# ../Vortex.Dashboard.API/Assets, so the output only lands where the .csproj globs it if this
-# directory sits one level under /src like the real one does.
-FROM node:22-slim AS frontend
-WORKDIR /src/Vortex.Dashboard.Web
-
-# package-lock.json alone first: as long as the dependencies do not move, editing a .svelte file
-# reuses this layer instead of re-downloading the whole tree. `npm ci` rather than `npm install`
-# for the same reason the .csproj gives — the lockfile is committed and the build may not move it.
-COPY Vortex.Dashboard.Web/package.json Vortex.Dashboard.Web/package-lock.json ./
-RUN npm ci
-
-COPY Vortex.Dashboard.Web/ ./
-RUN npm run build
-
-# =================================================================================================
 # Build stage
 # =================================================================================================
 # global.json pins the SDK to "10.0" with rollForward "latestFeature", so the image must carry a
@@ -52,57 +29,32 @@ RUN for proj in *.csproj; do \
 # Restoring Vortex.Main pulls in its full ProjectReference graph. The test projects are copied above
 # but deliberately not restored — the image only ships the host.
 #
-# The dashboard needs its own line, and that is not tidiness. It used to be inside Vortex.Main's
-# graph and came along for free; making it a loadable plugin meant removing that reference, which is
-# exactly what took it out of this restore. The publish below then failed with NETSDK1004, "assets
-# file not found" — and only in the image: a developer's tree still has obj/project.assets.json from
-# an earlier build, so the same command succeeds locally and says nothing.
-#
-# The web API needs one too, for the same reason: it became a loadable plugin the same way.
+# The web API needs its own line, and that is not tidiness. It is a loadable plugin, so Vortex.Main
+# does not reference it and it is not in that restore. Without this line the publish below fails
+# with NETSDK1004, "assets file not found" — and only in the image: a developer's tree still has
+# obj/project.assets.json from an earlier build, so the same command succeeds locally and says nothing.
 RUN dotnet restore Vortex.Main/Vortex.Main.csproj \
-    && dotnet restore Vortex.Dashboard.API/Vortex.Dashboard.API.csproj \
     && dotnet restore Vortex.WebApi/Vortex.WebApi.csproj
 
 # --- source + publish ----------------------------------------------------------------------------
 COPY . .
 
-# After COPY . . so the sources cannot overwrite it — the context has no Assets\ of its own, but the
-# ordering should not be what makes that true.
-COPY --from=frontend /src/Vortex.Dashboard.API/Assets ./Vortex.Dashboard.API/Assets
-
 # --no-restore keeps the cached restore layer authoritative: without it the publish would hit the
 # network again and the layering above would buy nothing.
-#
-# SkipDashboardFrontendBuild is the .csproj's documented opt-out for exactly this: the front-end was
-# built in its own stage above, and MSBuild embeds what Assets\ already holds instead of reaching
-# for an npm this image does not have.
 RUN dotnet publish Vortex.Main/Vortex.Main.csproj \
         --configuration Release \
         --no-restore \
-        -p:SkipDashboardFrontendBuild=true \
         --output /app/publish
 
-# The dashboard, published SEPARATELY, because the host no longer references it: it is a loadable
-# plugin now, and a project reference is exactly what would make it impossible to unload (see the
-# comment in Vortex.Main.csproj). Without this the image ships a hotel with NO admin panel and
-# nothing says so — the host starts, serves the game, and the dashboard port answers nothing.
+# The web API, published SEPARATELY, because the host does not reference it: it is a loadable
+# plugin, and a project reference is exactly what would make it impossible to unload (see the
+# comment in Vortex.Main.csproj). Missing, the image ships a hotel with no website backend and
+# nothing says so: the game runs, and :8080 answers nothing.
 #
 # Into a folder named after the plugin key, with its manifest.json beside the assembly, which is the
 # shape PluginManager discovers. The Vortex.* assemblies published alongside it are never loaded
 # from here: ByteLoadingAlc hands any assembly the host already holds to the default context, so one
 # IVortexPlugin and one VortexDbContext type exist in the process.
-#
-# --no-restore works because the layer above restores this project EXPLICITLY. It is no longer part
-# of Vortex.Main's graph — that is the whole point of it being a plugin — so it would otherwise have
-# no assets file here.
-RUN dotnet publish Vortex.Dashboard.API/Vortex.Dashboard.API.csproj \
-        --configuration Release \
-        --no-restore \
-        -p:SkipDashboardFrontendBuild=true \
-        --output /app/publish-plugins/turbo-dashboard-api
-
-# The web API, published separately for the dashboard's reason above. Missing, the image ships a
-# hotel with no website backend and nothing says so: the game runs, and :8080 answers nothing.
 RUN dotnet publish Vortex.WebApi/Vortex.WebApi.csproj \
         --configuration Release \
         --no-restore \
@@ -111,10 +63,10 @@ RUN dotnet publish Vortex.WebApi/Vortex.WebApi.csproj \
 # =================================================================================================
 # Runtime stage
 # =================================================================================================
-# Vortex.Main is a console host (OutputType Exe), but Vortex.WebApi and Vortex.Dashboard.API each
-# start their own Kestrel WebApplication and reference the Microsoft.AspNetCore.App shared
-# framework. The plain `runtime` image does not carry it, so the host would die on the first
-# WebApplication build — `aspnet` is the correct base here, not `runtime`.
+# Vortex.Main is a console host (OutputType Exe), but Vortex.WebApi starts its own Kestrel
+# WebApplication and references the Microsoft.AspNetCore.App shared framework. The plain `runtime`
+# image does not carry it, so the host would die on the first WebApplication build — `aspnet` is
+# the correct base here, not `runtime`.
 FROM mcr.microsoft.com/dotnet/aspnet:10.0 AS runtime
 WORKDIR /app
 
@@ -122,11 +74,10 @@ WORKDIR /app
 # (uid 1654). Copying with --chown avoids a second full-size layer just to fix ownership.
 COPY --from=build --chown=app:app /app/publish ./
 
-# The plugins that ship WITH the image. Today that is the dashboard and the web API, which used to
-# be compiled into the host and are now folders the loader discovers.
+# The plugins that ship WITH the image: today the web API alone.
 #
 # WARNING FOR THE OPERATOR: a volume mounted at /app/plugins REPLACES this directory, and the hotel
-# comes back with no admin panel and no website backend. The loader scans every subdirectory of the plugin folder and
+# comes back with no website backend. The loader scans every subdirectory of the plugin folder and
 # expects a manifest.json in each, so there is no "extra plugins" subfolder to mount instead. Ship
 # plugins in the image; to add one outside it, mount the volume AND seed it with this directory's
 # contents.
@@ -135,17 +86,8 @@ COPY --from=build --chown=app:app /app/publish-plugins /app/plugins/
 # Writable directories the host expects under its content root, created while still root:
 #   logs/    — Vortex:Observability:AuditDeadLetterPath defaults to logs/audit-dead-letter.jsonl
 #   plugins/ — the plugin loader probes AppContext.BaseDirectory/plugins
-#   assets/  — Vortex:Observability:AssetsLocalRoot defaults to ./assets
-#   data/    — Vortex:Rooms:CameraPhotoRoot defaults to data/camera-photos
-#
-# WARNING FOR THE OPERATOR: data/ is the one directory here that MUST be a mounted volume, and it
-# is the opposite of the plugins/ warning above. A camera photo is referenced forever — the
-# furniture a player bought carries its url in its stuff data — while this directory lives and dies
-# with the container. Deploy without a volume on /app/data and every photo ever taken disappears at
-# the next release, with the frames still hanging on the walls pointing at nothing. Coolify builds
-# a fresh container per deployment, so "it worked last week" is exactly how this presents.
-RUN mkdir -p /app/logs /app/plugins /app/assets /app/data \
-    && chown -R app:app /app/logs /app/plugins /app/assets /app/data
+RUN mkdir -p /app/logs /app/plugins \
+    && chown -R app:app /app/logs /app/plugins
 
 # curl, for one reason: a container healthcheck runs INSIDE the container, and this image ships no
 # HTTP client at all. An orchestrator that probes it gets `curl: not found`, reads that as the
@@ -169,9 +111,9 @@ HEALTHCHECK --interval=30s --timeout=5s --start-period=90s --retries=3 \
     CMD curl --fail --silent --show-error http://localhost:8080/health || exit 1
 
 # Documentation only — publishing these is docker-compose.yml's job.
-#   30000 game TCP socket, 30001 game WebSocket socket, 8080 web API, 9000 operator dashboard.
+#   30000 game TCP socket, 30001 game WebSocket socket, 8080 web API.
 # The Orleans silo (11111) and gateway (3000) ports are deliberately absent: this is a single
 # in-process silo and nothing outside the container should reach them.
-EXPOSE 30000 30001 8080 9000
+EXPOSE 30000 30001 8080
 
 ENTRYPOINT ["dotnet", "Vortex.Main.dll"]

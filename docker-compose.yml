@@ -76,12 +76,6 @@ services:
         # EnableRetryOnFailure. A not-yet-ready database is therefore a hard startup failure,
         # not a retried transient. `service_healthy` is what prevents it.
         condition: service_healthy
-    volumes:
-      # Camera photos outlive the container by necessity: a bought photo's furniture carries its url
-      # in its stuff data and keeps it forever, while the container is replaced on every release.
-      # Coolify has no compose file of its own for this stack -- it builds the image and runs it --
-      # so the same mount has to be declared there as persistent storage on /app/data.
-      - vortex-camera-photos:/app/data
     ports:
       - "30000:30000" # game client, raw TCP
       - "30001:30001" # game client, WebSocket
@@ -195,6 +189,3 @@ services:
 
 volumes:
   vortex-mysql-data:
-  # Camera photos. Referenced forever by the furniture a player bought, so they cannot live in a
-  # container that a deployment replaces -- see the warning on data/ in the Dockerfile.
-  vortex-camera-photos:
