@@ -5,6 +5,7 @@ using Vortex.Primitives.Networking;
 using Vortex.Primitives.Players;
 using Vortex.Primitives.Rooms;
 using Vortex.Primitives.World;
+using Vortex.Primitives.World.Layers;
 using Vortex.Rpg.Zones;
 
 namespace Vortex.Rpg.Combat.Tests.Support;
@@ -152,6 +153,12 @@ internal sealed class FakeZoneRuntime : IZoneRuntime
     }
 
     public (int X, int Y)? RespawnCell() => Respawn;
+
+    /// <summary>The triggers the zone was told to run (spec Z1 §5).</summary>
+    public List<(PlayerId Player, ZoneTriggerType Type, string Target)> Raised { get; } = [];
+
+    public void RaiseTrigger(PlayerId player, ZoneTriggerType type, string target) =>
+        Raised.Add((player, type, target));
 
     public Task BroadcastAsync(IComposer composer)
     {

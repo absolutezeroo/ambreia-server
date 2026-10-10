@@ -58,7 +58,7 @@ public sealed partial class CombatZone(
     /// <summary>Where each player was last sent to reach his target.</summary>
     private readonly Dictionary<int, (int X, int Y)> _approachGoals = [];
 
-    private readonly List<int> _died = [];
+    private readonly List<MonsterDeath> _died = [];
 
     public IReadOnlyDictionary<int, Combatant> Combatants => _combatants;
 
@@ -67,8 +67,9 @@ public sealed partial class CombatZone(
     /// <summary>The players in the zone with a character, by room object id.</summary>
     public IEnumerable<Combatant> Players => _players.Values.Select(id => _combatants[id]);
 
-    /// <summary>Monsters that died during the last tick, for whoever brings them back.</summary>
-    public IReadOnlyList<int> DiedMonsters => _died;
+    /// <summary>Monsters that died during the last tick, and who fought them: for whoever brings
+    /// them back, and for the zone's MonsterKilled triggers (spec Z1 §5.1).</summary>
+    public IReadOnlyList<MonsterDeath> DiedMonsters => _died;
 
     public async Task PlayerEnteredAsync(PlayerId player, int objectId, CancellationToken ct)
     {

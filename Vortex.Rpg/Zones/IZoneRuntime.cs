@@ -4,6 +4,7 @@ using Vortex.Primitives.Networking;
 using Vortex.Primitives.Players;
 using Vortex.Primitives.Rooms;
 using Vortex.Primitives.World;
+using Vortex.Primitives.World.Layers;
 
 namespace Vortex.Rpg.Zones;
 
@@ -69,6 +70,12 @@ public interface IZoneRuntime
 
     /// <summary>The zone's <c>respawn</c> entry, else its default arrival; null without either.</summary>
     public (int X, int Y)? RespawnCell();
+
+    /// <summary>
+    /// The zone's triggers of this type and target run for the player once the tick is over (spec
+    /// Z1 §5): a monster killed, or whatever else a module sees happen. Nothing for a player who left.
+    /// </summary>
+    public void RaiseTrigger(PlayerId player, ZoneTriggerType type, string target);
 
     /// <summary>To everyone in the zone.</summary>
     public Task BroadcastAsync(IComposer composer);

@@ -7,6 +7,7 @@ using Vortex.Primitives.Networking;
 using Vortex.Primitives.Observability;
 using Vortex.Primitives.Players;
 using Vortex.Primitives.Rpg.Characters;
+using Vortex.Primitives.World.Layers;
 using Vortex.Protocol.Messages.Outgoing.Rpg.Combat;
 using Vortex.Protocol.Messages.Outgoing.Rpg.Interaction;
 using Vortex.Protocol.Messages.Outgoing.Rpg.Skills;
@@ -136,10 +137,20 @@ public sealed class RpgZoneSimulation(
         }
         finally
         {
-            // Whatever the tick threw, a monster removed from the zone comes back.
-            foreach (int died in combat.DiedMonsters)
+            // Whatever the tick threw, a monster removed from the zone comes back; who fought it
+            // sets off the zone's MonsterKilled triggers on its spawn, then on its kind (spec Z1 §5.1).
+            foreach (MonsterDeath death in combat.DiedMonsters)
             {
-                spawner.Died(died, now);
+                if (spawner.SpawnOf(death.ObjectId) is { } spawnId)
+                {
+                    foreach (PlayerId player in death.Participants)
+                    {
+                        zone.RaiseTrigger(player, ZoneTriggerType.MonsterKilled, spawnId);
+                        zone.RaiseTrigger(player, ZoneTriggerType.MonsterKilled, death.MonsterId);
+                    }
+                }
+
+                spawner.Died(death.ObjectId, now);
             }
         }
     }

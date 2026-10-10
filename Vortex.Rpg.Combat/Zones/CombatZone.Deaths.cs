@@ -97,7 +97,7 @@ public sealed partial class CombatZone
         Removing(c, CombatantExit.Died);
         _combatants.Remove(c.ObjectId);
         Forget(c.ObjectId);
-        _died.Add(c.ObjectId);
+        _died.Add(new MonsterDeath(c.ObjectId, c.DefinitionId ?? string.Empty, present));
 
         if (c.CorpseMs <= 0)
         {

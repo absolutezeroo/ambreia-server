@@ -173,7 +173,11 @@ public sealed class CombatZoneTests
         await _combat.TickAsync(CancellationToken.None);
 
         _calls.Where(c => c.StartsWith("xp")).Should().BeEquivalentTo("xp 7: 20", "xp 8: 20");
-        _combat.DiedMonsters.Should().Equal(wolf);
+        _combat.DiedMonsters.Select(d => d.ObjectId).Should().Equal(wolf);
+        _combat
+            .DiedMonsters.Single()
+            .Participants.Should()
+            .BeEquivalentTo([new PlayerId(7), new PlayerId(8)], "who fought it, for its triggers");
         _zone.Postures[wolf].Should().Be("ded");
         _events.OfType<MonsterKilledEvent>().Should().ContainSingle();
     }
@@ -394,7 +398,7 @@ public sealed class CombatZoneTests
         await _combat.TickAsync(CancellationToken.None);
 
         (_combat.Combatants[1].Range, _combat.Combatants[1].ThreatMultiplier).Should().Be((3, 4));
-        _combat.DiedMonsters.Should().Equal(wolf);
+        _combat.DiedMonsters.Select(d => d.ObjectId).Should().Equal(wolf);
         _calls
             .Should()
             .NotContain(c => c.StartsWith("xp"), "a level 1 wolf gives a level 20 nothing");

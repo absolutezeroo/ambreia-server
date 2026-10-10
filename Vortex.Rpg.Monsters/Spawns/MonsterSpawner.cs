@@ -69,6 +69,10 @@ public sealed class MonsterSpawner(
         }
     }
 
+    /// <summary>The spawn a live monster belongs to — its summoner's for a summon — or null.</summary>
+    public string? SpawnOf(int objectId) =>
+        _live.TryGetValue(objectId, out LiveMonster? m) ? m.Spawn.Source.Id : null;
+
     /// <summary>A monster died: it comes back after its spawn's delay; a summon never does, and frees
     /// its place by its summoner (spec M1c §7.3).</summary>
     public void Died(int objectId, long now)

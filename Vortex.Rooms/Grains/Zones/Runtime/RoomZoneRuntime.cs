@@ -46,16 +46,57 @@ public sealed class RoomZoneRuntime(RoomGrain room) : IZoneRuntime
         _pathSearches = 0;
     }
 
-    /// <summary>What the tick put on the room (monsters born or gone), sent in order.</summary>
+    /// <summary>
+    /// What the tick put on the room (monsters born or gone), sent in order; then the triggers it
+    /// raised run, for the players still here (spec Z1 §5.1). Whatever fails, both are emptied.
+    /// </summary>
     public async Task FlushAsync()
     {
-        foreach (IComposer composer in _pending.ToArray())
+        try
         {
-            await room.SendComposerToRoomAsync(composer);
+            foreach (IComposer composer in _pending.ToArray())
+            {
+                await room.SendComposerToRoomAsync(composer);
+            }
+        }
+        finally
+        {
+            _pending.Clear();
         }
 
-        _pending.Clear();
+        (PlayerId Player, ZoneTriggerType Type, string Target)[] raised = [.. _raised];
+        _raised.Clear();
+
+        foreach ((PlayerId player, ZoneTriggerType type, string target) in raised)
+        {
+            if (!room._state.AvatarsByPlayerId.ContainsKey(player))
+            {
+                continue;
+            }
+
+            try
+            {
+                await room.RaiseZoneTriggerAsync(player, type, target);
+            }
+            catch (Exception ex)
+            {
+                room._logger.LogWarning(
+                    ex,
+                    "Zone trigger {Type} {Target} for player {PlayerId} failed in room {RoomId}.",
+                    type,
+                    target,
+                    player.Value,
+                    room.RoomId.Value
+                );
+            }
+        }
     }
+
+    private readonly List<(PlayerId Player, ZoneTriggerType Type, string Target)> _raised = [];
+
+    /// <summary>Held until the tick is over: no trigger runs in the middle of the simulation.</summary>
+    public void RaiseTrigger(PlayerId player, ZoneTriggerType type, string target) =>
+        _raised.Add((player, type, target));
 
     public bool IsWalkable(int x, int y) =>
         room.MapModule.InBounds(x, y) && room.MapModule.IsSpawnable(room.MapModule.ToIdx(x, y));
