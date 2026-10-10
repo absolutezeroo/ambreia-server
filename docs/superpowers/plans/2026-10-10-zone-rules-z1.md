@@ -386,11 +386,12 @@ mise à jour niveau 2 → vrai.
 - Créer : `Vortex.Rooms/Grains/Zones/Modules/ZoneLevelAdvice.cs` (`static void Check(RoomGrain room, ZoneRuntimeState zone, PlayerId p, string key, int recommended)`)
 - Test : `Vortex.Rooms.Tests/Zones/ZoneLevelAdviceTests.cs`
 
-> **Révisée après la relecture des tâches 1–2 :** le noyau ne lit pas le niveau. Il pose au registre la
-> condition du document `PlayerLevelCondition(N, 0)` ; s'il n'y a pas de réponse déclarée
-> (`ZoneRuleRegistry.Answers`), il ne dit rien. Le message ne cite donc pas le niveau du joueur.
+> **Révisée après les relectures des tâches 1–2 et 3–4 :** le noyau ne lit pas le niveau. Pour `N ≥ 2`
+> il pose au registre la condition du document `PlayerLevelCondition(1, N - 1)` (« sous le niveau ») et
+> avertit **si elle tient** : faits absents, pièce qui lève ou personne pour répondre donnent faux, et
+> rien n'est dit. Le message ne cite pas le niveau du joueur.
 
-- [ ] **Étape 1 : tests rouges.** `UnderTheLevel_ThePlayerIsWarned` (bulle `zone.level` « Niveau conseillé : 5. », `PlayerLevelEvaluator` déclaré) ; `AtTheLevel_Nothing` ; `OncePerAreaAndVisit` (sortir et rentrer dans l'aire : une seule ; quitter la zone et revenir : une nouvelle) ; `WithoutFacts_Nothing` ; `NobodyAnswersLevel_Nothing` ; `TheZonesOwnLevel_OnArrival`.
+- [ ] **Étape 1 : tests rouges.** `UnderTheLevel_ThePlayerIsWarned` (bulle `zone.level` « Niveau conseillé : 5. », `PlayerLevelEvaluator` déclaré) ; `AtTheLevel_Nothing` ; `OncePerAreaAndVisit` (sortir et rentrer dans l'aire : une seule ; quitter la zone et revenir : une nouvelle) ; `WithoutFacts_Nothing` ; `NobodyAnswersLevel_Nothing` ; `ALevelOneAdvice_SaysNothing` ; `TheZonesOwnLevel_OnArrival`.
 - [ ] **Étape 2 :** échec. **Étape 3 :** implémenter. Clé « déjà dit » `level:<aire>` / `level:zone`
   dans un `HashSet<string>` du `ZoneVisitor` (oublié avec lui au départ — « par visite »).
 - [ ] **Étape 4 :** vert. **Étape 5 : commit** `zones : avertissement de niveau conseillé`.
@@ -399,9 +400,17 @@ mise à jour niveau 2 → vrai.
 
 ### Tâche 9 : validateur
 
+> **Révisée après la relecture des tâches 3–4 :** les types de déclencheurs aussi sont déclarés.
+> `IZoneTriggerDeclaration { ZoneTriggerType Type }` (Primitives) ; `IZoneFactsSource.Raises` (les types
+> que ses changements signalent) déclarés par `AddZoneFactsSource<T>` ; `AddZoneTrigger(type)` pour un
+> type signalé autrement (`MonsterKilled`, `MonstersModule`). Le validateur ne garde à la main que les
+> types de la room (`EnterZone`, `LeaveZone`, `Interact`, `Timer`).
+
 **Fichiers :**
+- Créer : `Vortex.Primitives/World/Rules/IZoneTriggerDeclaration.cs`, `DeclaredZoneTrigger.cs`
+- Modifier : `Vortex.Rpg/Zones/Rules/IZoneFactsSource.cs` (+ `IReadOnlyCollection<ZoneTriggerType> Raises`), `ZoneRuleServices.cs` (`AddZoneFactsSource<T>` déclare ses `Raises` ; `AddZoneTrigger(type)`), `CharacterFactsSource` (`PlayerLevel`, `ItemOwned`), `MonstersModule` (`AddZoneTrigger(MonsterKilled)`)
 - Modifier : `Vortex.Primitives/Rpg/Content/IRpgContentService.cs` (+ `IReadOnlyList<string> GetItemIds();` non retirés), `Vortex.Rpg/Content/Import/RpgContentService.cs`, `Vortex.WebApi.Tests/FakeRpgContentService.cs`
-- Modifier : `Vortex.World/ZoneValidator.cs` (ctor : `IEnumerable<IZoneRuleDeclaration>? rules = null`), `Vortex.World/ZoneRuntimeRules.cs`
+- Modifier : `Vortex.World/ZoneValidator.cs` (ctor : `IEnumerable<IZoneRuleDeclaration>? rules = null, IEnumerable<IZoneTriggerDeclaration>? triggers = null`), `Vortex.World/ZoneRuntimeRules.cs`
 - Tests : `Vortex.Database.Tests/World/ZoneRuntimeRulesTests.cs`, `ZoneValidatorTests.cs`
 
 - [ ] **Étape 1 : tests rouges.**
@@ -414,10 +423,11 @@ mise à jour niveau 2 → vrai.
   - `ADormantSpawn_IsReported` (`Info`, code `DormantSpawn`).
 - [ ] **Étape 2 :** échec. **Étape 3 :** implémenter. `ZoneRuntimeRules.Check` reçoit
   `IReadOnlySet<Type> declared` et `IReadOnlySet<string>? items` ; « sans effet » pour une
-  condition/action dont le type n'est pas dans `declared` ; `RpgTriggers` réduit à `QuestState`.
-  Les tests existants qui attendaient « sans effet » pour niveau/objet/`SpawnGroup` passent la liste
-  de déclarations du jeu livré (`ShippedRules.All` : un utilitaire de test qui liste les 8 types des
-  rooms + `PlayerLevel`, `HasItem`, `SpawnGroup`).
+  condition/action dont le type n'est pas dans `declared` ; un déclencheur hors des quatre de la
+  room dont le type n'est pas déclaré. Les tests existants qui attendaient « sans effet » pour
+  niveau/objet/`SpawnGroup` passent les déclarations du jeu livré (`ShippedRules` : un utilitaire de
+  test qui liste les 8 types des rooms + `PlayerLevel`, `HasItem`, `SpawnGroup`, et les déclencheurs
+  `PlayerLevel`, `ItemOwned`, `MonsterKilled`).
 - [ ] **Étape 4 :** vert. **Étape 5 : commit** `éditeur : le validateur suit les règles déclarées et vérifie les nouvelles`.
 
 ---

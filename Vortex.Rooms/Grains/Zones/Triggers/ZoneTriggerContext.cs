@@ -11,17 +11,30 @@ namespace Vortex.Rooms.Grains.Zones.Triggers;
 /// <summary>
 /// What a condition reads and an action acts on: the room, its zone, the player who set it off
 /// (none for a clock), the server's local time, and the parts of what the zone knows of the player.
+/// A class, not a record: it caches the module's view, which a copy must not carry over.
 /// </summary>
-public sealed record ZoneTriggerContext(
-    RoomGrain Room,
-    ZoneRuntimeState Zone,
-    PlayerId PlayerId,
-    IRoomPlayer? Player,
-    DateTimeOffset LocalNow,
-    IReadOnlyDictionary<Type, ZoneFacts> Facts
+public sealed class ZoneTriggerContext(
+    RoomGrain room,
+    ZoneRuntimeState zone,
+    PlayerId playerId,
+    IRoomPlayer? player,
+    DateTimeOffset localNow,
+    IReadOnlyDictionary<Type, ZoneFacts> facts
 )
 {
     private ZoneRuleContext? _rule;
+
+    public RoomGrain Room { get; } = room;
+
+    public ZoneRuntimeState Zone { get; } = zone;
+
+    public PlayerId PlayerId { get; } = playerId;
+
+    public IRoomPlayer? Player { get; } = player;
+
+    public DateTimeOffset LocalNow { get; } = localNow;
+
+    public IReadOnlyDictionary<Type, ZoneFacts> Facts { get; } = facts;
 
     /// <summary>
     /// The same, as a module's rule sees it: no room, the zone's runtime instead; nobody (a clock,

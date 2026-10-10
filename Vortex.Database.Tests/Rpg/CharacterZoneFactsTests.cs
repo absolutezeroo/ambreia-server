@@ -146,6 +146,22 @@ public sealed class CharacterZoneFactsTests : IAsyncLifetime
         _forwarded.Should().ContainSingle().Which.Level.Should().Be(2);
     }
 
+    /// <summary>
+    /// The character grain went idle and came back while its player stayed in the zone: this new
+    /// activation never read its bag, and a level gained from a kill still reaches the zone.
+    /// </summary>
+    [Fact]
+    public async Task ALevelUp_OnAFreshActivation_StillTellsTheZone()
+    {
+        await WarriorAsync();
+        PlayerCharacterGrain again = Grain();
+        await again.OnActivateAsync(CancellationToken.None);
+
+        await again.GainXpAsync(100, "test");
+
+        _forwarded.Should().ContainSingle().Which.Level.Should().Be(2);
+    }
+
     [Fact]
     public async Task XpWithoutALevel_TellsNothing()
     {
@@ -229,10 +245,7 @@ public sealed class CharacterZoneFactsTests : IAsyncLifetime
             call.Method.Name == nameof(IGrainFactory.GetGrain)
                 ? FakeProxy.Create<IPlayerPresenceGrain>(inner =>
                 {
-                    if (
-                        inner.Method.Name
-                        == nameof(IPlayerPresenceGrain.OnZoneFactsChangedAsync)
-                    )
+                    if (inner.Method.Name == nameof(IPlayerPresenceGrain.OnZoneFactsChangedAsync))
                     {
                         _forwarded.Add((CharacterZoneFacts)inner.Args![0]!);
                     }

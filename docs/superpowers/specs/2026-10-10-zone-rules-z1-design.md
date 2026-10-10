@@ -207,10 +207,11 @@ le point se remplit à nouveau.
 ## 7. Niveau conseillé
 
 À l'arrivée dans la zone (`settings.recommendedLevel`) et à l'entrée d'une aire (son
-`recommendedLevel`, déjà dans `ZoneCellRules`) : le noyau ne lit pas le niveau ; il pose au registre
-la condition du document `PlayerLevel {min: N}`. Si un module y répond et qu'elle ne tient pas,
-une bulle `zone.level` « Niveau conseillé : N. » Une fois par aire et par visite de la zone.
-Personne ne répond à `PlayerLevel` (aucun module de personnages) : rien.
+`recommendedLevel`, déjà dans `ZoneCellRules`) : le noyau ne lit pas le niveau ; pour `N ≥ 2` il
+pose au registre la condition du document `PlayerLevel {min: 1, max: N - 1}` (« sous le niveau
+conseillé »). Si elle **tient**, une bulle `zone.level` « Niveau conseillé : N. » Une fois par aire
+et par visite de la zone. Faits absents, pièce qui lève ou personne pour répondre : la condition vaut
+faux, rien n'est dit — jamais d'avertissement à tort (relecture des tâches 3–4).
 
 ## 8. Réseau
 
@@ -219,8 +220,13 @@ Aucun nouveau paquet. Les messages passent par `ZoneBubble` (2243) comme les aut
 ## 9. Validateur (`Vortex.World`)
 
 - « Sans effet » (`InertUntilRpg`) : une condition ou une action dont **aucune règle n'est déclarée**
-  (`IEnumerable<IZoneRuleDeclaration>`), au lieu de la liste écrite à la main ; pour les
-  déclencheurs, seul `QuestState` reste sans effet.
+  (`IEnumerable<IZoneRuleDeclaration>`), au lieu de la liste écrite à la main. Pour les déclencheurs
+  aussi (relecture des tâches 3–4) : `EnterZone`, `LeaveZone`, `Interact` et `Timer` sont ceux de la
+  room ; tout autre type est sans effet tant qu'aucun module ne le déclare
+  (`IZoneTriggerDeclaration` dans `Vortex.Primitives/World/Rules` ; une source de faits déclare les
+  types que ses changements signalent — `Raises` —, et `AddZoneTrigger(type)` déclare un type
+  signalé autrement, comme `MonsterKilled` par le module des monstres). Aujourd'hui seul
+  `QuestState` reste sans effet, et le module de quêtes le rendra vivant sans toucher au validateur.
 - Nouvelles vérifications :
   - `PlayerLevel` : `min ≥ 1`, `max` 0 ou ≥ `min` (erreur) ;
   - `HasItem` : l'objet existe dans le contenu (erreur `UnknownItem`), `count ≥ 1` ; sans contenu

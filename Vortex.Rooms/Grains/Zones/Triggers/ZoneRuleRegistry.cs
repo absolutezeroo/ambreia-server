@@ -50,6 +50,15 @@ public sealed class ZoneRuleRegistry
 
         foreach (IZoneFactsSource source in sources)
         {
+            if (_sources.ContainsKey(source.FactsType))
+            {
+                _logger.LogWarning(
+                    "Zone facts {Facts} have two sources; {Source}, the last one, reads them.",
+                    source.FactsType.Name,
+                    source.GetType().Name
+                );
+            }
+
             _sources[source.FactsType] = source;
         }
     }

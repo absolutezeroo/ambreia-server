@@ -85,7 +85,8 @@ internal sealed class RoomHarness
         bool canManipulate,
         string[] capabilities,
         IZoneConditionEvaluator[] conditions,
-        IZoneActionExecutor[] actions
+        IZoneActionExecutor[] actions,
+        IZoneFactsSource[]? sources
     )
     {
         _options = options;
@@ -175,11 +176,12 @@ internal sealed class RoomHarness
                     Simulation?.Invoke((IZoneRuntime)call.Args![0]!, (ZoneDocument)call.Args[1]!)
                     ?? NoZoneSimulation.Instance
                 ),
-                // The character's part of the zone's facts, read from the fake character grain.
+                // By default the character's part of the zone's facts, read from the fake
+                // character grain; a test declares its own parts instead.
                 new ZoneRuleRegistry(
                     conditions,
                     actions,
-                    [new CharacterFactsSource(BuildGrainFactory())],
+                    sources ?? [new CharacterFactsSource(BuildGrainFactory())],
                     NullLogger<ZoneRuleRegistry>.Instance
                 ),
             ]
@@ -380,10 +382,15 @@ internal sealed class RoomHarness
         ZoneDocument zone,
         Func<IZoneRuntime, ZoneDocument, IZoneSimulation>? simulation = null,
         IZoneConditionEvaluator[]? conditions = null,
-        IZoneActionExecutor[]? actions = null
+        IZoneActionExecutor[]? actions = null,
+        IZoneFactsSource[]? sources = null
     )
     {
-        RoomHarness harness = await CreateAsync(conditions: conditions, actions: actions)
+        RoomHarness harness = await CreateAsync(
+                conditions: conditions,
+                actions: actions,
+                sources: sources
+            )
             .ConfigureAwait(true);
 
         harness.Zone = zone;
@@ -439,11 +446,14 @@ internal sealed class RoomHarness
     /// </param>
     /// <param name="conditions">Zone conditions a module would declare (spec Z1 §4.2).</param>
     /// <param name="actions">Zone actions a module would declare.</param>
+    /// <param name="sources">Parts of the zone's facts a module would declare (spec Z1 §4.3);
+    /// null: the character's.</param>
     public static Task<RoomHarness> CreateAsync(
         bool canManipulate = true,
         string[]? capabilities = null,
         IZoneConditionEvaluator[]? conditions = null,
-        IZoneActionExecutor[]? actions = null
+        IZoneActionExecutor[]? actions = null,
+        IZoneFactsSource[]? sources = null
     )
     {
         DbContextOptions<VortexDbContext> options = new DbContextOptionsBuilder<VortexDbContext>()
@@ -456,7 +466,8 @@ internal sealed class RoomHarness
                 canManipulate,
                 capabilities ?? [],
                 conditions ?? [],
-                actions ?? []
+                actions ?? [],
+                sources
             )
         );
     }

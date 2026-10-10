@@ -97,7 +97,9 @@ internal sealed partial class PlayerCharacterGrain
             }
 
             Publish(new CharacterStatsChangedEvent(_playerId));
-            TellTheZoneFacts();
+            // This activation may never have read its bag (the grain went idle and came back while
+            // its player stayed in the zone): the facts need it.
+            await TellTheZoneFactsLoadingAsync();
         }
 
         Publish(new XpGainedEvent(_playerId, gaining.Amount, source, c.Level, c.Xp));

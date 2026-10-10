@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Immutable;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -15,12 +16,15 @@ namespace Vortex.Rpg.Characters.Grains;
 /// <summary>
 /// What a zone's rules read of the character (spec Z1 §4.3): its level and what it owns, bag and
 /// equipment — a parcel is not claimed, so not owned yet. The zone reads them on entry and is told
-/// each change after; every reading carries a sequence that only grows, seeded from the clock at
-/// activation, so the zone drops one that arrives after a newer one.
+/// each change after; every reading carries a sequence that only grows, seeded at activation from
+/// the process's monotonic clock — a wall clock stepped back would make the zone drop every push —
+/// so the zone drops one that arrives after a newer one.
 /// </summary>
 internal sealed partial class PlayerCharacterGrain
 {
-    private long _zoneFactsSequence = DateTime.UtcNow.Ticks;
+    // ponytail: monotonic for one process; the rooms holding these parts live in the same silo.
+    // Several silos would need a sequence kept with the character instead.
+    private long _zoneFactsSequence = Stopwatch.GetTimestamp();
 
     /// <summary>The last facts the zone was given or read: an operation that changes nothing in
     /// them (a move, an equip) tells it nothing.</summary>
@@ -86,6 +90,28 @@ internal sealed partial class PlayerCharacterGrain
         {
             logger.LogWarning(ex, "Zone facts of player {PlayerId} not sent", _playerId.Value);
         }
+    }
+
+    /// <summary>The same, loading the bag first if this activation has not: a failed read is
+    /// logged, and only then is nothing told.</summary>
+    private async Task TellTheZoneFactsLoadingAsync()
+    {
+        try
+        {
+            await InventoryAsync();
+        }
+        catch (Exception ex)
+        {
+            logger.LogWarning(
+                ex,
+                "Zone facts of player {PlayerId} not sent: the bag could not be read",
+                _playerId.Value
+            );
+
+            return;
+        }
+
+        TellTheZoneFacts();
     }
 
     private static bool Same(CharacterZoneFacts a, CharacterZoneFacts b) =>
