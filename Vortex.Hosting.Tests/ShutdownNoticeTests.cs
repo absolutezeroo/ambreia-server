@@ -7,6 +7,7 @@ using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 using Vortex.Main;
 using Vortex.Main.Configuration;
+using Vortex.Primitives.Hosting;
 using Xunit;
 
 namespace Vortex.Hosting.Tests;
@@ -78,6 +79,7 @@ public sealed class ShutdownNoticeTests
             grainFactory: null!,
             Options.Create(new OrleansHostConfig()),
             announcer,
-            Options.Create(config)
+            Options.Create(config),
+            new HostReadiness()
         );
 }
