@@ -1,8 +1,10 @@
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Vortex.Primitives.Networking;
+using Vortex.Primitives.Observability;
 using Vortex.Primitives.Players;
 using Vortex.Primitives.Rpg.Characters;
 using Vortex.Protocol.Messages.Outgoing.Rpg.Combat;
@@ -11,7 +13,9 @@ using Vortex.Protocol.Messages.Outgoing.Rpg.Skills;
 using Vortex.Rpg.Combat.Combatants;
 using Vortex.Rpg.Combat.Systems;
 using Vortex.Rpg.Combat.Zones;
+using Vortex.Rpg.Content;
 using Vortex.Rpg.Monsters.Behaviors;
+using Vortex.Rpg.Monsters.Configuration;
 using Vortex.Rpg.Monsters.Spawns;
 using Vortex.Rpg.Zones;
 
@@ -21,8 +25,14 @@ namespace Vortex.Rpg.Monsters.Zones;
 /// A zone's fights (spec M1a §4.3): its monsters come and go, think, then the combat resolves the
 /// tick. One per zone activation, made by <see cref="RpgZoneSimulationFactory"/>.
 /// </summary>
-public sealed class RpgZoneSimulation(IZoneRuntime zone, CombatZone combat, MonsterSpawner spawner)
-    : IZoneSimulation
+public sealed class RpgZoneSimulation(
+    IZoneRuntime zone,
+    CombatZone combat,
+    MonsterSpawner spawner,
+    IRpgContent content,
+    IVortexMetrics metrics,
+    MonstersConfig config
+) : IZoneSimulation
 {
     internal CombatZone Combat => combat;
 
@@ -50,6 +60,9 @@ public sealed class RpgZoneSimulation(IZoneRuntime zone, CombatZone combat, Mons
                 Name = monster.DefinitionId ?? string.Empty,
                 Level = monster.Level,
                 ClassId = string.Empty,
+                Rank = spawner.Live.TryGetValue(objectId, out LiveMonster? live)
+                    ? JsonNamingPolicy.SnakeCaseLower.ConvertName(live.Definition.Rank.ToString())
+                    : RpgTargetMessageComposer.RankNormal,
             }
         );
 
@@ -93,6 +106,10 @@ public sealed class RpgZoneSimulation(IZoneRuntime zone, CombatZone combat, Mons
                         Combatant = c,
                         Combat = combat,
                         Runtime = zone,
+                        Spawner = spawner,
+                        Content = content,
+                        Metrics = metrics,
+                        Config = config,
                     }
                 );
             }

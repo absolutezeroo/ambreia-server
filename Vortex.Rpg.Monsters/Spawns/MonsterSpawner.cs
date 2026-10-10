@@ -4,6 +4,7 @@ using System.Linq;
 using Microsoft.Extensions.Logging;
 using Vortex.Primitives.World.Layers;
 using Vortex.Rpg.Combat.Zones;
+using Vortex.Rpg.Monsters.Configuration;
 using Vortex.Rpg.Zones;
 
 namespace Vortex.Rpg.Monsters.Spawns;
@@ -18,6 +19,7 @@ public sealed class MonsterSpawner(
     IZoneRuntime zone,
     CombatZone combat,
     IReadOnlyList<SpawnPoint> points,
+    MonstersConfig config,
     ILogger logger
 )
 {
@@ -104,7 +106,7 @@ public sealed class MonsterSpawner(
             cell.X,
             cell.Y
         );
-        combat.AddMonster(id, level, point.Definition);
+        combat.AddMonster(id, level, point.Definition, config.ScaleFor(point.Definition.Rank));
         _live[id] = new LiveMonster
         {
             ObjectId = id,
@@ -112,6 +114,7 @@ public sealed class MonsterSpawner(
             Spawn = point,
             Home = (cell.X, cell.Y),
             NextWanderAtMs = now + 4000,
+            Skills = point.Definition.Skills,
         };
 
         return true;

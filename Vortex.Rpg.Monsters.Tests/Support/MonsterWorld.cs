@@ -13,8 +13,10 @@ using Vortex.Primitives.World;
 using Vortex.Primitives.World.Layers;
 using Vortex.Rpg.Combat.Configuration;
 using Vortex.Rpg.Combat.Hits;
+using Vortex.Rpg.Combat.Systems;
 using Vortex.Rpg.Content.Definitions;
 using Vortex.Rpg.Monsters.Behaviors;
+using Vortex.Rpg.Monsters.Configuration;
 using Vortex.Rpg.Monsters.Zones;
 using Vortex.Tests.Support;
 using Vortex.Tests.Support.World;
@@ -42,6 +44,19 @@ internal sealed class MonsterWorld
 
     public FakeZoneRuntime Zone { get; } = new();
 
+    public MonstersConfig Config { get; } = new();
+
+    /// <summary>What was counted: "phase monster.x 1", "reset monster.x".</summary>
+    public List<string> Counted { get; } = [];
+
+    private IVortexMetrics Metrics =>
+        FakeProxy.Create<IVortexMetrics>(call =>
+        {
+            Counted.Add($"{call.Method.Name} {string.Join(' ', call.Args ?? [])}");
+
+            return null;
+        });
+
     public List<string> Calls { get; } = [];
 
     public RpgZoneSimulation Simulation { get; private set; } = null!;
@@ -51,6 +66,14 @@ internal sealed class MonsterWorld
     public RpgZoneSimulation Start(
         IEnumerable<ZoneSpawn> spawns,
         IMonsterBehavior[]? behaviors = null,
+        params ContentDefinition[] content
+    ) => Start(spawns, behaviors, [], content);
+
+    /// <summary>The same, with the combat systems other modules would add (a casting system).</summary>
+    public RpgZoneSimulation Start(
+        IEnumerable<ZoneSpawn> spawns,
+        IMonsterBehavior[]? behaviors,
+        ICombatSystem[] systems,
         params ContentDefinition[] content
     )
     {
@@ -67,10 +90,11 @@ internal sealed class MonsterWorld
             Options.Create(new CombatConfig()),
             Characters(),
             FakeProxy.Create<IEventPublisher>(_ => Task.CompletedTask),
-            FakeProxy.Create<IVortexMetrics>(_ => null),
+            Metrics,
             NullLoggerFactory.Instance,
+            systems,
             [],
-            []
+            Options.Create(Config)
         );
 
         Simulation = (RpgZoneSimulation)

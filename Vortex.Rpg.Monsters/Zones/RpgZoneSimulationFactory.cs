@@ -16,6 +16,7 @@ using Vortex.Rpg.Combat.Zones;
 using Vortex.Rpg.Content;
 using Vortex.Rpg.Content.Definitions;
 using Vortex.Rpg.Monsters.Behaviors;
+using Vortex.Rpg.Monsters.Configuration;
 using Vortex.Rpg.Monsters.Spawns;
 using Vortex.Rpg.Zones;
 
@@ -41,6 +42,7 @@ public sealed class RpgZoneSimulationFactory : IZoneSimulationFactory
     /// <summary>What other modules add to the fights (statuses, casts, spec M1b), handed to each zone.</summary>
     private readonly ICombatSystem[] _systems;
     private readonly IStatModifierSource[] _modifiers;
+    private readonly MonstersConfig _monsters;
 
     public RpgZoneSimulationFactory(
         IRpgContent content,
@@ -52,9 +54,11 @@ public sealed class RpgZoneSimulationFactory : IZoneSimulationFactory
         IVortexMetrics metrics,
         ILoggerFactory loggers,
         IEnumerable<ICombatSystem> systems,
-        IEnumerable<IStatModifierSource> modifiers
+        IEnumerable<IStatModifierSource> modifiers,
+        IOptions<MonstersConfig> monsters
     )
     {
+        _monsters = monsters.Value;
         _systems = [.. systems];
         _modifiers = [.. modifiers];
         _metrics = metrics;
@@ -135,7 +139,16 @@ public sealed class RpgZoneSimulationFactory : IZoneSimulationFactory
         return new RpgZoneSimulation(
             runtime,
             combat,
-            new MonsterSpawner(runtime, combat, points, _loggers.CreateLogger<MonsterSpawner>())
+            new MonsterSpawner(
+                runtime,
+                combat,
+                points,
+                _monsters,
+                _loggers.CreateLogger<MonsterSpawner>()
+            ),
+            _content,
+            _metrics,
+            _monsters
         );
     }
 }

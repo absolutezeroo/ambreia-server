@@ -1,8 +1,10 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Options;
 using Vortex.Primitives.Plugins;
 using Vortex.Rpg.Content.Rules;
 using Vortex.Rpg.Monsters.Behaviors;
+using Vortex.Rpg.Monsters.Configuration;
 using Vortex.Rpg.Monsters.Zones;
 using Vortex.Rpg.Zones;
 
@@ -17,6 +19,13 @@ public sealed class MonstersModule : IHostPluginModule
 
     public void ConfigureServices(IServiceCollection services, HostApplicationBuilder builder)
     {
+        // Spec M1c §10: a value that could not work refuses the start, naming its key.
+        services
+            .AddOptions<MonstersConfig>()
+            .Bind(builder.Configuration.GetSection(MonstersConfig.SECTION_NAME))
+            .ValidateOnStart();
+        services.AddSingleton<IValidateOptions<MonstersConfig>, MonstersConfigValidator>();
+
         services.AddSingleton<IMonsterBehavior, MeleeBehavior>();
         services.AddSingleton<IMonsterBehaviorKeys, DeclaredBehaviors>();
         services.AddSingleton<IZoneSimulationFactory, RpgZoneSimulationFactory>();
