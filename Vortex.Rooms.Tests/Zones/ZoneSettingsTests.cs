@@ -50,6 +50,33 @@ public sealed class ZoneSettingsTests
         room.WallThickness.Should().Be(RoomThicknessType.Thick);
     }
 
+    /// <summary>
+    /// The document carries Habbo's own scale, -2 (thinnest) to 1 (thick), for the walls and the
+    /// floor; out of it, the nearest end. The floor's thickness was missing from the document.
+    /// </summary>
+    [Theory]
+    [InlineData(-2, RoomThicknessType.Thinnest)]
+    [InlineData(-1, RoomThicknessType.Thin)]
+    [InlineData(0, RoomThicknessType.Normal)]
+    [InlineData(1, RoomThicknessType.Thick)]
+    [InlineData(3, RoomThicknessType.Thick)]
+    [InlineData(-9, RoomThicknessType.Thinnest)]
+    public async Task WallsAndFloor_TakeTheirThickness(int thickness, RoomThicknessType expected)
+    {
+        ZoneDocument doc = ZoneSamples.Minimal();
+        doc = doc with
+        {
+            Walls = new ZoneWalls { Thickness = thickness },
+            Floor = doc.Floor with { Thickness = thickness },
+        };
+        RoomHarness harness = await RoomHarness.CreateAsync();
+
+        RoomSnapshot room = ZoneSettingsApplier.Apply(harness.Grain._state.RoomSnapshot, doc);
+
+        room.WallThickness.Should().Be(expected);
+        room.FloorThickness.Should().Be(expected);
+    }
+
     [Fact]
     public async Task AZoneRoom_CarriesItsDocumentsCapacity()
     {

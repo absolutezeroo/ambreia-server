@@ -110,6 +110,9 @@
         },
         "doorDirection": {
           "type": "integer"
+        },
+        "thickness": {
+          "type": "integer"
         }
       },
       "required": [
