@@ -12,6 +12,6 @@ public sealed class ZoneVisitor
 {
     public IReadOnlyList<ZoneArea> Areas { get; set; } = [];
 
-    /// <summary>The zone ("zone") and the areas (their ids) whose level advice was given this visit.</summary>
+    /// <summary>Where the level advice was given this visit: <c>level:zone</c>, <c>level:&lt;area id&gt;</c>.</summary>
     public HashSet<string> Advised { get; } = [];
 }

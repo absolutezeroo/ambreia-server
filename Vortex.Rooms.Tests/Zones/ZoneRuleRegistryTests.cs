@@ -75,6 +75,21 @@ public sealed class ZoneRuleRegistryTests
         registry.AllHold([new PlayerLevelCondition(1, 0)], Context(harness)).Should().BeTrue();
     }
 
+    /// <summary>Spec Z1 §6.3: a spawn's conditions reach the module's pieces, for nobody.</summary>
+    [Fact]
+    public async Task ASpawnsConditions_ReachTheDeclaredPiecesForNobody()
+    {
+        RoomHarness harness = await RoomHarness.CreateZoneAsync(
+            ZoneSamples.Minimal(),
+            conditions: [new HoldsForNobody<TimeOfDayCondition>()]
+        );
+
+        harness
+            .Grain.CombatRuntime.ConditionsHold([new TimeOfDayCondition(0, 0)])
+            .Should()
+            .BeTrue();
+    }
+
     /// <summary>A step asks this: a broken piece shuts its content, it does not stop the walk.</summary>
     [Fact]
     public async Task AConditionThatThrows_IsFalse()

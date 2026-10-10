@@ -52,7 +52,10 @@ public sealed class MonsterSpawner(
 
             if (point.Dormant)
             {
-                SpawnWave(point, now);
+                if (now >= point.NextWaveTryAtMs)
+                {
+                    SpawnWave(point, now);
+                }
 
                 continue;
             }
@@ -91,6 +94,15 @@ public sealed class MonsterSpawner(
             held
             && (near || point.Active && now - point.LastNearAtMs < config.AoiSleepSeconds * 1000L);
 
+        if (!wanted && !point.Active)
+        {
+            // Asleep: what it kept for a fight goes once that fight is over; a wave woken since
+            // still waits for a player.
+            Empty(point, forgetWave: false);
+
+            return;
+        }
+
         if (wanted == point.Active)
         {
             return;
@@ -108,14 +120,15 @@ public sealed class MonsterSpawner(
         }
     }
 
-    /// <summary>A player within <c>AoiRadius</c> cells (Chebyshev) of a cell of the spawn's area.</summary>
+    /// <summary>A living player within <c>AoiRadius</c> cells (Chebyshev) of a cell of the spawn's
+    /// area: a body or a ghost waiting to stand again keeps nothing awake.</summary>
     private bool AnyPlayerNear(SpawnPoint point)
     {
         int radius = config.AoiRadius;
 
         foreach (Combatant player in combat.Players)
         {
-            if (zone.PositionOf(player.ObjectId) is not { } at)
+            if (player.IsDead || player.IsGhost || zone.PositionOf(player.ObjectId) is not { } at)
             {
                 continue;
             }
@@ -154,14 +167,24 @@ public sealed class MonsterSpawner(
         }
     }
 
-    /// <summary>Its monsters that are not fighting go, with their summons; none is due back.</summary>
-    private void Empty(SpawnPoint point)
+    /// <summary>Its monsters that are not fighting — nor chasing someone — go, with their summons;
+    /// none is due back. Falling asleep, what a wave still owed is forgotten too.</summary>
+    private void Empty(SpawnPoint point, bool forgetWave = true)
     {
         point.Due.Clear();
 
+        if (forgetWave)
+        {
+            point.WaveOwed = 0;
+        }
+
         foreach (LiveMonster m in _live.Values.Where(m => m.Spawn == point).ToArray())
         {
-            if (!combat.Combatants.TryGetValue(m.ObjectId, out Combatant? c) || c.InCombat)
+            if (
+                !combat.Combatants.TryGetValue(m.ObjectId, out Combatant? c)
+                || c.InCombat
+                || !c.Threat.IsEmpty
+            )
             {
                 continue;
             }
@@ -175,8 +198,8 @@ public sealed class MonsterSpawner(
 
     /// <summary>
     /// A SpawnGroup action (spec Z1 §6.1): every dormant spawn of that id or group whose last wave is
-    /// over — born and dead, adds included — owes a new one, born as soon as a player is there and
-    /// its area has room. How many were woken.
+    /// over — born and dead, adds included — and whose conditions hold now owes a new one, born as
+    /// soon as a player is there and its area has room. How many were woken.
     /// </summary>
     public int WakeGroup(string name)
     {
@@ -184,7 +207,12 @@ public sealed class MonsterSpawner(
 
         foreach (SpawnPoint point in points.Where(p => p.Dormant && p.Answers(name)))
         {
-            if (point.Wave.Count > 0 || point.WaveOwed > 0)
+            if (
+                point.Wave.Count > 0
+                || point.WaveOwed > 0
+                || point.Source.Conditions.Count > 0
+                    && !zone.ConditionsHold(point.Source.Conditions)
+            )
             {
                 continue;
             }
@@ -196,7 +224,7 @@ public sealed class MonsterSpawner(
         return woken;
     }
 
-    /// <summary>What the wave still owes, as far as its area has room; the rest at the next tick.</summary>
+    /// <summary>What the wave still owes, as far as its area has room; the rest a second later.</summary>
     private void SpawnWave(SpawnPoint point, long now)
     {
         while (point.WaveOwed > 0)
@@ -208,6 +236,7 @@ public sealed class MonsterSpawner(
                     point.Source.Id,
                     point.WaveOwed
                 );
+                point.NextWaveTryAtMs = now + 1000;
 
                 return;
             }

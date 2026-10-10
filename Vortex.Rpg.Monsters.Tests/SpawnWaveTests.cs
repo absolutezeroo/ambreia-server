@@ -167,6 +167,10 @@ public sealed class SpawnWaveTests
         _world.Simulation.Spawner.WakeGroup("ambush").Should().Be(0, "its wave is still owed");
         _world.Zone.Walls.Clear();
         await _world.TickAsync();
+        _world.Zone.Spawned.Should().BeEmpty("it tries again a second later, not every tick");
+
+        _world.Zone.NowMs += 1000;
+        await _world.TickAsync();
 
         _world.Zone.Spawned.Should().HaveCount(2);
     }

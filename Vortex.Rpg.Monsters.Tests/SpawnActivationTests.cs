@@ -4,6 +4,7 @@ using FluentAssertions;
 using Vortex.Primitives.World.Layers;
 using Vortex.Primitives.World.Rules;
 using Vortex.Rpg.Monsters.Tests.Support;
+using Vortex.Tests.Support.World;
 using Xunit;
 
 namespace Vortex.Rpg.Monsters.Tests;
@@ -131,5 +132,70 @@ public sealed class SpawnActivationTests
         await TickAfterAsync(1000);
 
         _world.Simulation.Spawner.Live.Should().HaveCount(2);
+    }
+
+    /// <summary>Kept for its fight while its spawn slept, a monster goes once the fight is over.</summary>
+    [Fact]
+    public async Task AFighterKeptAsleep_GoesWhenItsFightEnds()
+    {
+        _world.Start([AtNight()]);
+        await _world.EnterAsync(7, 1, 20, 20);
+        await _world.TickAsync();
+        int fighter = _world.Simulation.Spawner.Live.Keys.First();
+        _world.Simulation.Combat.Combatants[fighter].InCombat = true;
+        _world.Zone.ConditionsAnswer = _ => false;
+        await TickAfterAsync(1000);
+        _world.Simulation.Spawner.Live.Keys.Should().Equal(fighter);
+
+        _world.Simulation.Combat.Combatants[fighter].InCombat = false;
+        await TickAfterAsync(1000);
+
+        _world.Simulation.Spawner.Live.Should().BeEmpty();
+    }
+
+    /// <summary>Spec Z1 §6.1: a spawn's conditions apply when it is woken; false, the wake is refused.</summary>
+    [Fact]
+    public async Task AWakeWhileItsConditionsFail_IsRefused()
+    {
+        _world.StartZone(
+            ZoneSamples.Minimal() with
+            {
+                Spawns = [AtNight() with { Id = "ambush" }],
+                Triggers =
+                [
+                    new ZoneTrigger
+                    {
+                        Id = "t",
+                        Type = ZoneTriggerType.Timer,
+                        Target = "60",
+                        Actions = [new SpawnGroupAction("ambush")],
+                    },
+                ],
+            }
+        );
+        await _world.EnterAsync(7, 1, 20, 20);
+        _world.Zone.ConditionsAnswer = _ => false;
+
+        _world.Simulation.Spawner.WakeGroup("ambush").Should().Be(0);
+        _world.Zone.ConditionsAnswer = _ => true;
+        await TickAfterAsync(1000);
+
+        _world.Zone.Spawned.Should().BeEmpty("the refused wake was not kept for later");
+    }
+
+    /// <summary>A ghost lying near, waiting to stand again, keeps nothing awake.</summary>
+    [Fact]
+    public async Task AGhostNear_KeepsNothingAwake()
+    {
+        _world.Start([Near()]);
+        await _world.EnterAsync(7, 1, 10, 1);
+        await _world.TickAsync();
+        _world.Simulation.Spawner.Live.Should().HaveCount(2);
+
+        _world.Simulation.Combat.Combatants[1].GhostUntilMs = long.MaxValue;
+        await TickAfterAsync(1000);
+        await TickAfterAsync(30_000);
+
+        _world.Simulation.Spawner.Live.Should().BeEmpty();
     }
 }

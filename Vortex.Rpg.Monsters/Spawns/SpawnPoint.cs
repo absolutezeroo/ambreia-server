@@ -32,6 +32,9 @@ public sealed class SpawnPoint
     /// there and the area has room.</summary>
     public int WaveOwed { get; set; }
 
+    /// <summary>A wave that found no room tries again from then, not on every tick.</summary>
+    public long NextWaveTryAtMs { get; set; }
+
     /// <summary>Its wave still alive, adds included; woken again only once this is empty and
     /// nothing is owed.</summary>
     public HashSet<int> Wave { get; } = [];

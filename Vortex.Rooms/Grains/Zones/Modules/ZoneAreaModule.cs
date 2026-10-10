@@ -36,7 +36,7 @@ public sealed class ZoneAreaModule(RoomGrain roomGrain)
             AdviseLevel(
                 playerId,
                 visitor,
-                "zone",
+                "level:zone",
                 zone.Compiled.Document.Settings.RecommendedLevel
             );
         }
@@ -108,7 +108,7 @@ public sealed class ZoneAreaModule(RoomGrain roomGrain)
         {
             foreach (ZoneArea area in entered)
             {
-                AdviseLevel(playerId, visitor, area.Id, area.RecommendedLevel);
+                AdviseLevel(playerId, visitor, $"level:{area.Id}", area.RecommendedLevel);
             }
         }
     }

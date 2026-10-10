@@ -82,7 +82,7 @@ public interface IZoneRuntime
     public void RaiseTrigger(PlayerId player, ZoneTriggerType type, string target);
 
     /// <summary>Whether every condition holds for nobody in particular (a spawn's, spec Z1 §6.3):
-    /// time of day and areas answer, a player's level or items never hold.</summary>
+    /// asked for <see cref="PlayerId.Invalid"/> with no facts, a rule that needs a player is false.</summary>
     public bool ConditionsHold(IReadOnlyList<ZoneCondition> conditions);
 
     /// <summary>To everyone in the zone.</summary>
