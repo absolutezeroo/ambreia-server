@@ -94,6 +94,24 @@ public sealed class RangedBehaviorTests
     }
 
     [Fact]
+    public async Task ArrivingByItsOwnWalk_ItAimsToo()
+    {
+        await StartAsync(playerX: 9, skill: true);
+        await _world.TickAsync();
+        _casting.Casts.Clear();
+
+        // The runtime ends the walk on the goal cell before the monster thinks again.
+        _world.Zone.Positions[Archer] = (4, 1);
+        _world.Zone.Walking.Remove(Archer);
+        long now = _world.Zone.NowMs + 250;
+        _world.Zone.NowMs = now;
+        await _world.TickAsync();
+
+        ArcherCombatant.NextSwingAtMs.Should().BeGreaterThanOrEqualTo(now + 250);
+        _casting.Casts.Should().BeEmpty();
+    }
+
+    [Fact]
     public async Task OnceAimed_ItCasts()
     {
         await StartAsync(playerX: 5, skill: true);

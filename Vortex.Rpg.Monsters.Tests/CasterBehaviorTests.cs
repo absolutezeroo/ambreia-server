@@ -34,13 +34,23 @@ public sealed class CasterBehaviorTests
     private readonly MonsterWorld _world = new();
     private readonly RecordingCasting _casting = new();
 
-    private async Task StartAsync(int playerX, params SkillDefinition[] skills)
+    private Task StartAsync(int playerX, params SkillDefinition[] skills) =>
+        StartAsync(playerX, 100, skills);
+
+    private async Task StartAsync(int playerX, int below, params SkillDefinition[] skills)
     {
         MonsterDefinition shaman = MonsterWorld.Wolf with
         {
             Id = "monster.test.shaman",
             Behavior = "caster",
-            Skills = [.. skills.Select(s => new MonsterSkillRule { Skill = s.Id })],
+            Skills =
+            [
+                .. skills.Select(s => new MonsterSkillRule
+                {
+                    Skill = s.Id,
+                    BelowHealthPercent = below,
+                }),
+            ],
         };
         _world.Start(
             [MonsterWorld.WolvesAt(1, (1, 1)) with { Monster = shaman.Id, AggroRadius = 9 }],
@@ -61,6 +71,14 @@ public sealed class CasterBehaviorTests
         await StartAsync(9, Bolt, Spray, Mend);
 
         _world.Zone.WalkRanges.Last().Should().Be(4);
+    }
+
+    [Fact]
+    public async Task ASkillItCannotUseYet_DoesNotHoldItBack()
+    {
+        await StartAsync(9, below: 50, Bolt);
+
+        _world.Zone.WalkRanges.Last().Should().Be(1);
     }
 
     [Fact]

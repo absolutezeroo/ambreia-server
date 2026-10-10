@@ -81,7 +81,9 @@ public abstract class MonsterBehavior : IMonsterBehavior
 
         if (Distance(at, to) <= range && zone.HasLineOfSight(at.X, at.Y, to.X, to.Y))
         {
-            bool justStopped = zone.IsWalking(m.ObjectId);
+            // Walking a moment ago: still walking, or the runtime ended its walk on the goal cell
+            // before it thought again (its state still says it was chasing).
+            bool justStopped = m.State == MonsterState.Chase || zone.IsWalking(m.ObjectId);
             m.State = MonsterState.Fight;
             m.ChaseGoal = null;
             zone.StopWalking(m.ObjectId);

@@ -197,6 +197,25 @@ public sealed class MonsterSkillSelectorTests
     }
 
     [Fact]
+    public async Task AnAllySkill_NeverPicksAPlayer()
+    {
+        await FightAsync(2, Rule(Mend, below: 90));
+        _casting.Casts.Clear();
+        Combatant caster = WolfOf(0);
+        Combatant other = WolfOf(1);
+
+        _world.Simulation.Combat.Combatants[1].Health = 5;
+        other.Health = 20;
+        await _world.TickAsync();
+
+        _casting
+            .Casts.Where(c => c.CasterObjectId == caster.ObjectId)
+            .Select(c => c.TargetObjectId)
+            .Should()
+            .Equal(other.ObjectId);
+    }
+
+    [Fact]
     public async Task NothingToCast_LeavesTheAttackAsItWas()
     {
         await FightAsync(1, Rule(Bite, below: 10));
