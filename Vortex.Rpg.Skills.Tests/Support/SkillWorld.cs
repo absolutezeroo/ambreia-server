@@ -12,6 +12,7 @@ using Vortex.Primitives.Observability;
 using Vortex.Primitives.Players;
 using Vortex.Primitives.Rpg.Characters;
 using Vortex.Primitives.Rpg.Characters.Grains;
+using Vortex.Protocol.Messages.Outgoing.Rpg.Skills;
 using Vortex.Rpg.Combat.Combatants;
 using Vortex.Rpg.Combat.Configuration;
 using Vortex.Rpg.Combat.Hits;
@@ -129,7 +130,9 @@ internal sealed class SkillWorld
 
     /// <summary>The player's cast, as the room hands it over.</summary>
     public string? Cast(string skillId, int target = 0, int x = -1, int y = -1, int player = 7) =>
-        Combat.Cast(new CastRequest(new PlayerId(player), skillId, target, x, y));
+        Combat.PlayerCombatant(new PlayerId(player)) is { } me
+            ? Combat.Cast(new CastRequest(me.ObjectId, skillId, target, x, y))
+            : RpgSkillResultMessageComposer.Dead;
 
     public FakeZoneRuntime Zone { get; } = new();
 

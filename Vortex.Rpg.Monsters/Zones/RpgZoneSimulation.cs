@@ -126,7 +126,11 @@ public sealed class RpgZoneSimulation(IZoneRuntime zone, CombatZone combat, Mons
         CancellationToken ct
     )
     {
-        if (combat.Cast(new CastRequest(player, skillId, targetObjectId, x, y)) is { } refusal)
+        string? refusal = combat.PlayerCombatant(player) is { } me
+            ? combat.Cast(new CastRequest(me.ObjectId, skillId, targetObjectId, x, y))
+            : RpgSkillResultMessageComposer.Dead;
+
+        if (refusal is not null)
         {
             await zone.SendToPlayerAsync(
                 player,

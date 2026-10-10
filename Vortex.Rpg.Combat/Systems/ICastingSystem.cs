@@ -16,4 +16,7 @@ public interface ICastingSystem : ICombatSystem
 
     /// <summary>The fighter's cast is broken (an interrupt effect).</summary>
     public void Interrupt(CombatZone zone, Combatant c);
+
+    /// <summary>A monster resets (spec M1c §7.4): its cast stops, its cooldowns are forgotten.</summary>
+    public void Reset(CombatZone zone, Combatant c);
 }

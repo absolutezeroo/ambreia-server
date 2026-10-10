@@ -32,9 +32,11 @@ public static class SkillTargets
             case SkillTarget.Ally:
                 Combatant? ally = targetObjectId == 0 ? ctx.Caster : Find(zone, targetObjectId);
 
-                return ally is not null && IsAlly(ally) ? [ally] : [];
+                return ally is not null && IsAlly(ctx.Caster, ally) ? [ally] : [];
             case SkillTarget.Enemy:
-                return Find(zone, targetObjectId) is { } enemy && IsEnemy(enemy) ? [enemy] : [];
+                return Find(zone, targetObjectId) is { } enemy && IsEnemy(ctx.Caster, enemy)
+                    ? [enemy]
+                    : [];
             case SkillTarget.Ground:
                 return cell is { } at ? Area(ctx, at) : [];
             case SkillTarget.AroundCaster:
@@ -42,7 +44,7 @@ public static class SkillTargets
             case SkillTarget.AroundTarget:
                 return
                     Find(zone, targetObjectId) is { } centre
-                    && IsEnemy(centre)
+                    && IsEnemy(ctx.Caster, centre)
                     && zone.Runtime.PositionOf(centre.ObjectId) is { } there
                     ? Area(ctx, there)
                     : [];
@@ -51,11 +53,17 @@ public static class SkillTargets
         }
     }
 
-    /// <summary>A player standing (not a ghost): no PvP, every player is an ally.</summary>
-    public static bool IsAlly(Combatant c) => c.IsPlayer && !c.IsDead && !c.IsGhost;
+    /// <summary>The caster's side, standing (spec M1c §4.2): no PvP, players help players and monsters
+    /// monsters; a monster walking home takes nothing.</summary>
+    public static bool IsAlly(Combatant caster, Combatant c) =>
+        c.IsPlayer == caster.IsPlayer && Standing(c);
 
-    /// <summary>A monster alive and not walking home.</summary>
-    public static bool IsEnemy(Combatant c) => !c.IsPlayer && !c.IsDead && !c.Invulnerable;
+    /// <summary>The other side, standing: a player alive and not a ghost, a monster alive and not
+    /// walking home.</summary>
+    public static bool IsEnemy(Combatant caster, Combatant c) =>
+        c.IsPlayer != caster.IsPlayer && Standing(c);
+
+    private static bool Standing(Combatant c) => !c.IsDead && !c.IsGhost && !c.Invulnerable;
 
     private static Combatant? Find(CombatZone zone, int objectId) =>
         zone.Combatants.TryGetValue(objectId, out Combatant? c) ? c : null;
@@ -68,7 +76,9 @@ public static class SkillTargets
         return
         [
             .. ctx
-                .Zone.Combatants.Values.Where(c => offensive ? IsEnemy(c) : IsAlly(c))
+                .Zone.Combatants.Values.Where(c =>
+                    offensive ? IsEnemy(ctx.Caster, c) : IsAlly(ctx.Caster, c)
+                )
                 .Select(c => (Fighter: c, At: runtime.PositionOf(c.ObjectId)))
                 .Where(x =>
                     x.At is { } at

@@ -30,9 +30,9 @@ public static class TargetCheck
         {
             SkillTarget.Self or SkillTarget.AroundCaster => true,
             SkillTarget.Ally => targetObjectId == 0
-                || target is not null && SkillTargets.IsAlly(target),
+                || target is not null && SkillTargets.IsAlly(caster, target),
             SkillTarget.Enemy or SkillTarget.AroundTarget => target is not null
-                && SkillTargets.IsEnemy(target),
+                && SkillTargets.IsEnemy(caster, target),
             SkillTarget.Ground => cell is { } at && zone.Runtime.IsWalkable(at.X, at.Y),
             _ => false,
         };

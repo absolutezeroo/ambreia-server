@@ -45,22 +45,34 @@ public sealed class CastSystem(
     public string? Cast(CombatZone zone, CastRequest request)
     {
         string? refusal = Accept(zone, request);
+        Combatant? caster = zone.Combatants.TryGetValue(request.CasterObjectId, out Combatant? c)
+            ? c
+            : null;
 
-        if (refusal is not null)
+        // A monster tries its skills every tick: its refusals would drown the metric (plan M1c
+        // decision 2). A client string never becomes a label: an id nobody declared is "unknown".
+        if (refusal is not null && caster is { IsPlayer: true })
         {
-            // A client string never becomes a metric label: an id nobody declared is "unknown".
             string label = content.Get<SkillDefinition>(request.SkillId) is null
                 ? "unknown"
                 : request.SkillId;
             metrics.SkillCast(label, refusal);
         }
 
-        if (zone.PlayerCombatant(request.Player) is { } caster)
+        if (caster is not null)
         {
             Steer(caster);
         }
 
         return refusal;
+    }
+
+    public void Reset(CombatZone zone, Combatant c)
+    {
+        End(zone, c, RpgCastEnd.Cancelled);
+        c.Set<PendingCast>(null);
+        c.Set<SkillCooldowns>(null);
+        Steer(c);
     }
 
     public void Cancel(CombatZone zone, PlayerId player)
@@ -106,7 +118,7 @@ public sealed class CastSystem(
 
     public void Tick(CombatZone zone, long now)
     {
-        foreach (Combatant c in zone.Players.ToArray())
+        foreach (Combatant c in zone.Combatants.Values.ToArray())
         {
             if (c.Get<CastState>() is { } state)
             {
@@ -125,7 +137,7 @@ public sealed class CastSystem(
     private string? Accept(CombatZone zone, CastRequest request)
     {
         if (
-            zone.PlayerCombatant(request.Player) is not { } caster
+            !zone.Combatants.TryGetValue(request.CasterObjectId, out Combatant? caster)
             || caster.IsDead
             || caster.IsGhost
         )
@@ -148,7 +160,8 @@ public sealed class CastSystem(
             return RpgSkillResultMessageComposer.UnknownSkill;
         }
 
-        if (!Knows(caster, skill))
+        // A monster's skills are its content's rules, not a class's (spec M1c §4.2).
+        if (caster.IsPlayer && !Knows(caster, skill))
         {
             return RpgSkillResultMessageComposer.NotLearned;
         }
@@ -171,6 +184,14 @@ public sealed class CastSystem(
 
         if (Centre(zone, caster, pending) is { } centre && !InReach(zone, caster, skill, centre))
         {
+            // A monster never approaches for a skill: its behavior places it (spec M1c §4.2).
+            if (!caster.IsPlayer)
+            {
+                return InRange(zone, caster, skill, centre)
+                    ? RpgSkillResultMessageComposer.NoLineOfSight
+                    : RpgSkillResultMessageComposer.Unreachable;
+            }
+
             // An approach would replace an instant already paid and waiting for its tick.
             if (caster.Get<PendingCast>() is { Ready: true })
             {
@@ -210,7 +231,7 @@ public sealed class CastSystem(
             return RpgSkillResultMessageComposer.GlobalCooldown;
         }
 
-        if (caster.Mana < skill.Cost)
+        if (caster.IsPlayer && caster.Mana < skill.Cost)
         {
             return RpgSkillResultMessageComposer.NoMana;
         }
@@ -383,7 +404,7 @@ public sealed class CastSystem(
             return;
         }
 
-        if (c.Mana < skill.Cost)
+        if (c.IsPlayer && c.Mana < skill.Cost)
         {
             End(zone, c, RpgCastEnd.Failed);
             Refuse(zone, c, skill, RpgSkillResultMessageComposer.NoMana, count: false);
@@ -509,8 +530,12 @@ public sealed class CastSystem(
 
     private void Pay(CombatZone zone, Combatant c, SkillDefinition skill, long now)
     {
-        c.Mana = Math.Max(0, c.Mana - skill.Cost);
-        zone.VitalsChanged(c);
+        // A monster has no mana (spec M1c §4.2).
+        if (c.IsPlayer)
+        {
+            c.Mana = Math.Max(0, c.Mana - skill.Cost);
+            zone.VitalsChanged(c);
+        }
 
         if (skill.CooldownMs > 0)
         {

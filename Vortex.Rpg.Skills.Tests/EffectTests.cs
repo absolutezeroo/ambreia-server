@@ -352,5 +352,7 @@ public sealed class EffectTests
         public void Cancel(CombatZone zone, PlayerId player) { }
 
         public void Interrupt(CombatZone zone, Combatant c) => log.Add($"interrupt {c.ObjectId}");
+
+        public void Reset(CombatZone zone, Combatant c) { }
     }
 }

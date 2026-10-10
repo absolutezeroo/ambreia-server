@@ -174,7 +174,7 @@ public sealed partial class CombatZone
 
     public bool IsSafeCell(int x, int y) => runtime.RulesAt(x, y).Safe;
 
-    /// <summary>A player's cast, handed to the casting system the modules declared.</summary>
+    /// <summary>A fighter's cast, handed to the casting system the modules declared.</summary>
     public string? Cast(CastRequest request) =>
         Casting is { } casting
             ? casting.Cast(this, request)
@@ -183,6 +183,9 @@ public sealed partial class CombatZone
     public void CancelCast(PlayerId player) => Casting?.Cancel(this, player);
 
     public void Interrupt(Combatant c) => Casting?.Interrupt(this, c);
+
+    /// <summary>A monster's casting starts over: no cast under way, no cooldown.</summary>
+    public void ResetCasts(Combatant c) => Casting?.Reset(this, c);
 
     public void PlayerWalked(PlayerId player)
     {

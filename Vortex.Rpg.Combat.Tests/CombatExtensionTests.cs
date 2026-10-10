@@ -413,7 +413,7 @@ public sealed class CombatExtensionTests
         await PlayerNextToAWolfAsync();
 
         _combat
-            .Cast(new CastRequest(new PlayerId(7), "skill.mage.firebolt", 2, -1, -1))
+            .Cast(new CastRequest(1, "skill.mage.firebolt", 2, -1, -1))
             .Should()
             .Be("unknown_skill");
     }
