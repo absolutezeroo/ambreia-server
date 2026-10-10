@@ -93,6 +93,12 @@ public interface IVortexMetrics
     /// <summary>A status put on a fighter (spec M1b §13).</summary>
     void StatusApplied(string statusId);
 
+    /// <summary>A monster entered a phase (spec M1c §12), by monster id and phase number (1, 2…).</summary>
+    void BossPhase(string monsterId, int phase);
+
+    /// <summary>A monster with phases reset (spec M1c §12): its fight started over.</summary>
+    void BossReset(string monsterId);
+
     /// <summary>
     /// A call to the (single, global) room directory grain returned. <paramref name="method"/> is the
     /// grain method name, which is bounded by the interface.

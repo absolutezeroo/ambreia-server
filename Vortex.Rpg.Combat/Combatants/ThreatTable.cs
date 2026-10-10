@@ -10,6 +10,10 @@ public sealed class ThreatTable
 
     public bool IsEmpty => _entries.Count == 0;
 
+    /// <summary>In the order they came: added again in this order, they give the same top and ties
+    /// (a boss's summons take its table, spec M1c §7.3).</summary>
+    public IReadOnlyList<(int ObjectId, long Threat)> Entries => _entries;
+
     public int? Top
     {
         get

@@ -143,6 +143,7 @@ public sealed class RpgZoneSimulationFactory : IZoneSimulationFactory
                 runtime,
                 combat,
                 points,
+                _behaviors,
                 _monsters,
                 _loggers.CreateLogger<MonsterSpawner>()
             ),

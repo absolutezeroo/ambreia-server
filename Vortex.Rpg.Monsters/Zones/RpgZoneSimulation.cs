@@ -16,6 +16,7 @@ using Vortex.Rpg.Combat.Zones;
 using Vortex.Rpg.Content;
 using Vortex.Rpg.Monsters.Behaviors;
 using Vortex.Rpg.Monsters.Configuration;
+using Vortex.Rpg.Monsters.Phases;
 using Vortex.Rpg.Monsters.Spawns;
 using Vortex.Rpg.Zones;
 
@@ -96,22 +97,36 @@ public sealed class RpgZoneSimulation(
 
         foreach (LiveMonster m in spawner.Live.Values.ToArray())
         {
-            // A stunned monster does not think: no chase, no target, no way home (spec M1b §7.2).
-            if (combat.Combatants.TryGetValue(m.ObjectId, out Combatant? c) && !c.Stunned)
+            // Gone this tick already: a summon its boss's reset sent away.
+            if (!spawner.Live.ContainsKey(m.ObjectId))
             {
-                m.Spawn.Behavior.Think(
-                    new MonsterBrain
-                    {
-                        Monster = m,
-                        Combatant = c,
-                        Combat = combat,
-                        Runtime = zone,
-                        Spawner = spawner,
-                        Content = content,
-                        Metrics = metrics,
-                        Config = config,
-                    }
-                );
+                continue;
+            }
+
+            if (!combat.Combatants.TryGetValue(m.ObjectId, out Combatant? c))
+            {
+                continue;
+            }
+
+            MonsterBrain brain = new()
+            {
+                Monster = m,
+                Combatant = c,
+                Combat = combat,
+                Runtime = zone,
+                Spawner = spawner,
+                Content = content,
+                Metrics = metrics,
+                Config = config,
+            };
+
+            // Last tick's hits are counted: a phase plays even on a stunned boss (spec M1c §7.2).
+            BossPhases.Check(brain);
+
+            // A stunned monster does not think: no chase, no target, no way home (spec M1b §7.2).
+            if (!c.Stunned)
+            {
+                m.Spawn.Behavior.Think(brain);
             }
         }
 

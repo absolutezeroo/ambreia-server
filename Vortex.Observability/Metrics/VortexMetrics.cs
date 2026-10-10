@@ -39,6 +39,8 @@ public sealed class VortexMetrics : IVortexMetrics, IDisposable
     private readonly Counter<long> _monsterPathSearches;
     private readonly Counter<long> _skillCasts;
     private readonly Counter<long> _statusesApplied;
+    private readonly Counter<long> _bossPhases;
+    private readonly Counter<long> _bossResets;
     private readonly Counter<long> _referenceDataPublished;
     private readonly Counter<long> _auditWriteFailure;
 
@@ -158,6 +160,16 @@ public sealed class VortexMetrics : IVortexMetrics, IDisposable
             "Vortex.skills.statuses_applied",
             unit: "{status}",
             description: "Statuses put on fighters, by status."
+        );
+        _bossPhases = _meter.CreateCounter<long>(
+            "Vortex.monsters.boss_phases",
+            unit: "{phase}",
+            description: "Phases monsters entered, by monster and phase number."
+        );
+        _bossResets = _meter.CreateCounter<long>(
+            "Vortex.monsters.boss_resets",
+            unit: "{reset}",
+            description: "Fights monsters with phases started over, by monster."
         );
         _auditWriteFailure = _meter.CreateCounter<long>(
             "Vortex.audit.write.failure",
@@ -333,6 +345,26 @@ public sealed class VortexMetrics : IVortexMetrics, IDisposable
         if (_enabled)
         {
             _statusesApplied.Add(1, new KeyValuePair<string, object?>("status", statusId));
+        }
+    }
+
+    public void BossPhase(string monsterId, int phase)
+    {
+        if (_enabled)
+        {
+            _bossPhases.Add(
+                1,
+                new KeyValuePair<string, object?>("monster", monsterId),
+                new KeyValuePair<string, object?>("phase", phase)
+            );
+        }
+    }
+
+    public void BossReset(string monsterId)
+    {
+        if (_enabled)
+        {
+            _bossResets.Add(1, new KeyValuePair<string, object?>("monster", monsterId));
         }
     }
 

@@ -1,6 +1,7 @@
 using System.Linq;
 using Vortex.Rpg.Combat;
 using Vortex.Rpg.Combat.Combatants;
+using Vortex.Rpg.Monsters.Phases;
 using Vortex.Rpg.Monsters.Skills;
 using Vortex.Rpg.Monsters.Spawns;
 using Vortex.Rpg.Zones;
@@ -170,7 +171,7 @@ public abstract class MonsterBehavior : IMonsterBehavior
         brain.Combatant.Invulnerable = true;
         brain.Combatant.Threat.Clear();
         brain.Combat.SetMonsterTarget(m.ObjectId, null);
-        brain.Combat.ResetCasts(brain.Combatant);
+        BossPhases.Reset(brain);
         WalkHome(brain);
     }
 
