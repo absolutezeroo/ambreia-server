@@ -75,7 +75,9 @@ public interface IZoneRuntime
 
     /// <summary>
     /// The zone's triggers of this type and target run for the player once the tick is over (spec
-    /// Z1 §5): a monster killed, or whatever else a module sees happen. Nothing for a player who left.
+    /// Z1 §5): a monster killed, or whatever else the simulation sees happen. Nothing for a player
+    /// who left. For the simulation's tick only: raised from a trigger's own action, it would run
+    /// outside that trigger's chain and its limits.
     /// </summary>
     public void RaiseTrigger(PlayerId player, ZoneTriggerType type, string target);
 

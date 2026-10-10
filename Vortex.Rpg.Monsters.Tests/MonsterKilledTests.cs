@@ -40,6 +40,25 @@ public sealed class MonsterKilledTests
             ]);
     }
 
+    /// <summary>A boss's summon counts under the boss's spawn: a trigger on it fires for each add.</summary>
+    [Fact]
+    public async Task ASummonsDeath_IsToldUnderItsBossesSpawn()
+    {
+        BossWorld boss = new();
+        await boss.StartAsync();
+        await boss.HurtToAsync(60);
+        int add = boss.SummonIds[0];
+        string spawn = boss.BossMonster.Spawn.Source.Id;
+        boss.World.Simulation.Combat.Combatants[add].Participants.Add(new PlayerId(7));
+        boss.World.Simulation.Combat.Combatants[add].Health = 0;
+
+        await boss.World.TickAsync();
+
+        boss.World.Zone.Raised.Should()
+            .Contain((new PlayerId(7), ZoneTriggerType.MonsterKilled, spawn))
+            .And.Contain((new PlayerId(7), ZoneTriggerType.MonsterKilled, MonsterWorld.Wolf.Id));
+    }
+
     [Fact]
     public async Task ADeathNobodyFought_TellsNothing()
     {

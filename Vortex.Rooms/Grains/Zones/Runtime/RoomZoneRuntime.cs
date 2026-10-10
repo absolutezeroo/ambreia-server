@@ -53,6 +53,10 @@ public sealed class RoomZoneRuntime(RoomGrain room) : IZoneRuntime
     /// </summary>
     public async Task FlushAsync()
     {
+        // Taken first: a send that throws below must not leave them to grow until the next tick.
+        (PlayerId Player, ZoneTriggerType Type, string Target)[] raised = [.. _raised];
+        _raised.Clear();
+
         try
         {
             foreach (IComposer composer in _pending.ToArray())
@@ -64,9 +68,6 @@ public sealed class RoomZoneRuntime(RoomGrain room) : IZoneRuntime
         {
             _pending.Clear();
         }
-
-        (PlayerId Player, ZoneTriggerType Type, string Target)[] raised = [.. _raised];
-        _raised.Clear();
 
         foreach ((PlayerId player, ZoneTriggerType type, string target) in raised)
         {

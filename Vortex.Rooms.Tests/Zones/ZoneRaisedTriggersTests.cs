@@ -65,6 +65,33 @@ public sealed class ZoneRaisedTriggersTests
         Bubbles(harness).Should().Equal("point", "espèce");
     }
 
+    /// <summary>The room does not care what was raised: a kind no shipped module raises runs too.</summary>
+    [Fact]
+    public async Task AnyKindRaised_RunsItsTriggers()
+    {
+        RoomHarness harness = await ZoneAsync(
+            ZoneSamples.Minimal() with
+            {
+                Triggers =
+                [
+                    new ZoneTrigger
+                    {
+                        Id = "t_q1",
+                        Type = ZoneTriggerType.QuestState,
+                        Target = "q1",
+                        Actions = [new ShowDialogueAction("quête")],
+                    },
+                ],
+            }
+        );
+        await EnterAsync(harness);
+
+        harness.Grain.CombatRuntime.RaiseTrigger(Walker, ZoneTriggerType.QuestState, "q1");
+        await harness.Grain.CombatRuntime.FlushAsync();
+
+        Bubbles(harness).Should().Equal("quête");
+    }
+
     [Fact]
     public async Task APlayerWhoLeft_GetsNothing()
     {

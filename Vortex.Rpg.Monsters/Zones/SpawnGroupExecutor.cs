@@ -1,5 +1,6 @@
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 using Vortex.Primitives.World.Rules;
 using Vortex.Rpg.Zones.Rules;
 
@@ -8,9 +9,10 @@ namespace Vortex.Rpg.Monsters.Zones;
 /// <summary>
 /// SpawnGroup {spawn} (spec Z1 §6.1): wakes the zone's dormant spawns of that id or group, each
 /// bringing one wave at the next tick a player is there. The zone's simulation is this module's own;
-/// another kind of simulation has no spawns to wake.
+/// another kind of simulation has no spawns to wake, and says so.
 /// </summary>
-public sealed class SpawnGroupExecutor : ZoneActionExecutor<SpawnGroupAction>
+public sealed class SpawnGroupExecutor(ILogger<SpawnGroupExecutor> logger)
+    : ZoneActionExecutor<SpawnGroupAction>
 {
     protected override Task RunAsync(
         SpawnGroupAction action,
@@ -21,6 +23,13 @@ public sealed class SpawnGroupExecutor : ZoneActionExecutor<SpawnGroupAction>
         if (ctx.Simulation is RpgZoneSimulation simulation)
         {
             simulation.Spawner.WakeGroup(action.Spawn);
+        }
+        else
+        {
+            logger.LogDebug(
+                "SpawnGroup {Spawn}: the zone's simulation has no spawns to wake.",
+                action.Spawn
+            );
         }
 
         return Task.CompletedTask;

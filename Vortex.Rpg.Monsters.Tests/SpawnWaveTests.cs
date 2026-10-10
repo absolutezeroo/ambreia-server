@@ -4,9 +4,11 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using FluentAssertions;
+using Microsoft.Extensions.Logging.Abstractions;
 using Vortex.Primitives.Players;
 using Vortex.Primitives.World.Layers;
 using Vortex.Primitives.World.Rules;
+using Vortex.Rpg.Monsters.Spawns;
 using Vortex.Rpg.Monsters.Tests.Support;
 using Vortex.Rpg.Monsters.Zones;
 using Vortex.Rpg.Zones.Rules;
@@ -144,6 +146,61 @@ public sealed class SpawnWaveTests
         _world.Zone.Spawned.Should().HaveCount(4);
     }
 
+    /// <summary>
+    /// No room on its area (corpses of the last wave, players standing there): the wave is owed,
+    /// and comes as cells free up; it is not lost, and a second wake meanwhile changes nothing.
+    /// </summary>
+    [Fact]
+    public async Task AWaveWithNoRoom_IsOwed_AndComesWhenThereIsRoom()
+    {
+        StartWith(
+            [MonsterWorld.WolvesAt(2, (1, 1), (2, 1)) with { Id = "ambush" }],
+            Wakes("ambush")
+        );
+        await _world.EnterAsync(7, 1, 20, 20);
+        _world.Zone.Walls.Add((1, 1));
+        _world.Zone.Walls.Add((2, 1));
+        _world.Simulation.Spawner.WakeGroup("ambush");
+        await _world.TickAsync();
+        _world.Zone.Spawned.Should().BeEmpty();
+
+        _world.Simulation.Spawner.WakeGroup("ambush").Should().Be(0, "its wave is still owed");
+        _world.Zone.Walls.Clear();
+        await _world.TickAsync();
+
+        _world.Zone.Spawned.Should().HaveCount(2);
+    }
+
+    /// <summary>A wave boss's adds are part of its wave: it is over when they are dead too.</summary>
+    [Fact]
+    public async Task AWave_IncludesItsBossesSummons()
+    {
+        StartWith([Ambush()], Wakes("ambush"));
+        await _world.EnterAsync(7, 1, 20, 20);
+        _world.Simulation.Spawner.WakeGroup("ambush");
+        await _world.TickAsync();
+        LiveMonster leader = _world.Simulation.Spawner.Live.Values.First();
+        _world.Simulation.Spawner.Summon(leader, MonsterWorld.Wolf, 1, 1, _world.Zone.NowMs);
+        int add = _world
+            .Simulation.Spawner.Live.Keys.Except(
+                _world.Zone.Spawned.Take(2).Select(s => s.ObjectId)
+            )
+            .Single();
+
+        foreach (int id in _world.Zone.Spawned.Take(2).Select(s => s.ObjectId))
+        {
+            _world.Simulation.Combat.Combatants[id].Health = 0;
+        }
+
+        await _world.TickAsync();
+        _world.Simulation.Spawner.WakeGroup("ambush").Should().Be(0, "its add still lives");
+
+        _world.Simulation.Combat.Combatants[add].Health = 0;
+        await _world.TickAsync();
+
+        _world.Simulation.Spawner.WakeGroup("ambush").Should().Be(1);
+    }
+
     /// <summary>A clock may wake it when nobody is there: the wave waits for a player.</summary>
     [Fact]
     public async Task AWakeWithNoPlayer_WaitsForOne()
@@ -166,7 +223,7 @@ public sealed class SpawnWaveTests
         StartWith([Ambush()], Wakes("ambush"));
         await _world.EnterAsync(7, 1, 20, 20);
 
-        await new SpawnGroupExecutor().RunAsync(
+        await new SpawnGroupExecutor(NullLogger<SpawnGroupExecutor>.Instance).RunAsync(
             new SpawnGroupAction("ambush"),
             new ZoneRuleContext(
                 PlayerId.Invalid,

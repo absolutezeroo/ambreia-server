@@ -28,10 +28,12 @@ public sealed class SpawnPoint
     /// wave, never respawned.</summary>
     public bool Dormant { get; init; }
 
-    /// <summary>Woken, its wave not born yet: it is, at the next tick a player is there.</summary>
-    public bool WaveDue { get; set; }
+    /// <summary>Woken, how many of its wave are still to be born: they are as soon as a player is
+    /// there and the area has room.</summary>
+    public int WaveOwed { get; set; }
 
-    /// <summary>Its wave still alive; woken again only once this is empty.</summary>
+    /// <summary>Its wave still alive, adds included; woken again only once this is empty and
+    /// nothing is owed.</summary>
     public HashSet<int> Wave { get; } = [];
 
     /// <summary>Its conditions hold and, by nearness, a player is or was lately near (spec Z1

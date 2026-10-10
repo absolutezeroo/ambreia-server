@@ -50,7 +50,7 @@ public sealed class MonsterSpawner(
                 continue;
             }
 
-            if (point.WaveDue)
+            if (point.Dormant)
             {
                 SpawnWave(point, now);
 
@@ -175,7 +175,8 @@ public sealed class MonsterSpawner(
 
     /// <summary>
     /// A SpawnGroup action (spec Z1 §6.1): every dormant spawn of that id or group whose last wave is
-    /// dead brings a new one at the next tick a player is there. How many were woken.
+    /// over — born and dead, adds included — owes a new one, born as soon as a player is there and
+    /// its area has room. How many were woken.
     /// </summary>
     public int WakeGroup(string name)
     {
@@ -183,53 +184,56 @@ public sealed class MonsterSpawner(
 
         foreach (SpawnPoint point in points.Where(p => p.Dormant && p.Answers(name)))
         {
-            if (point.Wave.Count > 0 || point.WaveDue)
+            if (point.Wave.Count > 0 || point.WaveOwed > 0)
             {
                 continue;
             }
 
-            point.WaveDue = true;
+            point.WaveOwed = Count(point);
             woken++;
         }
 
         return woken;
     }
 
+    /// <summary>What the wave still owes, as far as its area has room; the rest at the next tick.</summary>
     private void SpawnWave(SpawnPoint point, long now)
     {
-        point.WaveDue = false;
-        int count = Count(point);
-
-        for (int i = 0; i < count; i++)
+        while (point.WaveOwed > 0)
         {
             if (Spawn(point, now) is not { } id)
             {
                 logger.LogDebug(
-                    "Spawn {SpawnId}: its wave found room for {Born} of {Count}.",
+                    "Spawn {SpawnId}: no room yet for {Owed} of its wave.",
                     point.Source.Id,
-                    i,
-                    count
+                    point.WaveOwed
                 );
 
-                break;
+                return;
             }
 
             point.Wave.Add(id);
+            point.WaveOwed--;
         }
     }
 
-    /// <summary>Between Min and Max, drawn on the zone's random source.</summary>
+    /// <summary>Between Min and Max, drawn on the zone's random source when they differ.</summary>
     private int Count(SpawnPoint point)
     {
         int min = Math.Max(0, point.Source.Min);
         int max = Math.Max(min, point.Source.Max);
 
-        return zone.Random.Next(min, max + 1);
+        return min == max ? min : zone.Random.Next(min, max + 1);
     }
 
     /// <summary>The spawn a live monster belongs to — its summoner's for a summon — or null.</summary>
     public string? SpawnOf(int objectId) =>
         _live.TryGetValue(objectId, out LiveMonster? m) ? m.Spawn.Source.Id : null;
+
+    /// <summary>The zone's spawn a monster belongs to — its summoner's for an add, whose own point is
+    /// a copy.</summary>
+    private SpawnPoint? PointOf(LiveMonster m) =>
+        points.FirstOrDefault(p => ReferenceEquals(p.Source, m.Spawn.Source));
 
     /// <summary>A monster died: it comes back after its spawn's delay; a summon never does, and frees
     /// its place by its summoner (spec M1c §7.3).</summary>
@@ -239,6 +243,9 @@ public sealed class MonsterSpawner(
         {
             return;
         }
+
+        // A wave's monster, or an add of one, does not come back (spec Z1 §6.1).
+        PointOf(m)?.Wave.Remove(objectId);
 
         if (m.Parent is { } parent)
         {
@@ -250,11 +257,8 @@ public sealed class MonsterSpawner(
             return;
         }
 
-        // A wave's monster does not come back (spec Z1 §6.1).
         if (m.Spawn.Dormant)
         {
-            m.Spawn.Wave.Remove(objectId);
-
             return;
         }
 
@@ -329,6 +333,12 @@ public sealed class MonsterSpawner(
                 State = MonsterState.Chase,
             };
             summoner.Summons.Add(id);
+
+            // A wave boss's adds are part of its wave: it is over when they are dead too.
+            if (summoner.Spawn.Dormant)
+            {
+                summoner.Spawn.Wave.Add(id);
+            }
         }
 
         if (Math.Min(room, cells.Length) < count)
@@ -350,6 +360,7 @@ public sealed class MonsterSpawner(
         {
             combat.RemoveMonster(id);
             _live.Remove(id);
+            summoner.Spawn.Wave.Remove(id);
         }
 
         summoner.Summons.Clear();
