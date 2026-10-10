@@ -470,6 +470,40 @@ public sealed class EnvelopeHostTests
     }
 
     [Fact]
+    public async Task FailClosed_ABehaviorThatThrowsAfterNext_DoesNotRunTheHandlerTwice()
+    {
+        Recorder recorder = new();
+        using ServiceProvider sp = NewProvider(recorder);
+        List<Exception> errors = [];
+        EnvelopeHost<TestEnvelope, string, TestContext> host = NewHost(
+            sp,
+            onBehaviorError: (ex, env) => errors.Add(ex),
+            behaviorErrorsFailClosed: true
+        );
+
+        using IDisposable behaviorReg = RegisterBehavior<ThrowAfterNextBehavior>(
+            host,
+            sp,
+            typeof(TestEnvelope)
+        );
+        using IDisposable handlerReg = RegisterHandler<RecordingHandlerA>(
+            host,
+            sp,
+            typeof(TestEnvelope)
+        );
+
+        await host.PublishAsync(new TestEnvelope { Payload = "late" }, null, CancellationToken.None)
+            .ConfigureAwait(true);
+
+        errors
+            .Should()
+            .ContainSingle()
+            .Which.Should()
+            .BeOfType<ThrowAfterNextBehavior.BoomException>();
+        recorder.Entries.Should().Equal("A:late");
+    }
+
+    [Fact]
     public async Task FailClosed_ABehaviorThatCannotActivate_RefusesTheEnvelope()
     {
         Recorder recorder = new();

@@ -60,8 +60,8 @@ public sealed class RpgIntentLimitBehavior(
             return;
         }
 
-        // Caught here: a behavior that throws is skipped by the pipeline, which would hand the
-        // refused packet to its handler.
+        // Caught here: the command pipeline treats a behavior that throws as a refusal, and a reply
+        // that failed to send must not be reported as a gate failure — the packet was refused already.
         try
         {
             await grainFactory

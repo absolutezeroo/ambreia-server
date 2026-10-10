@@ -8,8 +8,8 @@
   </PropertyGroup>
   <ItemGroup>
     <!-- The host's own dependency on ASP.NET Core, because its plugins have one and cannot bring it.
-         The dashboard and the web API are byte-loaded, and every Microsoft.AspNetCore.* they ask
-         for falls through to the default context, which only holds the shared frameworks named in
+         The web API is byte-loaded, and every Microsoft.AspNetCore.* it asks for falls through to
+         the default context, which only holds the shared frameworks named in
          Vortex.Main.runtimeconfig.json. Vortex.WebApi used to put Microsoft.AspNetCore.App there as
          a project reference; making it a plugin took it out, the runtimeconfig went back to
          Microsoft.NETCore.App alone, and both plugins died on
@@ -64,12 +64,6 @@
     <ProjectReference Include="..\Vortex.Logging\Vortex.Logging.csproj" />
     <ProjectReference Include="..\Vortex.Messages\Vortex.Messages.csproj" />
     <ProjectReference Include="..\Vortex.Networking\Vortex.Networking.csproj" />
-    <!-- Vortex.Dashboard.API is deliberately NOT referenced, and must not be. It is a loadable
-         plugin now, and ByteLoadingAlc hands any assembly the host already holds to the default
-         context — so a reference here would quietly make the dashboard impossible to unload, which
-         is the entire point of it being a plugin. It is built by the solution and lands in the
-         plugin folder from its own csproj. DashboardUnloadabilityTests is what notices if this
-         comes back. -->
     <ProjectReference Include="..\Vortex.Observability\Vortex.Observability.csproj" />
     <ProjectReference Include="..\Vortex.PacketHandlers\Vortex.PacketHandlers.csproj" />
     <ProjectReference Include="..\Vortex.Pipeline\Vortex.Pipeline.csproj" />
@@ -79,9 +73,11 @@
     <ProjectReference Include="..\Vortex.Protocol\Vortex.Protocol.csproj" />
     <ProjectReference Include="..\Vortex.Revisions\Vortex.Revisions.csproj" />
     <ProjectReference Include="..\Vortex.Rooms\Vortex.Rooms.csproj" />
-    <!-- Vortex.WebApi is deliberately NOT referenced either, for the dashboard's reason above: it is
-         a loadable plugin, and a reference would make it impossible to unload.
-         DashboardUnloadabilityTests measures both plugins and notices if this comes back. -->
+    <!-- Vortex.WebApi is deliberately NOT referenced, and must not be. It is a loadable plugin, and
+         ByteLoadingAlc hands any assembly the host already holds to the default context — so a
+         reference here would quietly make it impossible to unload, which is the entire point of it
+         being a plugin. It is built by the solution and lands in the plugin folder from its own
+         csproj. -->
     <ProjectReference Include="..\Vortex.Runtime\Vortex.Runtime.csproj" />
   </ItemGroup>
 </Project>

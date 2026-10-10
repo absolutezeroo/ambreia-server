@@ -30,8 +30,10 @@ public sealed partial class DockerfileTests
 
         referenced.Should().NotBeEmpty("the Dockerfile publishes at least the host");
 
+        // The .csproj, not the folder: a deleted project leaves bin/ and obj/ behind on a developer's
+        // machine, and the folder test would pass while the image still fails to build.
         referenced
-            .Where(project => !Directory.Exists(Path.Combine(root, project)))
+            .Where(project => !File.Exists(Path.Combine(root, project, project + ".csproj")))
             .Should()
             .BeEmpty("a project the Dockerfile references must exist, or `docker build` fails");
     }
