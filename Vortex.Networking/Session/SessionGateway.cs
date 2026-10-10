@@ -24,10 +24,12 @@ public sealed partial class SessionGateway(
     IGrainFactory grainFactory,
     IEventPublisher events,
     IOptions<NetworkingConfig> networkingConfig,
-    ILogger<SessionGateway> logger
+    ILogger<SessionGateway> logger,
+    TimeProvider? time = null
 ) : ISessionGateway
 {
     private readonly IGrainFactory _grainFactory = grainFactory;
+    private readonly TimeProvider _time = time ?? TimeProvider.System;
     private readonly IEventPublisher _events = events;
     private readonly NetworkingConfig _networkingConfig = networkingConfig.Value;
     private readonly ILogger<SessionGateway> _logger = logger;
@@ -100,6 +102,7 @@ public sealed partial class SessionGateway(
         }
 
         _sessions[key] = ctx;
+        ArmHandshakeDeadline(key);
 
         _sessionObservers.AddOrUpdate(
             key,
@@ -183,6 +186,7 @@ public sealed partial class SessionGateway(
         // the gate, and again after registering) and stands down instead of mapping a closed
         // session to the player.
         _sessions.TryRemove(key, out _);
+        DisarmHandshakeDeadline(key);
 
         // The mapping is read under the gate, never before it: a login holding the gate may be
         // about to write it, and a read taken outside would miss it and leave the player mapped to

@@ -38,6 +38,19 @@ public class NetworkingConfig
     /// </summary>
     public TimeSpan PongTimeout { get; init; } = TimeSpan.Zero;
 
+    /// <summary>
+    ///     How long a connection may stay without an account — no accepted SSO ticket — before it
+    ///     is closed. <see cref="TimeSpan.Zero" /> disables it.
+    /// </summary>
+    /// <remarks>
+    ///     A real client sends its ticket within a second of connecting. A socket that never does is
+    ///     a scanner, a half-open connection or an attacker holding a slot: with nothing closing it,
+    ///     a few thousand of them fill <see cref="MaxTotalSessions" /> and the per-address cap for
+    ///     good. Only the pre-account phase is bounded here; an authenticated session's silence is
+    ///     the heartbeat's business (see <see cref="PongTimeout" />).
+    /// </remarks>
+    public TimeSpan HandshakeTimeout { get; init; } = TimeSpan.FromSeconds(10);
+
     public int MaxPacketBodyBytes { get; init; } = DefaultMaxPacketBodyBytes;
 
     /// <summary>

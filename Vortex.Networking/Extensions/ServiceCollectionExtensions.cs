@@ -1,4 +1,6 @@
+using System;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Hosting;
 using Vortex.Networking.Configuration;
 using Vortex.Networking.Revisions;
@@ -21,6 +23,8 @@ public static class ServiceCollectionExtensions
 
         services.AddSingleton<INetworkManager, NetworkManager>();
         services.AddSingleton<IRevisionManager, RevisionManager>();
+        // The clock the gateway's handshake deadline runs on; a test hands it a manual one.
+        services.TryAddSingleton(TimeProvider.System);
         services.AddSingleton<ISessionGateway, SessionGateway>();
 
         return services;
