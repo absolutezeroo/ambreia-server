@@ -104,6 +104,11 @@ USER app
 # answers an HTTP GET with nothing an orchestrator can read — probing it marks a healthy hotel as
 # broken. `--fail` makes curl exit non-zero on a 4xx/5xx instead of happily reporting an error page.
 #
+# `/health` is LIVENESS: 200 while the process answers, whatever the database does. A probe that
+# fails here restarts the container, and a restart cures a dead process, not a database that is
+# away. Readiness — listeners open, not draining, database reachable — is `/ready`, for the proxy
+# or load balancer that decides whether to route players here; it is deliberately not probed here.
+#
 # start-period is generous on purpose: the host loads the whole catalogue before it listens —
 # 55 000 furniture definitions and 2 100 catalogue pages on the tree this was written against, which
 # took ~9 seconds. A short period fails the first probe and rolls back a deployment that was fine.

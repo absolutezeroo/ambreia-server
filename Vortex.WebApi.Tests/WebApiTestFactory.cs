@@ -123,6 +123,7 @@ internal sealed class WebApiTestFactory : IAsyncDisposable
         builder.Services.AddSingleton<IOptions<WebApiConfig>>(Options.Create(config));
 
         builder.Services.AddSingleton<RequiredServiceGuard>();
+        builder.Services.AddSingleton<IHostReadiness>(Readiness);
 
         DbContexts = new TestDbContextFactory(
             new DbContextOptionsBuilder<VortexDbContext>()
@@ -160,6 +161,9 @@ internal sealed class WebApiTestFactory : IAsyncDisposable
     }
 
     public WebApiSessionStore Sessions { get; }
+
+    /// <summary>The host's readiness as the routes see it; not ready until a test says so.</summary>
+    public HostReadiness Readiness { get; } = new();
 
     /// <summary>The character grains the routes reach.</summary>
     public FakeCharacters Characters { get; } = new();

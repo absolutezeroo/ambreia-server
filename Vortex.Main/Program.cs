@@ -145,6 +145,9 @@ internal class Program
         builder.Services.AddHostPlugin<PacketHandlersModule>(builder);
 
         builder.Services.AddSingleton<AssemblyProcessor>();
+        // Flipped by VortexEmulator (listeners open → ready; stopping → not), read by /ready.
+        builder.Services.AddSingleton<HostReadiness>();
+        builder.Services.AddSingleton<IHostReadiness>(sp => sp.GetRequiredService<HostReadiness>());
         builder.Services.AddSingleton<IConsoleCommandDispatcher, ConsoleCommandDispatcher>();
         builder.Services.AddSingleton<IMaintenanceAnnouncer, MaintenanceAnnouncer>();
         builder

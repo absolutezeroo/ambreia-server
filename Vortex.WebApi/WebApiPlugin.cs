@@ -100,6 +100,7 @@ public sealed class WebApiPlugin : IVortexPlugin
         services.UseHostService<IHostApplicationLifetime>();
 
         // Data and the live server.
+        services.UseHostService<IHostReadiness>();
         services.UseHostService<IDbContextFactory<VortexDbContext>>();
         services.UseHostService<IGrainFactory>();
         services.UseHostService<IEventPublisher>();

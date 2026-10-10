@@ -270,6 +270,7 @@ internal sealed class WebApiWebHost(
         services.AddSingleton(rootServices.GetRequiredService<IWebApiAuthService>());
         services.AddSingleton(rootServices.GetRequiredService<IWebApiPlayerService>());
         services.AddSingleton(rootServices.GetRequiredService<RequiredServiceGuard>());
+        services.AddSingleton(rootServices.GetRequiredService<IHostReadiness>());
         services.AddSingleton(rootServices.GetRequiredService<IZoneEditorService>());
         services.AddSingleton(rootServices.GetRequiredService<IRpgContentService>());
         services.AddSingleton(rootServices.GetRequiredService<IPermissionService>());

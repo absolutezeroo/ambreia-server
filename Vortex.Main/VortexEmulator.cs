@@ -22,7 +22,8 @@ public class VortexEmulator(
     IGrainFactory grainFactory,
     IOptions<OrleansHostConfig> orleansConfig,
     IMaintenanceAnnouncer announcer,
-    IOptions<ShutdownConfig> shutdownConfig
+    IOptions<ShutdownConfig> shutdownConfig,
+    HostReadiness readiness
 ) : IHostedLifecycleService
 {
     private readonly ILogger<VortexEmulator> _logger = logger;
@@ -51,6 +52,10 @@ public class VortexEmulator(
             }
 
             await _networkManager.StartAsync(ct).ConfigureAwait(false);
+
+            // The silo and the reference data came first (hosted services start in order), the
+            // listeners are open: a player routed here now gets in.
+            readiness.MarkReady();
         }
         catch (OperationCanceledException)
         {
@@ -153,6 +158,10 @@ public class VortexEmulator(
     /// </remarks>
     public async Task StoppingAsync(CancellationToken ct)
     {
+        // First thing, notice or not: the proxy stops routing new players here while the ones
+        // inside are warned and the state drains.
+        readiness.MarkStopping();
+
         int notice = _shutdownConfig.NoticeMinutes;
 
         if (notice <= 0)

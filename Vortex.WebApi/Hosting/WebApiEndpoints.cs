@@ -52,9 +52,32 @@ internal static partial class WebApiEndpoints
             .WithSummary("Server liveness probe used by the onboarding client.")
             .WithTags(TagPublic);
 
+        // Liveness: is the process answering? Always 200, so an orchestrator restarts the hotel for
+        // a dead process and nothing else — a database away or a start still in progress is not
+        // cured by a restart. This is what the container HEALTHCHECK probes.
         app.MapGet(
                 "/health",
+                Ok<HealthResponse> (RequiredServiceGuard guard) =>
+                    TypedResults.Ok(
+                        new HealthResponse(
+                            guard.IsDegraded ? "Degraded" : "Healthy",
+                            guard.DegradedServices
+                        )
+                    )
+            )
+            .WithName("Health")
+            .WithSummary(
+                "Liveness probe: 200 while the process answers; Degraded when an optional service "
+                    + "failed to start (OPS-02). Never asks the database — see /ready."
+            )
+            .WithTags(TagPublic);
+
+        // Readiness: can a player be routed here? Listeners open, host not draining, database
+        // reachable. This is what a proxy or load balancer probes before sending traffic.
+        app.MapGet(
+                "/ready",
                 async (
+                    IHostReadiness readiness,
                     RequiredServiceGuard guard,
                     IDbContextFactory<VortexDbContext> dbCtxFactory,
                     CancellationToken ct
@@ -72,18 +95,16 @@ internal static partial class WebApiEndpoints
                     }
                     catch
                     {
-                        // A probe failure is a health signal, not an error to propagate - report it
-                        // as part of the response body instead of a 500.
+                        // A probe failure is a readiness signal, not an error to propagate - report
+                        // it as part of the response body instead of a 500.
                         databaseUp = false;
                     }
 
-                    string status =
-                        !databaseUp ? "Unhealthy"
-                        : guard.IsDegraded ? "Degraded"
-                        : "Healthy";
+                    bool ready = readiness.IsReady && databaseUp;
 
-                    HealthResponse health = new(
-                        status,
+                    ReadinessResponse body = new(
+                        ready ? "Ready" : "NotReady",
+                        readiness.Blocker ?? (databaseUp ? null : "database"),
                         databaseUp ? "up" : "down",
                         guard.DegradedServices
                     );
@@ -94,21 +115,21 @@ internal static partial class WebApiEndpoints
                     // operations surface no generated client reads, so a declaration is the right
                     // amount of truth for it.
                     return Results.Json(
-                        health,
-                        statusCode: databaseUp
+                        body,
+                        statusCode: ready
                             ? StatusCodes.Status200OK
                             : StatusCodes.Status503ServiceUnavailable
                     );
                 }
             )
-            .WithName("Health")
+            .WithName("Ready")
             .WithSummary(
-                "Liveness/readiness probe: database connectivity and RequiredServiceGuard's "
-                    + "degraded-service state (OPS-02)."
+                "Readiness probe: 200 when the listeners are open, the host is not draining and the "
+                    + "database answers; 503 with the blocker otherwise."
             )
             .WithTags(TagPublic)
-            .Produces<HealthResponse>()
-            .Produces<HealthResponse>(StatusCodes.Status503ServiceUnavailable);
+            .Produces<ReadinessResponse>()
+            .Produces<ReadinessResponse>(StatusCodes.Status503ServiceUnavailable);
     }
 
     private static void MapAuthentication(WebApplication app)

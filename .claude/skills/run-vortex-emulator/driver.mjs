@@ -436,6 +436,10 @@ async function cmdPing() {
 async function cmdHealth() {
   const health = await request(`http://127.0.0.1:${WEBAPI}/health`);
   log(`GET :${WEBAPI}/health -> ${health.status} ${health.body}`);
+  // Liveness above (always 200 while the process answers); readiness here (503 until the
+  // listeners are open and the database answers, and again while the host drains).
+  const ready = await request(`http://127.0.0.1:${WEBAPI}/ready`);
+  log(`GET :${WEBAPI}/ready -> ${ready.status} ${ready.body}`);
   const hello = await request(`http://127.0.0.1:${WEBAPI}/api/public/info/hello`);
   log(`GET :${WEBAPI}/api/public/info/hello -> ${hello.status} ${hello.body}`);
 }

@@ -28,8 +28,10 @@ public sealed class WebApiEndpointsTests
         (await ReadJsonAsync(response)).GetProperty("status").GetString().Should().Be("ok");
     }
 
+    /// <summary>Liveness answers for the process alone: a hotel still starting, or one whose
+    /// database is away, is alive and must not be restarted for it.</summary>
     [Fact]
-    public async Task Health_WithDatabaseReachableAndNotDegraded_ReturnsHealthy()
+    public async Task Health_IsLiveness_AnswersHealthyBeforeTheHostIsReady_WithoutTheDatabase()
     {
         await using WebApiTestFactory factory = new WebApiTestFactory();
 
@@ -39,7 +41,51 @@ public sealed class WebApiEndpointsTests
 
         JsonElement body = await ReadJsonAsync(response);
         body.GetProperty("status").GetString().Should().Be("Healthy");
+        body.TryGetProperty("database", out _)
+            .Should()
+            .BeFalse("liveness does not ask the database");
+    }
+
+    [Fact]
+    public async Task Ready_BeforeTheHostIsReady_Answers503_AndSaysWhy()
+    {
+        await using WebApiTestFactory factory = new WebApiTestFactory();
+
+        HttpResponseMessage response = await factory.Client.GetAsync("/ready");
+
+        response.StatusCode.Should().Be(HttpStatusCode.ServiceUnavailable);
+
+        JsonElement body = await ReadJsonAsync(response);
+        body.GetProperty("status").GetString().Should().Be("NotReady");
+        body.GetProperty("blocker").GetString().Should().Be("starting");
+    }
+
+    [Fact]
+    public async Task Ready_OnceTheListenersAreOpen_Answers200_WithTheDatabaseUp()
+    {
+        await using WebApiTestFactory factory = new WebApiTestFactory();
+        factory.Readiness.MarkReady();
+
+        HttpResponseMessage response = await factory.Client.GetAsync("/ready");
+
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+
+        JsonElement body = await ReadJsonAsync(response);
+        body.GetProperty("status").GetString().Should().Be("Ready");
         body.GetProperty("database").GetString().Should().Be("up");
+    }
+
+    [Fact]
+    public async Task Ready_WhileTheHostDrains_Answers503()
+    {
+        await using WebApiTestFactory factory = new WebApiTestFactory();
+        factory.Readiness.MarkReady();
+        factory.Readiness.MarkStopping();
+
+        HttpResponseMessage response = await factory.Client.GetAsync("/ready");
+
+        response.StatusCode.Should().Be(HttpStatusCode.ServiceUnavailable);
+        (await ReadJsonAsync(response)).GetProperty("blocker").GetString().Should().Be("stopping");
     }
 
     [Fact]

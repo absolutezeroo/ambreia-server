@@ -60,7 +60,7 @@ node .claude/skills/run-vortex-emulator/driver.mjs smoke
 | `status` | pids and the ports |
 | `stop` | stops **only** an emulator this driver started; refuses otherwise — the owner stops theirs |
 | `logs [n]` | tail of the console log of an emulator this driver started |
-| `health` | `/health`, `/api/public/info/hello` |
+| `health` | `/health` (liveness, 200 while the process answers), `/ready` (readiness: 503 until the listeners are open and the database answers), `/api/public/info/hello` |
 | `ping` | raw frame on :40000 — `InitDiffieHandshake` (2022) out, 3309 back |
 | `play` | the four steps above |
 | `zone` | publishes `proof_zone` through `/api/editor` (owner role granted to the throwaway account on the target database), enters it (decor in `Objects`), republishes while inside and expects `RoomForward`. Point it at a scratch database: `VORTEX__Vortex__Database__ConnectionString` is read by both the emulator and the driver |

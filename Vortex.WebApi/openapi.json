@@ -784,7 +784,7 @@
         "tags": [
           "Public"
         ],
-        "summary": "Liveness/readiness probe: database connectivity and RequiredServiceGuard\u0027s degraded-service state (OPS-02).",
+        "summary": "Liveness probe: 200 while the process answers; Degraded when an optional service failed to start (OPS-02). Never asks the database \u2014 see /ready.",
         "operationId": "Health",
         "responses": {
           "200": {
@@ -796,13 +796,34 @@
                 }
               }
             }
+          }
+        }
+      }
+    },
+    "/ready": {
+      "get": {
+        "tags": [
+          "Public"
+        ],
+        "summary": "Readiness probe: 200 when the listeners are open, the host is not draining and the database answers; 503 with the blocker otherwise.",
+        "operationId": "Ready",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReadinessResponse"
+                }
+              }
+            }
           },
           "503": {
             "description": "Service Unavailable",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/HealthResponse"
+                  "$ref": "#/components/schemas/ReadinessResponse"
                 }
               }
             }
@@ -1166,16 +1187,12 @@
       },
       "HealthResponse": {
         "required": [
-          "database",
           "degradedServices",
           "status"
         ],
         "type": "object",
         "properties": {
           "status": {
-            "type": "string"
-          },
-          "database": {
             "type": "string"
           },
           "degradedServices": {
@@ -1220,6 +1237,33 @@
           "isValid": {
             "type": "boolean",
             "readOnly": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "ReadinessResponse": {
+        "required": [
+          "database",
+          "degradedServices",
+          "status"
+        ],
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "string"
+          },
+          "blocker": {
+            "type": "string",
+            "nullable": true
+          },
+          "database": {
+            "type": "string"
+          },
+          "degradedServices": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
           }
         },
         "additionalProperties": false
