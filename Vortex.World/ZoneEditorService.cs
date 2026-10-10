@@ -42,29 +42,113 @@ public sealed partial class ZoneEditorService(
             .OrderBy(z => z.Key)
             .ToListAsync(ct)
             .ConfigureAwait(false);
-        Dictionary<int, int> latest = await ctx
+        // ponytail: every newest document is read and parsed on each listing; fine for the tens of
+        // zones a world has, denormalise type/size into `zones` at save if it ever shows.
+        var latest = await ctx
             .ZoneVersions.AsNoTracking()
-            .GroupBy(v => v.ZoneEntityId)
-            .Select(g => new { Zone = g.Key, Version = g.Max(v => v.Version) })
-            .ToDictionaryAsync(x => x.Zone, x => x.Version, ct)
+            .Where(v =>
+                v.Version
+                == ctx.ZoneVersions.Where(w => w.ZoneEntityId == v.ZoneEntityId).Max(w => w.Version)
+            )
+            .Select(v => new
+            {
+                v.ZoneEntityId,
+                v.Version,
+                v.Document,
+                v.AuthorAccountId,
+                v.CreatedAt,
+            })
+            .ToDictionaryAsync(v => v.ZoneEntityId, ct)
             .ConfigureAwait(false);
         Dictionary<int, string> names = await ctx
             .Rooms.AsNoTracking()
             .Where(r => zones.Select(z => z.RoomEntityId).Contains(r.Id))
             .ToDictionaryAsync(r => r.Id, r => r.Name ?? string.Empty, ct)
             .ConfigureAwait(false);
+        Dictionary<int, string> authors = await AuthorNamesAsync(
+                ctx,
+                [.. latest.Values.Select(v => v.AuthorAccountId).Distinct()],
+                ct
+            )
+            .ConfigureAwait(false);
 
         return
         [
-            .. zones.Select(z => new ZoneSummary(
-                z.Key,
-                names.GetValueOrDefault(z.RoomEntityId, string.Empty),
-                z.RoomEntityId,
-                z.PublishedVersion,
-                latest.GetValueOrDefault(z.Id),
-                LockHolder(z)
-            )),
+            .. zones.Select(z =>
+            {
+                ZoneSummary summary = new(
+                    z.Key,
+                    names.GetValueOrDefault(z.RoomEntityId, string.Empty),
+                    z.RoomEntityId,
+                    z.PublishedVersion,
+                    0,
+                    LockHolder(z)
+                );
+
+                if (!latest.TryGetValue(z.Id, out var version))
+                {
+                    return summary;
+                }
+
+                summary = summary with
+                {
+                    LatestVersion = version.Version,
+                    AuthorName = authors.GetValueOrDefault(
+                        version.AuthorAccountId,
+                        $"#{version.AuthorAccountId}"
+                    ),
+                    ModifiedAt = version.CreatedAt,
+                };
+
+                ZoneDocument? doc = TryParse(version.Document);
+
+                return doc is null
+                    ? summary
+                    : summary with
+                    {
+                        Type = doc.Settings.Type.ToString(),
+                        Region = doc.Settings.Region,
+                        Width = doc.Floor.Width,
+                        Length = doc.Floor.Length,
+                        Template = doc.Settings.Template,
+                    };
+            }),
         ];
+    }
+
+    /// <summary>An account has no name of its own: its first character's stands for it.</summary>
+    private static async Task<Dictionary<int, string>> AuthorNamesAsync(
+        VortexDbContext ctx,
+        int[] accounts,
+        CancellationToken ct
+    )
+    {
+        var players = await ctx
+            .Players.AsNoTracking()
+            .Where(p =>
+                p.PlayerAccountEntityId != null && accounts.Contains(p.PlayerAccountEntityId.Value)
+            )
+            .OrderBy(p => p.Id)
+            .Select(p => new { Account = p.PlayerAccountEntityId!.Value, p.Name })
+            .ToListAsync(ct)
+            .ConfigureAwait(false);
+
+        return players.GroupBy(p => p.Account).ToDictionary(g => g.Key, g => g.First().Name);
+    }
+
+    /// <summary>The list still shows a zone whose newest document no longer parses.</summary>
+    private ZoneDocument? TryParse(string json)
+    {
+        try
+        {
+            return ZoneJson.Deserialize(json);
+        }
+        catch (System.Text.Json.JsonException e)
+        {
+            logger.LogWarning(e, "A zone document does not parse; listed without its settings");
+
+            return null;
+        }
     }
 
     public async Task<ZoneSummary> CreateAsync(

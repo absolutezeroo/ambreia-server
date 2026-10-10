@@ -321,6 +321,36 @@ public sealed class ZoneEditorServiceTests : IAsyncLifetime
         result.Findings.Should().Contain(f => f.Severity == ZoneSeverity.Error);
     }
 
+    [Fact]
+    public async Task TheList_ShowsTheNewestVersionsSettingsSizeAndAuthor()
+    {
+        await CreateLockedAsync();
+        await _service.SaveAsync("village", Json(), Author, "", default);
+
+        ZoneSummary zone = (await _service.ListAsync(default)).Single();
+        ZoneFloor floor = ZoneSamples.Minimal().Floor;
+
+        zone.LatestVersion.Should().Be(1);
+        zone.Type.Should().Be("World");
+        (zone.Width, zone.Length).Should().Be((floor.Width, floor.Length));
+        zone.Template.Should().BeFalse();
+        // No character on the author's account: the id stands for it.
+        zone.AuthorName.Should().Be($"#{Author}");
+        zone.ModifiedAt.Should().NotBeNull();
+    }
+
+    [Fact]
+    public async Task AZoneNeverSaved_IsListedWithoutSettings()
+    {
+        await _service.CreateAsync("village", "Village", Author, null, default);
+
+        ZoneSummary zone = (await _service.ListAsync(default)).Single();
+
+        (zone.LatestVersion, zone.Type, zone.Width, zone.AuthorName, zone.ModifiedAt)
+            .Should()
+            .Be((0, "", 0, "", (DateTime?)null));
+    }
+
     private async Task CreateLockedAsync()
     {
         await _service.CreateAsync("village", "Village", Author, null, default);

@@ -1335,10 +1335,16 @@
       },
       "ZoneSummary": {
         "required": [
+          "authorName",
           "key",
           "latestVersion",
+          "length",
           "name",
-          "roomId"
+          "region",
+          "roomId",
+          "template",
+          "type",
+          "width"
         ],
         "type": "object",
         "properties": {
@@ -1364,6 +1370,31 @@
           "lockedByAccountId": {
             "type": "integer",
             "format": "int32",
+            "nullable": true
+          },
+          "type": {
+            "type": "string"
+          },
+          "region": {
+            "type": "string"
+          },
+          "width": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "length": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "template": {
+            "type": "boolean"
+          },
+          "authorName": {
+            "type": "string"
+          },
+          "modifiedAt": {
+            "type": "string",
+            "format": "date-time",
             "nullable": true
           }
         },
