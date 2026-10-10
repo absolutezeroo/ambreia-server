@@ -6,8 +6,11 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using SuperSocket.ProtoBase;
 using SuperSocket.Server.Abstractions;
+using SuperSocket.Server.Abstractions.Session;
 using SuperSocket.WebSocket.Server;
 using Vortex.Crypto;
+using Vortex.Networking.Configuration;
+using Vortex.Networking.Session;
 using Vortex.Primitives.Crypto;
 using Vortex.Primitives.Networking;
 
@@ -19,7 +22,8 @@ namespace Vortex.Networking.Ws;
 public sealed class WebSocketSessionContext(
     WebSocketSession session,
     IPackageEncoder<OutgoingPackage> packageEncoder,
-    ILogger<WebSocketSessionContext> logger
+    ILogger<WebSocketSessionContext> logger,
+    NetworkingConfig networking
 ) : ISessionContext, IDisposable
 {
     private readonly SemaphoreSlim _sendSemaphore = new(1, 1);
@@ -29,8 +33,15 @@ public sealed class WebSocketSessionContext(
     public DateTime LastActivityUtc { get; private set; } = DateTime.UtcNow;
     public CancellationTokenSource HeartbeatCts { get; } = new();
 
+    // The client's address, not the proxy's, when a listed proxy spoke PROXY protocol or set
+    // X-Forwarded-For on the handshake (audit P0-4). Read once: the handshake does not change.
     public string? RemoteIpAddress { get; } =
-        session.RemoteEndPoint is IPEndPoint ipEndpoint ? ipEndpoint.Address?.ToString() : null;
+        ClientAddress.Resolve(
+            (session.RemoteEndPoint as IPEndPoint)?.Address,
+            ((IAppSession)session).Connection?.ProxyInfo?.SourceIPAddress,
+            session.HttpHeader?.Items["X-Forwarded-For"],
+            ClientAddress.ParseTrusted(networking.TrustedProxies)
+        );
 
     public IRc4Engine? CryptoIn { get; private set; }
     public IRc4Engine? CryptoOut { get; private set; }

@@ -51,6 +51,20 @@ public class NetworkingConfig
     /// </remarks>
     public TimeSpan HandshakeTimeout { get; init; } = TimeSpan.FromSeconds(10);
 
+    /// <summary>
+    ///     The reverse proxies whose word about the client's address is taken: PROXY protocol v1/v2
+    ///     on either listener (SuperSocket's <c>serverOptions:&lt;Server&gt;:enableProxyProtocol</c>
+    ///     must be on for the header to be read), <c>X-Forwarded-For</c> on the WebSocket handshake.
+    ///     Literal IP addresses. Empty — the default — means the transport address is the client's.
+    /// </summary>
+    /// <remarks>
+    ///     Behind the TLS proxy the README recommends, every connection comes from the proxy's
+    ///     address: the per-address cap (<see cref="MaxSessionsPerIpAddress" />) would hold the whole
+    ///     hotel to 32 sessions and the audit would name one client. The list is what keeps a stranger
+    ///     from writing a PROXY header or a header of their own and borrowing someone's address.
+    /// </remarks>
+    public string[] TrustedProxies { get; init; } = [];
+
     public int MaxPacketBodyBytes { get; init; } = DefaultMaxPacketBodyBytes;
 
     /// <summary>

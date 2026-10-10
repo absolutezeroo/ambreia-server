@@ -1,5 +1,6 @@
 using System;
 using System.Buffers;
+using System.Collections.Generic;
 using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
@@ -8,6 +9,7 @@ using SuperSocket.Connection;
 using SuperSocket.ProtoBase;
 using SuperSocket.Server;
 using Vortex.Crypto;
+using Vortex.Networking.Configuration;
 using Vortex.Primitives.Crypto;
 using Vortex.Primitives.Networking;
 using Vortex.Runtime;
@@ -16,19 +18,30 @@ namespace Vortex.Networking.Session;
 
 public class SessionContext(
     IPackageEncoder<OutgoingPackage> packageEncoder,
-    ILogger<SessionContext> logger
+    ILogger<SessionContext> logger,
+    NetworkingConfig networking
 ) : AppSession(), ISessionContext
 {
     private readonly IPackageEncoder<OutgoingPackage> _packageEncoder = packageEncoder;
     private readonly ILogger<SessionContext> _logger = logger;
+    private readonly IReadOnlySet<IPAddress> _trustedProxies = ClientAddress.ParseTrusted(
+        networking.TrustedProxies
+    );
     private readonly SemaphoreSlim _sendSemaphore = new(1, 1);
 
     public SessionKey SessionKey { get; private set; } = string.Empty;
     public string RevisionId { get; private set; } = "Default";
     public DateTime LastActivityUtc { get; private set; } = DateTime.UtcNow;
     public CancellationTokenSource HeartbeatCts { get; } = new();
+
+    // The client's address, not the proxy's, when a listed proxy spoke PROXY protocol (audit P0-4).
     public string? RemoteIpAddress =>
-        Connection?.RemoteEndPoint is IPEndPoint ipEndpoint ? ipEndpoint.Address?.ToString() : null;
+        ClientAddress.Resolve(
+            (Connection?.RemoteEndPoint as IPEndPoint)?.Address,
+            Connection?.ProxyInfo?.SourceIPAddress,
+            forwardedFor: null,
+            _trustedProxies
+        );
     public IRc4Engine? CryptoIn { get; private set; }
     public IRc4Engine? CryptoOut { get; private set; }
 

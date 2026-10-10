@@ -170,7 +170,8 @@ public sealed class NetworkManager(
                 WebSocketSessionContext context = new(
                     wsSession,
                     _packageEncoder,
-                    _loggerFactory.CreateLogger<WebSocketSessionContext>()
+                    _loggerFactory.CreateLogger<WebSocketSessionContext>(),
+                    _config
                 );
 
                 context.SetRevisionId(_revisionManager.DefaultRevisionId);
