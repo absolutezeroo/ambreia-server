@@ -51,7 +51,12 @@ internal sealed class FakeZoneRuntime : IZoneRuntime
 
     public bool IsWalkable(int x, int y) => !Walls.Contains((x, y)) && x >= 0 && y >= 0;
 
-    public bool HasLineOfSight(int fromX, int fromY, int toX, int toY) => true;
+    /// <summary>Sight lines a wall cuts, either way.</summary>
+    public HashSet<((int X, int Y) From, (int X, int Y) To)> Blind { get; } = [];
+
+    public bool HasLineOfSight(int fromX, int fromY, int toX, int toY) =>
+        !Blind.Contains(((fromX, fromY), (toX, toY)))
+        && !Blind.Contains(((toX, toY), (fromX, fromY)));
 
     public HashSet<(int X, int Y)> HostileCells { get; } = [];
 

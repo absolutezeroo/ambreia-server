@@ -1,12 +1,14 @@
 using System.IO;
 using System.Linq;
 using FluentAssertions;
+using Microsoft.Extensions.Options;
 using Vortex.Hosting.Tests.Architecture;
 using Vortex.Primitives.Rpg.Content;
 using Vortex.Rpg.Content.Definitions;
 using Vortex.Rpg.Content.Kinds;
 using Vortex.Rpg.Content.Validation;
 using Vortex.Rpg.Monsters.Behaviors;
+using Vortex.Rpg.Monsters.Configuration;
 using Vortex.Rpg.Skills.Effects;
 using Xunit;
 
@@ -30,7 +32,13 @@ public sealed class ContentPackInRepoTests
             new ProgressionKind(),
             new ItemKind(),
             // The behaviors MonstersModule declares: a new shipped behavior is added here too.
-            new MonsterKind(new DeclaredBehaviors([new MeleeBehavior()])),
+            new MonsterKind(
+                new DeclaredBehaviors([
+                    new MeleeBehavior(),
+                    new RangedBehavior(Options.Create(new MonstersConfig())),
+                    new CasterBehavior(),
+                ])
+            ),
             // The effect rules SkillsModule declares: a new shipped effect is added here too.
             new SkillKind([
                 new DamageEffect(),

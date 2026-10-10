@@ -11,9 +11,9 @@ namespace Vortex.Rpg.Monsters.Tests;
 /// accepts — no second registration to forget.</summary>
 public sealed class DeclaredBehaviorsTests
 {
-    private sealed class Ranged : IMonsterBehavior
+    private sealed class Flying : IMonsterBehavior
     {
-        public string Key => "ranged";
+        public string Key => "flying";
 
         public void Think(MonsterBrain brain) { }
     }
@@ -23,13 +23,13 @@ public sealed class DeclaredBehaviorsTests
     {
         ServiceCollection services = new();
         new MonstersModule().ConfigureServices(services, Host.CreateApplicationBuilder());
-        services.AddSingleton<IMonsterBehavior, Ranged>();
+        services.AddSingleton<IMonsterBehavior, Flying>();
 
         using ServiceProvider provider = services.BuildServiceProvider();
 
         provider
             .GetRequiredService<IMonsterBehaviorKeys>()
             .Keys.Should()
-            .BeEquivalentTo(["melee", "ranged"]);
+            .BeEquivalentTo(["melee", "ranged", "caster", "flying"]);
     }
 }

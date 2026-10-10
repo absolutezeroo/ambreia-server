@@ -26,7 +26,10 @@ public sealed class MonstersModule : IHostPluginModule
             .ValidateOnStart();
         services.AddSingleton<IValidateOptions<MonstersConfig>, MonstersConfigValidator>();
 
+        // Spec M1a §5.3, M1c §4.3: the kinds it ships, by their key.
         services.AddSingleton<IMonsterBehavior, MeleeBehavior>();
+        services.AddSingleton<IMonsterBehavior, RangedBehavior>();
+        services.AddSingleton<IMonsterBehavior, CasterBehavior>();
         services.AddSingleton<IMonsterBehaviorKeys, DeclaredBehaviors>();
         services.AddSingleton<IZoneSimulationFactory, RpgZoneSimulationFactory>();
     }
