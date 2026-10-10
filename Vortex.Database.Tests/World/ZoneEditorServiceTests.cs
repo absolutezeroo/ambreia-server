@@ -378,7 +378,13 @@ public sealed class ZoneEditorServiceTests : IAsyncLifetime
 
         _service = new ZoneEditorService(
             new OptionsDbContextFactory(_options),
-            new ZoneValidator(defs, Options.Create(config)),
+            new ZoneValidator(
+                defs,
+                Options.Create(config),
+                null,
+                ShippedRules.Rules,
+                ShippedRules.Triggers
+            ),
             defs,
             Options.Create(config),
             new ZoneRoomReloader(id =>

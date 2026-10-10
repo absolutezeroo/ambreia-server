@@ -24,17 +24,15 @@ public sealed class ZoneValidatorTests
     [Fact]
     public void TheMinimalSample_IsValid() => Errors(ZoneSamples.Minimal()).Should().BeEmpty();
 
+    /// <summary>Its level rule now runs (spec Z1): only what waits for a system (an NPC template, a
+    /// loot table) is left unchecked.</summary>
     [Fact]
-    public void TheFullSample_HasOnlyDeferredAndInertWarnings()
+    public void TheFullSample_HasOnlyDeferredWarnings()
     {
         IReadOnlyList<ZoneFinding> findings = Validate(ZoneSamples.EveryLayer());
 
         findings.Where(f => f.Severity == ZoneSeverity.Error).Should().BeEmpty();
-        findings
-            .Select(f => f.Code)
-            .Distinct()
-            .Should()
-            .BeEquivalentTo(["UnresolvedReference", "InertUntilRpg"]);
+        findings.Select(f => f.Code).Distinct().Should().BeEquivalentTo(["UnresolvedReference"]);
     }
 
     [Fact]
@@ -259,10 +257,16 @@ public sealed class ZoneValidatorTests
             Definitions(),
             Options.Create(new WorldConfig { DecorBudget = 3 }),
             FakeProxy.Create<IRpgContentService>(call =>
-                call.Method.Name == nameof(IRpgContentService.GetMonsters)
-                    ? (IReadOnlyList<MonsterSummary>)monsters
-                    : null
-            )
+                call.Method.Name switch
+                {
+                    nameof(IRpgContentService.GetMonsters) => (IReadOnlyList<MonsterSummary>)
+                        monsters,
+                    nameof(IRpgContentService.GetItemIds) => (IReadOnlyList<string>)[],
+                    _ => null,
+                }
+            ),
+            ShippedRules.Rules,
+            ShippedRules.Triggers
         ).Validate(doc, Known);
 
     private static MonsterSummary Monster(string id, bool retired = false) =>

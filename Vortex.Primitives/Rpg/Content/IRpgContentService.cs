@@ -27,4 +27,7 @@ public interface IRpgContentService
 
     /// <summary>The classes a new character may take: those of the served content, not retired.</summary>
     public IReadOnlyList<ClassSummary> GetClasses();
+
+    /// <summary>The ids of the served items, not retired: what a zone's item rules may name.</summary>
+    public IReadOnlyList<string> GetItemIds();
 }

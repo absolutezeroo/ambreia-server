@@ -8,12 +8,22 @@ using Vortex.Primitives.World.Rules;
 namespace Vortex.World;
 
 /// <summary>
-/// The checks that follow what the server does with a zone at run time (plan phase 6): a trigger
-/// aims at what its type listens to, an action and a teleporter name what exists, RPG content is
-/// flagged inert, triggers teleporting into each other and Safe/PvP overlaps warn.
+/// The checks that follow what the server does with a zone at run time (plan phase 6, spec Z1 §9):
+/// a trigger aims at what its type listens to, an action and a teleporter name what exists, a rule
+/// or a trigger type no module of this server runs is flagged inert, triggers teleporting into each
+/// other and Safe/PvP overlaps warn, and a spawn that sleeps until a trigger wakes it is said so.
 /// </summary>
 internal static class ZoneRuntimeRules
 {
+    /// <summary>The trigger types the room fires itself; any other is a module's to declare.</summary>
+    private static readonly HashSet<ZoneTriggerType> RoomTriggers =
+    [
+        ZoneTriggerType.EnterZone,
+        ZoneTriggerType.LeaveZone,
+        ZoneTriggerType.Interact,
+        ZoneTriggerType.Timer,
+    ];
+
     /// <summary>The interactions ZoneInteractionModule knows; "" or null leaves the furni's logic.</summary>
     private static readonly HashSet<string> Interactions =
     [
@@ -25,15 +35,12 @@ internal static class ZoneRuntimeRules
         "use",
     ];
 
-    private static readonly HashSet<ZoneTriggerType> RpgTriggers =
-    [
-        ZoneTriggerType.MonsterKilled,
-        ZoneTriggerType.QuestState,
-        ZoneTriggerType.PlayerLevel,
-        ZoneTriggerType.ItemOwned,
-    ];
-
-    public static void Check(ZoneDocument d, IReadOnlySet<string> knownZones, List<ZoneFinding> f)
+    public static void Check(
+        ZoneDocument d,
+        IReadOnlySet<string> knownZones,
+        ZoneRuleVocabulary v,
+        List<ZoneFinding> f
+    )
     {
         HashSet<string> areas = [.. d.Zones.Select(z => z.Id)];
         Dictionary<string, ZoneDecorObject> decor = d
@@ -51,20 +58,34 @@ internal static class ZoneRuntimeRules
         ];
         string here = d.Settings.Id;
 
+        // What a MonsterKilled aims at, and what a SpawnGroup names: a spawn, its monster, its group.
+        HashSet<string> spawnTargets =
+        [
+            .. d.Spawns.Select(s => s.Id),
+            .. d.Spawns.Select(s => s.Monster),
+        ];
+        HashSet<string> spawnNames =
+        [
+            .. d.Spawns.Select(s => s.Id),
+            .. d.Spawns.Select(s => s.Group).OfType<string>(),
+        ];
+
         foreach (ZoneTrigger t in d.Triggers)
         {
-            CheckTarget(t, areas, decor, known, f);
+            CheckTarget(t, areas, decor, known, spawnTargets, v, f);
 
             foreach (ZoneCondition c in t.Conditions)
             {
-                CheckCondition(t.Id, c, areas, f);
+                CheckCondition(t.Id, c, areas, v, f);
             }
 
             foreach (ZoneAction a in t.Actions)
             {
-                CheckAction(t.Id, a, areas, decor, entries, here, knownZones, f);
+                CheckAction(t.Id, a, areas, decor, entries, here, knownZones, spawnNames, v, f);
             }
         }
+
+        CheckDormantSpawns(d, f);
 
         foreach (ZonePassage p in d.Passages)
         {
@@ -81,7 +102,7 @@ internal static class ZoneRuntimeRules
 
             foreach (ZoneCondition c in p.Conditions)
             {
-                CheckCondition(p.Id, c, areas, f);
+                CheckCondition(p.Id, c, areas, v, f);
             }
         }
 
@@ -102,9 +123,18 @@ internal static class ZoneRuntimeRules
         HashSet<string> areas,
         Dictionary<string, ZoneDecorObject> decor,
         HashSet<string> known,
+        HashSet<string> spawnTargets,
+        ZoneRuleVocabulary v,
         List<ZoneFinding> f
     )
     {
+        if (!RoomTriggers.Contains(t.Type) && !v.Raised.Contains(t.Type))
+        {
+            f.Add(Inert(t.Id, $"trigger {t.Type}"));
+
+            return;
+        }
+
         switch (t.Type)
         {
             case ZoneTriggerType.Timer:
@@ -148,8 +178,32 @@ internal static class ZoneRuntimeRules
 
                 break;
 
-            case var type when RpgTriggers.Contains(type):
-                f.Add(Inert(t.Id, $"trigger {type}"));
+            case ZoneTriggerType.MonsterKilled
+                when t.Target is null || !spawnTargets.Contains(t.Target):
+                f.Add(
+                    Error(
+                        "WrongTarget",
+                        t.Id,
+                        $"MonsterKilled listens to a spawn of this zone or its monster; '{t.Target}' is neither."
+                    )
+                );
+
+                break;
+
+            case ZoneTriggerType.PlayerLevel
+                when !int.TryParse(t.Target, out int level) || level < 2:
+                f.Add(
+                    Error(
+                        "WrongTarget",
+                        t.Id,
+                        $"PlayerLevel listens to a level reached, 2 or more, not '{t.Target}'."
+                    )
+                );
+
+                break;
+
+            case ZoneTriggerType.ItemOwned:
+                CheckItem(t.Id, t.Target ?? string.Empty, v, f);
 
                 break;
         }
@@ -159,9 +213,17 @@ internal static class ZoneRuntimeRules
         string owner,
         ZoneCondition c,
         HashSet<string> areas,
+        ZoneRuleVocabulary v,
         List<ZoneFinding> f
     )
     {
+        if (!v.Declared.Contains(c.GetType()))
+        {
+            f.Add(Inert(owner, $"condition {c.GetType().Name}, always false"));
+
+            return;
+        }
+
         switch (c)
         {
             case ZoneActiveCondition active when !areas.Contains(active.Zone):
@@ -169,13 +231,73 @@ internal static class ZoneRuntimeRules
 
                 break;
 
-            case PlayerLevelCondition
-            or QuestStateCondition
-            or HasItemCondition
-            or FactionCondition:
-                f.Add(Inert(owner, $"condition {c.GetType().Name}, always false"));
+            case PlayerLevelCondition level
+                when level.Min < 1 || level.Max != 0 && level.Max < level.Min:
+                f.Add(
+                    Error(
+                        "BadLevel",
+                        owner,
+                        $"A level from {level.Min} to {level.Max}: the least is 1, the most 0 (no cap) or not below it."
+                    )
+                );
 
                 break;
+
+            case HasItemCondition item:
+                CheckItem(owner, item.Item, v, f);
+
+                break;
+        }
+    }
+
+    /// <summary>An item a rule names is in the content; without content loaded it is not checked.</summary>
+    private static void CheckItem(
+        string owner,
+        string item,
+        ZoneRuleVocabulary v,
+        List<ZoneFinding> f
+    )
+    {
+        if (v.Items is null)
+        {
+            f.Add(
+                Warning(
+                    "UnresolvedReference",
+                    owner,
+                    $"item '{item}' is not checked until its system exists."
+                )
+            );
+        }
+        else if (!v.Items.Contains(item))
+        {
+            f.Add(Error("UnknownItem", owner, $"No item '{item}' in the content."));
+        }
+    }
+
+    /// <summary>Spec Z1 §6.1: the author sees which spawns appear only when a trigger wakes them.</summary>
+    private static void CheckDormantSpawns(ZoneDocument d, List<ZoneFinding> f)
+    {
+        HashSet<string> woken =
+        [
+            .. d
+                .Triggers.SelectMany(t => t.Actions)
+                .OfType<SpawnGroupAction>()
+                .Select(a => a.Spawn),
+        ];
+
+        foreach (
+            ZoneSpawn s in d.Spawns.Where(s =>
+                woken.Contains(s.Id) || s.Group is { } g && woken.Contains(g)
+            )
+        )
+        {
+            f.Add(
+                Warning(
+                    "DormantSpawn",
+                    s.Id,
+                    "This spawn sleeps until a SpawnGroup action wakes it: one wave, never respawned."
+                )
+            );
         }
     }
 
@@ -187,9 +309,18 @@ internal static class ZoneRuntimeRules
         HashSet<string> entries,
         string here,
         IReadOnlySet<string> knownZones,
+        HashSet<string> spawnNames,
+        ZoneRuleVocabulary v,
         List<ZoneFinding> f
     )
     {
+        if (!v.Declared.Contains(a.GetType()))
+        {
+            f.Add(Inert(owner, $"action {a.GetType().Name}"));
+
+            return;
+        }
+
         switch (a)
         {
             case ActivateZoneAction { Zone: var area } when !areas.Contains(area):
@@ -231,9 +362,14 @@ internal static class ZoneRuntimeRules
 
                 break;
 
-            case StartQuestAction
-            or SpawnGroupAction:
-                f.Add(Inert(owner, $"action {a.GetType().Name}"));
+            case SpawnGroupAction group when !spawnNames.Contains(group.Spawn):
+                f.Add(
+                    Error(
+                        "BrokenReference",
+                        owner,
+                        $"No spawn or spawn group '{group.Spawn}' in this zone."
+                    )
+                );
 
                 break;
         }
@@ -416,7 +552,11 @@ internal static class ZoneRuntimeRules
     }
 
     private static ZoneFinding Inert(string id, string what) =>
-        Warning("InertUntilRpg", id, $"The {what} has no effect until the RPG systems exist.");
+        Warning(
+            "InertUntilRpg",
+            id,
+            $"The {what} has no effect: no system of this server carries it out yet."
+        );
 
     private static ZoneFinding Error(string code, string? id, string message) =>
         new(ZoneSeverity.Error, code, id, message);

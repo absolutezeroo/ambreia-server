@@ -11,8 +11,9 @@ namespace Vortex.Rpg.Zones.Rules;
 /// <see cref="ZoneRuleServices.AddZoneFactsSource{T}"/>: how the zone reads it when the player
 /// enters, and which triggers a change of it sets off. The zone keeps the part and never looks
 /// inside: only the module's own conditions do. A singleton shared by every zone: no state.
+/// <see cref="IZoneTriggerSource.Raises"/> lists the trigger types its <see cref="Changes"/> give.
 /// </summary>
-public interface IZoneFactsSource
+public interface IZoneFactsSource : IZoneTriggerSource
 {
     /// <summary>The <see cref="ZoneFacts"/> record this source reads.</summary>
     public Type FactsType { get; }

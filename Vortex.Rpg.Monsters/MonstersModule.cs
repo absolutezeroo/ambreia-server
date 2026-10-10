@@ -2,6 +2,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
 using Vortex.Primitives.Plugins;
+using Vortex.Primitives.World.Layers;
 using Vortex.Rpg.Content.Rules;
 using Vortex.Rpg.Monsters.Behaviors;
 using Vortex.Rpg.Monsters.Configuration;
@@ -34,7 +35,9 @@ public sealed class MonstersModule : IHostPluginModule
         services.AddSingleton<IMonsterBehaviorKeys, DeclaredBehaviors>();
         services.AddSingleton<IZoneSimulationFactory, RpgZoneSimulationFactory>();
 
-        // Spec Z1 §6.1: the zone action that wakes this module's dormant spawns.
+        // Spec Z1 §6.1: the zone action that wakes this module's dormant spawns; §5.1, §9: the
+        // trigger its simulation raises when a monster dies.
         services.AddZoneAction<SpawnGroupExecutor>();
+        services.AddZoneTrigger(ZoneTriggerType.MonsterKilled);
     }
 }

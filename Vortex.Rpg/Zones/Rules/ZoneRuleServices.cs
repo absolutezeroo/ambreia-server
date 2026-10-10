@@ -1,5 +1,6 @@
 using System.Linq;
 using Microsoft.Extensions.DependencyInjection;
+using Vortex.Primitives.World.Layers;
 using Vortex.Primitives.World.Rules;
 
 namespace Vortex.Rpg.Zones.Rules;
@@ -51,9 +52,16 @@ public static class ZoneRuleServices
 
         services.AddSingleton<T>();
         services.AddSingleton<IZoneFactsSource>(sp => sp.GetRequiredService<T>());
+        services.AddSingleton<IZoneTriggerSource>(sp => sp.GetRequiredService<T>());
 
         return services;
     }
+
+    /// <summary>Trigger types the module raises from elsewhere than its facts (spec Z1 §9).</summary>
+    public static IServiceCollection AddZoneTrigger(
+        this IServiceCollection services,
+        params ZoneTriggerType[] types
+    ) => services.AddSingleton<IZoneTriggerSource>(new DeclaredZoneTriggers(types));
 
     private static bool Declared<T>(IServiceCollection services) =>
         services.Any(d => d.ServiceType == typeof(T));

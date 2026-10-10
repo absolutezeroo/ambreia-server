@@ -14,6 +14,8 @@ internal sealed class TestQuestSource(Dictionary<PlayerId, TestQuestFacts> logs)
 {
     public Type FactsType => typeof(TestQuestFacts);
 
+    public IReadOnlyCollection<ZoneTriggerType> Raises { get; } = [ZoneTriggerType.QuestState];
+
     public Task<ZoneFacts?> ReadAsync(PlayerId player) =>
         Task.FromResult<ZoneFacts?>(logs.GetValueOrDefault(player));
 

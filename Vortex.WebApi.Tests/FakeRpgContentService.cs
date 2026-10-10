@@ -60,4 +60,6 @@ internal sealed class FakeRpgContentService : IRpgContentService
             ),
             new ClassSummary("class.warrior", "tank", 1, "strength", ["spec.warrior.guardian"]),
         ];
+
+    public IReadOnlyList<string> GetItemIds() => ["item.weapon.rusted_sword"];
 }

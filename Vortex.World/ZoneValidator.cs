@@ -8,17 +8,32 @@ using Vortex.Primitives.Furniture.Snapshots;
 using Vortex.Primitives.Rpg.Content;
 using Vortex.Primitives.World;
 using Vortex.Primitives.World.Layers;
+using Vortex.Primitives.World.Rules;
 
 namespace Vortex.World;
 
-/// <summary>The rules of spec §5. Errors refuse a save; warnings do not.</summary>
+/// <summary>
+/// The rules of spec §5. Errors refuse a save; warnings do not. What has an effect is what the
+/// modules declared (spec Z1 §9): a rule nobody answers, a trigger type nobody raises, is said to
+/// have none.
+/// </summary>
 public sealed class ZoneValidator(
     IFurnitureDefinitionProvider definitions,
     IOptions<WorldConfig> config,
-    IRpgContentService? content = null
+    IRpgContentService? content = null,
+    IEnumerable<IZoneRuleDeclaration>? rules = null,
+    IEnumerable<IZoneTriggerSource>? triggers = null
 )
 {
     private static readonly int[] AllowedRotations = [0, 2, 4, 6];
+
+    private readonly IReadOnlySet<Type> _declared = (rules ?? [])
+        .Select(r => r.RuleType)
+        .ToHashSet();
+
+    private readonly IReadOnlySet<ZoneTriggerType> _raised = (triggers ?? [])
+        .SelectMany(t => t.Raises)
+        .ToHashSet();
 
     public IReadOnlyList<ZoneFinding> Validate(ZoneDocument doc, IReadOnlySet<string> knownZones)
     {
@@ -92,7 +107,12 @@ public sealed class ZoneValidator(
         CheckDecor(doc, f);
         CheckPlacement(doc, f);
         CheckInternalReferences(doc, f);
-        ZoneRuntimeRules.Check(doc, knownZones, f);
+        ZoneRuntimeRules.Check(
+            doc,
+            knownZones,
+            new ZoneRuleVocabulary(_declared, _raised, content?.GetItemIds()?.ToHashSet()),
+            f
+        );
 
         foreach (ZonePassage p in doc.Passages.Where(p => !knownZones.Contains(p.DestinationZone)))
         {
@@ -316,9 +336,16 @@ public sealed class ZoneValidator(
             .. d.Spawns.Select(x => x.Id),
         ];
 
+        // Only these aim at an element of the document; a monster killed, a level, an item or a
+        // quest aim at what ZoneRuntimeRules checks for each.
         foreach (
             ZoneTrigger t in d.Triggers.Where(t =>
-                t.Type != ZoneTriggerType.Timer && t.Target is not null && !all.Contains(t.Target)
+                t.Type
+                    is ZoneTriggerType.EnterZone
+                        or ZoneTriggerType.LeaveZone
+                        or ZoneTriggerType.Interact
+                && t.Target is not null
+                && !all.Contains(t.Target)
             )
         )
         {

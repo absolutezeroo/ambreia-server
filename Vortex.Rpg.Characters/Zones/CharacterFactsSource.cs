@@ -21,6 +21,9 @@ public sealed class CharacterFactsSource(IGrainFactory grains) : IZoneFactsSourc
 {
     public Type FactsType => typeof(CharacterZoneFacts);
 
+    public IReadOnlyCollection<ZoneTriggerType> Raises { get; } =
+    [ZoneTriggerType.PlayerLevel, ZoneTriggerType.ItemOwned];
+
     public async Task<ZoneFacts?> ReadAsync(PlayerId player) =>
         await grains.GetPlayerCharacterGrain(player).GetZoneFactsAsync();
 

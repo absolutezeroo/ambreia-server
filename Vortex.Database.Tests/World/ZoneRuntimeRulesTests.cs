@@ -188,14 +188,15 @@ public sealed class ZoneRuntimeRulesTests
     public void ASignWithNothingToSay_IsAWarning() =>
         Codes(Doc() with { Decor = [Furni("s", "sign")] }).Should().Equal("EmptySign");
 
+    /// <summary>What no system of this server runs yet — quests, factions — is flagged inert.</summary>
     [Fact]
-    public void RpgTriggersConditionsAndActions_AreInertWarnings()
+    public void UndeclaredTriggersConditionsAndActions_AreInertWarnings()
     {
         IReadOnlyList<ZoneFinding> findings = Validate(
             Doc(
-                Trigger(ZoneTriggerType.MonsterKilled, null, new StartQuestAction("q1")) with
+                Trigger(ZoneTriggerType.QuestState, "q1", new StartQuestAction("q1")) with
                 {
-                    Conditions = [new PlayerLevelCondition(5, 10)],
+                    Conditions = [new FactionCondition("red")],
                 }
             )
         );
@@ -307,7 +308,13 @@ public sealed class ZoneRuntimeRulesTests
             .Equal("UnknownAreaKind");
 
     private static IReadOnlyList<ZoneFinding> Validate(ZoneDocument doc) =>
-        new ZoneValidator(Definitions(), Options.Create(new WorldConfig())).Validate(doc, Known);
+        new ZoneValidator(
+            Definitions(),
+            Options.Create(new WorldConfig()),
+            null,
+            ShippedRules.Rules,
+            ShippedRules.Triggers
+        ).Validate(doc, Known);
 
     private static string[] Codes(ZoneDocument doc) => [.. Validate(doc).Select(f => f.Code)];
 
