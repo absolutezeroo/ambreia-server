@@ -8,6 +8,7 @@ using Vortex.Primitives.Events;
 using Vortex.Primitives.Observability;
 using Vortex.Primitives.World;
 using Vortex.Primitives.World.Layers;
+using Vortex.Primitives.World.Rules;
 using Vortex.Rpg.Combat.Configuration;
 using Vortex.Rpg.Combat.Hits;
 using Vortex.Rpg.Combat.Stats;
@@ -97,6 +98,15 @@ public sealed class RpgZoneSimulationFactory : IZoneSimulationFactory
         );
         List<SpawnPoint> points = [];
 
+        // Spec Z1 §6.1: a spawn a trigger wakes, by its id or its group, sleeps until then.
+        HashSet<string> woken =
+        [
+            .. zone
+                .Triggers.SelectMany(t => t.Actions)
+                .OfType<SpawnGroupAction>()
+                .Select(a => a.Spawn),
+        ];
+
         foreach (ZoneSpawn spawn in zone.Spawns)
         {
             MonsterDefinition? definition = _content.Get<MonsterDefinition>(spawn.Monster);
@@ -132,6 +142,9 @@ public sealed class RpgZoneSimulationFactory : IZoneSimulationFactory
                     Source = spawn,
                     Definition = definition,
                     Behavior = behavior,
+                    Dormant =
+                        woken.Contains(spawn.Id)
+                        || spawn.Group is { } group && woken.Contains(group),
                 }
             );
         }

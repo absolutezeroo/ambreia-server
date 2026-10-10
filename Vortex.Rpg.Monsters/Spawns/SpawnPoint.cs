@@ -23,4 +23,17 @@ public sealed class SpawnPoint
 
     /// <summary>When each of its dead is due back, in order.</summary>
     public Queue<long> Due { get; } = new();
+
+    /// <summary>A trigger's action names it (spec Z1 §6.1): it brings nothing until woken, then one
+    /// wave, never respawned.</summary>
+    public bool Dormant { get; init; }
+
+    /// <summary>Woken, its wave not born yet: it is, at the next tick a player is there.</summary>
+    public bool WaveDue { get; set; }
+
+    /// <summary>Its wave still alive; woken again only once this is empty.</summary>
+    public HashSet<int> Wave { get; } = [];
+
+    /// <summary>Whether a SpawnGroup naming <paramref name="name"/> wakes it: its id or its group.</summary>
+    public bool Answers(string name) => Source.Id == name || Source.Group == name;
 }

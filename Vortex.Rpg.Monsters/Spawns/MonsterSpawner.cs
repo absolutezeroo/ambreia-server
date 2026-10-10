@@ -13,10 +13,11 @@ using Vortex.Rpg.Zones;
 namespace Vortex.Rpg.Monsters.Spawns;
 
 /// <summary>
-/// A zone's monsters coming and going (spec M1a §5.2): every spawn brings its <c>Max</c> the first
-/// tick a player is there, each on a free walkable non-safe cell of its area at a level in its range;
-/// a dead one comes back after <c>RespawnSeconds</c>, one per spawn and per tick. A new zone
-/// activation starts from the spawns again: nothing is kept.
+/// A zone's monsters coming and going (spec M1a §5.2, Z1 §6): every spawn brings between its
+/// <c>Min</c> and <c>Max</c> the first tick a player is there, each on a free walkable non-safe cell
+/// of its area at a level in its range; a dead one comes back after <c>RespawnSeconds</c>, one per
+/// spawn and per tick. A dormant spawn brings nothing until a trigger wakes it, then one wave that
+/// never comes back. A new zone activation starts from the spawns again: nothing is kept.
 /// </summary>
 public sealed class MonsterSpawner(
     IZoneRuntime zone,
@@ -38,22 +39,27 @@ public sealed class MonsterSpawner(
         {
             _awake = true;
 
-            foreach (SpawnPoint point in points)
+            foreach (SpawnPoint point in points.Where(p => !p.Dormant))
             {
-                for (int i = 0; i < Math.Max(0, point.Source.Max); i++)
+                for (int i = 0; i < Count(point); i++)
                 {
-                    if (!Spawn(point, now))
+                    if (Spawn(point, now) is null)
                     {
                         point.Due.Enqueue(now + 1000);
                     }
                 }
             }
-
-            return;
         }
 
         foreach (SpawnPoint point in points)
         {
+            if (point.WaveDue)
+            {
+                SpawnWave(point, now);
+
+                continue;
+            }
+
             if (point.Due.Count == 0 || point.Due.Peek() > now)
             {
                 continue;
@@ -61,12 +67,66 @@ public sealed class MonsterSpawner(
 
             point.Due.Dequeue();
 
-            if (!Spawn(point, now))
+            if (Spawn(point, now) is null)
             {
                 // No free cell yet: it tries again in a second.
                 point.Due.Enqueue(now + 1000);
             }
         }
+    }
+
+    /// <summary>
+    /// A SpawnGroup action (spec Z1 §6.1): every dormant spawn of that id or group whose last wave is
+    /// dead brings a new one at the next tick a player is there. How many were woken.
+    /// </summary>
+    public int WakeGroup(string name)
+    {
+        int woken = 0;
+
+        foreach (SpawnPoint point in points.Where(p => p.Dormant && p.Answers(name)))
+        {
+            if (point.Wave.Count > 0 || point.WaveDue)
+            {
+                continue;
+            }
+
+            point.WaveDue = true;
+            woken++;
+        }
+
+        return woken;
+    }
+
+    private void SpawnWave(SpawnPoint point, long now)
+    {
+        point.WaveDue = false;
+        int count = Count(point);
+
+        for (int i = 0; i < count; i++)
+        {
+            if (Spawn(point, now) is not { } id)
+            {
+                logger.LogDebug(
+                    "Spawn {SpawnId}: its wave found room for {Born} of {Count}.",
+                    point.Source.Id,
+                    i,
+                    count
+                );
+
+                break;
+            }
+
+            point.Wave.Add(id);
+        }
+    }
+
+    /// <summary>Between Min and Max, drawn on the zone's random source.</summary>
+    private int Count(SpawnPoint point)
+    {
+        int min = Math.Max(0, point.Source.Min);
+        int max = Math.Max(min, point.Source.Max);
+
+        return zone.Random.Next(min, max + 1);
     }
 
     /// <summary>The spawn a live monster belongs to — its summoner's for a summon — or null.</summary>
@@ -88,6 +148,14 @@ public sealed class MonsterSpawner(
             {
                 summoner.Summons.Remove(objectId);
             }
+
+            return;
+        }
+
+        // A wave's monster does not come back (spec Z1 §6.1).
+        if (m.Spawn.Dormant)
+        {
+            m.Spawn.Wave.Remove(objectId);
 
             return;
         }
@@ -237,7 +305,8 @@ public sealed class MonsterSpawner(
         }
     }
 
-    private bool Spawn(SpawnPoint point, long now)
+    /// <summary>One monster of the spawn on a free cell of its area; its object id, null without room.</summary>
+    private int? Spawn(SpawnPoint point, long now)
     {
         ZoneCell[] cells = [.. point.Source.Area];
 
@@ -257,7 +326,7 @@ public sealed class MonsterSpawner(
         {
             logger.LogDebug("Spawn {SpawnId}: no free cell for its monster.", point.Source.Id);
 
-            return false;
+            return null;
         }
 
         int min = Math.Max(1, Math.Min(point.Source.LevelMin, point.Source.LevelMax));
@@ -280,6 +349,6 @@ public sealed class MonsterSpawner(
             Skills = point.Definition.Skills,
         };
 
-        return true;
+        return id;
     }
 }

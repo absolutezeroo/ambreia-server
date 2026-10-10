@@ -7,6 +7,7 @@ using Vortex.Rpg.Monsters.Behaviors;
 using Vortex.Rpg.Monsters.Configuration;
 using Vortex.Rpg.Monsters.Zones;
 using Vortex.Rpg.Zones;
+using Vortex.Rpg.Zones.Rules;
 
 namespace Vortex.Rpg.Monsters;
 
@@ -32,5 +33,8 @@ public sealed class MonstersModule : IHostPluginModule
         services.AddSingleton<IMonsterBehavior, CasterBehavior>();
         services.AddSingleton<IMonsterBehaviorKeys, DeclaredBehaviors>();
         services.AddSingleton<IZoneSimulationFactory, RpgZoneSimulationFactory>();
+
+        // Spec Z1 §6.1: the zone action that wakes this module's dormant spawns.
+        services.AddZoneAction<SpawnGroupExecutor>();
     }
 }

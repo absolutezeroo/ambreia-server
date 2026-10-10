@@ -75,6 +75,15 @@ internal sealed class MonsterWorld
         IMonsterBehavior[]? behaviors,
         ICombatSystem[] systems,
         params ContentDefinition[] content
+    ) =>
+        StartZone(ZoneSamples.Minimal() with { Spawns = [.. spawns] }, behaviors, systems, content);
+
+    /// <summary>The simulation for a whole zone document: its spawns and its triggers.</summary>
+    public RpgZoneSimulation StartZone(
+        ZoneDocument zone,
+        IMonsterBehavior[]? behaviors = null,
+        ICombatSystem[]? systems = null,
+        params ContentDefinition[] content
     )
     {
         RpgZoneSimulationFactory factory = new(
@@ -92,13 +101,12 @@ internal sealed class MonsterWorld
             FakeProxy.Create<IEventPublisher>(_ => Task.CompletedTask),
             Metrics,
             NullLoggerFactory.Instance,
-            systems,
+            systems ?? [],
             [],
             Options.Create(Config)
         );
 
-        Simulation = (RpgZoneSimulation)
-            factory.Create(Zone, ZoneSamples.Minimal() with { Spawns = [.. spawns] });
+        Simulation = (RpgZoneSimulation)factory.Create(Zone, zone);
 
         return Simulation;
     }
