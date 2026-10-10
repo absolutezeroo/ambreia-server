@@ -76,6 +76,40 @@
     "slowPercent": {
       "type": "integer"
     },
+    "vfx": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "properties": {
+        "aura": {
+          "type": [
+            "object",
+            "null"
+          ],
+          "properties": {
+            "sheet": {
+              "type": "string"
+            },
+            "attach": {
+              "enum": [
+                "body",
+                "feet",
+                "ground"
+              ]
+            },
+            "delayMs": {
+              "type": "integer"
+            }
+          },
+          "required": [
+            "sheet"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": false
+    },
     "id": {
       "type": "string"
     },

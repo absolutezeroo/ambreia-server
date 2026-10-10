@@ -11,8 +11,16 @@ public sealed class ClassKind : ContentKind<ClassDefinition>
 {
     public override string Kind => "class";
 
+    /// <summary>The client draws a class's basic attack (<see cref="ClassDefinition.BasicAttack"/>).</summary>
+    public override bool Public => true;
+
     protected override IEnumerable<ContentFinding> Check(ClassDefinition c, ContentCheck check)
     {
+        foreach (string problem in VfxCheck.Problems(c.BasicAttack))
+        {
+            yield return Error("BadVfx", c.Id, $"basicAttack: {problem}");
+        }
+
         if (c.Range < 1)
         {
             yield return Error(

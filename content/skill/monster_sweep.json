@@ -12,6 +12,5 @@
   "maxTargets": 5,
   "effects": [{ "kind": "damage", "coefficient": 1.2 }],
   "animation": "attack",
-  "vfx": "sweep",
   "telegraph": { "shape": "cone", "size": 3, "angle": 90 }
 }

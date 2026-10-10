@@ -12,6 +12,5 @@
   "radius": 3,
   "effects": [{ "kind": "damage", "coefficient": 1.5 }],
   "animation": "cast",
-  "vfx": "quake",
   "telegraph": { "shape": "circle", "size": 3 }
 }

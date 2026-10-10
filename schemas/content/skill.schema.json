@@ -106,7 +106,132 @@
       "type": "string"
     },
     "vfx": {
-      "type": "string"
+      "type": [
+        "object",
+        "null"
+      ],
+      "properties": {
+        "cast": {
+          "type": [
+            "object",
+            "null"
+          ],
+          "properties": {
+            "sheet": {
+              "type": "string"
+            },
+            "attach": {
+              "enum": [
+                "body",
+                "feet",
+                "ground"
+              ]
+            },
+            "delayMs": {
+              "type": "integer"
+            }
+          },
+          "required": [
+            "sheet"
+          ],
+          "additionalProperties": false
+        },
+        "release": {
+          "type": [
+            "object",
+            "null"
+          ],
+          "properties": {
+            "sheet": {
+              "type": "string"
+            },
+            "attach": {
+              "enum": [
+                "body",
+                "feet",
+                "ground"
+              ]
+            },
+            "delayMs": {
+              "type": "integer"
+            }
+          },
+          "required": [
+            "sheet"
+          ],
+          "additionalProperties": false
+        },
+        "projectile": {
+          "type": [
+            "object",
+            "null"
+          ],
+          "properties": {
+            "sheet": {
+              "type": "string"
+            },
+            "speed": {
+              "type": "integer"
+            }
+          },
+          "required": [
+            "sheet",
+            "speed"
+          ],
+          "additionalProperties": false
+        },
+        "area": {
+          "type": [
+            "object",
+            "null"
+          ],
+          "properties": {
+            "sheet": {
+              "type": "string"
+            },
+            "attach": {
+              "enum": [
+                "body",
+                "feet",
+                "ground"
+              ]
+            },
+            "delayMs": {
+              "type": "integer"
+            }
+          },
+          "required": [
+            "sheet"
+          ],
+          "additionalProperties": false
+        },
+        "hit": {
+          "type": [
+            "object",
+            "null"
+          ],
+          "properties": {
+            "sheet": {
+              "type": "string"
+            },
+            "attach": {
+              "enum": [
+                "body",
+                "feet",
+                "ground"
+              ]
+            },
+            "delayMs": {
+              "type": "integer"
+            }
+          },
+          "required": [
+            "sheet"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": false
     },
     "sound": {
       "type": "string"

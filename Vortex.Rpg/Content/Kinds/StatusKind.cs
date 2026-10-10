@@ -17,6 +17,11 @@ public sealed class StatusKind : ContentKind<StatusDefinition>
 
     protected override IEnumerable<ContentFinding> Check(StatusDefinition s, ContentCheck check)
     {
+        foreach (string problem in VfxCheck.Problems(s.Vfx))
+        {
+            yield return Error("BadVfx", s.Id, $"vfx: {problem}");
+        }
+
         if (s.DurationMs <= 0)
         {
             yield return Error("BadDuration", s.Id, "A status lasts more than 0 ms.");

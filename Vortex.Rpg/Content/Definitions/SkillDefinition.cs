@@ -56,7 +56,8 @@ public sealed record SkillDefinition : ContentDefinition
     /// <summary>Client keys.</summary>
     public string Animation { get; init; } = string.Empty;
 
-    public string Vfx { get; init; } = string.Empty;
+    /// <summary>What the client draws, by moment; absent: nothing.</summary>
+    public SkillVfx? Vfx { get; init; }
 
     public string Sound { get; init; } = string.Empty;
 

@@ -7,5 +7,9 @@
   "primaryStat": "intelligence",
   "base": { "strength": 4, "intelligence": 14, "agility": 5, "health": 60, "mana": 70, "armor": 0, "speed": 0 },
   "perLevel": { "strength": 0, "intelligence": 3, "agility": 1, "health": 8, "mana": 6, "armor": 0, "speed": 0 },
-  "specializations": ["spec.mage.elementalist"]
+  "specializations": ["spec.mage.elementalist"],
+  "basicAttack": {
+    "projectile": { "sheet": "mage/energy-orb", "speed": 420 },
+    "hit": { "sheet": "mage/impact-burst", "attach": "body" }
+  }
 }

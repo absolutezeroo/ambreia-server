@@ -13,6 +13,5 @@
   "effects": [
     { "kind": "damage", "coefficient": 0.4 },
     { "kind": "apply_status", "status": "status.frozen" }
-  ],
-  "vfx": "frost_nova"
+  ]
 }

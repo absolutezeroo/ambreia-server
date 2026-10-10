@@ -10,6 +10,5 @@
   "range": 5,
   "target": "ally",
   "effects": [{ "kind": "heal", "base": 10, "coefficient": 1.5 }],
-  "animation": "cast",
-  "vfx": "heal"
+  "animation": "cast"
 }

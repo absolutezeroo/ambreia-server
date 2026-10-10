@@ -9,6 +9,5 @@
   "type": "instant",
   "range": 5,
   "target": "ally",
-  "effects": [{ "kind": "apply_status", "status": "status.aegis" }],
-  "vfx": "aegis"
+  "effects": [{ "kind": "apply_status", "status": "status.aegis" }]
 }

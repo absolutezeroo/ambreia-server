@@ -14,6 +14,5 @@
   "radius": 1,
   "maxTargets": 5,
   "effects": [{ "kind": "damage", "coefficient": 0.5 }],
-  "animation": "shoot",
-  "vfx": "arrow_rain"
+  "animation": "shoot"
 }

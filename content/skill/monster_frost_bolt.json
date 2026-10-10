@@ -13,6 +13,5 @@
     { "kind": "damage", "coefficient": 0.6 },
     { "kind": "apply_status", "status": "status.frozen" }
   ],
-  "animation": "cast",
-  "vfx": "frost_bolt"
+  "animation": "cast"
 }

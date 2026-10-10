@@ -16,5 +16,9 @@
     { "kind": "apply_status", "status": "status.burning" }
   ],
   "animation": "cast",
-  "vfx": "fire_burst"
+  "vfx": {
+    "cast": { "sheet": "mage/magic-circle", "attach": "ground" },
+    "area": { "sheet": "mage/ground-sigil", "attach": "ground" },
+    "hit": { "sheet": "mage/power-aura", "attach": "feet", "delayMs": 500 }
+  }
 }

@@ -23,6 +23,11 @@ public sealed class SkillKind(IEnumerable<ISkillEffectRule> rules) : ContentKind
 
     protected override IEnumerable<ContentFinding> Check(SkillDefinition s, ContentCheck check)
     {
+        foreach (string problem in VfxCheck.Problems(s.Vfx))
+        {
+            yield return Error("BadVfx", s.Id, $"vfx: {problem}");
+        }
+
         foreach (string cls in s.Classes.Where(c => !check.Is<ClassDefinition>(c)))
         {
             yield return Error("BrokenReference", s.Id, $"Class '{cls}' does not exist.");

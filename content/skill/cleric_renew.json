@@ -8,6 +8,5 @@
   "type": "instant",
   "range": 5,
   "target": "ally",
-  "effects": [{ "kind": "apply_status", "status": "status.renewed" }],
-  "vfx": "renew"
+  "effects": [{ "kind": "apply_status", "status": "status.renewed" }]
 }

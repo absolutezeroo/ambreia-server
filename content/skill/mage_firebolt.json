@@ -11,5 +11,7 @@
   "target": "enemy",
   "effects": [{ "kind": "damage", "base": 8, "coefficient": 1.8 }],
   "animation": "cast",
-  "vfx": "firebolt"
+  "vfx": {
+    "cast": { "sheet": "mage/magic-circle", "attach": "ground" }
+  }
 }

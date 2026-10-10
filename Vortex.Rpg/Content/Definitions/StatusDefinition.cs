@@ -33,4 +33,7 @@ public sealed record StatusDefinition : ContentDefinition
 
     /// <summary>Required (1–90) for <see cref="StatusType.Slow"/>.</summary>
     public int SlowPercent { get; init; }
+
+    /// <summary>What the client draws while it lasts; absent: nothing.</summary>
+    public StatusVfx? Vfx { get; init; }
 }
