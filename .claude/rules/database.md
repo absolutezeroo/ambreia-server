@@ -16,6 +16,9 @@ The full schema-change procedure is the `changing-the-schema` skill.
 - `Vortex.Database/Seeds/*.sql` is embedded and every file must be applied by `InitialCreate`
   (`SeedCatalogTests`). Data that needs imported reference rows (a zone needs `room_models`) is a
   `scripts/sql/` script run by `scripts/import-reference-data.ps1` (`dev_zone.sql`).
+- A live database that cannot be recreated follows the regenerated `InitialCreate` by the chain
+  `scripts/sql/forward/NNN-<name>.sql`, applied in order and once each by `node scripts/sql/forward.mjs`
+  (history in `vortex_forward_history`). A schema change adds the next number; never renumber.
 - Seeds and scripts are re-runnable: `NOT EXISTS` guards, `ON DUPLICATE KEY UPDATE`, `WHERE` clauses
   that stop matching once applied. MySQL strict mode refuses an insert that omits a NOT NULL column
   with no default.

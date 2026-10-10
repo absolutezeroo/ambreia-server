@@ -46,6 +46,11 @@ jobs:
           -t:VortexCloudQualityGate
           -p:VortexAIPolicyPhase=2
 
+      # The forward-script runner's own rules (numbering, pending set, connection parsing); the
+      # scripts themselves run against a real MySQL in the job below.
+      - name: Forward runner unit tests
+        run: node --test scripts/sql/forward.test.mjs
+
       # `dotnet list package --vulnerable` exits 0 even when it finds something, so the output has
       # to be inspected. Transitive packages are included: that is where most advisories land.
       - name: Scan for vulnerable packages
@@ -60,3 +65,42 @@ jobs:
             exit 1
           fi
           echo "No vulnerable packages reported."
+
+  # The live database moves by scripts/sql/forward/NNN-*.sql, not by the regenerated InitialCreate.
+  # Nothing on a developer's machine runs that chain end to end, so this job does: InitialCreate on
+  # a throwaway MySQL 8, then every forward script in order (each is a no-op on a schema that already
+  # has it, which is what proves it still parses and runs), then the runner again (0 pending).
+  forward-scripts:
+    name: forward-scripts-mysql
+    runs-on: ubuntu-latest
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_ROOT_PASSWORD: ci-root
+          MYSQL_DATABASE: vortex_ci
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd "mysqladmin ping -h 127.0.0.1 -pci-root --silent"
+          --health-interval 5s --health-timeout 5s --health-retries 30
+    env:
+      Vortex__Database__ConnectionString: "Server=127.0.0.1;Port=3306;Database=vortex_ci;User Id=root;Password=ci-root;"
+      VORTEX__Vortex__Database__ConnectionString: "Server=127.0.0.1;Port=3306;Database=vortex_ci;User Id=root;Password=ci-root;"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          global-json-file: global.json
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Restore
+        run: dotnet restore Vortex.Cloud.sln
+      - name: InitialCreate
+        shell: pwsh
+        run: ./scripts/ef.ps1 database update
+      - name: Forward scripts, in order, once each
+        run: node scripts/sql/forward.mjs
+      - name: Forward scripts, again (nothing pending)
+        run: node scripts/sql/forward.mjs --list | tee forward.txt && grep -q " 0 pending" forward.txt

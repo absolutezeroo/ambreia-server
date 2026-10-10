@@ -33,6 +33,7 @@ flush); nothing else writes it while the emulator runs.
 | needed by every install, independent of imported rows | `Vortex.Database/Seeds/<name>.sql` + a `SeedScripts.Read("<name>.sql")` line at the end of `InitialCreate.Up` |
 | dependent on `room_models`/`furniture_definitions` (imported from turbo) | `scripts/sql/<name>.sql`, run by `scripts/import-reference-data.ps1` (see `dev_zone.sql`) |
 | a one-off correction | the `/sql-fix` skill |
+| the same change for a live database that cannot be recreated (the owner's) | `scripts/sql/forward/NNN-<name>.sql`: the next number, the migration's DDL (`IF NOT EXISTS`, guarded `ALTER`), then the `__EFMigrationsHistory` row moved from the previous `InitialCreate` id to the new one; applied in order, once each, by `node scripts/sql/forward.mjs` (`--list` to see where a database stands) |
 
 Seeds are re-runnable (`NOT EXISTS`, `ON DUPLICATE KEY UPDATE`) and name every NOT NULL column that
 has no default (MySQL strict mode). `SeedCatalogTests` fails if an embedded seed is not applied.
