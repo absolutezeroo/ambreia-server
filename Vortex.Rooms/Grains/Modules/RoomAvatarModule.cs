@@ -119,6 +119,7 @@ public sealed partial class RoomAvatarModule(RoomGrain roomGrain)
             {
                 _roomGrain._state.AvatarsByPlayerId.Remove(playerId);
                 _roomGrain._state.ZoneRuntime?.Visitors.Remove(playerId);
+                _roomGrain._state.ZoneRuntime?.Facts.Remove(playerId);
             }
         }
         catch (Exception ex)

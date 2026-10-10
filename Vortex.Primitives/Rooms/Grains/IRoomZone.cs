@@ -2,6 +2,7 @@ using System.Threading.Tasks;
 using Orleans;
 using Orleans.Concurrency;
 using Vortex.Primitives.Players;
+using Vortex.Primitives.Rpg.Characters;
 using Vortex.Primitives.World;
 
 namespace Vortex.Primitives.Rooms.Grains;
@@ -36,4 +37,10 @@ public interface IRoomZone : IGrainWithIntegerKey
     /// D24). Null when the room is not a zone. What combat and monsters ask before they act.
     /// </summary>
     public Task<ZoneCellRules?> GetRulesAtAsync(int x, int y);
+
+    /// <summary>
+    /// Server side only: the player's presence passes on what changed in their character (spec Z1
+    /// §4.3). Ignored for a player not in the room.
+    /// </summary>
+    public Task UpdatePlayerFactsAsync(PlayerId player, CharacterZoneFacts facts);
 }

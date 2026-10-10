@@ -97,6 +97,7 @@ internal sealed partial class PlayerCharacterGrain
             }
 
             Publish(new CharacterStatsChangedEvent(_playerId));
+            await TellTheZoneFactsAsync();
         }
 
         Publish(new XpGainedEvent(_playerId, gaining.Amount, source, c.Level, c.Xp));

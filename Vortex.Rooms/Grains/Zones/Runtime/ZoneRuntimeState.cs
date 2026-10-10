@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Vortex.Primitives.Players;
+using Vortex.Primitives.Rpg.Characters;
 using Vortex.Primitives.World;
 using Vortex.Primitives.World.Layers;
 using Vortex.Rooms.Grains.Zones.Compilation;
@@ -98,4 +99,10 @@ public sealed class ZoneRuntimeState(CompiledZone compiled)
 
     /// <summary>The players in the room, from their arrival step to their exit.</summary>
     public Dictionary<PlayerId, ZoneVisitor> Visitors { get; } = [];
+
+    /// <summary>
+    /// What the zone knows of each player's character (spec Z1 §4.3): read on entry, replaced on
+    /// each change the character pushes, forgotten on exit. None for a player without a character.
+    /// </summary>
+    public Dictionary<PlayerId, CharacterZoneFacts> Facts { get; } = [];
 }

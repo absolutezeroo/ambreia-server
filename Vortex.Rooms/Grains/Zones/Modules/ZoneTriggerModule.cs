@@ -206,7 +206,14 @@ public sealed class ZoneTriggerModule(RoomGrain roomGrain) : IRoomEventListener
     }
 
     private ZoneTriggerContext ContextFor(ZoneRuntimeState zone, PlayerId playerId) =>
-        new(roomGrain, zone, playerId, PlayerAvatar(playerId), Time.GetLocalNow(), null);
+        new(
+            roomGrain,
+            zone,
+            playerId,
+            PlayerAvatar(playerId),
+            Time.GetLocalNow(),
+            zone.Facts.GetValueOrDefault(playerId)
+        );
 
     /// <remarks>
     /// The arrival step runs inside the avatar's attach, before the room maps the player to it:

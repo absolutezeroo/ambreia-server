@@ -102,6 +102,7 @@ internal sealed partial class PlayerCharacterGrain
 
         // A server gesture: no result to answer, the bag as it now is.
         await PushAsync(InventoryComposer(next));
+        await TellTheZoneFactsAsync();
 
         return new ItemGrantResult
         {
@@ -141,6 +142,7 @@ internal sealed partial class PlayerCharacterGrain
         }
 
         await PushAsync(InventoryComposer(next));
+        await TellTheZoneFactsAsync();
 
         return outcome;
     }
@@ -302,6 +304,8 @@ internal sealed partial class PlayerCharacterGrain
         if (outcome == ItemOutcome.Ok && _inventory is { } inventory)
         {
             await PushAsync(result, InventoryComposer(inventory));
+            // A destroy, a claimed parcel: what is owned may have moved (spec Z1 §4.3).
+            await TellTheZoneFactsAsync();
         }
         else
         {

@@ -285,6 +285,9 @@ internal sealed class RoomHarness
     /// <summary>Every character grain throws, as one whose database read failed.</summary>
     public bool CharacterFails { get; set; }
 
+    /// <summary>What each character tells a zone on entry (spec Z1 §4.3); none by default.</summary>
+    public Dictionary<PlayerId, CharacterZoneFacts> Facts { get; } = [];
+
     /// <summary>
     /// Room events as they were published, so a test can see that something fired.
     /// </summary>
@@ -699,13 +702,18 @@ internal sealed class RoomHarness
                 PlayerId character = new((int)(long)call.Args![0]!);
 
                 return FakeProxy.Create<IPlayerCharacterGrain>(inner =>
-                    inner.Method.Name == nameof(IPlayerCharacterGrain.GetSummaryAsync)
-                        ? CharacterFails
+                    inner.Method.Name switch
+                    {
+                        nameof(IPlayerCharacterGrain.GetSummaryAsync) => CharacterFails
                             ? Task.FromException<CharacterSummary?>(
                                 new InvalidOperationException("character grain down")
                             )
-                            : Task.FromResult(Characters.GetValueOrDefault(character))
-                        : null
+                            : Task.FromResult(Characters.GetValueOrDefault(character)),
+                        nameof(IPlayerCharacterGrain.GetZoneFactsAsync) => Task.FromResult(
+                            Facts.GetValueOrDefault(character)
+                        ),
+                        _ => null,
+                    }
                 );
             }
 

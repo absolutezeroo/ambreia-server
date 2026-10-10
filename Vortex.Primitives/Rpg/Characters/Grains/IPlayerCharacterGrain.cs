@@ -86,4 +86,8 @@ public interface IPlayerCharacterGrain : IGrainWithIntegerKey
 
     /// <summary>Every copy held: bag, equipment, parcels.</summary>
     public Task<CharacterItemSnapshot[]> GetItemsAsync();
+
+    /// <summary>What a zone's rules read of this character (spec Z1 §4.3): its level and what it
+    /// owns. Null without a character.</summary>
+    public Task<CharacterZoneFacts?> GetZoneFactsAsync();
 }
