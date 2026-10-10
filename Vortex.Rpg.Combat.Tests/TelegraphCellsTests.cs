@@ -71,6 +71,13 @@ public sealed class TelegraphCellsTests
             ]);
 
     [Fact]
+    public void AWideDiagonalLine_HasNoHoles() =>
+        TelegraphCells
+            .Of(Line(2, width: 3), (0, 0), (5, 5), Open)
+            .Should()
+            .BeEquivalentTo([(1, 0), (0, 1), (1, 1), (2, 1), (1, 2), (2, 2)]);
+
+    [Fact]
     public void ALineOfWidthFive_IsFiveWide() =>
         TelegraphCells.Of(Line(2, width: 5), (0, 0), (0, 9), Open).Should().HaveCount(10);
 

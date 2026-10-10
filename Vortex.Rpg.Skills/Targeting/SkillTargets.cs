@@ -119,6 +119,8 @@ public static class SkillTargets
                     x.At is { } at
                     && CombatMath.Chebyshev(centre.X, centre.Y, at.X, at.Y) <= ctx.Skill.Radius
                     && runtime.HasLineOfSight(centre.X, centre.Y, at.X, at.Y)
+                    // No combat on a safe cell (spec M1a §5.3): a monster's area spares it.
+                    && !(offensive && ctx.Zone.IsSafeCell(at.X, at.Y))
                 )
                 .OrderBy(x => CombatMath.Chebyshev(centre.X, centre.Y, x.At!.Value.X, x.At.Value.Y))
                 .ThenBy(x => x.Fighter.ObjectId)

@@ -20,7 +20,7 @@ public sealed class MonsterCastTests
         "skill.monster.spit",
         SkillType.Cast,
         range: 4,
-        cost: 0,
+        cost: 30,
         castMs: 1000
     ) with
     {
@@ -63,14 +63,58 @@ public sealed class MonsterCastTests
         effect: "heal"
     );
 
+    private static readonly SkillDefinition Stomp = CastTests.Skill(
+        "skill.monster.stomp",
+        target: SkillTarget.AroundCaster,
+        range: 0,
+        cost: 0,
+        radius: 2
+    ) with
+    {
+        Classes = [],
+    };
+
     private readonly SkillWorld _world = SkillWorld.WithCasting(
         Spit,
         Bite,
         Snap,
         Mend,
         Cure,
+        Stomp,
         CastTests.Stunned
     );
+
+    [Fact]
+    public async Task AMonstersArea_SparesAPlayerOnASafeCell()
+    {
+        Combatant safe = await _world.PlayerAsync(x: 6, y: 5);
+        Combatant open = await _world.PlayerAsync(player: 8, objectId: 2, x: 8, y: 5);
+        Combatant wolf = _world.Wolf(x: 7, y: 5);
+        _world.Zone.SafeCells.Add((6, 5));
+
+        MonsterCast(wolf, Stomp, 0).Should().BeNull();
+        await _world.TickAsync();
+
+        _world
+            .Broadcast<RpgSkillEventsMessageComposer>()
+            .SelectMany(e => e.Outcomes)
+            .Select(o => o.TargetObjectId)
+            .Should()
+            .Equal(open.ObjectId);
+        safe.Health.Should().Be(safe.MaxHealth);
+    }
+
+    [Fact]
+    public async Task AMonster_NeverAimsAtAnotherMonster()
+    {
+        await _world.PlayerAsync();
+        Combatant wolf = _world.Wolf(x: 7, y: 5);
+        Combatant other = _world.Wolf(x: 8, y: 5);
+
+        MonsterCast(wolf, Spit, other.ObjectId)
+            .Should()
+            .Be(RpgSkillResultMessageComposer.InvalidTarget);
+    }
 
     private string? MonsterCast(Combatant caster, SkillDefinition skill, int target) =>
         _world.Combat.Cast(new CastRequest(caster.ObjectId, skill.Id, target, -1, -1));

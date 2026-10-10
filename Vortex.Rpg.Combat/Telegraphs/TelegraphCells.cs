@@ -41,7 +41,11 @@ public static class TelegraphCells
         ];
     }
 
-    /// <summary>Straight ahead in the nearest of the 8 directions, widened on both sides.</summary>
+    /// <summary>
+    /// Straight ahead in the nearest of the 8 directions, <paramref name="size"/> steps long and
+    /// widened on both sides. Cells are kept by their projection on the direction (ahead, within the
+    /// length) and across it (within the half width), so a wide diagonal has no holes.
+    /// </summary>
     private static IEnumerable<(int X, int Y)> Line(
         (int X, int Y) origin,
         double angle,
@@ -53,14 +57,17 @@ public static class TelegraphCells
         int dx = Math.Sign(Math.Round(Math.Cos(octant), 6));
         int dy = Math.Sign(Math.Round(Math.Sin(octant), 6));
         int half = (width - 1) / 2;
+        // A diagonal step is (1, 1): its projection counts 2 per step.
+        int length = size * (dx * dx + dy * dy);
 
-        for (int step = 1; step <= size; step++)
-        {
-            for (int w = -half; w <= half; w++)
+        return Square(origin, size + half)
+            .Where(c =>
             {
-                yield return (origin.X + dx * step - dy * w, origin.Y + dy * step + dx * w);
-            }
-        }
+                int along = (c.X - origin.X) * dx + (c.Y - origin.Y) * dy;
+                int across = (c.Y - origin.Y) * dx - (c.X - origin.X) * dy;
+
+                return along >= 1 && along <= length && Math.Abs(across) <= half;
+            });
     }
 
     private static bool InCone(
