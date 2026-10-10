@@ -65,6 +65,9 @@ public sealed class MessageRegistry(
             EnableInheritanceDispatch = true,
             HandlerMode = HandlerExecutionMode.Parallel,
             MaxHandlerDegreeOfParallelism = null,
+            // A behavior here is a gate (rate limit, account phase, intent limit): one that throws
+            // has not said yes, so the packet is refused rather than handled unguarded.
+            BehaviorErrorsFailClosed = true,
             OnHandlerActivationError = (ex, env) =>
                 ReportError(
                     ex,

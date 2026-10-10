@@ -43,7 +43,9 @@ public sealed class EnvelopeHostTests
         int? maxDop = null,
         Action<Exception, object>? onHandlerActivationError = null,
         Action<Exception, object>? onHandlerInvokeError = null,
-        Action<TestEnvelope>? onNoHandlerRegistered = null
+        Action<TestEnvelope>? onNoHandlerRegistered = null,
+        Action<Exception, object>? onBehaviorError = null,
+        bool behaviorErrorsFailClosed = false
     )
     {
         EnvelopeHostOptions<TestEnvelope, string, TestContext> options = new()
@@ -54,7 +56,10 @@ public sealed class EnvelopeHostTests
             MaxHandlerDegreeOfParallelism = maxDop,
             OnHandlerActivationError = onHandlerActivationError,
             OnHandlerInvokeError = onHandlerInvokeError,
+            OnBehaviorActivationError = onBehaviorError,
+            OnBehaviorInvokeError = onBehaviorError,
             OnNoHandlerRegistered = onNoHandlerRegistered,
+            BehaviorErrorsFailClosed = behaviorErrorsFailClosed,
         };
 
         return new EnvelopeHost<TestEnvelope, string, TestContext>(sp, options);
@@ -399,5 +404,111 @@ public sealed class EnvelopeHostTests
             .BeGreaterThan(1, "degree 2 should allow real overlap, not fully serialize the work");
 
         regs.Dispose();
+    }
+
+    [Fact]
+    public async Task ByDefault_AThrowingBehavior_IsSkipped_AndTheHandlerStillRuns()
+    {
+        Recorder recorder = new();
+        using ServiceProvider sp = NewProvider(recorder);
+        List<Exception> errors = [];
+        EnvelopeHost<TestEnvelope, string, TestContext> host = NewHost(
+            sp,
+            onBehaviorError: (ex, env) => errors.Add(ex)
+        );
+
+        using IDisposable behaviorReg = RegisterBehavior<ThrowingBehavior>(
+            host,
+            sp,
+            typeof(TestEnvelope)
+        );
+        using IDisposable handlerReg = RegisterHandler<RecordingHandlerA>(
+            host,
+            sp,
+            typeof(TestEnvelope)
+        );
+
+        await host.PublishAsync(new TestEnvelope { Payload = "open" }, null, CancellationToken.None)
+            .ConfigureAwait(true);
+
+        errors.Should().ContainSingle().Which.Should().BeOfType<ThrowingBehavior.BoomException>();
+        recorder.Entries.Should().Equal("A:open");
+    }
+
+    [Fact]
+    public async Task FailClosed_AThrowingBehavior_RefusesTheEnvelope()
+    {
+        Recorder recorder = new();
+        using ServiceProvider sp = NewProvider(recorder);
+        List<Exception> errors = [];
+        EnvelopeHost<TestEnvelope, string, TestContext> host = NewHost(
+            sp,
+            onBehaviorError: (ex, env) => errors.Add(ex),
+            behaviorErrorsFailClosed: true
+        );
+
+        using IDisposable behaviorReg = RegisterBehavior<ThrowingBehavior>(
+            host,
+            sp,
+            typeof(TestEnvelope)
+        );
+        using IDisposable handlerReg = RegisterHandler<RecordingHandlerA>(
+            host,
+            sp,
+            typeof(TestEnvelope)
+        );
+
+        await host.PublishAsync(
+                new TestEnvelope { Payload = "closed" },
+                null,
+                CancellationToken.None
+            )
+            .ConfigureAwait(true);
+
+        errors.Should().ContainSingle().Which.Should().BeOfType<ThrowingBehavior.BoomException>();
+        recorder.Entries.Should().BeEmpty("a gate that cannot decide refuses the command");
+    }
+
+    [Fact]
+    public async Task FailClosed_ABehaviorThatCannotActivate_RefusesTheEnvelope()
+    {
+        Recorder recorder = new();
+        using ServiceProvider sp = NewProvider(recorder);
+        List<Exception> errors = [];
+        EnvelopeHost<TestEnvelope, string, TestContext> host = NewHost(
+            sp,
+            onBehaviorError: (ex, env) => errors.Add(ex),
+            behaviorErrorsFailClosed: true
+        );
+
+        EnvelopeInvokerFactory<TestContext> factory = new();
+        BehaviorInvoker<TestContext> invoker = factory.CreateBehaviorInvoker(
+            typeof(UnorderedBehavior),
+            typeof(TestEnvelope)
+        );
+        Func<IServiceProvider, object> throwingActivator = _ =>
+            throw new InvalidOperationException("cannot activate");
+        using IDisposable behaviorReg = host.RegisterBehavior(
+            typeof(TestEnvelope),
+            sp,
+            throwingActivator,
+            invoker,
+            0
+        );
+        using IDisposable handlerReg = RegisterHandler<RecordingHandlerA>(
+            host,
+            sp,
+            typeof(TestEnvelope)
+        );
+
+        await host.PublishAsync(
+                new TestEnvelope { Payload = "closed" },
+                null,
+                CancellationToken.None
+            )
+            .ConfigureAwait(true);
+
+        errors.Should().ContainSingle().Which.Should().BeOfType<InvalidOperationException>();
+        recorder.Entries.Should().BeEmpty();
     }
 }

@@ -20,6 +20,9 @@ public class EnvelopeHost<TEnvelope, TMeta, TContext>(
     private readonly IServiceProvider _host = host;
     private readonly EnvelopeHostOptions<TEnvelope, TMeta, TContext> _opt = options;
 
+    /// <summary>Whether a throwing behavior drops the envelope (see the option of the same name).</summary>
+    public bool BehaviorErrorsFailClosed => _opt.BehaviorErrorsFailClosed;
+
     public IDisposable RegisterHandler(
         Type envType,
         IServiceProvider sp,
@@ -315,7 +318,10 @@ public class EnvelopeHost<TEnvelope, TMeta, TContext>(
                     {
                         _opt.OnBehaviorActivationError?.Invoke(ex, env);
 
-                        await next(env, ctx, ct).ConfigureAwait(false);
+                        if (!_opt.BehaviorErrorsFailClosed)
+                        {
+                            await next(env, ctx, ct).ConfigureAwait(false);
+                        }
 
                         return;
                     }
@@ -347,7 +353,11 @@ public class EnvelopeHost<TEnvelope, TMeta, TContext>(
                     {
                         _opt.OnBehaviorInvokeError?.Invoke(ex, env);
 
-                        if (!nextInvoked && !ShouldShortCircuit(ctx))
+                        if (
+                            !nextInvoked
+                            && !_opt.BehaviorErrorsFailClosed
+                            && !ShouldShortCircuit(ctx)
+                        )
                         {
                             await next(env, ctx, ct).ConfigureAwait(false);
                         }
