@@ -277,11 +277,59 @@ public sealed class ConfigValidationTests
     }
 
     [Fact]
-    public void AnEnabledWebApiOnLocalhost_Passes()
+    public void AnEnabledWebApiOnLocalhost_Passes_InDevelopment()
     {
         WebApiConfig config = new() { Enabled = true, Host = "localhost" };
 
+        ValidateWebApi(config, Environments.Development).Succeeded.Should().BeTrue();
+    }
+
+    /// <summary>
+    /// Outside Development, a web API without TLS of its own is only reachable through a reverse
+    /// proxy. The login, registration and ticket limiters partition by the connection's address,
+    /// which is then the proxy's: one bucket for the whole hotel, five logins a minute for everyone.
+    /// </summary>
+    [Fact]
+    public void ALoopbackWebApiOutsideDevelopment_WithoutForwardedHeaders_IsRefused()
+    {
+        WebApiConfig config = new() { Enabled = true, Host = "localhost" };
+
+        ValidateOptionsResult result = ValidateWebApi(config, Environments.Production);
+
+        result.Failed.Should().BeTrue();
+        result.FailureMessage.Should().Contain(nameof(WebApiConfig.UseForwardedHeaders));
+    }
+
+    [Fact]
+    public void ALoopbackWebApiOutsideDevelopment_BehindADeclaredProxy_Passes()
+    {
+        WebApiConfig config = new()
+        {
+            Enabled = true,
+            Host = "localhost",
+            UseForwardedHeaders = true,
+            KnownProxies = ["10.0.0.1"],
+        };
+
         ValidateWebApi(config, Environments.Production).Succeeded.Should().BeTrue();
+    }
+
+    [Fact]
+    public void ARemoteWebApiWithoutHttpsOutsideDevelopment_WithoutForwardedHeaders_IsRefused()
+    {
+        // The TLS it lacks is a proxy's: the forwarded address is the one the limiters need.
+        WebApiConfig config = new()
+        {
+            Enabled = true,
+            Host = "0.0.0.0",
+            HttpsEnabled = false,
+            AllowInsecureRemoteHttp = true,
+        };
+
+        ValidateOptionsResult result = ValidateWebApi(config, Environments.Production);
+
+        result.Failed.Should().BeTrue();
+        result.FailureMessage.Should().Contain(nameof(WebApiConfig.UseForwardedHeaders));
     }
 
     [Fact]

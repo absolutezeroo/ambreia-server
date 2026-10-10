@@ -87,6 +87,27 @@ public sealed class WebApiConfigValidator(IHostEnvironment environment)
             );
         }
 
+        // Outside Development, a web API without TLS of its own — a loopback bind, or a remote bind
+        // with HTTPS off — is only reachable through a reverse proxy. The login, registration and
+        // ticket limiters partition by the connection's address, which is then the proxy's: one
+        // bucket for the whole hotel, and the login limit throttles every player as one client.
+        if (
+            !environment.IsDevelopment()
+            && !options.UseForwardedHeaders
+            && (ListenerSecurity.IsLocalHost(options.Host) || !options.HttpsEnabled)
+        )
+        {
+            failures.Add(
+                $"'{WebApiConfig.SECTION_NAME}:{nameof(WebApiConfig.UseForwardedHeaders)}' must be "
+                    + $"enabled outside Development when the web API has no TLS of its own (host "
+                    + $"'{options.Host}', HTTPS {(options.HttpsEnabled ? "on" : "off")}): it is then "
+                    + "served through a reverse proxy, and the per-address rate limits would see the "
+                    + "proxy's address and throttle the whole hotel as one client. Enable it and list "
+                    + $"the proxy in '{WebApiConfig.SECTION_NAME}:{nameof(WebApiConfig.KnownProxies)}' "
+                    + $"or '{WebApiConfig.SECTION_NAME}:{nameof(WebApiConfig.KnownNetworks)}'."
+            );
+        }
+
         if (options.MetricsEnabled && !options.MetricsPath.StartsWith('/'))
         {
             failures.Add(
