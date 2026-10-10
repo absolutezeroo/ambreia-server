@@ -39,6 +39,29 @@ public sealed class MonstersConfigTests
             .Contain("Vortex:Monsters:Ranks:elite:HealthMultiplier");
     }
 
+    /// <summary>Spec Z1 §6.5: a spawn's nearness and checks need a positive radius and period.</summary>
+    [Theory]
+    [InlineData(0, 30, 1000, "AoiRadius")]
+    [InlineData(12, 0, 1000, "AoiSleepSeconds")]
+    [InlineData(12, 30, 0, "SpawnConditionCheckMs")]
+    public void ANearnessSettingBelowOne_IsNamedByItsKey(
+        int radius,
+        int sleep,
+        int check,
+        string key
+    ) =>
+        new MonstersConfig
+        {
+            AoiRadius = radius,
+            AoiSleepSeconds = sleep,
+            SpawnConditionCheckMs = check,
+        }
+            .Problems()
+            .Should()
+            .ContainSingle()
+            .Which.Should()
+            .Contain(key);
+
     [Fact]
     public void AnUnknownImmunity_IsNamedByItsKey()
     {

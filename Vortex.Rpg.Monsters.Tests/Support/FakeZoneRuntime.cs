@@ -6,6 +6,7 @@ using Vortex.Primitives.Players;
 using Vortex.Primitives.Rooms;
 using Vortex.Primitives.World;
 using Vortex.Primitives.World.Layers;
+using Vortex.Primitives.World.Rules;
 using Vortex.Rpg.Zones;
 
 namespace Vortex.Rpg.Monsters.Tests.Support;
@@ -164,6 +165,12 @@ internal sealed class FakeZoneRuntime : IZoneRuntime
 
     public void RaiseTrigger(PlayerId player, ZoneTriggerType type, string target) =>
         Raised.Add((player, type, target));
+
+    /// <summary>How the zone answers a spawn's conditions; they hold unless the test says.</summary>
+    public Func<IReadOnlyList<ZoneCondition>, bool> ConditionsAnswer { get; set; } = _ => true;
+
+    public bool ConditionsHold(IReadOnlyList<ZoneCondition> conditions) =>
+        ConditionsAnswer(conditions);
 
     public Task BroadcastAsync(IComposer composer)
     {

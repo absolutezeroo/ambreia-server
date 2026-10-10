@@ -12,6 +12,7 @@ using Vortex.Primitives.Rooms.Object;
 using Vortex.Primitives.Rooms.Object.Avatars;
 using Vortex.Primitives.World;
 using Vortex.Primitives.World.Layers;
+using Vortex.Primitives.World.Rules;
 using Vortex.Protocol.Messages.Outgoing.Room.Engine;
 using Vortex.Rooms.Object.Avatars.Monster;
 using Vortex.Rpg.Zones;
@@ -97,6 +98,9 @@ public sealed class RoomZoneRuntime(RoomGrain room) : IZoneRuntime
     /// <summary>Held until the tick is over: no trigger runs in the middle of the simulation.</summary>
     public void RaiseTrigger(PlayerId player, ZoneTriggerType type, string target) =>
         _raised.Add((player, type, target));
+
+    public bool ConditionsHold(IReadOnlyList<ZoneCondition> conditions) =>
+        room.ZoneTriggers.ConditionsHold(conditions, PlayerId.Invalid);
 
     public bool IsWalkable(int x, int y) =>
         room.MapModule.InBounds(x, y) && room.MapModule.IsSpawnable(room.MapModule.ToIdx(x, y));

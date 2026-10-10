@@ -34,6 +34,16 @@ public sealed class SpawnPoint
     /// <summary>Its wave still alive; woken again only once this is empty.</summary>
     public HashSet<int> Wave { get; } = [];
 
+    /// <summary>Its conditions hold and, by nearness, a player is or was lately near (spec Z1
+    /// §6.3–6.4): it keeps its monsters and brings them back. Off, it brings nothing.</summary>
+    public bool Active { get; set; }
+
+    /// <summary>When it next looks at its conditions and who is near.</summary>
+    public long NextCheckAtMs { get; set; }
+
+    /// <summary>When a player was last near it.</summary>
+    public long LastNearAtMs { get; set; }
+
     /// <summary>Whether a SpawnGroup naming <paramref name="name"/> wakes it: its id or its group.</summary>
     public bool Answers(string name) => Source.Id == name || Source.Group == name;
 }

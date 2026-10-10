@@ -119,6 +119,8 @@ internal sealed class MonsterWorld
 
     public Task TickAsync() => Simulation.TickAsync(CancellationToken.None);
 
+    /// <summary>A spawn awake for any player in the zone, wherever they stand: the tests put their
+    /// players far from it on purpose. Activation by nearness has its own tests.</summary>
     public static ZoneSpawn WolvesAt(int count, params (int X, int Y)[] area) =>
         new()
         {
@@ -130,6 +132,7 @@ internal sealed class MonsterWorld
             RespawnSeconds = 30,
             WanderRadius = 2,
             AggroRadius = 4,
+            AoiActivation = false,
         };
 
     private IGrainFactory Characters() =>

@@ -1,10 +1,12 @@
 using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Vortex.Primitives.Networking;
 using Vortex.Primitives.Players;
 using Vortex.Primitives.Rooms;
 using Vortex.Primitives.World;
 using Vortex.Primitives.World.Layers;
+using Vortex.Primitives.World.Rules;
 
 namespace Vortex.Rpg.Zones;
 
@@ -76,6 +78,10 @@ public interface IZoneRuntime
     /// Z1 §5): a monster killed, or whatever else a module sees happen. Nothing for a player who left.
     /// </summary>
     public void RaiseTrigger(PlayerId player, ZoneTriggerType type, string target);
+
+    /// <summary>Whether every condition holds for nobody in particular (a spawn's, spec Z1 §6.3):
+    /// time of day and areas answer, a player's level or items never hold.</summary>
+    public bool ConditionsHold(IReadOnlyList<ZoneCondition> conditions);
 
     /// <summary>To everyone in the zone.</summary>
     public Task BroadcastAsync(IComposer composer);

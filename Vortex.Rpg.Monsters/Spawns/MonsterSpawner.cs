@@ -13,11 +13,13 @@ using Vortex.Rpg.Zones;
 namespace Vortex.Rpg.Monsters.Spawns;
 
 /// <summary>
-/// A zone's monsters coming and going (spec M1a §5.2, Z1 §6): every spawn brings between its
-/// <c>Min</c> and <c>Max</c> the first tick a player is there, each on a free walkable non-safe cell
-/// of its area at a level in its range; a dead one comes back after <c>RespawnSeconds</c>, one per
-/// spawn and per tick. A dormant spawn brings nothing until a trigger wakes it, then one wave that
-/// never comes back. A new zone activation starts from the spawns again: nothing is kept.
+/// A zone's monsters coming and going (spec M1a §5.2, Z1 §6): a spawn wakes when its conditions
+/// hold and — by nearness — a player comes within reach; it then brings between its <c>Min</c> and
+/// <c>Max</c>, each on a free walkable non-safe cell of its area at a level in its range, and a dead
+/// one comes back after <c>RespawnSeconds</c>, one per spawn and per tick. It sleeps when its
+/// conditions stop holding or nobody has been near for a while: its idle monsters go, those in a
+/// fight stay. A dormant spawn brings nothing until a trigger wakes it, then one wave that never
+/// comes back. A new zone activation starts from the spawns again: nothing is kept.
 /// </summary>
 public sealed class MonsterSpawner(
     IZoneRuntime zone,
@@ -29,30 +31,25 @@ public sealed class MonsterSpawner(
 )
 {
     private readonly Dictionary<int, LiveMonster> _live = [];
-    private bool _awake;
 
     public IReadOnlyDictionary<int, LiveMonster> Live => _live;
 
+    /// <summary>Called on each tick a player is in the zone.</summary>
     public void Tick(long now)
     {
-        if (!_awake)
-        {
-            _awake = true;
-
-            foreach (SpawnPoint point in points.Where(p => !p.Dormant))
-            {
-                for (int i = 0; i < Count(point); i++)
-                {
-                    if (Spawn(point, now) is null)
-                    {
-                        point.Due.Enqueue(now + 1000);
-                    }
-                }
-            }
-        }
-
         foreach (SpawnPoint point in points)
         {
+            if (now >= point.NextCheckAtMs)
+            {
+                point.NextCheckAtMs = now + config.SpawnConditionCheckMs;
+                Check(point, now);
+            }
+
+            if (!point.Active)
+            {
+                continue;
+            }
+
             if (point.WaveDue)
             {
                 SpawnWave(point, now);
@@ -72,6 +69,107 @@ public sealed class MonsterSpawner(
                 // No free cell yet: it tries again in a second.
                 point.Due.Enqueue(now + 1000);
             }
+        }
+    }
+
+    /// <summary>
+    /// Spec Z1 §6.3–6.4: the spawn should run while its conditions hold and — by nearness — a player
+    /// is near, or was within <c>AoiSleepSeconds</c>. Switched on, it fills; off, it empties.
+    /// </summary>
+    private void Check(SpawnPoint point, long now)
+    {
+        bool held =
+            point.Source.Conditions.Count == 0 || zone.ConditionsHold(point.Source.Conditions);
+        bool near = !point.Source.AoiActivation || AnyPlayerNear(point);
+
+        if (near)
+        {
+            point.LastNearAtMs = now;
+        }
+
+        bool wanted =
+            held
+            && (near || point.Active && now - point.LastNearAtMs < config.AoiSleepSeconds * 1000L);
+
+        if (wanted == point.Active)
+        {
+            return;
+        }
+
+        point.Active = wanted;
+
+        if (wanted)
+        {
+            Fill(point, now);
+        }
+        else
+        {
+            Empty(point);
+        }
+    }
+
+    /// <summary>A player within <c>AoiRadius</c> cells (Chebyshev) of a cell of the spawn's area.</summary>
+    private bool AnyPlayerNear(SpawnPoint point)
+    {
+        int radius = config.AoiRadius;
+
+        foreach (Combatant player in combat.Players)
+        {
+            if (zone.PositionOf(player.ObjectId) is not { } at)
+            {
+                continue;
+            }
+
+            foreach (ZoneCell cell in point.Source.Area)
+            {
+                if (Math.Max(Math.Abs(cell.X - at.X), Math.Abs(cell.Y - at.Y)) <= radius)
+                {
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
+
+    /// <summary>Back to between Min and Max, counting the monsters it kept in a fight; a dormant
+    /// spawn only waits for its wave.</summary>
+    private void Fill(SpawnPoint point, long now)
+    {
+        point.Due.Clear();
+
+        if (point.Dormant)
+        {
+            return;
+        }
+
+        int missing = Count(point) - _live.Values.Count(m => m.Spawn == point);
+
+        for (int i = 0; i < missing; i++)
+        {
+            if (Spawn(point, now) is null)
+            {
+                point.Due.Enqueue(now + 1000);
+            }
+        }
+    }
+
+    /// <summary>Its monsters that are not fighting go, with their summons; none is due back.</summary>
+    private void Empty(SpawnPoint point)
+    {
+        point.Due.Clear();
+
+        foreach (LiveMonster m in _live.Values.Where(m => m.Spawn == point).ToArray())
+        {
+            if (!combat.Combatants.TryGetValue(m.ObjectId, out Combatant? c) || c.InCombat)
+            {
+                continue;
+            }
+
+            Dismiss(m);
+            combat.RemoveMonster(m.ObjectId);
+            _live.Remove(m.ObjectId);
+            point.Wave.Remove(m.ObjectId);
         }
     }
 

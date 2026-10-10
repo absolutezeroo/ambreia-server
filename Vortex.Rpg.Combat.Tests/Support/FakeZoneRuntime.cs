@@ -6,6 +6,7 @@ using Vortex.Primitives.Players;
 using Vortex.Primitives.Rooms;
 using Vortex.Primitives.World;
 using Vortex.Primitives.World.Layers;
+using Vortex.Primitives.World.Rules;
 using Vortex.Rpg.Zones;
 
 namespace Vortex.Rpg.Combat.Tests.Support;
@@ -159,6 +160,8 @@ internal sealed class FakeZoneRuntime : IZoneRuntime
 
     public void RaiseTrigger(PlayerId player, ZoneTriggerType type, string target) =>
         Raised.Add((player, type, target));
+
+    public bool ConditionsHold(IReadOnlyList<ZoneCondition> conditions) => true;
 
     public Task BroadcastAsync(IComposer composer)
     {

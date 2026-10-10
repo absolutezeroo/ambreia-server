@@ -39,6 +39,16 @@ public sealed class MonstersConfig
     /// <summary>How long a ranged monster stands still before shooting after it moved.</summary>
     public int RangedAimMs { get; set; } = 250;
 
+    /// <summary>A spawn woken by nearness wakes when a player is this many cells (Chebyshev) or
+    /// fewer from a cell of its area (spec Z1 §6.4).</summary>
+    public int AoiRadius { get; set; } = 12;
+
+    /// <summary>With nobody near for this long, such a spawn sleeps: its idle monsters go.</summary>
+    public int AoiSleepSeconds { get; set; } = 30;
+
+    /// <summary>How often a spawn looks again at its conditions and who is near.</summary>
+    public int SpawnConditionCheckMs { get; set; } = 1000;
+
     public RankScale ScaleFor(MonsterRank rank)
     {
         if (!Ranks.TryGetValue(rank.ToString(), out MonsterRankConfig? r))
@@ -92,6 +102,18 @@ public sealed class MonstersConfig
         if (MaxSummonsPerMonster < 0 || RangedAimMs < 0)
         {
             problems.Add($"{SECTION_NAME}: MaxSummonsPerMonster and RangedAimMs are not negative.");
+        }
+
+        foreach (
+            (string field, int value) in new[]
+            {
+                (nameof(AoiRadius), AoiRadius),
+                (nameof(AoiSleepSeconds), AoiSleepSeconds),
+                (nameof(SpawnConditionCheckMs), SpawnConditionCheckMs),
+            }.Where(f => f.Item2 < 1)
+        )
+        {
+            problems.Add($"{SECTION_NAME}:{field}: {value} is not 1 or more.");
         }
 
         return problems;
