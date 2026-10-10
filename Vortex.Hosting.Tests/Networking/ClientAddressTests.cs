@@ -45,12 +45,42 @@ public sealed class ClientAddressTests
     }
 
     [Fact]
-    public void FromATrustedProxy_WithoutProxyProtocol_TheFirstForwardedHopIsTheClient()
+    public void FromATrustedProxy_WithoutProxyProtocol_TheNearestUnlistedHopIsTheClient()
+    {
+        IReadOnlySet<IPAddress> twoProxies = new HashSet<IPAddress>
+        {
+            Proxy,
+            IPAddress.Parse("10.0.0.1"),
+        };
+
+        ClientAddress
+            .Resolve(Proxy, null, "203.0.113.7, 10.0.0.1", twoProxies)
+            .Should()
+            .Be("203.0.113.7", "read from the right, every listed proxy is skipped");
+    }
+
+    /// <summary>A client can send its own X-Forwarded-For; a proxy that appends leaves it in front.
+    /// The leftmost hop is therefore never believed: the client is the first hop from the right
+    /// that is not one of our proxies.</summary>
+    [Fact]
+    public void AForgedLeftmostHop_IsIgnored()
+    {
+        ClientAddress
+            .Resolve(Proxy, null, "6.6.6.6, 203.0.113.7", Trusted)
+            .Should()
+            .Be("203.0.113.7");
+    }
+
+    [Fact]
+    public void AnUnlistedIntermediateProxy_IsTheClientAsFarAsWeKnow()
     {
         ClientAddress
             .Resolve(Proxy, null, "203.0.113.7, 10.0.0.1", Trusted)
             .Should()
-            .Be("203.0.113.7");
+            .Be(
+                "10.0.0.1",
+                "an operator who forgets a proxy sees that proxy, never a forged client"
+            );
     }
 
     [Fact]

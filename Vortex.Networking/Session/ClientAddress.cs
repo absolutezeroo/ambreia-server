@@ -40,12 +40,32 @@ public static class ClientAddress
             return proxyProtocolSource.ToString();
         }
 
-        // "client, proxy1, proxy2": the first hop is the client; the rest are proxies on the way.
-        string? firstHop = forwardedFor?.Split(',', 2)[0].Trim();
+        // "client, proxy1, proxy2": read from the right, the side the proxies wrote. The first hop
+        // that is not a listed proxy is the client. Never the leftmost: a client can send its own
+        // X-Forwarded-For, and a proxy that appends rather than overwrites leaves it in front.
+        if (forwardedFor is null)
+        {
+            return transport.ToString();
+        }
 
-        return firstHop is { Length: > 0 } && IPAddress.TryParse(firstHop, out IPAddress? client)
-            ? client.ToString()
-            : transport.ToString();
+        string[] hops = forwardedFor.Split(',');
+
+        for (int i = hops.Length - 1; i >= 0; i--)
+        {
+            if (!IPAddress.TryParse(hops[i].Trim(), out IPAddress? hop))
+            {
+                // A hop that is not an address is a header nobody trustworthy wrote.
+                return transport.ToString();
+            }
+
+            if (!trusted.Contains(hop))
+            {
+                return hop.ToString();
+            }
+        }
+
+        // Every hop was one of ours: the proxy is the client (a probe from the proxy itself).
+        return transport.ToString();
     }
 
     /// <summary>The configured list, parsed once; an entry that is not an address is dropped.</summary>

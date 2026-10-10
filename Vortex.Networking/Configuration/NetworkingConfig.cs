@@ -55,7 +55,9 @@ public class NetworkingConfig
     ///     The reverse proxies whose word about the client's address is taken: PROXY protocol v1/v2
     ///     on either listener (SuperSocket's <c>serverOptions:&lt;Server&gt;:enableProxyProtocol</c>
     ///     must be on for the header to be read), <c>X-Forwarded-For</c> on the WebSocket handshake.
-    ///     Literal IP addresses. Empty — the default — means the transport address is the client's.
+    ///     Literal IP addresses, every proxy on the path. Empty — the default — means the transport
+    ///     address is the client's. <c>X-Forwarded-For</c> is read from the right: the first hop that
+    ///     is not listed here is the client, so a header the client forged in front is never believed.
     /// </summary>
     /// <remarks>
     ///     Behind the TLS proxy the README recommends, every connection comes from the proxy's
