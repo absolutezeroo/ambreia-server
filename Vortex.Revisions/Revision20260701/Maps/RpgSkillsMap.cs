@@ -50,5 +50,9 @@ internal sealed class RpgSkillsMap : IRevisionMap
                 MessageComposer.RpgSkillEventsMessageComposer
             )
         );
+        builder.MapSerializer(
+            typeof(RpgTelegraphsMessageComposer),
+            new RpgTelegraphsMessageComposerSerializer(MessageComposer.RpgTelegraphsMessageComposer)
+        );
     }
 }

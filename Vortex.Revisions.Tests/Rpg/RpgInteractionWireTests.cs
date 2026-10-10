@@ -58,9 +58,30 @@ public sealed class RpgInteractionWireTests
             }
         );
 
-        (p.PopInt(), p.PopString(), p.PopString(), p.PopInt(), p.PopString())
+        (p.PopInt(), p.PopString(), p.PopString(), p.PopInt(), p.PopString(), p.PopString())
             .Should()
-            .Be((202, "player", "Ann", 3, "class.warrior"));
+            .Be((202, "player", "Ann", 3, "class.warrior", "normal"));
+        p.Remaining.Should().Be(0);
+    }
+
+    [Fact]
+    public void AnEliteTarget_EndsWithItsRank()
+    {
+        ClientPacket p = Serialize(
+            new RpgTargetMessageComposer
+            {
+                ObjectId = 31,
+                Kind = RpgTargetMessageComposer.KindMonster,
+                Name = "monster.forest.alpha_wolf",
+                Level = 4,
+                ClassId = string.Empty,
+                Rank = RpgTargetMessageComposer.RankElite,
+            }
+        );
+
+        (p.PopInt(), p.PopString(), p.PopString(), p.PopInt(), p.PopString(), p.PopString())
+            .Should()
+            .Be((31, "monster", "monster.forest.alpha_wolf", 4, "", "elite"));
         p.Remaining.Should().Be(0);
     }
 

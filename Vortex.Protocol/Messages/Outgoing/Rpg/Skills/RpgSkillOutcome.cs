@@ -12,6 +12,9 @@ public sealed record RpgSkillOutcome
     public const string Dodge = "dodge";
     public const string Heal = "heal";
 
+    /// <summary>A status its target's rank ignores (spec M1c §7.1).</summary>
+    public const string Immune = "immune";
+
     [Id(0)]
     public required int SourceObjectId { get; init; }
 

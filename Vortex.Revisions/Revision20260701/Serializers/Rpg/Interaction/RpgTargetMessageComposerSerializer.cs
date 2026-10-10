@@ -13,6 +13,7 @@ internal class RpgTargetMessageComposerSerializer(int header)
             .WriteString(message.Kind)
             .WriteString(message.Name)
             .WriteInteger(message.Level)
-            .WriteString(message.ClassId);
+            .WriteString(message.ClassId)
+            .WriteString(message.Rank);
     }
 }

@@ -15,6 +15,10 @@ public sealed record RpgTargetMessageComposer : IComposer
     /// <summary>A monster (spec M1a §9.1): its name is its content id, its class empty.</summary>
     public const string KindMonster = "monster";
 
+    public const string RankNormal = "normal";
+    public const string RankElite = "elite";
+    public const string RankBoss = "boss";
+
     /// <summary>No target: cleared by the player, an invalid id, or the target leaving.</summary>
     public static readonly RpgTargetMessageComposer None = new()
     {
@@ -40,4 +44,9 @@ public sealed record RpgTargetMessageComposer : IComposer
 
     [Id(4)]
     public required string ClassId { get; init; }
+
+    /// <summary>The last field (spec M1c §9.3): a client not yet updated reads up to the class and
+    /// ignores it. A player is always normal.</summary>
+    [Id(5)]
+    public string Rank { get; init; } = RankNormal;
 }

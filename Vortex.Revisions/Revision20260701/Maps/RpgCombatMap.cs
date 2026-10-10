@@ -33,5 +33,11 @@ internal sealed class RpgCombatMap : IRevisionMap
                 MessageComposer.RpgCombatResultMessageComposer
             )
         );
+        builder.MapSerializer(
+            typeof(RpgMonsterYellMessageComposer),
+            new RpgMonsterYellMessageComposerSerializer(
+                MessageComposer.RpgMonsterYellMessageComposer
+            )
+        );
     }
 }

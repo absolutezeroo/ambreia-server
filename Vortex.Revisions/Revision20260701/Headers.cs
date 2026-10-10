@@ -143,5 +143,7 @@ internal static class MessageComposer
     public const int RpgCooldownsMessageComposer = 9022; // RPG (spec §3.7)
     public const int RpgStatusesMessageComposer = 9023; // RPG (spec §3.7)
     public const int RpgSkillEventsMessageComposer = 9024; // RPG (spec §3.7)
+    public const int RpgTelegraphsMessageComposer = 9025; // RPG (spec §3.7)
+    public const int RpgMonsterYellMessageComposer = 9026; // RPG (spec §3.7)
     #endregion
 }
