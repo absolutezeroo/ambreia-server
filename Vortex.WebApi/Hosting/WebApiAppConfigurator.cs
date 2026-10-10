@@ -23,6 +23,8 @@ internal static class WebApiAppConfigurator
 
     public static void ConfigureServices(IServiceCollection services, WebApiConfig config)
     {
+        // The body of a 500: a problem document, never the exception (see ConfigurePipeline).
+        services.AddProblemDetails();
         AddCors(services, config);
         AddRateLimiting(services, config);
         AddHttpsRedirection(services, config);
@@ -32,6 +34,12 @@ internal static class WebApiAppConfigurator
 
     public static void ConfigurePipeline(WebApplication app, WebApiConfig config)
     {
+        // Outermost, so every unhandled exception below it — route, filter, middleware — is logged
+        // through the forwarded logger and answered with a bare 500 problem document. Without it the
+        // answer depends on the sub-host's environment: an empty 500, or the developer page with
+        // the stack and the configuration in it.
+        app.UseExceptionHandler();
+
         app.Use(
             async (ctx, next) =>
             {

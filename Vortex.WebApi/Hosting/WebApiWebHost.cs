@@ -156,7 +156,11 @@ internal sealed class WebApiWebHost(
 
         ConfigureKestrel(builder);
 
+        // The web app is its own host with its own logging: cleared, then pointed at the hotel's
+        // logger factory, so a Kestrel or route exception lands in the same console and sinks as
+        // everything else instead of nowhere.
         builder.Logging.ClearProviders();
+        builder.Services.AddSingleton(rootServices.GetRequiredService<ILoggerFactory>());
 
         ForwardSingletons(builder.Services);
         ConfigureForwardedHeaders(builder.Services);

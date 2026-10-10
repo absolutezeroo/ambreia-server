@@ -53,10 +53,15 @@ internal sealed class WebApiTestFactory : IAsyncDisposable
     /// <c>Connection.RemoteIpAddress</c> null, which no real Kestrel request ever is, and endpoints
     /// that gate on loopback need it to be something.
     /// </param>
+    /// <param name="mapExtra">
+    /// Extra routes mapped beside the real ones, for a test about the pipeline itself (an endpoint
+    /// that throws, say) rather than about a route the API ships.
+    /// </param>
     public WebApiTestFactory(
         Action<WebApiConfig>? configure = null,
         IPAddress? remoteIp = null,
-        string[]? capabilities = null
+        string[]? capabilities = null,
+        Action<WebApplication>? mapExtra = null
     )
     {
         WebApiConfig config = new WebApiConfig
@@ -143,6 +148,7 @@ internal sealed class WebApiTestFactory : IAsyncDisposable
 
         WebApiAppConfigurator.ConfigurePipeline(_app, config);
         WebApiEndpoints.Map(_app);
+        mapExtra?.Invoke(_app);
 
         // Same call and same ordering as WebApiWebHost: after the API routes, so the site's
         // catch-all never shadows /api. It no-ops unless a test sets SiteRoot.
