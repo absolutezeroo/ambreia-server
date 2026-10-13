@@ -115,13 +115,12 @@ internal sealed class QuestLogGrain(
 
         IPlayerCharacterGrain character = grains.GetPlayerCharacterGrain(_player);
 
-        foreach (QuestObjectiveDefinition o in quest.Objectives.Where(o => o.Kind == "collect"))
+        // Each held kind takes what it takes (collect, its consumed items): the grain names no kind.
+        foreach (QuestObjectiveDefinition o in quest.Objectives)
         {
-            CollectFields f = QuestFields.Read<CollectFields>(o.Fields);
-
-            if (f.Consume)
+            if (_objectives.GetValueOrDefault(o.Kind) is IHeldObjectiveKind held)
             {
-                await character.RemoveItemsAsync(f.Item, o.Count);
+                await held.HandInAsync(o, character);
             }
         }
 

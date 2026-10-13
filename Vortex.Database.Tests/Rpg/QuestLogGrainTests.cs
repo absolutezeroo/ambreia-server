@@ -104,6 +104,36 @@ public sealed class QuestLogGrainTests : IAsyncLifetime
         ],
     };
 
+    private static readonly QuestDefinition Badge = new()
+    {
+        Id = "quest.badge",
+        Kind = "quest",
+        Level = 1,
+        Objectives = [Objective("badge", 1)],
+    };
+
+    /// <summary>A held kind the engine has never heard of: always held, it notes its hand-in.</summary>
+    private sealed class BadgeObjective(List<string> handedIn) : IHeldObjectiveKind
+    {
+        public string Kind => "badge";
+
+        public int Current(QuestObjectiveDefinition objective, QuestHoldings holdings) => 1;
+
+        public Task HandInAsync(QuestObjectiveDefinition objective, IPlayerCharacterGrain character)
+        {
+            handedIn.Add(objective.Kind);
+
+            return Task.CompletedTask;
+        }
+
+        public IEnumerable<string> Problems(
+            QuestObjectiveDefinition objective,
+            Vortex.Rpg.Content.Validation.ContentCheck check
+        ) => [];
+    }
+
+    private readonly List<string> _handedIn = [];
+
     private static QuestSignal Wolf() =>
         new(
             QuestSignals.MonsterKilled,
@@ -186,6 +216,7 @@ public sealed class QuestLogGrainTests : IAsyncLifetime
                 {
                     "quest.wolves" => Wolves,
                     "quest.shards" => Shards,
+                    "quest.badge" => Badge,
                     _ => null,
                 }
                 : null
@@ -195,7 +226,12 @@ public sealed class QuestLogGrainTests : IAsyncLifetime
             Player,
             new OptionsDbContextFactory(_options),
             content,
-            new IQuestObjectiveRule[] { new KillObjective(), new CollectObjective() },
+            new IQuestObjectiveRule[]
+            {
+                new KillObjective(),
+                new CollectObjective(),
+                new BadgeObjective(_handedIn),
+            },
             new IQuestRewardKind[] { new XpReward(), new ItemsReward() },
             Grains(),
             FakeProxy.Create<IEventPublisher>(call =>
@@ -296,5 +332,17 @@ public sealed class QuestLogGrainTests : IAsyncLifetime
         (await grain.AbandonAsync(Wolves.Id)).Should().Be(QuestCodes.Ok);
 
         (await (await ActivateAsync()).GetLogAsync()).Entries.Should().BeEmpty();
+    }
+
+    /// <summary>The hand-in asks each held kind what it does (collect takes its items): the grain names no kind.</summary>
+    [Fact]
+    public async Task HandingIn_TellsEveryHeldKind_EvenOneTheEngineDoesNotKnow()
+    {
+        QuestLogGrain grain = await ActivateAsync();
+        await grain.AcceptAsync(Badge.Id);
+
+        (await grain.CompleteAsync(Badge.Id)).Should().Be(QuestCodes.Ok);
+
+        _handedIn.Should().Equal("badge");
     }
 }

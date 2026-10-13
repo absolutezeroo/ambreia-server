@@ -1,4 +1,6 @@
 using System.Collections.Generic;
+using System.Threading.Tasks;
+using Vortex.Primitives.Rpg.Characters.Grains;
 using Vortex.Rpg.Content.Definitions;
 using Vortex.Rpg.Content.Rules;
 using Vortex.Rpg.Content.Validation;
@@ -12,6 +14,19 @@ public sealed class CollectObjective : IHeldObjectiveKind
 
     public int Current(QuestObjectiveDefinition objective, QuestHoldings holdings) =>
         holdings.Items.GetValueOrDefault(QuestFields.Read<CollectFields>(objective.Fields).Item);
+
+    public async Task HandInAsync(
+        QuestObjectiveDefinition objective,
+        IPlayerCharacterGrain character
+    )
+    {
+        CollectFields f = QuestFields.Read<CollectFields>(objective.Fields);
+
+        if (f.Consume)
+        {
+            await character.RemoveItemsAsync(f.Item, objective.Count);
+        }
+    }
 
     public IEnumerable<string> Problems(QuestObjectiveDefinition objective, ContentCheck check)
     {
