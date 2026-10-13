@@ -29,15 +29,39 @@ public sealed class AutoAttackHandlerTests
         _calls.Should().Equal("room 12: player 7 auto-attack True");
     }
 
+    [Fact]
+    public async Task ADeathChoice_GoesToThePlayersRoom()
+    {
+        await new RpgDeathChoiceMessageHandler(Grains()).HandleAsync(
+            new RpgDeathChoiceMessage { Choice = RpgDeathChoiceMessage.Release },
+            Context(7, 12),
+            CancellationToken.None
+        );
+
+        _calls.Should().Equal("room 12: player 7 chooses release");
+    }
+
     [Theory]
     [InlineData(0, 12)]
     [InlineData(7, 0)]
     public async Task WithoutAPlayerInARoom_NothingIsCalled(int playerId, int roomId)
     {
         await HandleAsync(playerId, roomId, false);
+        await new RpgDeathChoiceMessageHandler(Grains()).HandleAsync(
+            new RpgDeathChoiceMessage { Choice = RpgDeathChoiceMessage.Wait },
+            Context(playerId, roomId),
+            CancellationToken.None
+        );
 
         _calls.Should().BeEmpty();
     }
+
+    private static MessageContext Context(int playerId, int roomId) =>
+        new(
+            FakeProxy.Create<ISessionContext>(_ => null),
+            new PlayerId(playerId),
+            new RoomId(roomId)
+        );
 
     private Task HandleAsync(int playerId, int roomId, bool active) =>
         new RpgAutoAttackMessageHandler(Grains())
@@ -59,7 +83,9 @@ public sealed class AutoAttackHandlerTests
                 {
                     ActionContext ctx = (ActionContext)inner.Args![0]!;
                     _calls.Add(
-                        $"room {(long)call.Args![0]!}: player {ctx.PlayerId.Value} auto-attack {inner.Args[1]}"
+                        inner.Method.Name == nameof(IRoomCombat.SetAutoAttackAsync)
+                            ? $"room {(long)call.Args![0]!}: player {ctx.PlayerId.Value} auto-attack {inner.Args[1]}"
+                            : $"room {(long)call.Args![0]!}: player {ctx.PlayerId.Value} chooses {inner.Args[1]}"
                     );
 
                     return Task.CompletedTask;

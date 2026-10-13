@@ -7,6 +7,7 @@ using Vortex.Logging.Extensions;
 using Vortex.Primitives.Events.Combat;
 using Vortex.Primitives.Orleans;
 using Vortex.Primitives.Players;
+using Vortex.Protocol.Messages.Incoming.Rpg.Combat;
 using Vortex.Protocol.Messages.Outgoing.Rpg.Combat;
 using Vortex.Rpg.Combat.Combatants;
 using Vortex.Rpg.Combat.Systems;
@@ -55,6 +56,9 @@ public sealed partial class CombatZone
         }
 
         c.GhostUntilMs = now + config.AutoReleaseSeconds * 1000L;
+        c.Waiting = false;
+        c.Offer = null;
+        c.DeathChoice = null;
         c.TargetId = null;
         // A death ends every cast and status (spec M1b §6.4, §7.4); a ghost carries nothing.
         Removing(c, CombatantExit.Died);
@@ -178,12 +182,34 @@ public sealed partial class CombatZone
         }
     }
 
-    /// <summary>A ghost whose time is up stands again at the zone's respawn cell (spec §8.1).</summary>
+    /// <summary>La machine KO (M1d §2.3) : accepter une offre relève sur place ; relâcher sur
+    /// demande, à l'auto-release ou au plafond relève au point de la zone.</summary>
     private void Respawns(long now)
     {
         foreach (Combatant c in _combatants.Values)
         {
-            if (c.GhostUntilMs is not { } until || now < until)
+            if (c.KoSinceMs is not { } since)
+            {
+                continue;
+            }
+
+            if (
+                c.DeathChoice == RpgDeathChoiceMessage.Accept
+                && c.Offer is { } offer
+                && now < offer.ExpiresAtMs
+            )
+            {
+                StandUp(c, c.MaxHealth * offer.HealthPercent / 100, c.MaxMana * offer.HealthPercent / 100);
+
+                continue;
+            }
+
+            bool release =
+                c.DeathChoice == RpgDeathChoiceMessage.Release
+                || !c.Waiting && c.GhostUntilMs is { } until && now >= until
+                || now >= since + config.MaxKoSeconds * 1000L;
+
+            if (!release)
             {
                 continue;
             }
@@ -193,13 +219,22 @@ public sealed partial class CombatZone
                 runtime.Teleport(c.ObjectId, cell.X, cell.Y);
             }
 
-            c.GhostUntilMs = null;
-            c.KoSinceMs = null;
-            c.Health = RespawnHealth(c);
-            LeaveCombat(c);
-            runtime.SetPosture(c.ObjectId, null);
-            _vitalsChanged.Add(c.ObjectId);
-            _selfChanged.Add(c.ObjectId);
+            StandUp(c, RespawnHealth(c), c.Mana);
         }
+    }
+
+    private void StandUp(Combatant c, int health, int mana)
+    {
+        c.KoSinceMs = null;
+        c.GhostUntilMs = null;
+        c.Waiting = false;
+        c.Offer = null;
+        c.DeathChoice = null;
+        c.Health = Math.Max(1, health);
+        c.Mana = mana;
+        LeaveCombat(c);
+        runtime.SetPosture(c.ObjectId, null);
+        _vitalsChanged.Add(c.ObjectId);
+        _selfChanged.Add(c.ObjectId);
     }
 }

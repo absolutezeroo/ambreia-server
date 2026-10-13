@@ -167,6 +167,8 @@ public sealed partial class CombatZone(
             ClearOutbox();
         }
 
+        // Un joueur KO qui part relâche (M1d §2.3) : une offre pendante tombe avec lui.
+        c.Offer = null;
         int health = c.IsGhost || c.IsDead ? RespawnHealth(c) : c.Health;
 
         try
@@ -452,10 +454,36 @@ public sealed partial class CombatZone(
             ],
         };
 
-        if (_players.TryGetValue(player, out int id))
+        if (!_players.TryGetValue(player, out int id))
         {
-            yield return SelfVitals(_combatants[id]);
+            yield break;
         }
+
+        // Un joueur KO retrouve son écran : le délai qui reste, puis l'offre pendante.
+        if (_combatants[id] is { IsGhost: true } ko)
+        {
+            long now = runtime.NowMs;
+
+            yield return new RpgDeathMessageComposer
+            {
+                RespawnSeconds =
+                    ko.Waiting || ko.GhostUntilMs is not { } until
+                        ? 0
+                        : (int)Math.Max(0, (until - now) / 1000),
+            };
+
+            if (ko.Offer is { } offer && offer.ExpiresAtMs > now)
+            {
+                yield return new RpgResurrectOfferMessageComposer
+                {
+                    CasterObjectId = offer.CasterObjectId,
+                    HealthPercent = offer.HealthPercent,
+                    ExpiresMs = (int)(offer.ExpiresAtMs - now),
+                };
+            }
+        }
+
+        yield return SelfVitals(_combatants[id]);
     }
 
     private void Apply(Combatant c, CharacterStatsSnapshot stats)

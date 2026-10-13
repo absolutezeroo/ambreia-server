@@ -63,6 +63,9 @@ public interface IZoneSimulation
     /// <summary>The player stops his own cast.</summary>
     public void CancelCast(PlayerId player);
 
+    /// <summary>Le choix d'un joueur KO : wait, release, accept, decline (M1d §2.3).</summary>
+    public void DeathChoice(PlayerId player, string choice);
+
     /// <summary>The player walked on his own: a cast that does not allow it ends (spec M1b §6.4).</summary>
     public void PlayerWalked(PlayerId player);
 }

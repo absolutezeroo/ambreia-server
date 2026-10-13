@@ -69,4 +69,17 @@ public sealed partial class RoomGrain
 
         return Simulation.SetAutoAttackAsync(ctx.PlayerId, active, ct);
     }
+
+    public Task DeathChoiceAsync(ActionContext ctx, string choice, CancellationToken ct)
+    {
+        // Actor guard: a real player with an avatar in this room.
+        if (ctx.PlayerId <= 0 || !_state.AvatarsByPlayerId.ContainsKey(ctx.PlayerId))
+        {
+            return Task.CompletedTask;
+        }
+
+        Simulation.DeathChoice(ctx.PlayerId, choice);
+
+        return Task.CompletedTask;
+    }
 }

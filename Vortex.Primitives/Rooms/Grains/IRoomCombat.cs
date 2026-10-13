@@ -28,6 +28,9 @@ public interface IRoomCombat : IGrainWithIntegerKey
     /// <summary>Démarre ou arrête l'attaque auto sur la cible choisie (M1d §2.2) ; la zone répond.</summary>
     public Task SetAutoAttackAsync(ActionContext ctx, bool active, CancellationToken ct);
 
+    /// <summary>Le choix d'un joueur KO (M1d §2.3).</summary>
+    public Task DeathChoiceAsync(ActionContext ctx, string choice, CancellationToken ct);
+
     /// <summary>The player's character changed while he is here (an item, a level, a class): his
     /// stats, level, range and threat follow, his health is bounded — the profile's own health and
     /// mana are not read. Server side only, through his presence.</summary>

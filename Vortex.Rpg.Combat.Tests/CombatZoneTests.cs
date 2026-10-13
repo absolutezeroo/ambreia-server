@@ -13,6 +13,7 @@ using Vortex.Primitives.Observability;
 using Vortex.Primitives.Players;
 using Vortex.Primitives.Rpg.Characters;
 using Vortex.Primitives.Rpg.Characters.Grains;
+using Vortex.Protocol.Messages.Incoming.Rpg.Combat;
 using Vortex.Protocol.Messages.Outgoing.Rpg.Combat;
 using Vortex.Rpg.Combat.Combatants;
 using Vortex.Rpg.Combat.Configuration;
@@ -244,7 +245,7 @@ public sealed class CombatZoneTests
     }
 
     [Fact]
-    public async Task APlayerKilled_BecomesAGhost_ThenRespawnsAtHalfHealth_AndIsWorn()
+    public async Task APlayerKilled_IsKo_ThenAutoReleasesAtHalfHealth_AndIsWorn()
     {
         await OnePlayerAsync();
         int wolf = AddWolf(6, 5);
@@ -254,21 +255,81 @@ public sealed class CombatZoneTests
         await _combat.TickAsync(CancellationToken.None);
 
         _zone.Postures[1].Should().Be("lay");
-        Sent<RpgDeathMessageComposer>()
-            .Should()
-            .ContainSingle()
-            .Which.RespawnSeconds.Should()
-            .Be(60);
+        Sent<RpgDeathMessageComposer>().Single().RespawnSeconds.Should().Be(60);
         _calls.Should().Contain("wear 7: 10");
-        _combat.Combatants[wolf].TargetId.Should().BeNull("a ghost is no target");
+        _combat.Combatants[wolf].TargetId.Should().BeNull("a KO player is no target");
+        _combat.Combatants[1].IsGhost.Should().BeTrue();
         _events.OfType<PlayerDiedEvent>().Should().ContainSingle();
 
-        _zone.NowMs += 60_000;
+        _zone.NowMs += 59_000;
+        await _combat.TickAsync(CancellationToken.None);
+        _zone.Postures[1].Should().Be("lay", "not yet");
+
+        _zone.NowMs += 1_000;
         await _combat.TickAsync(CancellationToken.None);
 
         _zone.Teleports.Should().Equal((1, 0, 0));
         _zone.Postures[1].Should().BeNull();
+        _combat.Combatants[1].IsGhost.Should().BeFalse();
         _combat.Combatants[1].Health.Should().Be(50);
+    }
+
+    [Fact]
+    public async Task Waiting_CancelsTheAutoRelease_UntilTheCap()
+    {
+        await KoAsync();
+        _combat.DeathChoice(new PlayerId(7), RpgDeathChoiceMessage.Wait);
+
+        _zone.NowMs += 120_000;
+        await _combat.TickAsync(CancellationToken.None);
+        _combat.Combatants[1].IsGhost.Should().BeTrue();
+
+        _zone.NowMs += 600_000;
+        await _combat.TickAsync(CancellationToken.None);
+        _combat.Combatants[1].IsGhost.Should().BeFalse("MaxKoSeconds");
+    }
+
+    [Fact]
+    public async Task Release_StandsUpAtTheRespawnCell_Now()
+    {
+        await KoAsync();
+        _combat.DeathChoice(new PlayerId(7), RpgDeathChoiceMessage.Release);
+        await _combat.TickAsync(CancellationToken.None);
+
+        _zone.Teleports.Should().Equal((1, 0, 0));
+        _combat.Combatants[1].IsGhost.Should().BeFalse();
+        _combat.Combatants[1].Health.Should().Be(50);
+    }
+
+    [Fact]
+    public async Task AKoPlayerLeaving_IsReleased()
+    {
+        await KoAsync();
+        await _combat.PlayerLeftAsync(new PlayerId(7), CancellationToken.None);
+
+        _calls.Should().Contain(call => call.StartsWith("vitals 7: 50/"));
+    }
+
+    [Fact]
+    public async Task AKoPlayerEntering_GetsDeathThenSelfVitals_Last()
+    {
+        await KoAsync();
+        _combat.DeathChoice(new PlayerId(7), RpgDeathChoiceMessage.Wait);
+
+        IComposer[] burst = [.. _combat.EntryVitals(new PlayerId(7))];
+
+        burst.OfType<RpgDeathMessageComposer>().Single().RespawnSeconds.Should().Be(0, "waiting");
+        burst.Last().Should().BeOfType<RpgSelfVitalsMessageComposer>();
+    }
+
+    private async Task KoAsync()
+    {
+        await OnePlayerAsync();
+        int wolf = AddWolf(6, 5);
+        _combat.Combatants[1].Health = 1;
+        _combat.SetMonsterTarget(wolf, 1);
+        await _combat.TickAsync(CancellationToken.None);
+        _combat.Combatants[1].IsGhost.Should().BeTrue();
     }
 
     [Fact]

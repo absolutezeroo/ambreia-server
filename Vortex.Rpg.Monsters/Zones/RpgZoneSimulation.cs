@@ -193,5 +193,7 @@ public sealed class RpgZoneSimulation(
 
     public void CancelCast(PlayerId player) => combat.CancelCast(player);
 
+    public void DeathChoice(PlayerId player, string choice) => combat.DeathChoice(player, choice);
+
     public void PlayerWalked(PlayerId player) => combat.PlayerWalked(player);
 }

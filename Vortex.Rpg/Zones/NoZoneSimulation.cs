@@ -45,5 +45,7 @@ public sealed class NoZoneSimulation : IZoneSimulation
 
     public void CancelCast(PlayerId player) { }
 
+    public void DeathChoice(PlayerId player, string choice) { }
+
     public void PlayerWalked(PlayerId player) { }
 }

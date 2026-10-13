@@ -4,6 +4,7 @@ using System.Linq;
 using Vortex.Primitives.Networking;
 using Vortex.Primitives.Players;
 using Vortex.Primitives.Rpg.Characters;
+using Vortex.Protocol.Messages.Incoming.Rpg.Combat;
 using Vortex.Protocol.Messages.Outgoing.Rpg.Skills;
 using Vortex.Rpg.Combat.Combatants;
 using Vortex.Rpg.Combat.Configuration;
@@ -195,6 +196,30 @@ public sealed partial class CombatZone
         Statuses?.Remove(this, target, statusId);
 
     private IStatusSystem? Statuses => _systems.OfType<IStatusSystem>().LastOrDefault();
+
+    /// <summary>Le choix d'un joueur KO (M1d §2.3) ; rien pour un vivant.</summary>
+    public void DeathChoice(PlayerId player, string choice)
+    {
+        if (PlayerCombatant(player) is not { IsGhost: true } c)
+        {
+            return;
+        }
+
+        switch (choice)
+        {
+            case RpgDeathChoiceMessage.Wait:
+                c.Waiting = true;
+                c.GhostUntilMs = null;
+                break;
+            case RpgDeathChoiceMessage.Decline:
+                c.Offer = null;
+                break;
+            case RpgDeathChoiceMessage.Release
+            or RpgDeathChoiceMessage.Accept:
+                c.DeathChoice = choice;
+                break;
+        }
+    }
 
     public void PlayerWalked(PlayerId player)
     {
