@@ -20,6 +20,7 @@
     <ProjectReference Include="..\Vortex.Observability\Vortex.Observability.csproj" />
     <ProjectReference Include="..\Vortex.Rpg\Vortex.Rpg.csproj" />
     <ProjectReference Include="..\Vortex.Rpg.Characters\Vortex.Rpg.Characters.csproj" />
+    <ProjectReference Include="..\Vortex.Rpg.Quests\Vortex.Rpg.Quests.csproj" />
     <ProjectReference Include="..\Vortex.Tests.Support\Vortex.Tests.Support.csproj" />
     <ProjectReference Include="..\Vortex.World\Vortex.World.csproj" />
   </ItemGroup>

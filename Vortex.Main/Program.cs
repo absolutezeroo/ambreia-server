@@ -37,6 +37,7 @@ using Vortex.Rpg;
 using Vortex.Rpg.Characters;
 using Vortex.Rpg.Combat;
 using Vortex.Rpg.Monsters;
+using Vortex.Rpg.Quests;
 using Vortex.Rpg.Skills;
 using Vortex.Runtime.AssemblyProcessing;
 using Vortex.WebApi.Authentication;
@@ -136,6 +137,7 @@ internal class Program
         builder.Services.AddHostPlugin<CharactersModule>(builder);
         builder.Services.AddHostPlugin<CombatModule>(builder);
         builder.Services.AddHostPlugin<MonstersModule>(builder);
+        builder.Services.AddHostPlugin<QuestsModule>(builder);
         builder.Services.AddHostPlugin<SkillsModule>(builder);
         builder.Services.AddHostPlugin<PlayerModule>(builder);
         // No web API module here. It is a LOADABLE plugin, found in its folder by PluginManager
