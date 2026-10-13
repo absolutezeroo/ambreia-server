@@ -50,4 +50,8 @@ public sealed record CharacterCombatProfile
     /// <summary>Le GCD qui restait en quittant la dernière zone, décompté de même.</summary>
     [Id(10)]
     public int GlobalCooldownRemainingMs { get; init; }
+
+    /// <summary>Ces stats viennent d'un niveau gagné : la zone remplit vie et mana (M1d §2.3).</summary>
+    [Id(11)]
+    public bool LevelledUp { get; init; }
 }

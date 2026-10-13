@@ -60,6 +60,19 @@ internal sealed partial class PlayerCharacterGrain
         }
 
         int oldLevel = c.Level;
+        // Les stats d'avant le gain, pour dire au joueur ce qui monte (M1d §2.1).
+        CharacterStatsSnapshot? before = null;
+
+        try
+        {
+            before = await GetStatsAsync();
+        }
+        catch (Exception ex)
+        {
+            // A stat source down must not refuse the grant (the push below guards the same way).
+            logger.LogWarning(ex, "Could not read the stats of player {PlayerId}", _playerId.Value);
+        }
+
         c.Xp += gaining.Amount;
 
         while (c.Level < progression.MaxLevel && c.Xp >= progression.XpToNext[c.Level - 1])
@@ -111,7 +124,7 @@ internal sealed partial class PlayerCharacterGrain
             XpToNext = XpToNext(c, progression),
         };
 
-        await PushProgressAsync(c.Level != oldLevel, progress);
+        await PushProgressAsync(oldLevel, before, progress);
 
         return XpGrantOutcome.Granted;
     }

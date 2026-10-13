@@ -100,7 +100,7 @@ public sealed class CharacterStatePushTests : IAsyncLifetime
     }
 
     [Fact]
-    public async Task ALevelUp_PushesStatsThenProgress()
+    public async Task ALevelUp_PushesProgressStatsSkills_ThenLevelUp()
     {
         await StoreAsync(level: 1);
         PlayerCharacterGrain grain = await ActivateAsync();
@@ -111,12 +111,16 @@ public sealed class CharacterStatePushTests : IAsyncLifetime
             .Select(c => c.GetType())
             .Should()
             .Equal(
-                typeof(RpgCharacterStatsMessageComposer),
                 typeof(RpgCharacterProgressMessageComposer),
-                typeof(RpgSkillsMessageComposer)
+                typeof(RpgCharacterStatsMessageComposer),
+                typeof(RpgSkillsMessageComposer),
+                typeof(RpgLevelUpMessageComposer)
             );
-        ((RpgCharacterStatsMessageComposer)_sent[0]).Stats.MaxHealth.Should().BeGreaterThan(120);
-        _sent[1]
+        ((RpgCharacterStatsMessageComposer)_sent[1]).Stats.MaxHealth.Should().BeGreaterThan(120);
+        RpgLevelUpMessageComposer up = (RpgLevelUpMessageComposer)_sent[3];
+        (up.FromLevel, up.ToLevel).Should().Be((1, 2));
+        up.StatsAfter.MaxHealth.Should().BeGreaterThan(up.StatsBefore.MaxHealth);
+        _sent[0]
             .Should()
             .BeEquivalentTo(
                 new RpgCharacterProgressMessageComposer
@@ -255,5 +259,24 @@ public sealed class CharacterStatePushTests : IAsyncLifetime
             }
         );
         await db.SaveChangesAsync();
+    }
+
+    [Fact]
+    public async Task TwoLevelsAtOnce_MakeOneLevelUp()
+    {
+        await StoreAsync(level: 1);
+        PlayerCharacterGrain grain = await ActivateAsync();
+
+        await grain.GainXpAsync(250, "test");
+
+        RpgLevelUpMessageComposer up = _sent.OfType<RpgLevelUpMessageComposer>().Single();
+        (up.FromLevel, up.ToLevel).Should().Be((1, 3));
+        up.SkillsLearned.Should()
+            .Equal(
+                _content
+                    .Values.OfType<SkillDefinition>()
+                    .Where(s => s.Classes.Contains("class.warrior") && s.Level > 1 && s.Level <= 3)
+                    .Select(s => s.Id)
+            );
     }
 }

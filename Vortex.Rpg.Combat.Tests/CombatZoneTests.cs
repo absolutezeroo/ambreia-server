@@ -867,4 +867,18 @@ public sealed class CombatZoneTests
             .Sent.Where(s => s.Player == new PlayerId(player))
             .Select(s => s.Composer)
             .OfType<RpgThreatMessageComposer>();
+
+    [Fact]
+    public async Task ALevelUp_FillsHealthAndMana()
+    {
+        await OnePlayerAsync();
+        _combat.Combatants[1].Health = 10;
+        _combat.Combatants[1].Mana = 5;
+
+        _combat.PlayerStatsChanged(new PlayerId(7), _profiles[7] with { LevelledUp = true, Level = 2 });
+        await _combat.TickAsync(CancellationToken.None);
+
+        (_combat.Combatants[1].Health, _combat.Combatants[1].Mana).Should().Be((100, 50));
+        Sent<RpgSelfVitalsMessageComposer>().Last().Health.Should().Be(100);
+    }
 }

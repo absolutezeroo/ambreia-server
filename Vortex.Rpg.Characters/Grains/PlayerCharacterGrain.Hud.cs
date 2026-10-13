@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
@@ -64,7 +65,7 @@ internal sealed partial class PlayerCharacterGrain
     /// <summary>New stats, level or class reach the zone the player fights in (spec M1a §4.4),
     /// through his presence. Never awaited: the zone may be waiting on this very grain (an XP grant
     /// during its tick).</summary>
-    private void TellTheZone(CharacterStatsSnapshot stats)
+    private void TellTheZone(CharacterStatsSnapshot stats, bool levelledUp = false)
     {
         if (_character is not { } c)
         {
@@ -73,7 +74,10 @@ internal sealed partial class PlayerCharacterGrain
 
         grainFactory
             .GetPlayerPresenceGrain(_playerId)
-            .OnCharacterStatsChangedAsync(Profile(stats, c), CancellationToken.None)
+            .OnCharacterStatsChangedAsync(
+                Profile(stats, c) with { LevelledUp = levelledUp },
+                CancellationToken.None
+            )
             .LogAndForget(
                 logger,
                 "Passing new stats of player {PlayerId} to its zone",
@@ -81,10 +85,12 @@ internal sealed partial class PlayerCharacterGrain
             );
     }
 
-    /// <summary>Progress, after the new stats on a level up. The level is already written: reading
-    /// the stats may fail here, and that must not fail the grant.</summary>
+    /// <summary>Progress alone, or on a level gained progress, the new stats, the skills, then one
+    /// RpgLevelUp for the whole gain (M1d décision 1). The level is already written: reading the
+    /// stats may fail here, and that must not fail the grant.</summary>
     private async Task PushProgressAsync(
-        bool levelledUp,
+        int oldLevel,
+        CharacterStatsSnapshot? before,
         RpgCharacterProgressMessageComposer progress
     )
     {
@@ -92,15 +98,32 @@ internal sealed partial class PlayerCharacterGrain
 
         try
         {
-            if (levelledUp && await GetStatsAsync() is { } stats && _character is { } c)
+            if (
+                _character is { } c
+                && c.Level != oldLevel
+                && await GetStatsAsync() is { } stats
+            )
             {
                 composers =
                 [
-                    new RpgCharacterStatsMessageComposer { Stats = stats },
                     progress,
+                    new RpgCharacterStatsMessageComposer { Stats = stats },
                     SkillsComposer(c),
+                    new RpgLevelUpMessageComposer
+                    {
+                        FromLevel = oldLevel,
+                        ToLevel = c.Level,
+                        StatsBefore = before ?? stats,
+                        StatsAfter = stats,
+                        SkillsLearned =
+                        [
+                            .. Known(c)
+                                .Where(s => s.Level > oldLevel && s.Level <= c.Level)
+                                .Select(s => s.Id),
+                        ],
+                    },
                 ];
-                TellTheZone(stats);
+                TellTheZone(stats, levelledUp: true);
             }
         }
         catch (Exception ex)

@@ -398,8 +398,9 @@ public sealed partial class CombatZone(
         c.ClassId = profile.ClassId;
         c.SpecializationId = profile.SpecializationId;
         Apply(c, profile.Stats);
-        c.Health = Math.Min(c.Health, c.MaxHealth);
-        c.Mana = Math.Min(c.Mana, c.MaxMana);
+        // Un niveau gagné remplit tout (M1d §2.3) ; toute autre raison garde la vie courante.
+        c.Health = profile.LevelledUp ? c.MaxHealth : Math.Min(c.Health, c.MaxHealth);
+        c.Mana = profile.LevelledUp ? c.MaxMana : Math.Min(c.Mana, c.MaxMana);
         _vitalsChanged.Add(id);
         _selfChanged.Add(id);
     }
