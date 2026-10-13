@@ -45,6 +45,10 @@ public interface IZoneRuntime
 
     public void RemoveMonster(int objectId);
 
+    /// <summary>Un combattant est mort : la salle vide la cible de qui le visait et le lui dit
+    /// (RpgTarget None), au flush (M1d §2.3).</summary>
+    public void TargetDied(int objectId);
+
     /// <summary>
     /// Walks an avatar to the nearest free cell within <paramref name="within"/> tiles (Chebyshev) of
     /// (x, y), in sight of it — 0: onto the cell itself. The zone applies each avatar's own rules: a

@@ -426,6 +426,8 @@ public sealed partial class CombatZone(
         await FlushAsync();
     }
 
+    /// <summary>La rafale d'entrée (M1d §2.3) : des instantanés complets, et les vitals du joueur
+    /// en dernier, qui la terminent côté client.</summary>
     public IEnumerable<IComposer> EntryVitals(PlayerId player)
     {
         yield return new RpgVitalsMessageComposer
@@ -433,14 +435,26 @@ public sealed partial class CombatZone(
             Combatants = [.. _combatants.Values.Select(Vitals)],
         };
 
-        if (_players.TryGetValue(player, out int id))
-        {
-            yield return SelfVitals(_combatants[id]);
-        }
-
         foreach (IComposer composer in _systems.SelectMany(s => s.Entry(this)))
         {
             yield return composer;
+        }
+
+        yield return new RpgTargetsMessageComposer
+        {
+            Entries =
+            [
+                .. _combatants.Values.Select(c => new RpgTargetEntry
+                {
+                    ObjectId = c.ObjectId,
+                    TargetObjectId = c.TargetId ?? 0,
+                }),
+            ],
+        };
+
+        if (_players.TryGetValue(player, out int id))
+        {
+            yield return SelfVitals(_combatants[id]);
         }
     }
 

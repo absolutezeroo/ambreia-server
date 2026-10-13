@@ -23,6 +23,7 @@ public sealed partial class CombatZone
     private readonly List<PlayerId> _deaths = [];
     private readonly List<(PlayerId Player, string Code)> _results = [];
     private readonly HashSet<int> _autoAttackChanged = [];
+    private readonly Dictionary<int, int?> _lastTargets = [];
     private long _nextRegenAtMs;
 
     private async Task FlushAsync()
@@ -34,6 +35,38 @@ public sealed partial class CombatZone
 
         // Each composer is built now, before the outbox is cleared; only the send is deferred.
         List<Func<Task>> sends = [];
+
+        // Qui vise qui, par différence (M1d décision 2) : six sites écrivent TargetId.
+        List<RpgTargetEntry> aims = [];
+
+        foreach (Combatant fighter in _combatants.Values)
+        {
+            if (
+                !_lastTargets.TryGetValue(fighter.ObjectId, out int? last)
+                || last != fighter.TargetId
+            )
+            {
+                _lastTargets[fighter.ObjectId] = fighter.TargetId;
+                aims.Add(
+                    new RpgTargetEntry
+                    {
+                        ObjectId = fighter.ObjectId,
+                        TargetObjectId = fighter.TargetId ?? 0,
+                    }
+                );
+            }
+        }
+
+        foreach (int gone in _lastTargets.Keys.Where(id => !_combatants.ContainsKey(id)).ToArray())
+        {
+            _lastTargets.Remove(gone);
+        }
+
+        if (aims.Count > 0)
+        {
+            RpgTargetsMessageComposer targets = new() { Entries = [.. aims] };
+            sends.Add(() => runtime.BroadcastAsync(targets));
+        }
 
         if (_hits.Count > 0)
         {

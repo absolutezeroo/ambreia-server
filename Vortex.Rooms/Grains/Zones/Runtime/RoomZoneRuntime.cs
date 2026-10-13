@@ -16,6 +16,8 @@ using Vortex.Primitives.World.Rules;
 using Vortex.Protocol.Messages.Outgoing.Room.Engine;
 using Vortex.Rooms.Object.Avatars.Monster;
 using Vortex.Rpg.Zones;
+using Vortex.Rooms.Grains.State;
+using Vortex.Protocol.Messages.Outgoing.Rpg.Interaction;
 
 namespace Vortex.Rooms.Grains.Zones.Runtime;
 
@@ -27,6 +29,7 @@ namespace Vortex.Rooms.Grains.Zones.Runtime;
 public sealed class RoomZoneRuntime(RoomGrain room) : IZoneRuntime
 {
     private readonly List<IComposer> _pending = [];
+    private readonly List<(PlayerId Player, IComposer Composer)> _pendingToPlayers = [];
 
     /// <summary>Avatars the zone laid down (a ghost, a body) and those it rooted (a stun): either one
     /// keeps the avatar from walking.</summary>
@@ -63,10 +66,16 @@ public sealed class RoomZoneRuntime(RoomGrain room) : IZoneRuntime
             {
                 await room.SendComposerToRoomAsync(composer);
             }
+
+            foreach ((PlayerId player, IComposer composer) in _pendingToPlayers.ToArray())
+            {
+                await SendToPlayerAsync(player, composer);
+            }
         }
         finally
         {
             _pending.Clear();
+            _pendingToPlayers.Clear();
         }
 
         foreach ((PlayerId player, ZoneTriggerType type, string target) in raised)
@@ -418,6 +427,20 @@ public sealed class RoomZoneRuntime(RoomGrain room) : IZoneRuntime
         }
 
         return compiled.DefaultArrival is { } arrival ? (arrival.Cell.X, arrival.Cell.Y) : null;
+    }
+
+    public void TargetDied(int objectId)
+    {
+        RoomObjectId id = new(objectId);
+
+        foreach ((PlayerId player, RoomTarget target) in room._state.Targets.ToArray())
+        {
+            if (target.ObjectId == id)
+            {
+                room._state.Targets.Remove(player);
+                _pendingToPlayers.Add((player, RpgTargetMessageComposer.None));
+            }
+        }
     }
 
     public Task BroadcastAsync(IComposer composer) => room.SendComposerToRoomAsync(composer);

@@ -698,4 +698,51 @@ public sealed class CombatZoneTests
         await _combat.TickAsync(CancellationToken.None);
         Sent<RpgAutoAttackStateMessageComposer>().Last().Active.Should().BeFalse();
     }
+
+    [Fact]
+    public async Task TargetChanges_AreBroadcastOncePerTick_AndFullOnEntry()
+    {
+        await OnePlayerAsync();
+        int wolf = AddWolf(6, 5);
+        _combat.SetMonsterTarget(wolf, 1);
+        await _combat.TickAsync(CancellationToken.None);
+
+        _zone
+            .Broadcasts.OfType<RpgTargetsMessageComposer>()
+            .Single()
+            .Entries.Should()
+            .ContainSingle(e => e.ObjectId == wolf && e.TargetObjectId == 1);
+
+        _zone.Broadcasts.Clear();
+        await _combat.TickAsync(CancellationToken.None);
+        _zone.Broadcasts.OfType<RpgTargetsMessageComposer>().Should().BeEmpty("nothing changed");
+
+        _combat
+            .EntryVitals(new PlayerId(7))
+            .OfType<RpgTargetsMessageComposer>()
+            .Single()
+            .Entries.Should()
+            .HaveCount(2, "one per combatant, target or not");
+        _combat
+            .EntryVitals(new PlayerId(7))
+            .Last()
+            .Should()
+            .BeOfType<RpgSelfVitalsMessageComposer>("the burst ends on the self vitals");
+    }
+
+    [Fact]
+    public async Task TheSelectedMonsterDying_ClearsTargetAndAttack()
+    {
+        await OnePlayerAsync();
+        int wolf = AddWolf(6, 5);
+        _combat.SelectTarget(new PlayerId(7), wolf);
+        _combat.SetAutoAttack(new PlayerId(7), true);
+        _combat.Combatants[wolf].Health = 0;
+
+        await _combat.TickAsync(CancellationToken.None);
+
+        _zone.TargetsDied.Should().Equal(wolf);
+        _combat.Combatants[1].AutoAttacking.Should().BeFalse();
+        Sent<RpgAutoAttackStateMessageComposer>().Last().Active.Should().BeFalse();
+    }
 }

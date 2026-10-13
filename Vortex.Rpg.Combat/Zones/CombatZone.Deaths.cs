@@ -64,6 +64,7 @@ public sealed partial class CombatZone
         runtime.StopWalking(c.ObjectId);
         runtime.SetPosture(c.ObjectId, Lay);
         Forget(c.ObjectId);
+        Died(c.ObjectId);
         _selfChanged.Add(c.ObjectId);
         _deaths.Add(player);
 
@@ -105,6 +106,7 @@ public sealed partial class CombatZone
         Removing(c, CombatantExit.Died);
         _combatants.Remove(c.ObjectId);
         Forget(c.ObjectId);
+        Died(c.ObjectId);
         _died.Add(new MonsterDeath(c.ObjectId, c.DefinitionId ?? string.Empty, present));
 
         if (c.CorpseMs <= 0)
@@ -124,6 +126,17 @@ public sealed partial class CombatZone
             c.ObjectId,
             runtime.ZoneId.Value
         );
+    }
+
+    /// <summary>Un mort n'est plus la cible choisie de personne : la salle vide la sienne (M1d §2.3).</summary>
+    private void Died(int objectId)
+    {
+        runtime.TargetDied(objectId);
+
+        foreach (PlayerId p in _selected.Where(kv => kv.Value == objectId).Select(kv => kv.Key).ToArray())
+        {
+            _selected.Remove(p);
+        }
     }
 
     private void RemoveCorpses(long now)

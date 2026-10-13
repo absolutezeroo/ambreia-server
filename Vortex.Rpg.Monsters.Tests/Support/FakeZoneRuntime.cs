@@ -89,6 +89,10 @@ internal sealed class FakeZoneRuntime : IZoneRuntime
         return id;
     }
 
+    public List<int> TargetsDied { get; } = [];
+
+    public void TargetDied(int objectId) => TargetsDied.Add(objectId);
+
     public void RemoveMonster(int objectId)
     {
         Positions.Remove(objectId);
