@@ -107,11 +107,48 @@ public sealed class CastSystem(
             zone.GetOrAdd<CastNews>().Clear();
             zone.GetOrAdd<TelegraphNews>().Clear();
         }
+
+        // Les recharges emportées de la zone d'avant reprennent où elles en étaient (M1d §2.3).
+        if (profile is { } carried && (carried.Cooldowns.Length > 0 || carried.GlobalCooldownRemainingMs > 0))
+        {
+            long now = zone.Runtime.NowMs;
+            SkillCooldowns cooldowns = Cooldowns(c);
+            cooldowns.GlobalUntilMs = now + carried.GlobalCooldownRemainingMs;
+
+            foreach (CarriedCooldown cd in carried.Cooldowns)
+            {
+                cooldowns.Until[cd.SkillId] = now + cd.RemainingMs;
+            }
+        }
     }
 
-    /// <summary>A player coming in sees the telegraphs under way, with the time they have left.</summary>
-    public IEnumerable<IComposer> Entry(CombatZone zone)
+    public IEnumerable<CarriedCooldown> CarryingCooldowns(CombatZone zone, Combatant c)
     {
+        long now = zone.Runtime.NowMs;
+
+        return c.Get<SkillCooldowns>() is { } cd
+            ? cd
+                .Until.Where(kv => kv.Value > now)
+                .Select(kv => new CarriedCooldown
+                {
+                    SkillId = kv.Key,
+                    RemainingMs = (int)(kv.Value - now),
+                })
+            : [];
+    }
+
+    public int GlobalCooldownRemainingMs(CombatZone zone, Combatant c) =>
+        c.Get<SkillCooldowns>() is { } cd ? (int)Math.Max(0, cd.GlobalUntilMs - zone.Runtime.NowMs) : 0;
+
+    /// <summary>A player coming in sees the telegraphs under way, with the time they have left, and
+    /// his own recharges (M1d §2.3).</summary>
+    public IEnumerable<IComposer> Entry(CombatZone zone, Combatant? player)
+    {
+        if (player is { IsPlayer: true })
+        {
+            yield return CooldownsOf(player, zone.Runtime.NowMs);
+        }
+
         long now = zone.Runtime.NowMs;
         ImmutableArray<RpgTelegraph> live =
         [
@@ -123,7 +160,10 @@ public sealed class CastSystem(
                 ),
         ];
 
-        return live.Length > 0 ? [new RpgTelegraphsMessageComposer { Telegraphs = live }] : [];
+        if (live.Length > 0)
+        {
+            yield return new RpgTelegraphsMessageComposer { Telegraphs = live };
+        }
     }
 
     public IEnumerable<CarriedStatus> Removing(CombatZone zone, Combatant c, CombatantExit exit)
@@ -635,24 +675,28 @@ public sealed class CastSystem(
             return;
         }
 
+        zone.SendTo(player, CooldownsOf(c, now));
+    }
+
+    /// <summary>La liste complète (M1b §6.5) : une compétence absente est prête.</summary>
+    private static RpgCooldownsMessageComposer CooldownsOf(Combatant c, long now)
+    {
         SkillCooldowns cooldowns = Cooldowns(c);
-        zone.SendTo(
-            player,
-            new RpgCooldownsMessageComposer
-            {
-                GlobalRemainingMs = (int)Math.Max(0, cooldowns.GlobalUntilMs - now),
-                Skills =
-                [
-                    .. cooldowns
-                        .Until.Where(kv => kv.Value > now)
-                        .Select(kv => new RpgCooldown
-                        {
-                            SkillId = kv.Key,
-                            RemainingMs = (int)(kv.Value - now),
-                        }),
-                ],
-            }
-        );
+
+        return new RpgCooldownsMessageComposer
+        {
+            GlobalRemainingMs = (int)Math.Max(0, cooldowns.GlobalUntilMs - now),
+            Skills =
+            [
+                .. cooldowns
+                    .Until.Where(kv => kv.Value > now)
+                    .Select(kv => new RpgCooldown
+                    {
+                        SkillId = kv.Key,
+                        RemainingMs = (int)(kv.Value - now),
+                    }),
+            ],
+        };
     }
 
     /// <summary>The player is told; counted unless the end of the cast already was (failed).</summary>

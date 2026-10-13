@@ -164,7 +164,9 @@ internal sealed class SkillWorld
         string classId = "class.mage",
         int power = 25,
         double critPercent = 0,
-        ImmutableArray<CarriedStatus> carried = default
+        ImmutableArray<CarriedStatus> carried = default,
+        ImmutableArray<CarriedCooldown> carriedCooldowns = default,
+        int globalCooldownRemainingMs = 0
     )
     {
         Zone.Positions[objectId] = (x, y);
@@ -186,6 +188,8 @@ internal sealed class SkillWorld
             ClassId = classId,
             SpecializationId = "spec.any",
             Statuses = carried.IsDefault ? [] : carried,
+            Cooldowns = carriedCooldowns.IsDefault ? [] : carriedCooldowns,
+            GlobalCooldownRemainingMs = globalCooldownRemainingMs,
         };
         await Combat.PlayerEnteredAsync(new PlayerId(player), objectId, CancellationToken.None);
 
@@ -238,7 +242,7 @@ internal sealed class SkillWorld
                         _profiles.GetValueOrDefault(player)
                     ),
                     nameof(IPlayerCharacterGrain.SetVitalsAsync) => Record(
-                        $"vitals {player}: {inner.Args![0]}/{inner.Args[1]} {string.Join(',', ((ImmutableArray<CarriedStatus>)inner.Args[2]!).Select(s => $"{s.StatusId}@{s.RemainingMs}"))}",
+                        $"vitals {player}: {inner.Args![0]}/{inner.Args[1]} {string.Join(',', ((ImmutableArray<CarriedStatus>)inner.Args[2]!).Select(s => $"{s.StatusId}@{s.RemainingMs}"))}{Cooldowns((ImmutableArray<CarriedCooldown>)inner.Args[3]!, (int)inner.Args[4]!)}",
                         Task.CompletedTask
                     ),
                     nameof(IPlayerCharacterGrain.GainXpAsync) => Record(
@@ -256,4 +260,11 @@ internal sealed class SkillWorld
 
         return answer;
     }
+
+    /// <summary>" cd skill@ms gcd ms" when the player carries any, else nothing: the older
+    /// expectations stay exact.</summary>
+    private static string Cooldowns(ImmutableArray<CarriedCooldown> cooldowns, int globalMs) =>
+        cooldowns.Length == 0 && globalMs == 0
+            ? string.Empty
+            : $" cd {string.Join(',', cooldowns.Select(cd => $"{cd.SkillId}@{cd.RemainingMs}"))} gcd {globalMs}";
 }

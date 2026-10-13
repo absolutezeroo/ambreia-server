@@ -249,7 +249,9 @@ public sealed class CharacterActionBarTests : IAsyncLifetime
                     Stacks = 1,
                     Amount = 0,
                 },
-            ]
+            ],
+            [],
+            0
         );
 
         _clock.Now = _clock.Now.AddSeconds(4);

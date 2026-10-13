@@ -9,6 +9,9 @@ using Vortex.Rpg.Combat.Combatants;
 using Vortex.Rpg.Content.Definitions;
 using Vortex.Rpg.Skills.Tests.Support;
 using Vortex.Protocol.Messages.Incoming.Rpg.Combat;
+using System.Threading;
+using Vortex.Primitives.Networking;
+using Vortex.Primitives.Rpg.Characters;
 using Xunit;
 
 namespace Vortex.Rpg.Skills.Tests;
@@ -544,5 +547,31 @@ public sealed class CastTests
 
         fallen.Offer!.CasterObjectId.Should().Be(3);
         _world.SentTo<RpgResurrectOfferMessageComposer>(8).Should().HaveCount(2);
+    }
+
+    [Fact]
+    public async Task Cooldowns_LeaveWithThePlayer_AndAreInTheEntryBurst()
+    {
+        await _world.PlayerAsync();
+        Combatant wolf = ToughWolf();
+        _world.Cast(Bolt.Id, wolf.ObjectId);
+        await _world.RunAsync(2250);
+
+        await _world.Combat.PlayerLeftAsync(new PlayerId(7), CancellationToken.None);
+        _world
+            .Calls.Should()
+            .Contain(call => call.StartsWith("vitals 7:") && call.Contains($"cd {Bolt.Id}@"));
+
+        await _world.PlayerAsync(
+            carriedCooldowns: [new CarriedCooldown { SkillId = Bolt.Id, RemainingMs = 1500 }],
+            globalCooldownRemainingMs: 400
+        );
+        IComposer[] burst = [.. _world.Combat.EntryVitals(new PlayerId(7))];
+
+        RpgCooldownsMessageComposer cooldowns = burst.OfType<RpgCooldownsMessageComposer>().Single();
+        cooldowns.GlobalRemainingMs.Should().Be(400);
+        cooldowns.Skills.Single().Should().BeEquivalentTo(new { SkillId = Bolt.Id, RemainingMs = 1500 });
+        burst.Last().Should().BeOfType<RpgSelfVitalsMessageComposer>();
+        _world.Cast(Bolt.Id, wolf.ObjectId).Should().Be(RpgSkillResultMessageComposer.Cooldown, "restored");
     }
 }

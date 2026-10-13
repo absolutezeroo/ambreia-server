@@ -41,4 +41,13 @@ public sealed record CharacterCombatProfile
     /// (spec M1b §7.4). Never read from a relayed stats change.</summary>
     [Id(8)]
     public ImmutableArray<CarriedStatus> Statuses { get; init; } = [];
+
+    /// <summary>Les recharges emportées hors de la dernière zone, décomptées du temps passé dehors ;
+    /// données une fois (M1d §2.3).</summary>
+    [Id(9)]
+    public ImmutableArray<CarriedCooldown> Cooldowns { get; init; } = [];
+
+    /// <summary>Le GCD qui restait en quittant la dernière zone, décompté de même.</summary>
+    [Id(10)]
+    public int GlobalCooldownRemainingMs { get; init; }
 }

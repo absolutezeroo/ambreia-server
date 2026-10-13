@@ -502,6 +502,7 @@ public sealed class CombatExtensionTests
             return Carried;
         }
 
-        public IEnumerable<IComposer> Entry(CombatZone zone) => EntryComposer is { } e ? [e] : [];
+        public IEnumerable<IComposer> Entry(CombatZone zone, Combatant? player) =>
+            EntryComposer is { } e ? [e] : [];
     }
 }

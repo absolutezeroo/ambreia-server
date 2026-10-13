@@ -74,7 +74,13 @@ public interface IPlayerCharacterGrain : IGrainWithIntegerKey
     /// <summary>The zone gives health and mana back when the player leaves it: one write (spec M1a
     /// §4.4), bounded to the maximum; with the persistent statuses he carries out (spec M1b §7.4),
     /// kept in memory only.</summary>
-    public Task SetVitalsAsync(int health, int mana, ImmutableArray<CarriedStatus> statuses);
+    public Task SetVitalsAsync(
+        int health,
+        int mana,
+        ImmutableArray<CarriedStatus> statuses,
+        ImmutableArray<CarriedCooldown> cooldowns,
+        int globalCooldownRemainingMs
+    );
 
     /// <summary>Puts an action (<c>skill:&lt;id&gt;</c>, or "" to clear) in a slot of the bar (spec M1b
     /// §9); the player is told the new bar, or why not.</summary>

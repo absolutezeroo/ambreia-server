@@ -203,7 +203,7 @@ public sealed class StatusSystem(
         zone.GetOrAdd<SkillEvents>().Flush(zone);
     }
 
-    public IEnumerable<IComposer> Entry(CombatZone zone)
+    public IEnumerable<IComposer> Entry(CombatZone zone, Combatant? player)
     {
         ImmutableArray<RpgCombatantStatuses> carrying =
         [

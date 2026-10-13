@@ -20,6 +20,8 @@ internal sealed partial class PlayerCharacterGrain
     public TimeProvider Time { get; set; } = TimeProvider.System;
 
     private ImmutableArray<CarriedStatus> _carried = [];
+    private ImmutableArray<CarriedCooldown> _carriedCooldowns = [];
+    private int _carriedGlobalMs;
     private DateTimeOffset _carriedAt;
 
     public async Task<CharacterCombatProfile?> GetCombatProfileAsync()
@@ -29,9 +31,22 @@ internal sealed partial class PlayerCharacterGrain
             return null;
         }
 
+        long elapsed = (long)(Time.GetUtcNow() - _carriedAt).TotalMilliseconds;
+        ImmutableArray<CarriedCooldown> cooldowns =
+        [
+            .. _carriedCooldowns
+                .Where(cd => cd.RemainingMs > elapsed)
+                .Select(cd => cd with { RemainingMs = (int)(cd.RemainingMs - elapsed) }),
+        ];
+        int global = (int)Math.Max(0, _carriedGlobalMs - elapsed);
+        _carriedCooldowns = [];
+        _carriedGlobalMs = 0;
+
         return Profile(stats, c) with
         {
             Statuses = TakeCarried(),
+            Cooldowns = cooldowns,
+            GlobalCooldownRemainingMs = global,
         };
     }
 
@@ -70,7 +85,13 @@ internal sealed partial class PlayerCharacterGrain
         };
     }
 
-    public async Task SetVitalsAsync(int health, int mana, ImmutableArray<CarriedStatus> statuses)
+    public async Task SetVitalsAsync(
+        int health,
+        int mana,
+        ImmutableArray<CarriedStatus> statuses,
+        ImmutableArray<CarriedCooldown> cooldowns,
+        int globalCooldownRemainingMs
+    )
     {
         if (await GetStatsAsync() is not { } stats || _character is not { } c)
         {
@@ -79,6 +100,8 @@ internal sealed partial class PlayerCharacterGrain
 
         // Memory only (spec M1b decision 7): a logout past the grace period loses them.
         _carried = statuses.IsDefault ? [] : statuses;
+        _carriedCooldowns = cooldowns.IsDefault ? [] : cooldowns;
+        _carriedGlobalMs = globalCooldownRemainingMs;
         _carriedAt = Time.GetUtcNow();
 
         // Full is kept as null: a maximum that grows later still finds the character full.

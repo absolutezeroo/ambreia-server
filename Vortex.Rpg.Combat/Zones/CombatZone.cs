@@ -171,11 +171,17 @@ public sealed partial class CombatZone(
         c.Offer = null;
         int health = c.IsGhost || c.IsDead ? RespawnHealth(c) : c.Health;
 
+        ImmutableArray<CarriedCooldown> cooldowns =
+        [
+            .. _systems.SelectMany(s => s.CarryingCooldowns(this, c)),
+        ];
+        int globalMs = _systems.Max(s => (int?)s.GlobalCooldownRemainingMs(this, c)) ?? 0;
+
         try
         {
             await grains
                 .GetPlayerCharacterGrain(player)
-                .SetVitalsAsync(health, c.Mana, [.. carried]);
+                .SetVitalsAsync(health, c.Mana, [.. carried], cooldowns, globalMs);
         }
         catch (Exception ex) when (ex is not OperationCanceledException)
         {
@@ -437,7 +443,9 @@ public sealed partial class CombatZone(
             Combatants = [.. _combatants.Values.Select(Vitals)],
         };
 
-        foreach (IComposer composer in _systems.SelectMany(s => s.Entry(this)))
+        Combatant? me = _players.TryGetValue(player, out int entering) ? _combatants[entering] : null;
+
+        foreach (IComposer composer in _systems.SelectMany(s => s.Entry(this, me)))
         {
             yield return composer;
         }

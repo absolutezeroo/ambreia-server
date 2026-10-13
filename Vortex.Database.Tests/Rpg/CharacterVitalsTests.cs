@@ -21,6 +21,7 @@ using Vortex.Rpg.Characters.Stats;
 using Vortex.Rpg.Content.Definitions;
 using Vortex.Rpg.Stats;
 using Vortex.Tests.Support;
+using System.Linq;
 using Xunit;
 
 namespace Vortex.Database.Tests.Rpg;
@@ -57,7 +58,7 @@ public sealed class CharacterVitalsTests : IAsyncLifetime
     public async Task SetVitals_IsKept_AcrossAReactivation()
     {
         PlayerCharacterGrain grain = await ActivateAsync(withCharacter: true);
-        await grain.SetVitalsAsync(10, 5, []);
+        await grain.SetVitalsAsync(10, 5, [], [], 0);
         await DeactivateAsync(grain);
 
         PlayerCharacterGrain again = await ActivateAsync(withCharacter: false);
@@ -73,7 +74,7 @@ public sealed class CharacterVitalsTests : IAsyncLifetime
     {
         PlayerCharacterGrain grain = await ActivateAsync(withCharacter: true);
 
-        await grain.SetVitalsAsync(10, 5, []);
+        await grain.SetVitalsAsync(10, 5, [], [], 0);
 
         await using VortexDbContext db = new(_options);
         PlayerCharacterEntity row = await db
@@ -87,7 +88,7 @@ public sealed class CharacterVitalsTests : IAsyncLifetime
     {
         PlayerCharacterGrain grain = await ActivateAsync(withCharacter: true);
         int max = (await grain.GetCombatProfileAsync())!.Stats.MaxHealth;
-        await grain.SetVitalsAsync(10, 0, []);
+        await grain.SetVitalsAsync(10, 0, [], [], 0);
 
         _clock.Now = _clock.Now.AddSeconds(10);
 
@@ -105,7 +106,7 @@ public sealed class CharacterVitalsTests : IAsyncLifetime
     {
         PlayerCharacterGrain grain = await ActivateAsync(withCharacter: true);
 
-        await grain.SetVitalsAsync(99_999, 99_999, []);
+        await grain.SetVitalsAsync(99_999, 99_999, [], [], 0);
 
         CharacterCombatProfile profile = (await grain.GetCombatProfileAsync())!;
         (profile.Health, profile.Mana)
@@ -121,7 +122,7 @@ public sealed class CharacterVitalsTests : IAsyncLifetime
         PlayerCharacterGrain grain = await ActivateAsync(withCharacter: true);
         CharacterCombatProfile profile = (await grain.GetCombatProfileAsync())!;
 
-        await grain.SetVitalsAsync(profile.Stats.MaxHealth, profile.Stats.MaxMana, []);
+        await grain.SetVitalsAsync(profile.Stats.MaxHealth, profile.Stats.MaxMana, [], [], 0);
         await DeactivateAsync(grain);
 
         await using VortexDbContext db = new(_options);
@@ -188,4 +189,25 @@ public sealed class CharacterVitalsTests : IAsyncLifetime
             new DeactivationReason(DeactivationReasonCode.ShuttingDown, "test"),
             CancellationToken.None
         );
+
+    [Fact]
+    public async Task CarriedCooldowns_ComeBackOnce()
+    {
+        PlayerCharacterGrain grain = await ActivateAsync(withCharacter: true);
+        await grain.SetVitalsAsync(
+            10,
+            5,
+            [],
+            [new CarriedCooldown { SkillId = "skill.mage.bolt", RemainingMs = 3000 }],
+            700
+        );
+
+        CharacterCombatProfile first = (await grain.GetCombatProfileAsync())!;
+        CharacterCombatProfile second = (await grain.GetCombatProfileAsync())!;
+
+        first.Cooldowns.Single().SkillId.Should().Be("skill.mage.bolt");
+        first.Cooldowns.Single().RemainingMs.Should().BeInRange(1, 3000);
+        first.GlobalCooldownRemainingMs.Should().BeInRange(1, 700);
+        (second.Cooldowns.Length, second.GlobalCooldownRemainingMs).Should().Be((0, 0));
+    }
 }

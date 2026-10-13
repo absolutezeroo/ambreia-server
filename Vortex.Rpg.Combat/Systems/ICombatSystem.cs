@@ -33,6 +33,13 @@ public interface ICombatSystem
     /// <summary>The tick's messages are about to go: queue this system's.</summary>
     public void BeforeFlush(CombatZone zone) { }
 
-    /// <summary>For the zone's entry burst.</summary>
-    public IEnumerable<IComposer> Entry(CombatZone zone) => [];
+    /// <summary>Les recharges qu'un joueur qui part emporte (M1d §2.3).</summary>
+    public IEnumerable<CarriedCooldown> CarryingCooldowns(CombatZone zone, Combatant c) => [];
+
+    /// <summary>Le GCD qui lui reste en partant.</summary>
+    public int GlobalCooldownRemainingMs(CombatZone zone, Combatant c) => 0;
+
+    /// <summary>For the zone's entry burst of <paramref name="player"/> (null: an avatar without a
+    /// character, who gets the zone's state but nothing of his own).</summary>
+    public IEnumerable<IComposer> Entry(CombatZone zone, Combatant? player) => [];
 }
