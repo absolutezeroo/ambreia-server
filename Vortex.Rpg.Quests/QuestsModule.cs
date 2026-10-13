@@ -3,6 +3,8 @@ using Microsoft.Extensions.Hosting;
 using Vortex.Primitives.Plugins;
 using Vortex.Rpg.Content.Kinds;
 using Vortex.Rpg.Content.Rules;
+using Vortex.Rpg.Npcs;
+using Vortex.Rpg.Quests.Npcs;
 using Vortex.Rpg.Quests.Objectives;
 using Vortex.Rpg.Quests.Rewards;
 using Vortex.Rpg.Quests.Signals;
@@ -40,6 +42,9 @@ public sealed class QuestsModule : IHostPluginModule
         services.AddZoneFactsSource<QuestFactsSource>();
         services.AddZoneCondition<QuestStateEvaluator>();
         services.AddZoneAction<StartQuestExecutor>();
+
+        // Spec M2a §3.3: what an NPC's dialogue says; the room keeps the NPC and the session.
+        services.AddSingleton<INpcDialogues, QuestDialogues>();
     }
 
     private static void AddObjective<T>(IServiceCollection services)
