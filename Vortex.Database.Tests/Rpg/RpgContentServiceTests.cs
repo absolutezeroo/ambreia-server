@@ -338,7 +338,7 @@ public sealed class RpgContentServiceTests : IAsyncLifetime
         )
             .Should()
             .Be(("status.burning", "dot", 6000));
-        Service().GetDefinitions("class").Should().BeNull("classes are not a public kind");
+        Service().GetDefinitions("class").Should().NotBeNull("classes are public: the client reads them (4fceb9fad)");
         Service().GetDefinitions("nope").Should().BeNull();
     }
 
