@@ -12,8 +12,11 @@ namespace Vortex.Rpg.Skills.Effects;
 /// </summary>
 public interface ISkillEffect : ISkillEffectRule
 {
-    /// <summary>On one target, still alive.</summary>
+    /// <summary>On one target, still alive — or KO, for an effect that says so.</summary>
     public void Apply(SkillContext ctx, Combatant target, SkillEffectDefinition effect);
+
+    /// <summary>Vrai pour un effet qui vise un mort (une résurrection, M1d §2.3).</summary>
+    public bool TargetsDead => false;
 
     /// <summary>Hostile to its target: an area of a skill whose first effect is offensive touches
     /// enemies, else allies; an offensive skill never leaves or reaches a safe cell.</summary>

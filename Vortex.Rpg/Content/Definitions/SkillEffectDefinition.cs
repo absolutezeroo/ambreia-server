@@ -22,4 +22,7 @@ public sealed record SkillEffectDefinition
 
     /// <summary>Extra threat, as a percent of this skill's damage on the target.</summary>
     public int ThreatPercent { get; init; }
+
+    /// <summary>Vie et mana rendues par une résurrection, en % du maximum (M1d §2.3).</summary>
+    public int HealthPercent { get; init; }
 }

@@ -5,6 +5,7 @@ using Vortex.Primitives.Networking;
 using Vortex.Primitives.Players;
 using Vortex.Primitives.Rpg.Characters;
 using Vortex.Protocol.Messages.Incoming.Rpg.Combat;
+using Vortex.Protocol.Messages.Outgoing.Rpg.Combat;
 using Vortex.Protocol.Messages.Outgoing.Rpg.Skills;
 using Vortex.Rpg.Combat.Combatants;
 using Vortex.Rpg.Combat.Configuration;
@@ -196,6 +197,29 @@ public sealed partial class CombatZone
         Statuses?.Remove(this, target, statusId);
 
     private IStatusSystem? Statuses => _systems.OfType<IStatusSystem>().LastOrDefault();
+
+    /// <summary>Une offre de résurrection (M1d §2.3) : la plus récente remplace, et part au flush.</summary>
+    public void Offer(Combatant target, int casterObjectId, int healthPercent)
+    {
+        target.Offer = new ResurrectOffer(
+            casterObjectId,
+            healthPercent,
+            runtime.NowMs + config.ResurrectOfferSeconds * 1000L
+        );
+
+        if (target.PlayerId is { } player)
+        {
+            SendTo(
+                player,
+                new RpgResurrectOfferMessageComposer
+                {
+                    CasterObjectId = casterObjectId,
+                    HealthPercent = healthPercent,
+                    ExpiresMs = config.ResurrectOfferSeconds * 1000,
+                }
+            );
+        }
+    }
 
     /// <summary>Le choix d'un joueur KO (M1d §2.3) ; rien pour un vivant.</summary>
     public void DeathChoice(PlayerId player, string choice)

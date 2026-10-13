@@ -9,4 +9,7 @@ public enum SkillTarget
     Ground = 4,
     AroundCaster = 5,
     AroundTarget = 6,
+
+    /// <summary>Un allié KO (M1d §2.3) : la seule voie vers un joueur au sol.</summary>
+    DeadAlly = 7,
 }

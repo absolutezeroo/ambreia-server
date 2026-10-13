@@ -54,7 +54,8 @@
         "enemy",
         "ground",
         "around_caster",
-        "around_target"
+        "around_target",
+        "dead_ally"
       ]
     },
     "radius": {
@@ -93,6 +94,9 @@
             "type": "integer"
           },
           "threatPercent": {
+            "type": "integer"
+          },
+          "healthPercent": {
             "type": "integer"
           }
         },

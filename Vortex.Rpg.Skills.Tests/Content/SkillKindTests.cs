@@ -73,6 +73,7 @@ public sealed class SkillKindTests
             new InterruptEffect(),
             new DispelEffect(),
             new ThreatEffect(),
+            new ResurrectEffect(),
         ]);
 
     private static string[] Codes(SkillDefinition skill) =>

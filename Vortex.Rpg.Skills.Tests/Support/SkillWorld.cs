@@ -68,6 +68,7 @@ internal sealed class SkillWorld
                 new InterruptEffect(),
                 new DispelEffect(),
                 new ThreatEffect(),
+                new ResurrectEffect(),
             ],
             NullLogger<SkillEffects>.Instance
         );

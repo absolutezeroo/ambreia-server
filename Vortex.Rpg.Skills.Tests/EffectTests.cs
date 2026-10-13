@@ -47,6 +47,7 @@ public sealed class EffectTests
                 new InterruptEffect(),
                 new DispelEffect(),
                 new ThreatEffect(),
+                new ResurrectEffect(),
             ],
             NullLogger<SkillEffects>.Instance
         );

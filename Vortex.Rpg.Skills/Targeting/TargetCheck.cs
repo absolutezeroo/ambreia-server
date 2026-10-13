@@ -34,6 +34,7 @@ public static class TargetCheck
             SkillTarget.Enemy or SkillTarget.AroundTarget => target is not null
                 && SkillTargets.IsEnemy(caster, target),
             SkillTarget.Ground => cell is { } at && zone.Runtime.IsWalkable(at.X, at.Y),
+            SkillTarget.DeadAlly => target is not null && SkillTargets.IsKoAlly(caster, target),
             _ => false,
         };
 

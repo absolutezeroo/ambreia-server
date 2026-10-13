@@ -31,6 +31,7 @@ public sealed class SkillsModule : IHostPluginModule
         AddEffect<InterruptEffect>(services);
         AddEffect<DispelEffect>(services);
         AddEffect<ThreatEffect>(services);
+        AddEffect<ResurrectEffect>(services);
         services.AddSingleton<SkillEffects>();
 
         // Statuses (spec M1b §7): one system, ticked by every zone and asked for its modifiers.

@@ -8,6 +8,7 @@ using Vortex.Protocol.Messages.Outgoing.Rpg.Skills;
 using Vortex.Rpg.Combat.Combatants;
 using Vortex.Rpg.Content.Definitions;
 using Vortex.Rpg.Skills.Tests.Support;
+using Vortex.Protocol.Messages.Incoming.Rpg.Combat;
 using Xunit;
 
 namespace Vortex.Rpg.Skills.Tests;
@@ -43,7 +44,8 @@ public sealed class CastTests
         string cls = "class.mage",
         bool globalCooldown = true,
         bool moveAllowed = false,
-        string effect = "damage"
+        string effect = "damage",
+        int healthPercent = 0
     ) =>
         new()
         {
@@ -62,8 +64,27 @@ public sealed class CastTests
             Radius = radius,
             GlobalCooldown = globalCooldown,
             MoveAllowed = moveAllowed,
-            Effects = [new SkillEffectDefinition { Kind = effect, Base = 10 }],
+            Effects =
+            [
+                new SkillEffectDefinition
+                {
+                    Kind = effect,
+                    Base = 10,
+                    HealthPercent = healthPercent,
+                },
+            ],
         };
+
+    internal static readonly SkillDefinition Revive = Skill(
+        "skill.cleric.resurrect",
+        SkillType.Cast,
+        SkillTarget.DeadAlly,
+        range: 8,
+        castMs: 500,
+        cls: "class.cleric",
+        effect: "resurrect",
+        healthPercent: 35
+    );
 
     internal static readonly SkillDefinition Zap = Skill("skill.mage.zap", cooldownMs: 4000);
     internal static readonly SkillDefinition Spark = Skill("skill.mage.spark");
@@ -104,7 +125,7 @@ public sealed class CastTests
         Focus,
         Strike,
         Meteor,
-        Stunned
+        Stunned, Revive
     );
 
     private Combatant ToughWolf(int x = 6, int y = 5) =>
@@ -465,5 +486,63 @@ public sealed class CastTests
             .Counted.Should()
             .Contain("cast skill.mage.spark resolved")
             .And.Contain("cast skill.mage.spark global_cooldown");
+    }
+
+    [Fact]
+    public async Task Resurrect_OnAKoAlly_OffersAndDoesNotStandHimUp()
+    {
+        await _world.PlayerAsync(player: 7, objectId: 1, classId: "class.cleric");
+        Combatant fallen = await _world.PlayerAsync(player: 8, objectId: 2, x: 6);
+        fallen.Health = 0;
+        await _world.TickAsync();
+        fallen.IsGhost.Should().BeTrue();
+
+        _world.Cast(Revive.Id, 2).Should().BeNull();
+        await _world.RunAsync(750);
+
+        fallen.IsGhost.Should().BeTrue("an offer, not a stand-up");
+        _world
+            .SentTo<RpgResurrectOfferMessageComposer>(8)
+            .Single()
+            .Should()
+            .BeEquivalentTo(
+                new
+                {
+                    CasterObjectId = 1,
+                    HealthPercent = 35,
+                    ExpiresMs = 30000,
+                }
+            );
+
+        _world.Combat.DeathChoice(new PlayerId(8), RpgDeathChoiceMessage.Accept);
+        await _world.TickAsync();
+        (fallen.IsGhost, fallen.Health).Should().Be((false, 35));
+    }
+
+    [Fact]
+    public async Task AnOfferOnTheLiving_IsDropped()
+    {
+        await _world.PlayerAsync(player: 7, objectId: 1, classId: "class.cleric");
+        await _world.PlayerAsync(player: 8, objectId: 2, x: 6);
+
+        _world.Cast(Revive.Id, 2).Should().Be(RpgSkillResultMessageComposer.InvalidTarget);
+    }
+
+    [Fact]
+    public async Task ASecondOffer_ReplacesTheFirst()
+    {
+        await _world.PlayerAsync(player: 7, objectId: 1, classId: "class.cleric");
+        await _world.PlayerAsync(player: 9, objectId: 3, x: 4, classId: "class.cleric");
+        Combatant fallen = await _world.PlayerAsync(player: 8, objectId: 2, x: 6);
+        fallen.Health = 0;
+        await _world.TickAsync();
+
+        _world.Cast(Revive.Id, 2, player: 7);
+        await _world.RunAsync(750);
+        _world.Cast(Revive.Id, 2, player: 9);
+        await _world.RunAsync(750);
+
+        fallen.Offer!.CasterObjectId.Should().Be(3);
+        _world.SentTo<RpgResurrectOfferMessageComposer>(8).Should().HaveCount(2);
     }
 }

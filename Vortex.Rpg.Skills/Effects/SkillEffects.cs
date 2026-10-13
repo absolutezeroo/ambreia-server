@@ -49,16 +49,16 @@ public sealed class SkillEffects
     {
         foreach (SkillEffectDefinition effect in ctx.Skill.Effects)
         {
-            if (target.IsDead)
-            {
-                return;
-            }
-
             if (Find(effect.Kind) is not { } type)
             {
                 WarnMissing(effect.Kind);
 
                 continue;
+            }
+
+            if (target.IsDead && !type.TargetsDead)
+            {
+                return;
             }
 
             type.Apply(ctx, target, effect);

@@ -41,6 +41,8 @@ public static class SkillTargets
                 return cell is { } at ? Area(ctx, at) : [];
             case SkillTarget.AroundCaster:
                 return zone.Runtime.PositionOf(ctx.Caster.ObjectId) is { } me ? Area(ctx, me) : [];
+            case SkillTarget.DeadAlly:
+                return Find(zone, targetObjectId) is { } ko && IsKoAlly(ctx.Caster, ko) ? [ko] : [];
             case SkillTarget.AroundTarget:
                 return
                     Find(zone, targetObjectId) is { } centre
@@ -62,6 +64,10 @@ public static class SkillTargets
     /// walking home.</summary>
     public static bool IsEnemy(Combatant caster, Combatant c) =>
         c.IsPlayer != caster.IsPlayer && Standing(c);
+
+    /// <summary>Un allié KO (M1d §2.3) : le seul cas où un mort est une cible.</summary>
+    public static bool IsKoAlly(Combatant caster, Combatant c) =>
+        c.IsPlayer == caster.IsPlayer && c.IsGhost;
 
     private static bool Standing(Combatant c) => !c.IsDead && !c.IsGhost && !c.Invulnerable;
 

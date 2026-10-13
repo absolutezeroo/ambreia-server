@@ -47,6 +47,7 @@ public sealed class ContentPackInRepoTests
                 new InterruptEffect(),
                 new DispelEffect(),
                 new ThreatEffect(),
+                new ResurrectEffect(),
             ]),
             new StatusKind(),
         ]).Validate(Read(), id => id == Throne);

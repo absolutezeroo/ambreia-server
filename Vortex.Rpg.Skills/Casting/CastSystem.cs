@@ -727,7 +727,7 @@ public sealed class CastSystem(
         && CombatMath.Chebyshev(from.X, from.Y, centre.X, centre.Y) <= skill.Range;
 
     private static bool SingleTarget(SkillDefinition skill, int targetObjectId) =>
-        skill.Target is SkillTarget.Enemy or SkillTarget.AroundTarget
+        skill.Target is SkillTarget.Enemy or SkillTarget.AroundTarget or SkillTarget.DeadAlly
         || skill.Target == SkillTarget.Ally && targetObjectId != 0;
 
     private static void DropApproach(Combatant c)
