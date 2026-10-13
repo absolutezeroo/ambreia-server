@@ -47,6 +47,8 @@ internal static class MessageEvent
     public const int RpgSkillCastMessageEvent = 9013; // RPG (spec §3.7)
     public const int RpgActionBarSetMessageEvent = 9014; // RPG (spec §3.7)
     public const int RpgCastCancelMessageEvent = 9015; // RPG (spec §3.7)
+    public const int RpgAutoAttackMessageEvent = 9016; // RPG (M1d §2.2)
+    public const int RpgDeathChoiceMessageEvent = 9017; // RPG (M1d §2.2)
     #endregion
 }
 
@@ -145,5 +147,10 @@ internal static class MessageComposer
     public const int RpgSkillEventsMessageComposer = 9024; // RPG (spec §3.7)
     public const int RpgTelegraphsMessageComposer = 9025; // RPG (spec §3.7)
     public const int RpgMonsterYellMessageComposer = 9026; // RPG (spec §3.7)
+    public const int RpgTargetsMessageComposer = 9027; // RPG (M1d §2.1)
+    public const int RpgThreatMessageComposer = 9028; // RPG (M1d §2.1)
+    public const int RpgResurrectOfferMessageComposer = 9029; // RPG (M1d §2.1)
+    public const int RpgLevelUpMessageComposer = 9030; // RPG (M1d §2.1)
+    public const int RpgAutoAttackStateMessageComposer = 9031; // RPG (M1d §2.1)
     #endregion
 }

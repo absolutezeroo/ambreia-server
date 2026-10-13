@@ -58,5 +58,9 @@ internal sealed class RpgCharactersMap : IRevisionMap
                 MessageComposer.RpgCharacterStatsMessageComposer
             )
         );
+        builder.MapSerializer(
+            typeof(RpgLevelUpMessageComposer),
+            new RpgLevelUpMessageComposerSerializer(MessageComposer.RpgLevelUpMessageComposer)
+        );
     }
 }

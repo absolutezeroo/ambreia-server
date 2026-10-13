@@ -259,4 +259,46 @@ public sealed class RpgCharactersWireTests
         }
             .Should()
             .AllBeAssignableTo<IAccountPhaseMessage>();
+
+    [Fact]
+    public void ALevelUp_WritesBothStatBlocksThenTheSkills()
+    {
+        Vortex.Revisions.DevHeaders.Composers["RpgLevelUpMessageComposer"].Should().Be(9030);
+
+        CharacterStatsSnapshot after = Stats with { MaxHealth = 132, Power = 14 };
+        ClientPacket p = Serialize(
+            new RpgLevelUpMessageComposer
+            {
+                FromLevel = 3,
+                ToLevel = 4,
+                StatsBefore = Stats,
+                StatsAfter = after,
+                SkillsLearned = ["skill.mage.frost_nova"],
+            }
+        );
+
+        (p.PopInt(), p.PopInt()).Should().Be((3, 4));
+        for (int i = 0; i < 3; i++)
+        {
+            p.PopInt();
+        }
+        p.PopInt().Should().Be(120, "maxHealth before");
+        for (int i = 0; i < 6; i++)
+        {
+            p.PopInt();
+        }
+        for (int i = 0; i < 3; i++)
+        {
+            p.PopInt();
+        }
+        p.PopInt().Should().Be(132, "maxHealth after");
+        for (int i = 0; i < 5; i++)
+        {
+            p.PopInt();
+        }
+        p.PopInt().Should().Be(14, "power after");
+        p.PopInt().Should().Be(1);
+        p.PopString().Should().Be("skill.mage.frost_nova");
+        p.Remaining.Should().Be(0);
+    }
 }

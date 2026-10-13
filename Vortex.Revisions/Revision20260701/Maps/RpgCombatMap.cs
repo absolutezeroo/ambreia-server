@@ -1,5 +1,6 @@
 using Vortex.Primitives.Networking.Revisions;
 using Vortex.Protocol.Messages.Outgoing.Rpg.Combat;
+using Vortex.Revisions.Revision20260701.Parsers.Rpg.Combat;
 using Vortex.Revisions.Revision20260701.Serializers.Rpg.Combat;
 
 namespace Vortex.Revisions.Revision20260701.Maps;
@@ -9,6 +10,11 @@ internal sealed class RpgCombatMap : IRevisionMap
 {
     public void RegisterInto(IRevisionMapBuilder builder)
     {
+        builder.MapParser(MessageEvent.RpgAutoAttackMessageEvent, new RpgAutoAttackMessageParser());
+        builder.MapParser(
+            MessageEvent.RpgDeathChoiceMessageEvent,
+            new RpgDeathChoiceMessageParser()
+        );
         builder.MapSerializer(
             typeof(RpgCombatEventsMessageComposer),
             new RpgCombatEventsMessageComposerSerializer(
@@ -37,6 +43,26 @@ internal sealed class RpgCombatMap : IRevisionMap
             typeof(RpgMonsterYellMessageComposer),
             new RpgMonsterYellMessageComposerSerializer(
                 MessageComposer.RpgMonsterYellMessageComposer
+            )
+        );
+        builder.MapSerializer(
+            typeof(RpgTargetsMessageComposer),
+            new RpgTargetsMessageComposerSerializer(MessageComposer.RpgTargetsMessageComposer)
+        );
+        builder.MapSerializer(
+            typeof(RpgThreatMessageComposer),
+            new RpgThreatMessageComposerSerializer(MessageComposer.RpgThreatMessageComposer)
+        );
+        builder.MapSerializer(
+            typeof(RpgResurrectOfferMessageComposer),
+            new RpgResurrectOfferMessageComposerSerializer(
+                MessageComposer.RpgResurrectOfferMessageComposer
+            )
+        );
+        builder.MapSerializer(
+            typeof(RpgAutoAttackStateMessageComposer),
+            new RpgAutoAttackStateMessageComposerSerializer(
+                MessageComposer.RpgAutoAttackStateMessageComposer
             )
         );
     }

@@ -4,6 +4,9 @@ using FluentAssertions;
 using Vortex.Primitives.Networking;
 using Vortex.Primitives.Packets;
 using Vortex.Protocol.Messages.Outgoing.Rpg.Combat;
+using System.Collections.Generic;
+using System.Text;
+using Vortex.Protocol.Messages.Incoming.Rpg.Combat;
 using Xunit;
 using Rev = Vortex.Revisions.Revision20260701.Revision20260701;
 
@@ -140,5 +143,93 @@ public sealed class RpgCombatWireTests
         header.Should().Be(9016);
         p.PopString().Should().Be("safe_zone");
         p.Remaining.Should().Be(0);
+    }
+
+    private static ClientPacket Body(int header, params object[] fields)
+    {
+        List<byte> bytes = [];
+
+        foreach (object field in fields)
+        {
+            switch (field)
+            {
+                case int i:
+                {
+                    byte[] b = new byte[4];
+                    BinaryPrimitives.WriteInt32BigEndian(b, i);
+                    bytes.AddRange(b);
+                    break;
+                }
+                case bool flag:
+                    bytes.Add(flag ? (byte)1 : (byte)0);
+                    break;
+                case string s:
+                {
+                    byte[] text = Encoding.UTF8.GetBytes(s);
+                    byte[] length = new byte[2];
+                    BinaryPrimitives.WriteInt16BigEndian(length, (short)text.Length);
+                    bytes.AddRange(length);
+                    bytes.AddRange(text);
+                    break;
+                }
+            }
+        }
+
+        return new ClientPacket(header, bytes.ToArray());
+    }
+
+    [Fact]
+    public void Targets_Threat_Offer_AutoAttackState_AreReadInTheClientsOrder()
+    {
+        (int header, ClientPacket p) = Serialize(
+            new RpgTargetsMessageComposer
+            {
+                Entries = [new RpgTargetEntry { ObjectId = 4, TargetObjectId = 0 }],
+            }
+        );
+        header.Should().Be(9027);
+        p.PopInt().Should().Be(1);
+        p.PopInt().Should().Be(4);
+        p.PopInt().Should().Be(0);
+        p.Remaining.Should().Be(0);
+
+        (header, p) = Serialize(
+            new RpgThreatMessageComposer
+            {
+                MonsterObjectId = 9,
+                Percent = 80,
+                HasAggro = false,
+            }
+        );
+        header.Should().Be(9028);
+        (p.PopInt(), p.PopInt(), p.PopBoolean()).Should().Be((9, 80, false));
+
+        (header, p) = Serialize(
+            new RpgResurrectOfferMessageComposer
+            {
+                CasterObjectId = 2,
+                HealthPercent = 35,
+                ExpiresMs = 30000,
+            }
+        );
+        header.Should().Be(9029);
+        (p.PopInt(), p.PopInt(), p.PopInt()).Should().Be((2, 35, 30000));
+
+        (header, p) = Serialize(new RpgAutoAttackStateMessageComposer { Active = true });
+        header.Should().Be(9031);
+        p.PopBoolean().Should().BeTrue();
+        p.Remaining.Should().Be(0);
+    }
+
+    [Fact]
+    public void AutoAttack_And_DeathChoice_ReadTheirField()
+    {
+        ((RpgAutoAttackMessage)Revision.Parsers[9016].Parse(Body(9016, true)))
+            .Active.Should()
+            .BeTrue();
+
+        ((RpgDeathChoiceMessage)Revision.Parsers[9017].Parse(Body(9017, "release")))
+            .Choice.Should()
+            .Be(RpgDeathChoiceMessage.Release);
     }
 }
