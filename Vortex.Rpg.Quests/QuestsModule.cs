@@ -23,6 +23,7 @@ public sealed class QuestsModule : IHostPluginModule
     public void ConfigureServices(IServiceCollection services, HostApplicationBuilder builder)
     {
         services.AddSingleton<IContentKind, QuestKind>();
+        services.AddSingleton<IContentKind, DialogueKind>();
 
         AddObjective<KillObjective>(services);
         AddObjective<ReachObjective>(services);
