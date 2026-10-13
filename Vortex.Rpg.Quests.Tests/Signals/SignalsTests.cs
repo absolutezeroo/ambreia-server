@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Collections.Immutable;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using FluentAssertions;
@@ -37,7 +38,9 @@ public sealed class SignalsTests
                 if (inner.Method.Name == nameof(IQuestLogGrain.CountAsync))
                 {
                     QuestSignal s = (QuestSignal)inner.Args![0]!;
-                    _calls.Add($"{player} {s.Name} {s.Zone} {string.Join(",", s.Subject)}");
+                    _calls.Add(
+                        $"{player} {s.Name} {s.Zone} {string.Join(",", s.Subject.OrderBy(kv => kv.Key))}"
+                    );
                 }
                 else if (inner.Method.Name == nameof(IQuestLogGrain.RefreshHeldAsync))
                 {

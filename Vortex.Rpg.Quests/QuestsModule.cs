@@ -6,6 +6,8 @@ using Vortex.Rpg.Content.Rules;
 using Vortex.Rpg.Quests.Objectives;
 using Vortex.Rpg.Quests.Rewards;
 using Vortex.Rpg.Quests.Signals;
+using Vortex.Rpg.Quests.Zones;
+using Vortex.Rpg.Zones.Rules;
 
 namespace Vortex.Rpg.Quests;
 
@@ -32,6 +34,11 @@ public sealed class QuestsModule : IHostPluginModule
         AddReward<ItemsReward>(services);
 
         services.AddSingleton<ZoneKeys>();
+
+        // Spec M2a §3.3: the log's part of a zone's facts, the condition reading it, the action starting a quest.
+        services.AddZoneFactsSource<QuestFactsSource>();
+        services.AddZoneCondition<QuestStateEvaluator>();
+        services.AddZoneAction<StartQuestExecutor>();
     }
 
     private static void AddObjective<T>(IServiceCollection services)

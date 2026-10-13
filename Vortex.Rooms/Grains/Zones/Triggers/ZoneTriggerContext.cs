@@ -47,5 +47,8 @@ public sealed class ZoneTriggerContext(
             LocalNow,
             Room.CombatRuntime,
             Room.Simulation
-        );
+        )
+        {
+            AllHold = conditions => Room._zoneRules.AllHold(conditions, this),
+        };
 }

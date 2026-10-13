@@ -21,4 +21,9 @@ public sealed record ZoneRuleContext(
     /// <summary>The part a module declared, or null when the zone has none for this player.</summary>
     public T? FactsOf<T>()
         where T : ZoneFacts => Facts.TryGetValue(typeof(T), out ZoneFacts? part) ? (T)part : null;
+
+    /// <summary>Whether every condition holds for this player, by the room's rule registry (a quest's
+    /// requirements, spec M2a §3.3). Outside a room nothing can say: a non-empty list does not hold.</summary>
+    public Func<IReadOnlyList<ZoneCondition>, bool> AllHold { get; init; } =
+        conditions => conditions.Count == 0;
 }
