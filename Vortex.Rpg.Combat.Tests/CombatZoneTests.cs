@@ -806,4 +806,65 @@ public sealed class CombatZoneTests
         _combat.Combatants[1].AutoAttacking.Should().BeFalse();
         Sent<RpgAutoAttackStateMessageComposer>().Last().Active.Should().BeFalse();
     }
+
+    [Fact]
+    public async Task Threat_IsSentOnSelection_ThenOnlyWhenItMoves()
+    {
+        await OnePlayerAsync();
+        await EnterAsync(8, 2, (4, 5));
+        int wolf = AddWolf(6, 5);
+        _combat.Combatants[wolf].Threat.Add(1, 100);
+        _combat.Combatants[wolf].Threat.Add(2, 50);
+
+        _combat.SelectTarget(new PlayerId(8), wolf);
+        await _combat.TickAsync(CancellationToken.None);
+        ThreatsTo(8)
+            .Single()
+            .Should()
+            .BeEquivalentTo(
+                new
+                {
+                    MonsterObjectId = wolf,
+                    Percent = 50,
+                    HasAggro = false,
+                }
+            );
+
+        _combat.Combatants[wolf].Threat.Add(2, 3);
+        await _combat.TickAsync(CancellationToken.None);
+        ThreatsTo(8).Should().HaveCount(1, "53 % is under the 5-point step");
+
+        _combat.Combatants[wolf].Threat.Add(2, 60);
+        await _combat.TickAsync(CancellationToken.None);
+        ThreatsTo(8).Last().Should().BeEquivalentTo(new { Percent = 100, HasAggro = true });
+
+        _combat.SelectTarget(new PlayerId(8), 0);
+        _combat.EntryVitals(new PlayerId(8)).OfType<RpgThreatMessageComposer>().Should().BeEmpty();
+    }
+
+    [Fact]
+    public async Task ThreatOfAnUnthreatenedMonster_IsZero()
+    {
+        await OnePlayerAsync();
+        int wolf = AddWolf(6, 5);
+        _combat.SelectTarget(new PlayerId(7), wolf);
+        await _combat.TickAsync(CancellationToken.None);
+
+        Sent<RpgThreatMessageComposer>()
+            .Single()
+            .Should()
+            .BeEquivalentTo(new { Percent = 0, HasAggro = false });
+        _combat
+            .EntryVitals(new PlayerId(7))
+            .OfType<RpgThreatMessageComposer>()
+            .Single()
+            .MonsterObjectId.Should()
+            .Be(wolf, "the burst carries the current threat");
+    }
+
+    private IEnumerable<RpgThreatMessageComposer> ThreatsTo(int player) =>
+        _zone
+            .Sent.Where(s => s.Player == new PlayerId(player))
+            .Select(s => s.Composer)
+            .OfType<RpgThreatMessageComposer>();
 }

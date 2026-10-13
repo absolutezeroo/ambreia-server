@@ -459,6 +459,25 @@ public sealed partial class CombatZone(
             yield break;
         }
 
+        // Sa menace sur la cible qu'il avait choisie (M1d §2.3).
+        if (
+            _selected.TryGetValue(player, out int sel)
+            && _combatants.TryGetValue(sel, out Combatant? m)
+            && !m.IsPlayer
+            && !m.IsDead
+        )
+        {
+            (int percent, bool hasAggro) = ThreatOf(m, id);
+            _lastThreat[player] = (sel, percent, hasAggro);
+
+            yield return new RpgThreatMessageComposer
+            {
+                MonsterObjectId = sel,
+                Percent = percent,
+                HasAggro = hasAggro,
+            };
+        }
+
         // Un joueur KO retrouve son écran : le délai qui reste, puis l'offre pendante.
         if (_combatants[id] is { IsGhost: true } ko)
         {

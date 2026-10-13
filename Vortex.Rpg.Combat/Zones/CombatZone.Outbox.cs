@@ -24,6 +24,7 @@ public sealed partial class CombatZone
     private readonly List<(PlayerId Player, string Code)> _results = [];
     private readonly HashSet<int> _autoAttackChanged = [];
     private readonly Dictionary<int, int?> _lastTargets = [];
+    private readonly Dictionary<PlayerId, (int Monster, int Percent, bool HasAggro)> _lastThreat = [];
     private long _nextRegenAtMs;
 
     private async Task FlushAsync()
@@ -66,6 +67,45 @@ public sealed partial class CombatZone
         {
             RpgTargetsMessageComposer targets = new() { Entries = [.. aims] };
             sends.Add(() => runtime.BroadcastAsync(targets));
+        }
+
+        // La menace du joueur sur sa cible (M1d §2.1) : par pas, et quand l'aggro change de main.
+        foreach ((PlayerId player, int monsterId) in _selected)
+        {
+            if (
+                !_players.TryGetValue(player, out int me)
+                || !_combatants.TryGetValue(monsterId, out Combatant? m)
+                || m.IsPlayer
+            )
+            {
+                continue;
+            }
+
+            (int percent, bool hasAggro) = ThreatOf(m, me);
+            bool send =
+                !_lastThreat.TryGetValue(player, out (int Monster, int Percent, bool HasAggro) last)
+                || last.Monster != monsterId
+                || last.HasAggro != hasAggro
+                || Math.Abs(last.Percent - percent) >= config.ThreatReportStep;
+
+            if (!send)
+            {
+                continue;
+            }
+
+            _lastThreat[player] = (monsterId, percent, hasAggro);
+            RpgThreatMessageComposer threat = new()
+            {
+                MonsterObjectId = monsterId,
+                Percent = percent,
+                HasAggro = hasAggro,
+            };
+            sends.Add(() => runtime.SendToPlayerAsync(player, threat));
+        }
+
+        foreach (PlayerId p in _lastThreat.Keys.Where(p => !_selected.ContainsKey(p)).ToArray())
+        {
+            _lastThreat.Remove(p);
         }
 
         if (_hits.Count > 0)

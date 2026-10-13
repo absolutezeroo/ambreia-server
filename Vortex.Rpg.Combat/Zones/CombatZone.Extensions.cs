@@ -221,6 +221,17 @@ public sealed partial class CombatZone
         }
     }
 
+    /// <summary>La menace du joueur sur ce monstre (M1d §2.1) : sa part du premier, et s'il est le
+    /// premier. Table vide ou joueur absent : zéro.</summary>
+    public (int Percent, bool HasAggro) ThreatOf(Combatant monster, int playerObjectId)
+    {
+        int? top = monster.Threat.Top;
+        long best = top is { } t ? monster.Threat.ThreatOf(t) : 0;
+        long mine = monster.Threat.ThreatOf(playerObjectId);
+
+        return best <= 0 ? (0, false) : ((int)Math.Min(100, mine * 100 / best), top == playerObjectId);
+    }
+
     /// <summary>Le choix d'un joueur KO (M1d §2.3) ; rien pour un vivant.</summary>
     public void DeathChoice(PlayerId player, string choice)
     {
