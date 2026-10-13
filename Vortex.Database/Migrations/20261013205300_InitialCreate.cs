@@ -1122,6 +1122,57 @@ namespace Vortex.Database.Migrations
 
             migrationBuilder
                 .CreateTable(
+                    name: "rpg_character_quests",
+                    columns: table => new
+                    {
+                        id = table
+                            .Column<int>(type: "int", nullable: false)
+                            .Annotation(
+                                "MySql:ValueGenerationStrategy",
+                                MySqlValueGenerationStrategy.IdentityColumn
+                            ),
+                        player_id = table.Column<int>(type: "int", nullable: false),
+                        quest_id = table
+                            .Column<string>(type: "varchar(64)", maxLength: 64, nullable: false)
+                            .Annotation("MySql:CharSet", "utf8mb4"),
+                        status = table
+                            .Column<string>(type: "varchar(16)", maxLength: 16, nullable: false)
+                            .Annotation("MySql:CharSet", "utf8mb4"),
+                        progress = table
+                            .Column<string>(type: "varchar(256)", maxLength: 256, nullable: false)
+                            .Annotation("MySql:CharSet", "utf8mb4"),
+                        accepted_at = table.Column<DateTime>(type: "datetime(6)", nullable: false),
+                        completed_at = table.Column<DateTime>(type: "datetime(6)", nullable: true),
+                        created_at = table
+                            .Column<DateTime>(type: "datetime(6)", nullable: false)
+                            .Annotation(
+                                "MySql:ValueGenerationStrategy",
+                                MySqlValueGenerationStrategy.IdentityColumn
+                            ),
+                        updated_at = table
+                            .Column<DateTime>(type: "datetime(6)", nullable: false)
+                            .Annotation(
+                                "MySql:ValueGenerationStrategy",
+                                MySqlValueGenerationStrategy.ComputedColumn
+                            ),
+                        deleted_at = table.Column<DateTime>(type: "datetime(6)", nullable: true),
+                    },
+                    constraints: table =>
+                    {
+                        table.PrimaryKey("PK_rpg_character_quests", x => x.id);
+                        table.ForeignKey(
+                            name: "FK_rpg_character_quests_players_player_id",
+                            column: x => x.player_id,
+                            principalTable: "players",
+                            principalColumn: "id",
+                            onDelete: ReferentialAction.Cascade
+                        );
+                    }
+                )
+                .Annotation("MySql:CharSet", "utf8mb4");
+
+            migrationBuilder
+                .CreateTable(
                     name: "rpg_item_grants",
                     columns: table => new
                     {
@@ -1715,6 +1766,13 @@ namespace Vortex.Database.Migrations
             );
 
             migrationBuilder.CreateIndex(
+                name: "IX_rpg_character_quests_player_id_quest_id",
+                table: "rpg_character_quests",
+                columns: new[] { "player_id", "quest_id" },
+                unique: true
+            );
+
+            migrationBuilder.CreateIndex(
                 name: "IX_rpg_content_content_id",
                 table: "rpg_content",
                 column: "content_id",
@@ -1856,6 +1914,8 @@ namespace Vortex.Database.Migrations
             migrationBuilder.DropTable(name: "room_entry_logs");
 
             migrationBuilder.DropTable(name: "room_rights");
+
+            migrationBuilder.DropTable(name: "rpg_character_quests");
 
             migrationBuilder.DropTable(name: "rpg_content");
 
