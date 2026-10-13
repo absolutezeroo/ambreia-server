@@ -195,7 +195,10 @@ public sealed class CombatZoneTests
 
         (_zone.Postures[wolf], _zone.Walking.Contains(wolf)).Should().Be(("ded", false));
         _combat.Combatants.Should().NotContainKey(wolf);
-        _combat.StartAttack(new PlayerId(7), wolf).Should().Be("dead");
+        _combat
+            .StartAttack(new PlayerId(7), wolf)
+            .Should()
+            .Be(RpgCombatResultMessageComposer.InvalidTarget, "a corpse is no living monster (M1d)");
         _combat.Combatants[1].TargetId.Should().BeNull();
 
         _zone.NowMs += 1999;
@@ -645,5 +648,54 @@ public sealed class CombatZoneTests
         _calls.Add(call);
 
         return answer;
+    }
+
+    [Fact]
+    public async Task SelectingAMonster_DoesNotSwing_UntilAutoAttack()
+    {
+        await OnePlayerAsync();
+        int wolf = AddWolf(6, 5);
+
+        _combat.SelectTarget(new PlayerId(7), wolf);
+        _zone.NowMs += 2000;
+        await _combat.TickAsync(CancellationToken.None);
+        Hits().Should().BeEmpty("selecting is not attacking");
+
+        _combat.SetAutoAttack(new PlayerId(7), true).Should().BeNull();
+        Sent<RpgAutoAttackStateMessageComposer>().Should().BeEmpty("sent at the flush");
+        _zone.NowMs += 2000;
+        await _combat.TickAsync(CancellationToken.None);
+
+        Hits().Should().ContainSingle(h => h.AttackerId == 1 && h.TargetId == wolf);
+        Sent<RpgAutoAttackStateMessageComposer>().Single().Active.Should().BeTrue();
+    }
+
+    [Fact]
+    public async Task AutoAttackWithoutAMonsterTarget_IsRefused()
+    {
+        await OnePlayerAsync();
+
+        _combat
+            .SetAutoAttack(new PlayerId(7), true)
+            .Should()
+            .Be(RpgCombatResultMessageComposer.InvalidTarget);
+    }
+
+    [Fact]
+    public async Task ChangingTargetWhileAttacking_Transfers_OrStops()
+    {
+        await OnePlayerAsync();
+        int a = AddWolf(6, 5);
+        int b = AddWolf(5, 6);
+        _combat.SelectTarget(new PlayerId(7), a);
+        _combat.SetAutoAttack(new PlayerId(7), true);
+
+        _combat.SelectTarget(new PlayerId(7), b);
+        _combat.Combatants[1].TargetId.Should().Be(b);
+
+        _combat.SelectTarget(new PlayerId(7), 0);
+        _combat.Combatants[1].AutoAttacking.Should().BeFalse();
+        await _combat.TickAsync(CancellationToken.None);
+        Sent<RpgAutoAttackStateMessageComposer>().Last().Active.Should().BeFalse();
     }
 }

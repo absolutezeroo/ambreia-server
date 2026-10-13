@@ -55,6 +55,9 @@ public sealed partial class CombatZone(
     private readonly Dictionary<int, Combatant> _combatants = [];
     private readonly Dictionary<PlayerId, int> _players = [];
 
+    /// <summary>La cible choisie par chaque joueur (M1d décision 3) : la menace et l'attaque auto en dépendent.</summary>
+    private readonly Dictionary<PlayerId, int> _selected = [];
+
     /// <summary>Where each player was last sent to reach his target.</summary>
     private readonly Dictionary<int, (int X, int Y)> _approachGoals = [];
 
@@ -251,18 +254,78 @@ public sealed partial class CombatZone(
         }
     }
 
-    /// <summary>The player attacks a monster (spec M1a §6.1); a refusal code, or null.</summary>
-    public string? StartAttack(PlayerId player, int monsterId)
+    /// <summary>La cible choisie par le joueur (M1d §2.3) ; 0 la vide. L'attaque auto suit un
+    /// monstre vivant et s'arrête sur tout le reste.</summary>
+    public void SelectTarget(PlayerId player, int objectId)
     {
+        if (objectId <= 0)
+        {
+            _selected.Remove(player);
+        }
+        else
+        {
+            _selected[player] = objectId;
+        }
+
+        if (!_players.TryGetValue(player, out int id) || !_combatants[id].AutoAttacking)
+        {
+            return;
+        }
+
         if (
-            !_players.TryGetValue(player, out int id)
-            || _combatants[id] is { } me && (me.IsDead || me.IsGhost)
+            objectId > 0
+            && _combatants.TryGetValue(objectId, out Combatant? t)
+            && !t.IsPlayer
+            && !t.IsDead
+        )
+        {
+            _combatants[id].TargetId = objectId;
+            _approachGoals.Remove(id);
+        }
+        else
+        {
+            SetAutoAttack(player, false);
+        }
+    }
+
+    /// <summary>Démarre ou arrête l'attaque auto sur la cible choisie (M1d §2.3) ; un code de refus,
+    /// ou null. Chaque changement d'état part au flush (RpgAutoAttackState).</summary>
+    public string? SetAutoAttack(PlayerId player, bool active)
+    {
+        if (!_players.TryGetValue(player, out int id))
+        {
+            return RpgCombatResultMessageComposer.Dead;
+        }
+
+        Combatant me = _combatants[id];
+
+        if (!active)
+        {
+            if (me.AutoAttacking)
+            {
+                _autoAttackChanged.Add(id);
+            }
+
+            me.AutoAttacking = false;
+            me.TargetId = null;
+            _approachGoals.Remove(id);
+
+            return null;
+        }
+
+        if (me.IsDead || me.IsGhost)
+        {
+            return RpgCombatResultMessageComposer.Dead;
+        }
+
+        if (
+            !_selected.TryGetValue(player, out int monsterId)
             || !_combatants.TryGetValue(monsterId, out Combatant? target)
             || target.IsPlayer
             || target.IsDead
         )
         {
-            return RpgCombatResultMessageComposer.Dead;
+            return RpgCombatResultMessageComposer.InvalidTarget;
         }
 
         if (IsSafe(id) || IsSafe(monsterId))
@@ -270,20 +333,28 @@ public sealed partial class CombatZone(
             return RpgCombatResultMessageComposer.SafeZone;
         }
 
-        _combatants[id].TargetId = monsterId;
+        if (!me.AutoAttacking)
+        {
+            _autoAttackChanged.Add(id);
+        }
+
+        me.AutoAttacking = true;
+        me.TargetId = monsterId;
         _approachGoals.Remove(id);
 
         return null;
     }
 
-    public void StopAttack(PlayerId player)
+    /// <summary>Sélectionne ce monstre et l'attaque : le raccourci des tests et des bots.</summary>
+    public string? StartAttack(PlayerId player, int monsterId)
     {
-        if (_players.TryGetValue(player, out int id))
-        {
-            _combatants[id].TargetId = null;
-            _approachGoals.Remove(id);
-        }
+        SelectTarget(player, monsterId);
+
+        return SetAutoAttack(player, true);
     }
+
+    /// <summary>Le joueur a marché de lui-même : son attaque s'arrête (M1a §6.1).</summary>
+    public void StopAttack(PlayerId player) => SetAutoAttack(player, false);
 
     /// <summary>A monster back at its spawn heals entirely (spec §5.3).</summary>
     public void HealFully(int objectId)
@@ -406,6 +477,12 @@ public sealed partial class CombatZone(
             if (other.TargetId == objectId)
             {
                 other.TargetId = null;
+
+                if (other.AutoAttacking)
+                {
+                    other.AutoAttacking = false;
+                    _autoAttackChanged.Add(other.ObjectId);
+                }
             }
         }
     }

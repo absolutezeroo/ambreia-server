@@ -24,12 +24,19 @@ public interface IZoneSimulation
     /// the next zone reads what this one wrote.</summary>
     public Task PlayerLeftAsync(PlayerId player, CancellationToken ct);
 
-    /// <summary>True when <paramref name="objectId"/> is a monster: the simulation answered the
-    /// player (target, attack started, or a refusal). False leaves it to the zone.</summary>
+    /// <summary>La cible choisie par le joueur (0 : aucune), retenue pour la menace et l'attaque
+    /// auto (M1d §2.3). Vrai quand c'est un monstre : la simulation a répondu (RpgTarget). Faux
+    /// laisse la zone répondre.</summary>
     public Task<bool> SelectTargetAsync(PlayerId player, int objectId, CancellationToken ct);
 
-    /// <summary>The player cleared his target or walked on his own: his attack stops.</summary>
+    /// <summary>Démarre ou arrête l'attaque auto sur la cible choisie ; un refus est dit au joueur.</summary>
+    public Task SetAutoAttackAsync(PlayerId player, bool active, CancellationToken ct);
+
+    /// <summary>The player walked on his own: his attack stops.</summary>
     public void StopAttack(PlayerId player);
+
+    /// <summary>Faux pour un joueur KO : nul ne le cible, sauf une compétence faite pour (M1d §2.3).</summary>
+    public bool IsTargetable(int objectId);
 
     public Task TickAsync(CancellationToken ct);
 

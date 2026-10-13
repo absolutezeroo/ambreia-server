@@ -59,6 +59,7 @@ public sealed class MeleeBehaviorTests
         WolfCombatant.Threat.IsEmpty.Should().BeTrue();
 
         await _world.Simulation.SelectTargetAsync(new PlayerId(7), Wolf, CancellationToken.None);
+        await _world.Simulation.SetAutoAttackAsync(new PlayerId(7), true, CancellationToken.None);
         await _world.TickAsync();
         await _world.TickAsync();
 

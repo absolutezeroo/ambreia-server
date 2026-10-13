@@ -16,6 +16,9 @@ public sealed record RpgCombatResultMessageComposer : IComposer
     /// <summary>The target or the player is dead.</summary>
     public const string Dead = "dead";
 
+    /// <summary>L'attaque auto sans monstre vivant sélectionné (M1d §2.3).</summary>
+    public const string InvalidTarget = "invalid_target";
+
     [Id(0)]
     public required string Code { get; init; }
 }

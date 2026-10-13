@@ -48,6 +48,9 @@ public sealed class RpgZoneSimulation(
 
     public async Task<bool> SelectTargetAsync(PlayerId player, int objectId, CancellationToken ct)
     {
+        // La zone retient le choix quel qu'il soit (M1d décision 3) ; elle ne répond que pour un monstre.
+        combat.SelectTarget(player, objectId);
+
         if (!combat.Combatants.TryGetValue(objectId, out Combatant? monster) || monster.IsPlayer)
         {
             return false;
@@ -68,18 +71,24 @@ public sealed class RpgZoneSimulation(
             }
         );
 
-        if (combat.StartAttack(player, objectId) is { } refusal)
+        return true;
+    }
+
+    public async Task SetAutoAttackAsync(PlayerId player, bool active, CancellationToken ct)
+    {
+        if (combat.SetAutoAttack(player, active) is { } refusal)
         {
             await zone.SendToPlayerAsync(
                 player,
                 new RpgCombatResultMessageComposer { Code = refusal }
             );
         }
-
-        return true;
     }
 
     public void StopAttack(PlayerId player) => combat.StopAttack(player);
+
+    public bool IsTargetable(int objectId) =>
+        !combat.Combatants.TryGetValue(objectId, out Combatant? c) || !c.IsGhost;
 
     public async Task TickAsync(CancellationToken ct)
     {

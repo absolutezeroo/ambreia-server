@@ -25,6 +25,9 @@ public interface IRoomCombat : IGrainWithIntegerKey
     /// <summary>The player stops his own cast.</summary>
     public Task CancelCastAsync(ActionContext ctx, CancellationToken ct);
 
+    /// <summary>Démarre ou arrête l'attaque auto sur la cible choisie (M1d §2.2) ; la zone répond.</summary>
+    public Task SetAutoAttackAsync(ActionContext ctx, bool active, CancellationToken ct);
+
     /// <summary>The player's character changed while he is here (an item, a level, a class): his
     /// stats, level, range and threat follow, his health is bounded — the profile's own health and
     /// mana are not read. Server side only, through his presence.</summary>

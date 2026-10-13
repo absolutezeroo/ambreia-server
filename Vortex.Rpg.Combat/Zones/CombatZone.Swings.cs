@@ -25,6 +25,12 @@ public sealed partial class CombatZone
             {
                 a.TargetId = null;
 
+                if (a.AutoAttacking)
+                {
+                    a.AutoAttacking = false;
+                    _autoAttackChanged.Add(a.ObjectId);
+                }
+
                 continue;
             }
 

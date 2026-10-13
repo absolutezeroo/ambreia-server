@@ -22,6 +22,7 @@ public sealed partial class CombatZone
     private readonly HashSet<int> _selfChanged = [];
     private readonly List<PlayerId> _deaths = [];
     private readonly List<(PlayerId Player, string Code)> _results = [];
+    private readonly HashSet<int> _autoAttackChanged = [];
     private long _nextRegenAtMs;
 
     private async Task FlushAsync()
@@ -72,6 +73,15 @@ public sealed partial class CombatZone
             sends.Add(() => runtime.SendToPlayerAsync(player, result));
         }
 
+        foreach (int id in _autoAttackChanged)
+        {
+            if (_combatants.TryGetValue(id, out Combatant? c) && c.PlayerId is { } player)
+            {
+                RpgAutoAttackStateMessageComposer state = new() { Active = c.AutoAttacking };
+                sends.Add(() => runtime.SendToPlayerAsync(player, state));
+            }
+        }
+
         // Then what the modules queued (spec M1b): theirs come after combat's, in their order.
         foreach (IComposer composer in _broadcasts)
         {
@@ -114,6 +124,7 @@ public sealed partial class CombatZone
         _selfChanged.Clear();
         _deaths.Clear();
         _results.Clear();
+        _autoAttackChanged.Clear();
         _broadcasts.Clear();
         _sends.Clear();
     }

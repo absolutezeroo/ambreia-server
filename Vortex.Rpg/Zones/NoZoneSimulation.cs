@@ -21,7 +21,12 @@ public sealed class NoZoneSimulation : IZoneSimulation
     public Task<bool> SelectTargetAsync(PlayerId player, int objectId, CancellationToken ct) =>
         Task.FromResult(false);
 
+    public Task SetAutoAttackAsync(PlayerId player, bool active, CancellationToken ct) =>
+        Task.CompletedTask;
+
     public void StopAttack(PlayerId player) { }
+
+    public bool IsTargetable(int objectId) => true;
 
     public Task TickAsync(CancellationToken ct) => Task.CompletedTask;
 

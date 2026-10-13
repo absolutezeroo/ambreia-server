@@ -26,7 +26,7 @@ public sealed class RpgZoneSimulationTests
     }
 
     [Fact]
-    public async Task SelectingAMonster_AnswersRpgTarget_AndStartsTheAttack()
+    public async Task SelectingAMonster_AnswersRpgTarget_AndAutoAttackStartsTheAttack()
     {
         int wolf = await AWolfAsync();
 
@@ -48,6 +48,10 @@ public sealed class RpgZoneSimulationTests
                     ClassId = string.Empty,
                 }
             );
+        _world.Simulation.Combat.Combatants[1].TargetId.Should().BeNull("selecting is not attacking (M1d)");
+
+        await _world.Simulation.SetAutoAttackAsync(new PlayerId(7), true, CancellationToken.None);
+
         _world.Simulation.Combat.Combatants[1].TargetId.Should().Be(wolf);
     }
 
@@ -60,6 +64,7 @@ public sealed class RpgZoneSimulationTests
         (await _world.Simulation.SelectTargetAsync(new PlayerId(7), wolf, CancellationToken.None))
             .Should()
             .BeTrue();
+        await _world.Simulation.SetAutoAttackAsync(new PlayerId(7), true, CancellationToken.None);
 
         _world
             .Zone.Sent.Select(s => s.Composer)

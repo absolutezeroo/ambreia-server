@@ -47,6 +47,13 @@ public sealed partial class CombatZone
 
         metrics.PlayerDied();
         c.KoSinceMs = now;
+
+        if (c.AutoAttacking)
+        {
+            c.AutoAttacking = false;
+            _autoAttackChanged.Add(c.ObjectId);
+        }
+
         c.GhostUntilMs = now + config.AutoReleaseSeconds * 1000L;
         c.TargetId = null;
         // A death ends every cast and status (spec M1b §6.4, §7.4); a ghost carries nothing.

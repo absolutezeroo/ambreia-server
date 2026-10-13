@@ -58,4 +58,15 @@ public sealed partial class RoomGrain
 
         return Task.CompletedTask;
     }
+
+    public Task SetAutoAttackAsync(ActionContext ctx, bool active, CancellationToken ct)
+    {
+        // Actor guard: a real player with an avatar in this room.
+        if (ctx.PlayerId <= 0 || !_state.AvatarsByPlayerId.ContainsKey(ctx.PlayerId))
+        {
+            return Task.CompletedTask;
+        }
+
+        return Simulation.SetAutoAttackAsync(ctx.PlayerId, active, ct);
+    }
 }

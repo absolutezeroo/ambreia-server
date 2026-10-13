@@ -192,6 +192,7 @@ public sealed class SpawnActivationTests
         await _world.TickAsync();
         _world.Simulation.Spawner.Live.Should().HaveCount(2);
 
+        _world.Simulation.Combat.Combatants[1].KoSinceMs = 0;
         _world.Simulation.Combat.Combatants[1].GhostUntilMs = long.MaxValue;
         await TickAfterAsync(1000);
         await TickAfterAsync(30_000);

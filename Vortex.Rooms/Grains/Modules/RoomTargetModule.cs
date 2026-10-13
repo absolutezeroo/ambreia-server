@@ -34,14 +34,9 @@ public sealed class RoomTargetModule(RoomGrain roomGrain) : IRoomEventListener
             return;
         }
 
-        // A new choice, whatever it is, ends the attack under way; a monster starts another one
-        // (spec M1a §6.1), and the zone's fights answer it.
-        roomGrain.Simulation.StopAttack(ctx.PlayerId);
-
-        if (
-            objectId > 0
-            && await roomGrain.Simulation.SelectTargetAsync(ctx.PlayerId, objectId, ct)
-        )
+        // Sélectionner n'est pas attaquer (M1d §2.3) : la zone retient le choix, répond pour un
+        // monstre, et l'attaque auto est un acte à part (RpgAutoAttack).
+        if (await roomGrain.Simulation.SelectTargetAsync(ctx.PlayerId, objectId, ct))
         {
             roomGrain._state.Targets[ctx.PlayerId] = new RoomTarget(
                 new RoomObjectId(objectId),
@@ -58,6 +53,7 @@ public sealed class RoomTargetModule(RoomGrain roomGrain) : IRoomEventListener
                 out IRoomAvatar? avatar
             )
             || avatar is not IRoomPlayer target
+            || !roomGrain.Simulation.IsTargetable(objectId)
         )
         {
             roomGrain._state.Targets.Remove(ctx.PlayerId);
