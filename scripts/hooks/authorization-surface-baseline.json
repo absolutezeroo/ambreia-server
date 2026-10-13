@@ -9,6 +9,8 @@
     "grain:Rooms/IRoomAvatars.cs::WalkAvatarToAsync": "actor-guard",
     "grain:Rooms/IRoomCombat.cs::CancelCastAsync": "actor-guard",
     "grain:Rooms/IRoomCombat.cs::CastSkillAsync": "actor-guard",
+    "grain:Rooms/IRoomCombat.cs::DeathChoiceAsync": "actor-guard",
+    "grain:Rooms/IRoomCombat.cs::SetAutoAttackAsync": "actor-guard",
     "grain:Rooms/IRoomCombat.cs::UpdateCombatantStatsAsync": "actor-guard",
     "grain:Rooms/IRoomCore.cs::AdmitAsync": "controller-level",
     "grain:Rooms/IRoomDirectoryGrain.cs::AddPlayerToRoomAsync": "NONE",
