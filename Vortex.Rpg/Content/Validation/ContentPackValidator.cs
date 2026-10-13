@@ -219,11 +219,16 @@ public sealed partial class ContentPackValidator(IEnumerable<IContentKind> kinds
             return;
         }
 
+        // A key a kind declares (a quest's objective lines, a monster's yells) is used, whatever its shape.
+        HashSet<string> declared = [];
+
         foreach ((string id, ContentDefinition definition) in definitions)
         {
             IEnumerable<string> extra = _kinds.TryGetValue(definition.Kind, out IContentKind? kind)
                 ? kind.TextKeys(definition)
                 : [];
+
+            declared.UnionWith(extra);
 
             foreach (string key in extra.Prepend($"{id}.description").Prepend($"{id}.name"))
             {
@@ -240,7 +245,7 @@ public sealed partial class ContentPackValidator(IEnumerable<IContentKind> kinds
         {
             int dot = key.LastIndexOf('.');
 
-            if (dot <= 0 || !definitions.ContainsKey(key[..dot]))
+            if (!declared.Contains(key) && (dot <= 0 || !definitions.ContainsKey(key[..dot])))
             {
                 findings.Add(
                     Warning("UnusedText", "texts/fr.txt", null, $"'{key}' names no content.")

@@ -79,10 +79,10 @@ public sealed class QuestZoneRulesTests
                 Facts(("quest.a", "ready"), ("quest.b", "active"), ("quest.c", "active"))
             )
             .Should()
-            .Equal(
+            .BeEquivalentTo([
                 new ZoneTriggerSignal(ZoneTriggerType.QuestState, "quest.a"),
-                new ZoneTriggerSignal(ZoneTriggerType.QuestState, "quest.c")
-            );
+                new ZoneTriggerSignal(ZoneTriggerType.QuestState, "quest.c"),
+            ]);
     }
 
     [Fact]

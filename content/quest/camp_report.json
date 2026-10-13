@@ -1,0 +1,18 @@
+{
+  "$schema": "../../schemas/content/quest.schema.json",
+  "id": "quest.camp.report",
+  "kind": "quest",
+  "level": 1,
+  "requires": [
+    {"kind": "QuestState", "quest": "quest.camp.wolves", "state": "done"}
+  ],
+  "objectives": [
+    {"kind": "talk", "zone": "camp", "npc": "scout"},
+    {"kind": "reach", "zone": "camp", "area": "clearing"},
+    {"kind": "interact", "zone": "camp", "object": "old_well"}
+  ],
+  "rewards": [
+    {"kind": "xp", "amount": 80},
+    {"kind": "items", "items": [{"item": "item.consumable.minor_potion", "quantity": 3}]}
+  ]
+}

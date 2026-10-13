@@ -1,0 +1,13 @@
+{
+  "$schema": "../../schemas/content/quest.schema.json",
+  "id": "quest.camp.wolves",
+  "kind": "quest",
+  "level": 1,
+  "objectives": [
+    {"kind": "kill", "monster": "monster.forest.wolf", "count": 3}
+  ],
+  "rewards": [
+    {"kind": "xp", "amount": 120},
+    {"kind": "items", "items": [{"item": "item.weapon.rusted_sword", "quantity": 1}]}
+  ]
+}

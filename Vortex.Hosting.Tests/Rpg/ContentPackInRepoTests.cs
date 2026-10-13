@@ -9,6 +9,8 @@ using Vortex.Rpg.Content.Kinds;
 using Vortex.Rpg.Content.Validation;
 using Vortex.Rpg.Monsters.Behaviors;
 using Vortex.Rpg.Monsters.Configuration;
+using Vortex.Rpg.Quests.Objectives;
+using Vortex.Rpg.Quests.Rewards;
 using Vortex.Rpg.Skills.Effects;
 using Xunit;
 
@@ -72,7 +74,9 @@ public sealed class ContentPackInRepoTests
         pack.Definitions.Values.OfType<SkillDefinition>()
             .Should()
             .OnlyContain(s => s.Icon.Length > 0, "the client maps nothing any more (M1d §6.1)");
-        pack.Definitions.Values.OfType<StatusDefinition>().Should().OnlyContain(s => s.Icon.Length > 0);
+        pack.Definitions.Values.OfType<StatusDefinition>()
+            .Should()
+            .OnlyContain(s => s.Icon.Length > 0);
         pack.Definitions.Values.OfType<SkillDefinition>()
             .Should()
             .ContainSingle(s => s.Id == "skill.cleric.resurrect")
@@ -107,6 +111,16 @@ public sealed class ContentPackInRepoTests
                 new ResurrectEffect(),
             ]),
             new StatusKind(),
+            // The objective and reward kinds QuestsModule declares: a new shipped kind is added here too.
+            new QuestKind(
+                [
+                    new KillObjective(),
+                    new ReachObjective(),
+                    new InteractObjective(),
+                    new TalkObjective(),
+                    new CollectObjective(),
+                ],
+                [new XpReward(), new ItemsReward()]
+            ),
         ]).Validate(Read(), id => id == Throne);
-
 }
