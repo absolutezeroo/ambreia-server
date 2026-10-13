@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using FluentAssertions;
@@ -21,7 +22,6 @@ using Vortex.Rpg.Characters.Stats;
 using Vortex.Rpg.Content.Definitions;
 using Vortex.Rpg.Stats;
 using Vortex.Tests.Support;
-using System.Linq;
 using Xunit;
 
 namespace Vortex.Database.Tests.Rpg;
@@ -209,5 +209,26 @@ public sealed class CharacterVitalsTests : IAsyncLifetime
         first.Cooldowns.Single().RemainingMs.Should().BeInRange(1, 3000);
         first.GlobalCooldownRemainingMs.Should().BeInRange(1, 700);
         (second.Cooldowns.Length, second.GlobalCooldownRemainingMs).Should().Be((0, 0));
+    }
+
+    /// <summary>The push is a read: what the last zone handed back still goes to the next one.</summary>
+    [Fact]
+    public async Task PushVitals_KeepsTheCarriedCooldowns_ForTheNextZone()
+    {
+        PlayerCharacterGrain grain = await ActivateAsync(withCharacter: true);
+        await grain.SetVitalsAsync(
+            10,
+            5,
+            [],
+            [new CarriedCooldown { SkillId = "skill.mage.bolt", RemainingMs = 3000 }],
+            700
+        );
+
+        await grain.PushVitalsAsync();
+
+        (await grain.GetCombatProfileAsync())!
+            .Cooldowns.Single()
+            .SkillId.Should()
+            .Be("skill.mage.bolt");
     }
 }

@@ -71,6 +71,11 @@ public interface IPlayerCharacterGrain : IGrainWithIntegerKey
     /// maximum), level, range and threat multiplier; null without a character (spec M1a §7).</summary>
     public Task<CharacterCombatProfile?> GetCombatProfileAsync();
 
+    /// <summary>Sends the player his health and mana as they stand out of any zone, for a room
+    /// that runs no fight (none tells the HUD there). A read: the carried statuses and cooldowns
+    /// stay for the next zone.</summary>
+    public Task PushVitalsAsync();
+
     /// <summary>The zone gives health and mana back when the player leaves it: one write (spec M1a
     /// §4.4), bounded to the maximum; with the persistent statuses he carries out (spec M1b §7.4),
     /// kept in memory only.</summary>

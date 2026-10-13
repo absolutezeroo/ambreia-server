@@ -71,6 +71,29 @@ public sealed class RoomCombatTests
             .Be($"entered {RoomHarness.Owner.Value}");
     }
 
+    /// <summary>A room with no zone runs no fight, so no zone tells the HUD the player's health
+    /// and mana: the character does.</summary>
+    [Fact]
+    public async Task EnteringARoomWithoutAZone_HasTheCharacterPushItsVitals()
+    {
+        _harness = await RoomHarness.CreateAsync();
+        _harness.LogicFactory = () => FakeProxy.Create<IRoomPlayerLogic>(_ => null);
+
+        await EnterAsync(RoomHarness.Owner);
+
+        _harness.VitalsPushed.Should().Equal(RoomHarness.Owner);
+    }
+
+    [Fact]
+    public async Task EnteringAZoneRoom_LeavesTheVitalsToItsFights()
+    {
+        await ZoneAsync();
+
+        await EnterAsync(RoomHarness.Owner);
+
+        _harness.VitalsPushed.Should().BeEmpty();
+    }
+
     [Fact]
     public async Task LeavingTheRoom_LeavesItsFights_BeforeTheAvatarGoes()
     {

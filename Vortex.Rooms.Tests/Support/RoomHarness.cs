@@ -291,6 +291,9 @@ internal sealed class RoomHarness
     /// <summary>The characters the room reads (a target's level and class); none by default.</summary>
     public Dictionary<PlayerId, CharacterSummary> Characters { get; } = [];
 
+    /// <summary>The characters asked to push their own health and mana, in order.</summary>
+    public List<PlayerId> VitalsPushed { get; } = [];
+
     /// <summary>Every character grain throws, as one whose database read failed.</summary>
     public bool CharacterFails { get; set; }
 
@@ -727,6 +730,7 @@ internal sealed class RoomHarness
                                 new InvalidOperationException("character grain down")
                             )
                             : Task.FromResult(Characters.GetValueOrDefault(character)),
+                        nameof(IPlayerCharacterGrain.PushVitalsAsync) => PushVitalsAsync(character),
                         nameof(IPlayerCharacterGrain.GetZoneFactsAsync) => CharacterFails
                             ? Task.FromException<CharacterZoneFacts?>(
                                 new InvalidOperationException("character grain down")
@@ -770,6 +774,13 @@ internal sealed class RoomHarness
                 return null;
             });
         });
+
+    private Task PushVitalsAsync(PlayerId character)
+    {
+        VitalsPushed.Add(character);
+
+        return Task.CompletedTask;
+    }
 
     private sealed class SingleOptionsFactory(DbContextOptions<VortexDbContext> options)
         : IDbContextFactory<VortexDbContext>

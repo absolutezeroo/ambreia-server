@@ -5,6 +5,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Vortex.Database.Entities.Rpg;
 using Vortex.Primitives.Rpg.Characters;
+using Vortex.Protocol.Messages.Outgoing.Rpg.Combat;
 using Vortex.Rpg.Content.Definitions;
 
 namespace Vortex.Rpg.Characters.Grains;
@@ -48,6 +49,27 @@ internal sealed partial class PlayerCharacterGrain
             Cooldowns = cooldowns,
             GlobalCooldownRemainingMs = global,
         };
+    }
+
+    public async Task PushVitalsAsync()
+    {
+        if (await GetStatsAsync() is not { } stats || _character is not { } c)
+        {
+            return;
+        }
+
+        // ponytail: once, on entry; out-of-zone regeneration is not pushed as it ticks.
+        CharacterCombatProfile profile = Profile(stats, c);
+        await PushAsync(
+            new RpgSelfVitalsMessageComposer
+            {
+                Health = profile.Health,
+                MaxHealth = Math.Max(1, stats.MaxHealth),
+                Mana = profile.Mana,
+                MaxMana = Math.Max(0, stats.MaxMana),
+                InCombat = false,
+            }
+        );
     }
 
     /// <summary>The persistent statuses handed back by the last zone, less the time spent out of

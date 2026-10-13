@@ -19,6 +19,7 @@ using Vortex.Primitives.Players.Grains;
 using Vortex.Primitives.Rooms;
 using Vortex.Primitives.Rpg.Characters;
 using Vortex.Protocol.Messages.Outgoing.Rpg.Characters;
+using Vortex.Protocol.Messages.Outgoing.Rpg.Combat;
 using Vortex.Protocol.Messages.Outgoing.Rpg.Items;
 using Vortex.Protocol.Messages.Outgoing.Rpg.Skills;
 using Vortex.Rpg.Characters.Configuration;
@@ -176,6 +177,26 @@ public sealed class CharacterStatePushTests : IAsyncLifetime
             .OfType<RpgCharacterStateMessageComposer>()
             .Single();
         (state.Level, state.MaxLevel, state.XpToNext).Should().Be((20, 20, 0));
+    }
+
+    /// <summary>Out of any zone (a room with no fights) the character tells the HUD its health and
+    /// mana itself: no zone does it there.</summary>
+    [Fact]
+    public async Task PushVitals_SendsHealthAndMana_OutOfCombat()
+    {
+        await StoreAsync(level: 1);
+        PlayerCharacterGrain grain = await ActivateAsync();
+
+        await grain.PushVitalsAsync();
+
+        RpgSelfVitalsMessageComposer vitals = _sent
+            .Should()
+            .ContainSingle()
+            .Which.Should()
+            .BeOfType<RpgSelfVitalsMessageComposer>()
+            .Subject;
+        (vitals.Health, vitals.MaxHealth, vitals.InCombat).Should().Be((120, 120, false));
+        vitals.Mana.Should().Be(vitals.MaxMana);
     }
 
     /// <summary>
