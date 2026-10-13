@@ -4,6 +4,7 @@ using Vortex.Primitives.Plugins;
 using Vortex.Rpg.Content.Kinds;
 using Vortex.Rpg.Content.Rules;
 using Vortex.Rpg.Quests.Objectives;
+using Vortex.Rpg.Quests.Rewards;
 
 namespace Vortex.Rpg.Quests;
 
@@ -25,6 +26,9 @@ public sealed class QuestsModule : IHostPluginModule
         AddObjective<InteractObjective>(services);
         AddObjective<TalkObjective>(services);
         AddObjective<CollectObjective>(services);
+
+        AddReward<XpReward>(services);
+        AddReward<ItemsReward>(services);
     }
 
     private static void AddObjective<T>(IServiceCollection services)
@@ -32,5 +36,13 @@ public sealed class QuestsModule : IHostPluginModule
     {
         services.AddSingleton<T>();
         services.AddSingleton<IQuestObjectiveRule>(sp => sp.GetRequiredService<T>());
+    }
+
+    private static void AddReward<T>(IServiceCollection services)
+        where T : class, IQuestRewardKind
+    {
+        services.AddSingleton<T>();
+        services.AddSingleton<IQuestRewardKind>(sp => sp.GetRequiredService<T>());
+        services.AddSingleton<IQuestRewardRule>(sp => sp.GetRequiredService<T>());
     }
 }
