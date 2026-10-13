@@ -5,6 +5,7 @@ using Vortex.Rpg.Content.Kinds;
 using Vortex.Rpg.Content.Rules;
 using Vortex.Rpg.Quests.Objectives;
 using Vortex.Rpg.Quests.Rewards;
+using Vortex.Rpg.Quests.Signals;
 
 namespace Vortex.Rpg.Quests;
 
@@ -29,6 +30,8 @@ public sealed class QuestsModule : IHostPluginModule
 
         AddReward<XpReward>(services);
         AddReward<ItemsReward>(services);
+
+        services.AddSingleton<ZoneKeys>();
     }
 
     private static void AddObjective<T>(IServiceCollection services)
