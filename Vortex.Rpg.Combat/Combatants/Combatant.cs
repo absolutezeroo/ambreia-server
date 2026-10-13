@@ -74,15 +74,30 @@ public sealed class Combatant : ICombatantStats
 
     public bool InCombat { get; set; }
 
-    /// <summary>A dead player, until he respawns.</summary>
+    /// <summary>KO : couché sur place jusqu'à un choix (M1d §2.3). L'instant de l'auto-release ;
+    /// null après « attendre ».</summary>
     public long? GhostUntilMs { get; set; }
+
+    /// <summary>Depuis quand le joueur est KO ; null : vivant.</summary>
+    public long? KoSinceMs { get; set; }
+
+    /// <summary>Il a choisi d'attendre une résurrection : plus d'auto-release.</summary>
+    public bool Waiting { get; set; }
+
+    public ResurrectOffer? Offer { get; set; }
+
+    /// <summary>Un joueur qui a demandé à relâcher ou accepté une offre : la zone agit au tick.</summary>
+    public string? DeathChoice { get; set; }
+
+    /// <summary>Un joueur qui frappe sa cible automatiquement (M1d §2.3).</summary>
+    public bool AutoAttacking { get; set; }
 
     /// <summary>A monster going home: no hit lands on it.</summary>
     public bool Invulnerable { get; set; }
 
     public bool IsDead => Health <= 0;
 
-    public bool IsGhost => GhostUntilMs is not null;
+    public bool IsGhost => KoSinceMs is not null;
 
     /// <summary>A monster's threat per player avatar.</summary>
     public ThreatTable Threat { get; } = new();

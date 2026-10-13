@@ -27,7 +27,16 @@ public sealed class CombatConfig
     /// <summary>Out of combat, health and mana come back by this share of their maximum per second.</summary>
     public int RegenPercentPerSecond { get; init; } = 2;
 
-    public int GhostSeconds { get; init; } = 5;
+    /// <summary>Un joueur KO qui n'a rien choisi relâche après ce délai (M1d §2.3).</summary>
+    public int AutoReleaseSeconds { get; init; } = 60;
+
+    /// <summary>Même après « attendre », au plus ce temps au sol.</summary>
+    public int MaxKoSeconds { get; init; } = 600;
+
+    public int ResurrectOfferSeconds { get; init; } = 30;
+
+    /// <summary>La menace n'est renvoyée que si elle a bougé d'autant de points.</summary>
+    public int ThreatReportStep { get; init; } = 5;
 
     public int RespawnHealthPercent { get; init; } = 50;
 

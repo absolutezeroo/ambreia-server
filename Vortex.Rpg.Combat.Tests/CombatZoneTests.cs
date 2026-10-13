@@ -255,12 +255,12 @@ public sealed class CombatZoneTests
             .Should()
             .ContainSingle()
             .Which.RespawnSeconds.Should()
-            .Be(5);
+            .Be(60);
         _calls.Should().Contain("wear 7: 10");
         _combat.Combatants[wolf].TargetId.Should().BeNull("a ghost is no target");
         _events.OfType<PlayerDiedEvent>().Should().ContainSingle();
 
-        _zone.NowMs += 5000;
+        _zone.NowMs += 60_000;
         await _combat.TickAsync(CancellationToken.None);
 
         _zone.Teleports.Should().Equal((1, 0, 0));

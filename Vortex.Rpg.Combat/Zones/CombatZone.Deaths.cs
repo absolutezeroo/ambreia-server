@@ -46,7 +46,8 @@ public sealed partial class CombatZone
         PlayerId player = c.PlayerId!.Value;
 
         metrics.PlayerDied();
-        c.GhostUntilMs = now + config.GhostSeconds * 1000L;
+        c.KoSinceMs = now;
+        c.GhostUntilMs = now + config.AutoReleaseSeconds * 1000L;
         c.TargetId = null;
         // A death ends every cast and status (spec M1b §6.4, §7.4); a ghost carries nothing.
         Removing(c, CombatantExit.Died);
@@ -173,6 +174,7 @@ public sealed partial class CombatZone
             }
 
             c.GhostUntilMs = null;
+            c.KoSinceMs = null;
             c.Health = RespawnHealth(c);
             LeaveCombat(c);
             runtime.SetPosture(c.ObjectId, null);

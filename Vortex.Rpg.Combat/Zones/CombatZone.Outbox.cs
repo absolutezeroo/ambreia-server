@@ -53,7 +53,7 @@ public sealed partial class CombatZone
 
         foreach (PlayerId player in _deaths)
         {
-            RpgDeathMessageComposer death = new() { RespawnSeconds = config.GhostSeconds };
+            RpgDeathMessageComposer death = new() { RespawnSeconds = config.AutoReleaseSeconds };
             sends.Add(() => runtime.SendToPlayerAsync(player, death));
         }
 
