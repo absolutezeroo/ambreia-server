@@ -39,11 +39,6 @@ public interface IRoomAvatar : IRoomObject
     public long NextMoveUpdateAtMs { get; set; }
     public long PendingStopAtMs { get; set; }
 
-    /// <summary>The avatar's currently worn effect id (0 = none): status effects and premium
-    /// cosmetics will set it (spec §6.5, §12). Broadcast via <c>AvatarEffectMessageComposer</c> and
-    /// re-synced to late joiners at room entry. Nothing calls <see cref="SetEffect"/> yet.</summary>
-    public int CurrentEffectId { get; }
-
     /// <summary>
     /// What the avatar is holding (0 = empty-handed): the weapon in hand of the RPG (spec §16.3).
     /// Broadcast via <c>CarryObjectMessageComposer</c> and re-synced to late joiners at room entry,
@@ -57,7 +52,6 @@ public interface IRoomAvatar : IRoomObject
     public bool IsMovementLocked { get; }
 
     public bool SetGoalTileId(int tileId);
-    public bool SetEffect(int effectId);
 
     /// <summary>Sets or clears the movement lock. The caller is responsible for stopping an
     /// in-flight walk — the lock only gates NEW walks.</summary>

@@ -34,8 +34,6 @@ public sealed class RoomEntryPayloadTests
     /// </summary>
     private static readonly string[] RequiredOnEntry =
     [
-        // Occupants' worn effects.
-        "AvatarEffectMessageComposer",
         // Occupants' hand items.
         "CarryObjectMessageComposer",
         // Pins chooserDisabled, freeFurniMovementsEnabled and invisibleFurni on the client's room

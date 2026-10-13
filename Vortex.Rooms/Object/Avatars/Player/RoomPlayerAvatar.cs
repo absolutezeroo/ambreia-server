@@ -67,7 +67,6 @@ public sealed class RoomPlayerAvatar
             Gender = Gender,
             ActivityPoints = ActivityPoints,
             IsModerator = IsModerator,
-            CurrentEffectId = CurrentEffectId,
             CarryItemId = CarryItemId,
         };
     }

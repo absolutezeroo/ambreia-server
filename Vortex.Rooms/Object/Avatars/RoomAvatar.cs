@@ -39,8 +39,6 @@ public abstract class RoomAvatar<TSelf, TLogic, TContext>
     public long NextMoveUpdateAtMs { get; set; } = 0;
     public long PendingStopAtMs { get; set; } = 0;
 
-    public int CurrentEffectId { get; private set; } = 0;
-
     public bool IsMovementLocked { get; private set; } = false;
 
     /// <summary>What the avatar is holding, or zero for empty-handed.</summary>
@@ -222,21 +220,6 @@ public abstract class RoomAvatar<TSelf, TLogic, TContext>
     }
 
     public void SetMovementLocked(bool locked) => IsMovementLocked = locked;
-
-    public bool SetEffect(int effectId)
-    {
-        effectId = effectId < 0 ? 0 : effectId;
-
-        if (CurrentEffectId == effectId)
-        {
-            return false;
-        }
-
-        CurrentEffectId = effectId;
-        _snapshot = null;
-
-        return true;
-    }
 
     public RoomAvatarSnapshot GetSnapshot()
     {

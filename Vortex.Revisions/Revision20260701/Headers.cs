@@ -66,13 +66,6 @@ internal static class MessageComposer
 
     public const int RoomEntryTileMessageComposer = 2792;
 
-    // AS3-verified (client fix 5316023): the in-room figure_effect broadcast is 2624, not 3629.
-    // WIN63 registry _SafeCls_2046.as maps _SafeStr_4546[2624] = _SafeCls_2589 (parser _SafeCls_3361:
-    // userId, effectId, delayMilliSeconds) to RoomMessageHandler.onAvatarEffect. Header 3629 there is a
-    // different message (AvatarEditorMessageHandler.onAvatarEffectSelected). Serializer field order
-    // already matches the client's 2624 parser, so only the header number was wrong — this is why
-    // worn effects never appeared on avatars in-room.
-    public const int AvatarEffectMessageComposer = 2624;
     public const int CarryObjectMessageComposer = 2850;
 
     public const int FigureUpdateComposer = 132;

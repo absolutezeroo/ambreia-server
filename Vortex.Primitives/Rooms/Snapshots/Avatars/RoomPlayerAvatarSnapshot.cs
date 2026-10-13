@@ -20,8 +20,7 @@ public sealed record RoomPlayerAvatarSnapshot : RoomAvatarSnapshot
     [Id(19)]
     public required bool IsModerator { get; init; }
 
-    [Id(20)]
-    public int CurrentEffectId { get; init; }
+    // [Id(20)] retired: the Habbo avatar effect, gone with M1d (status visuals are content auras).
 
     // [Id(21)] retired: the badge leaderboard rank, always -1 and no longer on the wire.
 

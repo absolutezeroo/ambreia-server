@@ -46,10 +46,6 @@ internal sealed class RoomMap : IRevisionMap
 
         // Room Action
         builder.MapSerializer(
-            typeof(AvatarEffectMessageComposer),
-            new AvatarEffectMessageComposerSerializer(MessageComposer.AvatarEffectMessageComposer)
-        );
-        builder.MapSerializer(
             typeof(CarryObjectMessageComposer),
             new CarryObjectMessageComposerSerializer(MessageComposer.CarryObjectMessageComposer)
         );

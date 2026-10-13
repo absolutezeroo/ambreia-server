@@ -219,24 +219,13 @@ public sealed partial class RoomGrain
             burst.Add(new YouAreOwnerMessageComposer { RoomId = _state.RoomId });
         }
 
-        // Neither a worn effect nor a hand item is part of the Users payload, so each one has to
-        // be replayed for the player walking in. Ours, not Sulake's: the capture's room was empty.
+        // A hand item is not part of the Users payload, so it has to be replayed for the player
+        // walking in. Ours, not Sulake's: the capture's room was empty. (The Habbo avatar effect
+        // went with M1d: status visuals are the client's auras, declared in the content.)
         foreach (
             RoomPlayerAvatarSnapshot avatar in avatarSnapshots.OfType<RoomPlayerAvatarSnapshot>()
         )
         {
-            if (avatar.CurrentEffectId != 0)
-            {
-                burst.Add(
-                    new AvatarEffectMessageComposer
-                    {
-                        UserId = avatar.ObjectId,
-                        EffectId = avatar.CurrentEffectId,
-                        DelayMilliseconds = 0,
-                    }
-                );
-            }
-
             if (avatar.CarryItemId != 0)
             {
                 burst.Add(
