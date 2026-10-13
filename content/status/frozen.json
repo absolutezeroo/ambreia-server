@@ -5,5 +5,6 @@
   "type": "slow",
   "durationMs": 5000,
   "stacking": "replace",
-  "slowPercent": 60
+  "slowPercent": 60,
+  "icon": "rpg/status-effects/icon_02"
 }

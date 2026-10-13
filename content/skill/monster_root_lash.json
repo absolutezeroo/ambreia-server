@@ -15,5 +15,6 @@
     { "kind": "apply_status", "status": "status.frozen" }
   ],
   "animation": "cast",
-  "telegraph": { "shape": "line", "size": 5, "width": 1 }
+  "telegraph": { "shape": "line", "size": 5, "width": 1 },
+  "icon": "rpg/skills/warrior_skill_icon_10"
 }

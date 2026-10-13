@@ -13,5 +13,6 @@
   "animation": "cast",
   "vfx": {
     "cast": { "sheet": "mage/magic-circle", "attach": "ground" }
-  }
+  },
+  "icon": "rpg/skills/warrior_skill_icon_8"
 }

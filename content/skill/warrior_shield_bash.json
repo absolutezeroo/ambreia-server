@@ -14,5 +14,6 @@
     { "kind": "apply_status", "status": "status.stunned" },
     { "kind": "interrupt" }
   ],
-  "animation": "bash"
+  "animation": "bash",
+  "icon": "rpg/skills/warrior_skill_icon_3"
 }

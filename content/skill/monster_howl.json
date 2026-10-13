@@ -10,5 +10,6 @@
   "target": "self",
   "effects": [{ "kind": "apply_status", "status": "status.howling" }],
   "animation": "howl",
-  "sound": "howl"
+  "sound": "howl",
+  "icon": "rpg/skills/warrior_skill_icon_10"
 }

@@ -110,6 +110,9 @@
       },
       "additionalProperties": false
     },
+    "icon": {
+      "type": "string"
+    },
     "id": {
       "type": "string"
     },

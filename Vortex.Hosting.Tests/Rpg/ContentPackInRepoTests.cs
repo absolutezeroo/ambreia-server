@@ -26,31 +26,7 @@ public sealed class ContentPackInRepoTests
     [Fact]
     public void TheRepositoryPack_IsValid()
     {
-        ValidatedPack pack = new ContentPackValidator([
-            new ClassKind(),
-            new SpecializationKind(),
-            new ProgressionKind(),
-            new ItemKind(),
-            // The behaviors MonstersModule declares: a new shipped behavior is added here too.
-            new MonsterKind(
-                new DeclaredBehaviors([
-                    new MeleeBehavior(),
-                    new RangedBehavior(Options.Create(new MonstersConfig())),
-                    new CasterBehavior(),
-                ])
-            ),
-            // The effect rules SkillsModule declares: a new shipped effect is added here too.
-            new SkillKind([
-                new DamageEffect(),
-                new HealEffect(),
-                new ApplyStatusEffect(),
-                new InterruptEffect(),
-                new DispelEffect(),
-                new ThreatEffect(),
-                new ResurrectEffect(),
-            ]),
-            new StatusKind(),
-        ]).Validate(Read(), id => id == Throne);
+        ValidatedPack pack = Validated();
 
         pack.Findings.Select(f => $"{f.Severity} {f.Code} {f.File} {f.ContentId}: {f.Message}")
             .Should()
@@ -58,7 +34,7 @@ public sealed class ContentPackInRepoTests
         pack.Definitions.Should().HaveCountGreaterThan(15);
         // Spec M1b §16: three skills per class, and the statuses they apply; spec M1c §15: six
         // monster skills, two statuses and four monsters more.
-        pack.Definitions.Values.OfType<SkillDefinition>().Should().HaveCount(18);
+        pack.Definitions.Values.OfType<SkillDefinition>().Should().HaveCount(19);
         pack.Definitions.Values.OfType<StatusDefinition>().Should().HaveCount(9);
         pack.Definitions.Values.OfType<MonsterDefinition>().Should().HaveCount(6);
     }
@@ -87,4 +63,50 @@ public sealed class ContentPackInRepoTests
                 .ToDictionary(f => Path.GetFileNameWithoutExtension(f), File.ReadAllText)
         );
     }
+
+    [Fact]
+    public void EverySkillAndStatus_NamesItsIcon()
+    {
+        ValidatedPack pack = Validated();
+
+        pack.Definitions.Values.OfType<SkillDefinition>()
+            .Should()
+            .OnlyContain(s => s.Icon.Length > 0, "the client maps nothing any more (M1d §6.1)");
+        pack.Definitions.Values.OfType<StatusDefinition>().Should().OnlyContain(s => s.Icon.Length > 0);
+        pack.Definitions.Values.OfType<SkillDefinition>()
+            .Should()
+            .ContainSingle(s => s.Id == "skill.cleric.resurrect")
+            .Which.Effects.Single()
+            .Kind.Should()
+            .Be("resurrect");
+    }
+
+    /// <summary>The pack validated with every kind the host declares.</summary>
+    private static ValidatedPack Validated() =>
+        new ContentPackValidator([
+            new ClassKind(),
+            new SpecializationKind(),
+            new ProgressionKind(),
+            new ItemKind(),
+            // The behaviors MonstersModule declares: a new shipped behavior is added here too.
+            new MonsterKind(
+                new DeclaredBehaviors([
+                    new MeleeBehavior(),
+                    new RangedBehavior(Options.Create(new MonstersConfig())),
+                    new CasterBehavior(),
+                ])
+            ),
+            // The effect rules SkillsModule declares: a new shipped effect is added here too.
+            new SkillKind([
+                new DamageEffect(),
+                new HealEffect(),
+                new ApplyStatusEffect(),
+                new InterruptEffect(),
+                new DispelEffect(),
+                new ThreatEffect(),
+                new ResurrectEffect(),
+            ]),
+            new StatusKind(),
+        ]).Validate(Read(), id => id == Throne);
+
 }

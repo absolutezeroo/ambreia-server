@@ -8,5 +8,6 @@
   "type": "instant",
   "range": 5,
   "target": "ally",
-  "effects": [{ "kind": "apply_status", "status": "status.renewed" }]
+  "effects": [{ "kind": "apply_status", "status": "status.renewed" }],
+  "icon": "rpg/skills/psionicist_skill_icon_6"
 }

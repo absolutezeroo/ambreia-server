@@ -61,6 +61,9 @@ public sealed record SkillDefinition : ContentDefinition
 
     public string Sound { get; init; } = string.Empty;
 
+    /// <summary>L'icône que le client affiche (clé d'image, M1d §6.1).</summary>
+    public string Icon { get; init; } = string.Empty;
+
     /// <summary>Marks its ground for the cast's time before it lands (spec M1c §8).</summary>
     public SkillTelegraph? Telegraph { get; init; }
 }

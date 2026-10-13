@@ -6,5 +6,6 @@
   "durationMs": 1000,
   "stacking": "refresh",
   "dispellable": false,
-  "modifiers": [{ "stat": "damage_dealt_percent", "flat": 30 }]
+  "modifiers": [{ "stat": "damage_dealt_percent", "flat": 30 }],
+  "icon": "rpg/status-effects/icon_14"
 }

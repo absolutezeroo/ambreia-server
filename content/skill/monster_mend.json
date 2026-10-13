@@ -9,5 +9,6 @@
   "range": 5,
   "target": "ally",
   "effects": [{ "kind": "heal", "base": 10, "coefficient": 1.0 }],
-  "animation": "cast"
+  "animation": "cast",
+  "icon": "rpg/skills/warrior_skill_icon_10"
 }

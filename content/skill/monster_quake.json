@@ -12,5 +12,6 @@
   "radius": 3,
   "effects": [{ "kind": "damage", "coefficient": 1.5 }],
   "animation": "cast",
-  "telegraph": { "shape": "circle", "size": 3 }
+  "telegraph": { "shape": "circle", "size": 3 },
+  "icon": "rpg/skills/warrior_skill_icon_10"
 }

@@ -1,0 +1,17 @@
+{
+  "$schema": "../../schemas/content/skill.schema.json",
+  "id": "skill.cleric.resurrect",
+  "kind": "skill",
+  "classes": ["class.cleric"],
+  "level": 4,
+  "cost": 30,
+  "type": "cast",
+  "castMs": 8000,
+  "range": 8,
+  "target": "dead_ally",
+  "cooldownMs": 60000,
+  "effects": [{ "kind": "resurrect", "healthPercent": 35 }],
+  "animation": "cast",
+  "vfx": { "release": { "sheet": "mage/magic-circle", "attach": "feet", "delayMs": 0 } },
+  "icon": "rpg/skills/psionicist_skill_icon_4"
+}

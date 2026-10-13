@@ -14,5 +14,6 @@
   "radius": 1,
   "maxTargets": 5,
   "effects": [{ "kind": "damage", "coefficient": 0.5 }],
-  "animation": "shoot"
+  "animation": "shoot",
+  "icon": "rpg/skills/rogue_skill_icon_6"
 }

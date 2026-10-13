@@ -10,5 +10,6 @@
   "range": 5,
   "target": "ally",
   "effects": [{ "kind": "heal", "base": 10, "coefficient": 1.5 }],
-  "animation": "cast"
+  "animation": "cast",
+  "icon": "rpg/skills/psionicist_skill_icon_8"
 }

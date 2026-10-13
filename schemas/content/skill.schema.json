@@ -240,6 +240,9 @@
     "sound": {
       "type": "string"
     },
+    "icon": {
+      "type": "string"
+    },
     "telegraph": {
       "type": [
         "object",

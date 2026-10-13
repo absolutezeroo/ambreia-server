@@ -12,5 +12,6 @@
   "maxTargets": 5,
   "effects": [{ "kind": "damage", "coefficient": 1.2 }],
   "animation": "attack",
-  "telegraph": { "shape": "cone", "size": 3, "angle": 90 }
+  "telegraph": { "shape": "cone", "size": 3, "angle": 90 },
+  "icon": "rpg/skills/warrior_skill_icon_10"
 }

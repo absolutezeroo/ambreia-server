@@ -20,5 +20,6 @@
     "cast": { "sheet": "mage/magic-circle", "attach": "ground" },
     "area": { "sheet": "mage/ground-sigil", "attach": "ground" },
     "hit": { "sheet": "mage/power-aura", "attach": "feet", "delayMs": 500 }
-  }
+  },
+  "icon": "rpg/skills/warrior_skill_icon_4"
 }

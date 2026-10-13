@@ -10,5 +10,6 @@
   "range": 6,
   "target": "enemy",
   "effects": [{ "kind": "damage", "base": 6, "coefficient": 1.6 }],
-  "animation": "shoot"
+  "animation": "shoot",
+  "icon": "rpg/skills/rogue_skill_icon_2"
 }

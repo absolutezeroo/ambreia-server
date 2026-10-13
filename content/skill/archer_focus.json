@@ -10,5 +10,6 @@
   "type": "instant",
   "range": 0,
   "target": "self",
-  "effects": [{ "kind": "apply_status", "status": "status.focused" }]
+  "effects": [{ "kind": "apply_status", "status": "status.focused" }],
+  "icon": "rpg/skills/psionicist_skill_icon_3"
 }

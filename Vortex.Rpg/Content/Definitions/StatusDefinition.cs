@@ -36,4 +36,7 @@ public sealed record StatusDefinition : ContentDefinition
 
     /// <summary>What the client draws while it lasts; absent: nothing.</summary>
     public StatusVfx? Vfx { get; init; }
+
+    /// <summary>L'icône que le client affiche (clé d'image, M1d §6.1).</summary>
+    public string Icon { get; init; } = string.Empty;
 }

@@ -9,5 +9,6 @@
   "type": "instant",
   "range": 5,
   "target": "ally",
-  "effects": [{ "kind": "apply_status", "status": "status.aegis" }]
+  "effects": [{ "kind": "apply_status", "status": "status.aegis" }],
+  "icon": "rpg/skills/psionicist_skill_icon_7"
 }

@@ -6,5 +6,6 @@
   "durationMs": 12000,
   "periodMs": 3000,
   "stacking": "refresh",
-  "coefficient": 0.4
+  "coefficient": 0.4,
+  "icon": "rpg/status-effects/icon_09"
 }

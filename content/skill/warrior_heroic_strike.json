@@ -13,5 +13,6 @@
     { "kind": "damage", "base": 4, "coefficient": 1.0 },
     { "kind": "threat", "threatPercent": 50 }
   ],
-  "animation": "strike"
+  "animation": "strike",
+  "icon": "rpg/skills/warrior_skill_icon_1"
 }

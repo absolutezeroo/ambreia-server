@@ -5,5 +5,7 @@
   "type": "buff",
   "durationMs": 10000,
   "stacking": "refresh",
-  "modifiers": [{ "stat": "crit_percent", "flat": 20 }]
+  "modifiers": [{ "stat": "crit_percent", "flat": 20 }],
+  "icon": "rpg/status-effects/icon_13",
+  "vfx": { "aura": { "sheet": "mage/power-aura", "attach": "feet", "delayMs": 0 } }
 }

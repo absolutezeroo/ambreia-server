@@ -4,5 +4,6 @@
   "kind": "status",
   "type": "stun",
   "durationMs": 2000,
-  "stacking": "ignore"
+  "stacking": "ignore",
+  "icon": "rpg/status-effects/icon_21"
 }

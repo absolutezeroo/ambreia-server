@@ -13,5 +13,6 @@
   "effects": [
     { "kind": "damage", "coefficient": 0.4 },
     { "kind": "apply_status", "status": "status.frozen" }
-  ]
+  ],
+  "icon": "rpg/skills/psionicist_skill_icon_5"
 }
