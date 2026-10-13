@@ -18,6 +18,7 @@ public sealed class Revision20260701()
             new RpgChatMap(),
             new RpgEmoteMap(),
             new RpgCombatMap(),
+            new RpgQuestMap(),
             new RpgSkillsMap(),
         }
     )
