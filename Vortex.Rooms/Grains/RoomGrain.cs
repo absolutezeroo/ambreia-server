@@ -43,6 +43,7 @@ using Vortex.Rooms.Grains.Zones.Modules;
 using Vortex.Rooms.Grains.Zones.Runtime;
 using Vortex.Rooms.Grains.Zones.Triggers;
 using Vortex.Rooms.Providers;
+using Vortex.Rpg.Npcs;
 using Vortex.Rpg.Zones;
 
 namespace Vortex.Rooms.Grains;
@@ -96,6 +97,8 @@ public sealed partial class RoomGrain : Grain, IRoomGrain
     public readonly ZonePassageModule ZonePassages;
     public readonly ZoneInteractionModule ZoneInteractions;
     public readonly ZoneTriggerModule ZoneTriggers;
+
+    public readonly RoomNpcModule NpcModule;
     public readonly RoomTargetModule TargetModule;
     public readonly RoomEmoteModule EmoteModule;
 
@@ -121,9 +124,11 @@ public sealed partial class RoomGrain : Grain, IRoomGrain
         IVortexMetrics metrics,
         IZoneRoomSource zoneSource,
         IZoneSimulationFactory simulationFactory,
-        ZoneRuleRegistry zoneRules
+        ZoneRuleRegistry zoneRules,
+        INpcDialogues npcDialogues
     )
     {
+        _npcDialogues = npcDialogues;
         _zoneRules = zoneRules;
         _zoneSource = zoneSource;
         _simulationFactory = simulationFactory;
@@ -158,6 +163,7 @@ public sealed partial class RoomGrain : Grain, IRoomGrain
         ZonePassages = new ZonePassageModule(this);
         ZoneInteractions = new ZoneInteractionModule(this);
         ZoneTriggers = new ZoneTriggerModule(this);
+        NpcModule = new RoomNpcModule(this);
         EventModule.Register(ZoneTriggers);
         TargetModule = new RoomTargetModule(this);
         EventModule.Register(TargetModule);
@@ -172,6 +178,9 @@ public sealed partial class RoomGrain : Grain, IRoomGrain
 
     /// <summary>Who answers the zone's conditions and actions (spec Z1 §4.2).</summary>
     internal readonly ZoneRuleRegistry _zoneRules;
+
+    /// <summary>What an NPC's dialogue says and does (spec M2a §3.3), declared by the quests module.</summary>
+    internal readonly INpcDialogues _npcDialogues;
 
     /// <summary>The room as a zone for combat and monsters (spec M1a §4.2).</summary>
     public readonly RoomZoneRuntime CombatRuntime;
@@ -221,6 +230,7 @@ public sealed partial class RoomGrain : Grain, IRoomGrain
 
         await MapModule.EnsureMapBuiltAsync(ct);
         await FurniModule.EnsureFurniLoadedAsync(ct);
+        NpcModule.EnsureSpawned();
     }
 
     /// <summary>

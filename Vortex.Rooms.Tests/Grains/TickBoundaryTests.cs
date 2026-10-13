@@ -17,6 +17,7 @@ using Vortex.Primitives.World;
 using Vortex.Rooms.Configuration;
 using Vortex.Rooms.Grains;
 using Vortex.Rooms.Tests.Support;
+using Vortex.Rpg.Npcs;
 using Vortex.Rpg.Zones;
 using Vortex.Tests.Support;
 using Xunit;
@@ -119,7 +120,8 @@ public sealed class TickBoundaryTests
             FakeProxy.Create<IVortexMetrics>(_ => null),
             FakeProxy.Create<IZoneRoomSource>(_ => Task.FromResult<ZoneDocument?>(null)),
             FakeProxy.Create<IZoneSimulationFactory>(_ => NoZoneSimulation.Instance),
-            RoomGrainStubs.RoomRulesOnly()
+            RoomGrainStubs.RoomRulesOnly(),
+            FakeProxy.Create<INpcDialogues>(_ => null)
         );
 
         grain._state.EpochMs = epoch;

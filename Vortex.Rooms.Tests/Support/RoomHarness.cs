@@ -50,6 +50,7 @@ using Vortex.Rooms.Grains.Zones.Triggers;
 using Vortex.Rooms.Object.Avatars.Player;
 using Vortex.Rooms.Providers;
 using Vortex.Rpg.Characters.Zones;
+using Vortex.Rpg.Npcs;
 using Vortex.Rpg.Zones;
 using Vortex.Rpg.Zones.Rules;
 using Vortex.Tests.Support;
@@ -184,6 +185,7 @@ internal sealed class RoomHarness
                     sources ?? [new CharacterFactsSource(BuildGrainFactory())],
                     NullLogger<ZoneRuleRegistry>.Instance
                 ),
+                FakeProxy.Create<INpcDialogues>(call => NpcDialogues?.Invoke(call)),
             ]
         );
 
@@ -293,6 +295,9 @@ internal sealed class RoomHarness
 
     /// <summary>The characters asked to push their own health and mana, in order.</summary>
     public List<PlayerId> VitalsPushed { get; } = [];
+
+    /// <summary>What the room's dialogue service answers (spec M2a §3.3); nothing by default.</summary>
+    public Func<ProxyCall, object?>? NpcDialogues { get; set; }
 
     /// <summary>Every character grain throws, as one whose database read failed.</summary>
     public bool CharacterFails { get; set; }
