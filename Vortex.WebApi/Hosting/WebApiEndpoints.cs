@@ -39,6 +39,7 @@ internal static partial class WebApiEndpoints
         MapUser(app);
         MapEditor(app);
         MapContent(app);
+        MapContentAuthoring(app);
         MapCharacters(app);
     }
 

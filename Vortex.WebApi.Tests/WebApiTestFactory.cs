@@ -22,6 +22,7 @@ using Vortex.Primitives.Players;
 using Vortex.Primitives.Rooms;
 using Vortex.Primitives.Rpg.Characters.Grains;
 using Vortex.Primitives.Rpg.Content;
+using Vortex.Primitives.Rpg.Content.Authoring;
 using Vortex.Primitives.World.Editing;
 using Vortex.Primitives.World.Grains;
 using Vortex.Tests.Support;
@@ -98,6 +99,7 @@ internal sealed class WebApiTestFactory : IAsyncDisposable
         );
         builder.Services.AddSingleton<IZoneEditorService>(new FakeZoneEditorService());
         builder.Services.AddSingleton<IRpgContentService>(new FakeRpgContentService());
+        builder.Services.AddSingleton<IContentAuthoring>(Authoring);
         builder.Services.AddSingleton<IGrainFactory>(
             FakeProxy.Create<IGrainFactory>(call =>
                 call.Method.Name != nameof(IGrainFactory.GetGrain) ? null
@@ -174,6 +176,9 @@ internal sealed class WebApiTestFactory : IAsyncDisposable
 
     /// <summary>The player service behind the avatar routes.</summary>
     public FakePlayerService Players { get; } = new();
+
+    /// <summary>The authoring service behind /api/content/documents, its writes recorded.</summary>
+    public FakeContentAuthoring Authoring { get; } = new();
 
     /// <summary>Every test-mode sign-in the editor's test route announced.</summary>
     public List<(PlayerId Player, RoomId Room, int X, int Y)> ZoneTests { get; } = [];

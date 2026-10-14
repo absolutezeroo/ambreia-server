@@ -9,6 +9,9 @@ public sealed record ContentWriteResult(ContentImportResult? Result, string? Err
     /// <summary>The content moved past the write's base version: read it again.</summary>
     public const string Stale = "content.stale";
 
+    /// <summary>No live document has that id.</summary>
+    public const string UnknownDocument = "content.unknown_document";
+
     /// <summary>No kind of that name on this server.</summary>
     public const string UnknownKind = "content.unknown_kind";
 

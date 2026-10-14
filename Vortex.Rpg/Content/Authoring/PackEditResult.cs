@@ -1,4 +1,5 @@
 using Vortex.Primitives.Rpg.Content;
+using Vortex.Primitives.Rpg.Content.Authoring;
 
 namespace Vortex.Rpg.Content.Authoring;
 
@@ -18,7 +19,7 @@ public sealed record PackEditResult(ContentPack? Pack, string? Error)
     public const string BadText = "content.bad_text";
 
     /// <summary>No live document has that id.</summary>
-    public const string UnknownDocument = "content.unknown_document";
+    public const string UnknownDocument = ContentWriteResult.UnknownDocument;
 
     public static PackEditResult Refused(string error) => new(null, error);
 }

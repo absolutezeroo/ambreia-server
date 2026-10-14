@@ -1,8 +1,10 @@
+using System.Linq;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Logging;
 using Vortex.Primitives.Permissions;
 using Vortex.Primitives.Rpg.Content;
 using Vortex.WebApi.Http.Errors;
@@ -33,7 +35,10 @@ internal static partial class WebApiEndpoints
                     HttpContext ctx,
                     WebApiSessionStore sessions,
                     IRpgContentService content,
-                    CancellationToken ct
+                    ILoggerFactory loggers,
+                    CancellationToken ct,
+                    long? baseVersion = null,
+                    bool force = false
                 ) =>
                 {
                     string? json = await ReadDocumentAsync(ctx, ct, MaxPackBytes)
@@ -62,9 +67,27 @@ internal static partial class WebApiEndpoints
                         );
                     }
 
+                    int account = ctx.AccountId(sessions)!.Value;
+
+                    // A push from git may erase what the editor wrote since: only on purpose.
+                    if (force)
+                    {
+                        loggers
+                            .CreateLogger("Vortex.WebApi.Content")
+                            .LogWarning(
+                                "Content import forced by account {AccountId}, past any version check.",
+                                account
+                            );
+                    }
+
                     ContentImportResult result = await content
-                        .ImportAsync(pack, ctx.AccountId(sessions)!.Value, ct)
+                        .ImportAsync(pack, account, force ? null : baseVersion, ct)
                         .ConfigureAwait(false);
+
+                    if (result.Findings.Any(f => f.Code == "Stale"))
+                    {
+                        return TypedResults.Conflict(new ApiErrorResponse("content.stale"));
+                    }
 
                     return result.Imported
                         ? TypedResults.Ok(result)
@@ -76,7 +99,8 @@ internal static partial class WebApiEndpoints
             .WithName("ContentImport")
             .Accepts<ContentPack>("application/json")
             .Produces<ContentImportResult>()
-            .Produces<ContentImportResult>(StatusCodes.Status400BadRequest);
+            .Produces<ContentImportResult>(StatusCodes.Status400BadRequest)
+            .Produces<ApiErrorResponse>(StatusCodes.Status409Conflict);
 
         app.MapGet(
                 "/api/public/content/texts/{language}",
