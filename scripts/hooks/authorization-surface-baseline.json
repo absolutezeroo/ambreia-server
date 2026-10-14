@@ -52,6 +52,7 @@
     "http:GET /documents  (Vortex.WebApi/Hosting/WebApiEndpoints.ContentAuthoring.cs)": "capability",
     "http:GET /documents/{id}  (Vortex.WebApi/Hosting/WebApiEndpoints.ContentAuthoring.cs)": "capability",
     "http:GET /export  (Vortex.WebApi/Hosting/WebApiEndpoints.ContentAuthoring.cs)": "capability",
+    "http:GET /schemas/{kind}  (Vortex.WebApi/Hosting/WebApiEndpoints.ContentAuthoring.cs)": "capability",
     "http:PUT /documents/{id}  (Vortex.WebApi/Hosting/WebApiEndpoints.ContentAuthoring.cs)": "account-id+capability",
     "http:POST /api/public/authentication/login  (Vortex.WebApi/Hosting/WebApiEndpoints.cs)": "NONE",
     "http:POST /api/public/authentication/logout  (Vortex.WebApi/Hosting/WebApiEndpoints.cs)": "NONE",

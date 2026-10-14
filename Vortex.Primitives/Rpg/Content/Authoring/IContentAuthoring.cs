@@ -29,6 +29,10 @@ public interface IContentAuthoring
         CancellationToken ct
     );
 
+    /// <summary>A kind's JSON schema, exported from its record: what an editor builds the
+    /// document's form from. Null for a kind the server does not know.</summary>
+    public string? SchemaOf(string kind);
+
     /// <summary>The stored pack, for git.</summary>
     public Task<ContentExport> ExportAsync(CancellationToken ct);
 }

@@ -138,6 +138,11 @@ public sealed class ContentAuthoringService(
         );
     }
 
+    public string? SchemaOf(string kind) =>
+        _kinds.TryGetValue(kind, out IContentKind? found)
+            ? ContentSchemas.For(found.DefinitionType)
+            : null;
+
     public Task<ContentExport> ExportAsync(CancellationToken ct) => reader.ReadAsync(ct);
 
     private async Task<ContentWriteResult> ImportAsync(

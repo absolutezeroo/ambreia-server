@@ -168,6 +168,22 @@ internal static partial class WebApiEndpoints
             .Produces<ApiErrorResponse>(StatusCodes.Status404NotFound)
             .Produces<ApiErrorResponse>(StatusCodes.Status409Conflict);
 
+        // What the Game Editor builds a document's form from: a field added to a record shows there.
+        content
+            .MapGet(
+                "/schemas/{kind}",
+                IResult (string kind, IContentAuthoring authoring) =>
+                    authoring.SchemaOf(kind) is { } schema
+                        ? TypedResults.Text(schema, "application/json; charset=utf-8")
+                        : TypedResults.NotFound(
+                            new ApiErrorResponse(ContentWriteResult.UnknownKind)
+                        )
+            )
+            .RequireCapability(Capabilities.Content.Publish)
+            .WithName("ContentSchema")
+            .Produces<object>(StatusCodes.Status200OK, "application/json")
+            .Produces<ApiErrorResponse>(StatusCodes.Status404NotFound);
+
         content
             .MapGet(
                 "/export",

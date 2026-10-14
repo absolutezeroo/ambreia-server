@@ -221,6 +221,14 @@ public sealed class ContentAuthoringServiceTests : IAsyncLifetime
         (await Authoring().ListAsync("spell", CancellationToken.None)).Should().BeNull();
     }
 
+    /// <summary>The Objets screen builds its form from it: a field added to the record shows there.</summary>
+    [Fact]
+    public void AKindsSchema_IsItsRecords_AndAnUnknownKindHasNone()
+    {
+        Authoring().SchemaOf("item").Should().Contain("\"category\"").And.Contain("\"tool\"");
+        Authoring().SchemaOf("spell").Should().BeNull();
+    }
+
     private static ContentWrite Pickaxe(long baseVersion) =>
         new(
             "item.tool.pickaxe",

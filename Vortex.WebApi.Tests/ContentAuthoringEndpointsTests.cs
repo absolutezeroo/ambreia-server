@@ -24,6 +24,7 @@ public sealed class ContentAuthoringEndpointsTests
     [InlineData("PUT", "/api/content/documents/item.weapon.sword")]
     [InlineData("DELETE", "/api/content/documents/item.weapon.sword?baseVersion=1")]
     [InlineData("GET", "/api/content/export")]
+    [InlineData("GET", "/api/content/schemas/item")]
     public async Task EveryRoute_RequiresContentPublish(string method, string path)
     {
         await using WebApiTestFactory f = new(capabilities: [Capabilities.World.ZonePublish]);
@@ -197,6 +198,22 @@ public sealed class ContentAuthoringEndpointsTests
             await f.CreateAuthenticatedClient()
                 .DeleteAsync("/api/content/documents/item.weapon.ghost?baseVersion=1")
         )
+            .StatusCode.Should()
+            .Be(HttpStatusCode.NotFound);
+    }
+
+    [Fact]
+    public async Task AKindsSchema_IsServedAsJson_AndAnUnknownKindIsNotFound()
+    {
+        await using WebApiTestFactory f = Publisher();
+
+        HttpResponseMessage r = await f.CreateAuthenticatedClient()
+            .GetAsync("/api/content/schemas/item");
+
+        r.StatusCode.Should().Be(HttpStatusCode.OK);
+        r.Content.Headers.ContentType!.MediaType.Should().Be("application/json");
+        (await r.Content.ReadAsStringAsync()).Should().Contain("\"category\"");
+        (await f.CreateAuthenticatedClient().GetAsync("/api/content/schemas/spell"))
             .StatusCode.Should()
             .Be(HttpStatusCode.NotFound);
     }

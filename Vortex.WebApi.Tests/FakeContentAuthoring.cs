@@ -88,6 +88,9 @@ internal sealed class FakeContentAuthoring : IContentAuthoring
         );
     }
 
+    public string? SchemaOf(string kind) =>
+        kind == "item" ? """{ "properties": { "category": { "enum": ["tool"] } } }""" : null;
+
     public Task<ContentExport> ExportAsync(CancellationToken ct) =>
         Task.FromResult(
             new ContentExport(

@@ -662,6 +662,44 @@
         }
       }
     },
+    "/api/content/schemas/{kind}": {
+      "get": {
+        "tags": [
+          "Content"
+        ],
+        "operationId": "ContentSchema",
+        "parameters": [
+          {
+            "name": "kind",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/content/export": {
       "get": {
         "tags": [
