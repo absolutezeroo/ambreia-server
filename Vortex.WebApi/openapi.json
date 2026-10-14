@@ -801,6 +801,29 @@
         }
       }
     },
+    "/api/editor/dialogues": {
+      "get": {
+        "tags": [
+          "Editor"
+        ],
+        "operationId": "EditorDialoguePalette",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/public/info/hello": {
       "get": {
         "tags": [

@@ -39,6 +39,7 @@
     "http:GET /api/ssotoken  (Vortex.WebApi/Hosting/WebApiEndpoints.cs)": "account-id",
     "http:GET /furniture  (Vortex.WebApi/Hosting/WebApiEndpoints.Editor.cs)": "capability",
     "http:GET /health  (Vortex.WebApi/Hosting/WebApiEndpoints.cs)": "NONE",
+    "http:GET /dialogues  (Vortex.WebApi/Hosting/WebApiEndpoints.Editor.cs)": "capability",
     "http:GET /monsters  (Vortex.WebApi/Hosting/WebApiEndpoints.Editor.cs)": "capability",
     "http:GET /ready  (Vortex.WebApi/Hosting/WebApiEndpoints.cs)": "NONE",
     "http:GET /zones  (Vortex.WebApi/Hosting/WebApiEndpoints.Editor.cs)": "capability",

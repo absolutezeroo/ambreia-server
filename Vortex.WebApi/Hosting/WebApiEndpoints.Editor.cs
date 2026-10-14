@@ -414,6 +414,17 @@ internal static partial class WebApiEndpoints
             .RequireCapability(Capabilities.World.ZoneEdit)
             .WithName("EditorMonsterPalette")
             .Produces<IReadOnlyList<MonsterPaletteEntry>>();
+
+        // What an NPC can say (spec M2a §5): the served dialogues by id, the retired ones left out.
+        // The editor names them by the content text <id>.name, as it names monsters.
+        editor
+            .MapGet(
+                "/dialogues",
+                (IRpgContentService content) => TypedResults.Ok(content.GetDialogueIds())
+            )
+            .RequireCapability(Capabilities.World.ZoneEdit)
+            .WithName("EditorDialoguePalette")
+            .Produces<IReadOnlyList<string>>();
     }
 
     /// <summary>

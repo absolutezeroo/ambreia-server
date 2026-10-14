@@ -55,6 +55,7 @@ public sealed class EditorEndpointsTests
     [InlineData("POST", "/api/editor/zones/village/test", false)]
     [InlineData("GET", "/api/editor/furniture", false)]
     [InlineData("GET", "/api/editor/monsters", false)]
+    [InlineData("GET", "/api/editor/dialogues", false)]
     public async Task EveryEditorRoute_RequiresItsOwnCapability(
         string method,
         string path,
@@ -201,6 +202,18 @@ public sealed class EditorEndpointsTests
             .Be(
                 """[{"id":"monster.forest.wolf","rank":"normal","behavior":"melee","aggressive":true,"figure":"38 0 FFFFFF"}]"""
             );
+    }
+
+    [Fact]
+    public async Task TheDialogues_AreListed_ByTheirIds()
+    {
+        await using WebApiTestFactory f = new();
+
+        string body = await (
+            await f.CreateAuthenticatedClient().GetAsync("/api/editor/dialogues")
+        ).Content.ReadAsStringAsync();
+
+        body.Should().Be("""["dialogue.camp.elder"]""");
     }
 
     [Fact]
