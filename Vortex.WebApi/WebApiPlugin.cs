@@ -19,6 +19,7 @@ using Vortex.Primitives.Permissions;
 using Vortex.Primitives.Plugins;
 using Vortex.Primitives.Plugins.Exports;
 using Vortex.Primitives.Rpg.Content;
+using Vortex.Primitives.Rpg.Content.Authoring;
 using Vortex.Primitives.World.Editing;
 using Vortex.WebApi.Configuration;
 using Vortex.WebApi.Hosting;
@@ -117,6 +118,8 @@ public sealed class WebApiPlugin : IVortexPlugin
         // The map editor's routes: zones live in Vortex.World, rights in Vortex.Permissions.
         services.UseHostService<IZoneEditorService>();
         services.UseHostService<IRpgContentService>();
+        // The Game Editor's content routes, one document at a time (content authoring §4).
+        services.UseHostService<IContentAuthoring>();
         services.UseHostService<IPermissionService>();
     }
 
