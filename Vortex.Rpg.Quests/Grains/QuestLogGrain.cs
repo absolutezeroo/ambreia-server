@@ -24,6 +24,7 @@ using Vortex.Rpg.Quests.Log;
 using Vortex.Rpg.Quests.Objectives;
 using Vortex.Rpg.Quests.Persistence;
 using Vortex.Rpg.Quests.Rewards;
+using Vortex.Rpg.Quests.Wire;
 
 namespace Vortex.Rpg.Quests.Grains;
 
@@ -186,6 +187,27 @@ internal sealed class QuestLogGrain(
 
     public Task<QuestZoneFacts> GetZoneFactsAsync() => Task.FromResult(Facts());
 
+    public Task PushLogAsync() => SendLogAsync();
+
+    /// <summary>RpgQuestLog to the player: a view, so its failure never undoes the change.</summary>
+    private async Task SendLogAsync()
+    {
+        try
+        {
+            QuestLogSnapshot log = await GetLogAsync();
+
+            await grains
+                .GetPlayerPresenceGrain(_player)
+                .SendComposerAsync(
+                    QuestLogComposer.Of(log.Entries, id => content.Get<QuestDefinition>(id))
+                );
+        }
+        catch (Exception ex)
+        {
+            logger.LogWarning(ex, "The quest log of player {PlayerId} was not sent", _player.Value);
+        }
+    }
+
     /// <summary>Reads holdings only when an open quest has a held objective; true when the log moved.</summary>
     private async Task<bool> HoldAsync() =>
         _log.HasHeld
@@ -194,6 +216,7 @@ internal sealed class QuestLogGrain(
     private async Task ChangedAsync()
     {
         await _store.SaveAsync(_player, _log.Entries, CancellationToken.None);
+        await SendLogAsync();
 
         events
             .PublishAsync(new QuestLogChangedEvent(_player))

@@ -25,4 +25,7 @@ public interface IQuestLogGrain : IGrainWithIntegerKey
     public Task RefreshHeldAsync();
 
     public Task<QuestZoneFacts> GetZoneFactsAsync();
+
+    /// <summary>Sends the player the whole log (RpgQuestLog): on entering a zone, the client's copy is rebuilt.</summary>
+    public Task PushLogAsync();
 }

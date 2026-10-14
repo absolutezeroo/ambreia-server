@@ -21,6 +21,7 @@ using Vortex.Primitives.Rpg.Items;
 using Vortex.Primitives.Rpg.Items.Enums;
 using Vortex.Primitives.Rpg.Quests;
 using Vortex.Primitives.World.Rules;
+using Vortex.Protocol.Messages.Outgoing.Rpg.Quests;
 using Vortex.Rpg.Content;
 using Vortex.Rpg.Content.Definitions;
 using Vortex.Rpg.Content.Rules;
@@ -40,6 +41,7 @@ public sealed class QuestLogGrainTests : IAsyncLifetime
     private readonly List<string> _character = [];
     private readonly List<object> _published = [];
     private readonly List<ZoneFacts> _facts = [];
+    private readonly List<object> _sent = [];
     private int _shards;
 
     private SqliteConnection _conn = null!;
@@ -203,6 +205,21 @@ public sealed class QuestLogGrainTests : IAsyncLifetime
                 {
                     _facts.Add((ZoneFacts)inner.Args![0]!);
                 }
+                else if (inner.Method.Name == nameof(IPlayerPresenceGrain.SendComposerAsync))
+                {
+                    // Both overloads land here: one composer, or the params array.
+                    foreach (object? arg in inner.Args ?? [])
+                    {
+                        if (arg is object[] many)
+                        {
+                            _sent.AddRange(many);
+                        }
+                        else if (arg is not null and not System.Threading.CancellationToken)
+                        {
+                            _sent.Add(arg);
+                        }
+                    }
+                }
 
                 return Task.CompletedTask;
             });
@@ -344,5 +361,23 @@ public sealed class QuestLogGrainTests : IAsyncLifetime
         (await grain.CompleteAsync(Badge.Id)).Should().Be(QuestCodes.Ok);
 
         _handedIn.Should().Equal("badge");
+    }
+
+    [Fact]
+    public async Task EveryChange_SendsTheLog_AndPushSendsItOnDemand()
+    {
+        QuestLogGrain grain = await ActivateAsync();
+
+        await grain.AcceptAsync(Wolves.Id);
+        _sent
+            .OfType<RpgQuestLogMessageComposer>()
+            .Should()
+            .ContainSingle()
+            .Which.Quests.Single()
+            .State.Should()
+            .Be("active");
+
+        await grain.PushLogAsync();
+        _sent.OfType<RpgQuestLogMessageComposer>().Should().HaveCount(2);
     }
 }
