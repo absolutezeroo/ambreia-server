@@ -95,6 +95,12 @@ public sealed class RpgContentService(
     public IReadOnlyList<string> GetItemIds() =>
         [.. registry.All<ItemDefinition>().Where(i => !i.Retired).Select(i => i.Id)];
 
+    public IReadOnlyList<string> GetQuestIds() =>
+        [.. registry.All<QuestDefinition>().Where(q => !q.Retired).Select(q => q.Id)];
+
+    public IReadOnlyList<string> GetDialogueIds() =>
+        [.. registry.All<DialogueDefinition>().Where(d => !d.Retired).Select(d => d.Id)];
+
     public async Task<string?> GetTextsAsync(string language, CancellationToken ct)
     {
         await using VortexDbContext db = await dbFactory.CreateDbContextAsync(ct);

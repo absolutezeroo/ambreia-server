@@ -111,6 +111,13 @@ internal static class ZoneRuntimeRules
             CheckInteraction(o, entries, passages, f);
         }
 
+        // An NPC's dialogue is what it says when talked to (spec M2a §5): one the content does not
+        // have leaves it mute, so the zone does not publish.
+        foreach (ZoneNpc n in d.Npcs.Where(n => !string.IsNullOrEmpty(n.Dialogue)))
+        {
+            CheckContent(n.Id, "dialogue", n.Dialogue!, v.Dialogues, "UnknownDialogue", f);
+        }
+
         CheckAreas(d, f);
         CheckLoops(d, f);
         CheckOverlaps(d, f);
@@ -203,7 +210,12 @@ internal static class ZoneRuntimeRules
                 break;
 
             case ZoneTriggerType.ItemOwned:
-                CheckItem(t.Id, t.Target ?? string.Empty, v, f);
+                CheckContent(t.Id, "item", t.Target ?? string.Empty, v.Items, "UnknownItem", f);
+
+                break;
+
+            case ZoneTriggerType.QuestState:
+                CheckContent(t.Id, "quest", t.Target ?? string.Empty, v.Quests, "UnknownQuest", f);
 
                 break;
         }
@@ -244,33 +256,41 @@ internal static class ZoneRuntimeRules
                 break;
 
             case HasItemCondition item:
-                CheckItem(owner, item.Item, v, f);
+                CheckContent(owner, "item", item.Item, v.Items, "UnknownItem", f);
+
+                break;
+
+            case QuestStateCondition quest:
+                CheckContent(owner, "quest", quest.Quest, v.Quests, "UnknownQuest", f);
 
                 break;
         }
     }
 
-    /// <summary>An item a rule names is in the content; without content loaded it is not checked.</summary>
-    private static void CheckItem(
+    /// <summary>An item, quest or dialogue a zone names is in the content; without content loaded
+    /// it is not checked.</summary>
+    private static void CheckContent(
         string owner,
-        string item,
-        ZoneRuleVocabulary v,
+        string what,
+        string id,
+        IReadOnlySet<string>? known,
+        string code,
         List<ZoneFinding> f
     )
     {
-        if (v.Items is null)
+        if (known is null)
         {
             f.Add(
                 Warning(
                     "UnresolvedReference",
                     owner,
-                    $"item '{item}' is not checked until its system exists."
+                    $"{what} '{id}' is not checked until its system exists."
                 )
             );
         }
-        else if (!v.Items.Contains(item))
+        else if (!known.Contains(id))
         {
-            f.Add(Error("UnknownItem", owner, $"No item '{item}' in the content."));
+            f.Add(Error(code, owner, $"No {what} '{id}' in the content."));
         }
     }
 
@@ -370,6 +390,11 @@ internal static class ZoneRuntimeRules
                         $"No spawn or spawn group '{group.Spawn}' in this zone."
                     )
                 );
+
+                break;
+
+            case StartQuestAction start:
+                CheckContent(owner, "quest", start.Quest, v.Quests, "UnknownQuest", f);
 
                 break;
         }

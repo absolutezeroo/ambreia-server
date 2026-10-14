@@ -62,4 +62,10 @@ internal sealed class FakeRpgContentService : IRpgContentService
         ];
 
     public IReadOnlyList<string> GetItemIds() => ["item.weapon.rusted_sword"];
+
+    /// <summary>The wolves quest only.</summary>
+    public IReadOnlyList<string> GetQuestIds() => ["quest.camp.wolves"];
+
+    /// <summary>The elder's dialogue only: what the editor's dialogue route lists.</summary>
+    public IReadOnlyList<string> GetDialogueIds() => ["dialogue.camp.elder"];
 }

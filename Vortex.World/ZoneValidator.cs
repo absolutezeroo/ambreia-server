@@ -110,7 +110,13 @@ public sealed class ZoneValidator(
         ZoneRuntimeRules.Check(
             doc,
             knownZones,
-            new ZoneRuleVocabulary(_declared, _raised, content?.GetItemIds()?.ToHashSet()),
+            new ZoneRuleVocabulary(
+                _declared,
+                _raised,
+                content?.GetItemIds()?.ToHashSet(),
+                content?.GetQuestIds()?.ToHashSet(),
+                content?.GetDialogueIds()?.ToHashSet()
+            ),
             f
         );
 

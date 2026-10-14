@@ -27,6 +27,8 @@ internal static class ShippedRules
             typeof(PlayerLevelCondition),
             typeof(HasItemCondition),
             typeof(SpawnGroupAction),
+            typeof(QuestStateCondition),
+            typeof(StartQuestAction),
         }.Select(t => new DeclaredZoneRule(t)),
     ];
 
@@ -36,6 +38,7 @@ internal static class ShippedRules
             ZoneTriggerType.PlayerLevel,
             ZoneTriggerType.ItemOwned,
             ZoneTriggerType.MonsterKilled,
+            ZoneTriggerType.QuestState,
         ]),
     ];
 }

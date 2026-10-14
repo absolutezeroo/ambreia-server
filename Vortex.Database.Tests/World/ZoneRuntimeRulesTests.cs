@@ -188,13 +188,14 @@ public sealed class ZoneRuntimeRulesTests
     public void ASignWithNothingToSay_IsAWarning() =>
         Codes(Doc() with { Decor = [Furni("s", "sign")] }).Should().Equal("EmptySign");
 
-    /// <summary>What no system of this server runs yet — quests, factions — is flagged inert.</summary>
+    /// <summary>What no system of this server runs yet — factions — is flagged inert (quests run
+    /// since M2a: ZoneDeclaredRulesTests checks what they name).</summary>
     [Fact]
-    public void UndeclaredTriggersConditionsAndActions_AreInertWarnings()
+    public void UndeclaredConditions_AreInertWarnings()
     {
         IReadOnlyList<ZoneFinding> findings = Validate(
             Doc(
-                Trigger(ZoneTriggerType.QuestState, "q1", new StartQuestAction("q1")) with
+                Trigger(ZoneTriggerType.Timer, "60") with
                 {
                     Conditions = [new FactionCondition("red")],
                 }
@@ -202,10 +203,7 @@ public sealed class ZoneRuntimeRulesTests
         );
 
         findings.Should().OnlyContain(f => f.Severity == ZoneSeverity.Warning);
-        findings
-            .Select(f => f.Code)
-            .Should()
-            .Equal("InertUntilRpg", "InertUntilRpg", "InertUntilRpg");
+        findings.Select(f => f.Code).Should().Equal("InertUntilRpg");
     }
 
     [Fact]

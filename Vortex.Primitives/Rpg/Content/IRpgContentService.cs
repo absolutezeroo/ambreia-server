@@ -30,4 +30,11 @@ public interface IRpgContentService
 
     /// <summary>The ids of the served items, not retired: what a zone's item rules may name.</summary>
     public IReadOnlyList<string> GetItemIds();
+
+    /// <summary>The ids of the served quests, not retired: what a zone's quest rules may name.</summary>
+    public IReadOnlyList<string> GetQuestIds();
+
+    /// <summary>The ids of the served dialogues, not retired: what a zone's NPC may name, and the
+    /// map editor's choice for it.</summary>
+    public IReadOnlyList<string> GetDialogueIds();
 }

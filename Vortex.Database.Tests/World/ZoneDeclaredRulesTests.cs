@@ -78,6 +78,10 @@ public sealed class ZoneDeclaredRulesTests
                             ],
                         nameof(IRpgContentService.GetItemIds) => (IReadOnlyList<string>)
                             ["item.key"],
+                        nameof(IRpgContentService.GetQuestIds) => (IReadOnlyList<string>)
+                            ["quest.camp.wolves"],
+                        nameof(IRpgContentService.GetDialogueIds) => (IReadOnlyList<string>)
+                            ["dialogue.camp.elder"],
                         _ => null,
                     }
                 )
@@ -133,12 +137,6 @@ public sealed class ZoneDeclaredRulesTests
                     rules: [new DeclaredZoneRule(typeof(TimeOfDayCondition))]
                 )
             )
-            .Should()
-            .Contain("InertUntilRpg");
-
-    [Fact]
-    public void AQuestStateTrigger_StaysInert() =>
-        Codes(Validate(Doc(Trigger(ZoneTriggerType.QuestState, "q1"))))
             .Should()
             .Contain("InertUntilRpg");
 
@@ -240,4 +238,115 @@ public sealed class ZoneDeclaredRulesTests
         Codes(Validate(Doc(Trigger(ZoneTriggerType.Timer, "60", new SpawnGroupAction("pack")))))
             .Should()
             .Equal("DormantSpawn");
+
+    private static ZoneNpc Npc(string? dialogue) =>
+        new()
+        {
+            Id = "elder",
+            Template = "npc.villager",
+            Cell = new ZoneCell(2, 3),
+            Dialogue = dialogue,
+        };
+
+    [Fact]
+    public void AQuestStateCondition_OnAnUnknownQuest_IsAnError() =>
+        Codes(
+                Validate(
+                    Doc(
+                        Trigger(ZoneTriggerType.Timer, "60") with
+                        {
+                            Conditions = [new QuestStateCondition("quest.nothing", "done")],
+                        }
+                    )
+                )
+            )
+            .Should()
+            .Equal("UnknownQuest");
+
+    [Fact]
+    public void AStartQuestAction_OnAnUnknownQuest_IsAnError() =>
+        Codes(
+                Validate(
+                    Doc(Trigger(ZoneTriggerType.Timer, "60", new StartQuestAction("quest.nothing")))
+                )
+            )
+            .Should()
+            .Equal("UnknownQuest");
+
+    [Fact]
+    public void AnEmptyQuest_IsAnUnknownOne() =>
+        Codes(Validate(Doc(Trigger(ZoneTriggerType.Timer, "60", new StartQuestAction("")))))
+            .Should()
+            .Equal("UnknownQuest");
+
+    [Fact]
+    public void AQuestStateTrigger_OnAnUnknownQuest_IsAnError() =>
+        Codes(Validate(Doc(Trigger(ZoneTriggerType.QuestState, "quest.nothing"))))
+            .Should()
+            .Equal("UnknownQuest");
+
+    [Fact]
+    public void QuestRules_OnAKnownQuest_AreFine() =>
+        Codes(
+                Validate(
+                    Doc(
+                        Trigger(
+                            ZoneTriggerType.QuestState,
+                            "quest.camp.wolves",
+                            new StartQuestAction("quest.camp.wolves")
+                        ) with
+                        {
+                            Conditions = [new QuestStateCondition("quest.camp.wolves", "done")],
+                        }
+                    )
+                )
+            )
+            .Should()
+            .BeEmpty();
+
+    [Fact]
+    public void AQuestRule_WithoutContent_IsAWarning() =>
+        Validate(
+                Doc(
+                    Trigger(ZoneTriggerType.Timer, "60", new StartQuestAction("quest.camp.wolves"))
+                ),
+                withContent: false
+            )
+            .Should()
+            .Contain(f =>
+                f.Code == "UnresolvedReference"
+                && f.Severity == ZoneSeverity.Warning
+                && f.Message.Contains("quest")
+            );
+
+    [Fact]
+    public void AnNpc_WithAnUnknownDialogue_IsAnError() =>
+        Validate(ZoneSamples.Minimal() with { Npcs = [Npc("dialogue.nothing")] })
+            .Should()
+            .ContainSingle(f =>
+                f.Code == "UnknownDialogue"
+                && f.Severity == ZoneSeverity.Error
+                && f.ElementId == "elder"
+            );
+
+    [Fact]
+    public void AnNpc_WithAKnownDialogue_OrNone_HasNoDialogueFinding() =>
+        Codes(
+                Validate(
+                    ZoneSamples.Minimal() with
+                    {
+                        Npcs =
+                        [
+                            Npc("dialogue.camp.elder"),
+                            Npc(null) with
+                            {
+                                Id = "scout",
+                                Cell = new ZoneCell(3, 3),
+                            },
+                        ],
+                    }
+                )
+            )
+            .Should()
+            .NotContain("UnknownDialogue");
 }
