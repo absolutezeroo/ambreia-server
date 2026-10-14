@@ -277,6 +277,8 @@ function frame(header, ...fields) {
       const len = Buffer.alloc(2);
       len.writeInt16BE(s.length, 0);
       parts.push(len, s);
+    } else if (typeof f === 'boolean') {
+      parts.push(Buffer.from([f ? 1 : 0]));
     } else {
       const n = Buffer.alloc(4);
       n.writeInt32BE(f, 0);
@@ -357,6 +359,16 @@ const H = {
   // Monsters (spec M1c §9.2).
   rpgTelegraphs: 9025,
   rpgMonsterYell: 9026,
+  // The quests (spec M2a §3): out, then in.
+  rpgAutoAttack: 9016, // out (M1d §2.2): selecting is not attacking
+  rpgNpcTalk: 9018,
+  rpgDialogueChoose: 9019,
+  rpgQuestAbandon: 9020,
+  rpgNpcs: 9032,
+  rpgDialogue: 9033,
+  rpgDialogueClose: 9034,
+  rpgQuestLog: 9035,
+  rpgQuestResult: 9036,
   userRemove: 3693,
   quit: 3061,
   objectDataUpdate: 2329,
@@ -380,6 +392,11 @@ function reader(body) {
     },
     bool() {
       return body[at++] !== 0;
+    },
+    short() {
+      const v = body.readInt16BE(at);
+      at += 2;
+      return v;
     },
     left: () => body.length - at,
   };
@@ -455,6 +472,8 @@ const PLAYER_C = { email: 'run-skill-c@vortex.local', password: 'RunSkill!2026' 
 const PLAYER_D = { email: 'run-skill-d@vortex.local', password: 'RunSkill!2026' };
 // A fifth, the mage `rules` levels up and gives items: the others keep their levels and bags.
 const PLAYER_E = { email: 'run-skill-e@vortex.local', password: 'RunSkill!2026' };
+// A sixth, for `quests`: deleted and made again at each run, so its character starts with no quest.
+const PLAYER_F = { email: 'run-skill-f@vortex.local', password: 'RunSkill!2026' };
 const WEB_COOKIE = 'habbo-web-session';
 
 function sessionCookie(res) {
@@ -971,16 +990,23 @@ async function cmdEnter(key) {
   log(`zone ${key} v${zone.publishedVersion} -> room ${zone.roomId}: ${count} floor item(s)${items.length ? `, first ${items[0]}` : ''}`);
 }
 
-function cmdCleanup() {
-  const id = sql(`SELECT id FROM player_accounts WHERE email='${PLAYER.email}' LIMIT 1;`);
-  if (!id) return log('Nothing to clean up.');
+// Deletes a throwaway account and its players (their quests, items and grants go with them by the
+// players' cascades). Answers the account id, or null when there was none.
+function deleteAccount(account) {
+  const id = sql(`SELECT id FROM player_accounts WHERE email='${account.email}' LIMIT 1;`);
+  if (!id) return null;
   const players = `SELECT id FROM players WHERE account_id=${id}`;
   sql(`DELETE FROM security_tickets WHERE player_id IN (${players});`);
   sql(`DELETE FROM room_entry_logs WHERE player_id IN (${players});`);
   sql(`DELETE FROM players WHERE account_id=${id};`);
   sql(`DELETE FROM player_account_roles WHERE account_id=${id};`);
   sql(`DELETE FROM player_accounts WHERE id=${id};`);
-  log(`Deleted the throwaway account ${id} and its players.`);
+  return id;
+}
+
+function cmdCleanup() {
+  const id = deleteAccount(PLAYER);
+  log(id ? `Deleted the throwaway account ${id} and its players.` : 'Nothing to clean up.');
 }
 
 // ---------------------------------------------------------------- smoke
@@ -1370,6 +1396,10 @@ function usersOf(f) {
       r.int(), r.int(), r.str(), r.bool(), r.bool();
       a.level = r.int();
       r.str();
+    } else if (a.type === 4) {
+      // A bot (the NPCs of M2a): gender, owner id and name, then its skills as shorts.
+      r.str(), r.int(), r.str();
+      for (let n = r.int(); n > 0; n--) r.short();
     }
     avatars.push(a);
   }
@@ -1916,6 +1946,271 @@ async function cmdBoss() {
   log('Boss OK.');
 }
 
+// Creates the zone when it is new, saves the document as a new version and publishes it; answers
+// its room id. The account must hold world.zone.edit and world.zone.publish (the owner role).
+async function publishZone(key, doc) {
+  const base = `http://127.0.0.1:${WEBAPI}`;
+  const headers = { cookie: (await webSession()).cookie };
+  let r = await request(`${base}/api/editor/zones`, { method: 'POST', headers, body: JSON.stringify({ key, name: doc.settings.name }) });
+  if (r.status !== 200 && r.status !== 409) die(`Zone creation ${key}: ${r.status} ${r.body}`);
+  r = await request(`${base}/api/editor/zones/${key}/lock?force=true`, { method: 'POST', headers });
+  if (r.status !== 200) die(`Lock ${key}: ${r.status} ${r.body}`);
+  r = await request(`${base}/api/editor/zones/${key}/versions?comment=driver`, { method: 'POST', headers, body: JSON.stringify(doc) });
+  if (r.status !== 200) die(`Save ${key}: ${r.status} ${r.body}`);
+  const saved = JSON.parse(r.body);
+  if (!saved.published) {
+    r = await request(`${base}/api/editor/zones/${key}/publish/${saved.version}`, { method: 'POST', headers });
+    if (r.status !== 200) die(`Publish ${key}: ${r.status} ${r.body}`);
+  }
+  await request(`${base}/api/editor/zones/${key}/lock`, { method: 'DELETE', headers });
+  const zones = JSON.parse((await request(`${base}/api/editor/zones`, { headers })).body);
+  return zones.find((z) => z.key === key).roomId;
+}
+
+// The quests' demo zone (spec M2a §6): a safe camp at the arrival with the elder, three lone wolves
+// outside it, the clearing in the far corner with the scout and the old well. The well is clickable
+// because an Interact trigger listens to it (CompiledZone.Interactives); being the first decor, it is
+// room object 1.
+function campZone() {
+  const square = (x0, y0, x1, y1) => [{ x: x0, y: y0 }, { x: x1, y: y0 }, { x: x1, y: y1 }, { x: x0, y: y1 }];
+  const wolf = (id, x, y) => ({ id, area: [{ x, y }], monster: 'monster.forest.wolf', min: 1, max: 1, respawnSeconds: 300, wanderRadius: 0, aggroRadius: 1 });
+  return {
+    schemaVersion: 1,
+    settings: { id: 'camp', name: 'Camp' },
+    floor: { width: 12, length: 12, tiles: Array.from({ length: 144 }, () => ({ height: 0, walkable: true, hole: false })), door: { x: 0, y: 6 }, doorDirection: 2 },
+    entries: [
+      { id: 'start', kind: 'arrival', cell: { x: 1, y: 6 } },
+      { id: 'fire', kind: 'respawn', cell: { x: 2, y: 6 } },
+    ],
+    zones: [
+      { id: 'camp', kind: 'Safe', name: 'Camp', polygon: square(0, 4, 3, 8) },
+      { id: 'clearing', kind: 'Quest', name: 'Clairière', polygon: square(8, 8, 11, 11) },
+    ],
+    npcs: [
+      { id: 'elder', template: 'npc.villager', name: 'Ancien du camp', cell: { x: 2, y: 4 }, rotation: 4, dialogue: 'dialogue.camp.elder' },
+      { id: 'scout', template: 'npc.villager', name: 'Éclaireur', cell: { x: 9, y: 8 }, rotation: 6, dialogue: 'dialogue.camp.scout' },
+    ],
+    decor: [{ id: 'old_well', definition: 3149, class: 'country_well', x: 10, y: 10 }],
+    spawns: [wolf('wolf_1', 6, 2), wolf('wolf_2', 7, 6), wolf('wolf_3', 5, 10)],
+    triggers: [
+      { id: 'well_look', type: 'Interact', target: 'old_well', actions: [{ kind: 'ShowDialogue', dialogue: 'Le puits est vide… mais quelque chose brille au fond.' }] },
+    ],
+  };
+}
+
+// The first quest loop (spec M2a §7) on the socket, in `camp`, with a fresh character: the elder's
+// « ! », the wolves quest accepted, three wolves killed, signed out and back in (the log and the
+// « ? » come back), handed in once; the report quest accepted, abandoned, taken again, the scout
+// talked to, the clearing reached, the well looked into, handed in.
+async function cmdQuests() {
+  await cmdContent();
+  await webSession(PLAYER);
+  sql(`INSERT INTO player_account_roles (account_id, role_id)
+       SELECT a.id, r.id FROM player_accounts a, roles r
+       WHERE a.email='${PLAYER.email}' AND r.\`key\`='owner'
+         AND NOT EXISTS (SELECT 1 FROM player_account_roles x WHERE x.account_id=a.id AND x.role_id=r.id);`);
+  const room = await publishZone('camp', campZone());
+  log(`Published camp (room ${room}).`);
+  const gone = deleteAccount(PLAYER_F);
+  if (gone) log(`Deleted the previous quests account ${gone}.`);
+
+  let a = await enterWorld(PLAYER_F);
+  let g = a.g;
+  const fail = (m) => {
+    g.close();
+    die(m);
+  };
+  const until = async (test, ms) => {
+    for (let t = 0; t < ms; t += 100) {
+      const hit = test();
+      if (hit) return hit;
+      await sleep(100);
+    }
+    return null;
+  };
+  const after = (header, from) => g.frames.slice(from).filter((f) => f.header === header);
+  const npcsOf = (f) => {
+    const r = reader(f.body);
+    return Array.from({ length: r.int() }, () => ({ objectId: r.int(), marker: r.str() }));
+  };
+  const dialogueOf = (f) => {
+    const r = reader(f.body);
+    const npc = r.int();
+    const speaker = r.str();
+    const text = r.str();
+    return { npc, speaker, text, choices: Array.from({ length: r.int() }, () => ({ text: r.str(), kind: r.str() })) };
+  };
+  const logOf = (f) => {
+    const r = reader(f.body);
+    return Array.from({ length: r.int() }, () => {
+      const questId = r.str();
+      const state = r.str();
+      return { questId, state, objectives: Array.from({ length: r.int() }, () => ({ kind: r.str(), current: r.int(), required: r.int() })) };
+    });
+  };
+  const resultOf = (f) => {
+    const r = reader(f.body);
+    return { action: r.str(), code: r.str(), questId: r.str() };
+  };
+  const hitsAfter = (from) =>
+    after(H.rpgCombatEvents, from).flatMap((f) => {
+      const r = reader(f.body);
+      return Array.from({ length: r.int() }, () => ({
+        attacker: r.int(), target: r.int(), amount: r.int(), outcome: r.str(), health: r.int(), maxHealth: r.int(), killed: r.bool(),
+      }));
+    });
+  // The quest as the latest RpgQuestLog since `from` has it, once it is in `state`.
+  const questIn = (from, questId, state, ms = 8000) =>
+    until(() => {
+      const logs = after(H.rpgQuestLog, from);
+      const q = logs.length ? logOf(logs[logs.length - 1]).find((x) => x.questId === questId) : null;
+      return q && q.state === state ? q : null;
+    }, ms);
+  const markerOf = (from, npc, marker, ms = 8000) =>
+    until(() => {
+      const lists = after(H.rpgNpcs, from);
+      return lists.length && npcsOf(lists[lists.length - 1]).some((n) => n.objectId === npc && n.marker === marker);
+    }, ms);
+  const resultFor = async (from, action) => {
+    const hit = await until(() => after(H.rpgQuestResult, from).map(resultOf).find((x) => x.action === action || x.code !== 'ok'), 8000);
+    if (!hit || hit.action !== action || hit.code !== 'ok') fail(`Expected ${action}/ok, got ${JSON.stringify(hit)}`);
+    return hit;
+  };
+  const talk = async (npc) => {
+    const from = g.frames.length;
+    g.send(frame(H.rpgNpcTalk, npc));
+    const f = await g.wait([H.rpgDialogue], from, 10000);
+    if (!f) fail(`No RpgDialogue from NPC ${npc}.`);
+    return dialogueOf(f);
+  };
+  // Picks a shown choice by its text key; answers the frame mark from before it was sent.
+  const choose = (node, text) => {
+    const at = node.choices.findIndex((c) => c.text === text);
+    if (at < 0) fail(`No choice ${text} in ${JSON.stringify(node)}`);
+    const from = g.frames.length;
+    g.send(frame(H.rpgDialogueChoose, at));
+    return from;
+  };
+  const enterCamp = async () => {
+    const from = g.frames.length;
+    g.send(frame(H.openFlat, room, '', -1));
+    const all = await until(() => {
+      const units = after(H.users, from).flatMap(usersOf);
+      return units.some((u) => u.name === 'Ancien du camp') && units.some((u) => u.name === 'Éclaireur') ? units : null;
+    }, 10000);
+    if (!all) fail('The elder and the scout are not in the room.');
+    return { from, units: all };
+  };
+
+  // 1. In the camp: two NPCs (bots), the elder offers a quest (« ! »), the log is empty.
+  let { from, units } = await enterCamp();
+  const elder = units.find((u) => u.name === 'Ancien du camp');
+  const scout = units.find((u) => u.name === 'Éclaireur');
+  if (elder.type !== 4 || scout.type !== 4) fail(`NPCs are not bots: ${JSON.stringify([elder, scout])}`);
+  if (!(await markerOf(from, elder.objectId, 'available'))) fail('1. No « ! » over the elder.');
+  if (!(await until(() => after(H.rpgQuestLog, 0).length > 0, 5000))) fail('1. No quest log at sign-in.');
+  log(`1. camp: elder ${elder.objectId} « ! », scout ${scout.objectId}, empty quest log`);
+
+  // 2. The wolves quest, accepted through the dialogue.
+  let node = await talk(elder.objectId);
+  node = dialogueOf((await g.wait([H.rpgDialogue], choose(node, 'dialogue.camp.elder.ask'), 8000)) ?? fail('2. No offer node.'));
+  let mark = choose(node, 'dialogue.common.accept');
+  await resultFor(mark, 'accepted');
+  if (!(await g.wait([H.rpgDialogueClose], mark, 5000))) fail('2. The dialogue did not close on accept.');
+  if (!(await questIn(mark, 'quest.camp.wolves', 'active'))) fail('2. The wolves quest is not active.');
+  if (!(await markerOf(mark, elder.objectId, 'active'))) fail('2. The elder is not « ? » grey.');
+  log('2. quest.camp.wolves accepted');
+
+  // 3. Three wolves, one by one, from out of the camp (a death sends back to the camp: target again).
+  // They are born when the first player comes in, in a Users of their own after the NPCs'.
+  const wolves = await until(() => {
+    const born = after(H.users, from).flatMap(usersOf).filter((u) => u.name === 'monster.forest.wolf');
+    return born.length >= 3 ? born : null;
+  }, 10000);
+  if (!wolves) fail(`3. Not three wolves in camp: ${JSON.stringify(after(H.users, from).flatMap(usersOf))}`);
+  for (const wolf of wolves) {
+    let killed = null;
+    for (let attempt = 0; attempt < 3 && !killed; attempt++) {
+      g.send(frame(H.moveAvatar, 4, 6));
+      await sleep(1500);
+      mark = g.frames.length;
+      g.send(frame(H.rpgTargetSelect, wolf.objectId));
+      g.send(frame(H.rpgAutoAttack, true));
+      killed = await until(() => hitsAfter(mark).find((h) => h.target === wolf.objectId && h.killed), 45000);
+    }
+    if (!killed) {
+      const refused = after(H.rpgCombatResult, mark).map((f) => reader(f.body).str());
+      fail(`3. Wolf ${wolf.objectId} did not die: refusals ${JSON.stringify(refused)}, last hits ${JSON.stringify(hitsAfter(mark).slice(-4))}, headers ${JSON.stringify(Object.entries(g.frames.slice(mark).reduce((c, f) => ({ ...c, [f.header]: (c[f.header] ?? 0) + 1 }), {})))}, wolves ${JSON.stringify(wolves)}`);
+    }
+  }
+  const ready = await questIn(0, 'quest.camp.wolves', 'ready', 10000);
+  if (!ready || ready.objectives[0].current !== 3) fail(`3. Not ready at 3/3: ${JSON.stringify(ready)}`);
+  log('3. three wolves killed, quest ready');
+
+  // 4. Signed out and back in within the grace period (the avatar waits, no room entry): the log
+  // and the elder's « ? » come back anyway.
+  g.close();
+  await sleep(1500);
+  a = await enterWorld(PLAYER_F);
+  g = a.g;
+  ({ from } = await enterCamp());
+  // The log comes with the sign-in (the character's state push), before the zone: from frame 0.
+  if (!(await questIn(0, 'quest.camp.wolves', 'ready'))) fail(`4. The log did not come back ready: ${JSON.stringify(after(H.rpgQuestLog, 0).map(logOf))}`);
+  if (!(await markerOf(from, elder.objectId, 'ready'))) fail('4. No « ? » over the elder after signing in again.');
+  log('4. signed in again: log and « ? » back');
+
+  // 5. Handed in: completed once, XP, the quest done; the elder offers the report.
+  g.send(frame(H.moveAvatar, 2, 5));
+  await sleep(1500);
+  node = await talk(elder.objectId);
+  if (node.text !== 'dialogue.camp.elder.thanks') fail(`5. The elder said ${node.text}, not thanks.`);
+  mark = choose(node, 'dialogue.common.complete');
+  await resultFor(mark, 'completed');
+  if (!(await g.wait([H.rpgProgress], mark, 5000))) fail('5. No XP after completing.');
+  if (!(await questIn(mark, 'quest.camp.wolves', 'done'))) fail('5. The wolves quest is not done.');
+  if (!(await markerOf(mark, elder.objectId, 'available'))) fail('5. No « ! » for the report.');
+  log('5. wolves handed in: completed, XP, report offered');
+
+  // 6. The report: accepted, abandoned, accepted again.
+  const acceptReport = async () => {
+    let n = await talk(elder.objectId);
+    n = dialogueOf((await g.wait([H.rpgDialogue], choose(n, 'dialogue.camp.elder.ask_report'), 8000)) ?? fail('6. No report offer.'));
+    const m = choose(n, 'dialogue.common.accept');
+    await resultFor(m, 'accepted');
+    return m;
+  };
+  await acceptReport();
+  mark = g.frames.length;
+  g.send(frame(H.rpgQuestAbandon, 'quest.camp.report'));
+  await resultFor(mark, 'abandoned');
+  const dropped = await until(() => {
+    const logs = after(H.rpgQuestLog, mark);
+    return logs.length && !logOf(logs[logs.length - 1]).some((q) => q.questId === 'quest.camp.report');
+  }, 5000);
+  if (!dropped) fail('6. The report is still in the log after abandoning.');
+  mark = await acceptReport();
+  log('6. report accepted, abandoned, accepted again');
+
+  // 7. Its three objectives: the scout, the clearing, the well.
+  await talk(scout.objectId);
+  g.send(frame(H.moveAvatar, 10, 9));
+  await sleep(3000);
+  g.send(frame(H.useFurniture, 1, 0));
+  const met = await questIn(mark, 'quest.camp.report', 'ready', 10000);
+  if (!met) fail(`7. The report is not ready: ${JSON.stringify(after(H.rpgQuestLog, mark).map(logOf).pop())}`);
+  log('7. scout talked to, clearing reached, well looked into: report ready');
+
+  // 8. Handed in.
+  g.send(frame(H.moveAvatar, 2, 5));
+  await sleep(4000);
+  node = await talk(elder.objectId);
+  mark = choose(node, 'dialogue.common.complete');
+  await resultFor(mark, 'completed');
+  if (!(await questIn(mark, 'quest.camp.report', 'done'))) fail('8. The report is not done.');
+  log('8. report handed in. The first quest loop plays end to end.');
+  g.close();
+}
+
 // The zone rules (spec Z1 §13): proof_rules holds a vault open from the mage's next level, a wolf
 // whose death wakes a sleeping ambush, and triggers on that level and on an amber shard. The mage of
 // PLAYER_E is refused the vault, kills the wolf and sees the ambush born, gains the level and the
@@ -2269,6 +2564,7 @@ const table = {
   combat: cmdCombat,
   skills: cmdSkills,
   boss: cmdBoss,
+  quests: cmdQuests,
   rules: cmdRules,
   grace: () => cmdGrace(args[0]),
   cleanup: cmdCleanup,
@@ -2298,6 +2594,7 @@ if (!cmd || !table[cmd]) {
   items     the admin item grant: a sword to the first character, replayed with its key -> one sword more
   grace [wait]  drop the socket in a room and come back: same room, one avatar, same tile (wait: then stay away past 60 s)
   boss      proof_boss: a cone telegraph dodged, phase 2 by Firebolt (yell, enraged, two wolves), back to camp -> reset
+  quests    camp: the M2a quest loop on the socket (dialogue, wolves, sign in again, hand in, abandon, report)
   rules     proof_rules: vault refused, a kill wakes an ambush, level and item triggers speak, vault opens
   cleanup   delete the throwaway account and its players`);
   process.exit(cmd ? 1 : 0);
