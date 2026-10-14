@@ -12,6 +12,8 @@
     "grain:Rooms/IRoomCombat.cs::DeathChoiceAsync": "actor-guard",
     "grain:Rooms/IRoomCombat.cs::SetAutoAttackAsync": "actor-guard",
     "grain:Rooms/IRoomCombat.cs::UpdateCombatantStatsAsync": "actor-guard",
+    "grain:Rooms/IRoomNpcs.cs::ChooseDialogueAsync": "actor-guard",
+    "grain:Rooms/IRoomNpcs.cs::TalkToNpcAsync": "actor-guard",
     "grain:Rooms/IRoomCore.cs::AdmitAsync": "controller-level",
     "grain:Rooms/IRoomDirectoryGrain.cs::AddPlayerToRoomAsync": "NONE",
     "grain:Rooms/IRoomDirectoryGrain.cs::RemovePlayerFromRoomAsync": "NONE",

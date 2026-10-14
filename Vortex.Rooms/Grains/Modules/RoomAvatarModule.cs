@@ -102,6 +102,7 @@ public sealed partial class RoomAvatarModule(RoomGrain roomGrain)
         avatar.SetRotation(startRot);
 
         await JoinFightsAsync(snapshot.PlayerId, objectId, ct);
+        await _roomGrain.DialogueModule.SendMarkersAsync(snapshot.PlayerId);
 
         return avatar;
     }

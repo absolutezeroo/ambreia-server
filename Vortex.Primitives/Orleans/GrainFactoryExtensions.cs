@@ -50,6 +50,9 @@ public static class GrainFactoryExtensions
     public static IRoomCombat GetRoomCombat(this IGrainFactory factory, RoomId roomId) =>
         factory.GetGrain<IRoomCombat>((long)roomId.Value);
 
+    public static IRoomNpcs GetRoomNpcs(this IGrainFactory factory, RoomId roomId) =>
+        factory.GetGrain<IRoomNpcs>((long)roomId.Value);
+
     public static IZoneTestGrain GetZoneTestGrain(this IGrainFactory factory) =>
         factory.GetGrain<IZoneTestGrain>(0);
 

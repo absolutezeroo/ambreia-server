@@ -26,4 +26,5 @@ public interface IRoomGrain
         IRoomZone,
         IRoomTargets,
         IRoomEmotes,
-        IRoomCombat { }
+        IRoomCombat,
+        IRoomNpcs { }

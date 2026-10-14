@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Vortex.Primitives.Players;
 using Vortex.Primitives.Rooms.Events.Zone;
+using Vortex.Primitives.Rpg.Quests;
 using Vortex.Primitives.World.Layers;
 using Vortex.Primitives.World.Rules;
 using Vortex.Rpg.Zones.Rules;
@@ -43,6 +44,12 @@ public sealed partial class RoomGrain
         }
 
         parts[type] = facts;
+
+        // The NPC markers follow the player's own quests (spec M2a §3.3).
+        if (facts is QuestZoneFacts)
+        {
+            await DialogueModule.SendMarkersAsync(player);
+        }
 
         if (held is null || _zoneRules.SourceOf(type) is not { } source)
         {

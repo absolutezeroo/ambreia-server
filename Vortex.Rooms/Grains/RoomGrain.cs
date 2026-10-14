@@ -99,6 +99,8 @@ public sealed partial class RoomGrain : Grain, IRoomGrain
     public readonly ZoneTriggerModule ZoneTriggers;
 
     public readonly RoomNpcModule NpcModule;
+
+    public readonly RoomDialogueModule DialogueModule;
     public readonly RoomTargetModule TargetModule;
     public readonly RoomEmoteModule EmoteModule;
 
@@ -164,7 +166,9 @@ public sealed partial class RoomGrain : Grain, IRoomGrain
         ZoneInteractions = new ZoneInteractionModule(this);
         ZoneTriggers = new ZoneTriggerModule(this);
         NpcModule = new RoomNpcModule(this);
+        DialogueModule = new RoomDialogueModule(this, npcDialogues);
         EventModule.Register(ZoneTriggers);
+        EventModule.Register(DialogueModule);
         TargetModule = new RoomTargetModule(this);
         EventModule.Register(TargetModule);
         EmoteModule = new RoomEmoteModule(this);

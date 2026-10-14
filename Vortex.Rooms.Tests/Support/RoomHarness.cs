@@ -510,6 +510,22 @@ internal sealed class RoomHarness
             .ConfigureAwait(true);
     }
 
+    /// <summary>Puts the player's avatar on (x, y) at once, as a teleport does.</summary>
+    public void TeleportPlayer(PlayerId player, int x, int y)
+    {
+        IRoomAvatar avatar = Grain._state.AvatarsByObjectId[Grain._state.AvatarsByPlayerId[player]];
+        Grain.AvatarModule.Teleport(avatar, x, y);
+    }
+
+    /// <summary>Ticks the avatars until nobody walks (at most 200 ticks).</summary>
+    public async Task TickUntilIdleAsync()
+    {
+        for (int i = 0; i < 200 && Grain._state.AvatarsByObjectId.Values.Any(a => a.IsWalking); i++)
+        {
+            await TickAvatarsAsync();
+        }
+    }
+
     /// <summary>Closes a tile, which is what furniture standing on one amounts to for a walker.</summary>
     public void BlockTile(int x, int y) =>
         Grain._state.TileFlags[Grain.MapModule.ToIdx(x, y)] = RoomTileFlags.Closed;
