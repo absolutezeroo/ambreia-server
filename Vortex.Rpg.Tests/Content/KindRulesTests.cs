@@ -161,6 +161,26 @@ public sealed class KindRulesTests
     public void AValidItem_HasNoFinding() =>
         Codes(new ItemKind(), Sword, Warrior).Should().BeEmpty();
 
+    private static readonly ItemDefinition Pickaxe = Sword with
+    {
+        Id = "item.tool.pickaxe",
+        Category = ItemCategory.Tool,
+        Slot = null,
+        AllowedClasses = [],
+        Stats = null,
+        MaxDurability = 0,
+    };
+
+    /// <summary>Content authoring §7: a tool is an item that is not worn.</summary>
+    [Fact]
+    public void ATool_IsAnItemWithoutSlot() => Codes(new ItemKind(), Pickaxe).Should().BeEmpty();
+
+    [Fact]
+    public void ASlotOnATool_IsAnError() =>
+        Codes(new ItemKind(), Pickaxe with { Slot = EquipmentSlot.Weapon })
+            .Should()
+            .Equal("SlotForbidden");
+
     [Fact]
     public void AnEquipmentWithoutSlot_IsAnError() =>
         Codes(new ItemKind(), Sword with { Slot = null }, Warrior).Should().Equal("SlotRequired");

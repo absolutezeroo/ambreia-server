@@ -10,4 +10,8 @@ public enum ItemCategory
     Mount = 4,
     Cosmetic = 5,
     Quest = 6,
+
+    /// <summary>A pickaxe, an axe, a sickle (content authoring §7): carried, not worn; what it opens
+    /// (gathering) comes with its own spec.</summary>
+    Tool = 7,
 }

@@ -12,7 +12,8 @@
         "furniture",
         "mount",
         "cosmetic",
-        "quest"
+        "quest",
+        "tool"
       ]
     },
     "rarity": {
