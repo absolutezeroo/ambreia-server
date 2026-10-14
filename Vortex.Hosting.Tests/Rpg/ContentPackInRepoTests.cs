@@ -122,5 +122,6 @@ public sealed class ContentPackInRepoTests
                 ],
                 [new XpReward(), new ItemsReward()]
             ),
+            new DialogueKind(),
         ]).Validate(Read(), id => id == Throne);
 }

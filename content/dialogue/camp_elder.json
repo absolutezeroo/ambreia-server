@@ -1,0 +1,32 @@
+{
+  "$schema": "../../schemas/content/dialogue.schema.json",
+  "id": "dialogue.camp.elder",
+  "kind": "dialogue",
+  "entries": [
+    {"quest": "quest.camp.wolves", "state": "ready", "node": "thanks"},
+    {"quest": "quest.camp.wolves", "state": "active", "node": "waiting"},
+    {"quest": "quest.camp.report", "state": "ready", "node": "report"}
+  ],
+  "nodes": {
+    "start": {"text": "dialogue.camp.elder.start", "choices": [
+      {"text": "dialogue.camp.elder.ask", "next": "offer"},
+      {"text": "dialogue.camp.elder.ask_report", "next": "offer_report"},
+      {"text": "dialogue.common.bye"}
+    ]},
+    "offer": {"text": "dialogue.camp.elder.offer", "choices": [
+      {"text": "dialogue.common.accept", "accept": "quest.camp.wolves"},
+      {"text": "dialogue.common.later"}
+    ]},
+    "waiting": {"text": "dialogue.camp.elder.waiting", "choices": [{"text": "dialogue.common.bye"}]},
+    "thanks": {"text": "dialogue.camp.elder.thanks", "choices": [
+      {"text": "dialogue.common.complete", "complete": "quest.camp.wolves"}
+    ]},
+    "offer_report": {"text": "dialogue.camp.elder.offer_report", "choices": [
+      {"text": "dialogue.common.accept", "accept": "quest.camp.report"},
+      {"text": "dialogue.common.later"}
+    ]},
+    "report": {"text": "dialogue.camp.elder.report", "choices": [
+      {"text": "dialogue.common.complete", "complete": "quest.camp.report"}
+    ]}
+  }
+}

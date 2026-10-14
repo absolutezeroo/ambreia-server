@@ -1,0 +1,8 @@
+{
+  "$schema": "../../schemas/content/dialogue.schema.json",
+  "id": "dialogue.camp.scout",
+  "kind": "dialogue",
+  "nodes": {
+    "start": {"text": "dialogue.camp.scout.start", "choices": [{"text": "dialogue.common.bye"}]}
+  }
+}
