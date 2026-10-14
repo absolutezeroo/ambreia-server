@@ -27,6 +27,26 @@ internal sealed class FakeRpgContentService : IRpgContentService
                 )
         );
 
+    /// <summary>Version 1 is the stored one: any other base version is stale.</summary>
+    public Task<ContentImportResult> ImportAsync(
+        ContentPack pack,
+        int accountId,
+        long? baseVersion,
+        CancellationToken ct
+    ) =>
+        baseVersion is null or 1
+            ? ImportAsync(pack, accountId, ct)
+            : Task.FromResult(
+                new ContentImportResult(
+                    false,
+                    1,
+                    0,
+                    0,
+                    0,
+                    [new ContentFinding(ContentSeverity.Error, "Stale", null, null, "x")]
+                )
+            );
+
     public Task<string?> GetTextsAsync(string language, CancellationToken ct) =>
         Task.FromResult(language == "fr" ? "class.warrior.name=Guerrier" : null);
 

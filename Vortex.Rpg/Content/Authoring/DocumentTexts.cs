@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
+using Vortex.Rpg.Content.Validation;
 
 namespace Vortex.Rpg.Content.Authoring;
 
@@ -64,6 +65,17 @@ public static partial class DocumentTexts
 
         return string.Join('\n', kept);
     }
+
+    /// <summary>The document's lines of a text file, by key.</summary>
+    public static IReadOnlyDictionary<string, string> Of(
+        string body,
+        string id,
+        IReadOnlyCollection<string> nested
+    ) =>
+        ContentTexts
+            .Parse(body)
+            .Where(text => Owns($"{text.Key}={text.Value}", id, nested))
+            .ToDictionary(text => text.Key, text => text.Value, StringComparer.Ordinal);
 
     private static bool Owns(string line, string id, IReadOnlyCollection<string> nested)
     {

@@ -14,6 +14,15 @@ public interface IRpgContentService
         CancellationToken ct
     );
 
+    /// <summary>The same, only if the stored content is still at <paramref name="baseVersion"/>
+    /// (checked under the import gate): otherwise refused with a <c>Stale</c> finding.</summary>
+    public Task<ContentImportResult> ImportAsync(
+        ContentPack pack,
+        int accountId,
+        long? baseVersion,
+        CancellationToken ct
+    );
+
     /// <summary>The imported text file of a language, or null when none was imported.</summary>
     public Task<string?> GetTextsAsync(string language, CancellationToken ct);
 

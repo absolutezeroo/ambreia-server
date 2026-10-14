@@ -142,14 +142,7 @@ public static class PackEdit
             return bodies;
         }
 
-        // A longer id under this one (quest.camp.wolves under quest.camp) keeps its own lines.
-        string[] nested =
-        [
-            .. stored
-                .Files.Select(f => DocumentSource.IdOf(f.Text))
-                .OfType<string>()
-                .Where(other => other.StartsWith(id + ".", StringComparison.Ordinal)),
-        ];
+        string[] nested = NestedIds(stored, id);
 
         foreach ((string language, IReadOnlyDictionary<string, string> lines) in texts)
         {
@@ -163,6 +156,16 @@ public static class PackEdit
 
         return bodies;
     }
+
+    /// <summary>The longer ids under this one (quest.camp.wolves under quest.camp): their text lines
+    /// are theirs, not this document's.</summary>
+    public static string[] NestedIds(ContentExport stored, string id) =>
+        [
+            .. stored
+                .Files.Select(f => DocumentSource.IdOf(f.Text))
+                .OfType<string>()
+                .Where(other => other.StartsWith(id + ".", StringComparison.Ordinal)),
+        ];
 
     private static string WithRule(string? migrations, string from, string to)
     {

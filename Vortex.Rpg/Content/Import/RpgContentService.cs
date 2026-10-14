@@ -42,9 +42,16 @@ public sealed class RpgContentService(
     // ponytail: one import at a time in this one silo; a second host would need a database lock.
     private readonly SemaphoreSlim _gate = new(1, 1);
 
+    public Task<ContentImportResult> ImportAsync(
+        ContentPack pack,
+        int accountId,
+        CancellationToken ct
+    ) => ImportAsync(pack, accountId, null, ct);
+
     public async Task<ContentImportResult> ImportAsync(
         ContentPack pack,
         int accountId,
+        long? baseVersion,
         CancellationToken ct
     )
     {
@@ -52,6 +59,12 @@ public sealed class RpgContentService(
 
         try
         {
+            // Under the gate: no import can land between this read and the write below.
+            if (baseVersion is { } expected && await StoredVersionAsync(ct) != expected)
+            {
+                return LogRefused(Stale(expected), accountId, Stopwatch.GetTimestamp());
+            }
+
             return await ImportOneAsync(pack, accountId, ct);
         }
         finally
@@ -419,6 +432,24 @@ public sealed class RpgContentService(
     }
 
     private static bool Live(VortexEntity row) => row.DeletedAt is null;
+
+    private async Task<long> StoredVersionAsync(CancellationToken ct)
+    {
+        await using VortexDbContext db = await dbFactory.CreateDbContextAsync(ct);
+
+        return await db.RpgContentPacks.MaxAsync(p => (long?)p.Id, ct) ?? 0;
+    }
+
+    private ContentImportResult Stale(long expected) =>
+        Refused([
+            new ContentFinding(
+                ContentSeverity.Error,
+                "Stale",
+                null,
+                null,
+                $"The content moved past version {expected}: read it again before writing."
+            ),
+        ]);
 
     private ContentImportResult Refused(IReadOnlyList<ContentFinding> findings) =>
         new(false, registry.Version, 0, 0, 0, findings);
