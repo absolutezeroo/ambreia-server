@@ -1,7 +1,11 @@
 #!/usr/bin/env node
 // Sends the whole content pack (spec Contenu §6) to a running emulator and prints what it said.
 //
-//   node scripts/content/push.mjs [--base http://127.0.0.1:8080] [--email you@x] [--password-env VAR] [--dir content]
+//   node scripts/content/push.mjs [--base http://127.0.0.1:8080] [--email you@x] [--password-env VAR] [--dir content] [--force]
+//
+// The version content/.pack-version records (written by pull.mjs) goes with the pack: when the
+// database moved since (the Game Editor wrote to it), the push is refused rather than erasing that
+// work. --force pushes anyway, and the server logs it.
 //
 // The password is read from the environment variable named by --password-env (default
 // VORTEX_CONTENT_PASSWORD) and is never printed. The account needs content.publish (the owner role).
@@ -10,19 +14,9 @@
 import { readFileSync, readdirSync, existsSync } from 'node:fs';
 import { join, relative, resolve, sep, dirname, basename } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { fail, flag, option, signIn } from './session.mjs';
 
 const REPO = join(dirname(fileURLToPath(import.meta.url)), '..', '..');
-const COOKIE = 'habbo-web-session';
-
-function option(name, fallback) {
-  const i = process.argv.indexOf(`--${name}`);
-  return i > 0 && process.argv[i + 1] ? process.argv[i + 1] : fallback;
-}
-
-function fail(message) {
-  console.error(message);
-  process.exit(1);
-}
 
 function* walk(dir) {
   for (const entry of readdirSync(dir, { withFileTypes: true })) {
@@ -50,37 +44,31 @@ function readPack(root) {
   return { files, migrations: existsSync(migrations) ? readFileSync(migrations, 'utf8') : null, texts };
 }
 
-async function login(base, email, password) {
-  const res = await fetch(`${base}/api/public/authentication/login`, {
-    method: 'POST',
-    headers: { 'content-type': 'application/json' },
-    body: JSON.stringify({ email, password }),
-  });
-  const cookie = res.headers.getSetCookie().find((c) => c.startsWith(`${COOKIE}=`));
-  if (!cookie) fail(`Login refused for ${email}: HTTP ${res.status}.`);
-  return cookie.split(';')[0];
-}
-
-const base = option('base', 'http://127.0.0.1:8080');
-const email = option('email', process.env.VORTEX_CONTENT_EMAIL);
-const passwordEnv = option('password-env', 'VORTEX_CONTENT_PASSWORD');
-const password = process.env[passwordEnv];
-if (!email) fail('No account: pass --email or set VORTEX_CONTENT_EMAIL.');
-if (!password) fail(`No password: set the environment variable ${passwordEnv}.`);
-
-const pack = readPack(resolve(REPO, option('dir', 'content')));
+const root = resolve(REPO, option('dir', 'content'));
+const pack = readPack(root);
 console.log(`Pack: ${pack.files.length} file(s), ${Object.keys(pack.texts).length} language(s).`);
+
+const versionFile = join(root, '.pack-version');
+const query = flag('force')
+  ? '?force=true'
+  : existsSync(versionFile)
+    ? `?baseVersion=${Number.parseInt(readFileSync(versionFile, 'utf8'), 10)}`
+    : '';
 
 let res;
 try {
-  const cookie = await login(base, email, password);
-  res = await fetch(`${base}/api/content/import`, {
+  const { base, cookie } = await signIn();
+  res = await fetch(`${base}/api/content/import${query}`, {
     method: 'POST',
     headers: { 'content-type': 'application/json', cookie },
     body: JSON.stringify(pack),
   });
 } catch (e) {
   fail(`Cannot reach ${base}: ${e.message}`);
+}
+
+if (res.status === 409) {
+  fail('Refused: the content moved since your last pull (the Game Editor wrote to it). Run pull.mjs first, or --force to erase that work.');
 }
 
 const text = await res.text();

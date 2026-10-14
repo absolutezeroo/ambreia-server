@@ -84,3 +84,6 @@ chain/broadcast/
 
 # Git worktrees of this repo (superpowers:using-git-worktrees)
 .worktrees/
+
+# The content version the last pull read, for push.mjs: per database, not per repository.
+content/.pack-version

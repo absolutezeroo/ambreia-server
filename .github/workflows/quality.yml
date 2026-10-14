@@ -49,7 +49,7 @@ jobs:
       # The forward-script runner's own rules (numbering, pending set, connection parsing); the
       # scripts themselves run against a real MySQL in the job below.
       - name: Forward runner unit tests
-        run: node --test scripts/sql/forward.test.mjs
+        run: node --test scripts/sql/forward.test.mjs scripts/content/pull.test.mjs
 
       # `dotnet list package --vulnerable` exits 0 even when it finds something, so the output has
       # to be inspected. Transitive packages are included: that is where most advisories land.

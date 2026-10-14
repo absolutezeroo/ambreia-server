@@ -2211,6 +2211,87 @@ async function cmdQuests() {
   g.close();
 }
 
+// The content one document at a time (spec content authoring §8), through the web API as the
+// Game Editor will use it: a tool item created with its texts, read back, changed, a write at the
+// old version refused (409), one whose id is not the URL's refused (400), deleted, gone from the
+// export; then pull.mjs writes the database's content back into content/ (the repository should
+// only see content/.pack-version move). Re-runnable: a pickaxe left by a broken run is removed first.
+async function cmdAuthoring() {
+  const base = `http://127.0.0.1:${WEBAPI}/api/content`;
+  const ID = 'item.tool.driver_pickaxe';
+  await webSession(PLAYER);
+  sql(`INSERT INTO player_account_roles (account_id, role_id)
+       SELECT a.id, r.id FROM player_accounts a, roles r
+       WHERE a.email='${PLAYER.email}' AND r.\`key\`='owner'
+         AND NOT EXISTS (SELECT 1 FROM player_account_roles x WHERE x.account_id=a.id AND x.role_id=r.id);`);
+  const headers = { cookie: (await webSession(PLAYER)).cookie };
+  const json = (r) => (r.body ? JSON.parse(r.body) : null);
+  const version = async () => json(await request(`${base}/documents?kind=item`, { headers })).version;
+  const put = (baseVersion, source, id = ID) =>
+    request(`${base}/documents/${id}`, {
+      method: 'PUT',
+      headers,
+      body: JSON.stringify({
+        baseVersion,
+        kind: 'item',
+        source: JSON.stringify(source),
+        texts: { fr: { [`${ID}.name`]: 'Pioche du driver', [`${ID}.description`]: 'Une pioche pour la preuve.' } },
+      }),
+    });
+  const tool = { id: ID, kind: 'item', category: 'tool', rarity: 'common', maxStack: 1, sellValue: 2, binding: 'none' };
+
+  if ((await request(`${base}/documents/${ID}`, { headers })).status === 200) {
+    const left = await request(`${base}/documents/${ID}?baseVersion=${await version()}`, { method: 'DELETE', headers });
+    log(`0. A pickaxe left by an earlier run removed: HTTP ${left.status}`);
+  }
+
+  // 1. Created, with its texts.
+  const v0 = await version();
+  let r = await put(v0, tool);
+  if (r.status !== 200) die(`1. PUT -> ${r.status} ${r.body}`);
+  const v1 = json(r).packVersion;
+  const read = json(await request(`${base}/documents/${ID}`, { headers }));
+  if (read.path !== 'item/driver_pickaxe.json' || !read.source.includes('"category": "tool"') || read.texts.fr[`${ID}.name`] !== 'Pioche du driver') {
+    die(`1. Read back: ${JSON.stringify(read)}`);
+  }
+  log(`1. ${ID} created at ${read.path}, version ${v0} -> ${v1}, texts read back`);
+
+  // 2. Changed at the version just read.
+  r = await put(v1, { ...tool, sellValue: 3 });
+  if (r.status !== 200) die(`2. PUT -> ${r.status} ${r.body}`);
+  const v2 = json(r).packVersion;
+  log(`2. changed: version ${v1} -> ${v2}`);
+
+  // 3. A write at the old version is refused, and writes nothing.
+  r = await put(v1, { ...tool, sellValue: 99 });
+  if (r.status !== 409 || !r.body.includes('content.stale')) die(`3. Stale PUT -> ${r.status} ${r.body}`);
+  if (!json(await request(`${base}/documents/${ID}`, { headers })).source.includes('"sellValue": 3')) die('3. The stale write changed the document.');
+  log('3. a write at the old version -> 409 content.stale, nothing written');
+
+  // 4. A source whose id is not the URL's is refused.
+  r = await put(v2, tool, 'item.tool.other');
+  if (r.status !== 400 || !r.body.includes('content.id_mismatch')) die(`4. Mismatched PUT -> ${r.status} ${r.body}`);
+  log('4. a source that is not the URL\'s document -> 400 content.id_mismatch');
+
+  // 5. Deleted, gone from the export.
+  r = await request(`${base}/documents/${ID}?baseVersion=${v2}`, { method: 'DELETE', headers });
+  if (r.status !== 200) die(`5. DELETE -> ${r.status} ${r.body}`);
+  if ((await request(`${base}/documents/${ID}`, { headers })).status !== 404) die('5. Still readable after the delete.');
+  const exported = json(await request(`${base}/export`, { headers }));
+  if (exported.files.some((f) => f.text.includes(ID))) die('5. Still in the export.');
+  log(`5. deleted: version ${json(r).packVersion}, gone from the export (${exported.files.length} files)`);
+
+  // 6. The database's content back into content/.
+  const out = spawnSync(
+    process.execPath,
+    [path.join(REPO, 'scripts', 'content', 'pull.mjs'), '--base', `http://127.0.0.1:${WEBAPI}`, '--email', PLAYER.email],
+    { stdio: 'inherit', env: { ...process.env, VORTEX_CONTENT_PASSWORD: PLAYER.password } },
+  );
+  if (out.status !== 0) die('6. pull.mjs failed.');
+  const changed = spawnSync('git', ['status', '--short', '--', 'content'], { cwd: REPO, encoding: 'utf8' }).stdout.trim();
+  log(`6. pulled; git status content/: ${changed || '(clean)'}`);
+}
+
 // The zone rules (spec Z1 §13): proof_rules holds a vault open from the mage's next level, a wolf
 // whose death wakes a sleeping ambush, and triggers on that level and on an amber shard. The mage of
 // PLAYER_E is refused the vault, kills the wolf and sees the ambush born, gains the level and the
@@ -2565,6 +2646,7 @@ const table = {
   skills: cmdSkills,
   boss: cmdBoss,
   quests: cmdQuests,
+  authoring: cmdAuthoring,
   rules: cmdRules,
   grace: () => cmdGrace(args[0]),
   cleanup: cmdCleanup,
@@ -2595,6 +2677,7 @@ if (!cmd || !table[cmd]) {
   grace [wait]  drop the socket in a room and come back: same room, one avatar, same tile (wait: then stay away past 60 s)
   boss      proof_boss: a cone telegraph dodged, phase 2 by Firebolt (yell, enraged, two wolves), back to camp -> reset
   quests    camp: the M2a quest loop on the socket (dialogue, wolves, sign in again, hand in, abandon, report)
+  authoring the content API: a tool item created, changed, a stale write refused, deleted; then pull.mjs
   rules     proof_rules: vault refused, a kill wakes an ambush, level and item triggers speak, vault opens
   cleanup   delete the throwaway account and its players`);
   process.exit(cmd ? 1 : 0);
