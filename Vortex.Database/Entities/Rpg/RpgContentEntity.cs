@@ -30,4 +30,15 @@ public class RpgContentEntity : VortexEntity
 
     [ForeignKey(nameof(PackId))]
     public RpgContentPackEntity? Pack { get; set; }
+
+    /// <summary>The file it came from, relative to content/ (content authoring §3): where an export
+    /// writes it back. Null for a row imported before sources were kept.</summary>
+    [Column("source_path")]
+    [MaxLength(256)]
+    public string? SourcePath { get; set; }
+
+    /// <summary>The file's text as authored, $schema included: what an export writes, so the
+    /// repository gets its files back unchanged.</summary>
+    [Column("source", TypeName = "longtext")]
+    public string? Source { get; set; }
 }

@@ -338,7 +338,10 @@ public sealed class RpgContentServiceTests : IAsyncLifetime
         )
             .Should()
             .Be(("status.burning", "dot", 6000));
-        Service().GetDefinitions("class").Should().NotBeNull("classes are public: the client reads them (4fceb9fad)");
+        Service()
+            .GetDefinitions("class")
+            .Should()
+            .NotBeNull("classes are public: the client reads them (4fceb9fad)");
         Service().GetDefinitions("nope").Should().BeNull();
     }
 
@@ -392,6 +395,44 @@ public sealed class RpgContentServiceTests : IAsyncLifetime
 
         results.Select(r => r.PackVersion).Order().Should().Equal(1L, 2L);
         (await CountAsync()).Packs.Should().Be(2);
+    }
+
+    /// <summary>Content authoring §3: the authored file is kept beside its normalised form, so an
+    /// export gives the repository its files back.</summary>
+    [Fact]
+    public async Task AnImport_KeepsEachFilesPathAndText_AndThePacksMigrations()
+    {
+        await ImportAsync(WarriorPack("[]", ("item/sword.json", Sword)));
+
+        await using VortexDbContext db = new(_options);
+        var sword = await db.RpgContent.SingleAsync(c => c.ContentId == "item.weapon.sword");
+
+        (sword.SourcePath, sword.Source).Should().Be(("item/sword.json", Sword));
+        (await db.RpgContentPacks.SingleAsync()).Migrations.Should().Be("[]");
+    }
+
+    /// <summary>The same documents laid out otherwise: no new version, the sources follow.</summary>
+    [Fact]
+    public async Task ReformattedFiles_UpdateTheSources_WithoutANewVersion()
+    {
+        await ImportAsync(WarriorPack(("item/sword.json", Sword)));
+        string reformatted = Sword.Replace(
+            "\"rarity\": \"common\", ",
+            "\n  \"rarity\": \"common\",\n  "
+        );
+
+        ContentImportResult again = await ImportAsync(
+            WarriorPack(("item/sword.json", reformatted))
+        );
+
+        (again.Imported, again.PackVersion, again.Added, again.Changed, again.Removed)
+            .Should()
+            .Be((true, 1L, 0, 0, 0));
+        await using VortexDbContext db = new(_options);
+        (await db.RpgContent.SingleAsync(c => c.ContentId == "item.weapon.sword"))
+            .Source.Should()
+            .Be(reformatted);
+        (await db.RpgContentPacks.CountAsync()).Should().Be(1);
     }
 
     private static IContentKind[] Kinds() =>

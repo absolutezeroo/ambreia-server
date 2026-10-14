@@ -142,7 +142,7 @@ public sealed class RpgContentService(
         await using VortexDbContext owner = await dbFactory.CreateDbContextAsync(ct);
         (ContentImportResult result, long stored, int rules) = await owner
             .Database.CreateExecutionStrategy()
-            .ExecuteAsync(() => AttemptAsync(valid, hashes, texts, accountId, ct));
+            .ExecuteAsync(() => AttemptAsync(valid, hashes, texts, pack.Migrations, accountId, ct));
 
         if (!result.Imported)
         {
@@ -177,6 +177,7 @@ public sealed class RpgContentService(
         ValidatedPack valid,
         Dictionary<string, string> hashes,
         Dictionary<string, string> texts,
+        string? migrations,
         int accountId,
         CancellationToken ct
     )
@@ -228,6 +229,13 @@ public sealed class RpgContentService(
 
         if (added.Length + changed.Length + removed.Length == 0 && !textsChanged)
         {
+            // The same content laid out otherwise: the sources follow, the version does not move.
+            if (WriteSources(rows, valid.Sources))
+            {
+                await db.SaveChangesAsync(ct);
+                await tx.CommitAsync(ct);
+            }
+
             return (new ContentImportResult(true, stored, 0, 0, 0, valid.Findings), stored, 0);
         }
 
@@ -263,6 +271,7 @@ public sealed class RpgContentService(
             Added = added.Length,
             Changed = changed.Length,
             Removed = removed.Length,
+            Migrations = migrations,
         };
         db.RpgContentPacks.Add(written);
 
@@ -281,6 +290,7 @@ public sealed class RpgContentService(
                     PackId = 0,
                 };
                 db.RpgContent.Add(row);
+                rows[id] = row;
             }
 
             row.Kind = definition.Kind;
@@ -318,6 +328,7 @@ public sealed class RpgContentService(
         }
 
         WriteTexts(db, textRows, texts);
+        WriteSources(rows, valid.Sources);
 
         await db.SaveChangesAsync(ct);
         await tx.CommitAsync(ct);
@@ -378,6 +389,33 @@ public sealed class RpgContentService(
         {
             row.DeletedAt ??= DateTime.UtcNow;
         }
+    }
+
+    /// <summary>Each document's file as sent, on its row (content authoring §3); true when one moved.
+    /// <paramref name="rows"/> holds the rows this import added too.</summary>
+    private static bool WriteSources(
+        Dictionary<string, RpgContentEntity> rows,
+        IReadOnlyDictionary<string, ContentFile> sources
+    )
+    {
+        bool moved = false;
+
+        foreach ((string id, ContentFile file) in sources)
+        {
+            if (
+                !rows.TryGetValue(id, out RpgContentEntity? row)
+                || row.SourcePath == file.Path && row.Source == file.Text
+            )
+            {
+                continue;
+            }
+
+            row.SourcePath = file.Path;
+            row.Source = file.Text;
+            moved = true;
+        }
+
+        return moved;
     }
 
     private static bool Live(VortexEntity row) => row.DeletedAt is null;

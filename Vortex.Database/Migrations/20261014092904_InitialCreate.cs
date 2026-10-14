@@ -480,6 +480,9 @@ namespace Vortex.Database.Migrations
                         added = table.Column<int>(type: "int", nullable: false),
                         changed = table.Column<int>(type: "int", nullable: false),
                         removed = table.Column<int>(type: "int", nullable: false),
+                        migrations = table
+                            .Column<string>(type: "longtext", maxLength: 512, nullable: true)
+                            .Annotation("MySql:CharSet", "utf8mb4"),
                         created_at = table
                             .Column<DateTime>(type: "datetime(6)", nullable: false)
                             .Annotation(
@@ -889,6 +892,12 @@ namespace Vortex.Database.Migrations
                             .Column<string>(type: "char(64)", maxLength: 512, nullable: false)
                             .Annotation("MySql:CharSet", "utf8mb4"),
                         pack_id = table.Column<int>(type: "int", nullable: false),
+                        source_path = table
+                            .Column<string>(type: "varchar(256)", maxLength: 256, nullable: true)
+                            .Annotation("MySql:CharSet", "utf8mb4"),
+                        source = table
+                            .Column<string>(type: "longtext", maxLength: 512, nullable: true)
+                            .Annotation("MySql:CharSet", "utf8mb4"),
                         created_at = table
                             .Column<DateTime>(type: "datetime(6)", nullable: false)
                             .Annotation(

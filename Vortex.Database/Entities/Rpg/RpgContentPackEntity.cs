@@ -17,4 +17,8 @@ public class RpgContentPackEntity : VortexEntity
 
     [Column("removed")]
     public required int Removed { get; set; }
+
+    /// <summary>The pack's migrations.json as sent (content authoring §3): the latest one is exported.</summary>
+    [Column("migrations", TypeName = "longtext")]
+    public string? Migrations { get; set; }
 }

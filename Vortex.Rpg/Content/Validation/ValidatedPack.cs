@@ -12,7 +12,8 @@ public sealed record ValidatedPack(
     IReadOnlyDictionary<string, ContentDefinition> Definitions,
     IReadOnlyList<ContentMigrationRule> Rules,
     IReadOnlyDictionary<string, IReadOnlyDictionary<string, string>> Texts,
-    IReadOnlyList<ContentFinding> Findings
+    IReadOnlyList<ContentFinding> Findings,
+    IReadOnlyDictionary<string, ContentFile> Sources
 )
 {
     public bool HasErrors => Findings.Any(f => f.Severity == ContentSeverity.Error);

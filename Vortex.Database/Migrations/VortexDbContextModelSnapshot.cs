@@ -1362,6 +1362,16 @@ namespace Vortex.Database.Migrations
                         .HasColumnType("int")
                         .HasColumnName("pack_id");
 
+                    b.Property<string>("Source")
+                        .HasMaxLength(512)
+                        .HasColumnType("longtext")
+                        .HasColumnName("source");
+
+                    b.Property<string>("SourcePath")
+                        .HasMaxLength(256)
+                        .HasColumnType("varchar(256)")
+                        .HasColumnName("source_path");
+
                     b.Property<DateTime>("UpdatedAt")
                         .ValueGeneratedOnAddOrUpdate()
                         .HasColumnType("datetime(6)")
@@ -1464,6 +1474,11 @@ namespace Vortex.Database.Migrations
                     b.Property<DateTime?>("DeletedAt")
                         .HasColumnType("datetime(6)")
                         .HasColumnName("deleted_at");
+
+                    b.Property<string>("Migrations")
+                        .HasMaxLength(512)
+                        .HasColumnType("longtext")
+                        .HasColumnName("migrations");
 
                     b.Property<int>("Removed")
                         .HasColumnType("int")

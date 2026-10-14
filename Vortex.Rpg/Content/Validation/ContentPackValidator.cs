@@ -31,6 +31,7 @@ public sealed partial class ContentPackValidator(IEnumerable<IContentKind> kinds
         List<ContentFinding> findings = [];
         Dictionary<string, ContentDefinition> definitions = new(StringComparer.Ordinal);
         Dictionary<string, string> paths = new(StringComparer.Ordinal);
+        Dictionary<string, ContentFile> sources = new(StringComparer.Ordinal);
         Dictionary<string, IContentKind> kindOf = new(StringComparer.Ordinal);
 
         // The pack arrives from the web: a null the type does not allow is still possible. No file
@@ -70,6 +71,7 @@ public sealed partial class ContentPackValidator(IEnumerable<IContentKind> kinds
             {
                 definitions[definition.Id] = definition;
                 paths[definition.Id] = file.Path;
+                sources[definition.Id] = file;
                 kindOf[definition.Id] = kind!;
             }
         }
@@ -96,7 +98,7 @@ public sealed partial class ContentPackValidator(IEnumerable<IContentKind> kinds
 
         CheckTexts(texts, definitions, findings);
 
-        return new ValidatedPack(definitions, rules, texts, findings);
+        return new ValidatedPack(definitions, rules, texts, findings, sources);
     }
 
     private static IReadOnlyList<ContentMigrationRule> ReadMigrations(
