@@ -13,6 +13,7 @@ using Vortex.Database.Tests.Support;
 using Vortex.Primitives.Events;
 using Vortex.Primitives.Furniture.Providers;
 using Vortex.Primitives.Rpg.Content;
+using Vortex.Rpg.Content.Authoring;
 using Vortex.Rpg.Content.Definitions;
 using Vortex.Rpg.Content.Import;
 using Vortex.Rpg.Content.Kinds;
@@ -434,6 +435,46 @@ public sealed class RpgContentServiceTests : IAsyncLifetime
             .Be(reformatted);
         (await db.RpgContentPacks.CountAsync()).Should().Be(1);
     }
+
+    /// <summary>Content authoring §3: the stored pack is what was pushed, file for file.</summary>
+    [Fact]
+    public async Task TheStoredPack_GivesBackEveryFileAsPushed()
+    {
+        ContentPack pack = WarriorPack("[]", ("item/sword.json", Sword));
+        await ImportAsync(pack);
+
+        ContentExport stored = await Reader().ReadAsync(CancellationToken.None);
+
+        stored.Version.Should().Be(1);
+        stored
+            .Files.OrderBy(f => f.Path, StringComparer.Ordinal)
+            .Should()
+            .Equal(pack.Files.OrderBy(f => f.Path, StringComparer.Ordinal));
+        stored.Texts.Should().BeEquivalentTo(pack.Texts);
+        stored.Migrations.Should().Be("[]");
+    }
+
+    /// <summary>A row imported before sources were kept: its normalised form, at its derived path.</summary>
+    [Fact]
+    public async Task ARowWithoutSource_IsExportedNormalised_AtItsDerivedPath()
+    {
+        await ImportAsync(WarriorPack(("item/blade.json", Sword)));
+        await using (VortexDbContext db = new(_options))
+        {
+            await db.RpgContent.ExecuteUpdateAsync(c =>
+                c.SetProperty(r => r.Source, (string?)null)
+                    .SetProperty(r => r.SourcePath, (string?)null)
+            );
+        }
+
+        ContentExport stored = await Reader().ReadAsync(CancellationToken.None);
+        ContentFile sword = stored.Files.Single(f => f.Text.Contains("item.weapon.sword"));
+
+        sword.Path.Should().Be("item/sword.json");
+        sword.Text.Should().Contain("\"requiredLevel\":1");
+    }
+
+    private StoredPackReader Reader() => new(new OptionsDbContextFactory(_options));
 
     private static IContentKind[] Kinds() =>
         [
