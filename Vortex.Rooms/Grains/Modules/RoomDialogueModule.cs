@@ -153,14 +153,18 @@ public sealed class RoomDialogueModule(RoomGrain roomGrain, INpcDialogues dialog
     /// <summary>What each NPC has for this player; sent on entry and whenever their quest part changes.</summary>
     public async Task SendMarkersAsync(PlayerId player)
     {
-        if (roomGrain.NpcModule.Npcs.Count == 0)
+        if (MarkersFor(player) is { } markers)
         {
-            return;
+            await SendAsync(player, markers);
         }
+    }
 
-        await SendAsync(
-            player,
-            new RpgNpcsMessageComposer
+    /// <summary>The markers of every NPC for this player, or null in a room without NPCs: the entry
+    /// burst of a player back within the grace period carries them, no avatar being made then.</summary>
+    public RpgNpcsMessageComposer? MarkersFor(PlayerId player) =>
+        roomGrain.NpcModule.Npcs.Count == 0
+            ? null
+            : new RpgNpcsMessageComposer
             {
                 Npcs =
                 [
@@ -172,9 +176,7 @@ public sealed class RoomDialogueModule(RoomGrain roomGrain, INpcDialogues dialog
                             : RpgNpcMarker.None,
                     }),
                 ],
-            }
-        );
-    }
+            };
 
     public Task OnRoomEventAsync(RoomEvent evt, CancellationToken ct)
     {

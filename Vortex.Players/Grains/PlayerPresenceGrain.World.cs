@@ -55,6 +55,17 @@ internal sealed partial class PlayerPresenceGrain
         {
             _logger.LogWarning(ex, "Sign-in could not push the state of {PlayerId}", PlayerId);
         }
+
+        // The quest log goes with the state (spec M2a §3.2), for the same reason: a resume enters
+        // no zone. A view too, apart from the state's.
+        try
+        {
+            await _grainFactory.GetQuestLogGrain(PlayerId).PushLogAsync();
+        }
+        catch (Exception ex) when (ex is not OperationCanceledException)
+        {
+            _logger.LogWarning(ex, "Sign-in could not push the quest log of {PlayerId}", PlayerId);
+        }
     }
 
     /// <summary>The sign-in burst, landing place decided: a pending editor test entry, else the

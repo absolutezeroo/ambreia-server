@@ -16,6 +16,7 @@ using Vortex.Primitives.Observability;
 using Vortex.Primitives.Permissions;
 using Vortex.Primitives.Rooms;
 using Vortex.Primitives.Rpg.Characters.Grains;
+using Vortex.Primitives.Rpg.Quests.Grains;
 using Vortex.Primitives.Server.Grains;
 using Vortex.Primitives.World;
 using Vortex.Primitives.World.Grains;
@@ -142,13 +143,25 @@ public sealed class WorldEntryBurstTests
         (await grain.GetResumableRoomAsync()).Should().BeNull();
     }
 
-    /// <summary>Back within the grace period there is no room entry to push it: the sign-in does.</summary>
+    /// <summary>Back within the grace period there is no room entry to push them: the sign-in
+    /// does, the state then the quest log (spec M2a §3.2).</summary>
     [Fact]
-    public async Task EnteringTheWorld_PushesTheCharacterState()
+    public async Task EnteringTheWorld_PushesTheCharacterStateThenTheQuestLog()
     {
         await Build().EnterWorldAsync(CancellationToken.None);
 
-        _calls.Should().Equal("push");
+        _calls.Should().Equal("push", "quests");
+    }
+
+    /// <summary>Two views: one failing does not keep the other from the player.</summary>
+    [Fact]
+    public async Task AFailingStatePush_StillPushesTheQuestLog()
+    {
+        _pushFails = true;
+
+        await Build().EnterWorldAsync(CancellationToken.None);
+
+        _calls.Should().Equal("quests");
     }
 
     /// <summary>No zone to land in, no HUD: the player stays on the hotel view.</summary>
@@ -224,6 +237,12 @@ public sealed class WorldEntryBurstTests
                     ? FakeProxy.Create<IZoneTestGrain>(_ =>
                         Task.FromResult(_testRoomId is { } room ? (RoomId?)new RoomId(room) : null)
                     )
+                : grain == typeof(IQuestLogGrain)
+                    ? FakeProxy.Create<IQuestLogGrain>(inner =>
+                        inner.Method.Name == nameof(IQuestLogGrain.PushLogAsync)
+                            ? QuestLogPushedAsync()
+                            : null
+                    )
                 : grain == typeof(IPlayerCharacterGrain)
                     ? FakeProxy.Create<IPlayerCharacterGrain>(inner =>
                         inner.Method.Name switch
@@ -241,6 +260,13 @@ public sealed class WorldEntryBurstTests
                     )
                 : null;
         });
+
+    private Task QuestLogPushedAsync()
+    {
+        _calls.Add("quests");
+
+        return Task.CompletedTask;
+    }
 
     private Task PushedAsync()
     {

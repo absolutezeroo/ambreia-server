@@ -6,6 +6,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using FluentAssertions;
 using Vortex.Primitives.Orleans.Snapshots.Players;
+using Vortex.Primitives.Orleans.Snapshots.Room;
 using Vortex.Primitives.Players;
 using Vortex.Primitives.Rooms.Enums;
 using Vortex.Primitives.Rooms.Object.Logic.Avatars;
@@ -301,5 +302,42 @@ public sealed class RoomDialogueTests
             .Npcs.Single()
             .Marker.Should()
             .Be("available");
+    }
+
+    /// <summary>Back within the grace period no avatar is made, so nothing else would send them.</summary>
+    [Fact]
+    public async Task APlayerBackWithinGrace_GetsTheMarkersInTheEntryBurst()
+    {
+        await ZoneAsync();
+        await EnterAtAsync(RoomHarness.Owner, 3, 2);
+
+        RoomAdmissionSnapshot back = await _harness.Grain.AdmitAsync(
+            _harness.ContextFor(RoomHarness.Owner),
+            string.Empty,
+            resumed: true,
+            CancellationToken.None
+        );
+
+        back.Burst.OfType<RpgNpcsMessageComposer>()
+            .Single()
+            .Npcs.Select(n => (n.ObjectId, n.Marker))
+            .Should()
+            .Equal((_elder, "available"));
+    }
+
+    /// <summary>A fresh entry gets them when its avatar is made, after the burst.</summary>
+    [Fact]
+    public async Task AFreshEntry_HasNoMarkersInTheBurst()
+    {
+        await ZoneAsync();
+
+        RoomAdmissionSnapshot entry = await _harness.Grain.AdmitAsync(
+            _harness.ContextFor(RoomHarness.Owner),
+            string.Empty,
+            resumed: false,
+            CancellationToken.None
+        );
+
+        entry.Burst.OfType<RpgNpcsMessageComposer>().Should().BeEmpty();
     }
 }

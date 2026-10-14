@@ -93,6 +93,7 @@ public sealed partial class RoomGrain
                     snapshot,
                     controllerLevel,
                     avatarSnapshots,
+                    resumed,
                     ct
                 )
                 .ConfigureAwait(true),
@@ -109,6 +110,7 @@ public sealed partial class RoomGrain
         RoomSnapshot snapshot,
         RoomControllerType controllerLevel,
         ImmutableArray<RoomAvatarSnapshot> avatarSnapshots,
+        bool resumed,
         CancellationToken ct
     )
     {
@@ -259,6 +261,13 @@ public sealed partial class RoomGrain
             // Every fighter's health, for the bars over the avatars, and the player's own when he
             // is back within the grace period (spec M1a §9.2).
             burst.AddRange(Simulation.EntryVitals(player));
+
+            // The NPCs' markers (spec M2a §4.4) come with the avatar's creation; back within the
+            // grace period none is made, so they come here.
+            if (resumed && DialogueModule.MarkersFor(player) is { } markers)
+            {
+                burst.Add(markers);
+            }
         }
 
         return burst.ToImmutable();
